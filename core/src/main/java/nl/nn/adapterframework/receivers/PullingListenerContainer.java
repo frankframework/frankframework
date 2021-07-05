@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -214,8 +215,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					}
 					M rawMessage = null;
 					TransactionStatus txStatus = null;
-					boolean successfullyProcessed = false;
-					boolean tooManyRetries = false;
+					int deliveryCount=0;
+					boolean messageHandled = false;
 					String messageId = null;
 					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
@@ -290,20 +291,23 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						try {
 							if (receiver.getMaxRetries()>=0) {
 								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
+								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
+							}
+							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
+								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+							} else {
 								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								Date receivedDate = new Date();
+								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
 								final M rawMessageFinal = rawMessage;
 								final Map<String,Object> threadContextFinal = threadContext;
-								if (receiver.hasProblematicHistory(messageId, false, rawMessage, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), threadContext, correlationId) ) {
-									tooManyRetries = true;
-								}
+								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
+								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
 							}
-							if (!tooManyRetries || receiver.isSupportProgrammaticRetry()) {
-								receiver.processRawMessage(listener, rawMessage, threadContext, true);
-								successfullyProcessed = true;
-							}
+							messageHandled = true;
 							if (txStatus != null) {
 								if (txStatus.isRollbackOnly()) {
-									successfullyProcessed = false;
+									messageHandled = false;
 									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
 									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
@@ -315,7 +319,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							receiver.error("caught Exception processing message", e);
 							try {
 								if (txStatus != null && !txStatus.isCompleted()) {
-									successfullyProcessed = false;
+									messageHandled = false;
 									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
 									txStatus = null;
 								}
@@ -331,15 +335,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							successfullyProcessed = false;
+							messageHandled = false;
 							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
 							txStatus = null;
 						}
 					}
-					if (!successfullyProcessed && inProcessStateManager!=null) {
+					if (!messageHandled && inProcessStateManager!=null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
-						ProcessState targetState = tooManyRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
-						String errorMessage = Misc.concatStrings(tooManyRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
+						if (log.isDebugEnabled()) log.debug("noMoreRetries ["+noMoreRetries+"] deliveryCount ["+deliveryCount+"] targetState ["+targetState+"]");
+						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
 						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
 						if (txStatus!=null) {
 							txManager.commit(txStatus);

@@ -30,7 +30,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;

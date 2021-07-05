@@ -226,7 +226,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		ContentHandler handler;
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
-			handler = getCanonicalizedConfiguration(writer);
+			handler = getCanonicalizedConfiguration(configuration, writer);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
@@ -253,9 +253,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return loaded;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
+	public ContentHandler getCanonicalizedConfiguration(Configuration configuration, ContentHandler writer) throws IOException, SAXException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(null, frankConfigXSD));
+		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(configuration, frankConfigXSD));
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {

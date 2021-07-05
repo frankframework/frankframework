@@ -15,20 +15,29 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.util.LogUtil;
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
-import java.util.Set;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.util.LogUtil;
 
-public class ThreadConnector<T> {
+public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private ThreadLifeCycleEventListener<T> threadLifeCycleEventListener;
 	private Thread parentThread;
 	private T threadInfo;
 	private Set<String> hideRegex;
+	
+	private enum ThreadState {
+		ANNOUNCED,
+		CREATED,
+		FINISHED;
+	};
+	
+	private ThreadState threadState=ThreadState.ANNOUNCED;
 	
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, String correlationId) {
 		super();
@@ -39,6 +48,9 @@ public class ThreadConnector<T> {
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+		if (session!=null) {
+			session.scheduleCloseOnSessionExit(this);
+		} 
 	}
 	
 	public Object startThread(Object input) {
@@ -51,6 +63,7 @@ public class ThreadConnector<T> {
 			//	currentThread.setContextClassLoader(parentThread.getContextClassLoader());
 			// }
 			if (threadLifeCycleEventListener!=null) {
+				threadState = ThreadState.CREATED;
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);
 			}
 		} else {
@@ -65,6 +78,7 @@ public class ThreadConnector<T> {
 	public Object endThread(Object response) {
 		try {
 			if (threadLifeCycleEventListener!=null) {
+				threadState = ThreadState.FINISHED;
 				return threadLifeCycleEventListener.threadEnded(threadInfo, response);
 			}
 			return response;
@@ -76,6 +90,7 @@ public class ThreadConnector<T> {
 	public Throwable abortThread(Throwable t) {
 		try {
 			if (threadLifeCycleEventListener!=null) {
+				threadState = ThreadState.FINISHED;
 				Throwable t2 = threadLifeCycleEventListener.threadAborted(threadInfo, t);
 				if (t2==null) {
 					log.warn("Exception ignored by threadLifeCycleEventListener ("+t.getClass().getName()+"): "+t.getMessage());
@@ -86,6 +101,24 @@ public class ThreadConnector<T> {
 			return t;
 		} finally {
 			IbisMaskingLayout.removeThreadLocalReplace();
+		}
+	}
+	@Override
+	public void close() throws Exception {
+		if (threadLifeCycleEventListener!=null) {
+			switch (threadState) {
+			case ANNOUNCED:
+				threadLifeCycleEventListener.cancelChildThread(threadInfo);
+				break;
+			case CREATED:
+				log.warn("thread was not properly closed");
+				threadLifeCycleEventListener.threadEnded(threadInfo, null);
+				break;
+			case FINISHED:
+				break;
+			default: 
+				throw new IllegalStateException("Unknown ThreadState ["+threadState+"]");
+			}
 		}
 	}
 	
