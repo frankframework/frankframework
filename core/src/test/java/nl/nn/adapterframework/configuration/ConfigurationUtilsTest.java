@@ -48,6 +48,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	private PreparedStatementMock stmt;
 
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	private static final String STUB4TESTTOOL_DIRECTORY = "/ConfigurationUtils/stub4testtool";
 	
 	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
@@ -193,21 +194,33 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 	
 	@Test
-	public void stub4testtoolTest() throws Exception {
+	public void stub4testtoolApiListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ApiListener";
+		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+	}
+	
+	@Test
+	public void stub4testtoolRestListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/RestListener";
+		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+	}
+	
+	@Test
+	public void stub4testtoolWebServiceListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/WebServiceListener";
+		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+	}
+	
+	private void stub4testtoolTest(String baseDirectory, String originalConfigurationFilename, String expectedConfigurationFilename, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", false);
 		
-		String originalConfiguration = TestFileUtils.getTestFile("/ConfigurationUtils/stub4testtool/original.xml");
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + originalConfigurationFilename);
 		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
-		String expectedConfiguration = TestFileUtils.getTestFile("/ConfigurationUtils/stub4testtool/expected.xml");
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + expectedConfigurationFilename);
 		
-		assertTransformIsCorrect(expectedConfiguration, stubbedConfiguration);
-	}
-	
-	protected void assertTransformIsCorrect(String expected, String actual) {
-		// Trim results to remove starting/ending whitespaces that might be introduced by the xslt but do not matter
-		assertEquals(expected.trim(),actual.trim());	
+		assertEquals(expectedConfiguration.trim(),stubbedConfiguration.trim());
 	}
 }
