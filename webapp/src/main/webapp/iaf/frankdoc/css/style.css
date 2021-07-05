@@ -14,7 +14,15 @@ body {
 	display: flex;
 	flex-direction: row;
 	height: 100%;
-	background-color: #19aa8d;
+}
+button.btn {
+	border-radius: 0px;
+	width: 115px;
+	margin-top: 4px;
+	display: block;
+}
+button.btn:focus, button.btn:focus-visible {
+	outline: none !important;
 }
 table.table-sm tbody tr td {
 	padding: 5px 8px;
@@ -83,7 +91,7 @@ table.table thead th.tbl-65 {
 	background-color: white;
 	overflow-y: scroll;
 }
-.sidebar__elements li.deprecated span {
+.sidebar__elements li.deprecated span, td.deprecated {
 	text-decoration: line-through;
 }
 .sidebar__elements li.deprecated i {
