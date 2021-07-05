@@ -191,7 +191,7 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" base64="true">
+					urlParam="url_param">
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="decodeFile" />
