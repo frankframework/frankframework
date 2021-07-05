@@ -388,18 +388,24 @@ public class DocWriterNew {
 		addDocumentation(elementBuilder, getElementDescription(frankElement));
 		xsdElements.add(elementBuilder);
 		XmlBuilder complexType = addComplexType(elementBuilder);
-		XmlBuilder sequence = addSequence(complexType);
 		log.trace("Adding cumulative config chidren of FrankElement [{}] to XSD element [{}]", () -> frankElement.getFullName(), () -> xsdElementName);
 		if(frankElement.hasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
 			log.trace("FrankElement [{}] has plural config children", () -> frankElement.getFullName());
+			XmlBuilder sequence = addSequence(complexType);
 			XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 			for(ConfigChildSet configChildSet: frankElement.getCumulativeConfigChildSets()) {
 				addPluralConfigChild(choice, configChildSet, frankElement);
 			}
 		} else {
 			log.trace("FrankElement [{}] does not have plural config children", () -> frankElement.getFullName());
-			final XmlBuilder childContext = version.configChildBuilderWithinSequence(sequence);
-			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(childContext, c));
+			List<ConfigChild> cumulativeConfigChildren = frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector());
+			if(cumulativeConfigChildren.isEmpty()) {
+				log.trace("There are no config children, not adding <sequence><choice>");
+			} else {
+				XmlBuilder sequence = addSequence(complexType);
+				final XmlBuilder childContext = version.configChildBuilderWithinSequence(sequence);
+				cumulativeConfigChildren.forEach(c -> addConfigChild(childContext, c));				
+			}
 		}
 		log.trace("Adding cumulative attributes of FrankElement [{}] to XSD element [{}]", () -> frankElement.getFullName(), () -> xsdElementName);
 		addAttributeList(complexType, frankElement.getCumulativeAttributes(version.getChildSelector(), version.getChildRejector()));
@@ -482,13 +488,21 @@ public class DocWriterNew {
 		ElementAdder(FrankElement frankElement) {
 			complexType = createComplexType(xsdElementType(frankElement));
 			xsdComplexItems.add(complexType);
-			configChildBuilder = version.configChildBuilder(complexType);
 			this.addingTo = frankElement;
 		}
 
 		@Override
 		void addGroupRef(String referencedGroupName) {
 			log.trace("Appending XSD type def of [{}] with reference to XSD group [{}]", () -> addingTo.getFullName(), () -> referencedGroupName);
+			// We do not create configChildBuilder during construction, because
+			// that would produce an empty <seqneuce><choice> when there are no
+			// config children.
+			if(configChildBuilder == null) {
+				log.trace("Create <sequence><choice> to wrap the config children in");
+				configChildBuilder = version.configChildBuilder(complexType);				
+			} else {
+				log.trace("Already have <sequence><choice> for the config children");
+			}
 			DocWriterNewXmlUtils.addGroupRef(configChildBuilder, referencedGroupName);
 		}
 
@@ -766,9 +780,7 @@ public class DocWriterNew {
 		String roleName = ElementGroupManager.getRoleName(roles);
 		XmlBuilder genericElementOption = addElementWithType(context, Utils.toUpperCamelCase(roleName));
 		XmlBuilder complexType = addComplexType(genericElementOption);
-		XmlBuilder sequence = addSequence(complexType);
-		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
-		fillGenericOption(choice, roles);
+		fillGenericOption(complexType, roles);
 		// We do not add the attributes here directly, because we may
 		// have to solve a conflict between a member FrankElement and
 		// the XML element name of the generic element option. We need a ConfigChildSet to find
@@ -815,7 +827,12 @@ public class DocWriterNew {
 				parents, version.getChildSelector(), version.getChildRejector(), version.getElementFilter());
 		List<String> names = new ArrayList<>(memberChildrenByRoleName.keySet());
 		Collections.sort(names);
+		XmlBuilder choice = null;
 		for(String name: names) {
+			if(choice == null) {
+				XmlBuilder sequence = addSequence(context);
+				choice = addChoice(sequence, "0", "unbounded");				
+			}
 			List<ElementRole> childRoles = memberChildrenByRoleName.get(name);
 			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
 				log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
