@@ -48,6 +48,9 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
+		if (session!=null) {
+			session.scheduleCloseOnSessionExit(this);
+		} 
 	}
 	
 	public Object startThread(Object input) {

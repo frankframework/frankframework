@@ -92,26 +92,22 @@ public class MessageOutputStream implements AutoCloseable {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		closeOnClose(threadConnector);
 	}
 	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		closeOnClose(threadConnector);
 	}
 	
 	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		closeOnClose(threadConnector);
 	}
 	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		closeOnClose(threadConnector);
 	}
 
 

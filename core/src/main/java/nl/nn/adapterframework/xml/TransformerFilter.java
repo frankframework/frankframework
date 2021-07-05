@@ -37,11 +37,7 @@ public class TransformerFilter extends FullXmlFilter {
 	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
 		if (expectChildThreads) {
-			ThreadConnectingFilter threadConnectingFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
-			if (session!=null) {
-				session.scheduleCloseOnSessionExit(threadConnectingFilter);
-			}
-			handler = threadConnectingFilter;
+			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
