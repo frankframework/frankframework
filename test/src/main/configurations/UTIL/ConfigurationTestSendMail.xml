@@ -30,13 +30,6 @@
 			</pipe>
 			<pipe
 				name="SendMail"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
-				active="!${larva.adapter.mail.active}"
-				>
-				<forward name="success" path="EXIT" />
-			</pipe>
-			<pipe
-				name="SendMail"
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				active="${larva.adapter.mail.active}"
 				>
