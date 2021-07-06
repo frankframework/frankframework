@@ -23,12 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
 import org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper;
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
@@ -40,6 +34,13 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisHttpInvoker implements HttpInvoker {
 
@@ -53,7 +54,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
-			sender = new CmisHttpSender();
+			sender = new CmisHttpSender(true);
 
 			sender.setUrlParam("url");
 
@@ -138,31 +139,31 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 	@Override
 	public Response invokeGET(UrlBuilder url, BindingSession session) {
-		return invoke(url, "GET", null, null, null, session, null, null);
+		return invoke(url, HttpMethod.GET, null, null, null, session, null, null);
 	}
 
 	@Override
 	public Response invokeGET(UrlBuilder url, BindingSession session, BigInteger offset, BigInteger length) {
-		return invoke(url, "GET", null, null, null, session, offset, length);
+		return invoke(url, HttpMethod.GET, null, null, null, session, offset, length);
 	}
 
 	@Override
 	public Response invokePOST(UrlBuilder url, String contentType, Output writer, BindingSession session) {
-		return invoke(url, "POST", contentType, null, writer, session, null, null);
+		return invoke(url, HttpMethod.POST, contentType, null, writer, session, null, null);
 	}
 
 	@Override
 	public Response invokePUT(UrlBuilder url, String contentType, Map<String, String> headers, Output writer,
 			BindingSession session) {
-		return invoke(url, "PUT", contentType, headers, writer, session, null, null);
+		return invoke(url, HttpMethod.PUT, contentType, headers, writer, session, null, null);
 	}
 
 	@Override
 	public Response invokeDELETE(UrlBuilder url, BindingSession session) {
-		return invoke(url, "DELETE", null, null, null, session, null, null);
+		return invoke(url, HttpMethod.DELETE, null, null, null, session, null, null);
 	}
 
-	private Response invoke(UrlBuilder url, String method, String contentType, Map<String, String> headers,
+	private Response invoke(UrlBuilder url, HttpMethod method, String contentType, Map<String, String> headers,
 			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
 
 		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
@@ -171,7 +172,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			try {
 				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
 				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
-				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
 			} catch (UnsupportedEncodingException e) {
 				// This should never happen, but in case it does...
