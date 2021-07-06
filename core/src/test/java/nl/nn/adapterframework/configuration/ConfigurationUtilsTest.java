@@ -49,6 +49,8 @@ public class ConfigurationUtilsTest extends Mockito {
 
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String STUB4TESTTOOL_DIRECTORY = "/ConfigurationUtils/stub4testtool";
+	private static final String STUB4TESTTOOL_ORIGINAL_FILENAME = "original.xml";
+	private static final String STUB4TESTTOOL_EXPECTED_FILENAME = "expected.xml";
 	
 	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
@@ -196,30 +198,60 @@ public class ConfigurationUtilsTest extends Mockito {
 	@Test
 	public void stub4testtoolApiListener() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ApiListener";
-		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+		stub4testtoolTest(directory, false);
 	}
 	
 	@Test
 	public void stub4testtoolRestListener() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/RestListener";
-		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+		stub4testtoolTest(directory, false);
 	}
 	
 	@Test
 	public void stub4testtoolWebServiceListener() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/WebServiceListener";
-		stub4testtoolTest(directory, "original.xml", "expected.xml", false);
+		stub4testtoolTest(directory, false);
 	}
 	
-	private void stub4testtoolTest(String baseDirectory, String originalConfigurationFilename, String expectedConfigurationFilename, boolean disableValidators) throws Exception {
+	@Test
+	public void stub4testtoolDirectoryListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/DirectoryListener";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolJavaListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/JavaListener";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolJdbcQueryListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/JdbcQueryListener";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolJdbcTableListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/JdbcTableListener";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolMessageStoreListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/MessageStoreListener";
+		stub4testtoolTest(directory, false);
+	}
+	
+	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
 		parameters.put("disableValidators", false);
 		
-		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + originalConfigurationFilename);
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);
 		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
-		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + expectedConfigurationFilename);
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_EXPECTED_FILENAME);
 		
 		assertEquals(expectedConfiguration.trim(),stubbedConfiguration.trim());
 	}
