@@ -1,13 +1,20 @@
 angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'properties', function($scope, $http, properties) {
 	function getURI() {
-		return properties.server + "iaf/api/frankdoc/files/frankdoc.json";
+		return properties.server + "iaf/api/frankdoc/files/";
+	}
+	$scope.showDeprecatedElements = false;
+	$scope.showHideDeprecated = function() {
+		$scope.showDeprecatedElements = !$scope.showDeprecatedElements;
+	}
+	$scope.downloadXSD = function() {
+		window.open(getURI() + "frankdoc.xsd", 'Frank!Doc XSD');
 	}
 
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
 	$scope.search = "";
-	$http.get(getURI()).then(function(response) {
+	$http.get(getURI() + "frankdoc.json").then(function(response) {
 		if(response && response.data) {
 			let data = response.data;
 			let types = data.types;
@@ -28,6 +35,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 			for(i in elements) {
 				let element = elements[i];
+				addAttributeActive(element);
 				$scope.elements[element.fullName] = element;
 			}
 		}
@@ -38,6 +46,18 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.loadError = "Unable to load Frank!Doc.json file.";
 		}
 	});
+
+	function addAttributeActive(element) {
+		attributeActive = {
+			name: "active",
+			description: "If defined and empty or false, then this element and all its children are ignored"
+		};
+		if(element.attributes) {
+			element.attributes.unshift(attributeActive);
+		} else {
+			element.attributes = [attributeActive];
+		}
+	}
 
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {

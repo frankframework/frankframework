@@ -227,15 +227,15 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		closeables.add(message);
 	}
 
-	public void scheduleCloseOnSessionExit(Writer writer) {
-		// create a dummy Message, to be able to schedule the writer for close on exit of session
-		Message writerMessage = new Message(new StringReader("dummy")) {
+	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+		// create a dummy Message, to be able to schedule the resource for close on exit of session
+		Message resourceMessage = new Message(new StringReader("dummy")) {
 			@Override
-			public void close() throws IOException {
-				writer.close();
+			public void close() throws Exception {
+				resource.close();
 			}
 		};
-		scheduleCloseOnSessionExit(writerMessage);
+		scheduleCloseOnSessionExit(resourceMessage);
 	}
 	
 	public boolean isScheduledForCloseOnExit(Message message) {

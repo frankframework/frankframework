@@ -10,10 +10,9 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr ng-repeat="attr in element.attributes">
-				<td>
+			<tr ng-repeat="attr in element.attributes" ng-if="!attr.deprecated || showDeprecatedElements">
+				<td ng-class="{ 'deprecated': attr.deprecated }">
 					{{::attr.name}} 
-					<span class="label label-warning" ng-if="::attr.deprecated">Deprecated</span>
 				</td>
 				<td ng-bind-html="::attr.description"></td>
 				<td>{{::attr.default}}</td>

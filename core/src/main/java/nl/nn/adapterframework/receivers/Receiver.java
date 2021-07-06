@@ -213,7 +213,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public enum OnError { CONTINUE, RECOVER, CLOSE };
 
 	private @Getter String name;
-	private @Getter boolean active=true;
 
 	private OnError onError = OnError.CONTINUE;
 
@@ -893,7 +892,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		origin.afterMessageProcessed(plr, rawMessage, threadContext);
 	}
 
-	private void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
+	public void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 		if (getListener() instanceof IHasProcessState) {
 			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 			try {
@@ -1359,7 +1358,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
-						if (getListener() instanceof IHasProcessState) {
+						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
 						}
@@ -1413,7 +1412,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@SuppressWarnings("synthetic-access")
-	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
+	public synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
 		if (cacheItem==null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for messageId ["+messageId+"]");
@@ -1436,6 +1435,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return prci!=null ? prci.comments : null;
 	}
 	
+	public int getDeliveryCount(String messageId, M rawMessage) {
+		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking delivery count for messageId ["+messageId+"]");
+		if (origin instanceof IKnowsDeliveryCount) {
+			return ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage)-1;
+		}
+		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		if (prci==null) {
+			return 1;
+		}
+		return prci.receiveCount+1;
+	}
 	/*
 	 * returns true if message should not be processed
 	 */
@@ -1987,9 +1998,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
-		if (errorStorage.isActive()) {
-			this.errorStorage = errorStorage;
-		}
+		this.errorStorage = errorStorage;
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
@@ -2001,9 +2010,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-		}
+		this.messageLog = messageLog;
 	}
 	/**
 	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
@@ -2023,11 +2030,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void setName(String newName) {
 		name = newName;
 		propagateName();
-	}
-
-	@IbisDoc({"2", "If set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the receiver is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
 	}
 
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})

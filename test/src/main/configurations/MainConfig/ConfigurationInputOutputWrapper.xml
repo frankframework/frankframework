@@ -2,7 +2,7 @@
 	<adapter name="InputOutputWrapper"
 		description="Test the functioning of the InputWrapper and OutputWrapper">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-InputOutputWrapper" throwException="false" />

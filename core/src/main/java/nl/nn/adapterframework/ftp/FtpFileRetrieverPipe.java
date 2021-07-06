@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ftp;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -40,6 +41,8 @@ import nl.nn.adapterframework.stream.Message;
  * @author John Dekker
  * @since   4.4
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	private FtpSession ftpSession;
@@ -53,7 +56,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
 	}
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
@@ -63,6 +67,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.configure();
 	}
 	
+	@Override
 	public void stop() {
 		super.stop();
 		try {		
@@ -75,6 +80,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	/** 
 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
+	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
 		try {

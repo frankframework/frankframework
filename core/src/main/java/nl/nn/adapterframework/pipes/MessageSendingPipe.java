@@ -1033,15 +1033,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	@IbisDoc({"30"})
 	public void setMessageLog(ITransactionalStorage messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-			messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
-			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId(getName());
-			}
-			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
-			}
+		this.messageLog = messageLog;
+		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
+		if (StringUtils.isEmpty(messageLog.getSlotId())) {
+			messageLog.setSlotId(getName());
+		}
+		if (StringUtils.isEmpty(messageLog.getType())) {
+			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
 		}
 	}
 	public ITransactionalStorage getMessageLog() {

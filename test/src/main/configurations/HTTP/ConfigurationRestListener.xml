@@ -61,8 +61,8 @@
 				<forward name="success" path="writeFile" />
 			</pipe>
 
-			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" filename="id.xml" directory="${testdata.dir}/rest">
+			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="write" filename="${testdata.dir}/rest/id.xml">
 				<forward name="success" path="text2Xml2" />
 			</pipe>
 
@@ -175,8 +175,8 @@
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read">
+			<pipe name="readFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read">
 				<forward name="success" path="getUrl" />
 			</pipe>
 
@@ -202,8 +202,8 @@
 				<forward name="success" path="writeFile" />
 			</pipe>
 
-			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" filename="result.pdf" directory="${testdata.dir}/rest">
+			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="write" filename="${testdata.dir}/rest/result.pdf">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
