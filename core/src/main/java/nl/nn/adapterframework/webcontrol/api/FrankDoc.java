@@ -27,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -59,7 +60,12 @@ public final class FrankDoc extends Base {
 	public Response fetchFrankDocXSD() throws ApiException, IOException {
 		URL frankDoc = ClassUtils.getResourceURL(FRANKDOC_XSD);
 		if(frankDoc != null) {
-			return Response.status(Response.Status.OK).entity(Message.asString(frankDoc)).build();
+			String applicationVersion = AppConstants.getInstance().getProperty("application.version");
+			String xsdName = String.format("FrankFramework%s.xsd", applicationVersion!=null ? "-"+applicationVersion : "");
+			return Response.status(Response.Status.OK)
+					.entity(Message.asString(frankDoc))
+					.header("Content-Disposition", "attachment; filename=\"" + xsdName + "\"")
+					.build();
 		}
 
 		throw new ApiException("Frank!Doc XSD not found", Response.Status.NOT_FOUND);

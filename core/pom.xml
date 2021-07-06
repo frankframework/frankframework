@@ -351,7 +351,7 @@
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
-			<version>1.2</version>
+			<version>1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
@@ -435,12 +435,12 @@
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>
-			<version>1.7.7.1</version>
+			<version>1.7.13</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
 			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-			<version>1.1.1</version>
+			<version>1.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>net.spy</groupId>
@@ -551,7 +551,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.64</version>
+			<version>1.69</version>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
