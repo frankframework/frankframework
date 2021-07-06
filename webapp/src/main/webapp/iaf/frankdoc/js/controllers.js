@@ -1,13 +1,20 @@
 angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'properties', function($scope, $http, properties) {
 	function getURI() {
-		return properties.server + "iaf/api/frankdoc/files/frankdoc.json";
+		return properties.server + "iaf/api/frankdoc/files/";
+	}
+	$scope.showDeprecatedElements = false;
+	$scope.showHideDeprecated = function() {
+		$scope.showDeprecatedElements = !$scope.showDeprecatedElements;
+	}
+	$scope.downloadXSD = function() {
+		window.open(getURI() + "frankdoc.xsd", 'Frank!Doc XSD');
 	}
 
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
 	$scope.search = "";
-	$http.get(getURI()).then(function(response) {
+	$http.get(getURI() + "frankdoc.json").then(function(response) {
 		if(response && response.data) {
 			let data = response.data;
 			let types = data.types;
