@@ -124,7 +124,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		String result=returnString;
 		String filename = null;
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
-			filename = (String)session.get(getFilenameSessionKey());
+			try {
+				filename = session.getMessage(getFilenameSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to determine filename from pipeline session", e);
+			}
 		}
 		if (filename == null && StringUtils.isNotEmpty(getFilename()) && isLookupAtRuntime()) {
 			filename = getFilename();

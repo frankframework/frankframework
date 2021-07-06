@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -70,7 +71,12 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	@Override
 	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		int counter = 0;
-		String fileName = (String)session.get(getFilenameSessionKey());
+		String fileName = null;
+		try {
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
+		} catch(IOException e) {
+			throw new SenderException(getLogPrefix() + "unable to determine filename session key from pipeline session", e);
+		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));

@@ -475,7 +475,12 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
-		String fileName = (String) session.get(getFilenameSessionKey());
+		String fileName = null;
+		try {
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
+		} catch (IOException e) {
+			throw new SenderException("Unable to get filename from pipeline session");
+		}
 
 		String mediaType;
 		Map<String, Object> props = new HashMap<String, Object>();

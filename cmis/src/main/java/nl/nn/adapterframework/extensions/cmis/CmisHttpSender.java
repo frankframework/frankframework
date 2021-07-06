@@ -57,9 +57,16 @@ public class CmisHttpSender extends HttpSenderBase {
 	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
-		String methodType = (String) session.get("method");
-		if(StringUtils.isEmpty(methodType))
+		String methodType = null;
+		try {
+			methodType = session.getMessage("method").asString();
+		} catch (IOException e) {
+			throw new SenderException("unable to determine method from pipeline session", e);
+		}
+
+		if(StringUtils.isEmpty(methodType)) {
 			throw new SenderException("unable to determine method from pipeline session");
+		}
 
 		try {
 			if(methodType.equals("GET")) {

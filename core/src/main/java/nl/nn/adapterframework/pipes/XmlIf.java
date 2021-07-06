@@ -94,7 +94,7 @@ public class XmlIf extends AbstractPipe {
 		String forward = "";
 		PipeForward pipeForward = null;
 
-		String sInput;
+		String sInput = null;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (message==null || message.asObject()==null) {
 				sInput="";
@@ -107,7 +107,11 @@ public class XmlIf extends AbstractPipe {
 			}
 		} else {
 			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
-			sInput=(String) session.get(getSessionKey());
+			try {
+				sInput=session.getMessage(getSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve ["+getSessionKey()+"] session key ", e);
+			}
 		}
 
 		// log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");

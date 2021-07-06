@@ -63,7 +63,12 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		InputStream inputStream = (InputStream) session.get(getSessionKey());
+		InputStream inputStream;
+		try {
+			inputStream = session.getMessage(getSessionKey()).asInputStream();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve ["+getSessionKey()+"] session key ", e);
+		}
 		if (inputStream == null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null value from session under key [" + getSessionKey() + "]");
 		}
@@ -73,7 +78,11 @@ public class UploadFilePipe extends FixedForwardPipe {
 			dir = new File(getDirectory());
 		} else {
 			if (StringUtils.isNotEmpty(getDirectorySessionKey())) {
-				dir = new File((String) session.get(getDirectorySessionKey()));
+				try {
+					dir = new File(session.getMessage(getDirectorySessionKey()).asString());
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+ "unable to resolve directory session key",e);
+				}
 			} else {
 				String filename;
 				try {
@@ -95,7 +104,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		
 		String fileName;
 		try {
-			fileName = (String) session.get("fileName");
+			fileName = session.getMessage("fileName").asString();
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, dir);
 			} else {

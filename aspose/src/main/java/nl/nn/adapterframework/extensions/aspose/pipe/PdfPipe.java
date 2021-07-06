@@ -152,7 +152,7 @@ public class PdfPipe extends FixedForwardPipe {
 				session.put(mainDocumentSessionKey, result);
 
 			} else if ("convert".equalsIgnoreCase(action)) {
-				String fileName = (String) session.get("fileName");
+				String fileName = session.getMessage("fileName").asString();
 				CisConversionResult cisConversionResult = null;
 				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, fontManager.getFontsPath());
 				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName, saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
