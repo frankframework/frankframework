@@ -149,7 +149,19 @@
 	/>
 
 	<bean
-		name="proto-alarm,proto-clearing,proto-trigger"
+		name="proto-alarm"
+		class="nl.nn.adapterframework.monitoring.Alarm"
+		autowire="byName"
+		scope="prototype"
+	/>
+	<bean
+		name="proto-clearing"
+		class="nl.nn.adapterframework.monitoring.Clearing"
+		autowire="byName"
+		scope="prototype"
+	/>
+	<bean
+		name="proto-trigger"
 		class="nl.nn.adapterframework.monitoring.Trigger"
 		autowire="byName"
 		scope="prototype"
