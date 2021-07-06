@@ -20,8 +20,16 @@
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <inputwrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
-			      <outputwrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
+			      <inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+                       useFixedValues="true">
+            <param name="destination"
+                   value="P2P.Infrastructure.Ibis4TestTool.Stub.Request"/>
+         </inputWrapper>
+			      <outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+                        useFixedValues="true">
+            <param name="destination"
+                   value="P2P.Infrastructure.Ibis4TestTool.Stub.Response"/>
+         </outputWrapper>
 			
 			      <pipe name="switch"
                className="nl.nn.adapterframework.pipes.XmlSwitch"

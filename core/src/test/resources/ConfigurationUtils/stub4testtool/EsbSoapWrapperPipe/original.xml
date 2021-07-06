@@ -8,8 +8,8 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<inputwrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
-			<outputwrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
+			<inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
 			
 			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
 			<!-- unwrap -->

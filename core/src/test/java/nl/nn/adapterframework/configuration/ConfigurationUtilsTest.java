@@ -427,8 +427,47 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 	
 	// Other
-	
-	
+	@Test
+	public void stub4testtoolParameterPatternNow() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ParameterPatternNow";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolJmsRealm() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/JmsRealm";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolSapSystem() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SapSystem";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolListenerInPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ListenerInPipe";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolStores() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/Stores";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolValidatorOn() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ValidatorsOn";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolValidatorOff() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ValidatorsOff";
+		stub4testtoolTest(directory, true);
+	}
 	
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
