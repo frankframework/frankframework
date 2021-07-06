@@ -245,6 +245,112 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 	
 	// Senders
+	@Test
+	public void stub4testtoolResultSet2FileSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ResultSet2FileSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolDirectQuerySender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/DirectQuerySender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolFixedQuerySender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/FixedQuerySender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolXmlQuerySender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/XmlQuerySender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolDelaySender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/DelaySender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolEchoSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/EchoSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolIbisLocalSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/IbisLocalSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolLogSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/LogSender";
+		stub4testtoolTest(directory, false);
+	}
+	@Test
+	public void stub4testtoolParallelSenders() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ParallelSenders";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolSenderSeries() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderSeries";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolXsltSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/XsltSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolCommandSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/CommandSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolFixedResultSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/FixedResultSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolJavascriptSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/JavascriptSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolMessageStoreSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/MessageStoreSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolReloadSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ReloadSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolZipWriterSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ZipWriterSender";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolLocalFileSystemSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/LocalFileSystemSender";
+		stub4testtoolTest(directory, false);
+	}
 	
 	
 	// Pipes
