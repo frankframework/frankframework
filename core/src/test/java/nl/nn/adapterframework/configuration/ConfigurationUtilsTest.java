@@ -195,6 +195,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
 	}
 	
+	// Listeners
 	@Test
 	public void stub4testtoolApiListener() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ApiListener";
@@ -243,11 +244,91 @@ public class ConfigurationUtilsTest extends Mockito {
 		stub4testtoolTest(directory, false);
 	}
 	
+	// Senders
+	
+	
+	// Pipes
+	@Test
+	public void stub4testtoolPutSystemDateInSession() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/PutSystemDateInSession";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolEsbSoapWrapperPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/EsbSoapWrapperPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolGetPrincipalPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/GetPrincipalPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolIsUserInRolePipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/IsUserInRolePipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolUUIDGeneratorPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/UUIDGeneratorPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolFtpFileRetrieverPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/FtpFileRetrieverPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolSendTibcoMessage() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SendTibcoMessage";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolLdapFindMemberPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/LdapFindMemberPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolLdapFindGroupMembershipsPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/LdapFindGroupMembershipsPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolGenericMessageSendingPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/GenericMessageSendingPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolForEachChildElementPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ForEachChildElementPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolSenderPipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderPipe";
+		stub4testtoolTest(directory, false);
+	}
+	
+	// Other
+	
+	
+	
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put("disableValidators", false);
+		parameters.put("disableValidators", disableValidators);
 		
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);
 		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
