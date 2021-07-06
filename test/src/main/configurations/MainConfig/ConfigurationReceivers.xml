@@ -1,7 +1,6 @@
 <module>
 	<adapter name="ReceiverTest">
 		<receiver
-				maxRetries="1"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="NonTransacted, No InProcess"
@@ -18,7 +17,6 @@
 						keyField="tkey"/>
 		</receiver>
 		<receiver
-				maxRetries="1"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="NonTransacted, InProcess"
@@ -36,7 +34,6 @@
 						keyField="tkey"/>
 		</receiver>
 		<receiver
-				maxRetries="1"
 				transactionAttribute="Required"
 				supportProgrammaticRetry="true"
 				pollInterval="1"
@@ -55,7 +52,6 @@
 						keyField="tkey"/>
 		</receiver>
 		<receiver
-				maxRetries="1"
 				transactionAttribute="Required"
 				supportProgrammaticRetry="true"
 				pollInterval="1"
