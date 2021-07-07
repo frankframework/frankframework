@@ -1149,10 +1149,10 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) {
-		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
+		this.function = Misc.parseDocumentedEnum(JobDefFunctions.class, function);
 	}
 	public String getFunction() {
-		return function==null?null:function.getName();
+		return function==null?null:function.getValue();
 	}
 	public JobDefFunctions getFunctionEnum() {
 		return function;

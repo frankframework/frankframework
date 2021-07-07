@@ -71,6 +71,7 @@ import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -1404,10 +1405,23 @@ public class Misc {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked") //It's assignable from and it's a subclass
+	public static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
+		if(enumClass.isAssignableFrom(DocumentedEnum.class)) {
+			return (E)parseDocumentedEnum(enumClass.asSubclass(DocumentedEnum.class), value);
+		} else {
+			return parse(enumClass, value);
+		}
+	}
+
+	public static <E extends Enum<E> & DocumentedEnum> E parseDocumentedEnum(Class<E> enumClass, String value) {
+		return parseFromField(enumClass, null, value, e -> e.getValue());
+	}
+
 	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
 		return parseFromField(enumClass, null, value, field);
 	}
-	
+
 	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
 		List<String> fieldValues = new ArrayList<>();
 		for (E e:EnumUtils.getEnumList(enumClass)) {

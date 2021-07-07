@@ -3,6 +3,7 @@ package nl.nn.adapterframework.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -34,6 +35,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -610,5 +613,30 @@ public class MiscTest {
 		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+	}
+
+	@Test
+	public void testParseFromField() {
+		ProcessState state = Misc.parseFromField(ProcessState.class, "available", t -> t.getName());
+		assertNotNull(state);
+		assertEquals("Available", state.getName());
+	}
+
+	@Test
+	public void testParseDocumentedEnum() {
+		FtpType type = Misc.parseDocumentedEnum(FtpType.class, "FTP");
+		assertNotNull(type);
+		assertEquals("FTP", type.getValue());
+	}
+
+	@Test
+	public void testParseEnum() {
+		FtpType type = Misc.parseEnum(FtpType.class, "FTP");
+		assertNotNull(type);
+		assertEquals("FTP", type.getValue());
+
+		ProcessState state = Misc.parseEnum(ProcessState.class, "available");
+		assertNotNull(state);
+		assertEquals("Available", state.getName());
 	}
 }

@@ -62,6 +62,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.AuthSSLContextFactory;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -84,20 +85,25 @@ public class FtpSession implements IConfigurable {
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private FtpType ftpType = FtpType.FTP;
-	public enum FtpType {
+	public enum FtpType implements DocumentedEnum {
 		FTP("FTP", null, true),
 		SFTP("SFTP", null, true),
 		FTPS_IMPLICIT("FTPSI", "TLS", true),
 		FTPS_EXPLICIT_TLS("FTPSX(TLS)", "TLS", false),
 		FTPS_EXPLICIT_SSL("FTPSX(SSL)", "SSL", false);
 
-		private @Getter String type = null;
+		private String type = null;
 		private @Getter boolean implicit;
 		private @Getter String protocol;
 		private FtpType(String type, String protocol, boolean implicit) {
 			this.type = type;
 			this.protocol = protocol;
 			this.implicit = implicit;
+		}
+
+		@Override
+		public String getValue() {
+			return type;
 		}
 	}
 
@@ -785,7 +791,7 @@ public class FtpSession implements IConfigurable {
 	}
 	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpType(String value) {
-		ftpType = Misc.parseFromField(FtpType.class, value, m -> m.type);
+		ftpType = Misc.parseDocumentedEnum(FtpType.class, value);
 	}
 	public FtpType getFtpTypeEnum() {
 		return ftpType;

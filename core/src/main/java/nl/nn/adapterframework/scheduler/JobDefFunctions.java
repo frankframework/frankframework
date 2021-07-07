@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-public enum JobDefFunctions {
+import nl.nn.adapterframework.doc.DocumentedEnum;
+
+public enum JobDefFunctions implements DocumentedEnum {
 	STOP_ADAPTER("StopAdapter"),
 	START_ADAPTER("StartAdapter"),
 	STOP_RECEIVER("StopReceiver"),
@@ -42,7 +44,8 @@ public enum JobDefFunctions {
 		this.servicejob = servicejob;
 	}
 
-	public String getName() { // Beware: getName() is not the same as name()
+	@Override
+	public String getValue() {
 		return name;
 	}
 
