@@ -1,9 +1,12 @@
 <div ng-controller="element-children">
 	<h4>Nested children</h4>
-	<div ng-repeat="child in element.children">
-		<div>
-			<b ng-attr-title="{{ getTitle(child) }}">{{child.roleName}}</b>
-			<span ng-if="child.description"><b>:</b> {{ child.description }}</span>
-		</div>
-	</div>
+	<p>It is possible to configure the following sub-elements:</p>
+	<table class="table table-sm table-striped">
+		<tbody>
+			<tr ng-repeat="child in element.children" ng-attr-title="{{ getTitle(child) }}">
+				<td class="font-weight-bold">{{::child.roleName}}</td>
+				<td ng-bind-html="::child.description"></td>
+			</tr>
+		</tbody>
+	</table>
 </div>

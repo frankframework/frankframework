@@ -102,7 +102,48 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		return r;
 	};
+}).filter('javadoc', function($sce, $compile) {
+	return function(input, $scope) {
+		if(!input || !$scope.elements) return;
+		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
+		input = input.replace(/(?:{@link\s(.*?)})/g, function(match, captureGroup) {
+			let captures = captureGroup.split(" ");
+			let name = captures[captures.length-1];
+			let element = findElement($scope.elements, captures[0]);
+			if(!element) {
+				return name;
+			}
+
+			return '<a href="#!/All/'+element.name+'">'+name+'</a>';
+		});
+
+		return $sce.trustAsHtml(input);
+	};
 });
+
+function findElement(allElements, simpleName) {
+	if(!allElements || allElements.length < 1) return null; //Cannot find anything if we have nothing to search in
+	let arr = [];
+	for(element in allElements) {
+		if(fullNameToSimpleName(element) == simpleName) {
+			arr.push(allElements[element]);
+		}
+	}
+	if(arr.length == 1) {
+		return arr[0];
+	}
+
+	if(arr.length == 0) {
+		console.warn("could not find element ["+simpleName+"]");
+	} else {
+		console.warn("found multiple elements, playing safe, returning null", arr);
+	}
+	return null;
+}
+
+function fullNameToSimpleName(fullName) {
+	return fullName.substr(fullName.lastIndexOf(".")+1)
+}
 
 function getGroupMembers(allTypes, typesToFilterOn) {
 	let memberNames = [];
