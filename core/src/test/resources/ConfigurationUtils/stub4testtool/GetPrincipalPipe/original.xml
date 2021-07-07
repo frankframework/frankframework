@@ -1,12 +1,17 @@
 <configuration>
-	<adapter name="ApiListener">
+	<adapter name="GetPrincipalPipe">
 		<receiver>
-			<listener
-				name="ApiListener"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
-				method="post"
-				uriPattern="insert"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="GetPrincipalPipe" />
 		</receiver>
+		<pipeline firstPipe="GetPrincipalPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe
+				name="GetPrincipalPipe"
+				className="nl.nn.adapterframework.pipes.GetPrincipalPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
 	</adapter>
 </configuration>

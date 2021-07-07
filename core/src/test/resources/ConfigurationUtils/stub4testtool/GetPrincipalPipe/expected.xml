@@ -1,24 +1,26 @@
 <configuration>
-	  <adapter name="ApiListener">
-      <receiver name="testtool-ApiListener">
+	  <adapter name="GetPrincipalPipe">
+      <receiver name="testtool-GetPrincipalPipe">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
-                   serviceName="testtool-ApiListener"/>
-         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-                     slotId="stubbed-ApiListenerDuplicateCheck"/>
+                   serviceName="testtool-GetPrincipalPipe"/>
       </receiver>
 		    <receiver>
-			      <listener name="ApiListener"
-                   className="nl.nn.adapterframework.http.rest.ApiListener"
-                   method="post"
-                   uriPattern="insert"/>
-			      <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-                     slotId="ApiListenerDuplicateCheck"/>
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="GetPrincipalPipe"/>
 		    </receiver>
-      <receiver name="testtool-ApiListener-1">
+      <receiver name="testtool-GetPrincipalPipe-1">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
-                   serviceName="testtool-ApiListener-1"/>
-         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-                     slotId="stubbed-ApiListenerDuplicateCheck"/>
+                   serviceName="testtool-GetPrincipalPipe-1"/>
       </receiver>
+		    <pipeline firstPipe="GetPrincipalPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="GetPrincipalPipe"
+               className="nl.nn.adapterframework.pipes.FixedResultPipe"
+               returnString="tst9">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
 	  </adapter>
 </configuration>
