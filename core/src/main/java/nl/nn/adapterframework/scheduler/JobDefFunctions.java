@@ -33,20 +33,20 @@ public enum JobDefFunctions implements DocumentedEnum {
 	LOAD_DATABASE_SCHEDULES("loadDatabaseSchedules", true);
 
 	private boolean servicejob = false;
-	private final String name;
+	private final String label;
 
-	private JobDefFunctions(String name) {
-		this(name, false);
+	private JobDefFunctions(String label) {
+		this(label, false);
 	}
 
-	private JobDefFunctions(String name, boolean servicejob) {
-		this.name = name;
+	private JobDefFunctions(String label, boolean servicejob) {
+		this.label = label;
 		this.servicejob = servicejob;
 	}
 
 	@Override
-	public String getValue() {
-		return name;
+	public String getLabel() {
+		return label;
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {

@@ -40,20 +40,22 @@ import javax.naming.directory.SearchResult;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -253,7 +255,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public static final String LDAP_ERROR_MAGIC_STRING="[LDAP: error code";
 
 	public Operation operation = Operation.OPERATION_READ;
-	public enum Operation {
+	public enum Operation implements DocumentedEnum {
 		OPERATION_READ("read"),
 		OPERATION_CREATE("create"),
 		OPERATION_UPDATE("update"),
@@ -265,12 +267,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		OPERATION_CHALLENGE("challenge"),
 		OPERATION_CHANGE_UNICODE_PWD("changeUnicodePwd");
 
-		private String name;
-		private Operation(String name) {
-			this.name = name;
-		}
-		public String getName() {
-			return name;
+		private @Getter String label;
+		private Operation(String label) {
+			this.label = label;
 		}
 	}
 
@@ -1232,10 +1231,10 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	@IbisDoc({"specifies operation to perform. Must be one of <ul><li><code>read</code>: read the contents of an entry</li><li><code>create</code>: create an attribute or an entry</li><li><code>update</code>: update an attribute or an entry</li><li><code>delete</code>: delete an attribute or an entry</li><li><code>search</code>: search for an entry in the direct children of the specified root</li><li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li><li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li><li><code>getTree</code>: get a copy of the complete tree below the specified root</li><li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li><li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li></ul>", "read"})
 	public void setOperation(String value) {
-		operation = Misc.parseFromField(Operation.class, value, m -> m.name);
+		operation = EnumUtils.parse(Operation.class, value);
 	}
 	public String getOperation() {
-		return operation.name;
+		return operation.getLabel();
 	}
 	public Operation getOperationEnum() {
 		return operation;

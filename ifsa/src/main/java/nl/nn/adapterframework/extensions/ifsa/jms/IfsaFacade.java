@@ -409,7 +409,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		if (messageProtocol==null) {
 			return null;
 		} else {
-			return messageProtocol.getName();
+			return messageProtocol.getLabel();
 		}
     }
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
@@ -572,7 +572,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
      */
     public void setMessageProtocol(String newMessageProtocol) {
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
-        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
+        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getLabel());
     }
  
 	public boolean isSessionsArePooled() {
@@ -600,7 +600,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		ts.append("applicationId", applicationId);
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
-			ts.append("messageProtocol", messageProtocol.getName());
+			ts.append("messageProtocol", messageProtocol.getLabel());
 //			ts.append("transacted", isTransacted());
 			ts.append("jmsTransacted", isJmsTransacted());
 	    }

@@ -68,9 +68,9 @@ import nl.nn.adapterframework.http.AuthSSLContextFactory;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Helper class for sftp and ftp.
@@ -102,7 +102,7 @@ public class FtpSession implements IConfigurable {
 		}
 
 		@Override
-		public String getValue() {
+		public String getLabel() {
 			return type;
 		}
 	}
@@ -791,7 +791,7 @@ public class FtpSession implements IConfigurable {
 	}
 	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	public void setFtpType(String value) {
-		ftpType = Misc.parseDocumentedEnum(FtpType.class, value);
+		ftpType = EnumUtils.parse(FtpType.class, value);
 	}
 	public FtpType getFtpTypeEnum() {
 		return ftpType;
@@ -1037,7 +1037,7 @@ public class FtpSession implements IConfigurable {
 	 */
 	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
 	public void setProt(String prot) {
-		this.prot = Misc.parse(Prot.class, prot);
+		this.prot = EnumUtils.parse(Prot.class, prot);
 	}
 	public Prot getProtEnum() {
 		return prot;
