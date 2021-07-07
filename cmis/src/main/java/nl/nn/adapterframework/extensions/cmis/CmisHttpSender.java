@@ -47,11 +47,11 @@ import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
-public class CmisHttpSender extends HttpSenderBase {
-
-	//This constructor prevents Frank!Developers from including/using this Sender in their configurations.
-	public CmisHttpSender(boolean ignoreMe) {
-	}
+/**
+ * Abstract class to prevent Frank!Developers from including/using this Sender in their configurations.
+ * It should solely be used by the @{link CmisHttpInvoker}.
+ */
+public abstract class CmisHttpSender extends HttpSenderBase {
 
 	@Override
 	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {

@@ -54,7 +54,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
-			sender = new CmisHttpSender(true);
+			sender = new CmisHttpSender() {};
 
 			sender.setUrlParam("url");
 

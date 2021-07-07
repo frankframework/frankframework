@@ -787,7 +787,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return urlParam;
 	}
 
-	@IbisDoc({"3", "type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
+	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(String string) {
 		method = Misc.parse(HttpMethod.class, string);
 	}
