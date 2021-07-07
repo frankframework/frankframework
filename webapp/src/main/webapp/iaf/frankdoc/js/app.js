@@ -102,7 +102,7 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		return r;
 	};
-}).filter('javadoc', function($sce, $compile) {
+}).filter('javadoc', function($sce) {
 	return function(input, $scope) {
 		if(!input || !$scope.elements) return;
 		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
