@@ -2661,4 +2661,63 @@ angular.module('iaf.beheerconsole')
 			$scope.processingMessage = false;
 		});
 	};
+}])
+
+.controller('FileSystemCtrl', ['$scope', 'Alert', function($scope, Alert) {
+	$scope.state = [];
+	$scope.file = null;
+	$scope.addNote = function(type, message, removeQueue) {
+		$scope.state.push({type:type, message: message});
+	};
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files; 		
+	};
+	$scope.processingMessage = false;
+	
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			$scope.addNote("success", "success");
+			$scope.result = (xhr.response);
+			$scope.processingMessage = false;
+		}
+		if (this.readyState == 4 && this.status != 200) {
+			$scope.addNote("danger", "ERROR");
+			$scope.result = (xhr.response);
+			$scope.processingMessage = false;
+		}
+	};
+
+	$scope.submit = function(formData) {
+		$scope.result = "";
+		$scope.state = [];
+		if(!formData) {
+			$scope.addNote("warning", "Please specify a file and destination!");
+			return;
+		}
+		var fd = new FormData();
+		if(formData.destination && formData.destination != "")
+			fd.append("destination", formData.destination);
+		if($scope.file && $scope.file != "") {
+			for (var i = 0; i < $scope.file.length; i++) {
+				fd.append("file["+i+"]", $scope.file[i]);
+			};
+		}
+		if(formData.unzipFile)
+			fd.append("unzipFile", "unzip");
+		if(formData.cleanFilesystem)
+			fd.append("cleanFilesystem", "clean");
+		if(!formData.destination || !$scope.file) {
+			$scope.addNote("warning", "Please specify a file or destination!");
+			return;
+		}
+		
+		$scope.processingMessage = true;
+		xhr.open("POST", "../../api/fileSystem", true);
+		xhr.send(fd);
+	};
 }]);
