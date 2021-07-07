@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.digester3.Digester;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
 import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
 import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
+import nl.nn.adapterframework.configuration.filters.Stub4TesttoolFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
@@ -213,7 +215,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
+	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
 		return resolveEntitiesAndProperties(configuration, resource, appConstants, preparse);
 	}
 
@@ -221,13 +223,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException {
+	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
 		XmlWriter writer;
 		ContentHandler handler;
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
 			handler = getCanonicalizedConfiguration(configuration, writer);
 			handler = new OnlyActiveFilter(handler, appConstants);
+			handler = Stub4TesttoolFilter.getStub4TesttoolContentHandler(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
 			handler = writer;
