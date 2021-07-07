@@ -22,9 +22,9 @@
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
 				        <sender className="nl.nn.adapterframework.senders.SenderSeries">
-						         <sender className="nl.nn.adapterframework.senders.EchoSender"/>
-						         <sender className="nl.nn.adapterframework.senders.EchoSender"/>
-					       </sender>
+					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				        </sender>
 				        <forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

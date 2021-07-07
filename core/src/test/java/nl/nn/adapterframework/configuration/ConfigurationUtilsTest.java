@@ -425,6 +425,18 @@ public class ConfigurationUtilsTest extends Mockito {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderPipe";
 		stub4testtoolTest(directory, false);
 	}
+
+	@Test
+	public void stub4testtoolSenderWrapper() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderWrapper";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
+	public void stub4testtoolSenderInSender() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderInSender";
+		stub4testtoolTest(directory, false);
+	}
 	
 	// Other
 	@Test
@@ -467,6 +479,24 @@ public class ConfigurationUtilsTest extends Mockito {
 	public void stub4testtoolValidatorOff() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ValidatorsOff";
 		stub4testtoolTest(directory, true);
+	}
+
+	@Test
+	public void stub4testtoolComments() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/Comments";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolMultipleReceivers() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/MultipleReceivers";
+		stub4testtoolTest(directory, false);
+	}
+	
+	@Test
+	public void stub4testtoolFullAdapter() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/FullAdapter";
+		stub4testtoolTest(directory, false);
 	}
 	
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {

@@ -16,9 +16,9 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-						<sender className="nl.nn.adapterframework.senders.EchoSender"/>
-						<sender className="nl.nn.adapterframework.senders.EchoSender"/>
-					</sender>
+					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>
