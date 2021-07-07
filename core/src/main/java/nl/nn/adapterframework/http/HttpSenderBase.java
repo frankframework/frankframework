@@ -88,7 +88,6 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -168,12 +167,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private String url;
 	private String urlParam = "url";
-
-	public enum HttpMethod {
-		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
-	}
-	private HttpMethod method = HttpMethod.GET;
-
+	private String methodType = "GET";
 	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
 	private String contentType = null;
@@ -623,7 +617,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodTypeEnum()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -789,10 +783,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	@IbisDoc({"3", "type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
 	public void setMethodType(String string) {
-		method = Misc.parse(HttpMethod.class, string);
+		methodType = string;
 	}
-	public HttpMethod getMethodTypeEnum() {
-		return method;
+	public String getMethodType() {
+		return methodType.toUpperCase();
 	}
 
 	/**
