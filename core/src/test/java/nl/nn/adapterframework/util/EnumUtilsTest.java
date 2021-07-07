@@ -91,7 +91,11 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingIntegerValue() {
 		exception.expect(IllegalArgumentException.class);
+<<<<<<< HEAD
 		exception.expectMessage("unknown fieldName value [3]. Must be one of [1, 2]");
+=======
+		exception.expectMessage("unknown fieldName value [tralala]. Must be one of [1, 2]");
+>>>>>>> documentedEnum
 		EnumUtils.parseFromField(EnumWithInteger.class, "fieldName", 3, i -> i.i);
 	}
 }
