@@ -31,8 +31,8 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -240,7 +240,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 
 	public void setSeverity(String severity) {
-		setSeverityEnum(Misc.parse(SeverityEnum.class, severity));
+		setSeverityEnum(EnumUtils.parse(SeverityEnum.class, severity));
 	}
 	public void setSeverityEnum(SeverityEnum enumeration) {
 		severity = enumeration;

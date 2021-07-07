@@ -42,7 +42,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -407,7 +407,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	@IbisDoc({"Controls mode that reply messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
 	public void setReplyDeliveryMode(String replyDeliveryMode) {
-		this.replyDeliveryMode = Misc.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
+		this.replyDeliveryMode = EnumUtils.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
 	}
 	public DeliveryMode getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;

@@ -21,7 +21,7 @@ public class DatabaseJobDef extends JobDef {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		setFunction(JobDefFunctions.SEND_MESSAGE.getValue());
+		setFunction(JobDefFunctions.SEND_MESSAGE.getLabel());
 		super.configure();
 	}
 }

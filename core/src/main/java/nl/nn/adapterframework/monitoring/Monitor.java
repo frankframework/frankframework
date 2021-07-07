@@ -34,8 +34,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -261,7 +261,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public void setType(String eventType) {
-		setTypeEnum(Misc.parse(EventTypeEnum.class, eventType));
+		setTypeEnum(EnumUtils.parse(EventTypeEnum.class, eventType));
 	}
 	public String getType() {
 		return type==null?null:type.name();
