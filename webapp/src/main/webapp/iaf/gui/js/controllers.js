@@ -2663,7 +2663,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('FileSystemCtrl', ['$scope', 'Alert', function($scope, Alert) {
+.controller('FileSystemCtrl', ['$scope', 'Api', 'Alert', function($scope, Api, Alert) {
 	$scope.state = [];
 	$scope.file = null;
 	$scope.addNote = function(type, message, removeQueue) {
@@ -2677,20 +2677,6 @@ angular.module('iaf.beheerconsole')
 		$scope.file = files; 		
 	};
 	$scope.processingMessage = false;
-	
-	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			$scope.addNote("success", "success");
-			$scope.result = (xhr.response);
-			$scope.processingMessage = false;
-		}
-		if (this.readyState == 4 && this.status != 200) {
-			$scope.addNote("danger", "ERROR");
-			$scope.result = (xhr.response);
-			$scope.processingMessage = false;
-		}
-	};
 
 	$scope.submit = function(formData) {
 		$scope.result = "";
@@ -2717,7 +2703,14 @@ angular.module('iaf.beheerconsole')
 		}
 		
 		$scope.processingMessage = true;
-		xhr.open("POST", "../../api/fileSystem", true);
-		xhr.send(fd);
+		Api.Post("../../api/fileSystem", fd, function(returnData) {
+			$scope.addNote("success", "success");
+			$scope.result = (returnData);
+			$scope.processingMessage = false;
+		}, function(returnData) {
+			$scope.addNote("danger", "ERROR");
+			$scope.result = (returnData);
+			$scope.processingMessage = false;
+		});
 	};
 }]);
