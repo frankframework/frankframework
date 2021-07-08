@@ -35,7 +35,6 @@
 		</receiver>
 		<receiver
 				transactionAttribute="Required"
-				supportProgrammaticRetry="true"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, No InProcess"
@@ -53,7 +52,6 @@
 		</receiver>
 		<receiver
 				transactionAttribute="Required"
-				supportProgrammaticRetry="true"
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, InProcess"
