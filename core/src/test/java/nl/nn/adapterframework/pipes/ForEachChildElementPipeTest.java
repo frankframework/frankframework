@@ -8,9 +8,11 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +26,10 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.EchoSender;
+import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -895,6 +899,24 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testElementName() throws Exception {
+		XsltSender sender = new XsltSender();
+		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
+		pipe.setProcessFile(true);
+		pipe.setSender(sender);
+		pipe.setTargetElement("Person");
+		pipe.configure();
+		pipe.start();
+		
+		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
+		File file = new File(input.toURI());
+		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementNameOutput.xml");
+		PipeRunResult prr = doPipe(pipe, file.toString(), session);
+		String result = Message.asString(prr.getResult());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
 
 	
