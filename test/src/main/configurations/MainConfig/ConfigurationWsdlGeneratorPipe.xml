@@ -37,8 +37,8 @@
 				<forward name="success" path="readWsdlFile" />
 			</pipe>
 
-			<pipe name="readWsdlFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read">
+			<pipe name="readWsdlFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
