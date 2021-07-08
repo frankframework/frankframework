@@ -256,20 +256,22 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	public Operation operation = Operation.OPERATION_READ;
 	public enum Operation implements DocumentedEnum {
-		OPERATION_READ("read"),
-		OPERATION_CREATE("create"),
-		OPERATION_UPDATE("update"),
-		OPERATION_DELETE("delete"),
-		OPERATION_SEARCH("search"),
-		OPERATION_DEEP_SEARCH("deepSearch"),
-		OPERATION_SUB_CONTEXTS("getSubContexts"),
-		OPERATION_GET_TREE("getTree"),
-		OPERATION_CHALLENGE("challenge"),
-		OPERATION_CHANGE_UNICODE_PWD("changeUnicodePwd");
+		OPERATION_READ("read", "Read the contents of an entry"),
+		OPERATION_CREATE("create", "Create an attribute or an entry"),
+		OPERATION_UPDATE("update", "Update an attribute or an entry"),
+		OPERATION_DELETE("delete", "Delete an attribute or an entry"),
+		OPERATION_SEARCH("search", "Search for an entry in the direct children of the specified root"),
+		OPERATION_DEEP_SEARCH("deepSearch", "Search for an entry in the complete tree below the specified root"),
+		OPERATION_SUB_CONTEXTS("getSubContexts", "Get a list of the direct children of the specifed root"),
+		OPERATION_GET_TREE("getTree", "Get a copy of the complete tree below the specified root"),
+		OPERATION_CHALLENGE("challenge", "Check username and password against LDAP specifying principal and credential using parameters"),
+		OPERATION_CHANGE_UNICODE_PWD("changeUnicodePwd", "Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))");
 
 		private @Getter String label;
-		private Operation(String label) {
+		private @Getter String description;
+		private Operation(String label, String description) {
 			this.label = label;
+			this.description = description;
 		}
 	}
 
@@ -1229,7 +1231,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return paramList;
 	}
 
-	@IbisDoc({"specifies operation to perform. Must be one of <ul><li><code>read</code>: read the contents of an entry</li><li><code>create</code>: create an attribute or an entry</li><li><code>update</code>: update an attribute or an entry</li><li><code>delete</code>: delete an attribute or an entry</li><li><code>search</code>: search for an entry in the direct children of the specified root</li><li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li><li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li><li><code>getTree</code>: get a copy of the complete tree below the specified root</li><li><code>challenge</code>: check username and password against LDAP specifying principal and credential using parameters</li><li><code>changeUnicodePwd</code>: typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))</li></ul>", "read"})
+	@IbisDoc({"Specifies LDAP operation to perform", "read"})
 	public void setOperation(String value) {
 		operation = EnumUtils.parse(Operation.class, value);
 	}
