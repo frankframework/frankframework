@@ -13,7 +13,7 @@
 	<properties>
 		<spring.version>5.3.8</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
-		<cxf.version>3.1.18</cxf.version>
+		<cxf.version>3.4.4</cxf.version>
 	</properties>
 
 	<dependencies>
@@ -30,11 +30,6 @@
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.23.2-GA</version>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<version>4.3.1.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -212,6 +207,13 @@
 			<groupId>org.codehaus.woodstox</groupId>
 			<artifactId>woodstox-core-asl</artifactId>
 			<version>4.4.1</version>
+			<exclusions>
+				<!-- woodstox ships with an older version of stax2 -->
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>stax2-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>aopalliance</groupId>
