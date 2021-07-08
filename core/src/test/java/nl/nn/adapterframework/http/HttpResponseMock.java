@@ -22,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.http.mime.MultipartEntity;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -32,6 +30,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -40,6 +39,8 @@ import org.apache.http.util.EntityUtils;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import nl.nn.adapterframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private String lineSeparator = System.getProperty("line.separator");
@@ -70,6 +71,8 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			response = doPost(host, (HttpPost) request, context);
 		else if(request instanceof HttpPut)
 			response = doPut(host, (HttpPut) request, context);
+		else if(request instanceof HttpPatch)
+			response = doPatch(host, (HttpPatch) request, context);
 		else
 			throw new Exception("mock method not implemented");
 
@@ -141,6 +144,23 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 	public InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
 		assertEquals("PUT", request.getMethod());
+		StringBuilder response = new StringBuilder();
+		response.append(request.toString() + lineSeparator);
+
+		appendHeaders(request, response);
+
+		Header contentTypeHeader = request.getEntity().getContentType();
+		if(contentTypeHeader != null) {
+			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+		}
+
+		response.append(lineSeparator);
+		response.append(EntityUtils.toString(request.getEntity()));
+		return new ByteArrayInputStream(response.toString().getBytes());
+	}
+
+	public InputStream doPatch(HttpHost host, HttpPatch request, HttpContext context) throws IOException {
+		assertEquals("PATCH", request.getMethod());
 		StringBuilder response = new StringBuilder();
 		response.append(request.toString() + lineSeparator);
 
