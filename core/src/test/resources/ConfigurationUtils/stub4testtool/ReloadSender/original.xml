@@ -1,0 +1,25 @@
+<configuration>
+	<adapter name="ReloadSender">
+		<receiver name="ReloadSender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="ReloadSender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.ReloadSender"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

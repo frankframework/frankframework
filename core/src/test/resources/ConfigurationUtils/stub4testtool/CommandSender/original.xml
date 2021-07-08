@@ -1,0 +1,26 @@
+<configuration>
+	<adapter name="CommandSender">
+		<receiver name="CommandSender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="CommandSender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.CommandSender"
+					command="echo hello"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>
