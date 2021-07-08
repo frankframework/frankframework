@@ -247,10 +247,10 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			loaded = StringResolver.substVars(loaded, appConstants);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(loaded);
 			loaded = ConfigurationUtils.getActivatedConfiguration(loaded);
-		}
 
-		if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-			loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
+				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			}
 		}
 
 		return loaded;
