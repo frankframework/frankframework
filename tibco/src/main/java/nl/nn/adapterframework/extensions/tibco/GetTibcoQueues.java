@@ -544,7 +544,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String principal = aclEntry.getPrincipal().getName();
 			String permissions = aclEntry.getPermissions().toString();
 			String principalDescription = null;
-			if (principal != null) {
+			if (principal != null && principal.length() > 0) {
 				if (userMap.containsKey(principal)) {
 					principalDescription = (String) userMap.get(principal);
 				} else {
@@ -561,6 +561,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 					userMap.put(principal, principalDescription);
 				}
 			}
+			else {
+				continue;}
 			String pp;
 			if (principalDescription != null) {
 				pp = principal + " (" + principalDescription + ")="
