@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with containerElement or targetElement")
+@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with either containerElement or targetElement")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
@@ -196,8 +195,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	protected void iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
-			xmlInput = new FileInputStream((String) input.asObject());
-		} catch (FileNotFoundException e) {
+			xmlInput = new FileInputStream(input.asString());
+		} catch (IOException e) {
 			throw new SenderException("could not find file [" + input + "]", e);
 		}
 		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
