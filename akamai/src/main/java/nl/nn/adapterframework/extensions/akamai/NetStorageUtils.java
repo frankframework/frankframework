@@ -29,7 +29,7 @@ import java.util.TreeSet;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * General utility functions needed to implement the HTTP SDK.  Many of these functions are also
@@ -241,8 +241,8 @@ public class NetStorageUtils {
 			for (String entry : new TreeSet<String>(data.keySet()))
 				result.append(String.format("%s%s=%s",
 						result.length() > 0 ? "&" : "",
-						URLEncoder.encode(entry, Misc.DEFAULT_INPUT_STREAM_ENCODING),
-						URLEncoder.encode(data.get(entry), Misc.DEFAULT_INPUT_STREAM_ENCODING)));
+						URLEncoder.encode(entry, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING),
+						URLEncoder.encode(data.get(entry), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING)));
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalArgumentException("This should never happen! StandardCharsets.UTF_8 is an enum!", e);
 		}
