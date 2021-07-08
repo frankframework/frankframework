@@ -5,10 +5,15 @@
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="fileSystem" 
 				method="POST"
-				multipartBodyName="destination"/>
+				multipartBodyName="destination"
+				authenticationMethod="AUTHROLE"
+				authenticationRoles="IbisDataAdmin"/>
+		</receiver>
+		<receiver name="FileSystem-jl">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="FileSystem-jl" serviceName="${fileSystem-jl.serviceName}" />
 		</receiver>
 
-		<pipeline firstPipe="switchCleanFilesystem">	
+		<pipeline firstPipe="switchCleanFilesystem">
 			<exits>
 				<exit state="success" path="EXIT" code="200"/>
 				<exit state="error" path="ERROR" code="500"/>
