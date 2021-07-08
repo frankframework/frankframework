@@ -2691,7 +2691,7 @@ angular.module('iaf.beheerconsole')
 		if($scope.file && $scope.file != "") {
 			for (var i = 0; i < $scope.file.length; i++) {
 				fd.append("file["+i+"]", $scope.file[i]);
-			};
+			}
 		}
 		if(formData.unzipFile)
 			fd.append("unzipFile", "unzip");
