@@ -1,0 +1,4 @@
+<parts>
+	<part name="file[0]" type="file" filename="testFile1.txt" size="64" sessionKey="file[0]" mimeType="text/plain" />
+	<part name="file[1]" type="file" filename="testFile2.txt" size="64" sessionKey="file[1]" mimeType="text/plain" />
+</parts>
