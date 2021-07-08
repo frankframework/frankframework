@@ -836,7 +836,7 @@ public class DocWriterNew {
 			List<ElementRole> childRoles = memberChildrenByRoleName.get(name);
 			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
 				log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
-				addElementRoleAsElement(context, childRoles.get(0));				
+				addElementRoleAsElement(choice, childRoles.get(0));				
 			} else {
 				if(log.isTraceEnabled()) {
 					ThreadContext.push(String.format("nest [%s]", name));
