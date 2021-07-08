@@ -17,7 +17,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNullValue() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown ProcessState value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+		exception.expectMessage("unknown processState value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parse(ProcessState.class, null);
 	}
@@ -47,7 +47,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingNormalEnum() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown ProcessState value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+		exception.expectMessage("unknown processState value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parse(ProcessState.class, "tralala");
 	}
@@ -63,7 +63,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingDocumentedEnum() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown FtpType value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
+		exception.expectMessage("unknown ftpType value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
 		EnumUtils.parse(FtpType.class, "tralala");
 	}
 

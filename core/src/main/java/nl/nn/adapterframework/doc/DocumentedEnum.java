@@ -18,9 +18,11 @@ package nl.nn.adapterframework.doc;
 public interface DocumentedEnum {
 
 	/**
-	 * @return The 'SimpleName' or label that's used to parse the Enum
+	 * @return Optional 'SimpleName' or label that's used to parse the Enum, or null when `name()` should be used
 	 */
-	public String getLabel();
+	public default String getLabel() {
+		return null;
+	}
 
 	/**
 	 * @return Optional description to explain the corresponding Label

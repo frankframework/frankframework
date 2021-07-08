@@ -22,16 +22,22 @@ import java.util.function.Function;
 
 import nl.nn.adapterframework.doc.DocumentedEnum;
 
-public class EnumUtils {
+public abstract class EnumUtils {
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, enumClass.getSimpleName(), value);
+		return parse(enumClass, getFieldName(enumClass), value);
 	}
 
-	@SuppressWarnings("unchecked") //It's assignable from and it's a subclass
+	private static String getFieldName(Class<?> enumClass) {
+		String className = org.springframework.util.ClassUtils.getUserClass(enumClass).getSimpleName();
+		char c[] = className.toCharArray();
+		c[0] = Character.toLowerCase(c[0]);
+		return new String(c);
+	}
+
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
 		if(DocumentedEnum.class.isAssignableFrom(enumClass)) {
-			return (E)parseDocumented(enumClass.asSubclass(DocumentedEnum.class), fieldName, value);
+			return parseDocumented(enumClass, fieldName, value);
 		}
 		return parseNormal(enumClass, fieldName, value);
 	}
@@ -44,8 +50,11 @@ public class EnumUtils {
 		return result;
 	}
 
-	public static <E extends Enum<E> & DocumentedEnum> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
-		return parseFromField(enumClass, fieldName, value, e -> e.getLabel());
+	/**
+	 * Solely for DocumentedEnums !
+	 */
+	public static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
+		return parseFromField(enumClass, fieldName, value, e -> ((DocumentedEnum)e).getLabel());
 	}
 
 	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {

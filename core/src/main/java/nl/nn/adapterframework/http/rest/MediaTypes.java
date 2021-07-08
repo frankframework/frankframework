@@ -78,6 +78,6 @@ public enum MediaTypes {
 	}
 
 	public static MediaTypes fromValue(String contentType) {
-		return EnumUtils.parse(MediaTypes.class, contentType);
+		return EnumUtils.parseFromField(MediaTypes.class, "content-type", contentType, e -> e.mediaType);
 	}
 }
