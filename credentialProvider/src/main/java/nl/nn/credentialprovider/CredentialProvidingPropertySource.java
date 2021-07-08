@@ -15,6 +15,8 @@
 */
 package nl.nn.credentialprovider;
 
+import java.util.NoSuchElementException;
+
 import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
 
 /**
@@ -25,24 +27,37 @@ import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
  *   password="${testiaf_user/password}"
  *
  * Example context.xml configuration attributes with defaults:
- *   user="${testiaf_user/username:default username}"
- *   password="${testiaf_user/password:default password}"
+ *   user="${testiaf_user/username:-default username}"
+ *   password="${testiaf_user/password:-default password}"
  *
  * @author Gerrit van Brakel
  *
  */
 public class CredentialProvidingPropertySource implements PropertySource{
-
+	
+	public final String DEFAULT_MARKER=":-";
+	
 	@Override
 	public String getProperty(String key) {
-		String pathElements[] = key.split("/");
-		String alias = pathElements[0].trim();
+		String keyAndDefault[] = key.split(DEFAULT_MARKER);
 
-		if (!CredentialFactory.hasCredential(alias)) {
+		String pathElements[] = keyAndDefault[0].split("/"); 
+		String alias = pathElements[0].trim(); // ignore default value in key, it will be handled by Tomcat when necessary
+		//System.out.println("CredentialProvidingPropertySource key ["+key+"] alias ["+alias+"]");
+
+		try {
+			if (!CredentialFactory.hasCredential(alias)) {
+				return null;
+			}
+		} catch (NoSuchElementException e) {
+			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"]");
+			return null;
+		} catch (Exception e) {
+			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"] ("+e.getClass().getTypeName()+"): "+e.getMessage());
 			return null;
 		}
-		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
 		boolean returnPassword = pathElements.length==1 || pathElements[1].trim().equalsIgnoreCase("password");
+		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
 		
 		return returnPassword ? credentials.getPassword() : credentials.getUsername();
 	}
