@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.sql.Connection;
-import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
@@ -37,7 +36,6 @@ import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ConfigurationUtilsTest extends Mockito {
 

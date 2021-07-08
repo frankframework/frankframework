@@ -16,26 +16,18 @@
 package nl.nn.adapterframework.configuration.filters;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.AttributesWrapper;
-import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
 public class Stub4TesttoolFilter extends TransformerFilter {
