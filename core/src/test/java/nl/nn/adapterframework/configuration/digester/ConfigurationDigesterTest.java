@@ -96,6 +96,9 @@ public class ConfigurationDigesterTest {
 		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
 		
+		// Reset stubbing on the AppConstants, not doing this might fail other tests during CI 
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+		
 		//Unfortunately we need to cleanup the result a bit...
 		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
 		stubbedResult = stubbedResult.replaceAll("(</?exits>)", "");//Remove the exits tag
