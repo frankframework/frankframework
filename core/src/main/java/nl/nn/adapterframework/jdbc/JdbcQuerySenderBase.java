@@ -968,7 +968,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
 		} else {
-			this.queryType = EnumUtils.parse(QueryType.class, "queryType", queryType);
+			this.queryType = EnumUtils.parse(QueryType.class, queryType);
 		}
 	}
 	public QueryType getQueryTypeEnum() {

@@ -135,7 +135,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		NOT_SET(0),
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
 		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
-		
+
 		private @Getter int deliveryMode;
 		private DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
@@ -855,9 +855,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return persistent;
 	}
 
-	@IbisDoc({"5", "SubscriberType, should <b>DURABLE</b> or <b>TRANSIENT</b>. Only applicable for topics ", "DURABLE"})
+	@IbisDoc({"5", "Only applicable for topics", "DURABLE"})
 	public void setSubscriberType(String subscriberType) {
-		this.subscriberType = EnumUtils.parse(SubscriberType.class, "subscriberType", subscriberType);
+		this.subscriberType = EnumUtils.parse(SubscriberType.class, subscriberType);
 	}
 	public SubscriberType getSubscriberTypeEnum() {
 		return subscriberType;

@@ -373,9 +373,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return messageType;
 	}
 
-	@IbisDoc({"5", "Controls mode that messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
+	@IbisDoc({"5", "Controls mode that messages are sent with", "not set by application"})
 	public void setDeliveryMode(String deliveryMode) {
-		this.deliveryMode = EnumUtils.parse(DeliveryMode.class, "deliveryMode", deliveryMode);
+		this.deliveryMode = EnumUtils.parse(DeliveryMode.class, deliveryMode);
 	}
 	public void setDeliveryModeEnum(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;
