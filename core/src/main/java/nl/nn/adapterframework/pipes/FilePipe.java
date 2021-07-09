@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  */
 @Deprecated
-@ConfigurationWarning("Please use LocalFileSystemPipe instead")
+@ConfigurationWarning("Please use LocalFileSystemPipe instead, or when retrieving files from the classpath use the FixedResultPipe")
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 
