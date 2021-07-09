@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.Misc;
 
 //TODO: consider moving this to a separate module
 /**
- * Javascript V8 engine wrapper for VizJs flow diagrams
+ * JavaScript engine wrapper for VizJs flow diagrams
  * 
  * @author Niels Meijer
  *
