@@ -845,7 +845,7 @@ public class DocWriterNew {
 				if(log.isTraceEnabled()) {
 					ThreadContext.pop();
 				}
-				DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(childRoles));
+				DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(childRoles));
 			}
 		}
 	}
