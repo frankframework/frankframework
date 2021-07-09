@@ -1,0 +1,19 @@
+<configuration name="SimpleConfiguration">
+	<adapter name="HelloBeautifulWorld">
+		<receiver name="HelloBeautifulWorld">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
+		</receiver>
+		<receiver name="HelloBeautifulWorld">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="HelloBeautifulWorld"/>
+		</receiver>
+		<receiver name="testtool-HelloBeautifulWorld-1">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld-1"/>
+		</receiver>
+		<pipeline firstPipe="HelloBeautifulWorld">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="HelloBeautifulWorld" returnString="Hello Beautiful World">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+			<exit path="EXIT" state="success"/>
+		</pipeline>
+	</adapter>
+</configuration>

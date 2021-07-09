@@ -335,19 +335,6 @@ public class Stub4TesttoolFilterTest {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/FullAdapter";
 		stub4testtoolTest(directory, false);
 	}
-	/*
-	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
-		Map<String, Object> parameters = new Hashtable<String, Object>();
-		// Parameter disableValidators has been used to test the impact of
-		// validators on memory usage.
-		parameters.put("disableValidators", disableValidators);
-		
-		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);
-		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
-		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_EXPECTED_FILENAME);
-		
-		assertEquals(expectedConfiguration.trim(),stubbedConfiguration.trim());
-	}*/
 	
 	public void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		StringWriter target = new StringWriter();
@@ -363,7 +350,7 @@ public class Stub4TesttoolFilterTest {
 		
 		XmlUtils.parseXml(originalConfiguration, filter);
 		
-		String actual = new String (target.toString());
+		String actual = new String(target.toString());
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_EXPECTED_FILENAME);
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);

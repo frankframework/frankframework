@@ -23,11 +23,14 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class ConfigurationDigesterTest {
-
+	
+	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	
 	@Test
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
@@ -51,9 +54,15 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
+		
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
+
+		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
+		MatchUtils.assertXmlEquals(stubbedExpected, stubbedResult);
 
 		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
@@ -69,7 +78,7 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-
+		
 		//Unfortunately we need to cleanup the result a bit...
 		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
 		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
@@ -82,7 +91,24 @@ public class ConfigurationDigesterTest {
 
 		Diff diff = XMLUnit.compareXML(expected, result); //We need to use XML Compare as the order is different in the old canonical xslt
 		assertTrue(diff.toString(), diff.similar());
-
+		
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
+		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
+		
+		//Unfortunately we need to cleanup the result a bit...
+		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
+		stubbedResult = stubbedResult.replaceAll("(</?exits>)", "");//Remove the exits tag
+		stubbedResult = stubbedResult.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
+		
+		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
+		
+		stubbedResult = MatchUtils.xmlPretty(stubbedResult, true);
+		stubbedExpected = MatchUtils.xmlPretty(stubbedExpected, true);
+		
+		diff = XMLUnit.compareXML(stubbedExpected, stubbedResult); //We need to use XML Compare as the order is different in the old canonical xslt
+		assertTrue(diff.toString(), diff.similar());
+		
 		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
 	}
