@@ -44,6 +44,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public abstract class TriggerBase implements ITrigger, LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private static final String CLASS_NAME_ALARM = "nl.nn.adapterframework.monitoring.Alarm";
+	private static final String CLASS_NAME_CLEARING = "nl.nn.adapterframework.monitoring.Clearing";
+	private static final String ATTRIBUTE_CLASS_NAME = "className";
+
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
@@ -139,7 +143,9 @@ public abstract class TriggerBase implements ITrigger, LazyLoadingEventListener<
 	}
 
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
+		// XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
+		XmlBuilder trigger = new XmlBuilder("trigger");
+		trigger.addAttribute(ATTRIBUTE_CLASS_NAME, isAlarm()?CLASS_NAME_ALARM:CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity",getSeverity());

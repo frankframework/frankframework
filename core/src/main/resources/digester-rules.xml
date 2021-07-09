@@ -66,14 +66,6 @@
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger"/>
 	<rule pattern="*/monitor/trigger/events/event" registerTextMethod="addEventCode"/>
 
-	<!-- Ignored by the Frank!Doc, needed for backward compatibility, ibis-doc parsing -->
-	<rule pattern="*/monitor/alarm" registerMethod="registerTrigger"/>
-	<rule pattern="*/monitor/alarm/events/event" registerTextMethod="addEventCode"/>
-
-	<!-- Ignored by the Frank!Doc, needed for backward compatibility, ibis-doc parsing -->
-	<rule pattern="*/monitor/clearing" registerMethod="registerTrigger"/>
-	<rule pattern="*/monitor/clearing/events/event" registerTextMethod="addEventCode"/>
-
 	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter"/>
 	<rule pattern="*/adapterfilter/sources/source" registerTextMethod="registerSubObject"/>
 </digester-rules>
