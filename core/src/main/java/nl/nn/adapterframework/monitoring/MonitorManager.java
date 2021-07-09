@@ -221,11 +221,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return configXml;
 	}
 
-	@Override
-	public String toString() {
-		return ReflectionToStringBuilder.toStringExclude(this, "applicationContext");
-	}
-
 	public boolean isEnabled() {
 		return enabled;
 	}

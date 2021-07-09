@@ -550,8 +550,8 @@ public class WsdlGenerator {
             binding(w);
             service(w, servlet);
         }
-        w.writeEndDocument();
         warnings(w);
+        w.writeEndDocument();
         w.close();
     }
 

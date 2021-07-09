@@ -344,8 +344,4 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return ReflectionToStringBuilder.toStringExclude(this, "applicationContext");
-	}
 }

@@ -306,8 +306,4 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		log.info("removing trigger ["+this+"]");
 	}
 
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
 }
