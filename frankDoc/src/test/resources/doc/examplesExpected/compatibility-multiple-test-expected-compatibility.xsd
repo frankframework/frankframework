@@ -87,6 +87,20 @@
   <xs:complexType name="GrandChild2ImplType" />
   <xs:group name="AElementGroupBase">
     <xs:choice>
+      <xs:element name="Child1DescendantA">
+        <xs:annotation>
+          <xs:documentation>Child1DescendantA - nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child1Descendant used as A</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Child1DescendantType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child1Descendant" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="Child1ImplA">
         <xs:annotation>
           <xs:documentation>Child1ImplA - nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child1Impl used as A</xs:documentation>
@@ -103,12 +117,11 @@
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:complexType name="Child1DescendantType">
+    <xs:group ref="Child1ImplPluralConfigChildGroup" />
+  </xs:complexType>
   <xs:complexType name="Child1ImplType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="Child1ImplPluralConfigChildGroup" />
-      </xs:choice>
-    </xs:sequence>
+    <xs:group ref="Child1ImplPluralConfigChildGroup" />
   </xs:complexType>
   <xs:group name="Child1ImplPluralConfigChildGroup">
     <xs:sequence>
