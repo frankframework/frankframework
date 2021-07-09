@@ -321,6 +321,22 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpPatch() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo patch request");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType("patCH"); //should handle a mix of upper and lowercase characters :)
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPatch.txt"), result.trim());
+	}
+
+	@Test
 	public void simpleMockedHttpGetWithParams() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
