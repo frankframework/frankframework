@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="MessageStoreSender">
-      <receiver name="MessageStoreSender">
+      <receiver name="testtool-MessageStoreSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MessageStoreSender"/>
       </receiver>

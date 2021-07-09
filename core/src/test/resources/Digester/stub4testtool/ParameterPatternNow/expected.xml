@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="ParameterPatternNow">
-      <receiver name="ParameterPatternNow">
+      <receiver name="testtool-ParameterPatternNow">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-ParameterPatternNow"/>
       </receiver>

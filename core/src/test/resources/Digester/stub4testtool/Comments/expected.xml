@@ -1,7 +1,7 @@
 <configuration>
 	<!-- This comments is not removed -->
 	<adapter name="Comments">
-      <receiver name="Comments">
+      <receiver name="testtool-Comments">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-Comments"/>
       </receiver>

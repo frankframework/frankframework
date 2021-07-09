@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="SenderSeries">
-      <receiver name="SenderSeries">
+      <receiver name="testtool-SenderSeries">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-SenderSeries"/>
       </receiver>

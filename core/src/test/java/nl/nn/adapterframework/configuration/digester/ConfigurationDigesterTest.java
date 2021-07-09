@@ -50,8 +50,8 @@ public class ConfigurationDigesterTest {
 		ConfigurationDigester digester = new ConfigurationDigester();
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
-		properties.setProperty("HelloWorld.active", "false");
-		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		properties.setProperty("HelloWorld.active", "true");
+		properties.setProperty("HelloBeautifulWorld.active", "true");
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 		

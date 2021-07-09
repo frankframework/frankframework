@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="FixedResultSender">
-      <receiver name="FixedResultSender">
+      <receiver name="testtool-FixedResultSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-FixedResultSender"/>
       </receiver>

@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="LogSender">
-      <receiver name="LogSender">
+      <receiver name="testtool-LogSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-LogSender"/>
       </receiver>

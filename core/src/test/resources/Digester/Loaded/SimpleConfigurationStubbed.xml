@@ -1,6 +1,6 @@
 <configuration name="SimpleConfiguration">
 	<adapter name="HelloBeautifulWorld">
-		<receiver name="HelloBeautifulWorld">
+		<receiver name="testtool-HelloBeautifulWorld">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
 		</receiver>
 		<receiver name="HelloBeautifulWorld">

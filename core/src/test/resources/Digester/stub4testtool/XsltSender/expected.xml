@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="ZipWriterSender">
-      <receiver name="ZipWriterSender">
+      <receiver name="testtool-ZipWriterSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-ZipWriterSender"/>
       </receiver>

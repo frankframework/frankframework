@@ -1,16 +1,16 @@
 <configuration>
-	  <adapter name="SenderPipe">
-      <receiver name="SenderPipe">
+	  <adapter name="ZipWriterSender">
+      <receiver name="ZipWriterSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
-                   serviceName="testtool-SenderPipe"/>
+                   serviceName="testtool-ZipWriterSender"/>
       </receiver>
-		    <receiver name="SenderPipe">
+		    <receiver name="ZipWriterSender">
 			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
-                   name="SenderPipe"/>
+                   name="ZipWriterSender"/>
 		    </receiver>
-      <receiver name="testtool-SenderPipe-1">
+      <receiver name="testtool-ZipWriterSender-1">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
-                   serviceName="testtool-SenderPipe-1"/>
+                   serviceName="testtool-ZipWriterSender-1"/>
       </receiver>
 
 		    <pipeline>
@@ -21,8 +21,7 @@
                className="nl.nn.adapterframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.IbisLocalSender"
-                    javaListener="TEST"/>
+				        <sender className="nl.nn.adapterframework.compression.ZipWriterSender"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

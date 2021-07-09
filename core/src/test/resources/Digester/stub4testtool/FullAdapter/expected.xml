@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="FullAdapter">
-      <receiver name="FullAdapter">
+      <receiver name="testtool-FullAdapter">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-FullAdapter"/>
          <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"

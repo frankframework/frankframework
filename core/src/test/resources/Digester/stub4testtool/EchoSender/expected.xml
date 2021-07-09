@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="EchoSender">
-      <receiver name="EchoSender">
+      <receiver name="testtool-EchoSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-EchoSender"/>
       </receiver>

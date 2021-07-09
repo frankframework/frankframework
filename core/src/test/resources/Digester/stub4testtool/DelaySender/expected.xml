@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="DelaySender">
-      <receiver name="DelaySender">
+      <receiver name="testtool-DelaySender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-DelaySender"/>
       </receiver>

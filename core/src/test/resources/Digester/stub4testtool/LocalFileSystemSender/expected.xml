@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="LocalFileSystemSender">
-      <receiver name="LocalFileSystemSender">
+      <receiver name="testtool-LocalFileSystemSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-LocalFileSystemSender"/>
       </receiver>

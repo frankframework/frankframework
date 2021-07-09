@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="GenericMessageSendingPipe">
-      <receiver name="GenericMessageSendingPipe">
+      <receiver name="testtool-GenericMessageSendingPipe">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-GenericMessageSendingPipe"/>
       </receiver>

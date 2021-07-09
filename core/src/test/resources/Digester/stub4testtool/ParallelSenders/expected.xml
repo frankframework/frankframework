@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="ParallelSenders">
-      <receiver name="ParallelSenders">
+      <receiver name="testtool-ParallelSenders">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-ParallelSenders"/>
       </receiver>

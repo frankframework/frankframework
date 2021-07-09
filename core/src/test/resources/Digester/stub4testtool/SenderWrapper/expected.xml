@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="SenderWrapper">
-      <receiver name="SenderWrapper">
+      <receiver name="testtool-SenderWrapper">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-SenderWrapper"/>
       </receiver>

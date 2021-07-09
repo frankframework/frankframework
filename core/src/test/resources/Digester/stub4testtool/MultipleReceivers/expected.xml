@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="MultipleReceivers">
-      <receiver name="JmsListener">
+      <receiver name="testtool-MultipleReceivers">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MultipleReceivers"/>
       </receiver>
