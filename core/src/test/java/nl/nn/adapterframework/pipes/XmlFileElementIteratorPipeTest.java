@@ -22,10 +22,17 @@ public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementI
 	}
 
 	@Test
-	public void getterSetterXmlFileElementIteratorPipe() {
+	public void setterElementName() {
 		String dummyElementName = "Person";
 		pipe.setElementName(dummyElementName);
 		assertEquals(pipe.getElementName(), dummyElementName);
+	}
+	
+	@Test
+	public void setterElementChain() {
+		String dummyElementChain = "GetPartiesOnAgreementRLY;PartyAgreementRole;PartyInternalAgreementRole;Party;Person";
+		pipe.setElementChain(dummyElementChain);
+		assertEquals(pipe.getElementChain(), dummyElementChain);
 	}
 
 	@Test
