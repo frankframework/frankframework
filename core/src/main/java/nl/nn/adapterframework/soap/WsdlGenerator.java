@@ -514,7 +514,7 @@ public class WsdlGenerator {
     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, ConfigurationException,  NamingException {
         XMLStreamWriter w = WsdlGeneratorUtils.getWriter(out, isIndent());
 
-        w.writeStartDocument(XmlUtils.STREAM_FACTORY_ENCODING, "1.0");
+        w.writeStartDocument(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, "1.0");
         w.setPrefix(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
         w.setPrefix(XSD_NAMESPACE_PREFIX, XSD_NAMESPACE);
         w.setPrefix(wsdlSoapPrefix, wsdlSoapNamespace);

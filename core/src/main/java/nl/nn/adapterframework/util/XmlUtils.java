@@ -158,7 +158,6 @@ public class XmlUtils {
 	public static final XMLInputFactory INPUT_FACTORY;
 	public static final XMLOutputFactory OUTPUT_FACTORY;
 	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	static {
 		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
@@ -180,9 +179,6 @@ public class XmlUtils {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
-	public XmlUtils() {
-		super();
-	}
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
@@ -1988,16 +1984,6 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document) throws SAXException, IOException, TransformerException {
-		String input;
-		if (document instanceof DefaultDocument) {
-			DefaultDocument defaultDocument = (DefaultDocument) document;
-			input = defaultDocument.asXML();
-		} else {
-			input = document.toString();
-		}
-		return getAdapterSite(input, null);
-	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
 		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
