@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="FixedQuerySender">
-      <receiver name="FixedQuerySender">
+      <receiver name="testtool-FixedQuerySender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-FixedQuerySender"/>
       </receiver>

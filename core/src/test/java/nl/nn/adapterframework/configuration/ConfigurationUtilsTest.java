@@ -37,6 +37,7 @@ import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ConfigurationUtilsTest extends Mockito {
@@ -506,6 +507,6 @@ public class ConfigurationUtilsTest extends Mockito {
 		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_EXPECTED_FILENAME);
 		
-		assertEquals(expectedConfiguration.trim(),stubbedConfiguration.trim());
+		MatchUtils.assertXmlEquals(expectedConfiguration, stubbedConfiguration);
 	}
 }

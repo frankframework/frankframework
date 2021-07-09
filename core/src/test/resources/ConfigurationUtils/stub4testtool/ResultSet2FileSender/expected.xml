@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="ResultSet2FileSender">
-      <receiver name="ResultSet2FileSender">
+      <receiver name="testtool-ResultSet2FileSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-ResultSet2FileSender"/>
       </receiver>

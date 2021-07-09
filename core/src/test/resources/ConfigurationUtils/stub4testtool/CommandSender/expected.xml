@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="CommandSender">
-      <receiver name="CommandSender">
+      <receiver name="testtool-CommandSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-CommandSender"/>
       </receiver>

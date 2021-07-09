@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="XmlQuerySender">
-      <receiver name="XmlQuerySender">
+      <receiver name="testtool-XmlQuerySender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-XmlQuerySender"/>
       </receiver>

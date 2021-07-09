@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="JavascriptSender">
-      <receiver name="JavascriptSender">
+      <receiver name="testtool-JavascriptSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-JavascriptSender"/>
       </receiver>

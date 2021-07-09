@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="ReloadSender">
-      <receiver name="ReloadSender">
+      <receiver name="testtool-ReloadSender">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-ReloadSender"/>
       </receiver>

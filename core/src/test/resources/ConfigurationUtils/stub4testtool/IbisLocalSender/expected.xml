@@ -1,6 +1,6 @@
 <configuration>
 	  <adapter name="SenderPipe">
-      <receiver name="SenderPipe">
+      <receiver name="testtool-SenderPipe">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-SenderPipe"/>
       </receiver>

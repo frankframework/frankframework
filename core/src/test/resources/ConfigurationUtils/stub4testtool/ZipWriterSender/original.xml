@@ -1,9 +1,9 @@
 <configuration>
-	<adapter name="SenderPipe">
-		<receiver name="SenderPipe">
+	<adapter name="ZipWriterSender">
+		<receiver name="ZipWriterSender">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				name="SenderPipe"
+				name="ZipWriterSender"
 			/>
 		</receiver>
 
@@ -16,8 +16,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
-					javaListener="TEST"
+					className="nl.nn.adapterframework.compression.ZipWriterSender"
 				/>
 				<forward name="success" path="READY"/>
 			</pipe>
