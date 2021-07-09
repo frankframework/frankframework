@@ -369,7 +369,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					return retrieveObject(rs,1);
+					return retrieveObject(rs, 2);
 				}
 			}
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly
