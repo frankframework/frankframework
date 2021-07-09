@@ -203,18 +203,23 @@
 			<artifactId>ibis-xerces</artifactId>
 			<version>2.12.1-xml-schema-1.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.codehaus.woodstox</groupId>
-			<artifactId>woodstox-core-asl</artifactId>
-			<version>4.4.1</version>
-			<exclusions>
-				<!-- woodstox ships with an older version of stax2 -->
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>stax2-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.codehaus.woodstox</groupId> -->
+<!-- 			<artifactId>woodstox-core-asl</artifactId> -->
+<!-- 			<version>4.4.1</version> -->
+<!-- 			<exclusions> -->
+<!-- 				<exclusion> -->
+<!-- 					<groupId>org.codehaus.woodstox</groupId> -->
+<!-- 					<artifactId>stax2-api</artifactId> -->
+<!-- 				</exclusion> -->
+<!-- 			</exclusions> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+			<!-- woodstox ships with an older version of stax2, override that with the updated version, otherwise WsdlGeneratorTest fails -->
+<!-- 			<groupId>org.codehaus.woodstox</groupId> -->
+<!-- 			<artifactId>stax2-api</artifactId> -->
+<!-- 			<version>4.2.1</version> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>aopalliance</groupId>
 			<artifactId>aopalliance</artifactId>
