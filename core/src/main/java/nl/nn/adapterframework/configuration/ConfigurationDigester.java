@@ -228,9 +228,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		ContentHandler handler;
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
-			handler = getCanonicalizedConfiguration(configuration, writer);
+			handler = Stub4TesttoolFilter.getStub4TesttoolContentHandler(writer, appConstants);
+			handler = getCanonicalizedConfiguration(configuration, handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
-			handler = Stub4TesttoolFilter.getStub4TesttoolContentHandler(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
 			handler = writer;
