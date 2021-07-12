@@ -918,6 +918,28 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String result = Message.asString(prr.getResult());
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
+	
+//
+// This test does not work yet since XmlFileElementIteratorPipe's elementChain functionality 
+// is not present in ForEachChildElementPipe yet
+//
+//	@Test
+//	public void testElementChain() throws Exception {
+//		XsltSender sender = new XsltSender();
+//		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
+//		pipe.setProcessFile(true);
+//		pipe.setSender(sender);
+//		pipe.setElementXPathExpression("/GetPartiesOnAgreementRLY/PartyAgreementRole/PartyInternalAgreementRole/Party/Person");
+//		pipe.configure();
+//		pipe.start();
+//		
+//		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
+//		File file = new File(input.toURI());
+//		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementChainOutput.xml");
+//		PipeRunResult prr = doPipe(pipe, file.toString(), session);
+//		String result = Message.asString(prr.getResult());
+//		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+//	}
 
 	
 	private class SwitchCounter {
