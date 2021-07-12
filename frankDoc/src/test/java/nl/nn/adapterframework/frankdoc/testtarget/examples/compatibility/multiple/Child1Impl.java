@@ -6,4 +6,7 @@ public class Child1Impl implements IChild1 {
 	
 	public void registerB(IGrandChild2 child) {
 	}
+
+	public void registerD(GrandChild3 child) {
+	}
 }

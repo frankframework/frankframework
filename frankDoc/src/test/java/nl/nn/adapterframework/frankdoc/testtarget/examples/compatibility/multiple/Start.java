@@ -6,4 +6,7 @@ public class Start {
 
 	public void registerA(IChild2 child) {
 	}
+
+	public void registerC(Child3 child) {
+	}
 }

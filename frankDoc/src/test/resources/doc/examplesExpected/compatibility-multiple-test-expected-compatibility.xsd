@@ -8,10 +8,31 @@
       <xs:sequence>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:group ref="AElementGroup" />
+          <xs:element ref="C" />
         </xs:choice>
       </xs:sequence>
       <xs:attribute ref="active" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="D">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.GrandChild3</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="d" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.GrandChild3" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="C">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child3</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="c" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child3" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:group name="AElementGroup">
@@ -21,6 +42,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="BElementGroup" />
+              <xs:element ref="D" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -127,6 +149,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="BElementGroup" />
+        <xs:element ref="D" />
       </xs:choice>
     </xs:sequence>
   </xs:group>
