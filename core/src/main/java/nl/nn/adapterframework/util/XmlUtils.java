@@ -1730,8 +1730,12 @@ public class XmlUtils {
 		TransformerFactory tFactory2 = getTransformerFactory(2);
 		map.put("TransformerFactory2-class", tFactory2.getClass().getName());
 
+		XMLEventFactory xmlEventFactory = XMLEventFactory.newInstance();
+		map.put("XMLEventFactory-class", xmlEventFactory.getClass().getName());
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
+		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
 		
 		map.put("XML tool version info:", null);
 		try {
