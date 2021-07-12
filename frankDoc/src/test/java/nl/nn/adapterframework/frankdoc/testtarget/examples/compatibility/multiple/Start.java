@@ -9,4 +9,10 @@ public class Start {
 
 	public void registerC(Child3 child) {
 	}
+
+	public void setMyFirstAttribute(String value) {
+	}
+
+	public void setMySecondAttribute(String value) {
+	}
 }

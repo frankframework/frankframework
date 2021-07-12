@@ -9,4 +9,10 @@ public class Child1Impl implements IChild1 {
 
 	public void registerD(GrandChild3 child) {
 	}
+
+	public void setMyThirdAttribute(int value) {
+	}
+
+	public void setMyFourthAttribute(boolean value) {
+	}
 }

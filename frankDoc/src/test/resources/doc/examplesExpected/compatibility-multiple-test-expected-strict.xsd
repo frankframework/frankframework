@@ -11,6 +11,8 @@
           <xs:element ref="C" />
         </xs:choice>
       </xs:sequence>
+      <xs:attribute name="myFirstAttribute" type="xs:string" />
+      <xs:attribute name="mySecondAttribute" type="xs:string" />
       <xs:attribute ref="active" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start" use="prohibited" />
     </xs:complexType>
@@ -141,9 +143,11 @@
   </xs:group>
   <xs:complexType name="Child1DescendantType">
     <xs:group ref="Child1ImplPluralConfigChildGroup" />
+    <xs:attributeGroup ref="Child1ImplDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:complexType name="Child1ImplType">
     <xs:group ref="Child1ImplPluralConfigChildGroup" />
+    <xs:attributeGroup ref="Child1ImplDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:group name="Child1ImplPluralConfigChildGroup">
     <xs:sequence>
@@ -153,6 +157,10 @@
       </xs:choice>
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="Child1ImplDeclaredAttributeGroup">
+    <xs:attribute name="myThirdAttribute" type="frankInt" />
+    <xs:attribute name="myFourthAttribute" type="frankBoolean" />
+  </xs:attributeGroup>
   <xs:group name="AElementGroupBase_2">
     <xs:choice>
       <xs:element name="Child2ImplA">
