@@ -188,7 +188,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-		<!-- only used in XmlUtils.canonicalize, that is only used in CompareStringPipe with isXml=true -->
+			<!-- only used in XmlUtils.canonicalize, that is only used in CompareStringPipe with isXml=true -->
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>1.6.1</version>
@@ -513,12 +513,12 @@
 			<version>2.3.0</version>
 			<exclusions>
 				<exclusion>
-					<!-- to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
 				<exclusion>
-					<!-- to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
 					<groupId>org.apache.servicemix.specs</groupId>
 					<artifactId>org.apache.servicemix.specs.stax-api-1.0</artifactId>
 				</exclusion>

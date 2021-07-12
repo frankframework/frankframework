@@ -153,28 +153,12 @@ public class XmlUtils {
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
-	public static final XMLEventFactory EVENT_FACTORY;
-	public static final XMLInputFactory INPUT_FACTORY;
-	public static final XMLOutputFactory OUTPUT_FACTORY;
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
+	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
+	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
+	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
 	static {
-		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
-		// on all Application Servers. Don't leave it up to the newFactory
-		// method of javax.xml.stream.XMLOutputFactory which for example on
-		// WAS 8.5 with classloader parent first will result in
-		// com.ibm.xml.xlxp2.api.stax.XMLOutputFactoryImpl being used while
-		// with parent last it will use com.ctc.wstx.sw.RepairingNsStreamWriter
-		// from woodstox-core-asl-4.2.0.jar. At the time of testing the
-		// woodstox-core-asl-4.2.0.jar and sjsxp-1.0.2.jar were part of the
-		// webapp which both provide META-INF/services/javax.xml.stream.*. On
-		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
-		// last woodstox was used (giving "Response already committed" error
-		// when a WSDL was generated).
-		EVENT_FACTORY = XMLEventFactory.newFactory();
-		INPUT_FACTORY = XMLInputFactory.newFactory();
-		OUTPUT_FACTORY = XMLOutputFactory.newFactory();
-		REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
