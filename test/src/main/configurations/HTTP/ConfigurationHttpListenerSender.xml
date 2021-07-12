@@ -26,7 +26,7 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
-					inputMessageParam="request" />
+					firstBodyPartName="request"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
