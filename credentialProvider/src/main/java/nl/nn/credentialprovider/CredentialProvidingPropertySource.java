@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden
+   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
 import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
 
 /**
- * PropertySource that gets its data from filesystem with secrets.
+ * Tomcat PropertySource that gets its data from the configured CredentialFactory.
  * 
  * Example context.xml configuration attributes:
  *   user="${testiaf_user/username}"
@@ -35,7 +35,7 @@ import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
  */
 public class CredentialProvidingPropertySource implements PropertySource{
 	
-	public final String DEFAULT_MARKER=":-";
+	public final String DEFAULT_MARKER=":";
 	
 	@Override
 	public String getProperty(String key) {
