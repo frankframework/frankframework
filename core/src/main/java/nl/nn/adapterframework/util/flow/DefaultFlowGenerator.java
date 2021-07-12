@@ -41,7 +41,7 @@ public class DefaultFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(log.isTraceEnabled()) log.trace("creating V8FlowEngine");
+		if(log.isTraceEnabled()) log.trace("creating DefaultFlowEngine");
 		engine = new GraphvizEngine();
 
 		Format format;
@@ -83,7 +83,7 @@ public class DefaultFlowGenerator implements IFlowGenerator {
 	@Override
 	public void destroy() {
 		engine.close();
-		if(log.isTraceEnabled()) log.trace("destroyed V8FlowEngine");
+		if(log.isTraceEnabled()) log.trace("destroyed DefaultFlowEngine");
 	}
 
 	/**
