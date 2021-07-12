@@ -25,11 +25,15 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.ContentHandler;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.TransformerFilter;
 
+/**
+ * The Stub4TesttoolFilter is used to stub configurations during parsing
+ */
 public class Stub4TesttoolFilter extends TransformerFilter {
 
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
@@ -42,6 +46,10 @@ public class Stub4TesttoolFilter extends TransformerFilter {
 		super(null, transformerHandler, null, null, false, handler);
 	}
 	
+	/**
+	 * Get the contenthandler to stub configurations
+	 * If stubbing is disabled, the input ContentHandler is returned as-is
+	 */
 	public static ContentHandler getStub4TesttoolContentHandler(ContentHandler resolver, Properties properties) throws IOException, TransformerConfigurationException {
 		if (Boolean.parseBoolean(properties.getProperty(STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
 			Resource xslt = Resource.getResource(STUB4TESTTOOL_XSLT);
