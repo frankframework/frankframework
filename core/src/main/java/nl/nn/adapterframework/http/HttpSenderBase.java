@@ -73,8 +73,8 @@ import org.htmlcleaner.TagNode;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -88,7 +88,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -789,7 +789,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(String string) {
-		method = Misc.parse(HttpMethod.class, string);
+		method = EnumUtils.parse(HttpMethod.class, string);
 	}
 	public HttpMethod getMethodTypeEnum() {
 		return method;

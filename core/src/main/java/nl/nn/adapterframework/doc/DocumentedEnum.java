@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,15 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler;
+package nl.nn.adapterframework.doc;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+public interface DocumentedEnum {
 
-public class DatabaseJobDef extends JobDef {
+	/**
+	 * @return Optional 'SimpleName' or label that's used to parse the Enum, or null when `name()` should be used
+	 */
+	public default String getLabel() {
+		return null;
+	}
 
-	@Override
-	public void configure() throws ConfigurationException {
-		setFunction(JobDefFunctions.SEND_MESSAGE.getLabel());
-		super.configure();
+	/**
+	 * @return Optional description to explain the corresponding Label
+	 */
+	public default String getDescription() {
+		return null;
 	}
 }
