@@ -229,7 +229,10 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			// Transform the filename as it is known locally on the IUF state
 			// machine to the filename as know on the application server (which
 			// has a mount to the IUF state machine).
-			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + Paths.get(clientFilename).getFileName();
+			if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
+				clientFilename = clientFilename.replace("\\", "/");
+			}
+			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
 			session.put(getFxfFileSessionKey(), fxfFile);
 			return new PipeRunResult(getSuccessForward(), fxfFile);
 		}
