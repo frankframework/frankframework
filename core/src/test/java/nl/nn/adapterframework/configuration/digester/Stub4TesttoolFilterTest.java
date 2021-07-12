@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.filters.Stub4TesttoolFilter;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -50,8 +51,8 @@ public class Stub4TesttoolFilterTest {
 		XmlWriter xmlWriter = new XmlWriter(target);
 		
 		Properties properties = new Properties();
-		properties.setProperty("stub4testtool.configuration", "true");
-		properties.setProperty("validators.disabled", Boolean.toString(disableValidators));
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(disableValidators));
 		
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);
 		

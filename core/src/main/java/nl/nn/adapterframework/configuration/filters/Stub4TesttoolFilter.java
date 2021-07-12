@@ -26,6 +26,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -35,13 +36,6 @@ import nl.nn.adapterframework.xml.TransformerFilter;
  * The Stub4TesttoolFilter is used to stub configurations during parsing
  */
 public class Stub4TesttoolFilter extends TransformerFilter {
-
-	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
-	private static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
-	
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
-	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
-
 	private Stub4TesttoolFilter(TransformerHandler transformerHandler, ContentHandler handler) {
 		super(null, transformerHandler, null, null, false, handler);
 	}
@@ -51,14 +45,14 @@ public class Stub4TesttoolFilter extends TransformerFilter {
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
 	public static ContentHandler getStub4TesttoolContentHandler(ContentHandler resolver, Properties properties) throws IOException, TransformerConfigurationException {
-		if (Boolean.parseBoolean(properties.getProperty(STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
-			Resource xslt = Resource.getResource(STUB4TESTTOOL_XSLT);
+		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
+			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 			
 			Stub4TesttoolFilter filter = new Stub4TesttoolFilter(tp.getTransformerHandler(), resolver);
 			
 			Map<String,Object> parameters = new HashMap<String,Object>();
-			parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
+			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
 			
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
 			

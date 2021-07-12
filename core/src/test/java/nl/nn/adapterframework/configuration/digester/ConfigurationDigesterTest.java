@@ -27,10 +27,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-public class ConfigurationDigesterTest {
-	
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
-	
+public class ConfigurationDigesterTest {	
 	@Test
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
@@ -55,7 +52,7 @@ public class ConfigurationDigesterTest {
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 		
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
@@ -92,12 +89,12 @@ public class ConfigurationDigesterTest {
 		Diff diff = XMLUnit.compareXML(expected, result); //We need to use XML Compare as the order is different in the old canonical xslt
 		assertTrue(diff.toString(), diff.similar());
 		
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, true);
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
 		
 		// Reset stubbing on the AppConstants, not doing this might fail other tests during CI 
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, false);
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false);
 		
 		//Unfortunately we need to cleanup the result a bit...
 		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
