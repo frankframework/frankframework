@@ -32,8 +32,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * Initialized through Spring. Uses @{link GraphvizEngine} to get an available 
  * JavaScriptEngine to generate the Flow images with.
  */
-public class DefaultFlowGenerator implements IFlowGenerator {
-	private static Logger log = LogUtil.getLogger(DefaultFlowGenerator.class);
+public class JavaScriptFlowGenerator implements IFlowGenerator {
+	private static Logger log = LogUtil.getLogger(JavaScriptFlowGenerator.class);
 
 	private GraphvizEngine engine;
 	private Options options = Options.create();

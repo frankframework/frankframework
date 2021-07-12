@@ -23,13 +23,13 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 import nl.nn.adapterframework.util.flow.IFlowGenerator;
-import nl.nn.adapterframework.util.flow.DefaultFlowGenerator;
+import nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator;
 
 public class FlowDiagramTest {
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws Exception {
-		IFlowGenerator generator = new DefaultFlowGenerator();
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
 		generator.afterPropertiesSet();
 
 		FlowDiagramManager flow = new FlowDiagramManager() {
@@ -45,7 +45,7 @@ public class FlowDiagramTest {
 
 	@Test
 	public void canInitSVGWithoutErrors() throws Exception {
-		IFlowGenerator generator = new DefaultFlowGenerator();
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
 		generator.setFileExtension("svG");
 		generator.afterPropertiesSet();
 
@@ -63,7 +63,7 @@ public class FlowDiagramTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getUnknownFormat() throws Exception {
-		IFlowGenerator generator = new DefaultFlowGenerator();
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
 		generator.setFileExtension("application/pdf");
 		generator.afterPropertiesSet();
 

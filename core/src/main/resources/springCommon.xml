@@ -97,7 +97,7 @@
 	</bean>
 	<bean
 		name="flowGenerator"
-		class="nl.nn.adapterframework.util.flow.DefaultFlowGenerator"
+		class="nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator"
 		scope="prototype"
 		lazy-init="true"
 		>
