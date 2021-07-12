@@ -1,7 +1,7 @@
 <module>
 	<adapter name="MessageStoreListener">
 		<receiver transactionAttribute="Required" pollInterval="1">
-			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" peekUntransacted="true" />
+			<listener className="nl.nn.adapterframework.jdbc.MessageStoreListener" name="MessageStoreListener" slotId="${applicationId}/MessageStoreListener" />
 		</receiver>
 		<pipeline firstPipe="echoPipe">
 			<exits>

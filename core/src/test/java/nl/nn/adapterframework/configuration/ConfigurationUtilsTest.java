@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
@@ -36,11 +37,18 @@ import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ConfigurationUtilsTest extends Mockito {
 
 	private IbisContext ibisContext = spy(new IbisContext());
 	private PreparedStatementMock stmt;
+	
+	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	private static final String STUB4TESTTOOL_DIRECTORY = "/ConfigurationUtils/stub4testtool";
+	private static final String STUB4TESTTOOL_ORIGINAL_FILENAME = "original.xml";
+	private static final String STUB4TESTTOOL_EXPECTED_FILENAME = "expected.xml";
 	
 	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
@@ -184,4 +192,10 @@ public class ConfigurationUtilsTest extends Mockito {
 		//This field is pretty obsolete, check if it's been set
 		assertNotNull("FILENAME not set", parameters.get("FILENAME"));
 	}
+	
+	// Listeners
+	@Test
+	public void stub4testtoolApiListener() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/ApiListener";
+		stub4testtoolTest(directory, false);
 }

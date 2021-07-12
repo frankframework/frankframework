@@ -70,11 +70,11 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -587,7 +587,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			break;
 
 		default:
-			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
+			IbisAction action = EnumUtils.parse(IbisAction.class, "function", getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
 			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 			break;
 		}
@@ -1149,10 +1149,10 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) {
-		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
+		this.function = EnumUtils.parse(JobDefFunctions.class, "function", function);
 	}
 	public String getFunction() {
-		return function==null?null:function.getName();
+		return function==null?null:function.getLabel();
 	}
 	public JobDefFunctions getFunctionEnum() {
 		return function;

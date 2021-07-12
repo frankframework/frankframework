@@ -92,6 +92,7 @@ import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -2035,7 +2036,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
-			onError = Misc.parse(OnError.class, "onError", value);
+			onError = EnumUtils.parse(OnError.class, value);
 		}
 	}
 	public void setOnErrorEnum(OnError value) {

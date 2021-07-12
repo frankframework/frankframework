@@ -74,6 +74,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -1058,7 +1059,7 @@ public class CmisSender extends SenderWithParametersBase {
 			" * <li><code>fetch</code>: get the (meta)data of a folder or document</li>\n" +
 			" * </ul>", ""})
 	public void setAction(String action) {
-		this.action = Misc.parse(CmisAction.class, "destinationType", action);
+		this.action = EnumUtils.parse(CmisAction.class, "action", action);
 	}
 
 	public String getAction() {

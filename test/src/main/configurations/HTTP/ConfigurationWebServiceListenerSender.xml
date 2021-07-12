@@ -77,7 +77,7 @@
 			<pipe name="Send2WS"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					proxyHost="${proxy.host}" proxyPort="${proxy.port}" proxyUserName="${proxy.username}"
+					proxyHost="${proxy.host}" proxyPort="${proxy.port}" proxyUsername="${proxy.username}"
 					proxyPassword="${proxy.password}" url="${web.protocol}://www.webservicex.net/CurrencyConvertor.asmx"
 					soapAction="${web.protocol}://www.webserviceX.NET/ConversionRate"
 					allowSelfSignedCertificates="true" verifyHostname="false" 
