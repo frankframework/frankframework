@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -63,20 +65,21 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String instanceName;
 	private String instanceNameLowerCase;
 	private String fxfDir;
-	private String flowId;
+	private @Getter String flowId;
 	private String environment;
-	private boolean transformFilename = true;
-	private String flowOutFolder = "";
-	private String fxfVersion = "3.1";
+	private @Getter boolean transformFilename = true;
+	private @Getter String flowOutFolder = "";
+	private @Getter String fxfVersion = "3.1";
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
-	private String soapBodySessionKey = "soapBody";
-	private String transferFlowIdSessionKey = "transferFlowId";
-	private String clientFilenameSessionKey = "clientFilename";
-	private String flowIdSessionKey = "flowId";
-	private String fxfDirSessionKey = "fxfDir";
-	private String fxfFileSessionKey = "fxfFile";
-	private boolean createFolder = false;
+	private @Getter String soapBodySessionKey = "soapBody";
+	private @Getter String transferFlowIdSessionKey = "transferFlowId";
+	private @Getter String clientFilenameSessionKey = "clientFilename";
+	private @Getter String flowIdSessionKey = "flowId";
+	private @Getter String fxfDirSessionKey = "fxfDir";
+	private @Getter String fxfFileSessionKey = "fxfFile";
+	private @Getter boolean createFolder = false;
+	private @Getter boolean useServerFilename = false;
 
 
 	@Override
@@ -128,7 +131,8 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
 			}
 			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
-			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/ClientFilename", "text", false, getParameterList());
+			String xpathFilename = isUseServerFilename() ? "/OnCompletedTransferNotify_Action/ServerFilename" : "/OnCompletedTransferNotify_Action/ClientFilename";
+			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, "text", false, getParameterList());
 		}
 		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
 			setFlowOutFolder(getFlowOutFolder()+"/");
@@ -225,7 +229,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			// Transform the filename as it is known locally on the IUF state
 			// machine to the filename as know on the application server (which
 			// has a mount to the IUF state machine).
-			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
+			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + Paths.get(clientFilename).getFileName();
 			session.put(getFxfFileSessionKey(), fxfFile);
 			return new PipeRunResult(getForward(), fxfFile);
 		}
@@ -244,80 +248,52 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
-	public String getFlowId() {
-		return flowId;
-	}
 
 	@IbisDoc({"2", "specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
 	public void setFlowOutFolder(String flowOutFolder) {
 		this.flowOutFolder = flowOutFolder;
-	}
-	public String getFlowOutFolder() {
-		return flowOutFolder;
 	}
 
 	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the folder the output folder <code>flowOutFolder</code> will be constructed as <code>/opt/data/FXF/&lt;instanceNameLowerCase&gt;/&lt;flowId&gt;/out/</code> ", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
-	public boolean isTransformFilename() {
-		return transformFilename;
-	}
 
 	public void setSoapBodySessionKey(String soapBodySessionKey) {
 		this.soapBodySessionKey = soapBodySessionKey;
-	}
-	public String getSoapBodySessionKey() {
-		return soapBodySessionKey;
 	}
 
 	public void setTransferFlowIdSessionKey(String transferFlowIdSessionKey) {
 		this.transferFlowIdSessionKey = transferFlowIdSessionKey;
 	}
-	public String getTransferFlowIdSessionKey() {
-		return transferFlowIdSessionKey;
-	}
 
 	public void setClientFilenameSessionKey(String clientFilenameSessionKey) {
 		this.clientFilenameSessionKey = clientFilenameSessionKey;
-	}
-	public String getClientFilenameSessionKey() {
-		return clientFilenameSessionKey;
 	}
 
 	public void setFlowIdSessionKey(String flowIdSessionKey) {
 		this.flowIdSessionKey = flowIdSessionKey;
 	}
-	public String getFlowIdSessionKey() {
-		return flowIdSessionKey;
-	}
 
 	public void setFxfDirSessionKey(String fxfDirSessionKey) {
 		this.fxfDirSessionKey = fxfDirSessionKey;
-	}
-	public String getFxfDirSessionKey() {
-		return fxfDirSessionKey;
 	}
 
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
-	public String getFxfFileSessionKey() {
-		return fxfFileSessionKey;
-	}
 
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
-	}
-	public String getFxfVersion() {
-		return fxfVersion;
 	}
 
 	@IbisDoc({"when set to <code>true</code>, the folder corresponding fxf.dir property will be created in case it does not exist", "false"})
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
-	public boolean isCreateFolder() {
-		return createFolder;
+
+	@IbisDoc({"when set to <code>true</code>, ServerFileName from the input will be used as the filename", "false"})
+	public void setUseServerFilename(boolean useServerFilename) {
+		this.useServerFilename = useServerFilename;
 	}
 }
