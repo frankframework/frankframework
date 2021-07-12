@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class Stub4TesttoolFilterTest {
-	private static final String STUB4TESTTOOL_DIRECTORY = "/Digester/stub4testtool";
+	private static final String STUB4TESTTOOL_DIRECTORY = "/ConfigurationUtils/stub4testtool";
 	private static final String STUB4TESTTOOL_ORIGINAL_FILENAME = "original.xml";
 	private static final String STUB4TESTTOOL_EXPECTED_FILENAME = "expected.xml";
 	
