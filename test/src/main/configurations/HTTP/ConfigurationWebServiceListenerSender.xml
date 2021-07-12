@@ -2,7 +2,7 @@
 	<adapter name="WebServiceListener" description="Test the functioning of the WebServiceListener">
 		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
-				name="urn:ws" serviceNamespaceURI="urn:ws" />
+				name="urn:ws" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
@@ -38,7 +38,7 @@
 		description="Test the functioning of the WebServiceListener (error)">
 		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
-				name="urn:ws_error" serviceNamespaceURI="urn:ws_error" />
+				name="urn:ws_error" />
 		</receiver>
 		<pipeline firstPipe="ExceptionPipe">
 			<exits>
@@ -53,7 +53,7 @@
 		description="Test the functioning of the WebServiceListener (timeout)">
 		<receiver>
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
-				name="urn:ws_timeout" serviceNamespaceURI="urn:ws_timeout" />
+				name="urn:ws_timeout" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
