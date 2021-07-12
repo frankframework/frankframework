@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -226,12 +225,13 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
 			session.put(getFlowIdSessionKey(), flowId);
 			session.put(getFxfDirSessionKey(), fxfDir);
+			// Windows style file separator will be a problem in linux with new File(clientFilename).getName() so replace it
+			if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
+				clientFilename = clientFilename.replace("\\", File.separator);
+			}
 			// Transform the filename as it is known locally on the IUF state
 			// machine to the filename as know on the application server (which
 			// has a mount to the IUF state machine).
-			if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
-				clientFilename = clientFilename.replace("\\", "/");
-			}
 			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
 			session.put(getFxfFileSessionKey(), fxfFile);
 			return new PipeRunResult(getForward(), fxfFile);
