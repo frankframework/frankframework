@@ -56,7 +56,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getFilenameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"fileNameSessionKey must be specified");
+			throw new ConfigurationException(getLogPrefix()+"filenameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
 		if (StringUtils.isNotEmpty(sft)) {
@@ -74,7 +74,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		try {
 			fileName = session.getMessage(getFilenameSessionKey()).asString();
 		} catch(IOException e) {
-			throw new SenderException(getLogPrefix() + "unable to determine filename session key from pipeline session", e);
+			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {

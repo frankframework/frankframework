@@ -207,7 +207,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				try {
 					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
 				} catch (IOException e) {
-					throw new SenderException("unable to resolve ["+getJavaListenerSessionKey()+"] session key");
+					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
 				}
 			} else {
 				javaListener = getJavaListener();

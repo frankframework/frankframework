@@ -479,7 +479,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			fileName = session.getMessage(getFilenameSessionKey()).asString();
 		} catch (IOException e) {
-			throw new SenderException("Unable to get filename from pipeline session");
+			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
 
 		String mediaType;

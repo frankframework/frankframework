@@ -340,7 +340,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	        try {
 				return session.getMessage(getRekenboxSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to get rekenbox session key from pipeline session", e);
+				throw new PipeRunException(this, "unable to get rekenbox from session key ["+getRekenboxSessionKey()+"]", e);
 			}
 	    }
 	    return getRekenbox();

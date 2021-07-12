@@ -110,7 +110,7 @@ public class XmlIf extends AbstractPipe {
 			try {
 				sInput=session.getMessage(getSessionKey()).asString();
 			} catch (IOException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve ["+getSessionKey()+"] session key ", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve session key ["+getSessionKey()+"]", e);
 			}
 		}
 
