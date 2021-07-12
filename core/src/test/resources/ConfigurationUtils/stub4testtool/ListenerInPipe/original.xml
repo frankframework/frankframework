@@ -1,0 +1,30 @@
+<configuration>
+	<adapter name="ListenerInPipe">
+		<receiver name="ListenerInPipe">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="SenderPipe"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="TEST"
+				/>
+				<listener
+					className="nl.nn.adapterframework.receivers.JavaListener"
+					name="SenderListener"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>
