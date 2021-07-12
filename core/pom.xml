@@ -511,6 +511,18 @@
 			<groupId>org.apache.servicemix.specs</groupId>
 			<artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
 			<version>2.3.0</version>
+			<exclusions>
+				<exclusion>
+					<!-- to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<groupId>org.apache.servicemix.specs</groupId>
+					<artifactId>org.apache.servicemix.specs.stax-api-1.0</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>

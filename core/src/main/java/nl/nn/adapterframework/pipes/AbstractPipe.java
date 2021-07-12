@@ -297,28 +297,28 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public void stop() {}
 
-	/**
-	 * The <code>toString()</code> method retrieves its value
-	 * by reflection, so overriding this method is mostly not
-	 * useful.
-	 * @see ToStringBuilder#reflectionToString
-	 *
-	 **/
-	@Override
-	public String toString() {
-		try {
-			return (new ReflectionToStringBuilder(this) {
-				@Override
-				protected boolean accept(Field f) {
-					//TODO create a blacklist or whitelist
-					return super.accept(f) && !f.getName().contains("appConstants");
-				}
-			}).toString();
-		} catch (Throwable t) {
-			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
-		}
-		return null;
-	}
+//	/**
+//	 * The <code>toString()</code> method retrieves its value
+//	 * by reflection, so overriding this method is mostly not
+//	 * useful.
+//	 * @see ToStringBuilder#reflectionToString
+//	 *
+//	 **/
+//	@Override
+//	public String toString() {
+//		try {
+//			return (new ReflectionToStringBuilder(this) {
+//				@Override
+//				protected boolean accept(Field f) {
+//					//TODO create a blacklist or whitelist
+//					return super.accept(f) && !f.getName().contains("appConstants");
+//				}
+//			}).toString();
+//		} catch (Throwable t) {
+//			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
+//		}
+//		return null;
+//	}
 
 	/**
 	 * Add a parameter to the list of parameters
