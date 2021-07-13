@@ -259,6 +259,17 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>4.2.3</version>
 		</dependency>
+		<dependency><!-- Needed for WsdlUtils, for cosmeticly better wsdls. Woodstox messes up attribute order, and namespace definitions -->
+			<groupId>com.sun.xml.stream</groupId>
+			<artifactId>sjsxp</artifactId>
+			<version>1.0.2</version>
+			<exclusions>
+				<exclusion><!-- Exclude 1.0 as 1.0.1 is already included by xmlbeans. -->
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.security</groupId>
 			<artifactId>wss4j</artifactId>
@@ -315,12 +326,6 @@
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.org.apache</groupId>
-			<artifactId>jaxp-ri</artifactId>
-			<version>1.4</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
