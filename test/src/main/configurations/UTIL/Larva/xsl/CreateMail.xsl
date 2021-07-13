@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" cdata-section-elements="message" />
 
-	<xsl:param name="hostname"/>
+	<xsl:param name="hostname">asdf435sdf</xsl:param>
 	<xsl:param name="message"/>
 	<xsl:param name="mailaddresses"/>
 	<xsl:param name="result" />
@@ -19,7 +19,7 @@
 					<recipient type="cc"><xsl:value-of select="."/></recipient>
 				</xsl:for-each>
 			</recipients>
-			<from><xsl:value-of select="$from"/></from>
+			<from><xsl:value-of select="$from"/>&lt;devopshelpdesk@wearefrank.nl&gt;</from>
 			<subject>
 				<xsl:value-of select="$result"/>
 				<xsl:value-of select="concat(' Larva run results on ', $hostname, ' (')"/>
