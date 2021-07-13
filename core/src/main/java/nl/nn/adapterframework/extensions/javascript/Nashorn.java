@@ -54,7 +54,11 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 		if (StringUtils.isNotEmpty(alias))
 			executeScript(alias + " = this;");
 
-		executeScript("load('classpath:net/arnx/nashorn/lib/promise.js')");
+		try {
+			engine.eval("load('classpath:net/arnx/nashorn/lib/promise.js')");
+		} catch (NullPointerException | ScriptException e) {
+			log.error("Error initializing Nashorn, unable to load Promise.js", e);
+		}
 	}
 
 	@Override

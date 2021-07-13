@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,12 @@ import nl.nn.adapterframework.extensions.graphviz.Options;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class V8FlowGenerator implements IFlowGenerator {
-	private static Logger log = LogUtil.getLogger(V8FlowGenerator.class);
+/**
+ * Initialized through Spring. Uses @{link GraphvizEngine} to get an available 
+ * JavaScriptEngine to generate the Flow images with.
+ */
+public class JavaScriptFlowGenerator implements IFlowGenerator {
+	private static Logger log = LogUtil.getLogger(JavaScriptFlowGenerator.class);
 
 	private GraphvizEngine engine;
 	private Options options = Options.create();
@@ -37,7 +41,7 @@ public class V8FlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(log.isTraceEnabled()) log.trace("creating V8FlowEngine");
+		if(log.isTraceEnabled()) log.trace("creating JavaScriptFlowGenerator");
 		engine = new GraphvizEngine();
 
 		Format format;
@@ -79,9 +83,13 @@ public class V8FlowGenerator implements IFlowGenerator {
 	@Override
 	public void destroy() {
 		engine.close();
-		if(log.isTraceEnabled()) log.trace("destroyed V8FlowEngine");
+		if(log.isTraceEnabled()) log.trace("destroyed JavaScriptFlowGenerator");
 	}
 
+	/**
+	 * The {@link FlowDiagramManager} uses a ThreadLocal+SoftReference map to cache the 
+	 * {@link IFlowGenerator FlowGenerators}. This method ensures that the engine is destroyed properly.
+	 */
 	@Override
 	protected void finalize() throws Throwable {
 		destroy();
