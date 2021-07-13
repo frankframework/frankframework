@@ -45,8 +45,6 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 		String expected = logDir+File.separator +"FlXwId"+File.separator +"in"+File.separator +"filename.xml.zip";
 		assertEquals(expected, pipeRunResult.getResult().asString());
 
-		String clientFileName = session.getMessage(pipe.getClientFilenameSessionKey()).asString();
-		assertEquals("/filename.xml.zip", clientFileName);
 	}
 
 	@Test
