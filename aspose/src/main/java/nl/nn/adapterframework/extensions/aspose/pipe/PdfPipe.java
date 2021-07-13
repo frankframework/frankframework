@@ -157,7 +157,7 @@ public class PdfPipe extends FixedForwardPipe {
 				CisConversionService cisConversionService = new CisConversionServiceImpl(pdfOutputLocation, fontManager.getFontsPath());
 				cisConversionResult = cisConversionService.convertToPdf(binaryInputStream, fileName, saveSeparate ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
 				XmlBuilder main = new XmlBuilder("main");
-				cisConversionResult.buildXmlFromResult(main, cisConversionResult, true);
+				cisConversionResult.buildXmlFromResult(main, true);
 
 				session.put("documents", main.toXML());
 			}

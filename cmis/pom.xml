@@ -12,6 +12,7 @@
 
 	<properties>
 		<opencmis.version>1.1.0</opencmis.version>
+		<cxf.version>3.4.4</cxf.version>
 	</properties>
 
 	<dependencies>
@@ -28,12 +29,34 @@
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- Omitted because CORE uses a different version -->
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-ws-policy</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.chemistry.opencmis</groupId>
 			<artifactId>chemistry-opencmis-server-bindings</artifactId>
 			<version>${opencmis.version}</version>
+		</dependency>
+
+		<!-- CXF -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-ws-policy</artifactId>
+			<version>${cxf.version}</version>
 		</dependency>
 
 		<dependency>
@@ -44,6 +67,8 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Test scoped and provided dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -55,6 +80,7 @@
 			<version>1.8.5</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

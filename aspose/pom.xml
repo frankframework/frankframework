@@ -19,7 +19,7 @@
 		<repository>
 			<id>AsposeJavaAPI</id>
 			<name>Aspose Java API</name>
-			<url>http://repository.aspose.com/repo/</url>
+			<url>https://repository.aspose.com/repo/</url>
 		</repository>
 	</repositories>
 
@@ -33,13 +33,6 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- Libraries -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
 		</dependency>
 
 		<!-- Tika library -->
