@@ -201,7 +201,7 @@ public class CisConversionResult {
 			main.addAttribute("numberOfPages", this.getNumberOfPages());
 			main.addAttribute("convertedDocument", this.getResultFilePath());
 		}
-		List<CisConversionResult> attachmentList = this.getAttachments();
+		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
 		if (attachmentList != null && !attachmentList.isEmpty()) {
 			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
 			for (int i = 0; i < attachmentList.size(); i++) {
