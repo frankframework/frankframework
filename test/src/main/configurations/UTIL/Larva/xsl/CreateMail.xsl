@@ -19,7 +19,7 @@
 					<recipient type="cc"><xsl:value-of select="."/></recipient>
 				</xsl:for-each>
 			</recipients>
-			<from><xsl:value-of select="$from"/>&lt;devopshelpdesk@wearefrank.nl&gt;</from>
+			<from><xsl:value-of select="$from"/> &lt;devopshelpdesk@wearefrank.nl&gt;</from>
 			<subject>
 				<xsl:value-of select="$result"/>
 				<xsl:value-of select="concat(' Larva run results on ', $hostname, ' (')"/>
