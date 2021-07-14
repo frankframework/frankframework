@@ -249,32 +249,26 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return sb.toString();
 	}
 
-	/**
-	 * Register a PipeForward object to this Pipe. Global Forwards are added
-	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @see PipeLine
-	 * @see PipeForward
-	 */
 	@Override
 	@IbisDoc({"30"})
-	public void registerForward(PipeForward forward) {
-		PipeForward current = pipeForwards.get(forward.getName());
-		if (current==null){
-			pipeForwards.put(forward.getName(), forward);
-		} else {
-			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
+	public void registerForward(PipeForward forward) throws ConfigurationException {
+		String forwardName = forward.getName();
+		if(forwardName != null) {
+			PipeForward current = pipeForwards.get(forwardName);
+			if (current==null){
+				pipeForwards.put(forwardName, forward);
 			} else {
-				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+				} else {
+					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
 			}
+		} else {
+			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
 		}
 	}
 
-	/**
-	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for each start and stop command of the
-	 * adapter.
-	 */
 	@Override
 	public void start() throws PipeStartException {
 //		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
@@ -287,10 +281,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 //		}
 	}
 
-	/**
-	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	 * For instance, closing JMS connections, dbms connections etc.
-	 */
 	@Override
 	public void stop() {}
 
