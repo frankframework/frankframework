@@ -21,19 +21,16 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	public String ANSIBLE_VAULT_PASSWORD="GEHEIM";
 	
-	private String vaultFile;
-	private String keyFile;
-	
 	private AnsibleVaultCredentialFactory credentialFactory;
 	
 	@Before
 	public void setup() {
 		String vaultUrl = this.getClass().getResource(ANSIBLE_VAULT_FILE).toExternalForm();
-		vaultFile =  Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/")+2)).toString();
+		String vaultFile =  Paths.get(vaultUrl.substring(vaultUrl.indexOf(":/")+2)).toString();
 		assumeTrue(Files.exists(Paths.get(vaultFile)));
 
 		String keyUrl = this.getClass().getResource(ANSIBLE_VAULT_KEY_FILE).toExternalForm();
-		keyFile =  Paths.get(keyUrl.substring(keyUrl.indexOf(":/")+2)).toString();
+		String keyFile =  Paths.get(keyUrl.substring(keyUrl.indexOf(":/")+2)).toString();
 		assumeTrue(Files.exists(Paths.get(keyFile)));
 		
 		System.setProperty("credentialFactory.ansibleVault.vaultFile", vaultFile);
@@ -42,8 +39,8 @@ public class AnsibleVaultCredentialFactoryTest {
 		credentialFactory = new AnsibleVaultCredentialFactory();
 	}
 	
-	@Test
-	// run this to obtain a fresh ansibile vault
+	//@Test
+	// run this to obtain a fresh ansible vault
 	public void setupVault() throws IOException {
 		Properties aliases = new Properties();
 		aliases.put("noUsername/password","password from alias");
