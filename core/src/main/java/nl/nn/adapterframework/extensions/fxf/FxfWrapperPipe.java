@@ -80,6 +80,14 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private @Getter boolean createFolder = false;
 	private @Getter boolean useServerFilename = false;
 
+	private final String DESTINATION_PREFIX = "ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer";
+	private final String DESTINATION_SUFFIX = "Action";
+	private final String ON_COMPLETED_TRANSFER_NOTIFY_ACTION = "/OnCompletedTransferNotify_Action/";
+	private final String TRANSFORMER_FLOW_ID_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION + "TransferFlowId";
+	private final String SERVER_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ServerFilename";
+	private final String CLIENT_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ClientFilename";
+	private final String TRANSFER_ACTION_NAMESPACE_PREFIX = "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/";
+	private final String FILEPATH_PREFIX = "/opt/data/FXF/";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -90,7 +98,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (parameter == null) {
 				parameter = new Parameter();
 				parameter.setName(DESTINATION);
-				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer."+retrieveStartTransferVersion()+".Action");
+				parameter.setValue(DESTINATION_PREFIX+"."+retrieveStartTransferVersion()+"."+DESTINATION_SUFFIX);
 				parameterList.add(parameter);
 			}
 		}
@@ -129,8 +137,8 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if(!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
-			String xpathFilename = isUseServerFilename() ? "/OnCompletedTransferNotify_Action/ServerFilename" : "/OnCompletedTransferNotify_Action/ClientFilename";
+			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, "text", false, getParameterList());
+			String xpathFilename = isUseServerFilename() ? SERVER_FILENAME_XPATH : CLIENT_FILENAME_XPATH;
 			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, "text", false, getParameterList());
 		}
 		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
@@ -175,7 +183,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
-			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());
+			xmlStartTransfer_Action.addAttribute("xmlns", TRANSFER_ACTION_NAMESPACE_PREFIX+retrieveStartTransferVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
 			xmlStartTransfer_Action.addSubElement(xmlTransferDetails);
 			XmlBuilder xmlSenderApplication = new XmlBuilder("SenderApplication");
@@ -192,7 +200,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 				}
 				if (isTransformFilename()) {
-					String filenameOnIufState = "/opt/data/FXF/" + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
+					String filenameOnIufState = FILEPATH_PREFIX + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
 					xmlFilename.setValue(filenameOnIufState);
 				} else {
 					xmlFilename.setValue(getFlowOutFolder()+filename);
