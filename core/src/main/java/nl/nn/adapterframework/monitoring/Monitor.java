@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -344,8 +343,4 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return ReflectionToStringBuilder.toStringExclude(this, "applicationContext");
-	}
 }

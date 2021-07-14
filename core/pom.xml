@@ -188,6 +188,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<!-- only used in XmlUtils.canonicalize, that is only used in CompareStringPipe with isXml=true -->
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
 			<version>1.6.1</version>
@@ -202,18 +203,6 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-xerces</artifactId>
 			<version>2.12.1-xml-schema-1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.woodstox</groupId>
-			<artifactId>woodstox-core-asl</artifactId>
-			<version>4.4.1</version>
-			<exclusions>
-				<!-- woodstox ships with an older version of stax2 -->
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>stax2-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>aopalliance</groupId>
@@ -270,8 +259,7 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>4.2.3</version>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils. When running with only Woodstox, NullPointerExceptions in System.arraycopy appear,
-		probably due to a mal-initialized writer.  Probably also needed when running on WAS, see comment about SJSXP in XmlUtils.java -->
+		<dependency><!-- Needed for WsdlUtils, for cosmeticly better wsdls. Woodstox messes up attribute order, and namespace definitions -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
@@ -338,12 +326,6 @@
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.org.apache</groupId>
-			<artifactId>jaxp-ri</artifactId>
-			<version>1.4</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -534,6 +516,18 @@
 			<groupId>org.apache.servicemix.specs</groupId>
 			<artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
 			<version>2.3.0</version>
+			<exclusions>
+				<exclusion>
+					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
+					<groupId>org.apache.servicemix.specs</groupId>
+					<artifactId>org.apache.servicemix.specs.stax-api-1.0</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>

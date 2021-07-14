@@ -76,7 +76,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.dom4j.tree.DefaultDocument;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -154,35 +153,15 @@ public class XmlUtils {
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
-	public static final XMLEventFactory EVENT_FACTORY;
-	public static final XMLInputFactory INPUT_FACTORY;
-	public static final XMLOutputFactory OUTPUT_FACTORY;
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
+	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
+	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
 	static {
-		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
-		// on all Application Servers. Don't leave it up to the newFactory
-		// method of javax.xml.stream.XMLOutputFactory which for example on
-		// WAS 8.5 with classloader parent first will result in
-		// com.ibm.xml.xlxp2.api.stax.XMLOutputFactoryImpl being used while
-		// with parent last it will use com.ctc.wstx.sw.RepairingNsStreamWriter
-		// from woodstox-core-asl-4.2.0.jar. At the time of testing the
-		// woodstox-core-asl-4.2.0.jar and sjsxp-1.0.2.jar were part of the
-		// webapp which both provide META-INF/services/javax.xml.stream.*. On
-		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
-		// last woodstox was used (giving "Response already committed" error
-		// when a WSDL was generated).
-		EVENT_FACTORY = new com.sun.xml.stream.events.ZephyrEventFactory();
-		INPUT_FACTORY = new com.sun.xml.stream.ZephyrParserFactory();
-		OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
-		REPAIR_NAMESPACES_OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
-	public XmlUtils() {
-		super();
-	}
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
@@ -1734,8 +1713,12 @@ public class XmlUtils {
 		TransformerFactory tFactory2 = getTransformerFactory(2);
 		map.put("TransformerFactory2-class", tFactory2.getClass().getName());
 
+		XMLEventFactory xmlEventFactory = XMLEventFactory.newInstance();
+		map.put("XMLEventFactory-class", xmlEventFactory.getClass().getName());
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
+		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
 		
 		map.put("XML tool version info:", null);
 		try {
@@ -1988,16 +1971,6 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document) throws SAXException, IOException, TransformerException {
-		String input;
-		if (document instanceof DefaultDocument) {
-			DefaultDocument defaultDocument = (DefaultDocument) document;
-			input = defaultDocument.asXML();
-		} else {
-			input = document.toString();
-		}
-		return getAdapterSite(input, null);
-	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
 		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
