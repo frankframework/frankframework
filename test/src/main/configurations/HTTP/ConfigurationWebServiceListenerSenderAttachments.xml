@@ -166,7 +166,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -198,7 +198,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>
