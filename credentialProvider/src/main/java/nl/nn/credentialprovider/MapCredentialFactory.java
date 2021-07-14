@@ -32,7 +32,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 	private String usernameSuffix;
 	private String passwordSuffix;
 	
-	Map<String,String> aliases;
+	private Map<String,String> aliases;
 	
 	public MapCredentialFactory() {
 		AppConstants appConstants = AppConstants.getInstance();

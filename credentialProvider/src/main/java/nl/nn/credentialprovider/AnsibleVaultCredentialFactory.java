@@ -41,9 +41,6 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	private String vaultFile = "catalina-secure-store.vault";
 	private String vaultKeyFile = ".secure-vault-keyfile";
 	
-	Map<String,String> aliases;
-	
-
 	@Override
 	public String getPropertyBase() {
 		return PROPERTY_BASE;

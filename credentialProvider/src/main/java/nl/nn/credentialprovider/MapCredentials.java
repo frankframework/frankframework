@@ -21,9 +21,10 @@ import nl.nn.credentialprovider.util.Misc;
 
 public class MapCredentials extends Credentials {
 
-	Map<String,String> aliases;
 	private String usernameSuffix;
 	private String passwordSuffix;
+
+	private Map<String,String> aliases;
 
 
 	public MapCredentials(String alias, String defaultUsername, String defaultPassword, Map<String,String> aliases) {

@@ -21,10 +21,10 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	public String ANSIBLE_VAULT_PASSWORD="GEHEIM";
 	
-	String vaultFile;
-	String keyFile;
+	private String vaultFile;
+	private String keyFile;
 	
-	AnsibleVaultCredentialFactory credentialFactory;
+	private AnsibleVaultCredentialFactory credentialFactory;
 	
 	@Before
 	public void setup() {
