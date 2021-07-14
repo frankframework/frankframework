@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<email>
+	<recipients>
+		<recipient type="to">jaco.de.groot@nn.nl</recipient>
+		<recipient type="cc">ap.reinders@nn-group.com</recipient>
+		<recipient type="cc">gerrit.van.brakel@nn-group.com</recipient>
+		<recipient type="cc">niels.meijer@nn-group.com</recipient>
+	</recipients>
+	<from>&lt;devopshelpdesk@wearefrank.nl&gt;</from>
+	<subject>testmail Larva run results on srdzzapp0342.insim.biz ()</subject>
+	<message>This is a mail originating from a successfull test trail from the testsendmail adapter from ibis4testiaf</message>
+</email>

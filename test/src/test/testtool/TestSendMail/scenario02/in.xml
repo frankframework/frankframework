@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<email>
+	<recipients>
+		<recipient type="to">&lt;devopshelpdesk@wearefrank.nl&gt;</recipient>
+	</recipients>
+	<from>&lt;devopshelpdesk@wearefrank.nl&gt;</from>
+	<subject>testmail Larva run results on srdzzapp0342.insim.biz ()</subject>
+	<message>this is a test to see if the mailing service works</message>
+</email>
