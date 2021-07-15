@@ -56,7 +56,7 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	}
 
 	@Override
-	protected Map<String, String> getMap(AppConstants appConstants) throws MalformedURLException, IOException {
+	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException {
 		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, vaultFile, "Ansible Vault")) {
 			try (InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, vaultKeyFile, "Ansible Vault Key")) {
 	

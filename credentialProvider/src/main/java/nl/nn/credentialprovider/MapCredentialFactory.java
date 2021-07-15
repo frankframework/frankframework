@@ -38,7 +38,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 		AppConstants appConstants = AppConstants.getInstance();
 		
 		try {
-			aliases = getMap(appConstants);
+			aliases = getCredentialMap(appConstants);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map", e);
 		}
@@ -52,7 +52,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	public abstract String getPropertyBase();
 	
-	protected abstract Map<String,String> getMap(AppConstants appConstants) throws MalformedURLException, IOException;
+	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
 	
 	@Override
 	public boolean hasCredentials(String alias) {
