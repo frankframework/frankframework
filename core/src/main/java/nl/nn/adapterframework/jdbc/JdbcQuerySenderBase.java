@@ -331,10 +331,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					Object blobSessionVar=null;
 					Object clobSessionVar=null;
 					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-						blobSessionVar=session.getMessage(getBlobSessionKey()).asString();
+						blobSessionVar=session.getMessage(getBlobSessionKey()).asObject();
 					}
 					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-						clobSessionVar=session.getMessage(getClobSessionKey()).asString();
+						clobSessionVar=session.getMessage(getClobSessionKey()).asObject();
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
