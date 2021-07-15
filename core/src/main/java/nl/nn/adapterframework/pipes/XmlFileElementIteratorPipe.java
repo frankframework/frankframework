@@ -47,7 +47,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with either containerElement or targetElement")
+@ConfigurationWarning("Please replace with ForEachChildElementPipe. ElementName and elementChain can be replaced with containerElement and/or targetElement. It is not a 1 to 1 replacement, different values may be required!")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;

@@ -900,7 +900,9 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		assertEquals(expected, actual);
 	}
-	
+
+	//The XmlFileElementIteratorPipe has been deprecated, elementName has been replaced by targetElement.
+	//This test proves that the old method works with the ForEachChildElemenPipe
 	@Test
 	public void testElementName() throws Exception {
 		XsltSender sender = new XsltSender();
@@ -918,30 +920,29 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String result = Message.asString(prr.getResult());
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
-	
-//
-// This test does not work yet since XmlFileElementIteratorPipe's elementChain functionality 
-// is not present in ForEachChildElementPipe yet
-//
-//	@Test
-//	public void testElementChain() throws Exception {
-//		XsltSender sender = new XsltSender();
-//		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
-//		pipe.setProcessFile(true);
-//		pipe.setSender(sender);
-//		pipe.setElementXPathExpression("/GetPartiesOnAgreementRLY/PartyAgreementRole/PartyInternalAgreementRole/Party/Person");
-//		pipe.configure();
-//		pipe.start();
-//		
-//		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
-//		File file = new File(input.toURI());
-//		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementChainOutput.xml");
-//		PipeRunResult prr = doPipe(pipe, file.toString(), session);
-//		String result = Message.asString(prr.getResult());
-//		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
-//	}
 
-	
+	// The XmlFileElementIteratorPipe has been deprecated, elementChain has been replaced with targetElement + containerElement.
+	// This test proves that the old method works with the ForEachChildElemenPipe.
+	// The xPath in the sender was adjusted to match the targetElement
+	@Test
+	public void testElementChain() throws Exception {
+		XsltSender sender = new XsltSender();
+		sender.setXpathExpression("concat(Party/Person/PersonName/Id,'_',Party/Person/Demographics/Gender)");
+		pipe.setProcessFile(true);
+		pipe.setSender(sender);
+		pipe.setContainerElement("PartyInternalAgreementRole");
+		pipe.setTargetElement("Party");
+		pipe.configure();
+		pipe.start();
+
+		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
+		File file = new File(input.toURI());
+		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementChainOutput.xml");
+		PipeRunResult prr = doPipe(pipe, file.toString(), session);
+		String result = Message.asString(prr.getResult());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+	}
+
 	private class SwitchCounter {
 		public int count;
 		private String prevLabel;
