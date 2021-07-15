@@ -256,5 +256,21 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ " http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", 
 				getConfigurationWarnings().get(0));
 	}
+	
+	@Test
+	public void warnSetAddNamespaceToSchemaTrue() throws Exception {
+		pipe.setWsdl(BASIC);
+		pipe.setSoapHeader("MessageHeader");
+		pipe.setSoapBody("GetPolicyDetails_Request");
+		pipe.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
+		pipe.setThrowException(true);
+		pipe.registerForward(new PipeForward("success", null));
+		configureAndStartPipe();
+
+		assertEquals(1, getConfigurationWarnings().size());
+		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]"
+				+ " should only be set when addNamespaceToSchema=true", 
+				getConfigurationWarnings().get(0));
+	}
 }
 
