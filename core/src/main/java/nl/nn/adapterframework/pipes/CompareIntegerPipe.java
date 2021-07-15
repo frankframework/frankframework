@@ -112,7 +112,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 		if (operand == null) {
 			if (StringUtils.isNotEmpty(sessionkey)) {
 				try {
-					operand = Integer.parseInt(session.get(sessionkey)+"");
+					operand = Integer.parseInt(session.getMessage(sessionkey).asString());
 				} catch (Exception e) {
 					throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting [" + operandName + "] from session key ["+sessionkey+"]", e);
 				}
