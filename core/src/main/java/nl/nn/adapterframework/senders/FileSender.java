@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.FileHandler;
  * @author Jaco de Groot
  */
 @Deprecated
-@ConfigurationWarning("Please replace with LocalFileSystemSender")
+@ConfigurationWarning("Please use LocalFileSystemSender instead, or when retrieving files from the classpath use the FixedResultSender")
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
 	protected ParameterList paramList = null;

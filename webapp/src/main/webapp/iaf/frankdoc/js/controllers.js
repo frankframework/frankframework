@@ -88,9 +88,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		return title;
 	}
 
-	function fullNameToSimpleName(fullName) {
-		return fullName.substr(fullName.lastIndexOf(".")+1)
-	}
 	$scope.getElementsOfType = function(type) {
 		let fullNames = $scope.types[type];
 		let simpleNames = [];

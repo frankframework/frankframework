@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -31,8 +30,8 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -240,7 +239,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	}
 
 	public void setSeverity(String severity) {
-		setSeverityEnum(Misc.parse(SeverityEnum.class, severity));
+		setSeverityEnum(EnumUtils.parse(SeverityEnum.class, severity));
 	}
 	public void setSeverityEnum(SeverityEnum enumeration) {
 		severity = enumeration;
@@ -306,8 +305,4 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		log.info("removing trigger ["+this+"]");
 	}
 
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
 }

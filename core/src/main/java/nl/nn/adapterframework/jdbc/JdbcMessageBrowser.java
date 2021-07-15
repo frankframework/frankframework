@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,6 +37,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -369,7 +369,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 					if (!rs.next()) {
 						throw new ListenerException("could not retrieve message for storageKey ["+ storageKey+"]");
 					}
-					return retrieveObject(rs,1);
+					return retrieveObject(rs, 2);
 				}
 			}
 		} catch (ListenerException e) { //Don't catch ListenerExceptions, unnecessarily and ugly
@@ -526,7 +526,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 
 	public void setOrder(String string) {
-		sortOrder = Misc.parse(SortOrder.class, "sortOrder", string);
+		sortOrder = EnumUtils.parse(SortOrder.class, "order", string);
 	}
 
 	public SortOrder getOrderEnum() {

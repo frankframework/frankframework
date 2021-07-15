@@ -43,7 +43,6 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
@@ -56,7 +55,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
@@ -419,7 +418,7 @@ public final class ShowMonitors extends Base {
 			} else if(key.equalsIgnoreCase("type")) {
 				type = entry.getValue().toString();
 			} else if(key.equalsIgnoreCase("severity")) {
-				severity = Misc.parse(SeverityEnum.class, entry.getValue().toString());
+				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
 				threshold = (Integer.parseInt("" + entry.getValue()));
 				if(threshold < 0) {
@@ -513,7 +512,7 @@ public final class ShowMonitors extends Base {
 				name = entry.getValue().toString();
 			}
 			else if(key.equalsIgnoreCase("type")) {
-				type = Misc.parse(EventTypeEnum.class, entry.getValue().toString());
+				type = EnumUtils.parse(EventTypeEnum.class, entry.getValue().toString());
 			}
 			else if(key.equalsIgnoreCase("destinations")) {
 				destinations = parseDestinations(entry);

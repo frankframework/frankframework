@@ -103,9 +103,9 @@
 			</exits> 
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender" firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
+					allowSelfSignedCertificates="true" verifyHostname="false" postType="MTOM"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -142,9 +142,9 @@
 			</pipe> 
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true" multipartXmlSessionKey="multipart"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender" firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
+					allowSelfSignedCertificates="true" verifyHostname="false" postType="MTOM" multipartXmlSessionKey="multipart"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -166,7 +166,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -198,7 +198,7 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>

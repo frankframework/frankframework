@@ -73,8 +73,8 @@ import org.htmlcleaner.TagNode;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -88,6 +88,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -167,7 +168,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private String url;
 	private String urlParam = "url";
-	private String methodType = "GET";
+
+	public enum HttpMethod {
+		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+	}
+	private HttpMethod method = HttpMethod.GET;
+
 	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
 	private String contentType = null;
@@ -617,7 +623,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodTypeEnum()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -781,12 +787,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return urlParam;
 	}
 
-	@IbisDoc({"3", "type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
+	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(String string) {
-		methodType = string;
+		method = EnumUtils.parse(HttpMethod.class, string);
 	}
-	public String getMethodType() {
-		return methodType.toUpperCase();
+	public HttpMethod getMethodTypeEnum() {
+		return method;
 	}
 
 	/**

@@ -39,7 +39,6 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -67,7 +65,6 @@ import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -1390,50 +1387,6 @@ public class Misc {
 			index = -index - 1;
 		}
 		return index;
-	}
-	
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, null, value);
-	}
-
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
-		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
-		if (result==null) {
-			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
-		}
-		return result;
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
-		List<String> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			String fieldValue = field.apply(e);
-			if (fieldValue.equalsIgnoreCase(value)) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
-		List<Integer> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			int fieldValue = field.apply(e);
-			if (fieldValue==value) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
 	}
 
 	public static String jsonPretty(String json) {

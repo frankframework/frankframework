@@ -1,0 +1,46 @@
+<module>
+	<adapter name="TestSendMail" active="${testsendmail.adapter.active}">
+		<receiver>
+			<listener
+				name="TestSendMail"
+				className="nl.nn.adapterframework.receivers.JavaListener"
+			/>
+		</receiver>
+		<receiver>
+			<listener
+				name="TestSendMail"
+				className="nl.nn.adapterframework.http.RestListener"
+				uriPattern="TestSendMail"
+				method="GET"
+			/>
+		</receiver>
+		<pipeline firstPipe="CreateMail">
+		
+			<pipe
+				name="CreateMail"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="/Larva/xsl/CreateMail.xsl"
+				getInputFromFixedValue="&lt;dummy/&gt;"
+				>
+				<param name="hostname" value="${hostname}" />
+				<param name="message" sessionkey="originalMessage" />
+				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
+				<param name="result" value="testmail" />
+				<forward name="success" path="SendMail" />
+			</pipe>
+			<pipe
+				name="SendMail"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.MailSender"
+					smtpHost="${smtp.host}"
+				/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+		</pipeline>
+	</adapter>
+</module>

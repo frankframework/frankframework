@@ -15,22 +15,24 @@
 */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import nl.nn.adapterframework.util.Misc;
-public enum IfsaMessageProtocolEnum {
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.util.EnumUtils;
+public enum IfsaMessageProtocolEnum implements DocumentedEnum {
 
 	REQUEST_REPLY("RR"), FIRE_AND_FORGET("FF");
 
-	private String name;
-	private IfsaMessageProtocolEnum(String name) {
-		this.name = name;
+	private String label;
+	private IfsaMessageProtocolEnum(String label) {
+		this.label = label;
 	}
 
 	public static IfsaMessageProtocolEnum getEnum(String messageProtocol) {
-		return Misc.parseFromField(IfsaMessageProtocolEnum.class, messageProtocol, m -> m.name);
+		return EnumUtils.parse(IfsaMessageProtocolEnum.class, messageProtocol);
 	}
 
-	public String getName() {
-		return name;
+	@Override
+	public String getLabel() {
+		return label;
 	}
 
 	public static String getNames() {

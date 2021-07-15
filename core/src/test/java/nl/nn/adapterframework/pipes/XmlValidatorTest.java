@@ -81,7 +81,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
         return getUnconfiguredValidator(schemaLocation, false, implementation);
     }
 
-   public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) {
+   public static XmlValidator getUnconfiguredValidator(String schemaLocation, boolean addNamespaceToSchema, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
         XmlValidator validator = new XmlValidator();
         try {
             validator.setImplementation(implementation);

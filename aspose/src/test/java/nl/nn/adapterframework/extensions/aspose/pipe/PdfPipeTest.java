@@ -103,7 +103,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
-		return session.get("documents").toString();
+		return session.getMessage("documents").asString();
 	}
 
 	public String applyIgnores(String input){
