@@ -20,7 +20,7 @@
 		type="javax.sql.DataSource"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
 		url="jdbc:oracle:thin:@localhost:1521:xe"
-		username=""${testiaf_user/username:-testiaf_user}"
+		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		maxTotal="10"
 		maxWaitMillis="5000"
