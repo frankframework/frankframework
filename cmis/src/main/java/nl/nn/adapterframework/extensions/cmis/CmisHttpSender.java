@@ -58,8 +58,9 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		HttpRequestBase method = null;
 
 		HttpMethod methodType = (HttpMethod) session.get("method");
-		if(methodType == null)
+		if(methodType == null) {
 			throw new SenderException("unable to determine method from pipeline session");
+		}
 
 		try {
 			switch (methodType) {

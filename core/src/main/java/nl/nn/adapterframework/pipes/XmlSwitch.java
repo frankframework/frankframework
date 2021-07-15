@@ -174,7 +174,7 @@ public class XmlSwitch extends AbstractPipe {
 		} else {
 			try {
 				if (StringUtils.isNotEmpty(getSessionKey())) {
-					forward = Message.asString(session.get(sessionKey));
+					forward = session.getMessage(sessionKey).asString();
 				} else {
 					forward = message.asString();
 				}

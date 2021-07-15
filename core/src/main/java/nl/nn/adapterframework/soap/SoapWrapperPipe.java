@@ -262,7 +262,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = (String) session.get(getSoapHeaderSessionKey());
+						soapHeader = session.getMessage(getSoapHeaderSessionKey()).asString();
 					}
 				}
 				if (soapBodyTp != null) {
@@ -299,10 +299,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	protected String determineSoapNamespace(PipeLineSession session) {
+	protected String determineSoapNamespace(PipeLineSession session) throws IOException {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
-			String savedSoapNamespace = (String)session.get(getSoapNamespaceSessionKey());
+			String savedSoapNamespace = session.getMessage(getSoapNamespaceSessionKey()).asString();
 			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
 				soapNamespace = savedSoapNamespace;
 			} else {

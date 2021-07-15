@@ -558,7 +558,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
-					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
+					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
 					File file = new File(fileName);
 					Misc.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
