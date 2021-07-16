@@ -1696,10 +1696,8 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static Set<Entry<String,String>> getVersionInfo() {
+	public static Map<String, String> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
-		
-		map.put("XML tools:",null);
 
 		SAXParserFactory spFactory = getSAXParserFactory();
 		map.put("SAXParserFactory-class", spFactory.getClass().getName());
@@ -1719,13 +1717,12 @@ public class XmlUtils {
 		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
 		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
-		
-		map.put("XML tool version info:", null);
+
 		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
 		} catch (Throwable t) {
 			log.warn("Could not get Xerces version", t);
-			map.put("Xerces-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			map.put("Xerces-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
 		try {
@@ -1733,14 +1730,14 @@ public class XmlUtils {
 			map.put("Xalan-Version", xalanVersion);
 		} catch (Throwable t) {
 			log.warn("Could not get Xalan version", t);
-			map.put("Xalan-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			map.put("Xalan-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
 			map.put("Saxon-Version", saxonVersion);
 		} catch (Throwable t) {
 			log.warn("Could not get Saxon version", t);
-			map.put("Saxon-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			if (xmlInputFactory instanceof WstxInputFactory) {
@@ -1750,16 +1747,10 @@ public class XmlUtils {
 			}
 		} catch (Throwable t) {
 			log.warn("Could not get Woodstox version", t);
-			map.put("Woodstox-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			map.put("Woodstox-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
-//		try {
-//			map.put("XmlCommons-Version", org.apache.xmlcommons.Version.getVersion());
-//		} catch (Throwable t) {
-//			map.put("XmlCommons-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
-//		}
-
-		return map.entrySet();
+		return map;
 	}
 
 	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {

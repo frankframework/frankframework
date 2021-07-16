@@ -87,9 +87,9 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="entry in xmlComponents">
-									<td>{{entry.key}}</td>
-									<td>{{entry.value}}</td>
+								<tr ng-repeat="(key, value) in xmlComponents">
+									<td>{{key}}</td>
+									<td>{{value}}</td>
 								</tr>
 							</tbody>
 						</table>
