@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/WSDL/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns2="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/WSDL/CustomerAdministration/Party/Party/1/FindBPPensions/1">
-	<wsdl:documentation>Generated as CustomerAdministration_Party_Party_1_FindBPPensions_1_concrete.wsdl by ibis4test on 2015-10-28T14:18:20CET.</wsdl:documentation>
+	<wsdl:documentation>Generated at null as CustomerAdministration_Party_Party_1_FindBPPensions_1_concrete.wsdl on 2021-07-13 17:56:50.</wsdl:documentation>
 	<wsdl:types>
-		<xsd:schema xmlns="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
+		<xsd:schema xmlns="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1" xmlns:ns1="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1">
 			<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>
 	
 	<!--Request-->
@@ -36,7 +36,7 @@
 					</xsd:choice>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="IgnoreGBAFlag" minOccurs="0">
+			<xsd:element minOccurs="0" name="IgnoreGBAFlag">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:maxLength value="1"/>
@@ -70,107 +70,107 @@
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
-			<xsd:element name="SocialSecurityNumber" minOccurs="0"/>
-			<xsd:element name="Addresses" maxOccurs="unbounded" type="AddressesType" minOccurs="0"/>
-			<xsd:element name="GBAGeneral" type="GBAGeneralType" minOccurs="0"/>
-			<xsd:element name="GBAAddress" type="GBAAddressType" minOccurs="0"/>
-			<xsd:element name="GBAPerson" type="GBAPersonType" minOccurs="0"/>
-			<xsd:element name="GBAPartner" type="GBAPartnerType" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="SocialSecurityNumber"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="Addresses" type="AddressesType"/>
+			<xsd:element minOccurs="0" name="GBAGeneral" type="GBAGeneralType"/>
+			<xsd:element minOccurs="0" name="GBAAddress" type="GBAAddressType"/>
+			<xsd:element minOccurs="0" name="GBAPerson" type="GBAPersonType"/>
+			<xsd:element minOccurs="0" name="GBAPartner" type="GBAPartnerType"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<!--Reply complex types-->
 	<xsd:complexType name="AddressesType">
 		<xsd:sequence>
-			<xsd:element name="BestAddress" minOccurs="0">
+			<xsd:element minOccurs="0" name="BestAddress">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:maxLength value="1"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
-			<xsd:element name="AddressType" minOccurs="0">
+			<xsd:element minOccurs="0" name="AddressType">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:maxLength value="10"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
-			<xsd:element name="StartDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="EndDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="Street" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="PostalCode" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseNumber" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseNumberAddition" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="POBox" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="City" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Country" type="xsd:string" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="StartDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="EndDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="Street" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="PostalCode" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseNumber" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseNumberAddition" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="POBox" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="City" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Country" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="GBAGeneralType">
 		<xsd:sequence>
-			<xsd:element name="ANumber" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="SecrecyCode" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="GBAFlag" minOccurs="0">
+			<xsd:element minOccurs="0" name="ANumber" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="SecrecyCode" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="GBAFlag">
 				<xsd:simpleType>
 					<xsd:restriction base="xsd:string">
 						<xsd:maxLength value="1"/>
 					</xsd:restriction>
 				</xsd:simpleType>
 			</xsd:element>
-			<xsd:element name="InvestigationGroup" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="InvestigationArea" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="InvestigationStart" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="InvestigationEnd" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="GBAFlagRemovalDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="GBAStatus" type="xsd:string" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="InvestigationGroup" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="InvestigationArea" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="InvestigationStart" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="InvestigationEnd" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="GBAFlagRemovalDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="GBAStatus" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="GBAAddressType">
 		<xsd:sequence>
-			<xsd:element name="City" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Street" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseNumber" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseLetter" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseNumberAddition" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HouseNumberIndicator" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="PostalCode" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Location" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="CommunityPart" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="AddressStartDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="EmigrationCountry" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="EmigrationDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="City" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Street" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseNumber" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseLetter" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseNumberAddition" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HouseNumberIndicator" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="PostalCode" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Location" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="CommunityPart" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="AddressStartDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="EmigrationCountry" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="EmigrationDate" type="xsd:date"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="GBAPersonType">
 		<xsd:sequence>
-			<xsd:element name="BSN" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="FirstName" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Prefix" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="LastName" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Gender" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="BirthDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="DeathDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="NameFormattingCode" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="FullName" type="xsd:string" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="BSN" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="FirstName" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Prefix" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="LastName" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Gender" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="BirthDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="DeathDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="NameFormattingCode" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="FullName" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="GBAPartnerType">
 		<xsd:sequence>
-			<xsd:element name="ANumber" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="BSN" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="FirstName" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="Prefix" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="LastName" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="BirthDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="MarriageDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="DivorceDate" type="xsd:date" minOccurs="0"/>
-			<xsd:element name="DivorceReason" type="xsd:string" minOccurs="0"/>
-			<xsd:element name="HistoricMarriageDate" type="xsd:date" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="ANumber" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="BSN" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="FirstName" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="Prefix" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="LastName" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="BirthDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="MarriageDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="DivorceDate" type="xsd:date"/>
+			<xsd:element minOccurs="0" name="DivorceReason" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="HistoricMarriageDate" type="xsd:date"/>
 		</xsd:sequence>
 	</xsd:complexType>
 </xsd:schema>
 		<!-- v0.1.2 -->
-		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
+		<xsd:schema xmlns="http://nn.nl/XSD/Generic/MessageHeader/1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://nn.nl/XSD/Generic/MessageHeader/1">
 	<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 	<xsd:element name="Result" type="ResultType"/>
 	<xsd:complexType name="MessageHeaderType">
@@ -178,10 +178,10 @@
 			<xsd:element name="From" type="ProducingEndpointType"/>
 			<xsd:element name="To" type="ConsumingEndpointType"/>
 			<xsd:element name="HeaderFields" type="HeaderFieldType"/>
-			<xsd:element name="ConnectionInfo" type="ConnectionInfoType" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="ConnectionInfo" type="ConnectionInfoType"/>
 			<xsd:element name="Service" type="ServiceType"/>
-			<xsd:element name="TraceHeaderList" type="TraceHeaderListType" minOccurs="0"/>
-			<xsd:element name="TransactionList" type="TransactionListType" minOccurs="0"/>
+			<xsd:element minOccurs="0" name="TraceHeaderList" type="TraceHeaderListType"/>
+			<xsd:element minOccurs="0" name="TransactionList" type="TransactionListType"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ProducingEndpointType">
@@ -193,7 +193,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="Location" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="Location" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Destination of the endpoint of the initiator. Use when discriminating the Id with an location is of importance.
@@ -204,7 +204,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="ConsumingEndpointType">
 		<xsd:sequence>
-			<xsd:element name="Id" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="Id" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Unique identification of the endpoint being invoked.
@@ -243,14 +243,14 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="CorrelationId" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="CorrelationId" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Contains the request MessageId as part of the response in order to correlate two messages as part of the same MEP.
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="ExternalRefToMessageId" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="ExternalRefToMessageId" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Unique identifier referring to an id passed from an external (front-end) system. This often uniquely identifies the Transaction as known with the initiator.
@@ -264,7 +264,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="HeaderProperties" type="PropertiesType" minOccurs="0">
+			<xsd:element minOccurs="0" name="HeaderProperties" type="PropertiesType">
 				<xsd:annotation>
 					<xsd:documentation>
 						Used as extension on the HeaderFields for future use without backwards compatibility issues in existing implementations.
@@ -275,7 +275,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="PropertiesType">
 		<xsd:sequence>
-			<xsd:element name="HeaderProperty" maxOccurs="unbounded" type="HeaderPropertyType">
+			<xsd:element maxOccurs="unbounded" name="HeaderProperty" type="HeaderPropertyType">
 				<xsd:annotation>
 					<xsd:documentation>
 						Repeating structure to accommodate extra properties
@@ -285,14 +285,14 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="HeaderPropertyType">
-		<xsd:attribute name="Name" use="required" type="xsd:string">
+		<xsd:attribute name="Name" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation>
 					Attribute describing the name of the property
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="Value" use="required" type="xsd:string">
+		<xsd:attribute name="Value" type="xsd:string" use="required">
 			<xsd:annotation>
 				<xsd:documentation>
 					Attribute describing the value of the property
@@ -305,14 +305,14 @@
 			<xsd:documentation/>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="Principal" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="Principal" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						ID or name of the front-end system or application
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="RemoteAddress" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="RemoteAddress" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						System name, Full Qualified Domain Name (FQDN) or IP address of the front-end system. Typically used for black-listing or for some investigation purposed.
@@ -388,7 +388,7 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="TraceHeader" maxOccurs="unbounded" type="TraceHeaderType"/>
+			<xsd:element maxOccurs="unbounded" name="TraceHeader" type="TraceHeaderType"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="TraceHeaderType">
@@ -439,7 +439,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="RefToMessageId" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="RefToMessageId" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Unique identifier referring to an id passed from an external (front-end) system. This is a copy of.
@@ -447,7 +447,7 @@
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="Status" type="StatusType"/>
-			<xsd:element name="Retry_Option" type="xsd:boolean" minOccurs="0">
+			<xsd:element minOccurs="0" name="Retry_Option" type="xsd:boolean">
 				<xsd:annotation>
 					<xsd:documentation>
 						A boolean indicating if the invocation can be retried
@@ -463,7 +463,7 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="Transaction" maxOccurs="unbounded" type="TransactionType">
+			<xsd:element maxOccurs="unbounded" name="Transaction" type="TransactionType">
 				<xsd:annotation>
 					<xsd:documentation>
 						For each transaction a new Transaction is added to bottom of the TransactionList.
@@ -520,7 +520,7 @@
 	<xsd:complexType name="ResultType">
 		<xsd:sequence>
 			<xsd:element name="Status" type="StatusType"/>
-			<xsd:element name="ErrorList" type="ErrorListType" minOccurs="0">
+			<xsd:element minOccurs="0" name="ErrorList" type="ErrorListType">
 				<xsd:annotation>
 					<xsd:documentation>
 						Element which is the parent of all errors elements. Will only be present if the status equals ERROR
@@ -531,7 +531,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="ErrorListType">
 		<xsd:sequence>
-			<xsd:element name="Error" maxOccurs="unbounded" type="ErrorType"/>
+			<xsd:element maxOccurs="unbounded" name="Error" type="ErrorType"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ErrorType">
@@ -557,7 +557,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="DetailList" type="DetailListType" minOccurs="0">
+			<xsd:element minOccurs="0" name="DetailList" type="DetailListType">
 				<xsd:annotation>
 					<xsd:documentation>
 						List of specific non canonical errors.
@@ -568,7 +568,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="DetailListType">
 		<xsd:sequence>
-			<xsd:element name="Detail" maxOccurs="unbounded" type="DetailType"/>
+			<xsd:element maxOccurs="unbounded" name="Detail" type="DetailType"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="DetailType">
@@ -580,14 +580,14 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="SubCode" type="xsd:string" minOccurs="0">
+			<xsd:element minOccurs="0" name="SubCode" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation>
 						Application specific error code
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="Text" type="TextType" minOccurs="0">
+			<xsd:element minOccurs="0" name="Text" type="TextType">
 				<xsd:annotation>
 					<xsd:documentation>
 						Detailed description of the error that occurred.
@@ -663,6 +663,6 @@
 			<jms:targetAddress destination="queue">queueName-for-jms/dest_input-on-LOC</jms:targetAddress>
 		</wsdl:port>
 	</wsdl:service>
+	<!--Warning: Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)-->
+	<!--Warning: Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response)-->
 </wsdl:definitions>
-<!--Warning: Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)-->
-<!--Warning: Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response)-->

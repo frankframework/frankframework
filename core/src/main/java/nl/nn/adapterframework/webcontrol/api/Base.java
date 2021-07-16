@@ -18,10 +18,12 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.JAXRSServiceFactoryBean;
@@ -54,6 +56,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 public abstract class Base implements ApplicationContextAware {
 	@Context protected ServletConfig servletConfig;
+	@Context protected SecurityContext securityContext;
 	@Context protected HttpServletRequest request;
 
 	private IbisContext ibisContext = null;
@@ -114,6 +117,14 @@ public abstract class Base implements ApplicationContextAware {
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 			throw new ApiException("failed to initalize FlowDiagramManager", e);
 		}
+	}
+
+	protected String getUserPrincipalName() {
+		Principal principal = securityContext.getUserPrincipal();
+		if(principal != null && StringUtils.isNotEmpty(principal.getName())) {
+			return principal.getName();
+		}
+		return null;
 	}
 
 	protected String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {

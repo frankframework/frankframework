@@ -9,7 +9,6 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -42,13 +41,13 @@ public abstract class PipeTestBase<P extends IPipe> {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	public abstract P createPipe();
+	public abstract P createPipe() throws ConfigurationException;
 
 	@Before
 	public void setup() throws Exception {
 		pipe = createPipe();
 		autowireByType(pipe);
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline = getConfiguration().createBean(PipeLine.class);
 		pipeline.addPipe(pipe);
@@ -86,11 +85,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			((IExtendedPipe) pipe).configure(pipeline);
-		} else {
-			pipe.configure();
-		}
+		pipeline.configure();
 	}
 
 	/**

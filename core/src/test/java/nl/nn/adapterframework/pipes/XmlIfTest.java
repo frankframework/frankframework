@@ -16,7 +16,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	private String pipeForwardElse = "else";
 
 	@Override
-	public XmlIf createPipe() {
+	public XmlIf createPipe() throws ConfigurationException {
 		XmlIf xmlIf = new XmlIf();
 
 		//Add default pipes

@@ -39,7 +39,7 @@ public class MultipartHttpSender extends HttpSender {
 	}
 
 	@Override
-	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) {
+	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
 		String partType = element.getAttribute("type"); //File or otherwise
 		String partName = element.getAttribute("name"); //Name of the part
 		String fileName = (StringUtils.isNotEmpty(element.getAttribute("filename"))) ? element.getAttribute("filename") : element.getAttribute("fileName"); //Name of the file
@@ -61,7 +61,7 @@ public class MultipartHttpSender extends HttpSender {
 				return createMultipartBodypart(partName, fis, null, mimeType);
 			}
 		} else {
-			String value = (String) session.get(sessionKey);
+			String value = session.getMessage(sessionKey).asString();
 			if(StringUtils.isEmpty(value))
 				value = partValue;
 

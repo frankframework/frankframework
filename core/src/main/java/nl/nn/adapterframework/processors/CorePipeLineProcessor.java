@@ -21,9 +21,13 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
@@ -48,9 +52,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * @author Jaco de Groot
  */
-public class CorePipeLineProcessor implements PipeLineProcessor {
+public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
 	private Logger log = LogUtil.getLogger(this);
 	private PipeProcessor pipeProcessor;
+	private @Setter ApplicationContext applicationContext;
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
@@ -58,11 +63,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		if (message.isEmpty()) {
 			if (StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 				log.debug("running adapterBeforeOnEmptyInput");
-				IAdapter adapter = pipeLine
-						.getAdapter()
-						.getConfiguration()
-						.getIbisManager()
-						.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
+				IbisManager ibisManager = applicationContext.getBean(IbisManager.class);
+				IAdapter adapter = ibisManager.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
 				if (adapter == null) {
 					log.warn("adapterToRunBefore with specified name [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] could not be retrieved");
 				} else {

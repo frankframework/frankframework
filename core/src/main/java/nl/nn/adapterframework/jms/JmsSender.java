@@ -35,9 +35,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * This class sends messages with JMS.
@@ -373,9 +373,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return messageType;
 	}
 
-	@IbisDoc({"5", "Controls mode that messages are sent with: either 'PERSISTENT' or 'NON_PERSISTENT'", "not set by application"})
+	@IbisDoc({"5", "Controls mode that messages are sent with", "not set by application"})
 	public void setDeliveryMode(String deliveryMode) {
-		this.deliveryMode = Misc.parse(DeliveryMode.class, "deliveryMode", deliveryMode);
+		this.deliveryMode = EnumUtils.parse(DeliveryMode.class, deliveryMode);
 	}
 	public void setDeliveryModeEnum(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;

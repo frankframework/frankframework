@@ -1,0 +1,22 @@
+<configuration>
+	<adapter name="ListenerInPipe">
+		<receiver name="testtool-ListenerInPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-ListenerInPipe"/>
+		</receiver>
+		<receiver name="ListenerInPipe">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="SenderPipe"/>
+		</receiver>
+		<receiver name="testtool-ListenerInPipe-1">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-ListenerInPipe-1"/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe name="Call Sender" className="nl.nn.adapterframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TEST"/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

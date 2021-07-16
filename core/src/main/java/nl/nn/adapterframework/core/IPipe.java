@@ -28,7 +28,8 @@ import nl.nn.adapterframework.stream.Message;
  * @author Johan Verrips
  */
 @FrankDocGroup(order = 10, name = "Pipes")
-public interface IPipe extends INamedObject, IForwardTarget {
+public interface IPipe extends IConfigurable, IForwardTarget {
+
 	/**
 	 * <code>configure()</code> is called once after the {@link PipeLine} is registered
 	 * at the {@link Adapter}. Purpose of this method is to reduce
@@ -36,6 +37,7 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */ 
+	@Override
 	void configure() throws ConfigurationException;
 
 	/**
@@ -66,21 +68,22 @@ public interface IPipe extends INamedObject, IForwardTarget {
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
+	 * @throws ConfigurationException 
 	 * @see PipeLine
 	 * @see PipeForward
 	 */
-	void registerForward(PipeForward forward);
+	void registerForward(PipeForward forward) throws ConfigurationException;
 
 	/**
 	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for eacht start and stop command of the
+	 * after the {@link #configure()} method, for each start and stop command of the
 	 * adapter.
 	 */
 	void start() throws PipeStartException;
 
 	/**
 	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	 * For instance, closing JMS connections, dbms connections etc.
+	 * For instance, closing JMS connections, DBMS connections etc.
 	 */
 	void stop();
 }

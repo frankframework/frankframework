@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-public enum JobDefFunctions {
+import nl.nn.adapterframework.doc.DocumentedEnum;
+
+public enum JobDefFunctions implements DocumentedEnum {
 	STOP_ADAPTER("StopAdapter"),
 	START_ADAPTER("StartAdapter"),
 	STOP_RECEIVER("StopReceiver"),
@@ -31,19 +33,20 @@ public enum JobDefFunctions {
 	LOAD_DATABASE_SCHEDULES("loadDatabaseSchedules", true);
 
 	private boolean servicejob = false;
-	private final String name;
+	private final String label;
 
-	private JobDefFunctions(String name) {
-		this(name, false);
+	private JobDefFunctions(String label) {
+		this(label, false);
 	}
 
-	private JobDefFunctions(String name, boolean servicejob) {
-		this.name = name;
+	private JobDefFunctions(String label, boolean servicejob) {
+		this.label = label;
 		this.servicejob = servicejob;
 	}
 
-	public String getName() { // Beware: getName() is not the same as name()
-		return name;
+	@Override
+	public String getLabel() {
+		return label;
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {

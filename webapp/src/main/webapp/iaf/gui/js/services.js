@@ -275,18 +275,22 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
-			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
-			var poller = new this.createPollerObject(uri, callback);
-			data[uri] = poller;
-			if(!!autoStart)
-				poller.fn();
-			if(interval && interval > 1500)
-				poller.setInterval(interval);
-			return poller;
+			if(!data[uri]) {
+				Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
+				var poller = new this.createPollerObject(uri, callback);
+				data[uri] = poller;
+				if(!!autoStart)
+					poller.fn();
+				if(interval && interval > 1500)
+					poller.setInterval(interval);
+				return poller;
+			}
 		},
 		this.remove = function (uri) {
-			data[uri].stop();
-			delete data[uri];
+			if(data[uri]) {
+				data[uri].stop();
+				delete data[uri];
+			}
 		},
 		this.get = function (uri) {
 			return data[uri];
@@ -1030,7 +1034,8 @@ angular.module('iaf.beheerconsole')
 			var errorCount = 0;
 			return {
 				request: function(config) {
-					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+					//First check if we can append the version, then if it's an HTML file, and lastly if it's ours!
+					if (ff_version != null && config.url.indexOf('.html') !== -1 && config.url.indexOf('views/') !== -1) {
 						config.url = config.url + '?v=' + ff_version;
 					}
 					return config;

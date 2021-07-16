@@ -97,9 +97,9 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="DeleteFile" actions="delete"
-				className="nl.nn.adapterframework.pipes.FilePipe"
-				directory="${log.dir}" filename="input_big.xml">
+			<pipe name="DeleteFile" action="delete"
+				className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				filename="${log.dir}/input_big.xml">
 				<forward name="success" path="READY" />
 			</pipe>
 		</pipeline>

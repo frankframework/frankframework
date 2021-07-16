@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
- * Send a message with JMS.
- * 
- * @since	7.0-B1
  * @author	Niels Meijer
  */
 
@@ -52,7 +50,7 @@ public final class FrankDoc extends Base {
 			return Response.status(Response.Status.OK).entity(Message.asString(frankDoc)).build();
 		}
 
-		return Response.status(Response.Status.NOT_FOUND).entity("Frank!Doc JSON not found").build();
+		throw new ApiException("Frank!Doc JSON not found", Response.Status.NOT_FOUND);
 	}
 
 	@GET
@@ -62,9 +60,14 @@ public final class FrankDoc extends Base {
 	public Response fetchFrankDocXSD() throws ApiException, IOException {
 		URL frankDoc = ClassUtils.getResourceURL(FRANKDOC_XSD);
 		if(frankDoc != null) {
-			return Response.status(Response.Status.OK).entity(Message.asString(frankDoc)).build();
+			String applicationVersion = AppConstants.getInstance().getProperty("application.version");
+			String xsdName = String.format("FrankFramework%s.xsd", applicationVersion!=null ? "-"+applicationVersion : "");
+			return Response.status(Response.Status.OK)
+					.entity(Message.asString(frankDoc))
+					.header("Content-Disposition", "attachment; filename=\"" + xsdName + "\"")
+					.build();
 		}
 
-		return Response.status(Response.Status.NOT_FOUND).entity("Frank!Doc XSD not found").build();
+		throw new ApiException("Frank!Doc XSD not found", Response.Status.NOT_FOUND);
 	}
 }

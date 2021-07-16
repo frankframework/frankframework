@@ -1,25 +1,31 @@
 <manageDatabaseRLY>
-  <completionInformation>
-    <returnCode>OK</returnCode>
-  </completionInformation>
-  <results>
-    <result item="1">
-      <result>
-        <fielddefinition>
-          <field name="TKEY" type="NUMERIC" columnDisplaySize="39" precision="38" scale="0" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
-          <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
-          <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="11" precision="0" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="oracle.sql.TIMESTAMP"/>
-          <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
-        </fielddefinition>
-        <rowset>
-          <row number="0">
-            <field name="TKEY">62116</field>
-            <field name="TCHAR">E</field>
-            <field name="TTIMESTAMP">2021-06-14 08:00:14</field>
-            <field name="TVARCHAR">exitState [error], result [String: &lt;root forward="error"/&gt;]</field>
-          </row>
-        </rowset>
-      </result>
-    </result>
-  </results>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TKEY">58221</field>
+						<field name="TCHAR">E</field>
+						<field name="TTIMESTAMP">2021-07-02 15:49:32</field>
+						<field name="TVARCHAR">exitState [error], result [String: &lt;root forward="error"/&gt;]</field>
+					</row>
+					<row number="1">
+						<field name="TKEY">58222</field>
+						<field name="TCHAR">T</field>
+						<field name="TTIMESTAMP" null="true"/>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
 </manageDatabaseRLY>

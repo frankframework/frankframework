@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.Misc;
 
 //TODO: consider moving this to a separate module
 /**
- * Javascript V8 engine wrapper for VizJs flow diagrams
+ * JavaScript engine wrapper for VizJs flow diagrams
  * 
  * @author Niels Meijer
  *
@@ -67,7 +67,7 @@ public class GraphvizEngine {
 	 * @param src dot file
 	 * @return {@link Format#SVG} string
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when some V8 engine error occurs
+	 * @throws GraphvizException when a JavaScript engine error occurs
 	 */
 	public String execute(String src) throws IOException, GraphvizException {
 		return execute(src, Options.create());
@@ -79,7 +79,7 @@ public class GraphvizEngine {
 	 * @param options see {@link Options}
 	 * @return string in specified {@link Format}
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when some V8 engine error occurs
+	 * @throws GraphvizException when a JavaScript engine error occurs
 	 */
 	public String execute(String src, Options options) throws IOException, GraphvizException {
 		if(StringUtils.isEmpty(src)) {

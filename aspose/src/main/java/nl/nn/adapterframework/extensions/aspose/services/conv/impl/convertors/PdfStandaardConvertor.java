@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
-import com.google.common.io.Files;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
@@ -37,9 +37,8 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
-			throws Exception {
-		Files.copy(file, result.getPdfResultFile());
+	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption) throws Exception {
+		FileUtils.copyFile(file, result.getPdfResultFile());
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 

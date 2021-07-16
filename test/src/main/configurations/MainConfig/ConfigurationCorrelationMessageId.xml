@@ -19,7 +19,7 @@
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath" />
 		</receiver>
 		<receiver correlationIDXPath="request/@name">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="CorrelationMessageIdXPath2" />
+			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="CorrelationMessageIdXPath2" serviceNamespaceURI="CorrelationMessageIdXPath2" />
 			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/CorrelationMessageIdXPath2" />
 		</receiver>
 		<pipeline firstPipe="ResolveString">

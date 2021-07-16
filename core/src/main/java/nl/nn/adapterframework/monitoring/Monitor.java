@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -34,8 +33,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -261,7 +260,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	public void setType(String eventType) {
-		setTypeEnum(Misc.parse(EventTypeEnum.class, eventType));
+		setTypeEnum(EnumUtils.parse(EventTypeEnum.class, eventType));
 	}
 	public String getType() {
 		return type==null?null:type.name();
@@ -344,8 +343,4 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return ReflectionToStringBuilder.toStringExclude(this, "applicationContext");
-	}
 }

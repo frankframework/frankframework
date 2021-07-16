@@ -87,6 +87,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		MockServletContext servletContext = new MockServletContext();
 		MockServletConfig servletConfig = new MockServletConfig(servletContext, "JAX-RS-MockDispatcher");
 		jaxRsResource.servletConfig = servletConfig;
+		jaxRsResource.securityContext = mock(SecurityContext.class);
 		IbisContext ibisContext = mock(IbisContext.class);
 		configuration = new TestConfiguration();
 		IbisManager ibisManager = configuration.getIbisManager();

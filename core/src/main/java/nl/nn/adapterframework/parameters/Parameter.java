@@ -596,7 +596,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 				Date d;
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-				String fixedDateTime = (String)session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				String fixedDateTime = null;
+				try {
+					fixedDateTime = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY).asString();
+				} catch (IOException e1) {
+					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]");
+				}
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}

@@ -28,22 +28,16 @@ import nl.nn.adapterframework.util.DateUtils;
  * @author Johan Verrips IOS
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
-	
-	public Message format(
-	    String message,
-	    Throwable t,
-	    INamedObject location,
-	    Message originalMessage,
-	    String messageId,
-	    long receivedTime) {
+	private String applicationName = AppConstants.getInstance().getProperty("application.name");
+	private String applicationVersion = AppConstants.getInstance().getProperty("application.version");
+
+	@Override
+	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 		String result= "<ServiceResponse>\n" +
 	            "   <ResponseEnvelope>\n" +
 	            "       <serviceType>ING_RES1006</serviceType>\n" +
 	            "       <messageId>" +messageId+   "</messageId>\n" +
-	            "       <from>"+AppConstants.getInstance().getProperty("application.name")+
-	            				" "+
-	            				AppConstants.getInstance().getProperty("application.version")+
-	            				"</from>\n" +
+	            "       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
 	            "       <to>JUICE</to>\n" +
 	            "       <timeStamp>" + DateUtils.getIsoTimeStamp() + "</timeStamp>\n" +
 	            "       <ResponseStatus>\n" +
@@ -55,9 +49,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	            "   <Body>\n" +location.getName()+
 	            "   </Body>\n" +
 	            "</ServiceResponse>\n";
-	
-	
-	
+
 		return new Message(result);
 	}
 }

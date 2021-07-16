@@ -50,9 +50,9 @@ public interface JavascriptEngine<E> {
 	/**
 	 * Executes a javascript function and returns the result of that function
 	 * 
-	 * @param name		The name of the javascript function as given in the javascript file.
-	 * @param parameters		An array containing the parameters for the javascript function, given in the adapter configuration
-	 * @return		The result of the javascript function is returned.
+	 * @param name			The name of the javascript function as given in the javascript file.
+	 * @param parameters	An array containing the parameters for the javascript function, given in the adapter configuration
+	 * @return				The result of the javascript function is returned.
 	 */
 	Object executeFunction(String name, Object... parameters);
 

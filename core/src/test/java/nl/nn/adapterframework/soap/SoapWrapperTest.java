@@ -139,12 +139,7 @@ public class SoapWrapperTest {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest.xml");
-		String soapBody = null;
-		try {
-			soapBody = soapWrapper.signMessage(new Message(soapMessage), "digestPassword", "digestPassword", true).asString();
-		} catch (Exception e) {
-			soapBody = e.getMessage();
-		}
+		String soapBody = soapWrapper.signMessage(new Message(soapMessage), "digestPassword", "digestPassword", true).asString();
 		String result = replaceDynamicElements(soapBody);
 		assertEquals(expectedSoapBody, result);
 	}
@@ -154,12 +149,7 @@ public class SoapWrapperTest {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
-		String soapBody = null;
-		try {
-			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
-		} catch (Exception e) {
-			soapBody = e.getMessage();
-		}
+		String soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
 		String result = replaceDynamicElements(soapBody);
 		assertEquals(expectedSoapBody, result);
 	}

@@ -1,0 +1,32 @@
+<configuration>
+	  <adapter name="SenderSeries">
+      <receiver name="testtool-SenderSeries">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SenderSeries"/>
+      </receiver>
+		    <receiver name="SenderSeries">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="SenderSeries"/>
+		    </receiver>
+      <receiver name="testtool-SenderSeries-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SenderSeries-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.senders.SenderSeries">
+					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				        </sender>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

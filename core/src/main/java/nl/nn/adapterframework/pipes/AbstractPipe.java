@@ -15,15 +15,11 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.lang.reflect.Field;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -33,12 +29,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
-import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -97,7 +91,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, IConfigurable, ApplicationContextAware {
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
@@ -126,13 +120,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private String logIntermediaryResults = null;
 	private String hideRegex = null;
 
-	private boolean active=true;
-
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
 	private @Setter EventPublisher eventPublisher=null;
 
-	private PipeLine pipeline;
+	private @Getter @Setter PipeLine pipeLine;
 
 	private DummyNamedObject inSizeStatDummyObject=null;
 	private DummyNamedObject outSizeStatDummyObject=null;
@@ -149,6 +141,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */
+	//For testing purposes the configure method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
 		ParameterList params = getParameterList();
@@ -165,25 +158,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 
-		if (pipeForwards.isEmpty()) {
-			//TODO pipe will follow the next forward no need to show warning
+		if (pipeForwards.isEmpty()) { //In the case of a NON-FixedForwardPipe (default success/exception forwards) || no global forwards
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		} else {
-			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
-				String forwardName = it.next();
-				PipeForward forward= pipeForwards.get(forwardName);
-				if (forward!=null) {
-					String path=forward.getPath();
-					if (path!=null) {
-						PipeLineExit plExit= pipeline.getPipeLineExits().get(path);
-						if (plExit==null){
-							if (pipeline.getPipe(path)==null){
-								ConfigurationWarnings.add(this, log, "has a forward of which the pipe to execute ["+path+"] is not defined");
-							}
-						}
-					}
-				}
-			}
 		}
 
 		if (getLocker() != null) {
@@ -191,15 +167,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		}
 
 		super.configure();
-	}
-
-	/**
-	 * Extension for IExtendedPipe that calls configure(void) in its implementation.
-	 */
-	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		this.pipeline=pipeline;
-		configure();
 	}
 
 	/**
@@ -254,6 +221,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (pipeline==null) {
 			return null;
 		}
+
+		//Omit global pipeline-forwards and only return local pipe-forwards
 		List<IPipe> pipes = pipeline.getPipes();
 		for (int i=0; i<pipes.size(); i++) {
 			String pipeName = pipes.get(i).getName();
@@ -280,32 +249,26 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return sb.toString();
 	}
 
-	/**
-	 * Register a PipeForward object to this Pipe. Global Forwards are added
-	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @see PipeLine
-	 * @see PipeForward
-	 */
 	@Override
 	@IbisDoc({"30"})
-	public void registerForward(PipeForward forward) {
-		PipeForward current = pipeForwards.get(forward.getName());
-		if (current==null){
-			pipeForwards.put(forward.getName(), forward);
-		} else {
-			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
+	public void registerForward(PipeForward forward) throws ConfigurationException {
+		String forwardName = forward.getName();
+		if(forwardName != null) {
+			PipeForward current = pipeForwards.get(forwardName);
+			if (current==null){
+				pipeForwards.put(forwardName, forward);
 			} else {
-				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+				} else {
+					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
 			}
+		} else {
+			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
 		}
 	}
 
-	/**
-	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for each start and stop command of the
-	 * adapter.
-	 */
 	@Override
 	public void start() throws PipeStartException {
 //		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
@@ -318,35 +281,31 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 //		}
 	}
 
-	/**
-	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	 * For instance, closing JMS connections, dbms connections etc.
-	 */
 	@Override
 	public void stop() {}
 
-	/**
-	 * The <code>toString()</code> method retrieves its value
-	 * by reflection, so overriding this method is mostly not
-	 * useful.
-	 * @see ToStringBuilder#reflectionToString
-	 *
-	 **/
-	@Override
-	public String toString() {
-		try {
-			return (new ReflectionToStringBuilder(this) {
-				@Override
-				protected boolean accept(Field f) {
-					//TODO create a blacklist or whitelist
-					return super.accept(f) && !f.getName().contains("appConstants");
-				}
-			}).toString();
-		} catch (Throwable t) {
-			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
-		}
-		return null;
-	}
+//	/**
+//	 * The <code>toString()</code> method retrieves its value
+//	 * by reflection, so overriding this method is mostly not
+//	 * useful.
+//	 * @see ToStringBuilder#reflectionToString
+//	 *
+//	 **/
+//	@Override
+//	public String toString() {
+//		try {
+//			return (new ReflectionToStringBuilder(this) {
+//				@Override
+//				protected boolean accept(Field f) {
+//					//TODO create a blacklist or whitelist
+//					return super.accept(f) && !f.getName().contains("appConstants");
+//				}
+//			}).toString();
+//		} catch (Throwable t) {
+//			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
+//		}
+//		return null;
+//	}
 
 	/**
 	 * Add a parameter to the list of parameters
@@ -380,10 +339,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (eventPublisher != null) {
 			eventPublisher.fireEvent(this ,event);
 		}
-	}
-
-	public PipeLine getPipeLine() {
-		return pipeline;
 	}
 
 	@Override
@@ -420,15 +375,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	@Override
 	public String getName() {
 		return this.name;
-	}
-
-	@IbisDoc({"2", "controls whether pipe is included in configuration. when set <code>false</code> or set to something else as <code>true</code>, (even set to the empty string), the pipe is not included in the configuration", "true"})
-	public void setActive(boolean b) {
-		active = b;
-	}
-	@Override
-	public boolean isActive() {
-		return active;
 	}
 
 	@Override

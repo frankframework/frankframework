@@ -38,7 +38,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -151,7 +151,7 @@ public class Base64Pipe extends StreamingPipe {
 	
 	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
 	public void setDirection(String direction) {
-		this.direction = Misc.parse(Direction.class, direction);
+		this.direction = EnumUtils.parse(Direction.class, direction);
 	}
 	public Direction getDirectionEnum() {
 		return direction;
@@ -168,7 +168,7 @@ public class Base64Pipe extends StreamingPipe {
 		if (outputType.equalsIgnoreCase("Stream")) {
 			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used. Streaming is automatic where possible");
 		} else {
-			this.outputType = Misc.parse(OutputTypes.class, outputType);
+			this.outputType = EnumUtils.parse(OutputTypes.class, outputType);
 		}
 	}
 	public OutputTypes getOutputTypeEnum() {

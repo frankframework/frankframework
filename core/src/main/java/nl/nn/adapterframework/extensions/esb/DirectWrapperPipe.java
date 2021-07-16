@@ -74,8 +74,8 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		}
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		eswPipe.registerForward(pf);
 		try {
+			eswPipe.registerForward(pf);
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {

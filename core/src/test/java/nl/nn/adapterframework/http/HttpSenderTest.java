@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
@@ -320,6 +321,22 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpPatch() throws Throwable {
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		Message input = new Message("hallo patch request");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType("patCH"); //should handle a mix of upper and lowercase characters :)
+
+		sender.configure();
+		sender.open();
+
+		String result = sender.sendMessage(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPatch.txt"), result.trim());
+	}
+
+	@Test
 	public void simpleMockedHttpGetWithParams() throws Throwable {
 		HttpSender sender = getSender();
 		Message input = new Message("hallo");
@@ -517,7 +534,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void binaryHttpPostPDF() throws Throwable {
 		HttpSender sender = getSender();
 		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
-		Message input = new Message(url);
+		Message input = new UrlMessage(url);
 		assertTrue("input message has to be a binary file", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);

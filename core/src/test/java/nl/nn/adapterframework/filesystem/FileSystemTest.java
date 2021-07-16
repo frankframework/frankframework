@@ -3,7 +3,7 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -439,7 +439,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		assertTrue("Expected the file ["+filename+"] to be present", _fileExists(filename));
 		
-		Message result = fileSystem.readFile(file);
+		Message result = fileSystem.readFile(file, null);
 		assertEquals(content, result.asString());
 		
 		fileSystem.deleteFile(file);

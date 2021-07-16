@@ -46,6 +46,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -200,13 +201,13 @@ public class HttpSender extends HttpSenderBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && (getMethodType().equals("POST") || getMethodType().equals("PUT"))) {
+		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getMethodTypeEnum() == HttpMethod.POST || getMethodTypeEnum() == HttpMethod.PUT || getMethodTypeEnum() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (!getMethodType().equals("POST")) {
+		if (getMethodTypeEnum() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
 				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
 			}
@@ -274,19 +275,23 @@ public class HttpSender extends HttpSenderBase {
 				queryParametersAppended = true;
 			}
 
-			if (getMethodType().equals("GET")) {
+			switch (getMethodTypeEnum()) {
+			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet method = new HttpGet(relativePath+(parameters==null? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters==null? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
+					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
-				return method;
-			} else if (getMethodType().equals("POST") || getMethodType().equals("PUT")) {
+				return getMethod;
+
+			case POST:
+			case PUT:
+			case PATCH:
 				HttpEntity entity;
 				if(postType.equals(PostType.RAW)) {
 					String messageString = message.asString();
@@ -299,7 +304,7 @@ public class HttpSender extends HttpSenderBase {
 							messageString=msg.toString();
 						}
 					}
-					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
+					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
 				} else if(postType.equals(PostType.BINARY)) {
 					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
 				} else {
@@ -307,37 +312,38 @@ public class HttpSender extends HttpSenderBase {
 				}
 
 				HttpEntityEnclosingRequestBase method;
-				if (getMethodType().equals("POST")) {
+				if (getMethodTypeEnum() == HttpMethod.POST) {
 					method = new HttpPost(relativePath.toString());
+				} else if (getMethodTypeEnum() == HttpMethod.PATCH) {
+					method = new HttpPatch(relativePath.toString());
 				} else {
 					method = new HttpPut(relativePath.toString());
 				}
 
 				method.setEntity(entity);
 				return method;
-			}
-			if (getMethodType().equals("DELETE")) {
-				HttpDelete method = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return method;
-			}
-			if (getMethodType().equals("HEAD")) {
-				HttpHead method = new HttpHead(relativePath.toString());
-				return method;
-			}
 
-			if (getMethodType().equals("REPORT")) {
+			case DELETE:
+				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
+				if (null != getFullContentType()) { //Manually set Content-Type header
+					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
+				}
+				return deleteMethod;
+
+			case HEAD:
+				return new HttpHead(relativePath.toString());
+
+			case REPORT:
 				Element element = XmlUtils.buildElement(message.asString(), true);
-				HttpReport method = new HttpReport(relativePath.toString(), element);
+				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
 				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
+					reportMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
-				return method;
-			}
+				return reportMethod;
 
-			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either GET, PUT, POST, DELETE, HEAD or REPORT");
+			default:
+				return null;
+			}
 		} catch (Exception e) {
 			//Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
@@ -449,7 +455,7 @@ public class HttpSender extends HttpSenderBase {
 						String fileName = null;
 						String sessionKey = pv.getDefinition().getSessionKey();
 						if (sessionKey != null) {
-							fileName = (String) session.get(sessionKey + "Name");
+							fileName = session.getMessage(sessionKey + "Name").asString();
 						}
 
 						entity.addPart(createMultipartBodypart(name, fis, fileName));
@@ -466,7 +472,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = (String) session.get(getMultipartXmlSessionKey());
+			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
@@ -552,7 +558,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
-					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
+					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
 					File file = new File(fileName);
 					Misc.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
@@ -582,7 +588,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		if ("HEAD".equals(getMethodType())) {
+		if (getMethodTypeEnum() == HttpMethod.HEAD) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
 			for (Header header : headers) {
@@ -620,14 +626,9 @@ public class HttpSender extends HttpSenderBase {
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				if (i == 0) {
-					String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-					ContentType contentType = ContentType.parse(bodyPart.getContentType());
-					if(contentType.getCharset() != null)
-						charset = contentType.getCharset().name();
-
-					result = new Message(bodyPart.getInputStream(), charset);
+					result = new PartMessage(bodyPart);
 				} else {
-					session.put("multipart" + i, bodyPart.getInputStream());
+					session.put("multipart" + i, new PartMessage(bodyPart));
 				}
 			}
 		} catch(MessagingException e) {
