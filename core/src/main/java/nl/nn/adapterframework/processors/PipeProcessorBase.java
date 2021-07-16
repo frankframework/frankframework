@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class PipeProcessorBase implements PipeProcessor {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected PipeProcessor pipeProcessor;
+	private PipeProcessor pipeProcessor;
 
 	public void setPipeProcessor(PipeProcessor pipeProcessor) {
 		this.pipeProcessor = pipeProcessor;
