@@ -83,7 +83,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 		IForwardTarget forwardTarget = pipeLine.getPipe(pipeLine.getFirstPipe());
 
 		boolean inputValidateError = false;
-		IPipe inputValidator = pipeLine.getInputValidator();
+		IValidator inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
