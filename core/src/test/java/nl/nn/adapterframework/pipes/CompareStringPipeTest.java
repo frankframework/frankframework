@@ -80,7 +80,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	}
 
 	@Test
-	public void textXmlCompare() throws Exception {
+	public void textXmlCompareWithNewlines() throws Exception {
 		Parameter operand1 = new Parameter();
 		operand1.setName("operand1");
 		operand1.setValue("<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n");
@@ -96,7 +96,47 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		pipe.start();
 
 		PipeRunResult prr = doPipe("<ignored/>");
-		assertEquals(GREATER_THAN, prr.getPipeForward().getName());
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void textXmlCompareWithAttributes() throws Exception {
+		Parameter operand1 = new Parameter();
+		operand1.setName("operand1");
+		operand1.setValue("<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n");
+		pipe.addParameter(operand1);
+
+		Parameter operand2 = new Parameter();
+		operand2.setName("operand2");
+		operand2.setValue("<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>");
+		pipe.addParameter(operand2);
+
+		pipe.setXml(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(EQUALS, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void textXmlCompareWithSpaces() throws Exception {
+		Parameter operand1 = new Parameter();
+		operand1.setName("operand1");
+		operand1.setValue("<test><a>9</a><b>2</b><c>7</c>    </test>\n");
+		pipe.addParameter(operand1);
+
+		Parameter operand2 = new Parameter();
+		operand2.setName("operand2");
+		operand2.setValue("<test><a>9</a>    <b>2</b><c>7</c></test>");
+		pipe.addParameter(operand2);
+
+		pipe.setXml(true);
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe("<ignored/>");
+		assertEquals(EQUALS, prr.getPipeForward().getName());
 	}
 
 	@Test
