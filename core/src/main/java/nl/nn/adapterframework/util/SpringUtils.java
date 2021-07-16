@@ -34,6 +34,9 @@ public class SpringUtils {
 	}
 
 	public static <T> void autowire(ApplicationContext applicationContext, Object existingBean, int autowireMode) {
+		if (applicationContext==null) {
+			throw new NullPointerException("ApplicationContext not set");
+		}
 		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, false);
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, existingBean.getClass().getCanonicalName());
 	}

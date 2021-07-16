@@ -23,6 +23,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
@@ -31,20 +32,24 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CompactSaxHandler;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Jaco de Groot
  */
 public class InputOutputPipeProcessor extends PipeProcessorBase {
+	protected Logger secLog = LogUtil.getLogger("SEC");
+	
 	private final static String ME_START = "{sessionKey:";
 	private final static String ME_END = "}";
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Object preservedObject = message;
 		PipeRunResult pipeRunResult = null;
 		INamedObject owner = pipeLine.getOwner();
@@ -81,7 +86,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		
 		if (pipeRunResult==null){
-			pipeRunResult=pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			pipeRunResult=chain.get();
 		}
 		if (pipeRunResult==null){
 			throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] received null result from pipe ["+pipe.getName()+"]d");

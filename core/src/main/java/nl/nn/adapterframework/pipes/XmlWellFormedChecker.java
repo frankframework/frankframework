@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,13 +55,18 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		return validate(message, session, getRoot());
+	}
+
+	@Override
+	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
-		if (XmlUtils.isWellFormed(input, getRoot())) {
+		if (XmlUtils.isWellFormed(input, messageRoot)) {
 			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
 			return new PipeRunResult(getSuccessForward(), message);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -37,7 +38,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult = null;
 
 		IExtendedPipe pe=null;
@@ -73,7 +74,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		long pipeDuration = -1;
 
 		try {
-			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			pipeRunResult = chain.get();
 		} catch (PipeRunException pre) {
 			if (pe!=null) {
 				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);

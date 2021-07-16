@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ import java.util.Date;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.pipes.ExceptionPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
@@ -32,10 +33,10 @@ import nl.nn.adapterframework.util.DateUtils;
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult prr = null;
 		try {
-			prr = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			prr = chain.get();
 		} catch (PipeRunException e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
