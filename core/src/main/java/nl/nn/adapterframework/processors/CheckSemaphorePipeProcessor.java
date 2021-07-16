@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Semaphore;
@@ -36,7 +36,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 	private Map<IPipe,Semaphore> pipeThreadCounts=new ConcurrentHashMap<>();
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		Semaphore s = getSemaphore(pipe);
 		if (s != null) {
@@ -48,14 +48,14 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				waitingDuration = System.currentTimeMillis() - startWaiting;
 				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
-				pipeRunResult = chain.get();
+				pipeRunResult = chain.apply(message);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
 			} finally { 
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)
-			pipeRunResult = chain.get();
+			pipeRunResult = chain.apply(message);
 		}
 		return pipeRunResult;
 	}

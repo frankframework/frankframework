@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -39,7 +40,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private PlatformTransactionManager txManager;
 	
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		TransactionDefinition txDef;
 		int txTimeout=0;
@@ -56,7 +57,7 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 			Throwable tCaught=null;
 			try {
 				tg.activateGuard(txTimeout);
-				pipeRunResult = chain.get();
+				pipeRunResult = chain.apply(message);
 			} catch (Throwable t) {
 				tCaught=t;
 				throw tCaught;

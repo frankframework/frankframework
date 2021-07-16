@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.processors;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Baseclass for PipeProcessors.
@@ -42,16 +42,16 @@ public abstract class PipeProcessorBase implements PipeProcessor {
 		this.pipeProcessor = pipeProcessor;
 	}
 
-	protected abstract PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException;
+	protected abstract PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException;
 
 	@Override
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
-		return processPipe(pipeLine, pipe, message, pipeLineSession, () -> pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession));
+		return processPipe(pipeLine, pipe, message, pipeLineSession, m -> pipeProcessor.processPipe(pipeLine, pipe, m, pipeLineSession));
 	}
 	
 	@Override
 	public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
-		return processPipe(pipeLine, validator, message, pipeLineSession, () -> pipeProcessor.validate(pipeLine, validator, message, pipeLineSession, messageRoot));
+		return processPipe(pipeLine, validator, message, pipeLineSession, m -> pipeProcessor.validate(pipeLine, validator, m, pipeLineSession, messageRoot));
 	}
 
 }

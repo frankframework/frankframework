@@ -17,7 +17,9 @@ package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -81,6 +83,13 @@ public class SoapValidator extends Json2XmlValidator {
 			addInvalidRootNamespaces(Arrays.asList(ENVELOPE_ROOT, HEADER_ROOT, soapHeader), invalidRootNamespaces);
 		}
 		super.configure();
+	}
+
+	@Override
+	protected Set<List<String>> createRootValidation(String messageRoot) {
+		Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
+		messageRootValidations.add(Arrays.asList(ENVELOPE_ROOT, BODY_ROOT, messageRoot));
+		return messageRootValidations;
 	}
 
 	@Override

@@ -250,13 +250,15 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		Message messageToValidate;
-		if (StringUtils.isNotEmpty(getSoapNamespace())) {
-			messageToValidate = getMessageToValidate(input, session);
-		} else {
-			messageToValidate = input;
-		}
 		try {
+			Message messageToValidate;
+			input.preserve();
+			if (StringUtils.isNotEmpty(getSoapNamespace())) {
+				messageToValidate = getMessageToValidate(input, session);
+			} else {
+				messageToValidate = input;
+			}
+		
 			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
@@ -272,9 +274,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = null;
 		if(StringUtils.isNotEmpty(messageRoot)) {
-			Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
-			messageRootValidations.add(Arrays.asList(messageRoot));
-			context = validator.createValidationContext(session, messageRootValidations, getInvalidRootNamespaces());
+			context = validator.createValidationContext(session, createRootValidation(messageRoot), getInvalidRootNamespaces());
 		} else {
 			context = validator.createValidationContext(session, getRootValidations(responseMode), getInvalidRootNamespaces());
 		}
@@ -287,6 +287,12 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return determineForward(resultEvent, session, responseMode);
 	}
 
+	protected Set<List<String>> createRootValidation(String messageRoot) {
+		Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
+		messageRootValidations.add(Arrays.asList(messageRoot));
+		return messageRootValidations;
+	}
+	
 	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		throwEvent(resultEvent);
 		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {

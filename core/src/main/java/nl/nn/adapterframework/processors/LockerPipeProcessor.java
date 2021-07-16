@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Locker;
@@ -31,7 +32,7 @@ import nl.nn.adapterframework.util.Locker;
 public class LockerPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingSupplier<PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		IExtendedPipe extendedPipe = null;
 		Locker locker = null;
@@ -50,7 +51,7 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 				throw new PipeRunException(pipe, "could not obtain lock ["+locker+"]");
 			} 
 			try {
-				pipeRunResult = chain.get();
+				pipeRunResult = chain.apply(message);
 			} finally {
 				try {
 					locker.release(objectId);
@@ -59,7 +60,7 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 				}
 			}
 		} else {
-			pipeRunResult = chain.get();
+			pipeRunResult = chain.apply(message);
 		}
 		return pipeRunResult;
 	}
