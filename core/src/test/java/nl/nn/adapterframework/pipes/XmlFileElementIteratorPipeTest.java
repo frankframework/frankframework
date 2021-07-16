@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.net.URL;
 
@@ -14,25 +12,10 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementIteratorPipe> {
-	
 
 	@Override
 	public XmlFileElementIteratorPipe createPipe() {
 		return new XmlFileElementIteratorPipe();
-	}
-
-	@Test
-	public void setterElementName() {
-		String dummyElementName = "Person";
-		pipe.setElementName(dummyElementName);
-		assertEquals(pipe.getElementName(), dummyElementName);
-	}
-	
-	@Test
-	public void setterElementChain() {
-		String dummyElementChain = "GetPartiesOnAgreementRLY;PartyAgreementRole;PartyInternalAgreementRole;Party;Person";
-		pipe.setElementChain(dummyElementChain);
-		assertEquals(pipe.getElementChain(), dummyElementChain);
 	}
 
 	@Test
@@ -51,7 +34,7 @@ public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementI
 		String result = Message.asString(prr.getResult());
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 	}
-	
+
 	@Test
 	public void testElementChain() throws Exception {
 		XsltSender sender = new XsltSender();
