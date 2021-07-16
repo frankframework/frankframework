@@ -259,18 +259,19 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	
 	@Test
 	public void warnSetAddNamespaceToSchemaTrue() throws Exception {
-		pipe.setWsdl(BASIC);
-		pipe.setSoapHeader("MessageHeader");
-		pipe.setSoapBody("GetPolicyDetails_Request");
-		pipe.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
+		pipe.setWsdl(SIMPLE);
+		pipe.setSoapBody("TradePriceRequest");
+		pipe.setSchemaLocation("dummy schema1");
 		pipe.setThrowException(true);
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
-		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]"
+		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]"
 				+ " should only be set when addNamespaceToSchema=true", 
 				getConfigurationWarnings().get(0));
+		
+        pipe.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}
 }
 
