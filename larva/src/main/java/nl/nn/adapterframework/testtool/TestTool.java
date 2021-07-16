@@ -65,7 +65,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.dom4j.DocumentException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
@@ -3019,7 +3018,7 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
@@ -3041,7 +3040,7 @@ public class TestTool {
 		ProcessUtil.executeCommand(command);
 	}
 
-	private static File writeTempFile(String originalFileName, String content) throws IOException, DocumentException {
+	private static File writeTempFile(String originalFileName, String content) throws IOException {
 		String encoding = getEncoding(originalFileName, content);
 
 		String baseName = FileUtils.getBaseName(originalFileName);
