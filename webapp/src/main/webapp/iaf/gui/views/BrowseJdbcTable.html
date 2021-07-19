@@ -13,55 +13,57 @@
                 </div>
                 <div class="ibox-content">
                     <form role="form">
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Datasource</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Datasource</label>
                             <div class="col-sm-9">
-                                <select class="form-control m-b" name="datasource" ng-model="form.datasource">
+                                <select class="form-control" name="datasource" ng-model="form.datasource">
                                     <option ng-repeat="datasource in datasources">{{datasource}}</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Table name</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Table name</label>
                             <div class="col-sm-9">
-                                <input class="form-control m-b" name="table" type="text" ng-model="form.table"/>
+                                <input class="form-control" name="table" type="text" ng-model="form.table"/>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Where</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Where</label>
                             <div class="col-sm-9">
-                                <input class="form-control m-b" name="where" type="text" ng-model="form.where"/>
+                                <input class="form-control" name="where" type="text" ng-model="form.where"/>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Order by</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Order by</label>
                             <div class="col-sm-9">
-                                <input class="form-control m-b" name="order" type="text" ng-model="form.order"/>
+                                <input class="form-control" name="order" type="text" ng-model="form.order"/>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Number of rows only</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Number of rows only</label>
                             <div class="col-sm-9">
-                                <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.numberOfRowsOnly" /></span>
+                                <span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.numberOfRowsOnly" /></span>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Rownum min</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Rownum min</label>
                             <div class="col-sm-9">
-                                <input class="form-control m-b" name="minrow" type="text" ng-model="form.minRow"/>
+                                <input class="form-control" name="minrow" type="text" ng-model="form.minRow"/>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Rownum max</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Rownum max</label>
                             <div class="col-sm-9">
-                                <input class="form-control m-b" name="maxrow" type="text" ng-model="form.maxRow"/>
+                                <input class="form-control" name="maxrow" type="text" ng-model="form.maxRow"/>
                             </div>
                         </div>
-                        <div class="col-sm-3 m-t-md">
-                            <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
-                        </div>
-                        <div class="col-sm-9 m-t-md">
-                            <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+                        <div class="row form-group">
+                            <div class="col-sm-3 m-t-md">
+                                <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+                            </div>
+                            <div class="col-sm-3 m-t-md">
+                                <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+                            </div>
                         </div>
                     </form>
                 </div>
