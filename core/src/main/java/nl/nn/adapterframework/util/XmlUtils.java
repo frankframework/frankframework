@@ -72,10 +72,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -105,9 +101,12 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -1880,17 +1879,17 @@ public class XmlUtils {
 		}
 	}
 
-	public static String canonicalize(String input) throws DocumentException, IOException {
-		if (StringUtils.isEmpty(input)) {
-			return null;
+	public static String canonicalize(String input) throws IOException {
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeComments(false);
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		handler = new CanonicalizeFilter(handler);
+		try {
+			XmlUtils.parseXml(input, handler);
+			return xmlWriter.toString();
+		} catch (SAXException e) {
+			throw new IOException("ERROR: could not canonicalize ["+input+"]",e);
 		}
-		org.dom4j.Document doc = DocumentHelper.parseText(input);
-		StringWriter sw = new StringWriter();
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		format.setExpandEmptyElements(true);
-		XMLWriter xw = new XMLWriter(sw, format);
-		xw.write(doc);
-		return sw.toString();
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {

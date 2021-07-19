@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.util;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -150,6 +151,23 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		assertTrue(transformer.getParameter("integerParamKey") instanceof Integer);
 		assertTrue(transformer.getParameter("booleanParamKey") instanceof Boolean);
+	}
 
+	@Test
+	public void testCanonicalizeWithNewLinesAndSpaces() throws Exception {
+		String newLinesAndSpaces = XmlUtils.canonicalize("<test>\n<a>9</a>\n  <b>2</b>  \n<c>7</c>\n</test>\n");
+		assertEquals("<test>\n" + 
+				"	<a>9</a>\n" + 
+				"	<b>2</b>\n" + 
+				"	<c>7</c>\n" + 
+				"</test>", newLinesAndSpaces);
+	}
+
+	@Test
+	public void testCanonicalizeWithAttributes() throws Exception {
+		String attributes = XmlUtils.canonicalize("<test><a a=\"1\"   c=\"3\"	b=\"2\">9</a></test>");
+		assertEquals("<test>\n" + 
+				"	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n" + 
+				"</test>", attributes);
 	}
 }

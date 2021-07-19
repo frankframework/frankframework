@@ -188,18 +188,6 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<!-- only used in XmlUtils.canonicalize, that is only used in CompareStringPipe with isXml=true -->
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>1.6.1</version>
-			<exclusions>
-				<exclusion><!-- Part of JDK nowadays, prevent conflicts -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-xerces</artifactId>
 			<version>2.12.1-xml-schema-1.1</version>
