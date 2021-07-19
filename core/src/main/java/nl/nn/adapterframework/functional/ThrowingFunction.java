@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.functional;
 
-import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.stream.Message;
-
-/**
- * Marker interface for Validators
- * 
- * @author Gerrit van Brakel
- */
-@FrankDocGroup(order = 40, name = "Validators")
-public interface IValidator extends IPipe {
-
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
-
+@FunctionalInterface
+public interface ThrowingFunction<T, R, E extends Exception> {
+	R apply(T param) throws E;
 }

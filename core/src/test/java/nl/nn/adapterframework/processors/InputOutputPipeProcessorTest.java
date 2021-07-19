@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -30,6 +31,11 @@ public class InputOutputPipeProcessorTest {
 			@Override
 			public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 				return pipe.doPipe(message, pipeLineSession);
+			}
+
+			@Override
+			public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+				return validator.validate(message, pipeLineSession, messageRoot);
 			}
 		};
 		processor.setPipeProcessor(chain);

@@ -32,11 +32,12 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -82,7 +83,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 		IForwardTarget forwardTarget = pipeLine.getPipe(pipeLine.getFirstPipe());
 
 		boolean inputValidateError = false;
-		IPipe inputValidator = pipeLine.getInputValidator();
+		IValidator inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
@@ -171,14 +172,15 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						}
 
 						if (!outputWrapError) {
-							IPipe outputValidator = pipeLine.getOutputValidator();
+							IValidator outputValidator = pipeLine.getOutputValidator();
 							if (outputValidator != null) {
 								if (outputValidationFailed) {
 									log.debug("validating error message after PipeLineResult validation failed");
 								} else {
 									log.debug("validating PipeLineResult");
 								}
-								PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, outputValidator, message, pipeLineSession);
+								String exitSpecificResponseRoot = plExit.getResponseRoot();
+								PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
 								if (!validationResult.isSuccessful()) {
 									if (!outputValidationFailed) {
 										outputValidationFailed=true;
