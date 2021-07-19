@@ -61,18 +61,6 @@ public class RestListenerUtils {
 		return null;
 	}
 
-	public static String retrieveSOAPRequestURL(PipeLineSession session) {
-		HttpServletRequest request = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
-		if (request != null) {
-			String url = request.getScheme() + "://" + request.getServerName();
-			if(!(request.getScheme().equalsIgnoreCase("http") && request.getServerPort() == 80) && !(request.getScheme().equalsIgnoreCase("https") && request.getServerPort() == 443))
-				url += ":" + request.getServerPort();
-			url += request.getContextPath() + "/services/";
-			return url;
-		}
-		return null;
-	}
-
 	public static void writeToResponseOutputStream(PipeLineSession session, InputStream input) throws IOException {
 		OutputStream output = retrieveServletOutputStream(session);
 		StreamUtil.copyStream(input, output, 30000);

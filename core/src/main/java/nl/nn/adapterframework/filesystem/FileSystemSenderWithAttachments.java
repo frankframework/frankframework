@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -86,7 +87,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 						if(!attachmentsAsSessionKeys) {
 							InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
 							InputStream base64 = new Base64InputStream(binaryInputStream,true);
-							attachmentXml.setCdataValue(Misc.streamToString(base64,Misc.DEFAULT_INPUT_STREAM_ENCODING));
+							attachmentXml.setCdataValue(Misc.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 						} else {
 							attachmentXml.setValue(fileAttachment.getName());
 							session.put(fileAttachment.getName(), fileAttachment.getContent());
