@@ -20,7 +20,6 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence />
       <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="roleNameTChild" use="prohibited" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
@@ -30,9 +29,6 @@
     <xs:choice>
       <xs:element name="RoleNameIChild">
         <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded" />
-          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="roleNameIChild" use="prohibited" />
           <xs:attribute name="className" type="xs:string" use="required" />
