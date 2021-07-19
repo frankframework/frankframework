@@ -43,7 +43,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeForward;

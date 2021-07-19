@@ -26,6 +26,6 @@ import nl.nn.adapterframework.stream.Message;
 @FrankDocGroup(order = 40, name = "Validators")
 public interface IValidator extends IPipe {
 
-	PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
+	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
 
 }

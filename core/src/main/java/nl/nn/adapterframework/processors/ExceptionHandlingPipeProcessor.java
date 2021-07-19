@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.functional.ThrowingFunction;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.pipes.ExceptionPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
