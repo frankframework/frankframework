@@ -19,7 +19,6 @@ import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -28,12 +27,17 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-public class ConfigurationDigesterTest {	
+public class ConfigurationDigesterTest {
+	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
+	
+	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
+	
 	@Test
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
 		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler handler = digester.getCanonicalizedConfiguration(writer, ConfigurationUtils.FRANK_CONFIG_XSD, new XmlErrorHandler());
+		ContentHandler handler = digester.getCanonicalizedConfiguration(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
 
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);
@@ -53,7 +57,7 @@ public class ConfigurationDigesterTest {
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 		
-		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
@@ -90,12 +94,12 @@ public class ConfigurationDigesterTest {
 		Diff diff = XMLUnit.compareXML(expected, result); //We need to use XML Compare as the order is different in the old canonical xslt
 		assertTrue(diff.toString(), diff.similar());
 		
-		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, true);
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
 		
 		// Reset stubbing on the AppConstants, not doing this might fail other tests during CI 
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false);
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 		
 		//Unfortunately we need to cleanup the result a bit...
 		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
@@ -131,7 +135,7 @@ public class ConfigurationDigesterTest {
 
 	@Test
 	public void testFixedValueAttributeResolverWithFrankConfig() throws Exception {
-		URL schemaURL = TestFileUtils.getTestFileURL(ConfigurationUtils.FRANK_CONFIG_XSD);
+		URL schemaURL = TestFileUtils.getTestFileURL(FRANK_CONFIG_XSD);
 		ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
 
 		XmlWriter writer = new XmlWriter();
@@ -154,8 +158,8 @@ public class ConfigurationDigesterTest {
 		XmlWriter xmlWriter = new XmlWriter(target);
 		
 		Properties properties = new Properties();
-		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
 		
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
 		
