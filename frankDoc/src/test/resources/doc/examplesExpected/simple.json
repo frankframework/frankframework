@@ -35,10 +35,16 @@
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
       "abstract": true,
       "elementNames": [],
-      "attributes": [{
-        "name": "abstractParentOfStartAttribute",
-        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
-      }]
+      "attributes": [
+      	{
+          "name": "abstractParentOfStartAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
+        }
+      ]
     },
     {
       "name": "DescribedPossibleIChild",
@@ -56,6 +62,10 @@
           "name": "secondAttribute",
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
           "description": "Second attribute of DescribedPossibleIChild"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
         }
       ]
     },
@@ -80,13 +90,21 @@
           "name": "thirdAttribute",
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
           "type": "int"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
         }
       ]
     },
     {
       "name": "Object",
       "fullName": "java.lang.Object",
-      "elementNames": []
+      "elementNames": [],
+      "attributes": [{
+        "name":"active",
+        "description":"If defined and empty or false, then this element and all its children are ignored"
+      }]
     },
     {
       "name": "Start",
@@ -114,7 +132,11 @@
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
       "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
-      "elementNames": ["RoleNameTChild"]
+      "elementNames": ["RoleNameTChild"],
+      "attributes": [{
+        "name":"active",
+        "description":"If defined and empty or false, then this element and all its children are ignored"
+      }]
     }
   ]
 }
