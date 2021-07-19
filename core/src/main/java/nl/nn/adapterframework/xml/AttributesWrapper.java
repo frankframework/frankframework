@@ -66,12 +66,12 @@ public class AttributesWrapper implements Attributes {
 				public int compare(Attribute o1, Attribute o2) {
 					String o1Name = o1.localName;
 					if ("".equals(o1Name)) {
-						o1Name = o1.qName;
+						o1Name = o1.uri;
 					}
 	
 					String o2Name = o2.localName;
 					if ("".equals(o2Name)) {
-						o2Name = o2.qName;
+						o2Name = o2.uri;
 					}
 					return o1Name.compareTo(o2Name);
 				}
