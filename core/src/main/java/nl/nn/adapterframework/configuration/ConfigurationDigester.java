@@ -20,7 +20,9 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,7 +48,6 @@ import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
 import nl.nn.adapterframework.configuration.filters.InitialCapsFilter;
 import nl.nn.adapterframework.configuration.filters.OnlyActiveFilter;
 import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
-import nl.nn.adapterframework.configuration.filters.Stub4TesttoolFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
@@ -54,9 +55,11 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -228,7 +231,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		ContentHandler handler;
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
-			handler = Stub4TesttoolFilter.getStub4TesttoolContentHandler(writer, appConstants);
+			handler = getStub4TesttoolContentHandler(writer, appConstants);
 			handler = getCanonicalizedConfiguration(configuration, handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
@@ -273,6 +276,28 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
+		}
+	}	
+	
+	/**
+	 * Get the contenthandler to stub configurations
+	 * If stubbing is disabled, the input ContentHandler is returned as-is
+	 */
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
+		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
+			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
+			TransformerPool tp = TransformerPool.getInstance(xslt);
+
+			TransformerFilter filter = tp.getTransformerFilter(null, null, null, false, handler);
+			
+			Map<String,Object> parameters = new HashMap<String,Object>();
+			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
+			
+			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
+			
+			return filter;
+		} else {
+			return handler;
 		}
 	}
 

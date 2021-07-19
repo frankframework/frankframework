@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.Properties;
 
@@ -145,6 +146,30 @@ public class ConfigurationDigesterTest {
 		assertEquals(expected, writer.toString().trim());
 	}
 
+	@Test
+	public void stub4testtoolTest() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
+		
+		StringWriter target = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(target);
+		
+		Properties properties = new Properties();
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+		
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+		
+		ConfigurationDigester digester = new ConfigurationDigester();
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
+		
+		XmlUtils.parseXml(originalConfiguration, filter);
+		
+		String actual = new String(target.toString());
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
+		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+	
 	private class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
