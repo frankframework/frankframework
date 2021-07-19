@@ -1887,8 +1887,8 @@ public class XmlUtils {
 		try {
 			XmlUtils.parseXml(input, handler);
 			return xmlWriter.toString();
-		} catch (IOException | SAXException e) {
-			throw new RuntimeException("ERROR: could not canonicalize ["+input+"]",e);
+		} catch (SAXException e) {
+			throw new IOException("ERROR: could not canonicalize ["+input+"]",e);
 		}
 	}
 
