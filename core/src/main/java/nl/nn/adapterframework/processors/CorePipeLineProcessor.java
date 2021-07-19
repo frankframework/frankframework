@@ -115,10 +115,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 			}
 		}
 
-		if (message.asObject() instanceof String) {
-			pipeLine.getRequestSizeStats().addValue(((String)message.asObject()).length());
+		long size = message.size();
+		if (size > 0) {
+			pipeLine.getRequestSizeStats().addValue(size);
 		}
-		
+
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			String input;
 			try {
@@ -209,7 +210,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (message.asObject()!=null && !plExit.getEmptyResult()) {
+						if (!message.isEmpty() && !plExit.getEmptyResult()) {
 							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(Message.nullMessage());
