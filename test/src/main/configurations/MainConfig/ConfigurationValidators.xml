@@ -31,7 +31,7 @@
 				<forward name="outputFailure" path="OutputValidationFailure" />
 			</inputValidator>
 			<inputWrapper  className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" direction="unwrap"/>
-			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" outputNamespace="urn:items" root="Item_Response" soapNamespaceSessionKey="receivedRootNamespace"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" onlyIfSessionKey="receivedRootElement" onlyIfValue="Envelope" outputNamespace="urn:items" soapNamespaceSessionKey="receivedRootNamespace"/>
 	
 			<pipe name="InputValidationFailure" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="xml/xsl/esb/soapBody.xsl" getInputFromFixedValue="&lt;InputValidationFailure xmlns=&quot;urn:items&quot;/&gt;">
 				<param name="cmhVersion" value="1" />
