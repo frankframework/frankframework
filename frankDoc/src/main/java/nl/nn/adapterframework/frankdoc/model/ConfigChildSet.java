@@ -94,14 +94,14 @@ public class ConfigChildSet {
 	}
 
 	List<ConfigChild> filter(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
-		Set<ConfigChild.Key> keys = configChildren.stream().map(ConfigChild.Key::new).distinct().collect(Collectors.toSet());
+		Set<ConfigChildKey> keys = configChildren.stream().map(ConfigChildKey::new).distinct().collect(Collectors.toSet());
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild c: configChildren) {
 			if(rejector.test(c)) {
-				keys.remove(new ConfigChild.Key(c));
+				keys.remove(new ConfigChildKey(c));
 			} else if(selector.test(c)) {
 				result.add(c);
-				keys.remove(new ConfigChild.Key(c));
+				keys.remove(new ConfigChildKey(c));
 			}
 		}
 		return result;

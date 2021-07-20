@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.XsdVersion;
@@ -43,22 +42,6 @@ public class ConfigChild extends ElementChild {
 
 	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
 			SINGLE_ELEMENT_ONLY.thenComparing(c -> ! c.isMandatory());
-
-	@EqualsAndHashCode(callSuper = false)
-	static final class Key extends AbstractKey {
-		private final @Getter String roleName;
-		private final @Getter ElementType elementType;
-
-		public Key(ConfigChild configChild) {
-			roleName = configChild.getRoleName();
-			elementType = configChild.getElementType();
-		}
-
-		@Override
-		public String toString() {
-			return "(roleName=" + roleName + ", elementType=" + elementType.getFullName() + ")";
-		}
-	}
 
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
@@ -103,8 +86,8 @@ public class ConfigChild extends ElementChild {
 	}
 
 	@Override
-	Key getKey() {
-		return new Key(this);
+	ConfigChildKey getKey() {
+		return new ConfigChildKey(this);
 	}
 
 	public String getRoleName() {
@@ -138,10 +121,10 @@ public class ConfigChild extends ElementChild {
 	 * have a config child for the {@link ElementRole}.
 	 */
 	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
-		List<Key> keySequence = orig.stream().map(Key::new).collect(Collectors.toList());
-		Map<Key, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(Key::new));
+		List<ConfigChildKey> keySequence = orig.stream().map(ConfigChildKey::new).collect(Collectors.toList());
+		Map<ConfigChildKey, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(ConfigChildKey::new));
 		List<ConfigChild> result = new ArrayList<>();
-		for(Key key: keySequence) {
+		for(ConfigChildKey key: keySequence) {
 			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
 			ConfigChild selected = bucket.get(0);
