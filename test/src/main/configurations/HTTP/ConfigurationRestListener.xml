@@ -252,7 +252,7 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param">
+					urlParam="url_param" streamResultToFileNameSessionKey="fileName">
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="text2Xml" />
