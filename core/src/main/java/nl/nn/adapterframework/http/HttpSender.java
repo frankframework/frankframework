@@ -194,12 +194,12 @@ public class HttpSender extends HttpSenderBase {
 			this.description = description;
 		}
 		@Override
-		public String getLabel() {
+		public String getDescription() {
 			return description;
 		}
 		@Override
 		public String toString() {
-			return getLabel();
+			return getDescription();
 		}
 	}
 
