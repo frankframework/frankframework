@@ -69,6 +69,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -180,8 +181,8 @@ public class HttpSender extends HttpSenderBase {
 
 	private PostType postType = PostType.RAW;
 
-	public enum PostType {
-		RAW("raw text"), // text/html;charset=UTF8
+	public enum PostType implements DocumentedEnum {
+		RAW("raw text/xml/json"), // text/html;charset=UTF8
 		BINARY("binary content"), //application/octet-stream
 //		SWA("Soap with Attachments"), // text/xml
 		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
@@ -193,8 +194,12 @@ public class HttpSender extends HttpSenderBase {
 			this.description = description;
 		}
 		@Override
-		public String toString() {
+		public String getLabel() {
 			return description;
+		}
+		@Override
+		public String toString() {
+			return getLabel();
 		}
 	}
 
@@ -663,7 +668,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodType=POST</code>, the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
+	@IbisDoc({"When <code>methodType=POST</code>, the type of post request", "RAW"})
 	public void setPostType(String type) {
 		this.postType = EnumUtils.parse(PostType.class, type);
 	}
