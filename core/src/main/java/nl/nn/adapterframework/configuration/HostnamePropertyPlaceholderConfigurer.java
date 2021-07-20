@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
  * Make the hostname property available to the Ibis configuration and the Spring
@@ -29,7 +29,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
  *
  * @author Jaco de Groot
  */
-public class HostnamePropertyPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer {
+public class HostnamePropertyPlaceholderConfigurer
+		extends PropertyPlaceholderConfigurer {
 	private static String HOSTNAME_PROPERTY = "hostname";
 
 	public HostnamePropertyPlaceholderConfigurer() {

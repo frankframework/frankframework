@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import nl.nn.adapterframework.util.AppConstants;
 
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
  * Overwrite a property available to the Ibis configuration and the Spring
@@ -27,7 +27,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
  *
  * @author Jaco de Groot
  */
-public class OverwritePropertyPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer {
+public class OverwritePropertyPlaceholderConfigurer
+		extends PropertyPlaceholderConfigurer {
 	private String propertyName;
 	private String propertyValue;
 
