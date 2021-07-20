@@ -22,18 +22,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class MultipartHttpSender extends HttpSender {
 
-	@Override
-	public void configure() throws ConfigurationException {
+	public MultipartHttpSender() {
+		setPostType(PostType.FORMDATA.name());
 		setMethodType("POST");
 		setFirstBodyPartName("message");
-
-		super.configure();
 	}
 
 	@Override
