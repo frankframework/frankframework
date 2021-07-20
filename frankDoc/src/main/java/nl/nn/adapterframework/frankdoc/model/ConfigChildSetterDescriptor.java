@@ -36,12 +36,19 @@ import lombok.Getter;
  * That field is obtained from an {@code IbisDoc} annotation.
  */
 class ConfigChildSetterDescriptor {
+	static enum Type {
+		OBJECT,
+		TEXT
+	}
+
+	private @Getter Type configChildSetterDescriptorType;
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
 	private @Getter String roleName;
 
-	ConfigChildSetterDescriptor(String methodName, String roleName) throws SAXException {
+	ConfigChildSetterDescriptor(Type configChildSetterDescriptorType, String methodName, String roleName) throws SAXException {
+		this.configChildSetterDescriptorType = configChildSetterDescriptorType;
 		this.methodName = methodName;
 		this.roleName = roleName;
 		mandatory = false;

@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.sf.cglib.asm.Type;
 import nl.nn.adapterframework.configuration.digester.DigesterRule;
 import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
 import nl.nn.adapterframework.core.Resource;
@@ -149,16 +150,40 @@ public class FrankDocModel {
 				}
 			}
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
-				add(rule.getRegisterMethod(), roleName);
-			}			
+				if(StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
+					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", roleName);
+				}
+				addTypeObject(rule.getRegisterMethod(), roleName);
+			} else {
+				if(StringUtils.isNotEmpty(rule.getRegisterTextMethod())) {
+					addTypeText(rule.getRegisterTextMethod(), roleName);
+				} else {
+					// roleName is not final, so a lambda wont work in the trace statement.
+					// We use isTraceEnabled() instead.
+					if(log.isTraceEnabled()) {
+						log.trace("digester-rules.xml, ignoring role name {} because there is no registerMethod and no registerTextMethod attribute", roleName);
+					}
+				}
+			}
 		}
 
-		private void add(String registerMethod, String roleName) throws SAXException {
-			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, roleName);
-			if(configChildDescriptors.containsKey(item.getMethodName())) {
-				log.warn("In digester rules [{}], duplicate method name [{}]", path, registerMethod);
+		private void addTypeObject(String registerMethod, String roleName) throws SAXException {
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor(
+					ConfigChildSetterDescriptor.Type.OBJECT, registerMethod, roleName);
+			checkDuplicate(descriptor);
+		}
+
+		private void addTypeText(String registerMethod, String roleName) throws SAXException {
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor(
+					ConfigChildSetterDescriptor.Type.TEXT, registerMethod, roleName);
+			checkDuplicate(descriptor);
+		}
+
+		private void checkDuplicate(ConfigChildSetterDescriptor descriptor) {
+			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
+				log.warn("In digester rules [{}], duplicate method name [{}]", path, descriptor.getMethodName());
 			} else {
-				configChildDescriptors.put(item.getMethodName(), item);
+				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
 			}
 		}
 	}
@@ -433,16 +458,22 @@ public class FrankDocModel {
 		for(int order = 0; order < frankMethods.size(); ++order) {
 			FrankMethod frankMethod = frankMethods.get(order);
 			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
-			ConfigChild configChild = new ConfigChild(parent, frankMethod);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
-			log.trace("Have ConfigChildSetterDescriptor, methodName = [{}], roleName = [{}], mandatory = [{}], allowMultiple = [{}]",
-					() -> configChildDescriptor.getMethodName(), () -> configChildDescriptor.getRoleName(), () -> configChildDescriptor.isMandatory(), () -> configChildDescriptor.isAllowMultiple());
+			log.trace("Have ConfigChildSetterDescriptor, type = [{}], methodName = [{}], roleName = [{}], mandatory = [{}], allowMultiple = [{}]",
+					() -> configChildDescriptor.getConfigChildSetterDescriptorType().toString(),
+					() -> configChildDescriptor.getMethodName(),
+					() -> configChildDescriptor.getRoleName(),
+					() -> configChildDescriptor.isMandatory(),
+					() -> configChildDescriptor.isAllowMultiple());
+			ConfigChild configChild = createConfigChild(configChildDescriptor, parent, frankMethod);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
-			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
-			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
-			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			if(configChildDescriptor.getConfigChildSetterDescriptorType() == ConfigChildSetterDescriptor.Type.OBJECT) {
+				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
+				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
+				((ObjectConfigChild) configChild).setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			}
 			configChild.setOrder(order);
 			result.add(configChild);
 			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
@@ -454,6 +485,21 @@ public class FrankDocModel {
 			result.forEach(c -> log.trace("{}", c.toString()));
 		}
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
+		return result;
+	}
+
+	private ConfigChild createConfigChild(ConfigChildSetterDescriptor descriptor, FrankElement parent, FrankMethod method) {
+		ConfigChild result = null;
+		switch(descriptor.getConfigChildSetterDescriptorType()) {
+		case OBJECT:
+			result = new ObjectConfigChild(parent, method);
+			break;
+		case TEXT:
+			result = new TextConfigChild(parent, method, descriptor.getRoleName());
+			break;
+		default:
+			throw new IllegalArgumentException("Cannot happen, switch statement should cover all enum values");
+		}
 		return result;
 	}
 
@@ -591,7 +637,7 @@ public class FrankDocModel {
 	private void createConfigChildSets(FrankElement frankElement) {
 		log.trace("Handling FrankElement [{}]", () -> frankElement.getFullName());
 		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
-				.collect(Collectors.groupingBy(c -> c.getElementRole().getRoleName()));
+				.collect(Collectors.groupingBy(c -> c.getRoleName()));
 		for(String roleName: cumChildrenByRoleName.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
 			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {

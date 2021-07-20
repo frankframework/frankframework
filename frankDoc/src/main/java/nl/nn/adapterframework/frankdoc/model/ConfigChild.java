@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.XsdVersion;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild {
+public abstract class ConfigChild extends ElementChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
@@ -45,8 +46,7 @@ public class ConfigChild extends ElementChild {
 
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
-	private @Getter @Setter ElementRole elementRole;
-	private String methodName;
+	private @Getter(AccessLevel.PACKAGE) String methodName;
 	private boolean isOverrideMeaningfulLogged = false;
 
 	ConfigChild(FrankElement owningElement, FrankMethod method) {
@@ -65,6 +65,8 @@ public class ConfigChild extends ElementChild {
 			}
 		}
 	}
+
+	public abstract String getRoleName();
 
 	private static boolean isDocumented(FrankMethod m) {
 		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
@@ -88,14 +90,6 @@ public class ConfigChild extends ElementChild {
 	@Override
 	ConfigChildKey getKey() {
 		return new ConfigChildKey(this);
-	}
-
-	public String getRoleName() {
-		return elementRole.getRoleName();
-	}
-
-	public ElementType getElementType() {
-		return elementRole.getElementType();
 	}
 
 	/**
@@ -130,8 +124,8 @@ public class ConfigChild extends ElementChild {
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
 			if(selected.isDeprecated()) {
-				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for ElementRole {}",
-						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for {}",
+						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.toString());
 			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {
@@ -151,10 +145,5 @@ public class ConfigChild extends ElementChild {
 			log.trace("Config {} overrides {} and changes isAllowMultiple() or isMandatory()", toString(), overriddenFrom.toString());
 		}
 		return result;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("%s.%s(%s)", getOwningElement().getSimpleName(), methodName, getElementType().getSimpleName());
 	}
 }
