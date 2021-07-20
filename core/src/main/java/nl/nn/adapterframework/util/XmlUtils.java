@@ -1115,7 +1115,7 @@ public class XmlUtils {
 	}
 
 	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
-		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
 	}
