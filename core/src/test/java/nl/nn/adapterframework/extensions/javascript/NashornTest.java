@@ -88,9 +88,8 @@ public class NashornTest {
 		Assert.assertTrue(out.isNaN());
 	}
 
-	@Test
+	@Test(expected = JavascriptException.class)
 	public void testExecuteFunctionUnknownFunc() throws JavascriptException {
-		Double out = (Double) engine.executeFunction("plusTwo");
-		Assert.assertNull(out);
+		engine.executeFunction("plusTwo");
 	}
 }
