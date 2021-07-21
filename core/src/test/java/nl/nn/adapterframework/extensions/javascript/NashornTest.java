@@ -24,7 +24,7 @@ public class NashornTest {
 	private Nashorn engine;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws JavascriptException {
 		engine = new Nashorn();
 		engine.startRuntime();
 	}
@@ -73,7 +73,7 @@ public class NashornTest {
 	}
 
 	@Test
-	public void testExecuteFunction() {
+	public void testExecuteFunction() throws JavascriptException {
 		String script = "function plusTwo(x) { return x + 2;}";
 		engine.executeScript(script);
 		Double out = (Double) engine.executeFunction("plusTwo", 5);
@@ -81,7 +81,7 @@ public class NashornTest {
 	}
 
 	@Test
-	public void testExecuteFunctionNoParam() {
+	public void testExecuteFunctionNoParam() throws JavascriptException {
 		String script = "function plusTwo(x) { return x + 2;}";
 		engine.executeScript(script);
 		Double out = (Double) engine.executeFunction("plusTwo");
@@ -89,7 +89,7 @@ public class NashornTest {
 	}
 
 	@Test
-	public void testExecuteFunctionUnknownFunc() {
+	public void testExecuteFunctionUnknownFunc() throws JavascriptException {
 		Double out = (Double) engine.executeFunction("plusTwo");
 		Assert.assertNull(out);
 	}

@@ -180,7 +180,7 @@ public class GraphvizEngine {
 
 		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
 			log.info("Starting runtime for Javascript Engine...");
-			engine.setScriptAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
+			engine.setGlobalAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
 			engine.startRuntime();
 			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
 			engine.executeScript(graphvisJsLibrary);
