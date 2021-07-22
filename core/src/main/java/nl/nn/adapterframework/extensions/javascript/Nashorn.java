@@ -89,7 +89,6 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 				Message msg = Message.asMessage(param);
 				return sender.sendMessage(msg, session).asString();
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
 		};

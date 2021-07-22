@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.graphviz;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -175,7 +176,7 @@ public class GraphvizEngine {
 			}
 
 			if (jsEngine == null)
-				throw new UnsupportedOperationException("Javascript engines could not be initialized.");
+				throw new UnsupportedOperationException("no usable Javascript engines found, tried "+Arrays.toString(engines));
 		}
 
 		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {

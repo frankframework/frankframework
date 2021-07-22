@@ -87,7 +87,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	}
 
 	private String getLogPrefix() {
-		return "MonitorManager ["+this+"] ";
+		return "Manager@"+this.hashCode();
 	}
 
 	public void registerStateChange(Date date) {
