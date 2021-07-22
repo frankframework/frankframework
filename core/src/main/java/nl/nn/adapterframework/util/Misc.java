@@ -863,7 +863,8 @@ public class Misc {
 
 	public static String getConfigurationResources() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
+			return Misc.fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
 			return null;
@@ -872,7 +873,8 @@ public class Misc {
 
 	public static String getConfigurationServer() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
+			return Misc.fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
 			return null;
