@@ -265,8 +265,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
-		if(fileExtension == null) {
-			log.warn("cannot generate FlowFile, file extensions is null");
+		if(fileExtension == null) { //fail fast check to see if an IFlowGenerator is available.
+			log.debug("cannot generate FlowFile, file extensions is null");
 			return null;
 		}
 
