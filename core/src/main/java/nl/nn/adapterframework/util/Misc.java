@@ -351,12 +351,14 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString) throws IOException {
 		return fileToString(fileName, endOfLineString, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
 		try (FileReader reader = new FileReader(fileName)) {
 			return readerToString(reader, endOfLineString, xmlEncode);
