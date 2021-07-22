@@ -68,7 +68,7 @@ public class IbmMisc {
         return appPath;
     }
 
-    public static String getConfigurationResources() throws IOException {
+    public static String getConfigurationResourcePath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
         final String nodeName = adminService.getNodeName();
@@ -91,11 +91,11 @@ public class IbmMisc {
                         + processName
                         + File.separator
                         + "resources.xml";
-        LOG.debug("configurationResourcesFile [" + crFile + "]");
-        return Misc.fileToString(crFile);
+        LOG.debug("configurationResourcesPath [" + crFile + "]");
+        return crFile;
     }
 
-    public static String getConfigurationServer() throws IOException {
+    public static String getConfigurationServerPath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
         final String nodeName = adminService.getNodeName();
@@ -118,8 +118,8 @@ public class IbmMisc {
                         + processName
                         + File.separator
                         + "server.xml";
-        LOG.debug("configurationServerFile [" + csFile + "]");
-        return Misc.fileToString(csFile);
+        LOG.debug("configurationServerPath [" + csFile + "]");
+        return csFile;
     }
 
 	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, DomBuilderException, TransformerException, SAXException {
@@ -130,7 +130,7 @@ public class IbmMisc {
 					+ GETCONNPOOLPROP_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, 2);
-		Map parameters = new Hashtable();
+		Map<String, Object> parameters = new Hashtable<>();
 		parameters.put("providerType", providerType);
 		parameters.put("jndiName", jndiName);
 		XmlUtils.setTransformerParameters(t, parameters);

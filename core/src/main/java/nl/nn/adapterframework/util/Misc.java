@@ -345,7 +345,7 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
-	public static String fileToString(String fileName) throws IOException {
+	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
 	/**
