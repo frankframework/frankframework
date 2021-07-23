@@ -488,10 +488,30 @@
 			<version>2.2.11</version>
 		</dependency>
 
+		<!--
+			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces 
+			This version depends on the StAX1-API indirectly because of stax-ex.
+		-->
 		<dependency>
 			<groupId>com.sun.xml.messaging.saaj</groupId>
 			<artifactId>saaj-impl</artifactId>
 			<version>1.3.28</version>
+		</dependency>
+		<!--
+			Upgraded version of the Extended StAX API which does not depend on any StAX API.
+		-->
+		<dependency>
+			<groupId>org.jvnet.staxex</groupId>
+			<artifactId>stax-ex</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<!--
+			Explicitly add the StAX2-API
+		-->
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>stax2-api</artifactId>
+			<version>4.2.1</version>
 		</dependency>
 
 		<dependency>
