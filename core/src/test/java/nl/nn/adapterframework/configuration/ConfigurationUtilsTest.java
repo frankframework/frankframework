@@ -45,7 +45,9 @@ public class ConfigurationUtilsTest extends Mockito {
 	private IbisContext ibisContext = spy(new IbisContext());
 	private PreparedStatementMock stmt;
 
+	private static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	
 	private static final String STUB4TESTTOOL_DIRECTORY = "/ConfigurationUtils/stub4testtool";
 	private static final String STUB4TESTTOOL_ORIGINAL_FILENAME = "original.xml";
 	private static final String STUB4TESTTOOL_EXPECTED_FILENAME = "expected.xml";
@@ -499,9 +501,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
-		// Parameter disableValidators has been used to test the impact of
-		// validators on memory usage.
-		parameters.put("disableValidators", disableValidators);
+		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, disableValidators);
 		
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);
 		String stubbedConfiguration = ConfigurationUtils.transformConfiguration(originalConfiguration, STUB4TESTTOOL_XSLT, parameters);
