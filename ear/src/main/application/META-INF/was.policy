@@ -89,8 +89,9 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
-// required for nashhorn
+// required for the Nashorn javascript engine
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
 
 // required for MS SQL:
@@ -171,8 +172,5 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.nio.fs";
 
 // required for CXF
 permission java.lang.RuntimePermission "shutdownHooks";
-
-// required for the Nashorn javascript engine
-permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
 
 };
