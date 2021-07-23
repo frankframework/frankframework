@@ -101,13 +101,6 @@ public class ConfigChildSet {
 		return ConfigChild.getElementRoleStream(filteredConfigChildren).collect(Collectors.toList());
 	}
 
-	/**
-	 * Assumes that configChildren only consists of TextConfigChild.
-	 */
-	public boolean getFilteredTextAllowMultiple(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
-		return ConfigChild.textConfigChildrenAllowMultiple(filter(selector, rejector));
-	}
-
 	List<ConfigChild> filter(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
 		Set<ConfigChildKey> keys = configChildren.stream().map(ConfigChild::getKey).distinct().collect(Collectors.toSet());
 		List<ConfigChild> result = new ArrayList<>();

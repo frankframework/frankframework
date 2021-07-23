@@ -876,7 +876,7 @@ public class DocWriterNew {
 		String roleName = configChildren.get(0).getRoleName();
 		switch(ConfigChildGroupKind.groupKind(configChildren)) {
 		case TEXT:
-			addTextConfigChild(context, roleName, ConfigChild.textConfigChildrenAllowMultiple(configChildren));
+			addTextConfigChild(context, roleName);
 			break;
 		case MIXED:
 			log.warn("Encountered group of config children that mixes TextConfigChild and ObjectConfigChild, not supported: [{}]",
@@ -920,11 +920,18 @@ public class DocWriterNew {
 	}
 
 	private void addTextConfigChild(XmlBuilder context, TextConfigChild child) {
-		addTextConfigChild(context, child.getRoleName(), child.isAllowMultiple());
+		addTextConfigChild(context, child.getRoleName());
 	}
 
-	private void addTextConfigChild(XmlBuilder context, String roleName, boolean allowMultiple) {
-		addElement(context, Utils.toUpperCamelCase(roleName), "0", getMaxOccurs(allowMultiple));
+	/*
+	 * We can assume that a text config child has allowMultiple = true.
+	 * The reason is that TextConfigChild objects only correspond to
+	 * config child setter descriptors that start with "add" or "register".
+	 * They cannot start with "set" because a method setX(String) is
+	 * an attribute setter.
+	 */
+	private void addTextConfigChild(XmlBuilder context, String roleName) {
+		addElement(context, Utils.toUpperCamelCase(roleName), "0", "unbounded");
 	}
 
 	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -990,7 +997,7 @@ public class DocWriterNew {
 	}
 
 	private void addPluralTextConfigChild(XmlBuilder choice, ConfigChildSet configChildSet) {
-		addTextConfigChild(choice, configChildSet.getRoleName(), configChildSet.getFilteredTextAllowMultiple(version.getChildSelector(), version.getChildRejector()));
+		addTextConfigChild(choice, configChildSet.getRoleName());
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -1149,11 +1156,7 @@ public class DocWriterNew {
 	}
 
 	private static String getMaxOccurs(ConfigChild child) {
-		return getMaxOccurs(child.isAllowMultiple());
-	}
-
-	private static String getMaxOccurs(boolean allowMultiple) {
-		if(allowMultiple) {
+		if(child.isAllowMultiple()) {
 			return "unbounded";
 		} else {
 			return "1";
