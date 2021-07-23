@@ -16,18 +16,18 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -49,7 +49,6 @@ public class ConfigChildSet {
 	private static Logger log = LogUtil.getLogger(ConfigChildSet.class);
 
 	private final @Getter List<ConfigChild> configChildren;
-	private @Getter @Setter ElementRoleSet elementRoleSet;
 
 	/**
 	 * @throws IllegalStateException if input children is empty or when the elements
@@ -85,23 +84,39 @@ public class ConfigChildSet {
 		}
 	}
 
+	public ConfigChildGroupKind getConfigChildGroupKind() {
+		return ConfigChildGroupKind.groupKind(configChildren);
+	}
+
+	public Stream<ElementRole> getElementRoleStream() {
+		return ConfigChild.getElementRoleStream(configChildren);
+	}
+
 	public String getRoleName() {
 		return configChildren.get(0).getRoleName();
 	}
 
 	public List<ElementRole> getFilteredElementRoles(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
-		return new ArrayList<>(filter(selector, rejector).stream().map(ConfigChild::getElementRole).distinct().collect(Collectors.toList()));
+		List<ConfigChild> filteredConfigChildren = filter(selector, rejector);
+		return ConfigChild.getElementRoleStream(filteredConfigChildren).collect(Collectors.toList());
+	}
+
+	/**
+	 * Assumes that configChildren only consists of TextConfigChild.
+	 */
+	public boolean getFilteredTextAllowMultiple(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
+		return ConfigChild.textConfigChildrenAllowMultiple(filter(selector, rejector));
 	}
 
 	List<ConfigChild> filter(Predicate<ElementChild> selector, Predicate<ElementChild> rejector) {
-		Set<ConfigChildKey> keys = configChildren.stream().map(ConfigChildKey::new).distinct().collect(Collectors.toSet());
+		Set<ConfigChildKey> keys = configChildren.stream().map(ConfigChild::getKey).distinct().collect(Collectors.toSet());
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChild c: configChildren) {
 			if(rejector.test(c)) {
-				keys.remove(new ConfigChildKey(c));
+				keys.remove(c.getKey());
 			} else if(selector.test(c)) {
 				result.add(c);
-				keys.remove(new ConfigChildKey(c));
+				keys.remove(c.getKey());
 			}
 		}
 		return result;
@@ -111,7 +126,7 @@ public class ConfigChildSet {
 	 * Handles generic element option recursion as explained in
 	 * {@link nl.nn.adapterframework.frankdoc.model}.
 	 */
-	public static Map<String, List<ElementRole>> getMemberChildren(
+	public static Map<String, List<ConfigChild>> getMemberChildren(
 			List<ElementRole> parents, Predicate<ElementChild> selector, Predicate<ElementChild> rejector, Predicate<FrankElement> elementFilter) {
 		if(log.isTraceEnabled()) {
 			log.trace("ConfigChildSet.getMemberChildren called with parents: [{}]", elementRolesToString(parents));
@@ -125,41 +140,24 @@ public class ConfigChildSet {
 			String elementsString = members.stream().map(FrankElement::getSimpleName).collect(Collectors.joining(", "));
 			log.trace("Members of parents are: [{}]", elementsString);
 		}
-		List<ConfigChild> memberChildren = members.stream().flatMap(element -> element.getCumulativeConfigChildren(selector, rejector).stream())
+		Map<String, List<ConfigChild>> memberChildrenByRoleName = members.stream().flatMap(element -> element.getCumulativeConfigChildren(selector, rejector).stream())
 				.distinct()
-				.collect(Collectors.toList());
-		Map<String, List<ElementRole>> result = promoteIfConflict(memberChildren.stream()
-				.map(ConfigChild::getElementRole)
-				.distinct()
-				.collect(Collectors.groupingBy(ElementRole::getRoleName)));
+				.collect(Collectors.groupingBy(ConfigChild::getRoleName));
 		if(log.isTraceEnabled()) {
-			log.trace("Here is the result:");
-			for(String roleName: result.keySet()) {
-				log.trace("  Role name {} has roles {}", roleName, elementRolesToString(result.get(roleName)));
+			log.trace("Found the following member children:");
+			for(String roleName: memberChildrenByRoleName.keySet()) {
+				List<ConfigChild> memberChildren = memberChildrenByRoleName.get(roleName);
+				String memberChildrenString = memberChildren.stream()
+						.map(ConfigChild::toString)
+						.collect(Collectors.joining(", "));
+				log.trace("  [{}]: [{}]", roleName, memberChildrenString);				
 			}
 		}
-		return result;
+		return memberChildrenByRoleName;
 	}
 
 	private static String elementRolesToString(List<ElementRole> elementRoles) {
 		return elementRoles.stream().map(ElementRole::toString).collect(Collectors.joining(", "));
-	}
-
-	/**
-	 * Solves conflicts by {@link nl.nn.adapterframework.frankdoc.model.ElementType}
-	 * interface inheritance.
-	 */
-	private static Map<String, List<ElementRole>> promoteIfConflict(Map<String, List<ElementRole>> original) {
-		Map<String, List<ElementRole>> result = new HashMap<>();
-		for(String roleName: original.keySet()) {
-			List<ElementRole> group = original.get(roleName);
-			if(group.size() == 1) {
-				result.put(roleName, group);
-			} else {
-				result.put(roleName, group.stream().map(ElementRole::getHighestCommonInterface).distinct().collect(Collectors.toList()));
-			}
-		}
-		return result;
 	}
 
 	public static Set<ElementRole.Key> getKey(List<ElementRole> roles) {
@@ -167,11 +165,21 @@ public class ConfigChildSet {
 	}
 
 	public Optional<FrankElement> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
-		return elementRoleSet.getGenericElementDefaultCandidates().filter(elementFilter);
+		List<FrankElement> candidates = ConfigChild.getElementRoleStream(configChildren)
+				.map(ElementRole::getDefaultElementOptionConflict)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		if(candidates.size() == 1) {
+			return Optional.of(candidates.get(0));
+		} else {
+			return Optional.empty();
+		}
 	}
 
 	@Override
 	public String toString() {
-		return elementRoleSet.toString();
+		return "ConfigChildSet(" +
+				configChildren.stream().map(ConfigChild::toString).collect(Collectors.joining(", "))
+				+ ")";
 	}
 }

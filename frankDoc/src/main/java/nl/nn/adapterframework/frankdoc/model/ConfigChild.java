@@ -17,11 +17,13 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -88,9 +90,7 @@ public abstract class ConfigChild extends ElementChild {
 	}
 
 	@Override
-	ConfigChildKey getKey() {
-		return new ConfigChildKey(this);
-	}
+	abstract ConfigChildKey getKey();
 
 	/**
 	 * Removes duplicate config children. As input this method expects a list of config children
@@ -115,8 +115,8 @@ public abstract class ConfigChild extends ElementChild {
 	 * have a config child for the {@link ElementRole}.
 	 */
 	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
-		List<ConfigChildKey> keySequence = orig.stream().map(ConfigChildKey::new).collect(Collectors.toList());
-		Map<ConfigChildKey, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(ConfigChildKey::new));
+		List<ConfigChildKey> keySequence = orig.stream().map(ConfigChild::getKey).collect(Collectors.toList());
+		Map<ConfigChildKey, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(ConfigChild::getKey));
 		List<ConfigChild> result = new ArrayList<>();
 		for(ConfigChildKey key: keySequence) {
 			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
@@ -145,5 +145,32 @@ public abstract class ConfigChild extends ElementChild {
 			log.trace("Config {} overrides {} and changes isAllowMultiple() or isMandatory()", toString(), overriddenFrom.toString());
 		}
 		return result;
+	}
+
+	public static Stream<ElementRole> getElementRoleStream(Collection<ConfigChild> configChildren) {
+		return configChildren.stream()
+				.filter(c -> c instanceof ObjectConfigChild)
+				.map(c -> (ObjectConfigChild) c)
+				.map(ObjectConfigChild::getElementRole)
+				.distinct();
+	}
+
+	/**
+	 * Get the multiplicity for a collection of TextConfigChild. Should only be called if
+	 * some of the input config children are of type TextConfigChild.
+	 */
+	public static boolean textConfigChildrenAllowMultiple(Collection<ConfigChild> configChildren) {
+		List<TextConfigChild> textConfigChildren = configChildren.stream()
+				.filter(c -> c instanceof TextConfigChild)
+				.map(c -> (TextConfigChild) c)
+				.collect(Collectors.toList());
+		if(textConfigChildren.isEmpty()) {
+			throw new IllegalArgumentException(String.format("Did not expect only ObjectConfigChild in [%s]", ConfigChild.toString(configChildren)));
+		}
+		return textConfigChildren.stream().anyMatch(ConfigChild::isAllowMultiple);
+	}
+
+	public static String toString(Collection<ConfigChild> configChildren) {
+		return configChildren.stream().map(ConfigChild::toString).collect(Collectors.joining(", "));
 	}
 }

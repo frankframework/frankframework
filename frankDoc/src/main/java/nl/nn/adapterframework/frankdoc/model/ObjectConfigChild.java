@@ -12,6 +12,11 @@ public class ObjectConfigChild extends ConfigChild {
 	}
 
 	@Override
+	public ConfigChildKey getKey() {
+		return new ConfigChildKey(getRoleName(), elementRole.getElementType());
+	}
+
+	@Override
 	public String getRoleName() {
 		return elementRole.getRoleName();
 	}
@@ -22,7 +27,7 @@ public class ObjectConfigChild extends ConfigChild {
 
 	@Override
 	public String toString() {
-		return String.format("%s %s.%s(%s)",
+		return String.format("%s(%s.%s(%s))",
 				this.getClass().getSimpleName(), getOwningElement().getSimpleName(), getMethodName(), getElementType().getSimpleName());
 	}
 }

@@ -62,7 +62,9 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenConfigChildMethodThenConfigChildProduced() throws Exception {
-		ConfigChild actual = selectChild("roleNameChild");
+		ConfigChild rawActual = selectChild("roleNameChild");
+		assertTrue(rawActual instanceof ObjectConfigChild);
+		ObjectConfigChild actual = (ObjectConfigChild) rawActual;
 		assertEquals("roleNameChild", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
@@ -84,7 +86,9 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenConfigChildMethodDeprecatedThenConfigChildDeprecated() {
-		ConfigChild actual = selectChild("roleNameDeprecatedChild");
+		ConfigChild rawActual = selectChild("roleNameDeprecatedChild");
+		assertTrue(rawActual instanceof ObjectConfigChild);
+		ObjectConfigChild actual = (ObjectConfigChild) rawActual;
 		assertEquals("roleNameDeprecatedChild", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("Child", actual.getElementType().getSimpleName());
@@ -98,7 +102,9 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenChildInheritedFromProtectedThenChildAndNotOverriddenButAnnotationsInherited() {
-		ConfigChild actual = selectChild("roleNameInheritedChilds");
+		ConfigChild rawActual = selectChild("roleNameInheritedChilds");
+		assertTrue(rawActual instanceof ObjectConfigChild);
+		ObjectConfigChild actual = (ObjectConfigChild) rawActual;
 		assertEquals("roleNameInheritedChilds", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChild", actual.getElementType().getSimpleName());
@@ -114,7 +120,9 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenIbisDocBothOnParentAndDerivedThenDerivedValueTaken() {
-		ConfigChild actual = selectChild("roleNameInheritedChildDocWithDescriptionOverride");
+		ConfigChild rawActual = selectChild("roleNameInheritedChildDocWithDescriptionOverride");
+		assertTrue(rawActual instanceof ObjectConfigChild);
+		ObjectConfigChild actual = (ObjectConfigChild) rawActual;
 		assertEquals("roleNameInheritedChildDocWithDescriptionOverride", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("InheritedChildDocWithDescriptionOverride", actual.getElementType().getSimpleName());
@@ -142,10 +150,10 @@ public class FrankDocModelConfigChildrenTest {
 	@Test
 	public void testSequenceOfConfigChildrenMatchesSequenceOfConfigChildSetters() {
 		List<String> actualConfigChildNames = configChildren.stream().map(ConfigChild::toString).collect(Collectors.toList());
-		String[] expectedConfigChildNames = new String[] {"Container.setChild(Child)", "Container.setDeprecatedChild(Child)",
-				"Container.registerInheritedChilds(InheritedChild)", "Container.setInheritedChildDocOnDerived(InheritedChildDocOnDerived)",
-				"Container.setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride)", "Container.setInheritedChildNonSelected(InheritedChildNonSelected)",
-				"Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated)"};
+		String[] expectedConfigChildNames = new String[] {"ObjectConfigChild(Container.setChild(Child))", "ObjectConfigChild(Container.setDeprecatedChild(Child))",
+				"ObjectConfigChild(Container.registerInheritedChilds(InheritedChild))", "ObjectConfigChild(Container.setInheritedChildDocOnDerived(InheritedChildDocOnDerived))",
+				"ObjectConfigChild(Container.setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride))", "ObjectConfigChild(Container.setInheritedChildNonSelected(InheritedChildNonSelected))",
+				"ObjectConfigChild(Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated))"};
 		assertArrayEquals(expectedConfigChildNames, actualConfigChildNames.toArray(new String[] {}));
 	}
 
@@ -180,7 +188,9 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenChildOverridesWithoutDocsThenNotDocumentedButAnnotationsInherited() {
-		ConfigChild actual = selectChild("roleNameChildOverriddenOnlyParentAnnotated");
+		ConfigChild rawActual = selectChild("roleNameChildOverriddenOnlyParentAnnotated");
+		assertTrue(rawActual instanceof ObjectConfigChild);
+		ObjectConfigChild actual = (ObjectConfigChild) rawActual;
 		assertEquals("roleNameChildOverriddenOnlyParentAnnotated", actual.getRoleName());
 		assertEquals("Container", actual.getOwningElement().getSimpleName());
 		assertEquals("ChildOverriddenOnlyParentAnnotated", actual.getElementType().getSimpleName());

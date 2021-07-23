@@ -19,6 +19,7 @@ package nl.nn.adapterframework.frankdoc.model;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 
 /**
  * Class {@link nl.nn.adapterframework.frankdoc.model.ConfigChild} specifies what Frank elements
@@ -35,20 +36,13 @@ import lombok.Getter;
  * {@code X.setAbc()} and {@code Y.setAbc()} can have a different {@code sequenceInConfig}.
  * That field is obtained from an {@code IbisDoc} annotation.
  */
-class ConfigChildSetterDescriptor {
-	static enum Type {
-		OBJECT,
-		TEXT
-	}
-
-	private @Getter Type configChildSetterDescriptorType;
+abstract class ConfigChildSetterDescriptor {
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
 	private @Getter String roleName;
 
-	ConfigChildSetterDescriptor(Type configChildSetterDescriptorType, String methodName, String roleName) throws SAXException {
-		this.configChildSetterDescriptorType = configChildSetterDescriptorType;
+	ConfigChildSetterDescriptor(String methodName, String roleName) throws SAXException {
 		this.methodName = methodName;
 		this.roleName = roleName;
 		mandatory = false;
@@ -59,6 +53,46 @@ class ConfigChildSetterDescriptor {
 		} else {
 			throw new SAXException(
 					String.format("Do not know how many elements go in method [%s]", methodName));
+		}
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b)", getClass().getSimpleName(), methodName, roleName, mandatory, allowMultiple);
+	}
+
+	abstract ConfigChild createConfigChild(FrankElement parent, FrankMethod method);
+	abstract boolean isForObject();
+
+	static class ForObject extends ConfigChildSetterDescriptor {
+		ForObject(String methodName, String roleName) throws SAXException {
+			super(methodName, roleName);
+		}
+
+		@Override
+		ConfigChild createConfigChild(FrankElement parent, FrankMethod method) {
+			return new ObjectConfigChild(parent, method);
+		}
+
+		@Override
+		boolean isForObject() {
+			return true;
+		}
+	}
+
+	static class ForText extends ConfigChildSetterDescriptor {
+		ForText(String methodName, String roleName) throws SAXException {
+			super(methodName, roleName);
+		}
+
+		@Override
+		ConfigChild createConfigChild(FrankElement parent, FrankMethod method) {
+			return new TextConfigChild(parent, method, getRoleName());
+		}
+
+		@Override
+		boolean isForObject() {
+			return false;
 		}
 	}
 }

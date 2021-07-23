@@ -169,6 +169,18 @@ public class ElementRole implements Comparable<ElementRole> {
 		return COMPARATOR.compare(this, other);
 	}
 
+	/**
+	 * Solves conflicts by {@link nl.nn.adapterframework.frankdoc.model.ElementType}
+	 * interface inheritance.
+	 */
+	public static List<ElementRole> promoteIfConflict(List<ElementRole> roles) {
+		if(roles.size() == 1) {
+			return roles;
+		} else {
+			return roles.stream().map(ElementRole::getHighestCommonInterface).distinct().collect(Collectors.toList());
+		}
+	}
+
 	@Override
 	public String toString() {
 		return getKey().toString();
@@ -206,7 +218,7 @@ public class ElementRole implements Comparable<ElementRole> {
 			this.elementTypeSimpleName = elementTypeName.substring(index + 1);
 		}
 
-		public Key(ConfigChild configChild) {
+		public Key(ObjectConfigChild configChild) {
 			this(configChild.getElementType().getFullName(), configChild.getRoleName());
 		}
 

@@ -34,6 +34,8 @@ public class ConfigChildTechnicalOverrideTest {
 
 	private ConfigChild selectChildByArgumentType(FrankElement element, String simpleNameArgumentType) {
 		List<ConfigChild> children = element.getConfigChildren(ElementChild.ALL).stream()
+				.filter(c -> c instanceof ObjectConfigChild)
+				.map(c -> (ObjectConfigChild) c)
 				.filter(c -> c.getElementType().getFullName().equals(PACKAGE + simpleNameArgumentType))
 				.collect(Collectors.toList());
 		assertEquals(1, children.size());

@@ -10,6 +10,11 @@ public class TextConfigChild extends ConfigChild {
 		this.roleName = roleName;
 	}
 
+	@Override
+	public ConfigChildKey getKey() {
+		return new ConfigChildKey(roleName, null);
+	}
+
 	// Avoid complicated Lombok syntax to add the @Override tag. Just
 	// coding the getter is simpler in this case.
 	@Override
