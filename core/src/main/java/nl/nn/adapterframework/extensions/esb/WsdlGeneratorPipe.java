@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -220,7 +221,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
 			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
-			countRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
+			Resource xsdResource = Resource.getResource(xsdFile.getPath());
+			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
 				log.debug("counted [" + countRoot + "] root elements in xsd file [" + xsdFile.getName() + "]");
 				int cr = Integer.parseInt(countRoot);
@@ -243,12 +245,12 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbSoapValidator.setWarn(false);
 			esbSoapValidator.setCmhVersion(cmhVersion);
 
+			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
 					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", "text"));
-					xsdTargetNamespace = tp.transform(
-							Misc.fileToString(xsdFile.getPath()), null);
+					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
 					} else {
@@ -278,7 +280,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
 					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, "text"));
-					xsdRoot = tp.transform(Misc.fileToString(xsdFile.getPath()), null);
+					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");
 						esbSoapValidator.setSoapBody(xsdRoot);
