@@ -46,7 +46,6 @@ import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 /**
  * Singleton class that knows about the RestListeners that are active.
@@ -64,10 +63,6 @@ public class RestServiceDispatcher  {
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
-
-	private static AppConstants appConstants = AppConstants.getInstance();
-	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
-	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
 
 	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
 

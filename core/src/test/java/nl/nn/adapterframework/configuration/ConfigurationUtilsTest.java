@@ -63,7 +63,7 @@ public class ConfigurationUtilsTest extends Mockito {
 			@Override
 			public PreparedStatementMock answer(InvocationOnMock invocation) throws Throwable {
 				String query = (String) invocation.getArguments()[0];
-				stmt = new PreparedStatementMock(query);
+				stmt = PreparedStatementMock.newInstance(query);
 				return stmt;
 			}
 		}).when(conn).prepareStatement(anyString());
