@@ -636,7 +636,7 @@ public class FrankDocModel {
 	private void createElementRoleSetIfApplicable(ConfigChildSet configChildSet) {
 		switch(configChildSet.getConfigChildGroupKind()) {
 		case TEXT:
-			log.trace("[{}] holds only TextConfigChild. No ElementRoleSet needed", configChildSet.toString());
+			log.trace("[{}] holds only TextConfigChild. No ElementRoleSet needed", () -> configChildSet.toString());
 			break;
 		case MIXED:
 			log.warn("[{}] has combines ObjectConfigChild and TextConfigChild, which is not supported", configChildSet.toString());
