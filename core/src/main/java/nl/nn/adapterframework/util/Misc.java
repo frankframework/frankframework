@@ -827,6 +827,7 @@ public class Misc {
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getDeployedApplicationBindings() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -838,6 +839,7 @@ public class Misc {
 		return fileToString(appBndFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getApplicationDeploymentDescriptorPath() throws IOException {
 		try {
 			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
@@ -850,7 +852,8 @@ public class Misc {
 		}
 	}
 
-	public static String getApplicationDeploymentDescriptor () throws IOException {
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptor() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
 			log.debug("applicationDeploymentDescriptorPath not found");
@@ -861,20 +864,22 @@ public class Misc {
 		return fileToString(appFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationResources() throws IOException {
 		try {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
-			return Misc.fileToString(path);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
 			return null;
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationServer() throws IOException {
 		try {
 			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
-			return Misc.fileToString(path);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
 			return null;

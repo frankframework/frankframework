@@ -41,6 +41,7 @@ public class IbmMisc {
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
+	// Used in iaf-core Misc class
     public static String getApplicationDeploymentDescriptorPath() throws IOException {
         final String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication();
         final AdminService adminService = AdminServiceFactory.getAdminService();
@@ -68,6 +69,7 @@ public class IbmMisc {
         return appPath;
     }
 
+	// Used in iaf-core Misc class
     public static String getConfigurationResourcePath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
@@ -95,6 +97,7 @@ public class IbmMisc {
         return crFile;
     }
 
+	// Used in iaf-core Misc class
     public static String getConfigurationServerPath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
