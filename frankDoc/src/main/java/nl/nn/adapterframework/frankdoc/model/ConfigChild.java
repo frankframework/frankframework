@@ -155,21 +155,6 @@ public abstract class ConfigChild extends ElementChild {
 				.distinct();
 	}
 
-	/**
-	 * Get the multiplicity for a collection of TextConfigChild. Should only be called if
-	 * some of the input config children are of type TextConfigChild.
-	 */
-	public static boolean textConfigChildrenAllowMultiple(Collection<ConfigChild> configChildren) {
-		List<TextConfigChild> textConfigChildren = configChildren.stream()
-				.filter(c -> c instanceof TextConfigChild)
-				.map(c -> (TextConfigChild) c)
-				.collect(Collectors.toList());
-		if(textConfigChildren.isEmpty()) {
-			throw new IllegalArgumentException(String.format("Did not expect only ObjectConfigChild in [%s]", ConfigChild.toString(configChildren)));
-		}
-		return textConfigChildren.stream().anyMatch(ConfigChild::isAllowMultiple);
-	}
-
 	public static String toString(Collection<ConfigChild> configChildren) {
 		return configChildren.stream().map(ConfigChild::toString).collect(Collectors.joining(", "));
 	}
