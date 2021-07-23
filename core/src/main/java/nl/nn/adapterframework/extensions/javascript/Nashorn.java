@@ -52,7 +52,7 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 			engine = engineManager.getEngineByName("nashorn");
 
 			//Add PromiseJS polyfill
-			URL promise = ClassUtils.getResourceURL("net/arnx/nashorn/lib/promise.js");
+			URL promise = ClassUtils.getResourceURL("js/promise.js");
 			executeScript(Misc.resourceToString(promise));
 		} catch (Exception e) { //Catch all exceptions
 			throw new JavascriptException("error initializing Nashorn, unable to load Promise.js", e);
