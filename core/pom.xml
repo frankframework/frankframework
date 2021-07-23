@@ -487,36 +487,33 @@
 			<artifactId>jaxb-core</artifactId>
 			<version>2.2.11</version>
 		</dependency>
-		<!-- Use a different SAAJ implementation for WAS7 and WAS8.5 -->
+
+		<!--
+			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces 
+			This version depends on the StAX1-API indirectly because of stax-ex.
+		-->
 		<dependency>
-			<groupId>org.apache.servicemix.bundles</groupId>
-			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
-			<version>1.3.18_1</version>
+			<groupId>com.sun.xml.messaging.saaj</groupId>
+			<artifactId>saaj-impl</artifactId>
+			<version>1.3.28</version>
 		</dependency>
+		<!--
+			Upgraded version of the Extended StAX API which does not depend on any StAX API.
+		-->
 		<dependency>
-			<groupId>org.apache.servicemix.specs</groupId>
-			<artifactId>org.apache.servicemix.specs.saaj-api-1.3</artifactId>
-			<version>2.9.0</version>
+			<groupId>org.jvnet.staxex</groupId>
+			<artifactId>stax-ex</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<!--
+			Explicitly add the StAX2-API
+		-->
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>stax2-api</artifactId>
+			<version>4.2.1</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.servicemix.specs/org.apache.servicemix.specs.jaxws-api-2.2 -->
-		<dependency>
-			<groupId>org.apache.servicemix.specs</groupId>
-			<artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
-			<version>2.3.0</version>
-			<exclusions>
-				<exclusion>
-					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
-					<groupId>javax.xml.stream</groupId>
-					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<!-- exclude stax1 api, to avoid problems on WebSphere, when it tries to use the stax2 api -->
-					<groupId>org.apache.servicemix.specs</groupId>
-					<artifactId>org.apache.servicemix.specs.stax-api-1.0</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>name.neuhalfen.projects.crypto.bouncycastle.openpgp</groupId>
 			<artifactId>bouncy-gpg</artifactId>

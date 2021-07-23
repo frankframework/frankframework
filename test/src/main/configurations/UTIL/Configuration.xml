@@ -3,6 +3,7 @@
 	<!ENTITY UploadFiles SYSTEM "./ConfigurationUploadFiles.xml">
 	<!ENTITY Ladybug SYSTEM "./ConfigurationLadybug.xml">
 	<!ENTITY TestSendMail SYSTEM "./ConfigurationTestSendMail.xml">
+	<!ENTITY ConfigurationXmlParsers SYSTEM "./ConfigurationXmlParsers.xml">
 ]>
 <configuration name="UTIL">
 	<!-- Run Larva scenario's (on startup and once a day scheduled) -->
@@ -11,7 +12,9 @@
 
 	<!-- Include configuration for console functions -->
 	&UploadFiles;
-	
+
 	<!-- Run saved Ladybug test reports at a configurable CRON interval -->
 	&Ladybug;
+
+	&ConfigurationXmlParsers;
 </configuration>
