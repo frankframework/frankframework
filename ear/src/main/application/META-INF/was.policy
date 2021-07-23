@@ -164,8 +164,9 @@ permission java.io.FilePermission "/usr/share/fonts/-", "read";
 // required for ladybug retrieving userprincipal
 permission java.security.SecurityPermission "printIdentity";
 
-// required for Log4j
-permission java.lang.RuntimePermission "createSecurityManager"; // for stacktrace rendering and JavaAssist PipeLineSessionDebugger proxying
+// required for Log4J stacktrace rendering and JavaAssist PipeLineSessionDebugger proxying
+permission java.lang.RuntimePermission "createSecurityManager";
+// required for Log4J
 permission java.lang.RuntimePermission "accessClassInPackage.sun.nio.fs";
 
 // required for CXF
