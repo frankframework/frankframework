@@ -170,4 +170,8 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.nio.fs";
 
 // required for CXF
 permission java.lang.RuntimePermission "shutdownHooks";
+
+// required for the Nashorn javascript engine
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
+
 };
