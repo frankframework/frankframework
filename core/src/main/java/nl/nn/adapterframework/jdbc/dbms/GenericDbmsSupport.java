@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,36 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryContext;
+import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
@@ -48,20 +54,35 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
 	protected static final String TYPE_FUNCTION = "function";
+	
+	protected static Map<String,ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
 	public String getDbmsName() {
-		return "generic";
+		return getDbms().getKey();
 	}
 
 	@Override
-	public int getDatabaseType() {
-		return DbmsSupportFactory.DBMS_GENERIC;
+	public Dbms getDbms() {
+		return Dbms.GENERIC;
+	}
+
+	@Override
+	public boolean isParameterTypeMatchRequired() {
+		return false;
+	}
+	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return false;
 	}
 
 	@Override
 	public String getSysDate() {
 		return "NOW()";
+	}
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return dateValue+ " + "+daysOffset;
 	}
 
 	@Override
@@ -100,13 +121,42 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String getIbisStoreSummaryQuery() {
+		// include a where clause, to make MsSqlServerDbmsSupport.prepareQueryTextForNonLockingRead() work
+		return "select type, slotid, " + getTimestampAsDate("MESSAGEDATE")+ " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + getTimestampAsDate("MESSAGEDATE")+ " order by type, slotid, " + getTimestampAsDate("MESSAGEDATE");
+	}
+
+
+	@Override
 	public String getTimestampFieldType() {
 		return "TIMESTAMP";
+	}
+	// method is used in JobDef.cleanupDatabase
+	@Override
+	public String getDatetimeLiteral(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+	}
+	@Override
+	public String getTimestampAsDate(String columnName) {
+		return "TO_CHAR("+columnName+",'YYYY-MM-DD')";
 	}
 
 	@Override
 	public String getClobFieldType() {
-		return "LONG BINARY";
+		return "CLOB";
+	}
+	@Override
+	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		switch (rsmeta.getColumnType(colNum)) {
+		case Types.LONGVARCHAR:
+		case Types.LONGNVARCHAR:
+		case Types.CLOB:
+			return true;
+		default:
+			return false;
+		}
 	}
 	@Override
 	public boolean mustInsertEmptyClobBeforeData() {
@@ -118,52 +168,81 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 	@Override
 	public String emptyClobValue() {
-		return null;
+		return "''";
 	}
 
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Clob clob = rs.getClob(column);
-		if (clob==null) {
-			throw new JdbcException("no clob found in column ["+column+"]");
-		}
-		return clob;
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		return rs.getClob(column);
 	}
 	@Override
-	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Clob clob = rs.getClob(column);
-		if (clob==null) {
-			throw new JdbcException("no clob found in column ["+column+"]");
-		}
-		return clob;
-	}
-	
-	@Override
-	public Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
-		return out;
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		return rs.getClob(column);
 	}
 	@Override
-	public Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
-		return out;
-	}
-	
-	@Override
-	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		// updateClob is not implemented by the WebSphere implementation of ResultSet
-		rs.updateClob(column, (Clob)clobUpdateHandle);
+	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
 	}
 	@Override
-	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
-		// updateClob is not implemented by the WebSphere implementation of ResultSet
-		rs.updateClob(column, (Clob)clobUpdateHandle);
+	public Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
+	}
+	@Override
+	public void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException {
+		rs.updateClob(column, (Clob)clobHandle);
+	}
+	@Override
+	public void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException {
+		rs.updateClob(column, (Clob)clobHandle);
 	}
 
 	
+	@Override
+	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+		return stmt.getConnection().createClob();
+	}
+	@Override
+	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		return ((Clob)clobHandle).setCharacterStream(1L);
+	}
+	@Override
+	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException {
+		stmt.setClob(column, (Clob)clobHandle);
+	}
+
+	@Override
+	public Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			return null;
+		}
+		return clob.getCharacterStream();
+	}
+	@Override
+	public Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			return null;
+		}
+		return clob.getCharacterStream();
+	}
+
+
 	@Override
 	public String getBlobFieldType() {
-		return "LONG BINARY";
+		return "BLOB";
+	}
+	@Override
+	public boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		switch (rsmeta.getColumnType(colNum)) {
+		case Types.LONGVARBINARY:
+		case Types.VARBINARY:
+		case Types.BINARY:
+		case Types.BLOB:
+			return true;
+		default:
+			return false;
+		}
 	}
 	@Override
 	public boolean mustInsertEmptyBlobBeforeData() {
@@ -175,31 +254,21 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 	@Override
 	public String emptyBlobValue() {
-		return null;
+		return "''";
 	}
 
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(column);
-		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+column+"]");
-		}
-		return blob;
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		return rs.getBlob(column);
 	}
 	@Override
-	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(column);
-		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+column+"]");
-		}
-		return blob;
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		return rs.getBlob(column);
 	}
 	
 	protected  OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, JdbcException {
-		OutputStream out = ((Blob)blobUpdateHandle).setBinaryStream(1L);
-		return out;
+		return ((Blob)blobUpdateHandle).setBinaryStream(1L);
 	}
-	
 	@Override
 	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return getBlobOutputStream(rs,blobUpdateHandle);
@@ -208,16 +277,44 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
 		return getBlobOutputStream(rs,blobUpdateHandle);
 	}
-	
 	@Override
 	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		// updateBlob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
 	@Override
 	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
-		// updateBlob is not implemented by the WebSphere implementation of ResultSet
 		rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+
+	@Override
+	public Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException {
+		return stmt.getConnection().createBlob();
+	}
+	@Override
+	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
+		return ((Blob)blobInsertHandle).setBinaryStream(1L);
+	}
+	@Override
+	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException {
+		stmt.setBlob(column, (Blob)blobInsertHandle);
+	}
+
+
+	@Override
+	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			return null;
+		}
+		return blob.getBinaryStream();
+	}
+	@Override
+	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			return null;
+		}
+		return blob.getBinaryStream();
 	}
 
 	
@@ -243,11 +340,30 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException {
+		return prepareQueryTextForWorkQueuePeeking(batchSize, selectQuery, -1);
+	}
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+		return selectQuery;
+	}
+
+	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
 		String query="select * from "+tableName+" where ROWNUM=1";
 		return query;
 	} 
+
+	@Override
+	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
+		return selectQuery;
+	}
+	@Override
+	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
+		return null;
+	}
+
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
@@ -269,6 +385,38 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
+	@Override
+	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
+		return isTablePresent(conn, null, tableName);
+	}
+
+	@Override
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getTables(null, schemaName, tableName, null)) {
+			return rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
+		} catch (SQLException e) {
+			throw new JdbcException("exception checking for existence of table [" + tableName + "]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+	
+	@Override
+	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException {
+		return this.isColumnPresent(conn, null, tableName, columnName);
+	}
+
+	@Override
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getColumns(null, schemaName, tableName, columnName)) {
+			return rs.next(); // rs.isAfterLast() does not work properly when rs.next() has not yet been called
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+
+
+	/**
+	 * Alternative implementation of isTablePresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
+	 */
 	protected boolean doIsTablePresent(Connection conn, String tablesTable, String schemaColumn, String tableNameColumn, String schemaName, String tableName) throws JdbcException {
 		String query="select count(*) from "+tablesTable+" where upper("+tableNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
@@ -286,71 +434,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
-	private final boolean useMetaDataForTableExists=false;
-	@Override
-	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
-		try {
-			PreparedStatement stmt = null;
-			if (useMetaDataForTableExists) {
-				DatabaseMetaData dbmeta = conn.getMetaData();
-				ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
-				return !tableset.isAfterLast();
-			} 
-			String query=null;
-			try {
-				query="select count(*) from "+tableName;
-				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
-				stmt = conn.prepareStatement(query);
-				log.debug("execute statement");
-				ResultSet rs = stmt.executeQuery();
-				log.debug("statement executed");
-				rs.close();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
-				return false;
-			} finally {
-				if (stmt!=null) {
-					stmt.close();
-				}
-			}
-		}
-		catch(SQLException e) {
-			throw new JdbcException(e);
-		}
-	}
-
-	@Override
-	public boolean isColumnPresent(Connection conn, String tableName, String columnName) throws SQLException {
-		PreparedStatement stmt = null;
-		String query=null;
-		try {
-			query = "SELECT count(" + columnName + ") FROM " + tableName;
-			stmt = conn.prepareStatement(query);
-
-			ResultSet rs = null;
-			try {
-				rs = stmt.executeQuery();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
-				return false;
-			} finally {
-				if (rs != null) {
-					rs.close();
-				}
-			}
-		} catch (SQLException e) {
-			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
-			return false;
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-	}
-
-	protected boolean doIsTableColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
+	/**
+	 * Alternative implementation of isColumnPresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
+	 */
+	protected boolean doIsColumnPresent(Connection conn, String columnsTable, String schemaColumn, String tableNameColumn, String columnNameColumn, String schemaName, String tableName, String columnName) throws JdbcException {
 		String query="select count(*) from "+columnsTable+" where upper("+tableNameColumn+")=? and upper("+columnNameColumn+")=?";
 		if (StringUtils.isNotEmpty(schemaName)) {
 			if (StringUtils.isNotEmpty(schemaColumn)) {
@@ -365,12 +452,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
 			return false;
 		}
-	}
-
-	@Override
-	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
-		log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"], assuming it exists");
-		return true;
 	}
 
 	@Override
@@ -416,9 +497,9 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isUniqueConstraintViolation(SQLException e) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isConstraintViolation(SQLException e) {
+		String sqlState = e.getSQLState();
+		return sqlState!=null && sqlState.startsWith("23");
 	}
 	
 	@Override
@@ -437,11 +518,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String getIbisStoreSummaryQuery() {
-		return "select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount from ibisstore group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD') order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')";
-	}
-
-	@Override
 	public String getBooleanFieldType() {
 		return "BOOLEAN";
 	}
@@ -451,10 +527,53 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return (""+value).toUpperCase();
 	}
 
+	protected ISqlTranslator createTranslator(String source, String target) throws JdbcException {
+		return new SqlTranslator(source, target);
+	}
+
 	@Override
-	public void convertQuery(QueryContext queryContext, String sqlDialectFrom) throws SQLException, JdbcException {
+	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
 		if (isQueryConversionRequired(sqlDialectFrom)) {
-			warnConvertQuery(sqlDialectFrom);
+			String translatorKey = sqlDialectFrom+"->"+getDbmsName();
+			ISqlTranslator translator = sqlTranslators.get(translatorKey);
+			if (translator==null) {
+				if (sqlTranslators.containsKey(sqlDialectFrom)) {
+					// if translator==null, but the key is present in the map, 
+					// then we already tried to setup this translator, and did not succeed. 
+					// No need to try again.
+					warnConvertQuery(sqlDialectFrom); 
+					return;
+				}
+				try {
+					translator = createTranslator(sqlDialectFrom, getDbmsName());
+				} catch (IllegalArgumentException e) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(translatorKey, null);
+					return;
+				} catch (Exception e) {
+					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
+				}
+				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
+					warnConvertQuery(sqlDialectFrom);
+					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
+					return;
+				}
+				sqlTranslators.put(translatorKey, translator);
+			}
+			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
+			StringBuilder convertedQueries = null;
+			for (String singleQuery : multipleQueries) {
+				String convertedQuery = translator.translate(singleQuery);
+				if (convertedQuery != null) {
+					if (convertedQueries==null) {
+						convertedQueries = new StringBuilder();
+					} else {
+						convertedQueries.append("\n");
+					}
+					convertedQueries.append(convertedQuery);
+				}
+			}
+			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
 	}
 	
@@ -494,4 +613,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 		return splittedQueries;
 	}
+
+
 }

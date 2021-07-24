@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -108,18 +108,19 @@ public class WildCardFilter implements FilenameFilter
         // allow directories to match all patterns
         // not sure if this is the best idea, but
         // suits my needs for now
+    	if(dir != null) {
+    		String path = dir.getPath();
+            if ( !path.endsWith("/") && !path.endsWith("\\") )
+            {
+                path += File.separator;
+            }
+            File tempFile = new File(path, name);
 
-        String path = dir.getPath();
-        if ( !path.endsWith("/") && !path.endsWith("\\") )
-        {
-            path += File.separator;
-        }
-        File tempFile = new File(path, name);
-
-        if ( tempFile.isDirectory() )
-        {
-            return true;
-        }
+            if ( tempFile.isDirectory() )
+            {
+                return true;
+            }
+    	}
 
         // ensure name is lowercase for all testing
 

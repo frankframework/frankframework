@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,22 +21,20 @@ import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -104,7 +102,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			return (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 		}
 	}
-	
+
 	protected void releaseSession(Session session) throws ListenerException {
 		if (isSessionsArePooled()) {
 			closeSession(session);
@@ -126,7 +124,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
 		}
 	}
-	
+
 	protected void releaseReceiver(MessageConsumer receiver, String correlationId) throws ListenerException {
 		if ((isSessionsArePooled() || StringUtils.isNotEmpty(correlationId)) && receiver != null) {
 			try {
@@ -176,59 +174,60 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		String cid = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
+		String cid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PullingJmsListener.afterMessageProcessed()");
-	
 		try {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
-	
+
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
-				Session session=null;
-				
-	
+
 				log.debug(getLogPrefix()+"sending reply message with correlationID [" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageSent=rawMessage;
-					long expiration=messageSent.getJMSExpiration();
-					if (expiration!=0) {
-						timeToLive=expiration-new Date().getTime();
-						if (timeToLive<=0) {
-							log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-							timeToLive=1000;
-							// In case of a temporary queue it might already
-							// have disappeared.
-							ignoreInvalidDestinationException = true;
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
 						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
 					}
 				}
-				if (threadContext!=null) {
-					session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-				}
+				Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException);
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
-						releaseSession(session);					 
+						releaseSession(session);
 					}
-				}  else {
-					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException); 
+				} else {
+					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
 				if (getSender()==null) {
 					log.debug(getLogPrefix()+"itself has no sender to send the result (An enclosing Receiver might still have one).");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+
-							"no replyTo address found or not configured to use replyTo, using default destination" 
-							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug(getLogPrefix()+ "no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(new Message(plr.getResult()), null);
+					PipeLineSession pipeLineSession = new PipeLineSession();
+					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
+					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
 
@@ -240,13 +239,13 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
 					Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
+						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] has no session to commit or rollback");
 					} else {
 						String successState = getCommitOnState();
-						if (successState!=null && successState.equals(plr.getState())) {
+						if (successState!=null && successState.equalsIgnoreCase(plr.getState())) {
 							session.commit();
 						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");
+							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.originalMessageIdKey) +"] not committed nor rolled back either");
 							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
 							// session.rollback();
 						}
@@ -257,9 +256,9 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					}
 				} else {
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
+					if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
-						((TextMessage)rawMessage).acknowledge();
+						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}
 				}
 			}
@@ -267,10 +266,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 			throw new ListenerException(e);
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 */
@@ -278,7 +277,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public javax.jms.Message getRawMessage(Map<String,Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
-	
+
 	@Override
 	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeOutException {
 		javax.jms.Message msg = getRawMessageFromDestination(correlationId, threadContext);
@@ -359,7 +358,6 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 	
 
-
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
 	}
@@ -368,9 +366,5 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
-
-
-
-
 
 }

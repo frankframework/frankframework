@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="urn:family" xmlns:ns1="urn:family" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:family" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="family">
+		<xs:annotation>
+			<xs:documentation>Comment describing your root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="members">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="member" type="personType" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="address">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="street" type="xs:string"/>
+				<xs:element name="number" type="xs:short"/>
+				<xs:element name="town" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="personType">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"/>
+			<xs:element name="birthDate" type="xs:date"/>
+			<xs:element name="children" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="child" type="personType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element ref="address"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -33,6 +33,7 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -41,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
+public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -80,12 +81,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
-
-	}
-
-	@Override
-	public void close() {
-		// Automatically closes
+		super.open();
 	}
 
 	@Override
@@ -103,7 +99,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public Iterator<SmbFile> listFiles(String folder) throws FileSystemException {
+	public DirectoryStream<SmbFile> listFiles(String folder) throws FileSystemException {
 		try {
 			if (!isListHiddenFiles()) {
 				SmbFileFilter filter = new SmbFileFilter() {
@@ -113,9 +109,9 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 						return !file.isHidden();
 					}
 				};
-				return new SmbFileIterator(smbContext.listFiles(filter));
+				return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles(filter)));
 			}
-			return new SmbFileIterator(smbContext.listFiles());
+			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(smbContext.listFiles()));
 		} catch (SmbException e) {
 			throw new FileSystemException(e);
 		}
@@ -149,9 +145,15 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public InputStream readFile(SmbFile f) throws IOException {
-		SmbFileInputStream is = new SmbFileInputStream(f);
-		return is;
+	public Message readFile(SmbFile f, String charset) throws IOException {
+		return new Samba1Message(f, charset);
+	}
+
+	private class Samba1Message extends Message {
+		
+		public Samba1Message(SmbFile f, String charset) {
+			super(() -> new SmbFileInputStream(f), charset, f.getClass());
+		}
 	}
 
 	@Override
@@ -200,7 +202,7 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		try {
 			if (folderExists(folder)) {
 				toFile(folder).delete();
@@ -213,17 +215,19 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public SmbFile renameFile(SmbFile f, String newName, boolean force) throws FileSystemException {
-		SmbFile dest;
+	public SmbFile renameFile(SmbFile source, SmbFile destination) throws FileSystemException {
 		try {
-			dest = new SmbFile(smbContext, newName);
-			if (exists(dest)) {
-				if (force)
-					dest.delete();
-				else {
-					throw new FileSystemException("Cannot rename file. Destination file already exists.");
-				}
-			}
+			source.renameTo(destination);
+			return destination;
+		} catch (Exception e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	@Override
+	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		SmbFile dest = toFile(destinationFolder, f.getName());
+		try {
 			f.renameTo(dest);
 			return dest;
 		} catch (Exception e) {
@@ -232,17 +236,10 @@ public class Samba1FileSystem implements IWritableFileSystem<SmbFile> {
 	}
 
 	@Override
-	public SmbFile moveFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		SmbFile dest;
+	public SmbFile copyFile(SmbFile f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		SmbFile dest = toFile(destinationFolder, f.getName());
 		try {
-			dest = new SmbFile(smbContext, destinationFolder+"/"+f.getName());
-			if (!exists(dest)) {
-				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] does not exists.");
-			}
-			if (!isFolder(dest)) {
-				throw new FileSystemException("Cannot move file. Destination folder ["+destinationFolder+"] is not a folder.");
-			}
-			f.renameTo(dest);
+			f.copyTo(dest);
 			return dest;
 		} catch (Exception e) {
 			throw new FileSystemException(e);

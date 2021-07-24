@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+    Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -44,15 +47,17 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
-	private String name;
-	private String inputSeparator;
-	private boolean trim=false;
+	private @Getter String name;
+	private @Getter String inputSeparator;
+	private @Getter boolean trim=false;
 	
-	private List inputFields=new LinkedList(); 
-	private List recordIdentifyingFields=new LinkedList();
+	private List<InputField> inputFields=new LinkedList<>(); 
+	private List<Integer> recordIdentifyingFields=new LinkedList<>();
 	
-	protected ParameterList paramList = null;
+	protected @Getter ParameterList paramList = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -76,18 +81,22 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public void addInputField(int length) {
 		inputFields.add(new InputField(length));
 	}
-	
+
+	@Deprecated
 	public void registerChild(InputfieldsPart part) {
-		setInputFields(part.getValue());
+		registerInputFields(part);
 	}
 
+	public void registerInputFields(InputfieldsPart part) {
+		setInputFields(part.getValue());
+	}
 
 	protected int getNumberOfInputFields() {
 		return inputFields.size();
 	}
 	
 	@Override
-	public List<String> parse(IPipeLineSession session, String record) {
+	public List<String> parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -95,19 +104,19 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return parseUsingSeparator(record);
 		}
 		else {
-			List result = new ArrayList();
+			List<String> result = new ArrayList<>();
 			result.add(record);
 			return result;
 		}
 	}
 	
-	private List parseUsingInputFields(String record) {
-		List result = new ArrayList();
+	private List<String> parseUsingInputFields(String record) {
+		List<String> result = new ArrayList<>();
 
 		int recordLength = record.length(); 
 		int curPos = 0;
-		for (Iterator fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
-			InputField field = (InputField) fieldIt.next();
+		for (Iterator<InputField> fieldIt = inputFields.iterator(); fieldIt.hasNext();) {
+			InputField field = fieldIt.next();
 			int endPos = curPos + field.length; 
 			
 			String item;
@@ -132,8 +141,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 
-	private List parseUsingSeparator(String record) {
-		List result = new ArrayList();
+	private List<String> parseUsingSeparator(String record) {
+		List<String> result = new ArrayList<>();
 		
 		int endNdx = -1;
 		do {
@@ -161,10 +170,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public String getRecordType(List<String> record) {
 		String result=null;
 		
-		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
-			int i = ((Integer)it.next()).intValue();
-			Object field=record.get(i-1);
-			String fieldValue=field==null?"":field.toString();
+		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = (it.next()).intValue();
+			String field=record.get(i-1);
+			String fieldValue=field==null?"":field;
 			if (result==null) {
 				result=fieldValue;
 			} else {
@@ -175,26 +184,26 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	
 	@Override
-	public boolean isNewRecordType(IPipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List<String> prevRecord, List<String> curRecord) {
 		if (getRecordIdentifyingFieldList().size() == 0) {
-			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;
 		}
 		if (! equalRecordHandlers) {
-			log.debug("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
 			return true;
 		}
 			
 		if (prevRecord == null) {
-			log.debug("isNewRecordType(): no previous record, so returning true");
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no previous record, so returning true");
 			return true;
 		}
-		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
-			int i = ((Integer)it.next()).intValue();
-			Object prevField=prevRecord.get(i-1);
-			Object curField=curRecord.get(i-1);
+		for (Iterator<Integer> it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = (it.next()).intValue();
+			String prevField=prevRecord.get(i-1);
+			String curField=curRecord.get(i-1);
 			if (! prevField.equals(curField)) {
-				log.debug("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
+				if (log.isTraceEnabled()) log.trace("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
 				return true;
 			}
 		}
@@ -213,8 +222,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	/*
 	 * Returns a List, and therefore cannot be called 'getRecordIdentifyingFields', 
 	 * because then setRecordIdentifyingFields is not found as a setter.
-	 */  
-	public List getRecordIdentifyingFieldList() {
+	 */
+	public List<Integer> getRecordIdentifyingFieldList() {
 		return recordIdentifyingFields;
 	}
 
@@ -230,10 +239,10 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			log.warn("setRecordIdentifyingFields(): value ["+fieldNrs+"] did result in an empty list of tokens");
 		}
 	}
+
+	@Deprecated
+	@ConfigurationWarning("The attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields'")
 	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7";
-		configWarnings.add(log, msg);
 		setRecordIdentifyingFields(fieldNrs);
 	}
 
@@ -251,18 +260,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return paramList;
 	}
 
-	@IbisDoc({"name of the recordhandler", ""})
+	@IbisDoc({"1", "Name of the recordhandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
-	@Override
-	public String getName() {
-		return name;
-	}
 
-
-	@IbisDoc({"comma separated specification of fieldlengths. if neither this attribute nor <code>inputseparator</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"2", "Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed", ""})
 	public void setInputFields(String fieldLengths) {
 		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
 		while (st.hasMoreTokens()) {
@@ -271,32 +275,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-
-	/**
-	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
-	 */
-	@Deprecated
-	public void setInputSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'";
-		configWarnings.add(log, msg);
-		setInputSeparator(string);
-	}
-
-	@IbisDoc({"separator that separated the fields in the input record. if neither this attribute nor <code>inputfields</code> is specified then the entire record is parsed", ""})
+	@IbisDoc({"4", "Separator that separates the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed", ""})
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
-	public String getInputSeparator() {
-		return inputSeparator;
-	}
 
-	@IbisDoc({"when set <code>true</code>, trailing spaces are removed from each field", "false"})
+	@IbisDoc({"4", "If set <code>true</code>, trailing spaces are removed from each field", "false"})
 	public void setTrim(boolean b) {
 		trim = b;
-	}
-	public boolean isTrim() {
-		return trim;
 	}
 
 }

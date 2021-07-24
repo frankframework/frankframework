@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Integration Partners
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputS
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import org.bouncycastle.util.io.Streams;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -40,19 +39,11 @@ public class Verify extends PGPAction {
 				.decryptAndVerifyStream()
 				.withConfig(keyringConfig);
 
-		InputStream decryptionStream;
-		if(senders == null) {
-			decryptionStream = validation
-					.andValidateSomeoneSigned()
-					.fromEncryptedInputStream(inputStream);
-		} else {
-			decryptionStream = validation
-					.andRequireSignatureFromAllKeys(senders)
-					.fromEncryptedInputStream(inputStream);
+		try (InputStream decryptionStream = senders == null 
+				? validation.andValidateSomeoneSigned().fromEncryptedInputStream(inputStream)
+				: validation.andRequireSignatureFromAllKeys(senders).fromEncryptedInputStream(inputStream)) {
+			Streams.pipeAll(decryptionStream, outputStream);
 		}
-
-		Streams.pipeAll(decryptionStream, outputStream);
-		inputStream.close();
 	}
 
 }

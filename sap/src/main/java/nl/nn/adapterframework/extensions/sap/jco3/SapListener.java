@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco3;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -172,7 +174,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MODE, "1");
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
 			serverProperties.setProperty(ServerDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
+			serverProperties.setProperty(ServerDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
 		}
 
 		return serverProperties;
@@ -206,17 +208,17 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	}
 
 	@Override
-	public String getStringFromRawMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		return functionCall2message(rawMessage);
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCoFunction rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (rawMessage instanceof JCoFunction) {
-				message2FunctionResult(rawMessage, processResult.getResult());
+			if (rawMessageOrWrapper instanceof JCoFunction) {
+				message2FunctionResult((JCoFunction)rawMessageOrWrapper, processResult.getResult().asString());
 			}
-		} catch (SapException e) {
+		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
 		}
 	}
@@ -224,7 +226,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	@Override
 	public void handleRequest(JCoServerContext jcoServerContext, JCoFunction jcoFunction) throws AbapException, AbapClassException {
 		try {
-			handler.processRawMessage(this, jcoFunction, null);
+			handler.processRawMessage(this, jcoFunction, null, false);
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new AbapException("IbisException", t.getMessage());
@@ -241,7 +243,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 			doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
 			try {
-				handler.processRequest(this, xmlProcessor.render(doc));
+				handler.processRequest(this, null, null, new Message(xmlProcessor.render(doc)), null);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());
@@ -257,7 +259,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCoFu
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
-  	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
 	@Override

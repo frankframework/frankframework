@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.junit.After;
@@ -18,13 +19,13 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 
 
 /**
@@ -35,11 +36,16 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
+	public static final String AMAZONS3_PROPERTIES = "amazonS3.properties";
+	private static Properties properties;
+	
 	@Rule
 	public TestName name = new TestName();
 	
 	private String accessKey = "";
 	private String secretKey = "";
+	private String proxyHost = null;
+	private Integer proxyPort = null;
 
 	private boolean chunkedEncodingDisabled = false;
 	private boolean accelerateModeEnabled = false; // this may involve some extra costs
@@ -55,9 +61,28 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		setWaitMillis(waitMilis);
 	}
 	
+	private void setAttributesFromPropertiesFile() throws Exception {
+		try {
+			if (properties == null) {
+				properties = new Properties();
+			}
+			properties.load(ClassUtils.getResourceURL(AMAZONS3_PROPERTIES).openStream());	 
+			accessKey = properties.getProperty("accessKey");
+			secretKey = properties.getProperty("secretKey");
+			proxyHost = properties.getProperty("proxyHost");
+			if (properties.getProperty("proxyHost") != null) {
+				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
+			}
+		} catch (Exception e) {
+			log.error("There was an error reading propertie file: {} ", e.getMessage());
+			throw e;
+		}
+	}	
+	
 	@Override
 	@Before
 	public void setUp() throws Exception {
+		setAttributesFromPropertiesFile();
 		super.setUp();
 	}
 	
@@ -69,7 +94,8 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
-		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled, forceGlobalBucketAccessEnabled, bucketName, clientRegion);
+		return new AmazonS3FileSystemTestHelper(accessKey, secretKey, chunkedEncodingDisabled, accelerateModeEnabled,
+				forceGlobalBucketAccessEnabled, bucketName, clientRegion);
 	}
 	
 	@Override
@@ -78,11 +104,13 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		s3.setAccessKey(accessKey);
 		s3.setSecretKey(secretKey);
 		s3.setBucketName(bucketName);
+		s3.setProxyHost(proxyHost);
+		s3.setProxyPort(proxyPort);
 		return s3;
 	}
 
 	@Test
-	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("createBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
@@ -96,7 +124,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	}
 
 	@Test
-	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException {
+	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
 		fileSystemSender.setAction("deleteBucket");
 
 		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
@@ -118,7 +146,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 
 		fileSystemSender.setAction("copy");
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String dest = "copiedObject.txt";
 		session.put("destinationFileName", dest);
 
@@ -126,8 +154,6 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		p.setName("destinationFileName");
 		p.setSessionKey("destinationFileName");
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 		if (_fileExists(dest)) {
 			_deleteFile(null, dest);
 		}

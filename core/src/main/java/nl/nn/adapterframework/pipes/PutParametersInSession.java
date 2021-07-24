@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -38,10 +38,9 @@ import nl.nn.adapterframework.stream.Message;
 public class PutParametersInSession extends FixedForwardPipe {
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			Message message = new Message(input);
 			try {
 				ParameterValueList pvl = parameterList.getValues(message, session, isNamespaceAware());
 				if (pvl != null) {
@@ -57,6 +56,6 @@ public class PutParametersInSession extends FixedForwardPipe {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 }

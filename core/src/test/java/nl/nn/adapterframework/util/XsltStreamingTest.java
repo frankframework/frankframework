@@ -188,7 +188,7 @@ public class XsltStreamingTest {
 		 * receive SAX destination events
 		 * received events and source events should be mixed
 		 */
-		Assume.assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean("xslt.streaming.default", true));
+		Assume.assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		SwitchCounter sc = new SwitchCounter();
 		
 		String xpath="/root/a";

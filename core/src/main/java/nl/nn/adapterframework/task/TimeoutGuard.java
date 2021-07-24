@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * TimeoutGuard interrupts running thread when timeout is exceeded.
@@ -36,11 +36,11 @@ public class TimeoutGuard {
 	boolean threadKilled;
 
 	private Timer timer;
-	
+
 	private class Killer extends TimerTask {
 
 		private Thread thread;
-		
+
 		public Killer() {
 			super();
 			thread = Thread.currentThread();
@@ -51,48 +51,62 @@ public class TimeoutGuard {
 			log.warn("Thread ["+thread.getName()+"] executing task ["+description+"] exceeds timeout of ["+timeout+"] s, interuppting");
 			threadKilled=true;
 			thread.interrupt();
-			kill();
+			abort();
 		}
 	}
 
+	/**
+	 * Create a new TimeoutGuard
+	 * @param description name of the guard
+	 */
 	public TimeoutGuard(String description) {
 		super();
 		this.description=description;
 	}
-	
+
+	/**
+	 * Create a new TimeoutGuard and activate immediately
+	 * @param timeout in seconds
+	 * @param description name of the guard
+	 */
 	public TimeoutGuard(int timeout, String description) {
 		this(description);
 		activateGuard(timeout);
 	}
-	
-	
+
 	/**
-	 * Sets and activates the timeout, in seconds.
+	 * Sets and activates the timeout
+	 * @param timeout in seconds
 	 */
 	public void activateGuard(int timeout) {
 		if (timeout > 0) {
 			this.timeout=timeout;
 			if (log.isDebugEnabled()) log.debug("setting timeout of ["+timeout+"] s for task ["+description+"]");
-			timer= new Timer();
+			timer = new Timer("GuardTask["+description+"]");
 			timer.schedule(new Killer(),timeout*1000);
 		}
 	}
 
 	/**
-	 * cancels timer, and returns true if thread has been killed by this guard or interrupted by another.
+	 * Cancels timer, and returns true if thread has been killed by this guard or interrupted by another.
+	 * <br/><br/>
+	 * Implement this in a finally block to verify correct execution of the guarded process or if it has been interrupted by the guard.
 	 */
-	public boolean cancel() {	
+	public boolean cancel() {
 		if (timer!=null) {
 			if (log.isDebugEnabled()) log.debug("deactivating TimeoutGuard for task ["+description+"]");
-			timer.cancel();	
+			timer.cancel();
 		}
 		return Thread.interrupted() || threadKilled; 
 	}
 
-	protected void kill() {
+	/**
+	 * Implement this method to stop the process and cleanup the resources you are 'guarding'.
+	 */
+	protected void abort() {
 		// can be called in descendants to kill the guarded job when timeout is exceeded.
 	}
-	
+
 	public String getDescription() {
 		return description;
 	}

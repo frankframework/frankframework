@@ -15,11 +15,14 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -39,12 +42,13 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	private String logLevel="info";
 	private String logCategory=null;
 
+	protected Logger logger;
 	protected Level level;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		log=LogUtil.getLogger(getLogCategory());
+		logger=LogUtil.getLogger(getLogCategory());
 		level=Level.toLevel(getLogLevel());
 	}
 
@@ -54,8 +58,12 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		log.log(level,message);
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			logger.log(level, message.asString());
+		} catch (IOException io) {
+			log.warn("unable to log message: " + message.toString());
+		}
 		if (getParameterList() != null) {
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
@@ -71,7 +79,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	@Override
 	public void handleParam(String paramName, Object value) {
-		log.log(level,"parameter [" + paramName + "] value [" + value + "]");
+		logger.log(level, "parameter [" + paramName + "] value [" + value + "]");
 	}
 
 	public String getLogCategory() {

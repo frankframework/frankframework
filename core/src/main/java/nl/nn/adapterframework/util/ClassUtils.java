@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,12 +30,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
  * A collection of class management utility methods.
@@ -78,104 +78,107 @@ public class ClassUtils {
 	}
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class.
-	 * @param obj Object to derive the ClassLoader from
+	 * Get a resource-URL directly from the ClassPath
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	@Deprecated
-	static public URL getResourceURL(Object obj, String resource) {
-		return getResourceURL(obj.getClass(), resource);
+	public static URL getResourceURL(String resource) {
+		return getResourceURL(null, resource);
 	}
 
 	/**
-	 * Get a resource-URL with the ClassLoader derived from an object or class.
-	 * @param clazz Class to derive the ClassLoader from
-	 * @param resource name of the resource you are trying to fetch the URL from
-	 * @return URL of the resource or null if it can't be not found
-	 */
-	@Deprecated
-	static public URL getResourceURL(Class clazz, String resource) {
-		return getResourceURL(clazz.getClassLoader(), resource);
-	}
-
-	/**
-	 * Get a resource-URL from a specific ClassLoader. This should be used by
+	 * Get a resource-URL from a specific IConfigurationClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
 	 * because the configuration might be loaded from outside the webapp
-	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * ClassPath. Hence the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 * 
 	 * @see IbisContext#init()
 	 */
-	static public URL getResourceURL(ClassLoader classLoader, String resource) {
-		return getResourceURL(classLoader, resource, null);
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource) {
+		return getResourceURL(scopeProvider, resource, null);
 	}
 
 	/**
-	 * Get a resource-URL from a ClassLoader
-	 * @param classLoader to retrieve the file from
+	 * Get a resource-URL from a ClassLoader, therefore the resource should not start with a leading slash
+	 * @param scopeProvider to retrieve the file from, or NULL when you want to retrieve the resource directly from the ClassPath (using an absolute path)
 	 * @param resource name of the resource you are trying to fetch the URL from
 	 * @return URL of the resource or null if it can't be not found
 	 */
-	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null) {
+	public static URL getResourceURL(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+		ClassLoader classLoader = null;
+		if(scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
-			RuntimeException e = new IllegalStateException("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code");
-			log.warn(e);
+		} else {
+			classLoader = scopeProvider.getConfigurationClassLoader();
 		}
+
+		String resourceToUse = resource; //Don't change the original resource name for logging purposes
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
-			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
+			resourceToUse = resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
 		}
-		// Remove slash like Class.getResource(String name) is doing before
-		// delegation to ClassLoader
-		if (resource.startsWith("/")) {
-			resource = resource.substring(1);
+
+		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
+		// Resources retrieved from ClassLoaders should never start with a leading slash
+		if (resourceToUse.startsWith("/")) {
+			resourceToUse = resourceToUse.substring(1);
 		}
-		URL url = classLoader.getResource(resource);
+		URL url = classLoader.getResource(resourceToUse);
 
 		// then try to get it as a URL
 		if (url == null) {
-			if (resource.contains(":")) {
-				String protocol = resource.substring(0, resource.indexOf(":"));
+			if (resourceToUse.contains(":")) {
+				String protocol = resourceToUse.substring(0, resourceToUse.indexOf(":"));
 				if (allowedProtocols==null) {
 					allowedProtocols=defaultAllowedProtocols;
 				}
 				if (StringUtils.isNotEmpty(allowedProtocols)) {
 					//log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] now trying via protocol ["+protocol+"]");
 
-					List<String> protocols = new ArrayList<String>(Arrays.asList(allowedProtocols.split(",")));
+					List<String> protocols = Arrays.asList(allowedProtocols.split(","));
 					if(protocols.contains(protocol)) {
 						try {
-							url = new URL(Misc.replace(resource, " ", "%20"));
+							url = new URL(Misc.replace(resourceToUse, " ", "%20"));
 						} catch(MalformedURLException e) {
-							log.debug("Could not find resource ["+resource+"] in classloader ["+classLoader+"] and not as URL [" + resource + "]: "+e.getMessage());
+							log.debug("Could not find resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and not as URL [" + resource + "]: "+e.getMessage());
 						}
-					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
+					} else if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"], not allowed with protocol ["+protocol+"] allowedProtocols "+protocols.toString());
 				} else {
-					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+classLoader+"], with protocol ["+protocol+"], no allowedProtocols");
+					if(log.isDebugEnabled()) log.debug("Could not find resource as URL [" + resource + "] in classloader ["+nameOf(classLoader)+"], with protocol ["+protocol+"], no allowedProtocols");
 				}
 			} else {
-				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+classLoader+"] and no protocol to try as URL");
+				if(log.isDebugEnabled()) log.debug("Cannot lookup resource ["+resource+"] in classloader ["+nameOf(classLoader)+"] and no protocol to try as URL");
 			}
 		}
 
 		return url;
 	}
 
- 	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
+	public static List<String> getAllowedProtocols() {
+		if(StringUtils.isEmpty(defaultAllowedProtocols)) {
+			return new ArrayList<String>(); //Arrays.asList(..) won't return an empty List when empty.
+		}
+		return Arrays.asList(defaultAllowedProtocols.split(","));
+	}
+
+	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
 		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(timeoutMs);
-		conn.setReadTimeout(timeoutMs);
+		if (timeoutMs==0) {
+			timeoutMs = 10000;
+		}
+		if (timeoutMs>0) {
+			conn.setConnectTimeout(timeoutMs);
+			conn.setReadTimeout(timeoutMs);
+		}
 		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
 	}
 
+	public static Reader urlToReader(URL url) throws IOException {
+		return urlToReader(url, 0);
+	}
+	
 	public static Reader urlToReader(URL url, int timeoutMs) throws IOException {
-		try {
-			return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
-		} catch (UnsupportedEncodingException e) {
-			throw new IOException(e);
-		}
+		return StreamUtil.getCharsetDetectingInputStreamReader(urlToStream(url,timeoutMs));
 	}
 
 	
@@ -307,20 +310,36 @@ public class ClassUtils {
         return path;
     }
 
- 	/**
- 	 * returns the classname of the object, without the pacakge name.
- 	 */
+	/**
+	 * If the classLoader is derivable of IConfigurationClassLoader return the className + configurationName, 
+	 * else return the className of the object. Don't return the package name to avoid cluttering the logs.
+	 */
+	public static String nameOf(ClassLoader classLoader) {
+		if(classLoader == null) {
+			return "<null>";
+		}
+
+		String logPrefix = nameOf((Object) classLoader) + "@" + Integer.toHexString(classLoader.hashCode());
+		if(classLoader instanceof IConfigurationClassLoader) {
+			String configurationName = ((IConfigurationClassLoader) classLoader).getConfigurationName();
+			if(StringUtils.isNotEmpty(configurationName)) {
+				logPrefix += "["+configurationName+"]";
+			}
+		}
+		return logPrefix;
+	}
+
+	/**
+	 * returns the className of the object, without the package name.
+	 */
 	public static String nameOf(Object o) {
 		if (o==null) {
 			return "<null>";
 		}
-		String name=o.getClass().getName();
-		int pos=name.lastIndexOf('.');
-		if (pos<0) {
-			return name;
-		} else {
-			return name.substring(pos+1);
+		if(o instanceof Class) {
+			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
 		}
+		return org.springframework.util.ClassUtils.getUserClass(o).getSimpleName();
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

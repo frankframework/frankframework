@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import com.sap.conn.idoc.IDocFactory;
 import com.sap.conn.idoc.jco.JCoIDoc;
 import com.sap.conn.jco.JCoDestination;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -59,7 +59,7 @@ public class IdocSender extends SapSenderBase {
 	
 		try {
 			log.debug(getLogPrefix()+"start parsing Idoc");
-			XmlUtils.parseXml(handler, message.asInputSource());	
+			XmlUtils.parseXml(message.asInputSource(), handler);	
 			log.debug(getLogPrefix()+"finished parsing Idoc");
 			return handler.getIdoc();
 		} catch (Exception e) {
@@ -68,7 +68,7 @@ public class IdocSender extends SapSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,14 +18,17 @@ package nl.nn.adapterframework.extensions.sap.jco3;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoStructure;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
@@ -58,6 +61,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String sapSystemName;
@@ -153,7 +158,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 				if (parameterLists.size() > 0) {
 					Handler handler = Handler.getHandler(parameterLists, log);
 					try {
-						XmlUtils.parseXml(handler, message);
+						XmlUtils.parseXml(message, handler);
 					} catch (Exception e) {
 						throw new SapException("exception parsing message", e);
 					}
@@ -234,7 +239,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return null;
 	}
 
-	public String functionCall2message(JCoFunction function) {
+	public Message functionCall2message(JCoFunction function) {
 		JCoParameterList input = function.getImportParameterList();
 
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
@@ -258,7 +263,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			result+="</request>";
 		}
 
-		return result;
+		return new Message(result);
 	}
 
 	public Message functionResult2message(JCoFunction function) {

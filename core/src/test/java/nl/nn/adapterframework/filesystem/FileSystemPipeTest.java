@@ -16,14 +16,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -70,7 +69,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -82,9 +81,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		waitForActionToFinish();
 		
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
@@ -104,7 +103,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			_deleteFile(null, filename);
 		}
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		Parameter p = new Parameter();
@@ -116,9 +115,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		waitForActionToFinish();
 
@@ -140,7 +139,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
 		Parameter p = new Parameter();
@@ -152,9 +151,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, session);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, result, "file/@name");
 		waitForActionToFinish();
 
@@ -175,7 +174,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		//InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		//session.put("uploadActionTarget", stream);
 
 		Parameter param = new Parameter();
@@ -186,7 +185,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		assertTrue(fileSystemPipe.canProvideOutputStream());
+		//assertTrue(fileSystemPipe.canProvideOutputStream());
 
 		MessageOutputStream target = fileSystemPipe.provideOutputStream(session, null);
 
@@ -196,7 +195,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 
 		// verify the filename is properly returned
-		String stringResult=(String)target.getPipeRunResult().getResult();
+		String stringResult=target.getPipeRunResult().getResult().asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
 		// verify the file contents
@@ -222,9 +221,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=Misc.streamToString((InputStream)prr.getResult());
+		String result=prr.getResult().asString();
 		
 		// test
 		assertEquals("result should be base64 of file content", contents.trim(), result.trim());
@@ -255,9 +254,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		
 		// test
 		// result should be name of the moved file
@@ -304,9 +303,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=folder;
+		Message message= new Message(folder);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		waitForActionToFinish();
 
 		// test
@@ -329,9 +328,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=folder;
+		Message message= new Message(folder);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 
 		// test
 		assertEquals("result of pipe should be name of removed folder",folder,result);
@@ -342,6 +341,41 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
 	}
 
+	@Test
+	public void fileSystemPipeRmNonEmptyDirActionTest() throws Exception {
+		String folder = DIR1;
+		String innerFolder = DIR1+"/innerFolder";
+		if (!_folderExists(DIR1)) {
+			_createFolder(folder);
+		}
+		if (!_folderExists(innerFolder)) {
+			_createFolder(innerFolder);
+		}
+		
+		for (int i=0; i < 3; i++) {
+			String filename = "file"+i + FILE1;
+			createFile(folder, filename, "is not empty");
+			createFile(innerFolder, filename, "is not empty");
+		}
+		
+		fileSystemPipe.setRemoveNonEmptyFolder(true);
+		fileSystemPipe.setAction("rmdir");
+		fileSystemPipe.configure();
+		fileSystemPipe.start();
+		
+		Message message= new Message(folder);
+		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
+		String result=prr.getResult().asString();
+
+		// test
+		assertEquals("result of pipe should be name of removed folder",folder,result);
+		waitForActionToFinish();
+		
+		boolean actual = _fileExists(folder);
+		// test
+		assertFalse("Expected file [" + folder + "] " + "not to be present", actual);
+	}
+	
 	@Test
 	public void fileSystemPipeDeleteActionTest() throws Exception {
 		String filename = "tobedeleted" + FILE1;
@@ -354,9 +388,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 		
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 
 		waitForActionToFinish();
 		
@@ -386,9 +420,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 
 		deleteFile(null, dest);
 
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 
 		// test
 		assertEquals("result of pipe should be name of new file",dest,result);
@@ -420,9 +454,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		String message="";
+		Message message= new Message("");
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 
 		log.debug(result);
 		
@@ -528,9 +562,9 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 		assertTrue("File ["+filename2+"]expected to be present", _fileExists(inputFolder, filename2));
 		
-		String message=filename;
+		Message message= new Message(filename);
 		PipeRunResult prr = fileSystemPipe.doPipe(message, null);
-		String result=(String)prr.getResult();
+		String result=prr.getResult().asString();
 		System.err.println(result);
 		waitForActionToFinish();
 		

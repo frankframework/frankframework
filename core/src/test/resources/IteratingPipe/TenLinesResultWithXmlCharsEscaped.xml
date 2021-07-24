@@ -1,0 +1,32 @@
+<results>
+<result item="1">
+[key 1 one &gt;]
+</result>
+<result item="2">
+[key 1 two &lt;]
+</result>
+<result item="3">
+[key 1 three &amp;]
+</result>
+<result item="4">
+[key 2 four &quot;]
+</result>
+<result item="5">
+[key 3 five #]
+</result>
+<result item="6">
+[key 3 six ?]
+</result>
+<result item="7">
+[key 3 seven €]
+</result>
+<result item="8">
+[key 3 eight]
+</result>
+<result item="9">
+[key 4 nine]
+</result>
+<result item="10">
+[key 3 ten]
+</result>
+</results>

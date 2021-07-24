@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2020 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.StringReader;
-import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -38,35 +37,11 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.scheduler.ConfiguredJob;
-import nl.nn.adapterframework.scheduler.DatabaseJobDef;
-import nl.nn.adapterframework.scheduler.IbisJobDetail;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -80,6 +55,27 @@ import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.scheduler.ConfiguredJob;
+import nl.nn.adapterframework.scheduler.DatabaseJobDef;
+import nl.nn.adapterframework.scheduler.IbisJobDetail;
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Locker;
+import nl.nn.adapterframework.util.MessageKeeperMessage;
+import nl.nn.adapterframework.util.SpringUtils;
+
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs from the Scheduler.
  * 
@@ -89,7 +85,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 @Path("/")
 public final class ShowScheduler extends Base {
-	private @Context SecurityContext securityContext;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -181,14 +176,14 @@ public final class ShowScheduler extends Base {
 			List<String> jobGroupNames = scheduler.getJobGroupNames();
 
 			for(String jobGroupName : jobGroupNames) {
-				Map<String, Object> jobsInGroup = new HashMap<String, Object>();
+				List<Map<String, Object>> jobsInGroupList = new ArrayList<>();
 
 				Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(jobGroupName));
 
 				for (JobKey jobKey : jobKeys) {
-					jobsInGroup.put(jobKey.getName(), getJobData(jobKey, false));
+					jobsInGroupList.add(getJobData(jobKey, false));
 				}
-				jobGroups.put(jobGroupName, jobsInGroup);
+				jobGroups.put(jobGroupName, jobsInGroupList);
 			}
 		} catch (Exception e) {
 			log.error("error retrieving job from jobgroup", e);
@@ -387,15 +382,16 @@ public final class ShowScheduler extends Base {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	private Scheduler getScheduler() {
-		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
-		SchedulerHelper sh = manager.getSchedulerHelper();
+	private SchedulerHelper getSchedulerHelper() {
+		return getIbisContext().getBean("schedulerHelper", SchedulerHelper.class);
+	}
 
+	private Scheduler getScheduler() {
 		try {
-			return sh.getScheduler();
+			return getSchedulerHelper().getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler", e); 
+			throw new ApiException("Cannot find scheduler", e);
 		}
 	}
 
@@ -408,11 +404,13 @@ public final class ShowScheduler extends Base {
 	public Response trigger(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, LinkedHashMap<String, Object> json) throws ApiException {
 		Scheduler scheduler = getScheduler();
 
-		String commandIssuedBy = servletConfig.getInitParameter("remoteHost");
-		commandIssuedBy += servletConfig.getInitParameter("remoteAddress");
-		commandIssuedBy += servletConfig.getInitParameter("remoteUser");
-
-		if(log.isInfoEnabled()) log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		if(log.isInfoEnabled()) {
+			String commandIssuedBy = request.getRemoteHost();
+			commandIssuedBy += "-"+request.getRemoteAddr();
+			commandIssuedBy += "-"+request.getRemoteUser();
+	
+			log.info("trigger job jobName [" + jobName + "] groupName [" + groupName + "] " + commandIssuedBy);
+		}
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		String action = ""; //PAUSE,RESUME,TRIGGER
@@ -429,6 +427,20 @@ public final class ShowScheduler extends Base {
 				scheduler.pauseJob(jobKey);
 			}
 			else if("resume".equals(action)) {
+				SchedulerHelper sh = getSchedulerHelper();
+				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+				// TODO this part can be more generic in case multiple triggers 
+				// can be configurable
+				List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+				if(triggers != null) {
+					for (Trigger trigger : triggers) {
+						if(trigger instanceof CronTrigger) {
+							sh.scheduleJob(jobDetail, ((CronTrigger) trigger).getCronExpression(), -1, true);
+						} else if(trigger instanceof SimpleTrigger) {
+							sh.scheduleJob(jobDetail, null, ((SimpleTrigger) trigger).getRepeatInterval(), true);
+						}
+					}
+				}
 				scheduler.resumeJob(jobKey);
 			}
 			else if("trigger".equals(action)) {
@@ -449,8 +461,9 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSchedule(MultipartFormDataInput input) throws ApiException {
-		return createSchedule(null, input);
+	public Response createSchedule(MultipartBody input) throws ApiException {
+		String jobGroupName = resolveStringFromMap(input, "group");
+		return createSchedule(jobGroupName, input);
 	}
 
 	@PUT
@@ -458,7 +471,7 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job/{jobName}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartFormDataInput input) throws ApiException {
+	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, jobName, input, true);
 	}
 
@@ -467,18 +480,17 @@ public final class ShowScheduler extends Base {
 	@Path("/schedules/{groupName}/job")
 	@Relation("schedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartFormDataInput input) throws ApiException {
+	public Response createScheduleInJobGroup(@PathParam("groupName") String groupName, MultipartBody input) throws ApiException {
 		return createSchedule(groupName, input);
 	}
 
 
-	private Response createSchedule(String groupName, MultipartFormDataInput input) {
+	private Response createSchedule(String groupName, MultipartBody input) {
 		return createSchedule(groupName, null, input, false);
 	}
 
-	private Response createSchedule(String groupName, String jobName, MultipartFormDataInput input, boolean overwrite) {
+	private Response createSchedule(String groupName, String jobName, MultipartBody inputDataMap, boolean overwrite) {
 
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
@@ -504,21 +516,20 @@ public final class ShowScheduler extends Base {
 
 		//Make sure the receiver exists!
 		String receiverName = resolveStringFromMap(inputDataMap, "receiver");
-		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found");
 		}
 		String listenerName = null;
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
-			IListener<?> listener = rb.getListener();
-			if(listener != null) {
-				listenerName = listener.getName();
-			}
+		IListener<?> listener = receiver.getListener();
+		if(listener != null) {
+			listenerName = listener.getName();
 		}
 		if(StringUtils.isEmpty(listenerName)) {
 			throw new ApiException("unable to determine listener for receiver ["+receiverName+"]");
 		}
+
+		Configuration applicationContext = adapter.getConfiguration();
 
 		String jobGroup = groupName;
 		if(StringUtils.isEmpty(jobGroup)) {
@@ -531,43 +542,41 @@ public final class ShowScheduler extends Base {
 
 		String message = resolveStringFromMap(inputDataMap, "message");
 
-		SchedulerHelper sh = manager.getSchedulerHelper();
+		String description = resolveStringFromMap(inputDataMap, "description");
+
+		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJobDef jobdef = new DatabaseJobDef();
+		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
 		jobdef.setReceiverName(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
+		jobdef.setDescription(description);
 		jobdef.setInterval(interval);
 
-		String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
 		if(hasLocker) {
-			Locker locker = (Locker) getIbisContext().createBeanAutowireByName(Locker.class);
+			Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
 			locker.setName(lockKey);
 			locker.setObjectId(lockKey);
-			locker.setJmsRealm(jmsRealm);
+			locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			jobdef.setLocker(locker);
 		}
 
 		try {
 			jobdef.configure();
-			sh.scheduleJob(manager, jobdef);
+			sh.scheduleJob(jobdef);
 		} catch (Exception e) {
 			throw new ApiException("Failed to add schedule", e);
 		}
 
 		//Save the job in the database
 		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			if (StringUtils.isEmpty(jmsRealm)) {
-				throw new ApiException("no JmsRealm found!");
-			}
-
 			boolean success = false;
-			FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-			qs.setJmsRealm(jmsRealm);
+			FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
+			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 			try {
 				qs.configure();
@@ -575,44 +584,41 @@ public final class ShowScheduler extends Base {
 				throw new ApiException("Error creating FixedQuerySender bean to store job in database", e);
 			}
 
-			String user = null;
-			Principal principal = securityContext.getUserPrincipal();
-			if(principal != null)
-				user = principal.getName();
-
-			Connection conn = null;
 			try {
 				qs.open();
-				conn = qs.getConnection();
+				try (Connection conn = qs.getConnection()) {
 
-				if(overwrite) {
-					String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery);
-					deleteStatement.setString(1, name);
-					deleteStatement.setString(2, jobGroup);
-					deleteStatement.executeUpdate();
+					if(overwrite) {
+						String deleteQuery = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement deleteStatement = conn.prepareStatement(deleteQuery)) {
+							deleteStatement.setString(1, name);
+							deleteStatement.setString(2, jobGroup);
+							deleteStatement.executeUpdate();
+						}
+					}
+	
+					String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME, JOBGROUP, ADAPTER, RECEIVER, CRON, EXECUTIONINTERVAL, MESSAGE, DESCRIPTION, LOCKER, LOCK_KEY, CREATED_ON, BY_USER) "
+							+ "VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
+					try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+						stmt.setString(1, name);
+						stmt.setString(2, jobGroup);
+						stmt.setString(3, adapterName);
+						stmt.setString(4, listenerName);
+						stmt.setString(5, cronExpression);
+						stmt.setInt(6, interval);
+						stmt.setClob(7, new StringReader(message));
+						stmt.setString(8, description);
+						stmt.setBoolean(9, hasLocker);
+						stmt.setString(10, lockKey);
+						stmt.setString(11, getUserPrincipalName());
+		
+						success = stmt.executeUpdate() > 0;
+					}
 				}
-
-				String insertQuery = "INSERT INTO IBISSCHEDULES (JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY,CREATED_ON,BY_USER) "
-						+ "VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?)";
-				PreparedStatement stmt = conn.prepareStatement(insertQuery);
-				stmt.setString(1, name);
-				stmt.setString(2, jobGroup);
-				stmt.setString(3, adapterName);
-				stmt.setString(4, listenerName);
-				stmt.setString(5, cronExpression);
-				stmt.setInt(6, interval);
-				stmt.setClob(7, new StringReader(message));
-				stmt.setBoolean(8, hasLocker);
-				stmt.setString(9, lockKey);
-				stmt.setString(10, user);
-
-				success = stmt.executeUpdate() > 0;
 			} catch (SenderException | SQLException | JdbcException e) {
 				throw new ApiException("error saving job in database", e);
 			} finally {
 				qs.close();
-				JdbcUtil.close(conn);
 			}
 
 			if(!success)
@@ -640,14 +646,9 @@ public final class ShowScheduler extends Base {
 			IbisJobDetail jobDetail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
 			if(jobDetail.getJobType() == JobType.DATABASE) {
 				boolean success = false;
-				String jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-				if (StringUtils.isEmpty(jmsRealm)) {
-					throw new ApiException("no JmsRealm found!");
-				}
-
 				// remove from database
 				FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-				qs.setJmsRealm(jmsRealm);
+				qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 				qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
 				try {
 					qs.configure();
@@ -655,22 +656,22 @@ public final class ShowScheduler extends Base {
 					throw new ApiException("Error creating FixedQuerySender bean to remove job from database", e);
 				}
 
-				Connection conn = null;
 				try {
 					qs.open();
-					conn = qs.getConnection();
+					try (Connection conn = qs.getConnection()) {
 
-					String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
-					PreparedStatement stmt = conn.prepareStatement(query);
-					stmt.setString(1, jobKey.getName());
-					stmt.setString(2, jobKey.getGroup());
-
-					success = stmt.executeUpdate() > 0;
+						String query = "DELETE FROM IBISSCHEDULES WHERE JOBNAME=? AND JOBGROUP=?";
+						try (PreparedStatement stmt = conn.prepareStatement(query)) {
+							stmt.setString(1, jobKey.getName());
+							stmt.setString(2, jobKey.getGroup());
+		
+							success = stmt.executeUpdate() > 0;
+						}
+					}
 				} catch (SenderException | SQLException | JdbcException e) {
 					throw new ApiException("error removing job from database", e);
 				} finally {
 					qs.close();
-					JdbcUtil.close(conn);
 				}
 				if(!success) {
 					throw new ApiException("failed to remove job from database");

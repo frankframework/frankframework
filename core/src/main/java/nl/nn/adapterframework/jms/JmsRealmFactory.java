@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -58,10 +58,13 @@ public class JmsRealmFactory {
 
 	}
 
-	
+	/**
+	 * Test method to cleanup the static references
+	 */
 	public void clear() {
-		jmsRealms=new LinkedHashMap<String, JmsRealm>();
+		jmsRealms = new LinkedHashMap<String, JmsRealm>();
 	}
+
 	/**
 	 * Get a requested JmsRealm with the given name, null is returned if no realm
 	 * under given name
@@ -72,6 +75,17 @@ public class JmsRealmFactory {
 			log.error("no JmsRealm found under name [" + jmsRealmName + "], factory contents [" + toString() + "]");
 		}
 		return jmsRealm;
+	}
+
+	public List<String> getConnectionFactoryNames() {
+		List<String> list = new ArrayList<String>();
+		for (JmsRealm jmsRealm: jmsRealms.values()) {
+			String connectionFactory = jmsRealm.retrieveConnectionFactoryName();
+			if(StringUtils.isNotEmpty(connectionFactory)) {
+				list.add(connectionFactory);
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -97,35 +111,16 @@ public class JmsRealmFactory {
 	 * Register a Realm
 	 */
 	public void registerJmsRealm(JmsRealm jmsRealm) {
-		jmsRealms.put(jmsRealm.getRealmName(), jmsRealm);
-		log.debug("JmsRealmFactory registered realm [" + jmsRealm.toString() + "]");
+		String realmName = jmsRealm.getRealmName();
+		if(jmsRealms.containsKey(realmName)) {
+			log.warn("overwriting JmsRealm [" + jmsRealm.toString() + "]. Realm with name ["+realmName+"] already exists");
+		}
+		jmsRealms.put(realmName, jmsRealm);
+		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());
 	}
 
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
-	}
-
-	public String getFirstDatasourceJmsRealm() {
-		Iterator<String> it = getRegisteredRealmNames();
-		while (it.hasNext()) {
-			String jr = (String) it.next();
-			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
-				return jr;
-			}
-		}
-		return null;
-	}
-
-	public List<String> getRegisteredDatasourceRealmNamesAsList() {
-		Iterator<String> it = getRegisteredRealmNames();
-		List<String> result = new ArrayList<String>();
-		while (it.hasNext()) {
-			String jr = (String) it.next();
-			if (StringUtils.isNotEmpty(getJmsRealm(jr).getDatasourceName())) {
-				result.add(jr);
-			}
-		}
-		return result;
 	}
 }

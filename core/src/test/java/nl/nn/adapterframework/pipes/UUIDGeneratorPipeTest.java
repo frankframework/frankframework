@@ -1,19 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 
-	private IPipeLineSession session = new PipeLineSessionBase();
 	private Object input = new Object();
- 
+
 
     @Override
     public UUIDGeneratorPipe createPipe() {
@@ -43,22 +41,22 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
     }
     
     @Test
-    public void checkResultNotRightType() throws PipeRunException {
+    public void checkResultNotRightType() throws Exception {
     	pipe.setType("");
-    	PipeRunResult prr = pipe.doPipe(input, session);
-    	String result = (String) prr.getResult();
+    	PipeRunResult prr = doPipe(pipe, input, session);
+    	String result = prr.getResult().asString();
     	assertNotNull(result);
     	assertEquals(result.length(), 31);
     }
     
     @Test
-    public void checkResultRightType() throws PipeRunException {
+    public void checkResultRightType() throws Exception {
     	pipe.setType("alphanumeric");
-    	PipeRunResult first = pipe.doPipe(input, session);
-		PipeRunResult second = pipe.doPipe(input, session);
+    	PipeRunResult first = doPipe(pipe, input, session);
+		PipeRunResult second = doPipe(pipe, input, session);
 
-		String resultFirst = (String) first.getResult();
-		String resultSecond = (String) second.getResult();
+		String resultFirst = first.getResult().asString();
+		String resultSecond = second.getResult().asString();
 
 		assertEquals(resultFirst.length(), resultSecond.length());
     }

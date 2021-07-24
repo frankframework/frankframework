@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.TimeOutException;
-
 /**
  * Semaphorer-variant that supports exclusive and 
  * @since   4.9

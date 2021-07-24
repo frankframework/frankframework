@@ -1,0 +1,12 @@
+<manageDatabaseREQ>
+	<update>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>TCHAR</name>
+				<value>A</value>
+			</column>
+		</columns>
+		<where>TNUMBER=${jdbc.receivertest.key}1 AND TCHAR='E'</where>
+	</update>
+</manageDatabaseREQ>

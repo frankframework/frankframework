@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,15 +23,16 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -66,7 +68,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	private boolean recursiveSearch = true;
 	
 	private LdapClient ldapClient;
-	private ICacheAdapter<String, Set<String>> cache;
+	private ICache<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -77,7 +79,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
 		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
 		ldapClient= new LdapClient(options);
-		ldapClient.registerCache(cache);
+		ldapClient.setCache(cache);
 		ldapClient.configure();
 	}
 
@@ -104,11 +106,17 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "input is null");
 		}
-		String searchedDN=input.toString();
+		
+		String searchedDN;
+		try {
+			searchedDN = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "Failure converting input to string", e);
+		}
 
 		Set<String> memberships;
 		try {
@@ -127,7 +135,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}
@@ -135,16 +143,16 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public void registerCache(ICacheAdapter<String, Set<String>> cache) {
+	public void setCache(ICache<String, Set<String>> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter<String, Set<String>> getCache() {
+	public ICache<String, Set<String>> getCache() {
 		return cache;
 	}
 
 	
-	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "false"})
+	@IbisDoc({"1", "when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

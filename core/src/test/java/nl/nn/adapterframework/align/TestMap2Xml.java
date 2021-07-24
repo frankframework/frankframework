@@ -41,6 +41,7 @@ public class TestMap2Xml extends AlignTestBase {
 	    		fail("could not convert to xml");
 	    	}
 	       	assertTrue("converted XML is not aligned",  Utils.validate(schemaUrl, xmlAct));
+	       	MatchUtils.assertXmlEquals(null, xmlIn, xmlAct, true);
 	       	if (checkRoundTrip) {
 		       	Map<String,String> roundTrippedmap=Xml2Map.translate(xmlAct, schemaUrl);
 				System.out.println("mapIn:\n"+mapInStr);
@@ -74,13 +75,14 @@ public class TestMap2Xml extends AlignTestBase {
 		if (mapString==null) {
 			fail("no map input files found for ["+inputFile+"]");
 		}
-		testStrings(xmlString,mapString,   schemaUrl,namespace, rootElement,  true, expectedFailureReason);
+		testStrings(xmlString,mapString, schemaUrl,namespace, rootElement,  true, expectedFailureReason);
 	}
 
 	@Test
     public void testNestedValue() throws Exception {
     	testFiles("NestedValue/nestedValue.xsd","urn:gbpd","NestedValue","/NestedValue/nestedValue");
     }
+
 
 	
     @Override
@@ -146,11 +148,31 @@ public class TestMap2Xml extends AlignTestBase {
 		super.testMixedContentUnknown();
     }
 
+	@Test
+	@Ignore("Id is ambigous, special test in Json2XmlValidatorTest tests with fully specified Id")
+	public void testDoubleId() throws Exception {
+		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
+	}
+
+    
     @Override
     @Test
 	@Ignore("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
-    }
+	}
+	
+    @Override
+	@Test
+	@Ignore("Generates stackoverflow, known issue")
+	public void testFamilyTree() throws Exception {
+		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
+	}
+
+	@Test
+	@Ignore("Problem with converting property array into xml")
+	public void testTextAndAttributes() throws Exception {
+		super.testTextAndAttributes();
+	}
 
 }

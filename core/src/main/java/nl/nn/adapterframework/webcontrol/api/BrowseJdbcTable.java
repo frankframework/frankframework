@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,15 +15,17 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.net.URL;
-import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+import org.xml.sax.SAXException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -34,23 +36,28 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.Transformer;
-
-import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DB2XMLWriter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Path("/")
 public final class BrowseJdbcTable extends Base {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 	private static final String permissionRules = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
+	private static final String COLUMN_NAME = "COLUMN_NAME"; 
+	private static final String DATA_TYPE = "DATA_TYPE"; 
+	private static final String COLUMN_SIZE = "COLUMN_SIZE"; 
 	private Logger log = LogUtil.getLogger(this);
+	private String countColumnName = "ROWCOUNTER";
+	private String rnumColumnName = "RNUM";
 
 	@POST
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -59,7 +66,7 @@ public final class BrowseJdbcTable extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
 		String datasource = null, tableName = null, where = "", order = "";
-		Boolean rowNumbersOnly = false;
+		Boolean numberOfRowsOnly = false;
 		int minRow = 1, maxRow = 100;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
@@ -68,16 +75,16 @@ public final class BrowseJdbcTable extends Base {
 				datasource = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("table")) {
-				tableName = entry.getValue().toString().toLowerCase();
+				tableName = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("where")) {
-				where = entry.getValue().toString().toLowerCase();
+				where = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("order")) {
-				order = entry.getValue().toString().toLowerCase();
+				order = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("rowNumbersOnly")) {
-				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
+			if(key.equalsIgnoreCase("numberOfRowsOnly")) {
+				numberOfRowsOnly = Boolean.parseBoolean(entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("minRow")) {
 				if(entry.getValue() != "") {
@@ -106,7 +113,7 @@ public final class BrowseJdbcTable extends Base {
 			throw new ApiException("Access to table ("+tableName+") not allowed", 400);
 
 		//We have all info we need, lets execute the query!
-		Map<String, Object> fieldDef = new HashMap<String, Object>();
+		Map<String, Object> fieldDef = new LinkedHashMap<>();
 		String result = "";
 		String query = null;
 
@@ -121,67 +128,94 @@ public final class BrowseJdbcTable extends Base {
 			qs.setName("QuerySender");
 			qs.setDatasourceName(datasource);
 
-			//if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
-				qs.setQueryType("select");
-				qs.setBlobSmartGet(true);
-				qs.setIncludeFieldDefinition(true);
-				qs.configure(true);
-				qs.open();
+			qs.setQueryType("select");
+			qs.setSqlDialect("Oracle");
+			qs.setBlobSmartGet(true);
+			qs.setIncludeFieldDefinition(true);
+			qs.configure(true);
+			qs.open();
 
-				ResultSet rs = qs.getConnection().getMetaData().getColumns(null, null, tableName, null);
-				if (!rs.isBeforeFirst()) {
-					rs = qs.getConnection().getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
-				}
+			try (Connection conn =qs.getConnection()) {
+				ResultSet rs = null;
+				try {
+					rs = conn.getMetaData().getColumns(null, null, tableName, null);
 
-				String fielddefinition = "<fielddefinition>";
-				while(rs.next()) {
-					String field = "<field name=\""
-							+ rs.getString(4)
-							+ "\" type=\""
-							+ DB2XMLWriter.getFieldType(rs.getInt(5))
-							+ "\" size=\""
-							+ rs.getInt(7)
-							+ "\"/>";
-					fielddefinition = fielddefinition + field;
-					fieldDef.put(rs.getString(4), DB2XMLWriter.getFieldType(rs.getInt(5)) + "("+rs.getInt(7)+")");
-				}
-				fielddefinition = fielddefinition + "</fielddefinition>";
+					if (!rs.isBeforeFirst()) {
+						rs.close();
+						rs = conn.getMetaData().getColumns(null, null, tableName.toUpperCase(), null);
+					}
+	
+					StringBuilder fielddefinition = new StringBuilder("<fielddefinition>");
+					String field = null;
+					if(!numberOfRowsOnly) {
+						field = "<field name=\""+rnumColumnName+"\" type=\"INTEGER\" />";
+						fielddefinition.append(field);
+						fieldDef.put(rnumColumnName, "INTEGER");
+						while(rs.next()) {
+							field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+							fielddefinition.append(field);
+							fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+						}
+					} else {
+						field = "<field name=\""+countColumnName+"\" type=\"INTEGER\" />";
+						fielddefinition.append(field);
+						fieldDef.put(countColumnName, "INTEGER");
+						if(StringUtils.isNotEmpty(order)) {
+							rs = conn.getMetaData().getColumns(null, null, tableName, order);
+							while(rs.next()) {
+								field = "<field name=\"" + rs.getString(COLUMN_NAME) + "\" type=\"" + DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "\" size=\"" + rs.getInt(COLUMN_SIZE) + "\"/>";
+								fielddefinition.append(field);
+								fieldDef.put(rs.getString(COLUMN_NAME), DB2XMLWriter.getFieldType(rs.getInt(DATA_TYPE)) + "("+rs.getInt(COLUMN_SIZE)+")");
+							}
+						}
+					}
 
-				String browseJdbcTableExecuteREQ =
-					"<browseJdbcTableExecuteREQ>"
-						+ "<dbmsName>"
-						+ qs.getDbmsSupport().getDbmsName()
-						+ "</dbmsName>"
-						+ "<tableName>"
-						+ tableName
-						+ "</tableName>"
-						+ "<where>"
-						+ XmlUtils.encodeChars(where)
-						+ "</where>"
-						+ "<numberOfRowsOnly>"
-						+ rowNumbersOnly
-						+ "</numberOfRowsOnly>"
-						+ "<order>"
-						+ order
-						+ "</order>"
-						+ "<rownumMin>"
-						+ minRow
-						+ "</rownumMin>"
-						+ "<rownumMax>"
-						+ maxRow
-						+ "</rownumMax>"
-						+ fielddefinition
-						+ "<maxColumnSize>1000</maxColumnSize>"
-						+ "</browseJdbcTableExecuteREQ>";
-				URL url = ClassUtils.getResourceURL(getClassLoader(), DB2XML_XSLT);
-				if (url != null) {
-					Transformer t = XmlUtils.createTransformer(url);
-					query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+					fielddefinition.append("</fielddefinition>");
+	
+					String browseJdbcTableExecuteREQ =
+						"<browseJdbcTableExecuteREQ>"
+							+ "<dbmsName>"
+							+ qs.getDbmsSupport().getDbmsName()
+							+ "</dbmsName>"
+							+ "<countColumnName>"
+							+ countColumnName
+							+ "</countColumnName>"
+							+ "<rnumColumnName>"
+							+ rnumColumnName
+							+ "</rnumColumnName>"
+							+ "<tableName>"
+							+ tableName
+							+ "</tableName>"
+							+ "<where>"
+							+ XmlUtils.encodeChars(where)
+							+ "</where>"
+							+ "<numberOfRowsOnly>"
+							+ numberOfRowsOnly
+							+ "</numberOfRowsOnly>"
+							+ "<order>"
+							+ order
+							+ "</order>"
+							+ "<rownumMin>"
+							+ minRow
+							+ "</rownumMin>"
+							+ "<rownumMax>"
+							+ maxRow
+							+ "</rownumMax>"
+							+ fielddefinition
+							+ "<maxColumnSize>1000</maxColumnSize>"
+							+ "</browseJdbcTableExecuteREQ>";
+					URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
+					if (url != null) {
+						Transformer t = XmlUtils.createTransformer(url);
+						query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+					}
+					result = qs.sendMessage(new Message(query), null).asString();
+				} finally {
+					if (rs!=null) {
+						rs.close();
+					}
 				}
-				result = qs.sendMessage(new Message(query), null).asString();
-			//} else {
-				//error("errors.generic","This function only supports oracle databases",null);
-			//}
+			}
 		} catch (Throwable t) {
 			throw new ApiException("An error occured on executing jdbc query ["+query+"]", t);
 		} finally {
@@ -190,7 +224,11 @@ public final class BrowseJdbcTable extends Base {
 
 		List<Map<String, String>> resultMap = null;
 		if(XmlUtils.isWellFormed(result)) {
-			resultMap = XmlQueryResult2Map(result);
+			try {
+				resultMap = new QueryOutputToListOfMaps().parseString(result);
+			} catch (IOException | SAXException e) {
+				throw new ApiException("Query result could not be parsed.", e);
+			}
 		}
 		if(resultMap == null)
 			throw new ApiException("Invalid query result [null].", 400);

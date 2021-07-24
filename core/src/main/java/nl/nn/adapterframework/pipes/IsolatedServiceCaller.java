@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.util.HashMap;
-
-import org.apache.log4j.Logger;
-import org.springframework.core.task.TaskExecutor;
-
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
+
+import java.util.HashMap;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.

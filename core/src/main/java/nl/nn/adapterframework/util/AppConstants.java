@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2018-2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,10 +28,9 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -49,31 +48,28 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 public final class AppConstants extends Properties implements Serializable {
 	private Logger log = LogUtil.getLogger(this);
 
-	private final static String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
-	private final static String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
+	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
+	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
+	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
+	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
 
-	private VariableExpander variableExpander;
 	private static Properties additionalProperties = new Properties();
 
-	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<ClassLoader, AppConstants>();
+	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super();
 
 		load(classLoader, APP_CONSTANTS_PROPERTIES_FILE, true);
 
-		//TODO Make sure this to happens only once, and store all the properties in 'additionalProperties' to be loaded for each AppConstants instance
-		Properties databaseProperties = JdbcUtil.retrieveJdbcPropertiesFromDatabase();
-		if (databaseProperties!=null) {
-			putAll(databaseProperties);
-		}
-
 		//Add all ibis properties
 		putAll(additionalProperties);
 
+		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if(log.isInfoEnabled() && classLoader instanceof IConfigurationClassLoader) {
-			log.info("created new AppConstants instance for classloader ["+classLoader+"]");
+			log.info("created new AppConstants instance for classloader ["+ClassUtils.nameOf(classLoader)+"]");
 		}
 		else {
 			log.info("created new AppConstants instance for root classloader");
@@ -117,7 +113,7 @@ public final class AppConstants extends Properties implements Serializable {
 		removeInstance(AppConstants.class.getClassLoader());
 	}
 
-	public static void removeInstance(final ClassLoader cl) {
+	public static synchronized void removeInstance(final ClassLoader cl) {
 		ClassLoader classLoader = cl;
 		if(classLoader == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
@@ -136,6 +132,14 @@ public final class AppConstants extends Properties implements Serializable {
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
 	private String getSystemProperty(String key) {
+		try {
+			String result = System.getenv().get(key);
+			if (result!=null) {
+				return result;
+			}
+		} catch (Throwable e) {
+			log.warn("Was not allowed to read environment variable [" + key + "]: "+ e.getMessage());
+		}
 		try {
 			return System.getProperty(key);
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
@@ -171,6 +175,10 @@ public final class AppConstants extends Properties implements Serializable {
 		}
 		if (value != null) {
 			try {
+				if (value.contains(StringResolver.DELIM_START+key+StringResolver.DELIM_STOP)) {
+					log.warn("cyclic property definition key [{}] value [{}]", key, value);
+					return value;
+				}
 				String result=StringResolver.substVars(value, this);
 				if (log.isTraceEnabled()) {
 					if (!value.equals(result)){
@@ -249,7 +257,7 @@ public final class AppConstants extends Properties implements Serializable {
 	/**
 	 * Load the contents of a properties file.
 	 * <p>Optionally, this may be a comma-separated list of files to load, e.g.
-	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
+	 * <code><pre>log4j2.properties,deploymentspecifics.properties</pre></code>
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
@@ -264,14 +272,14 @@ public final class AppConstants extends Properties implements Serializable {
 
 		StringTokenizer tokenizer = new StringTokenizer(filename, ",");
 		while (tokenizer.hasMoreTokens()) {
-			String theFilename= tokenizer.nextToken().trim();
+			String theFilename = tokenizer.nextToken().trim();
 			try {
 				ClassLoader cl = classLoader;
 				if(classLoader == null) {
 					throw new IllegalStateException("no classloader found!");
 				}
 				List<URL> resources = Collections.list(cl.getResources(theFilename));
-				if(resources.size() == 0) {
+				if(resources.isEmpty()) {
 					if(APP_CONSTANTS_PROPERTIES_FILE.equals(theFilename)) { //The AppConstants.properties file cannot be found, abort!
 						String msg = APP_CONSTANTS_PROPERTIES_FILE+ " file not found, unable to initalize AppConstants";
 						log.error(msg);
@@ -291,16 +299,17 @@ public final class AppConstants extends Properties implements Serializable {
 				Collections.reverse(resources);
 
 				for (URL url : resources) {
-					InputStream is = url.openStream();
-					load(is);
-					log.info("Application constants loaded from url [" + url.toString() + "]");
+					try(InputStream is = url.openStream()) {
+						load(is);
+						log.info("Application constants loaded from url [" + url.toString() + "]");
+					}
 				}
 
-				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additonal properties if it's defined...
+				String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
 				if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 					// Add properties after load(is) to prevent load(is)
 					// from overriding them
-					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY + ".SUFFIX");
+					String loadFileSuffix = getProperty(ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 					if (StringUtils.isNotEmpty(loadFileSuffix)){
 						load(classLoader, loadFile, loadFileSuffix, false);
 					} else {
@@ -330,7 +339,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * 
 	 * This method is used by {@link Properties#load(InputStream)} to add all properties found (in a file/stream) 
 	 * to the {@link Hashtable}.
-	 * @Deprecated Use {@link #setProperty(String, String)} instead!
+	 * @deprecated Use {@link #setProperty(String, String)} instead!
 	 */
 	@Deprecated
 	@Override
@@ -466,15 +475,5 @@ public final class AppConstants extends Properties implements Serializable {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
-	}
-
-	/*
-	 *	The variableExpander is set from the SpringContext.
-	 */
-	public void setVariableExpander(VariableExpander expander) {
-		variableExpander = expander;
-	}
-	public VariableExpander getVariableExpander() {
-		return variableExpander;
 	}
 }

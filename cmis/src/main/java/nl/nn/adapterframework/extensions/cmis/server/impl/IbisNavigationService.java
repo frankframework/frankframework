@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,16 +31,24 @@ import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.w3c.dom.Element;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisNavigationService implements NavigationService {
 
 	private NavigationService navigationService;
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private CallContext callContext;
 
-	public IbisNavigationService(NavigationService navigationService) {
+	public IbisNavigationService(NavigationService navigationService, CallContext callContext) {
 		this.navigationService = navigationService;
+		this.callContext = callContext;
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
@@ -75,7 +83,7 @@ public class IbisNavigationService implements NavigationService {
 			cmisXml.addSubElement(buildXml("maxItems", maxItems));
 			cmisXml.addSubElement(buildXml("skipCount", skipCount));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML());
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_CHILDREN, cmisXml.toXML(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "objectInFolderList");
 
 			return CmisUtils.xml2ObjectsInFolderList(typesXml);
@@ -88,7 +96,6 @@ public class IbisNavigationService implements NavigationService {
 			Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
@@ -98,7 +105,6 @@ public class IbisNavigationService implements NavigationService {
 			Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getFolderTree(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
@@ -107,15 +113,12 @@ public class IbisNavigationService implements NavigationService {
 			String objectId, String filter, Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includeRelativePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getObjectParents(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includeRelativePathSegment, extension);
 	}
 
 	@Override
-	public ObjectData getFolderParent(String repositoryId, String folderId,
-			String filter, ExtensionsData extension) {
-		// TODO Auto-generated method stub
-		return null;
+	public ObjectData getFolderParent(String repositoryId, String folderId, String filter, ExtensionsData extension) {
+		return navigationService.getFolderParent(repositoryId, folderId, filter, extension);
 	}
 
 	@Override
@@ -123,7 +126,6 @@ public class IbisNavigationService implements NavigationService {
 			String filter, String orderBy, Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getCheckedOutDocs(repositoryId, folderId, filter, orderBy, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension);
 	}
 }

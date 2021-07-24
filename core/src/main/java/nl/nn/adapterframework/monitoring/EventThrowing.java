@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.monitoring;
 
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 
 /**
  * Interface to be implemented by objects to be monitored; Is called by code that handles event.
@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.IAdapter;
  * @since   4.9
  */
 public interface EventThrowing {
-	
 	public String getEventSourceName();
-	public IAdapter getAdapter();
+	public Adapter getAdapter();
 }

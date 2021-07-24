@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe for moving files to another directory.
@@ -33,7 +36,11 @@ import org.apache.commons.lang.StringUtils;
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
+ * 
+ * @deprecated Please use LocalFileSystemPipe with action="move"
  */
+@Deprecated
+@ConfigurationWarning("Please replace with LocalFileSystemPipe and action=\"move\"")
 public class MoveFilePipe extends FixedForwardPipe {
 
 	private String directory;
@@ -54,6 +61,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private String suffix;
 	private boolean throwException = false;
 	
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isAppend()) {
@@ -64,64 +72,67 @@ public class MoveFilePipe extends FixedForwardPipe {
 		}
 	}
 	
-	/** 
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
-	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		File srcFile=null;
 		File dstFile=null;
 
-		if (StringUtils.isEmpty(getWildcard()) && StringUtils.isEmpty(getWildcardSessionKey())) {
-			if (StringUtils.isEmpty(getDirectory())) {
-				if (StringUtils.isEmpty(getFilename())) {
-					srcFile = new File(input.toString());
+		try {
+			if (StringUtils.isEmpty(getWildcard()) && StringUtils.isEmpty(getWildcardSessionKey())) {
+				if (StringUtils.isEmpty(getDirectory())) {
+					if (StringUtils.isEmpty(getFilename())) {
+						srcFile = new File(message.asString());
+					} else {
+						srcFile = new File(getFilename());
+					}
 				} else {
-					srcFile = new File(getFilename());
+					if (StringUtils.isEmpty(getFilename())) {
+						srcFile = new File(getDirectory(), message.asString());
+					} else {
+						srcFile = new File(getDirectory(), getFilename());
+					}
 				}
-			} else {
-				if (StringUtils.isEmpty(getFilename())) {
-					srcFile = new File(getDirectory(), input.toString());
+				if (StringUtils.isEmpty(getMove2file())) {
+					if (StringUtils.isEmpty(getMove2fileSessionKey())) {
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
+					} else {
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getMessage(getMove2fileSessionKey()).asString()));
+					}
 				} else {
-					srcFile = new File(getDirectory(), getFilename());
+					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
 				}
-			}
-			if (StringUtils.isEmpty(getMove2file())) {
-				if (StringUtils.isEmpty(getMove2fileSessionKey())) {
-					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
+				moveFile(session, srcFile, dstFile);
+			} else {
+				if (StringUtils.isEmpty(getDirectory())) {
+					if (StringUtils.isEmpty(getFilename())) {
+						srcFile = new File(message.asString());
+					} else {
+						srcFile = new File(getFilename());
+					}
 				} else {
-					dstFile = new File(getMove2dir(), retrieveDestinationChild((String)session.get(getMove2fileSessionKey())));
+					srcFile = new File(getDirectory());
 				}
-			} else {
-				dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
-			}
-			moveFile(session, srcFile, dstFile);
-		} else {
-			if (StringUtils.isEmpty(getDirectory())) {
-				if (StringUtils.isEmpty(getFilename())) {
-					srcFile = new File(input.toString());
+				String wc;
+				if (StringUtils.isEmpty(getWildcardSessionKey())) {
+					wc = getWildcard();
 				} else {
-					srcFile = new File(getFilename());
+					wc = session.getMessage(getWildcardSessionKey()).asString();
 				}
-			} else {
-				srcFile = new File(getDirectory());
+				//WildCardFilter filter = new WildCardFilter(wc);
+				//File[] srcFiles = srcFile.listFiles(filter);
+				File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
+				int count = (srcFiles == null ? 0 : srcFiles.length);
+				if (count==0) {
+					log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
+				}
+				for (int i = 0; i < count; i++) {
+					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
+					moveFile(session, srcFiles[i], dstFile);
+				}
 			}
-			String wc;
-			if (StringUtils.isEmpty(getWildcardSessionKey())) {
-				wc = getWildcard();
-			} else {
-				wc = (String)session.get(getWildcardSessionKey());
-			}
-			//WildCardFilter filter = new WildCardFilter(wc);
-			//File[] srcFiles = srcFile.listFiles(filter);
-			File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
-			int count = (srcFiles == null ? 0 : srcFiles.length);
-			if (count==0) {
-				log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
-			}
-			for (int i = 0; i < count; i++) {
-				dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
-				moveFile(session, srcFiles[i], dstFile);
-			}
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 
 		/* if parent source directory is empty, delete the directory */
@@ -150,7 +161,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			}
 		}
 		
-		return new PipeRunResult(getForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
+		return new PipeRunResult(getSuccessForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
 	private String retrieveDestinationChild(String child) {
@@ -167,7 +178,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return newChild;
 	}
 	
-	private void moveFile(IPipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
+	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {

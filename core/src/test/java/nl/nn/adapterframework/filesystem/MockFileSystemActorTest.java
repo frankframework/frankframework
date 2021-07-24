@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.util.Date;
-
 public class MockFileSystemActorTest extends FileSystemActorExtraTest <MockFile,MockFileSystem<MockFile>>{
 
 	

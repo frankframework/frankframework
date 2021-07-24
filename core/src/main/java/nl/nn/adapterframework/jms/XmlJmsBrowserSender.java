@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.IOException;
 
 import org.w3c.dom.Element;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -102,8 +101,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XmlJmsBrowserSender extends SenderWithParametersBase {
 
+	@SuppressWarnings("unchecked")
+	public JmsBrowser<javax.jms.Message> createJmsBrowser() {
+		return createBean(JmsBrowser.class);
+	}
+
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
@@ -121,7 +125,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
-		JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
+		JmsBrowser<javax.jms.Message> jmsBrowser = createJmsBrowser();
 		jmsBrowser.setName("XmlQueueBrowserSender");
 		if (jmsRealm != null) {
 			jmsBrowser.setJmsRealm(jmsRealm);
@@ -131,7 +135,6 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		}
 		jmsBrowser.setDestinationName(destinationName);
 		jmsBrowser.setDestinationType(destinationType);
-		IMessageBrowser browser = jmsBrowser;
 		IMessageBrowsingIterator it = null;
 
 		boolean remove = false;
@@ -156,7 +159,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		}
 		try {
 			int count = 0;
-			it = browser.getIterator();
+			it = jmsBrowser.getIterator();
 			while (it.hasNext()) {
 				count++;
 				JmsMessageBrowserIteratorItem jmsMessageBrowserIteratorItem = (JmsMessageBrowserIteratorItem) it

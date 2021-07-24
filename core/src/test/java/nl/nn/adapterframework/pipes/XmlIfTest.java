@@ -3,26 +3,20 @@ package nl.nn.adapterframework.pipes;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
 
-	@Mock
-	private IPipeLineSession session = new PipeLineSessionBase();
-
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";
 
 	@Override
-	public XmlIf createPipe() {
+	public XmlIf createPipe() throws ConfigurationException {
 		XmlIf xmlIf = new XmlIf();
 
 		//Add default pipes
@@ -37,7 +31,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -47,7 +41,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -60,7 +54,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		session.put("test", "testValue");
 		session.put("test123", "testValue");
 
-		PipeRunResult pipeRunResult = pipe.doPipe("test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -70,7 +64,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -80,7 +74,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe(null, session);
+		PipeRunResult pipeRunResult = doPipe(pipe, null, session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -92,7 +86,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test", session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -102,7 +96,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -112,7 +106,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test", session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -122,7 +116,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -133,7 +127,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<test", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -143,7 +137,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setExpressionValue("");
 		pipe.configure();
 		pipe.start();
-		PipeRunResult pipeRunResult = pipe.doPipe("test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -153,7 +147,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -163,7 +157,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -175,7 +169,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test123", session);
 		Assert.assertEquals(pipeName, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -187,7 +181,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<test123", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<test123", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -198,7 +192,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<root>test</root>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test</root>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -209,7 +203,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<root>test</root>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test</root>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -220,7 +214,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<root>test123</root>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test123</root>", session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -231,7 +225,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<root/>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<root/>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -242,7 +236,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 		
-		PipeRunResult pipeRunResult = pipe.doPipe("<root>test123</root>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<root>test123</root>", session);
 		Assert.assertEquals(pipeForwardElse, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -253,7 +247,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -264,7 +258,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -275,7 +269,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult pipeRunResult = pipe.doPipe("<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+		PipeRunResult pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
 		Assert.assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
@@ -286,7 +280,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setElseForwardName("test");
 		pipe.configure();
 		pipe.start();
-		pipe.doPipe("<root>test123</root>", session);
+		doPipe(pipe, "<root>test123</root>", session);
 	}
 
 	@Test
@@ -296,7 +290,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.setThenForwardName("test");
 		pipe.configure();
 		pipe.start();
-		pipe.doPipe("<root>test123</root>", session);
+		doPipe(pipe, "<root>test123</root>", session);
 	}
 
 	@Test
@@ -305,7 +299,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(" <test1", session);
+		PipeRunResult prr = doPipe(pipe, " <test1", session);
 		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -318,7 +312,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe(" <test1", session);
+		PipeRunResult prr = doPipe(pipe, " <test1", session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
@@ -328,7 +322,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("	<test1", session);
+		PipeRunResult prr = doPipe(pipe, "	<test1", session);
 		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
@@ -341,7 +335,70 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr  = pipe.doPipe("	<test1", session);
+		PipeRunResult prr = doPipe(pipe, "	<test1", session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void emptyNamespaceDefsTest() throws PipeRunException, ConfigurationException, PipeStartException {
+		exception.expectMessage("Undeclared namespace prefix");
+		String input = "&lt;root&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
+				"&lt;/root&gt;";
+		String pipeName = "test1";
+		pipe.setThenForwardName(pipeName);
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestTrue() throws PipeRunException, ConfigurationException, PipeStartException {
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setThenForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestFalse() throws PipeRunException, ConfigurationException, PipeStartException {
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setElseForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 2)");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestEmptyBooleanCheck() throws PipeRunException, ConfigurationException, PipeStartException {
+		exception.expect(ConfigurationException.class);
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setElseForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean()");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 }

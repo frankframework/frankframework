@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,18 +29,18 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.sf.saxon.xqj.SaxonXQDataSource;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Perform an XQuery.
@@ -64,9 +64,9 @@ public class XQueryPipe extends FixedForwardPipe {
 		super.configure();
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
-			url = ClassUtils.getResourceURL(getConfigurationClassLoader(), getXqueryName());
+			url = ClassUtils.getResourceURL(this, getXqueryName());
 			if (url == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not find XQuery '" + getXqueryName() + "'");
+				throw new ConfigurationException("could not find XQuery '" + getXqueryName() + "'");
 			}
 		} else if (StringUtils.isNotEmpty(getXqueryFile())) {
 			File file = new File(getXqueryFile());
@@ -76,13 +76,13 @@ public class XQueryPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "could not create url for XQuery file", e);
 			}
 		} else {
-			throw new ConfigurationException(getLogPrefix(null) + "no XQuery name or file specified");
+			throw new ConfigurationException("no XQuery name or file specified");
 		}
 
 		try {
 			xquery = Misc.resourceToString(url);
 		} catch (IOException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "could not read XQuery", e);
+			throw new ConfigurationException("could not read XQuery", e);
 		}
 		SaxonXQDataSource dataSource = new SaxonXQDataSource();
 		XQConnection connection;
@@ -90,28 +90,30 @@ public class XQueryPipe extends FixedForwardPipe {
 			connection = dataSource.getConnection();
 			preparedExpression = connection.prepareExpression(xquery);
 		} catch (XQException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "could not create prepared expression", e);
+			throw new ConfigurationException("could not create prepared expression", e);
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
 		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got an invalid type as input, expected String, got " + input.getClass().getName());
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		try {
-			String stringResult = (String)input;
+			String stringResult = input;
 			// We already specifically use Saxon in this pipe, hence set xslt2
 			// to true to make XmlUtils use the Saxon
 			// DocumentBuilderFactoryImpl.
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
 			if (getParameterList() != null) {
-				ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
 				Map<String,Object> parametervalues = null;
-				parametervalues = prc.getValueMap(getParameterList());
+				parametervalues = getParameterList().getValues(message, session).getValueMap();
 				Iterator<Parameter> iterator = getParameterList().iterator();
 				while (iterator.hasNext()) {
 					Parameter parameter = iterator.next();
@@ -120,7 +122,7 @@ public class XQueryPipe extends FixedForwardPipe {
 			}
 			XQResultSequence resultSequence = preparedExpression.executeQuery();
 			stringResult = resultSequence.getSequenceAsString(null);
-			return new PipeRunResult(getForward(), stringResult);
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+" Exception on running xquery", e);
 		}

@@ -25,7 +25,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.ibm.websphere.management.AdminService;
@@ -37,10 +37,11 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
  * @since 5.0.29
  */
 public class IbmMisc {
-    private static final Logger LOG = LogUtil.getLogger(Misc.class);
+    private static final Logger LOG = LogUtil.getLogger(IbmMisc.class);
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
+	// Used in iaf-core Misc class
     public static String getApplicationDeploymentDescriptorPath() throws IOException {
         final String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication();
         final AdminService adminService = AdminServiceFactory.getAdminService();
@@ -68,7 +69,8 @@ public class IbmMisc {
         return appPath;
     }
 
-    public static String getConfigurationResources() throws IOException {
+	// Used in iaf-core Misc class
+    public static String getConfigurationResourcePath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
         final String nodeName = adminService.getNodeName();
@@ -91,11 +93,12 @@ public class IbmMisc {
                         + processName
                         + File.separator
                         + "resources.xml";
-        LOG.debug("configurationResourcesFile [" + crFile + "]");
-        return Misc.fileToString(crFile);
+        LOG.debug("configurationResourcesPath [" + crFile + "]");
+        return crFile;
     }
 
-    public static String getConfigurationServer() throws IOException {
+	// Used in iaf-core Misc class
+    public static String getConfigurationServerPath() throws IOException {
         final AdminService adminService = AdminServiceFactory.getAdminService();
         final String cellName = adminService.getCellName();
         final String nodeName = adminService.getNodeName();
@@ -118,22 +121,19 @@ public class IbmMisc {
                         + processName
                         + File.separator
                         + "server.xml";
-        LOG.debug("configurationServerFile [" + csFile + "]");
-        return Misc.fileToString(csFile);
+        LOG.debug("configurationServerPath [" + csFile + "]");
+        return csFile;
     }
 
-	public static String getConnectionPoolProperties(String confResString,
-			String providerType, String jndiName) throws IOException,
-			DomBuilderException, TransformerException, SAXException {
+	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, DomBuilderException, TransformerException, SAXException {
 		// providerType: 'JDBC' or 'JMS'
-		URL url = ClassUtils
-				.getResourceURL(IbmMisc.class, GETCONNPOOLPROP_XSLT);
+		URL url = ClassUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource ["
 					+ GETCONNPOOLPROP_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, 2);
-		Map parameters = new Hashtable();
+		Map<String, Object> parameters = new Hashtable<>();
 		parameters.put("providerType", providerType);
 		parameters.put("jndiName", jndiName);
 		XmlUtils.setTransformerParameters(t, parameters);
@@ -145,19 +145,15 @@ public class IbmMisc {
 		return connectionPoolProperties;
 	}
 
-	public static String getJmsDestinations(String confResString)
-			throws IOException, DomBuilderException, TransformerException, SAXException {
-		URL url = ClassUtils.getResourceURL(IbmMisc.class, GETJMSDEST_XSLT);
+	public static String getJmsDestinations(String confResString) throws IOException, DomBuilderException, TransformerException, SAXException {
+		URL url = ClassUtils.getResourceURL(GETJMSDEST_XSLT);
 		if (url == null) {
-			throw new IOException(
-					"cannot find resource [" + GETJMSDEST_XSLT + "]");
+			throw new IOException("cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, 2);
 		String jmsDestinations = XmlUtils.transformXml(t, confResString);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true)
-					+ "]");
-		}
+		if (LOG.isDebugEnabled()) LOG.debug("jmsDestinations [" + chomp(jmsDestinations, 100, true) + "]");
+
 		return jmsDestinations;
 	}
 	

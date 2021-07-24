@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
-public class LocalFileSystemPipe extends FileSystemPipe<File, LocalFileSystem>{
+public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 
 	public LocalFileSystemPipe() {
 		setFileSystem(new LocalFileSystem());
 	}
-	
+
 	@IbisDoc({"1", "the folder that serves as the root of this virtual filesystem", "" })
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}
-	
+
 }

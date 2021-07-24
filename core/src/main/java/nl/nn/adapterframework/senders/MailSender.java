@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -210,7 +210,6 @@ public class MailSender extends MailSenderBase {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
 		for (EMail recipient : emailList) {
-			String value = recipient.getAddress();
 			String type = recipient.getType();
 			Message.RecipientType recipientType;
 			if ("cc".equalsIgnoreCase(type)) {
@@ -220,7 +219,7 @@ public class MailSender extends MailSenderBase {
 			} else {
 				recipientType = Message.RecipientType.TO;
 			}
-			msg.addRecipient(recipientType, new InternetAddress(value, recipient.getName()));
+			msg.addRecipient(recipientType, recipient.getInternetAddress());
 			recipientsFound = true;
 			if (log.isDebugEnabled()) {
 				sb.append("[recipient [" + recipient + "]]");
@@ -305,7 +304,7 @@ public class MailSender extends MailSenderBase {
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
 		try {
-			msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom().getName()));
+			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while setting sender email", e);
 		}

@@ -20,14 +20,14 @@ import java.net.URL;
 
 import javax.servlet.ServletContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.context.ServletContextAware;
+
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.web.context.ServletContextAware;
 
 @IbisInitializer
 public class DetermineApplicationServerBean implements ServletContextAware {
@@ -40,8 +40,6 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 		this.servletContext = servletContext;
 
 		setUploadPathInServletContext();
-		checkAndCorrectLegacyServerTypes();
-		determineApplicationServerType();
 		checkSecurityConstraintEnabled();
 	}
 
@@ -54,10 +52,10 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 				URL webXml = servletContext.getResource(web);
 				if(webXml != null) {
 					if(XmlUtils.buildDomDocument(webXml).getElementsByTagName("security-constraint").getLength() < 1)
-						ConfigurationWarnings.getInstance().add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
+						ApplicationWarnings.add(log, "unsecure IBIS application, enable the security constraints section in the web.xml in order to secure the application!");
 				}
 			} catch (Exception e) {
-				ConfigurationWarnings.getInstance().add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
+				ApplicationWarnings.add(log, "unable to determine whether security constraints have been enabled, is there a web.xml present?", e);
 			}
 		}
 	}
@@ -75,64 +73,6 @@ public class DetermineApplicationServerBean implements ServletContextAware {
 			servletContext.setAttribute("javax.servlet.context.tempdir",tempDirFile);
 		} catch (Exception e) {
 			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
-		}
-	}
-
-	/**
-	 * Log the message in System.out, the Ibis console and the Log4j logger
-	 * @param message to log
-	 */
-	private void log2ContextAndGui(String message) {
-		servletContext.log(message);
-		ConfigurationWarnings.getInstance().add(log, message);
-	}
-
-	private void checkAndCorrectLegacyServerTypes() {
-		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
-		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if (StringUtils.isNotEmpty(applicationServerType)) {
-			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
-				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
-				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
-			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-				log2ContextAndGui("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
-				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
-			}
-		}
-	}
-
-	private void determineApplicationServerType() {
-		String serverInfo = servletContext.getServerInfo();
-		String defaultApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			defaultApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			defaultApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
-			defaultApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
-			defaultApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "jetty")) {
-			String javaHome = System.getProperty("java.home");
-			if (StringUtils.containsIgnoreCase(javaHome, "tibco")) {
-				defaultApplicationServerType = "TIBCOAMX";
-			} else {
-				defaultApplicationServerType = "JETTYMVN";
-			}
-		} else {
-			defaultApplicationServerType = "TOMCAT";
-			log2ContextAndGui("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
-		}
-
-		//has it explicitly been set? if not, set the property
-		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-		if (defaultApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			log2ContextAndGui("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+defaultApplicationServerType+"]");
-		}
-		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, defaultApplicationServerType);
 		}
 	}
 }

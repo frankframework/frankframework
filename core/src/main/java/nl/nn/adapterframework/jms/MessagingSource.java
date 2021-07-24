@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -37,9 +42,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Generic Source for JMS connection, to be shared for JMS Objects that can use the same. 
@@ -57,25 +59,23 @@ public class MessagingSource  {
 	private boolean createDestination;
 	private boolean useJms102;
 
-	private String authAlias;
+	private @Getter @Setter String authAlias;
 
 	private Counter openConnectionCount = new Counter(0);
 	private Counter openSessionCount = new Counter(0);
 	
-	private String id;
+	private @Getter String id;
 	
 	private Context context = null;
 	private ConnectionFactory connectionFactory = null;
 	private Connection globalConnection=null; // only used when connections are not pooled
 	
-	private Map siblingMap;
-	private Hashtable connectionTable; // hashtable is synchronized and does not permit nulls
+	private Map<String,MessagingSource> siblingMap;
+	private Hashtable<Session,Connection> connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;
 	
-	protected MessagingSource(String id, Context context,
-			ConnectionFactory connectionFactory, Map siblingMap,
-			String authAlias, boolean createDestination, boolean useJms102) {
+	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map<String,MessagingSource> siblingMap, String authAlias, boolean createDestination, boolean useJms102) {
 		super();
 		referenceCount=0;
 		this.id=id;
@@ -87,7 +87,7 @@ public class MessagingSource  {
 		this.createDestination=createDestination;
 		this.useJms102=useJms102;
 		if (connectionsArePooled()) {
-			connectionTable = new Hashtable();
+			connectionTable = new Hashtable<>();
 		}
 		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
 	}
@@ -368,18 +368,6 @@ public class MessagingSource  {
 
 	protected String getLogPrefix() {
 		return "["+getId()+"] "; 
-	}
-
-	public String getId() {
-		return id;
-	}
-
-
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
-	public String getAuthAlias() {
-		return authAlias;
 	}
 
 }

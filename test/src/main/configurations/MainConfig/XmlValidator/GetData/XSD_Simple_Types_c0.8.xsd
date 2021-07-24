@@ -1,1 +1,548 @@
-<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bik="http://www.ibissource.org/bik" targetNamespace="http://www.ibissource.org/bik" elementFormDefault="qualified" attributeFormDefault="unqualified" bik:agent="BIK" bik:package="com.ibissource.bik">	<xsd:simpleType name="legalForm">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM Organization Name Types**********************************-->	<xsd:simpleType name="organisationName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="150"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="organizationalId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************BIK General Types***********************************************-->	<xsd:simpleType name="date">		<xsd:restriction base="xsd:date"/>	</xsd:simpleType>	<!--******************************************BIK PortfolioNumber Simple Types***********************************************-->	<xsd:simpleType name="portfolioNumber">		<xsd:restriction base="xsd:positiveInteger">			<!--xsd:maxInclusive value="999999"/-->			<xsd:maxLength value="6"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************BIK Processing attributes***************************************-->	<xsd:complexType name="completionInformation">		<xsd:sequence>			<xsd:element name="ReturnCode">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="10"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="ReasonCode">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="100"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="LanguageCode" default="DUT">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="3"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="Message" minOccurs="0">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="200"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>		</xsd:sequence>	</xsd:complexType>	<xsd:complexType name="debuggingInformation">		<xsd:sequence>			<xsd:element name="DateTime">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="35"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="ExeptionCode">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="20"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="SystemID">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="50"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="ActingComponent" minOccurs="0">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="30"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>			<xsd:element name="ContextInformation" minOccurs="0">				<xsd:simpleType>					<xsd:restriction base="xsd:string">						<xsd:maxLength value="255"/>					</xsd:restriction>				</xsd:simpleType>			</xsd:element>		</xsd:sequence>	</xsd:complexType>	<xsd:simpleType name="messageType">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="2"/>			<xsd:enumeration value="BP"/>			<xsd:enumeration value="TM"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM PostalAddress**********************************************-->	<xsd:simpleType name="addressLines">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="70"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="street">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="60"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="houseNumber">		<xsd:restriction base="xsd:integer">			<xsd:maxInclusive value="99999"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="houseNumberAddition">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="6"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="city">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="60"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="onBoardTypeEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="postalCode">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="8"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="addressFormatEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="countryCodeEnum">		<xsd:restriction base="xsd:string">			<xsd:length value="2"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="region">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="60"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="poBox">		<xsd:restriction base="xsd:integer">			<xsd:maxInclusive value="99999"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="careOfName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="60"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="addressType">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="50"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="addressNotes">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="50"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="building">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="floor">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="roomNumber">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="undeliverable">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="4"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM Name Simple Types and Enumerations**********************-->	<xsd:simpleType name="partyNameId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="35"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="partyNameUseEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="fullName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="300"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="name">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="150"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="firstNames">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="28"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="lastName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="70"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="preTitles">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="postTitles">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="titlesEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="999"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="titleTypeEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="titlePositionEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="introductionEnum">		<xsd:restriction base="xsd:nonNegativeInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="nameSuffix">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="initials">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="24"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="basicLastName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="70"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="lastNamePrefix">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM Organisation Demographics Simple Types*******************-->	<xsd:simpleType name="foundationDate">		<xsd:restriction base="xsd:date"/>	</xsd:simpleType>	<xsd:simpleType name="liquidationDate">		<xsd:restriction base="xsd:date"/>	</xsd:simpleType>	<xsd:simpleType name="liquidationReason">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************BIK MarkeingAttributes Simple Types****************************-->	<xsd:simpleType name="marketingAttributeId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="30"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="marketingAttributeDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="marketingAttributeValue">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="30"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="marketingAttributeValueDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************BIK MarketingAttributesGroup  Simple Types************************-->	<xsd:simpleType name="marketingAttributeGroupId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="30"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="marketingAttributeGroupDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************BIK PartyRegistration Simple Types********************************-->	<xsd:simpleType name="typeName">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="registeredLocation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="60"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="issueDate">		<xsd:restriction base="xsd:date"/>	</xsd:simpleType>	<xsd:simpleType name="registeredCountry">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="5"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="registeredReference">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="35"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="responsibleInstitute">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="35"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="partyRegistrationDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="nameCoc">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="100"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM External Agreement SimpleTypes**********************************-->	<xsd:simpleType name="agreementType">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="70"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="status">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="processingStage">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="IdNumber">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="50"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM Person Demographic SimpleTypes**********************************-->	<xsd:simpleType name="gender">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="9"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="maritalStatus">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM TelephoneNumber SimpleTypes**********************************-->	<xsd:simpleType name="telephoneNumberInformation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="extension">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM MobilephoneNumber SimpleTypes**********************************-->	<xsd:simpleType name="mobilePhoneInformation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM FaxNumber SimpleTypes*****************************************-->	<xsd:simpleType name="faxNumberInformation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="20"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM EmailAddress SimpleTypes*****************************************-->	<xsd:simpleType name="emailAddressInformation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="120"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM CommunicationMethod SimpleTypes***********************************-->	<xsd:simpleType name="communicationType">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="5"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="communicatInformation">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="255"/>		</xsd:restriction>	</xsd:simpleType>	<!--******************************************TOM PartyRecursiveRole SimpleTypes************************************-->	<xsd:simpleType name="roleTypeName">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="partyRecursiveRoleDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="50"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="product">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK Account Simple Types**********************************************************-->	<xsd:simpleType name="accountId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="30"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="accountName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="30"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK AccountAttribute Simple Types*************************************************-->	<xsd:simpleType name="accountAttributeId">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="90"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="accountAttributeDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="255"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="accountAttributeValue">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="255"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="accountAttributeValueDescription">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="255"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK ContactPointUsage Simple Types*************************************************-->	<xsd:simpleType name="preferenceRank">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="preferredUsage">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="3"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK PartyInternalAgreementRole Simple Types***************************************-->	<xsd:simpleType name="partyInternalAgreementRoleTypeName">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="partyInternalAgreementRoleStatus">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="partyInternalAgreementRoleContactStatus">		<xsd:restriction base="xsd:positiveInteger">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK Qualifications Simple Types********************************************************-->	<xsd:simpleType name="qualificationGroup">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="qualificationsName">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="proficiency">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="40"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK Responsible Simple Types********************************************************-->	<xsd:simpleType name="personalNumber">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="10"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="assignmentType">		<xsd:restriction base="xsd:string">			<xsd:maxLength value="1"/>		</xsd:restriction>	</xsd:simpleType>	<!--*********************************BIK RelationshipAttributes Simple Types********************************************************-->	<xsd:simpleType name="relationshipattributes_id">		<xsd:restriction base="xsd:integer">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType>	<xsd:simpleType name="relationshipattributes_value">		<xsd:restriction base="xsd:integer">			<xsd:maxInclusive value="99"/>		</xsd:restriction>	</xsd:simpleType></xsd:schema>
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bik="http://www.ibissource.org/bik" targetNamespace="http://www.ibissource.org/bik" elementFormDefault="qualified" attributeFormDefault="unqualified" bik:agent="BIK" bik:package="com.ibissource.bik">
+	<xsd:simpleType name="legalForm">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM Organization Name Types**********************************-->
+	<xsd:simpleType name="organisationName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="organizationalId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************BIK General Types***********************************************-->
+	<xsd:simpleType name="date">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<!--******************************************BIK PortfolioNumber Simple Types***********************************************-->
+	<xsd:simpleType name="portfolioNumber">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************BIK Processing attributes***************************************-->
+	<xsd:complexType name="completionInformation">
+		<xsd:sequence>
+			<xsd:element name="ReturnCode">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="10"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="ReasonCode">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="100"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="LanguageCode" default="DUT">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="3"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="Message" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="200"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="debuggingInformation">
+		<xsd:sequence>
+			<xsd:element name="DateTime">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="35"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="ExeptionCode">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="20"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="SystemID">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="50"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="ActingComponent" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="30"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="ContextInformation" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="255"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="messageType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+			<xsd:enumeration value="BP"/>
+			<xsd:enumeration value="TM"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM PostalAddress**********************************************-->
+	<xsd:simpleType name="addressLines">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="street">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="houseNumber">
+		<xsd:restriction base="xsd:integer">
+			<xsd:maxInclusive value="99999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="houseNumberAddition">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="6"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="city">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="onBoardTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="postalCode">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="8"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="addressFormatEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="countryCodeEnum">
+		<xsd:restriction base="xsd:string">
+			<xsd:length value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="region">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="poBox">
+		<xsd:restriction base="xsd:integer">
+			<xsd:maxInclusive value="99999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="careOfName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="addressType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="addressNotes">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="building">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="floor">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="roomNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="undeliverable">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM Name Simple Types and Enumerations**********************-->
+	<xsd:simpleType name="partyNameId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="partyNameUseEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="fullName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="300"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="name">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="150"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="firstNames">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="28"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="lastName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="preTitles">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="postTitles">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="titlesEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="titleTypeEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="titlePositionEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="introductionEnum">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nameSuffix">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="initials">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="24"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="basicLastName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="lastNamePrefix">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM Organisation Demographics Simple Types*******************-->
+	<xsd:simpleType name="foundationDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="liquidationDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="liquidationReason">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************BIK MarkeingAttributes Simple Types****************************-->
+	<xsd:simpleType name="marketingAttributeId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="marketingAttributeDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="marketingAttributeValue">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="marketingAttributeValueDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************BIK MarketingAttributesGroup  Simple Types************************-->
+	<xsd:simpleType name="marketingAttributeGroupId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="marketingAttributeGroupDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************BIK PartyRegistration Simple Types********************************-->
+	<xsd:simpleType name="typeName">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="registeredLocation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="60"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="issueDate">
+		<xsd:restriction base="xsd:date"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="registeredCountry">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="registeredReference">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="responsibleInstitute">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="partyRegistrationDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="nameCoc">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="100"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM External Agreement SimpleTypes**********************************-->
+	<xsd:simpleType name="agreementType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="70"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="status">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="processingStage">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="IdNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM Person Demographic SimpleTypes**********************************-->
+	<xsd:simpleType name="gender">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="maritalStatus">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM TelephoneNumber SimpleTypes**********************************-->
+	<xsd:simpleType name="telephoneNumberInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="extension">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM MobilephoneNumber SimpleTypes**********************************-->
+	<xsd:simpleType name="mobilePhoneInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM FaxNumber SimpleTypes*****************************************-->
+	<xsd:simpleType name="faxNumberInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM EmailAddress SimpleTypes*****************************************-->
+	<xsd:simpleType name="emailAddressInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="120"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM CommunicationMethod SimpleTypes***********************************-->
+	<xsd:simpleType name="communicationType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="communicatInformation">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--******************************************TOM PartyRecursiveRole SimpleTypes************************************-->
+	<xsd:simpleType name="roleTypeName">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="partyRecursiveRoleDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="product">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK Account Simple Types**********************************************************-->
+	<xsd:simpleType name="accountId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="accountName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK AccountAttribute Simple Types*************************************************-->
+	<xsd:simpleType name="accountAttributeId">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="90"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="accountAttributeDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="accountAttributeValue">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="accountAttributeValueDescription">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK ContactPointUsage Simple Types*************************************************-->
+	<xsd:simpleType name="preferenceRank">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="preferredUsage">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK PartyInternalAgreementRole Simple Types***************************************-->
+	<xsd:simpleType name="partyInternalAgreementRoleTypeName">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="partyInternalAgreementRoleStatus">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="partyInternalAgreementRoleContactStatus">
+		<xsd:restriction base="xsd:positiveInteger">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK Qualifications Simple Types********************************************************-->
+	<xsd:simpleType name="qualificationGroup">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="qualificationsName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="proficiency">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="40"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK Responsible Simple Types********************************************************-->
+	<xsd:simpleType name="personalNumber">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="assignmentType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--*********************************BIK RelationshipAttributes Simple Types********************************************************-->
+	<xsd:simpleType name="relationshipattributes_id">
+		<xsd:restriction base="xsd:integer">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="relationshipattributes_value">
+		<xsd:restriction base="xsd:integer">
+			<xsd:maxInclusive value="99"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

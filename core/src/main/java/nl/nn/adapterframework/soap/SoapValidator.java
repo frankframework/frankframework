@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -40,47 +42,58 @@ import nl.nn.adapterframework.pipes.Json2XmlValidator;
  */
 public class SoapValidator extends Json2XmlValidator {
 
-	public static final String SOAP_1_1_NAMESPACE="http://schemas.xmlsoap.org/soap/envelope/";
-	public static final String SOAP_1_2_NAMESPACE="http://www.w3.org/2003/05/soap-envelope";
-	
 	private String soapBody = "";
 	private String outputSoapBody = "";
 	private String soapHeader = "";
 	private String soapHeaderNamespace = "";
-	private String soapVersion = "1.1";
-
-	private SoapVersion[] versions = new SoapVersion[] { SoapVersion.fromAttribute("1.1") };
+	private SoapVersion soapVersion = SoapVersion.SOAP11;
+	private boolean allowPlainXml = false;
+	public static final String SOAP_ENVELOPE = "Envelope";
+	public static final String SOAP_BODY = "Body";
+	public static final String SOAP_HEADER = "Header";
 
 	protected boolean addSoapEnvelopeToSchemaLocation = true;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setSoapNamespace("");
-		super.setRoot(getRoot());
-		if ("any".equals(soapVersion) || StringUtils.isBlank(soapVersion)) {
-			versions = SoapVersion.values();
+		if (isAllowPlainXml()) {
+			//super.setRoot("Envelope,"+soapBody);
+			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE+","+soapBody));
 		} else {
-			versions = new SoapVersion[] { SoapVersion.fromAttribute(soapVersion) };
+			super.setRoot(getRoot());
 		}
 		if (addSoapEnvelopeToSchemaLocation) {
-			super.setSchemaLocation(schemaLocation + (schemaLocation.length() > 0 ? " " : "") + StringUtils.join(versions, " "));
+			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
 		}
 		if (StringUtils.isEmpty(soapBody)) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "soapBody not specified");
+			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
-		addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
-		if (StringUtils.isNotEmpty(outputSoapBody)) {
-			addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+		if (!isAllowPlainXml()) {
+			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, soapBody));
+			if (StringUtils.isNotEmpty(outputSoapBody)) {
+				addResponseRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
+			}
+			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
+			List<String> invalidRootNamespaces = new ArrayList<String>();
+			for (String namespace:soapVersion.getNamespaces()) {
+				invalidRootNamespaces.add(namespace);
+			}
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, soapBody), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_HEADER, soapHeader), invalidRootNamespaces);
 		}
-		addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
-		List<String> invalidRootNamespaces = new ArrayList<String>();
-		for (SoapVersion version : versions) {
-			invalidRootNamespaces.add(version.getNamespace());
-		}
-		addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
-		addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
 		super.configure();
+	}
+
+	@Override
+	protected Set<List<String>> createRootValidation(String messageRoot) {
+		Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
+		if (isAllowPlainXml()) {
+			messageRootValidations.add(Arrays.asList(SOAP_ENVELOPE+","+messageRoot)); // cannot test for messageRoot in SOAP message with current rootvalidation structure
+		} else {
+			messageRootValidations.add(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, messageRoot));
+		}
+		return messageRootValidations;
 	}
 
 	@Override
@@ -88,6 +101,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return StringUtils.isNotEmpty(getOutputSoapBody());
 	}
 
+	@Deprecated
 	@Override
 	public void setSchema(String schema) {
 		throw new IllegalArgumentException("The schema attribute isn't supported");
@@ -110,7 +124,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@Override
 	public String getRoot() {
-		return "Envelope";
+		return SOAP_ENVELOPE;
 	}
 
 	@IbisDoc({ "always envelope (not allowed to change)", "envelope" })
@@ -119,80 +133,52 @@ public class SoapValidator extends Json2XmlValidator {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
 
-	@IbisDoc({"name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
+	@IbisDoc({"1", "name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
-
 	public String getSoapBody() {
 		return soapBody;
 	}
 
-	@IbisDoc({"identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", "" })
+	@IbisDoc({"2", "identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a>", "" })
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
 	}
-
 	public String getOutputSoapBody() {
 		return outputSoapBody;
 	}
 
-	@IbisDoc({"name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
+	@IbisDoc({"3", "name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
-
 	public String getSoapHeader() {
 		return soapHeader;
 	}
 
-	@IbisDoc({ "can be used when the soap header element exists multiple times", "" })
+	@IbisDoc({"4", "can be used when the SOAP header element exists multiple times", "" })
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
-
 	public String getSoapHeaderNamespace() {
 		return soapHeaderNamespace;
 	}
 
-	@IbisDoc({ "soap envelope xsd version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
+	@IbisDoc({"5", "SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = soapVersion;
+		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
 	}
-
-	public String getSoapVersion() {
+	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;
 	}
 
-	public static enum SoapVersion {
-
-		VERSION_1_1(SOAP_1_1_NAMESPACE, "/xml/xsd/soap/envelope.xsd"),
-		VERSION_1_2(SOAP_1_2_NAMESPACE, "/xml/xsd/soap/envelope-1.2.xsd");
-
-		public final String namespace;
-		public final String location;
-
-		SoapVersion(String namespace, String location) {
-			this.namespace = namespace;
-			this.location = location;
-		}
-
-		public static SoapVersion fromAttribute(String s) {
-			if (StringUtils.isBlank(s)) {
-				return VERSION_1_1;
-			}
-			return valueOf("VERSION_" + s.replaceAll("\\.", "_"));
-		}
-
-		public String getNamespace() {
-			return namespace;
-		}
-
-		@Override
-		public String toString() {
-			return namespace + " " + location;
-		}
-
+	@IbisDoc({"6", "allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages", "false"})
+	public void setAllowPlainXml(boolean allowPlainXml) {
+		this.allowPlainXml = allowPlainXml;
+	}
+	public boolean isAllowPlainXml() {
+		return allowPlainXml;
 	}
 
 }

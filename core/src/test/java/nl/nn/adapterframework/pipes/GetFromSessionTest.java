@@ -11,8 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -23,13 +22,13 @@ import org.junit.Test;
 
 public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	
 	private final String DUMMY_DATA = "dummy data";
 
 	@Before
 	public void populateSession() {
-		session = new PipeLineSessionBase();
+		session = new PipeLineSession();
 		session.put("dummyString", DUMMY_DATA);
 		session.put("dummyByteArray", DUMMY_DATA.getBytes());
 		session.put("dummyStream", new ByteArrayInputStream(DUMMY_DATA.getBytes()));
@@ -47,13 +46,13 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 	}
 
 	@Test
-	public void sessionKeyIsEmpty() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void sessionKeyIsEmpty() throws Exception {
 		pipe.setSessionKey("");
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("dummyString", session);
-		String result = (String) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "dummyString", session);
+		String result=prr.getResult().asString();
 		assertEquals(DUMMY_DATA, result.trim());
 	}
 
@@ -63,8 +62,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		assertNull(prr.getResult());
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		assertNull(prr.getResult().asObject());
 	}
 
 	@Test
@@ -73,8 +72,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		String result = (String) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		String result = (String) prr.getResult().asObject();
 		assertEquals(DUMMY_DATA, result);
 	}
 
@@ -84,8 +83,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		byte[] result = (byte[]) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		byte[] result = (byte[]) prr.getResult().asObject();
 		assertEquals(DUMMY_DATA, new String(result));
 	}
 
@@ -95,8 +94,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		InputStream result = (InputStream) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		InputStream result = (InputStream) prr.getResult().asObject();
 		assertEquals(DUMMY_DATA, Misc.streamToString(result));
 	}
 
@@ -107,8 +106,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		String result = (String) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		String result = (String) prr.getResult().asObject();
 		assertEquals("<items />", result.trim());
 	}
 
@@ -119,8 +118,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		pipe.configure();
 		pipe.start();
 
-		PipeRunResult prr = pipe.doPipe("ingored", session);
-		String result = (String) prr.getResult();
+		PipeRunResult prr = doPipe(pipe, "ingored", session);
+		String result = (String) prr.getResult().asObject();
 
 		assertNotNull(result);
 		String key1 = null;

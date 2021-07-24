@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
+import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -31,6 +32,8 @@ import nl.nn.adapterframework.stream.Message;
  *  
  * @author John Dekker
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpSender extends SenderWithParametersBase {
 
 	private FtpSession ftpSession;
@@ -54,7 +57,7 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			ftpSession.put(paramList, session, message.asString(), remoteDirectory, remoteFilenamePattern, true);
 		} catch(SenderException e) {
@@ -138,8 +141,17 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpTypeDescription(String ftpTypeDescription) {
-		ftpSession.setFtpTypeDescription(ftpTypeDescription);
+	@Deprecated
+	@ConfigurationWarning("use attribute ftpType instead")
+	public void setFtpTypeDescription(String string) {
+		setFtpType(string);
+	}
+	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	public void setFtpType(String string) {
+		ftpSession.setFtpType(string);
+	}
+	public FtpType getFtpTypeEnum() {
+		return ftpSession.getFtpTypeEnum();
 	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})
@@ -262,11 +274,6 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setTruststorePassword(truststorePassword);
 	}
 
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean jdk13Compatibility) {
-		ftpSession.setJdk13Compatibility(jdk13Compatibility);
-	}
-
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean verifyHostname) {
 		ftpSession.setVerifyHostname(verifyHostname);
@@ -277,9 +284,28 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
 
-	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
-	public void setProtP(boolean protP) {
-		ftpSession.setProtP(protP);
+	@IbisDoc({"(ftps) if true, the server returns data via a SSL socket", "false"})
+	@Deprecated
+	@ConfigurationWarning("use attribute prot=\"P\" instead")
+	public void setProtP(boolean b) {
+		ftpSession.setProt(Prot.P.name());
+	}
+
+	/**
+	 * <ul>
+	 * <li>C - Clear</li>
+	 * <li>S - Safe(SSL protocol only)</li>
+	 * <li>E - Confidential(SSL protocol only)</li>
+	 * <li>P - Private</li>
+	 * </ul>
+	 *
+	 */
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
+	public void setProt(String prot) {
+		ftpSession.setProt(prot);
+	}
+	public Prot getProtEnum() {
+		return ftpSession.getProtEnum();
 	}
 
 	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})

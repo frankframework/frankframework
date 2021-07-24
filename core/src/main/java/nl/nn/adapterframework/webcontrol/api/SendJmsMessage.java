@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,16 +28,16 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang.StringUtils;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -57,100 +55,81 @@ public final class SendJmsMessage extends Base {
 	@Path("jms/message")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response putJmsMessage(MultipartFormDataInput input) throws ApiException {
+	public Response putJmsMessage(MultipartBody inputDataMap) throws ApiException {
 
-		String jmsRealm = null, destinationName = null, destinationType = null, replyTo = null, message = null, fileName = null;
+		String message = null, fileName = null;
 		InputStream file = null;
-		boolean persistent = false;
-		Map<String, List<InputPart>> inputDataMap = input.getFormDataMap();
 		if(inputDataMap == null) {
 			throw new ApiException("Missing post parameters");
 		}
 
-		try {
-			if(inputDataMap.get("realm") != null)
-				jmsRealm = inputDataMap.get("realm").get(0).getBodyAsString();
-			else
-				throw new ApiException("JMS realm not defined", 400);
-			if(inputDataMap.get("destination") != null)
-				destinationName = inputDataMap.get("destination").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination name not defined", 400);
-			if(inputDataMap.get("type") != null) 
-				destinationType = inputDataMap.get("type").get(0).getBodyAsString();
-			else
-				throw new ApiException("Destination type not defined", 400);
-			if(inputDataMap.get("replyTo") != null)
-				replyTo = inputDataMap.get("replyTo").get(0).getBodyAsString();
-			else
-				throw new ApiException("ReplyTo not defined", 400);
-			if(inputDataMap.get("message") != null) 
-				message = inputDataMap.get("message").get(0).getBodyAsString();
-			if(inputDataMap.get("persistent") != null)
-				persistent = inputDataMap.get("persistent").get(0).getBody(boolean.class, null);
-			if(inputDataMap.get("file") != null)
-				file = inputDataMap.get("file").get(0).getBody(InputStream.class, null);
-		}
-		catch (IOException e) {
-			throw new ApiException("Failed to parse one or more parameters", e);
-		}
+		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String connectionFactory = resolveStringFromMap(inputDataMap, "connectionFactory");
+		String destinationName = resolveStringFromMap(inputDataMap, "destination");
+		String destinationType = resolveStringFromMap(inputDataMap, "type");
+		String replyTo = resolveTypeFromMap(inputDataMap, "replyTo", String.class, "");
+		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
+		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
+		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
 
-		try {
-			if (file != null) {
-				MultivaluedMap<String, String> headers = inputDataMap.get("file").get(0).getHeaders();
-				String[] contentDispositionHeader = headers.getFirst("Content-Disposition").split(";");
-				for (String name : contentDispositionHeader) {
-					if ((name.trim().startsWith("filename"))) {
-						String[] tmp = name.split("=");
-						fileName = tmp[1].trim().replaceAll("\"","");
-					}
-				}
+		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
+		Attachment filePart = inputDataMap.getAttachment("file");
+		if(filePart != null) {
+			fileName = filePart.getContentDisposition().getParameter( "filename" );
 
-				if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
-					processZipFile(file, jmsBuilder(jmsRealm, destinationName, persistent, destinationType), replyTo);
-					message = null;
-				}
-				else {
-					message = XmlUtils.readXml(Misc.streamToBytes(file), Misc.DEFAULT_INPUT_STREAM_ENCODING, false);
+			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+				try {
+					processZipFile(file, qms);
+
+					return Response.status(Response.Status.OK).build();
+				} catch (IOException e) {
+					throw new ApiException("error processing zip file", e);
 				}
 			}
 			else {
-				message = new String(message.getBytes(), Misc.DEFAULT_INPUT_STREAM_ENCODING);
+				try {
+					message = XmlUtils.readXml(Misc.streamToBytes(file), fileEncoding, false);
+				} catch (UnsupportedEncodingException e) {
+					throw new ApiException("unsupported file encoding ["+fileEncoding+"]");
+				} catch (IOException e) {
+					throw new ApiException("error reading file", e);
+				}
 			}
-		}
-		catch (Exception e) {
-			throw new ApiException("Failed to read message", e);
+		} else {
+			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
 		if(message != null && message.length() > 0) {
-			JmsSender qms = jmsBuilder(jmsRealm, destinationName, persistent, destinationType);
-
-			if ((replyTo!=null) && (replyTo.length()>0))
-				qms.setReplyToName(replyTo);
-
-			processMessage(qms, "testmsg_"+Misc.createUUID(), message);
-
+			processMessage(qms, message);
 			return Response.status(Response.Status.OK).build();
 		}
 		else {
-			return Response.status(Response.Status.BAD_REQUEST).build();
+			throw new ApiException("must provide either a message or file", 400);
 		}
 	}
 
-	private JmsSender jmsBuilder(String realm, String destination, boolean persistent, String type) {
-		JmsSender qms = new JmsSender();
+	private JmsSender jmsBuilder(String connectionFactory, String destination, boolean persistent, String type, String replyTo, boolean synchronous, boolean lookupDestination) {
+		JmsSender qms = getIbisContext().createBeanAutowireByName(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
-		qms.setJmsRealm(realm);
+		if(type.equals("QUEUE")) {
+			qms.setQueueConnectionFactoryName(connectionFactory);
+		} else {
+			qms.setTopicConnectionFactoryName(connectionFactory);
+		}
 		qms.setDestinationName(destination);
 		qms.setPersistent(persistent);
 		qms.setDestinationType(type);
+		if (StringUtils.isNotEmpty(replyTo)) {
+			qms.setReplyToName(replyTo);
+		}
+		qms.setSynchronous(synchronous);
+		qms.setLookupDestination(lookupDestination);
 		return qms;
 	}
 
-	private void processZipFile(InputStream file, JmsSender qms, String replyTo) throws IOException {
+	private void processZipFile(InputStream file, JmsSender qms) throws IOException {
 		ZipInputStream archive = new ZipInputStream(file);
 		for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
-			String name = entry.getName();
 			int size = (int)entry.getSize();
 			if (size>0) {
 				byte[] b=new byte[size];
@@ -163,38 +142,16 @@ public final class SendJmsMessage extends Base {
 					}
 					rb+=chunk;
 				} 
-				String currentMessage = XmlUtils.readXml(b,0,rb,Misc.DEFAULT_INPUT_STREAM_ENCODING,false);
-				// initiate MessageSender
-				if ((replyTo!=null) && (replyTo.length()>0))
-					qms.setReplyToName(replyTo);
+				String currentMessage = XmlUtils.readXml(b,0,rb,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING,false);
 
-				processMessage(qms, name+"_" + Misc.createSimpleUUID(), currentMessage);
+				processMessage(qms, currentMessage);
 			}
 			archive.closeEntry();
 		}
 		archive.close();
 	}
 
-	private void processMessage(JmsSender qms, String messageId, String message) throws ApiException {
-		Map<String, String> ibisContexts = XmlUtils.getIbisContext(message);
-		String technicalCorrelationId = messageId;
-		if (log.isDebugEnabled()) {
-			if (ibisContexts!=null) {
-				String contextDump = "ibisContext:";
-				for (Iterator<String> it = ibisContexts.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					String value = ibisContexts.get(key);
-					if (log.isDebugEnabled()) {
-						contextDump = contextDump + "\n " + key + "=[" + value + "]";
-					}
-					if (key.equals("tcid")) {
-						technicalCorrelationId = value;
-					}
-				}
-				log.debug(contextDump);
-			}
-		}
-
+	private void processMessage(JmsSender qms, String message) throws ApiException {
 		try {
 			qms.open();
 			/*

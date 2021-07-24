@@ -2,9 +2,9 @@
   <configurations>
       <configuration nameUC="0*ALL*">*ALL*</configuration>
       <configuration nameUC="1IAF*WEBCONTROL">IAF_WebControl</configuration>
+      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
       <configuration nameUC="1IBIS4EXAMPLE">Ibis4Example</configuration>
       <configuration nameUC="1NOTEXISTINGCONFIG">NotExistingConfig</configuration>
-      <configuration nameUC="1IAF*UTIL">IAF_Util</configuration>
   </configurations>
   <registeredAdapters all="false" log="false">
       <configurationMessages>
@@ -130,11 +130,11 @@
             </pipe>
          </pipes>
          <adapterMessages>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [ibisstore]</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [IBISSTORE]</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] initialization complete</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] successfully configured</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] has listener on external: testtool-HelloUniverse</adapterMessage>
-            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [ibisstore]</adapterMessage>
+            <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] has errorStorage to jdbc:h2:mem:ibisTestDataSource/IBISTESTDATASOURCE in table [IBISSTORE]</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] initialization complete</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Receiver [HelloUniverse] successfully configured</adapterMessage>
             <adapterMessage date="0000-00-00 00:00:00.000" level="INFO">Adapter [HelloUniverse] up and running</adapterMessage>

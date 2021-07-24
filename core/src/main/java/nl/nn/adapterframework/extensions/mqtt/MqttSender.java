@@ -16,12 +16,10 @@
 
 package nl.nn.adapterframework.extensions.mqtt;
 
-import java.io.IOException;
-
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -92,11 +90,11 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(Message message, IPipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
 		try {
 			if(!client.isConnected()) {
 				super.open();

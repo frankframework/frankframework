@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.sap.mw.idoc.IDoc.Document;
 import com.sap.mw.jco.JCO;
@@ -30,6 +31,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -124,17 +126,19 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	}
 
 	@Override
-	public String getStringFromRawMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message(rawMessage);
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, JCO.Function rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
-			message2FunctionResult(rawMessage, processResult.getResult());
-		} catch (SapException e) {
+			if (rawMessageOrWrapper instanceof JCO.Function) {
+				message2FunctionResult((JCO.Function)rawMessageOrWrapper, processResult.getResult().asString());
+			}
+		} catch (SapException | IOException e) {
 			throw new ListenerException(e);
 		}
 	}
@@ -151,7 +155,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		try {
 			log.debug("SapListener.procesFunctionCall()");
-			handler.processRawMessage(this, function, null);
+			handler.processRawMessage(this, function, null, false);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
@@ -161,7 +165,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	public void processIDoc(Document idoc) throws SapException {
 		try {
 			log.debug("SapListener.processIDoc()");
-			handler.processRequest(this, idoc.toXML());
+			handler.processRequest(this, null, null, new Message(idoc.toXML()), null);
 		} catch (ListenerException e) {
 			throw new SapException(e);
 		}
@@ -170,7 +174,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
-  	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+  	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
   	 *
   	 **/
 	@Override

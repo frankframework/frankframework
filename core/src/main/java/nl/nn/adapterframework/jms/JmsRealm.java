@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Iterator;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.BeanMap;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -123,9 +123,10 @@ public class JmsRealm {
 	/**
 	 * The <code>toString()</code> method retrieves its value by reflection.
 	 * 
-	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
+	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/
+	@Override
 	public String toString() {
 		try {
 			return ToStringBuilder.reflectionToString(this);

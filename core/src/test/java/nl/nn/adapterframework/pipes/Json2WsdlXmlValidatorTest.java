@@ -5,24 +5,22 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
-import javax.wsdl.WSDLException;
 
 @RunWith(value=JUnit4.class)
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
 	WsdlXmlValidator validator;
 	
-    private IPipeLineSession session = new PipeLineSessionBase();
+    private PipeLineSession session = new PipeLineSession();
 	
 	@Override
 	public String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
@@ -50,8 +48,13 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         }
         PipeRunResult result;
 		try {
-			result = val.doPipe(input, session);
-	        String resultStr=(String)result.getResult();
+			result = val.doPipe(new Message(input), session);
+	        String resultStr=null;
+			try {
+				resultStr = Message.asString(result);
+			} catch (IOException e) {
+				fail("cannot open stream: "+description +": "+ e.getMessage());
+			}
 	        System.out.println("result of ["+description+"]\n"+resultStr);
 	        if (resultStr.indexOf(targetContent1)<0) { 
 	        	fail("result of ["+description+"] does not contain target content ["+targetContent1+"]"); 
@@ -70,14 +73,16 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 		}
 	}
 	
-	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws Exception {
         WsdlXmlValidator val = new WsdlXmlValidator();
         val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
         val.setThrowException(true);
         val.registerForward(new PipeForward("success", null));
         val.setSoapBody(soapBody);
+        val.setValidateJsonToRootElementOnly(false);
         val.configure();
+        val.start();
 
         boolean compactJsonArrays=false;
         
@@ -103,7 +108,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 	
     @Test
-    public void wsdlJsonValidate() throws IOException, PipeRunException, SAXException, WSDLException, ConfigurationException, XmlValidatorException {
+    public void wsdlJsonValidate() throws Exception {
     	String wsdl=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
     	String soapBody="GetPolicyDetailsTravel_Response";
     	String soapFile=BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetailsTravel/response1soap.xml";
@@ -128,11 +133,12 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
         val.registerForward(new PipeForward("success", null));
         val.setSoapBody(soapBody);
         val.configure();
+        val.start();
         
         PipeRunResult result;
 		try {
-			result = val.doPipe(input, session);
-	        String resultStr=(String)result.getResult();
+			result = val.doPipe(new Message(input), session);
+	        Message.asString(result.getResult());
 	        fail("expected error ["+expectedError+"]");
 		} catch (PipeRunException e) {
 			String msg=e.getMessage();

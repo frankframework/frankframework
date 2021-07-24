@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,29 +24,26 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.storage.file.TestStorage;
 import nl.nn.testtool.transform.ReportXmlTransformer;
-import nl.nn.testtool.util.LogUtil;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
@@ -56,14 +53,12 @@ import nl.nn.testtool.util.LogUtil;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all tests passed</td></tr>
  * <tr><td>"failure"</td><td>errors or failed tests</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
  *
  */
 public class LadybugPipe extends FixedForwardPipe {
-	private static final Logger log = LogUtil.getLogger(LadybugPipe.class); // Overwrites log of JdbcFacade (using nl.nn.testtool.util.LogUtil instead of nl.nn.adapterframework.util.LogUtil)
 	private static String FAILURE_FORWARD_NAME = "failure";
 	private PipeForward failureForward;
 	private boolean writeToLog = false;
@@ -71,7 +66,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	private boolean checkRoles = false;
 	private boolean enableReportGenerator = false;
 	private TestTool testTool;
-	private TestStorage testStorage;
+	private CrudStorage testStorage;
 	private Storage debugStorage; 
 	private ReportXmlTransformer reportXmlTransformer;
 	private String exclude;
@@ -83,7 +78,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		super.configure();
 		failureForward = findForward(FAILURE_FORWARD_NAME);
 		if (failureForward == null) {
-			failureForward = getForward();
+			failureForward = getSuccessForward();
 		}
 		if (StringUtils.isNotEmpty(exclude)) {
 			excludeRegexPattern = Pattern.compile(exclude);
@@ -92,7 +87,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");
 		int reportsPassed = 0;
 		
@@ -186,7 +181,7 @@ public class LadybugPipe extends FixedForwardPipe {
 					+ "TotalDuration=\"" + (endTime - startTime) + "\", "
 					+ "Equal=\"" + allReportsPassed + "\"");
 		}
-		PipeForward forward = allReportsPassed ? getForward() : failureForward;
+		PipeForward forward = allReportsPassed ? getSuccessForward() : failureForward;
 		return new PipeRunResult(forward, results.toXML());
 	}
 
@@ -241,11 +236,11 @@ public class LadybugPipe extends FixedForwardPipe {
 		this.testTool = testTool;
 	}
 
-	public void setRunStorage(TestStorage testStorage) {
+	public void setTestStorage(CrudStorage testStorage) {
 		this.testStorage = testStorage;
 	}
 
-	public void setLogStorage(Storage debugStorage) {
+	public void setDebugStorage(Storage debugStorage) {
 		this.debugStorage = debugStorage;
 	}
 
@@ -256,10 +251,10 @@ public class LadybugPipe extends FixedForwardPipe {
 }
 
 class IbisSecurityContext implements SecurityContext {
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private boolean checkRoles;
 
-	IbisSecurityContext(IPipeLineSession session, boolean checkRoles) {
+	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
 		this.session = session;
 		this.checkRoles = checkRoles;
 	}

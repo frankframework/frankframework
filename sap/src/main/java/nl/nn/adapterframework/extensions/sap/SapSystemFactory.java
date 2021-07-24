@@ -24,8 +24,8 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 
 import com.sap.conn.jco.JCoException;
 

@@ -32,8 +32,6 @@ public interface Convertor {
 
 	/**
 	 * Returns the supported media types.
-	 * 
-	 * @return
 	 */
 	List<MediaType> getSupportedMediaTypes();
 
@@ -46,9 +44,7 @@ public interface Convertor {
 	 * @param filename
 	 * @param file
 	 * @param conversionOption
-	 * @return
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, File file,
-			ConversionOption conversionOption);
+	CisConversionResult convertToPdf(MediaType mediaType, String filename, File file, ConversionOption conversionOption);
 
 }

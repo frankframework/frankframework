@@ -3,6 +3,7 @@
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
     <xsl:param name="tnumber"/>
+    <xsl:param name="slotid"/>
 
 	<xsl:template match="/">
 		<manageDatabaseREQ>
@@ -13,10 +14,13 @@
                         <name>tchar</name>
                     </column>
                     <column>
-                        <name>tvarchar</name>
+                        <name>tclob</name>
                     </column>
                     <column>
                         <name>tnumber</name>
+                    </column>
+                    <column>
+                        <name>tvarchar</name>
                     </column>
                 </columns>
                 <where>tnumber=<xsl:value-of select="$tnumber"/></where>
@@ -32,7 +36,7 @@
                         <name>slotid</name>
                     </column>
                 </columns>
-                <where>slotid='IFSA://NLIBIS4TEST/JdbcQueryListener'</where>
+                <where>slotid='<xsl:value-of select="$slotid"/>'</where>
                 <order>MESSAGEKEY</order>
             </select>
         </manageDatabaseREQ>

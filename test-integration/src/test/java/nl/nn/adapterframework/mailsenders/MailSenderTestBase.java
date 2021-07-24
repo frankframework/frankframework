@@ -13,11 +13,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -127,9 +126,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
+		PipeLineSession session = new PipeLineSession();
 		sender.configure();
 		sender.open();
 
@@ -188,9 +185,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
+		PipeLineSession session = new PipeLineSession();
 
 		sender.configure();
 		sender.open();
@@ -244,7 +239,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pThreadTopic.setValue("subject");
 		sender.addParameter(pThreadTopic);
 
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		session.put("attachment",
 				new URL("file:///" + getClass().getResource(examplesMainFolder + "emailSample.xml").getPath())
 						.openStream());
@@ -253,9 +248,6 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		pAttachments.setValue("<attachment name=\"filename1\" type=\"txt\">This is the first attachment</attachment>"
 				+ "<attachment name=\"email.xml\" sessionKey=\"attachment\"> </attachment>");
 		sender.addParameter(pAttachments);
-
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		prc.setSession(session);
 
 		sender.configure();
 		sender.open();
@@ -306,9 +298,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 				"<attachment name=\"filename1\" base64=\"true\" type=\"txt\">VGhpcyBpcyB0aGUgZmlyc3QgYXR0YWNobWVudA==</attachment>");
 		sender.addParameter(pAttachments);
 
-		ParameterResolutionContext prc = new ParameterResolutionContext();
-		PipeLineSessionBase session = new PipeLineSessionBase();
-		prc.setSession(session);
+		PipeLineSession session = new PipeLineSession();
 		sender.configure();
 		sender.open();
 

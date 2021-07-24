@@ -20,7 +20,6 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutput
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import org.bouncycastle.util.io.Streams;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 

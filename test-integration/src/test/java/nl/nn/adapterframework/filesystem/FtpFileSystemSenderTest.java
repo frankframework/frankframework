@@ -14,10 +14,10 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFile, FtpFileSystem> {
 
-	private String username = "";
-	private String password = "";
-	private String host = "";
-	private String remoteDirectory = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
+	private String host = "localhost";
+	private String remoteDirectory = "/home/wearefrank/dir";
 	private int port = 21;
 
 	@Override

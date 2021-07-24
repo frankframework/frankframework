@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 package nl.nn.adapterframework.senders;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -40,13 +42,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
-public class ReloadSender extends SenderWithParametersBase implements ConfigurationAware {
+public class ReloadSender extends SenderWithParametersBase {
 
-	private Configuration configuration;
 	private boolean forceReload = false;
+	private @Setter IbisManager ibisManager;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		String configName = null;
 		String activeVersion = null;
@@ -78,12 +80,12 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
 
-		Configuration configuration = getConfiguration().getIbisManager().getConfiguration(configName);
+		Configuration configuration = ibisManager.getConfiguration(configName);
 
 		if (configuration != null) {
 			String latestVersion = configuration.getVersion();
 			if (getForceReload() || (latestVersion != null && !activeVersion.equals(latestVersion))) {
-				IbisContext ibisContext = configuration.getIbisManager().getIbisContext();
+				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
 				return new Message("Reload " + configName + " succeeded");
 			}
@@ -91,16 +93,6 @@ public class ReloadSender extends SenderWithParametersBase implements Configurat
 		}
 		log.warn("Configuration [" + configName + "] not loaded yet");
 		return new Message("Reload " + configName + " skipped"); 
-	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
 	}
 
 	@IbisDoc({"reload the configuration regardless of the version", "false"})

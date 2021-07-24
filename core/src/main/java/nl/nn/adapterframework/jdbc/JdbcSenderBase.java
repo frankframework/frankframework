@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,22 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.IBlockEnabledSender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Base class for building JDBC-senders.
@@ -40,7 +38,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSender {
+public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H>, IStreamingSender {
 
 	private int timeout = 0;
 
@@ -50,7 +48,6 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	public JdbcSenderBase() {
 		super();
 	}
-
 
 	@Override
 	public void addParameter(Parameter p) { 
@@ -64,16 +61,10 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	public ParameterList getParameterList() {
 		return paramList;
 	}
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		configure();		
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException(getLogPrefix()+"has no datasource");
-		}
 		if (paramList!=null) {
 			paramList.configure();
 		}
@@ -81,14 +72,21 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 
 	@Override
 	public void open() throws SenderException {
-		if (!isConnectionsArePooled()) {
-			try {
-				connection = getConnection();
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
+		try {
+			connection = getConnection();
+			connection.getMetaData(); //We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Throwable t) {
+			JdbcUtil.close(connection);
+			connection = null;
+
+			throw new SenderException(t);
 		}
-	}	
+
+		//When we use pooling connections we need to ask for a new connection every time we want to use it
+		if (isConnectionsArePooled()) {
+			close();
+		}
+	}
 
 	@Override
 	public void close() {
@@ -106,38 +104,16 @@ public abstract class JdbcSenderBase extends JdbcFacade implements IStreamingSen
 	
 
 	@Override
+	// implements ISender.sendMessage()
 	// can make this sendMessage() 'final', debugging handled by the newly implemented sendMessage() below, that includes the MessageOutputStream
-	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		PipeRunResult result = sendMessage(message, session, null);
-		return result==null?null:new Message(result.getResult());
-	}
-
-	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
-		if (isConnectionsArePooled()) {
-			Connection c = null;
-			try {
-				c = getConnectionWithTimeout(getTimeout());
-				return new PipeRunResult(null,sendMessage(c, message, session));
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			} finally {
-				if (c!=null) {
-					try {
-						c.close();
-					} catch (SQLException e) {
-						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
-					}
-				}
-			}
-			
-		} 
-		synchronized (connection) {
-			return new PipeRunResult(null,sendMessage(connection, message, session));
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		H blockHandle = openBlock(session);
+		try {
+			return sendMessage(blockHandle, message, session);
+		} finally {
+			closeBlock(blockHandle, session);
 		}
 	}
-
-	protected abstract String sendMessage(Connection connection, Message message, IPipeLineSession session) throws SenderException, TimeOutException;
 
 	@Override
 	public String toString() {

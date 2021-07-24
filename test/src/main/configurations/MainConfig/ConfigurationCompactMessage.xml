@@ -1,7 +1,6 @@
 <module>
 	<adapter name="CompactMessage-JavaListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="CompactMessage-JavaListener" chompCharSize="50"
+		<receiver chompCharSize="50"
 			elementToMoveChain="AuditLog_Action;Message;Text">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JavaListener" />
@@ -17,8 +16,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="CompactMessage-JavaListener2">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="CompactMessage-JavaListener2" chompCharSize="50"
+		<receiver chompCharSize="50"
 			elementToMove="Location">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JavaListener2" />
@@ -37,8 +35,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="CompactMessage-JavaListener3">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="CompactMessage-JavaListener3" chompCharSize="50"
+		<receiver chompCharSize="50"
 			elementToMoveChain="Location" removeCompactMsgNamespaces="false">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JavaListener3" />

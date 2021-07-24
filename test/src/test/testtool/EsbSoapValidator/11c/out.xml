@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbSoapValidator2]: (RequestProcessorException) RequestProcessor [ibis4test-EsbSoapValidator2] caught exception: message is not XML or JSON, because it starts with [S] and not with &#39;&lt;&#39;, &#39;{&#39; or &#39;[&#39;</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbSoapValidator2]: (RequestProcessorException) RequestProcessor [ibis4test-EsbSoapValidator2] caught exception: message is not XML or JSON, because it starts with [S] and not with &#39;&lt;&#39;, &#39;{&#39; or &#39;[&#39;</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>

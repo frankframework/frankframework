@@ -1,0 +1,26 @@
+<configuration>
+	<adapter name="LogSender">
+		<receiver name="LogSender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="LogSender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.LogSender"
+					logLevel="warn"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -47,21 +49,42 @@ public class JsonElementContainer implements ElementContainer {
 	private boolean nil=false;
 	private ScalarType type=ScalarType.UNKNOWN;
 	private String attributePrefix;
+	private String mixedContentLabel;
 
 	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
 	
-	private final boolean DEBUG=false;
-	
-	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix, XSTypeDefinition typeDefinition) {
+	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix, String mixedContentLabel, XSTypeDefinition typeDefinition) {
 		this.name=name;
 		this.xmlArrayContainer=xmlArrayContainer;
 		this.repeatedElement=repeatedElement;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.attributePrefix=attributePrefix;
-		if (typeDefinition instanceof XSSimpleType) {
-			setType(ScalarType.findType(((XSSimpleType)typeDefinition)));
+		this.mixedContentLabel=mixedContentLabel;
+		if (typeDefinition!=null) {
+			switch(typeDefinition.getTypeCategory()) {
+			case XSTypeDefinition.SIMPLE_TYPE:
+				setType(ScalarType.findType(((XSSimpleType)typeDefinition)));
+				break;
+			case XSTypeDefinition.COMPLEX_TYPE:
+				XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
+				switch (complexTypeDefinition.getContentType()) {
+				case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Empty, no child elements");
+					break;
+				case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+					setType(ScalarType.findType((XSSimpleType)complexTypeDefinition.getBaseType()));
+					break;
+				case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Element");
+					break;
+				case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
+					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Mixed");
+					break;
+				}
+			}
 		}
 	}
 	
@@ -76,7 +99,7 @@ public class JsonElementContainer implements ElementContainer {
 
 	@Override
 	public void setAttribute(String name, String value, XSSimpleTypeDefinition attTypeDefinition) {
-		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix, attTypeDefinition);
+		JsonElementContainer attributeContainer = new JsonElementContainer(attributePrefix+name, false, false, false, attributePrefix, mixedContentLabel, attTypeDefinition);
 		attributeContainer.setContent(value);
 		addContent(attributeContainer);
 	}
@@ -90,16 +113,28 @@ public class JsonElementContainer implements ElementContainer {
 	 * Sets the Text content of the current object
 	 */
 	public void setContent(String content) {
-		if (DEBUG) log.debug("setContent name ["+getName()+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("setContent() name ["+getName()+"] content ["+content+"]");
 		if (content!=null) {
 			boolean whitespace=content.trim().isEmpty();
 			if (whitespace && stringContent==null) {
-				if (DEBUG) log.debug("setContent ignoring empty content for name ["+getName()+"]");
+				if (log.isTraceEnabled()) log.trace("setContent() ignoring empty content for name ["+getName()+"]");
 				return;
 			}
 		}
 		if (contentMap!=null) {
-			throw new IllegalStateException("already created map for element ["+name+"]");
+			if (StringUtils.isNotEmpty(mixedContentLabel)) {
+				JsonElementContainer textContainer = (JsonElementContainer)contentMap.get(mixedContentLabel);
+				if (textContainer==null) {
+					textContainer = new JsonElementContainer(mixedContentLabel, false, false, false, attributePrefix, mixedContentLabel, null);
+					textContainer.setType(getType());
+					contentMap.put(mixedContentLabel, textContainer);
+					textContainer.stringContent = content;
+				} else {
+					textContainer.stringContent += content;
+				}
+				return;
+			} 
+			throw new IllegalStateException("already created map for element ["+name+"] and no mixexContentLabel set");
 		}
 		if (array!=null) {
 			throw new IllegalStateException("already created array for element ["+name+"]");
@@ -118,7 +153,7 @@ public class JsonElementContainer implements ElementContainer {
 			} else {
 				stringContent+=content;
 			}
-			if (DEBUG) log.debug("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
+			if (log.isTraceEnabled()) log.trace("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
 		}
 	}
 	
@@ -127,7 +162,7 @@ public class JsonElementContainer implements ElementContainer {
 	 */
 	public void addContent(JsonElementContainer content) {
 		String childName=content.getName();
-		if (DEBUG) log.debug("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
+		if (log.isTraceEnabled()) log.trace("addContent for parent ["+getName()+"] name ["+childName+"] array container ["+isXmlArrayContainer()+"] content.isRepeatedElement ["+content.isRepeatedElement()+"] skipArrayElementContainers ["+skipArrayElementContainers+"] content ["+content+"]");
 		if (stringContent!=null) {
 			throw new IllegalStateException("content already set as String for element ["+getName()+"]");
 		}
@@ -154,7 +189,7 @@ public class JsonElementContainer implements ElementContainer {
 				if (!(current instanceof List)) {
 					throw new IllegalArgumentException("element ["+childName+"] is not an array");
 				}
-	}
+			}
 			((List)current).add(content.getContent());
 		} else {
 			if (current!=null) {
@@ -189,7 +224,7 @@ public class JsonElementContainer implements ElementContainer {
 	        case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if (DEBUG) log.debug("getContent quoted stringContent ["+stringContent+"]");
+				if (log.isTraceEnabled()) log.trace("getContent quoted stringContent ["+stringContent+"]");
 //				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
 				String result=ESCAPE_JSON.translate(stringContent.toString()); 
 				return '"'+result+'"';

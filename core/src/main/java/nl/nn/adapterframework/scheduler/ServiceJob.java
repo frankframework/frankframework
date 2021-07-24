@@ -47,7 +47,6 @@ public class ServiceJob extends BaseJob {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			String serviceName = dataMap.getString(JAVALISTENER_KEY);
 			Message message = new Message(dataMap.getString(MESSAGE_KEY));
-			String correlationId = dataMap.getString(CORRELATIONID_KEY);
 
 			// send job
 			IbisLocalSender localSender = new IbisLocalSender();

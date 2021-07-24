@@ -16,21 +16,20 @@ public class NodeSetFilterTest {
 	private String document;
 	
 	public void testTargetElementFilter(String targetElement, boolean includeRoot, String input, String expected) throws IOException, SAXException {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(null, targetElement,true,includeRoot);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(null, targetElement, true, includeRoot, null);
 		testNodeSetFilter(targetElementFilter, targetElement, includeRoot, input, expected);
 	}
 
 	public void testContainerElementFilter(String containerElement, boolean includeRoot, String input, String expected) throws IOException, SAXException {
-		NodeSetFilter containerElementFilter = new NodeSetFilter(null, containerElement,false,includeRoot);
+		NodeSetFilter containerElementFilter = new NodeSetFilter(null, containerElement, false, includeRoot, null);
 		testNodeSetFilter(containerElementFilter, containerElement, includeRoot, input, expected);
 	}
 	
 	public void testNodeSetFilter(NodeSetFilter targetElementFilter, String element, boolean includeRoot, String input, String expected) throws IOException, SAXException {
 		XmlWriter xmlWriter = new XmlWriter();
-		PrettyPrintFilter ppf = new PrefixMappingObservingFilter();
-		ppf.setContentHandler(xmlWriter);
+		PrettyPrintFilter ppf = new PrefixMappingObservingFilter(xmlWriter);
 		targetElementFilter.setContentHandler(ppf);
-		XmlUtils.parseXml(targetElementFilter, input);
+		XmlUtils.parseXml(input, targetElementFilter);
 		assertEquals("testElementFilter "+(includeRoot?"container element":"target element")+" ["+element+"]",expected,xmlWriter.toString());
 	}
 
@@ -98,7 +97,7 @@ public class NodeSetFilterTest {
 
 	@Test
 	public void testNodeSetFilter() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(null, null, false, false);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(null, null, false, false, null);
 		String expected="<prefix- uri=\"urn:tja\">\n" +
 				"\t<sub1 xmlns=\"urn:tja\">\n" +
 					"\t\t<a>x</a>\n" +
@@ -126,7 +125,7 @@ public class NodeSetFilterTest {
 
 	@Test
 	public void testTargetElementFilterWithNamespace() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
 		String expected="<prefix- uri=\"urn:tja\">\n" +
 				"\t<a xmlns=\"urn:tja\">x</a>\n" +
 			"</prefix->\n" +
@@ -141,7 +140,7 @@ public class NodeSetFilterTest {
 	
 	@Test
 	public void testTargetElementFilterWithNamespace2() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("urn:tja"), "a",true,false, null);
 
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
 		String expected = 	"<prefix-ns uri=\"urn:tja\">\n" +
@@ -153,7 +152,7 @@ public class NodeSetFilterTest {
 	
 	@Test
 	public void testTargetElementFilterWithNamespace3() throws Exception {
-		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false);
+		NodeSetFilter targetElementFilter = new NodeSetFilter(XmlUtils.getNamespaceMap("x=urn:tja"), "x:a",true,false, null);
 
 		String document="<root xmlns:ns=\"urn:tja\"><sub1><a>x</a></sub1><x><sub2><ns:a>y</ns:a><b>y</b></sub2></x><sub2><a>y</a><b>y</b></sub2><xx/></root>";
 		String expected =	"<prefix-ns uri=\"urn:tja\">\n" +
@@ -168,7 +167,7 @@ public class NodeSetFilterTest {
 		String namespaceDefs="urn:defns2";
 		String targetElement="XDOC";
 		 
-		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), targetElement, true, false) {
+		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), targetElement, true, false, null) {
 
 			@Override
 			public void startNode(String uri, String localName, String qName) throws SAXException {
@@ -196,7 +195,7 @@ public class NodeSetFilterTest {
 		String namespaceDefs="urn:defcont";
 		String containerElement="DocOutputPrintDocumentRequestCont";
 		 
-		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), containerElement, false, false) {
+		NodeSetFilter nodeSetFilter = new NodeSetFilter(XmlUtils.getNamespaceMap(namespaceDefs), containerElement, false, false, null) {
 
 			@Override
 			public void startNode(String uri, String localName, String qName) throws SAXException {

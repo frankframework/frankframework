@@ -1,7 +1,6 @@
 <module>
 	<adapter name="Locker" description="Test the functioning of the Locker">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Locker">
+		<receiver name="Locker">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="Locker" />
 		</receiver>
@@ -16,8 +15,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="Locker2" description="Test the functioning of the Locker">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Locker2">
+		<receiver name="Locker2">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				name="Locker2" />
 		</receiver>
@@ -31,16 +29,18 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+<!-- 
 	<scheduler>
 		<job name="jobLocker" function="sendMessage" adapterName="Locker"
 			receiverName="Locker" cronExpression="0 0/2 * * * ?" description="call Locker every 2 minutes">
-			<locker jmsRealm="jdbc" objectId="Locker" />
+			<locker objectId="Locker" />
 		</job>
 	</scheduler>
 	<scheduler>
 		<job name="jobLocker2" function="sendMessage" adapterName="Locker2"
 			receiverName="Locker2" cronExpression="0 0/2 * * * ?" description="call Locker2 every 2 minutes">
-			<locker jmsRealm="jdbc" objectId="Locker" />
+			<locker objectId="Locker" />
 		</job>
 	</scheduler>
+ -->
 </module>

@@ -1,3 +1,18 @@
+/*
+   Copyright 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import java.util.Iterator;
@@ -9,7 +24,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -77,12 +92,12 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 	
 	@Override
-	protected IDataIterator<A> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<A> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		
 		FS ifs = getFileSystem();
 		
 		try {
-			F file = ifs.toFile((String)input);
+			F file = ifs.toFile(message.asString());
 			Iterator<A> it = ifs.listAttachments(file);
 			return new AttachmentIterator(it);
 		} catch (Exception e) {
@@ -102,8 +117,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 			Map<String,Object> attachmentProperties = ifs.getAdditionalAttachmentProperties(item);
 			if (attachmentProperties!=null) {
 				XmlBuilder properties = new XmlBuilder("properties");
-				Set<String> excludes=getExcludeProperties();
-				Set<String> includes=getOnlyProperties();
+				Set<String> excludes=getExcludePropertiesSet();
+				Set<String> includes=getOnlyPropertiesSet();
 				if (excludes!=null || includes==null) {
 					for(Entry<String,Object>entry:attachmentProperties.entrySet()) {
 						if (excludes==null || !excludes.contains(entry.getKey())) {
@@ -158,7 +173,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
 	}
-	public Set<String> getOnlyProperties() {
+	public Set<String> getOnlyPropertiesSet() {
 		return onlyProperties;
 	}
 
@@ -169,7 +184,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
 	}
-	public Set<String> getExcludeProperties() {
+	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
 	}
 

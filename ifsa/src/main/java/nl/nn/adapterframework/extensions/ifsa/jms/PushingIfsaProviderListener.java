@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -23,38 +24,37 @@ import java.util.Map;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IKnowsDeliveryCount;
-import nl.nn.adapterframework.core.IListenerConnector;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ITransactionRequirements;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.extensions.ifsa.IfsaException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAPoisonMessage;
 import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IKnowsDeliveryCount;
+import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IMessageWrapper;
+import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ITransactionRequirements;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Implementation of {@link IPortConnectedListener} that acts as an IFSA-service.
@@ -125,7 +125,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	private IListenerConnector jmsConnector;
 	private IMessageHandler<IFSAMessage> handler;
-	private IReceiver receiver;
+	private Receiver receiver;
 	private IbisExceptionListener exceptionListener;
 
 	public PushingIfsaProviderListener() {
@@ -155,9 +155,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination,
-					getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(), getProviderSelector(),
-					getTimeOut(), -1);
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), null,
+					destination, getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(),
+					getProviderSelector(), getTimeOut(), -1);
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
@@ -206,19 +206,19 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {	
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {	
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			    		    
 	    // on request-reply send the reply.
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
-			Message originalRawMessage;
-			if (rawMessage instanceof Message) { 
-				originalRawMessage = (Message)rawMessage;
+			javax.jms.Message originalRawMessage;
+			if (rawMessageOrWrapper instanceof javax.jms.Message) { 
+				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;
 			} else {
-				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {
@@ -227,10 +227,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				try {
 					String result="<exception>no result</exception>";
 					if (plr!=null && plr.getResult()!=null) {
-						result=plr.getResult();
+						result=plr.getResult().asString();
 					}
 					sendReply(session, originalRawMessage, result);
-				} catch (IfsaException e) {
+				} catch (IfsaException | IOException e) {
 					try {
 						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {
@@ -252,8 +252,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 		return wrapper.getId();
 	}
-	protected String getStringFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
-		return wrapper.getText();
+	protected Message getMessageFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
+		return wrapper.getMessage();
 	}
 
 	
@@ -409,7 +409,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //			}
 //		}
 	
-		PipeLineSessionBase.setListenerParameters(threadContext, id, BIFname, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
@@ -473,9 +473,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 * @return input message for adapter.
 	 */
 	@Override
-	public String getStringFromRawMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		if (rawMessage instanceof IMessageWrapper) {
-			return getStringFromWrapper((IMessageWrapper)rawMessage,threadContext);
+			return getMessageFromWrapper((IMessageWrapper)rawMessage,threadContext);
 		}
 		if (rawMessage instanceof IFSAPoisonMessage) {
 			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;
@@ -486,10 +486,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			} catch (Exception e) {
 				source = "unknown due to exeption:"+e.getMessage();
 			}
-			return  "<poisonmessage>"+
+			return  new Message("<poisonmessage>"+
 					"  <source>"+source+"</source>"+
 					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
-					"</poisonmessage>";
+					"</poisonmessage>");
 		}
 
 	    TextMessage message = null;
@@ -502,7 +502,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    try {
 	    	String result=message.getText();
 			threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
-	    	return result;
+	    	return new Message(result);
 	    } catch (JMSException e) {
 		    throw new ListenerException(getLogPrefix(),e);
 	    }
@@ -571,11 +571,13 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return listenerPort;
 	}
 
-    
-	public void setReceiver(IReceiver receiver) {
+
+	@Override
+	public void setReceiver(Receiver receiver) {
 		this.receiver = receiver;
 	}
-	public IReceiver getReceiver() {
+	@Override
+	public Receiver getReceiver() {
 		return receiver;
 	}
 
@@ -587,6 +589,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return cacheMode;
 	}
 
+	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -596,6 +599,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -605,6 +609,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -614,6 +619,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -623,6 +629,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -631,6 +638,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -639,9 +647,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public int getDeliveryCount(Object rawMessage) {
 		try {
-			Message message=(Message)rawMessage;
+			javax.jms.Message message=(javax.jms.Message)rawMessage;
 			int value = message.getIntProperty("JMSXDeliveryCount");
 			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
 			return value;

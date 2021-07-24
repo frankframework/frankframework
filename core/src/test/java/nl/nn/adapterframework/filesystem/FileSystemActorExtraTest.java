@@ -6,13 +6,13 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.TestAssertions;
 
 public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorTest<F, FS> {
 
@@ -39,7 +39,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		createFile(null, filename, "thanos car ");
 		setFileDate(null, filename, firstDate = new Date(currentDate.getTime() - (millisPerDay * numOfWrites)));
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
 		Parameter p = new Parameter();

@@ -1,16 +1,14 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 
 public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
-
-    private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public EtagHandlerPipe createPipe() {
@@ -67,18 +65,18 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 
     @Test(expected = PipeRunException.class)
     public void testInputNull() throws PipeRunException {
-        pipe.doPipe(null, session);
+        doPipe(pipe, null, session);
     }
 
 
     @Test(expected = PipeRunException.class)
     public void testWrongInputFormat() throws PipeRunException {
-        pipe.doPipe(5000, session);
+        doPipe(pipe, 5000, session);
     }
 
     @Test(expected = PipeRunException.class)
     public void testFailedToLocateCache() throws PipeRunException {
-        pipe.doPipe("dummyString", session);
+        doPipe(pipe, "dummyString", session);
     }
 
     @Test(expected = PipeRunException.class)
@@ -86,7 +84,7 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
         pipe.setAction("generate");
         pipe.setUriPattern("dummyPattern");
         pipe.configure();
-        pipe.doPipe("dummyString", session);
+        doPipe(pipe, "dummyString", session);
     }
 
 

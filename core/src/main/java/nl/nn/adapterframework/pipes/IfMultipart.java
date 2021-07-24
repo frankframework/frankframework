@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2018 Nationale-Nederlanden
+   Copyright 2017-2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,39 +17,36 @@ package nl.nn.adapterframework.pipes;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Selects an exitState, based on the content-type of a httpServletRequest
  * object as input.
  */
-
 public class IfMultipart extends AbstractPipe {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward;
 		PipeForward pipeForward = null;
 
-		if (input == null) {
+		if (message == null || message.asObject() == null) {
 			forward = elseForwardName;
 		} else {
-			if (!(input instanceof HttpServletRequest)) {
-				throw new PipeRunException(this,
-						getLogPrefix(null)
-								+ "expected HttpServletRequest as input, got ["
-								+ ClassUtils.nameOf(input) + "]");
+			if (!(message.asObject() instanceof HttpServletRequest)) {
+				throw new PipeRunException(this, getLogPrefix(null) + "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
 			}
 
-			HttpServletRequest request = (HttpServletRequest) input;
+			HttpServletRequest request = (HttpServletRequest) message.asObject();
 			String contentType = request.getContentType();
 			if (StringUtils.isNotEmpty(contentType) && contentType.startsWith("multipart")) {
 				forward = thenForwardName;
@@ -58,18 +55,15 @@ public class IfMultipart extends AbstractPipe {
 			}
 		}
 
-		log.debug(
-				getLogPrefix(session) + "determined forward [" + forward + "]");
+		log.debug(getLogPrefix(session) + "determined forward [" + forward + "]");
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null)
-					+ "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, getLogPrefix(null) + "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward
-				+ "] to path [" + pipeForward.getPath() + "]");
-		return new PipeRunResult(pipeForward, input);
+		log.debug(getLogPrefix(session) + "resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		return new PipeRunResult(pipeForward, message);
 	}
 
 	public void setThenForwardName(String thenForwardName) {

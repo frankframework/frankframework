@@ -1,4 +1,4 @@
-<singleSimpleRepeatedElement xmlns="urn:arrays" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:arrays file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/arrays.xsd">
+<singleSimpleRepeatedElement xmlns="urn:arrays">
 	<stringElem>1a</stringElem>
 	<stringElem>1b</stringElem>
 	<stringElem>1c</stringElem>

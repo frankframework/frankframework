@@ -1,0 +1,39 @@
+{
+  "family": {
+    "members": {
+      "member": [
+        {
+          "name": "Alice",
+          "birthDate": "1984-11-23",
+          "children": {
+            "child": [
+              {
+                "name": "Bob",
+                "birthDate": "2007-03-04",
+                "address": {
+                  "street": "String",
+                  "number": 4096,
+                  "town": "String"
+                }
+              },
+              {
+                "name": "Chris",
+                "birthDate": "2010-04-09",
+                "address": {
+                  "street": "String",
+                  "number": 4096,
+                  "town": "String"
+                }
+              }
+            ]
+          },
+          "address": {
+            "street": "String",
+            "number": 4096,
+            "town": "String"
+          }
+        }
+      ]
+    }
+  }
+}

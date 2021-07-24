@@ -4,9 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -24,7 +21,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		sender.open();
 		Message input = new Message("<dummy/>");
 		String result = sender.sendMessage(input, session).asString();
-		assertEquals(input, result);
+		assertEquals(input.asString(), result);
 	}
 	
 	@Test

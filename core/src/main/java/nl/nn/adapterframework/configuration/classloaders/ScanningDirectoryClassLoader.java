@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 package nl.nn.adapterframework.configuration.classloaders;
 
 import java.io.File;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
-	private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(1);
+	private ScheduledThreadPoolExecutor executor;
 	private int scanInterval = 10;
 	private ScheduledFuture<?> future;
 
@@ -39,8 +38,42 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super.configure(ibisContext, configurationName);
 
+		createTaskExecutor();
+
 		if(scanInterval > 0) {
 			schedule();
+		}
+	}
+
+	private void createTaskExecutor() {
+		String threadName = this.toString();
+		ThreadFactory namedThreadFactory = new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable runnable) {
+				Thread thread = new Thread(runnable);
+				thread.setName(threadName);
+				thread.setDaemon(false);
+				return thread;
+			}
+		};
+		executor = new ScheduledThreadPoolExecutor(1, namedThreadFactory);
+		executor.setRemoveOnCancelPolicy(true);
+		executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+
+		if(executor != null) {
+			executor.shutdownNow();
+			executor = null;
+		}
+
+		if (future != null) {
+			future.cancel(true);
+			future = null;
 		}
 	}
 
@@ -70,7 +103,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		}
 
 		log.debug("starting new scheduler, interval ["+scanInterval+"] delay ["+delay+"]");
-		future = EXECUTOR.scheduleAtFixedRate(new Runnable() {
+		future = executor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				ScanningDirectoryClassLoader.this.scan();

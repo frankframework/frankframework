@@ -5,8 +5,8 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		"
 	>
 
@@ -20,10 +20,7 @@
 		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
 		<property name="configLocation" value="classpath:quartz.properties"/>
 		<property name="autoStartup" value="false"/>
-		<property name="transactionManager" ref="txManager"/>
 		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
-		<!-- Prevent a dataSource bean being wired up when present (causing Quartz to look for table QRTZ_LOCKS) -->
-		<property name="dataSource"><null/></property>
 	</bean>
 
 	<!-- IBIS Beans -->

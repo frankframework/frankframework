@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe for deleting files.
@@ -51,19 +52,20 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private _DirFilter dirFilter = new _DirFilter();
 		
 		
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			String filename;
 			if (StringUtils.isNotEmpty(getFilePattern())) {
 				filename = FileUtils.getFilename(getParameterList(), session, "", getFilePattern());
 			} else {
 				if (StringUtils.isNotEmpty(getFilePatternSessionKey())) {
-					filename = FileUtils.getFilename(getParameterList(), session, "", (String)session.get(getFilePatternSessionKey()));
+					filename = FileUtils.getFilename(getParameterList(), session, "", session.getMessage(getFilePatternSessionKey()).asString());
 				} else {
-					if (StringUtils.isEmpty((String)input)) {
+					if (StringUtils.isEmpty(message.asString())) {
 						throw new PipeRunException(this, "input empty, but should contain filename to delete");
 					} else {
-						File in = new File(input.toString());
+						File in = new File(message.asString());
 						filename = in.getName();
 					}
 				}
@@ -91,7 +93,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				}
 			}
 			
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, "Error while deleting file(s)", e); 

@@ -2,12 +2,13 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
@@ -21,8 +22,10 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		log.debug("inputfile ["+input+"]");
 		configureAdapter();
 		PipeRunResult prr = doPipe(pipe,input,session);
-		String xmlOut=(String)prr.getResult();
-		assertEquals(input,xmlOut.trim());
+
+		String result = Message.asString(prr.getResult());
+		
+		assertEquals(input,result.trim());
 		
 		PipeForward forward=prr.getPipeForward();
 		assertNotNull(forward);
@@ -109,4 +112,41 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		testSwitch("<dummy name=\"input\"/>","2");
 	}
+	
+	@Test
+	public void withSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
+		pipe.setSessionKey("selectKey");
+		session=new PipeLineSession();
+		session.put("selectKey", "selectValue");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"selectValue");
+	}
+	
+	@Test
+	public void storeForwardInSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
+		pipe.setSessionKey("selectKey");
+		String forwardName = "forwardName";
+		pipe.setStoreForwardInSessionKey(forwardName);
+		session=new PipeLineSession();
+		session.put("selectKey", "selectValue");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"selectValue");
+		assertEquals("selectValue", session.get(forwardName).toString());
+	}
+
+	@Test
+	public void basicSelectionWithStylesheet() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
+		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
+		pipe.setNamespaceAware(false);
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"SetRequest");
+	}
+
+
 }

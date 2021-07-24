@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,29 +15,28 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.StringWriter;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.XsltSender;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
-import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -50,19 +49,23 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
  * @author Johan Verrips
  */
 
-public class XsltPipe extends StreamingPipe implements IThreadCreator {
+public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	private String sessionKey=null;
-	
+
 	private XsltSender sender = createXsltSender();
-	
+
 	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
 	}
-	
-	
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		SpringUtils.autowireByName(getApplicationContext(), sender);
+	}
+
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}
@@ -97,36 +100,39 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		}
 		super.stop();
 	}
+
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException {
+	public boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
+	}
+
+	@Override
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
-		Message message = new Message(input);
 		try {
-			if (StringUtils.isNotEmpty(getSessionKey())) {
-				nextProvider=null;
+			IForwardTarget nextPipe;
+			if (canStreamToNextPipe()) {
+				nextPipe = getNextPipe();
 			} else {
-				if (nextProvider==null) {
-					nextProvider = getStreamTarget();
+				nextPipe=null;
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					input.preserve();
 				}
 			}
-			PipeRunResult prr = sender.sendMessage(message, session, nextProvider);
-			Object result = prr.getResult();
-			if (result instanceof StringWriter) {
-				result = result.toString();
-			}
+			PipeRunResult prr = sender.sendMessage(input, session, nextPipe);
+			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
-			if (forward==null) {
-				forward=getForward();
+			if (nextPipe==null || forward.getPath()==null) {
+				forward=getSuccessForward();
 			}
-			
-			if (StringUtils.isEmpty(getSessionKey())) {
-				return new PipeRunResult(forward, result);
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				session.put(getSessionKey(), result.asString());
+				return new PipeRunResult(forward, input);
 			}
-			session.put(getSessionKey(), result);
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(forward, result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming input", e);
 		}
@@ -139,8 +145,8 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 
 
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		return sender.provideOutputStream(session, nextProvider);
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		return sender.provideOutputStream(session, getNextPipe());
 	}
 
 	@Override
@@ -220,6 +226,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
+	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
 	}
@@ -234,7 +241,7 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 		return sender.isNamespaceAware();
 	}
 
-	@IbisDocRef({"15", XSLTSENDER})
+	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
@@ -246,11 +253,6 @@ public class XsltPipe extends StreamingPipe implements IThreadCreator {
 	public void setName(String name) {
 		super.setName(name);
 		sender.setName("Sender of Pipe ["+name+"]");
-	}
-
-	@Override
-	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener) {
-		sender.setThreadLifeCycleEventListener(threadLifeCycleEventListener);
 	}
 
 	protected XsltSender getSender() {

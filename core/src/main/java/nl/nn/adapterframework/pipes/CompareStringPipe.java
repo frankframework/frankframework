@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,26 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that compares lexicographically two strings.
- *
+ * <table>
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
  * If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
  * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v1</td></tr>
+ * <tr><td>equals</td><td>when v1 = v2</td></tr>
  * </table>
  * </p>
  * @author  Peter Leeuwenburgh
@@ -80,65 +80,58 @@ public class CompareStringPipe extends AbstractPipe {
 		super.configure();
 
 		if (null == findForward(LESSTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null) + "forward [" + LESSTHANFORWARD + "] is not defined");
+			throw new ConfigurationException("forward [" + LESSTHANFORWARD + "] is not defined");
 
 		if (null == findForward(GREATERTHANFORWARD))
-			throw new ConfigurationException(getLogPrefix(null) + "forward [" + GREATERTHANFORWARD + "] is not defined");
+			throw new ConfigurationException("forward [" + GREATERTHANFORWARD + "] is not defined");
 
 		if (null == findForward(EQUALSFORWARD))
-			throw new ConfigurationException(getLogPrefix(null) + "forward [" + EQUALSFORWARD + "] is not defined");
+			throw new ConfigurationException("forward [" + EQUALSFORWARD + "] is not defined");
 
 		if (StringUtils.isEmpty(sessionKey1) && StringUtils.isEmpty(sessionKey2)) {
-			boolean operand1Exists = false;
-			boolean operand2Exists = false;
 			ParameterList parameterList = getParameterList();
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(OPERAND1)) {
-					operand1Exists = true;
-				} else {
-					if (parameter.getName().equalsIgnoreCase(OPERAND2)) {
-						operand2Exists = true;
-					}
-				}
-			}
-			if (!operand1Exists && !operand2Exists) {
-				throw new ConfigurationException(getLogPrefix(null) + "has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
+			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
+				throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 			}
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
-
 		String operand1 = getParameterValue(pvl, OPERAND1);
-		if (operand1 == null) {
-			if (StringUtils.isNotEmpty(getSessionKey1())) {
-				operand1 = (String) session.get(getSessionKey1());
-			}
+		try {
 			if (operand1 == null) {
-				operand1 = (String) input;
+				if (StringUtils.isNotEmpty(getSessionKey1())) {
+					operand1 = session.getMessage(getSessionKey1()).asString();
+				}
+				if (operand1 == null) {
+					operand1 = message.asString();
+				}
 			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
-		if (operand2 == null) {
-			if (StringUtils.isNotEmpty(getSessionKey2())) {
-				operand2 = (String) session.get(getSessionKey2());
-			}
+		try {
 			if (operand2 == null) {
-				operand2 = (String) input;
+				if (StringUtils.isNotEmpty(getSessionKey2())) {
+					operand2 = session.getMessage(getSessionKey2()).asString();
+				}
+				if (operand2 == null) {
+					operand2 = message.asString();
+				}
 			}
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
 		}
-
 		if (isXml()) {
 			try {
 				operand1 = XmlUtils.canonicalize(operand1);
@@ -188,11 +181,11 @@ public class CompareStringPipe extends AbstractPipe {
 
 		int comparison = operand1.compareTo(operand2);
 		if (comparison == 0)
-			return new PipeRunResult(findForward(EQUALSFORWARD), input);
+			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
-			return new PipeRunResult(findForward(LESSTHANFORWARD), input);
+			return new PipeRunResult(findForward(LESSTHANFORWARD), message);
 		else
-			return new PipeRunResult(findForward(GREATERTHANFORWARD), input);
+			return new PipeRunResult(findForward(GREATERTHANFORWARD), message);
 
 	}
 
@@ -242,22 +235,20 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
-	@IbisDoc({"reference to one of the session variables to be compared", ""})
+	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "The attribute sessionKey1 has been deprecated. Please use the parameter operand1";
-		configWarnings.add(log, msg);
 		sessionKey1 = string;
 	}
 	public String getSessionKey1() {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared", ""})
+	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix(null) + "The attribute sessionKey2 has been deprecated. Please use the parameter operand2";
-		configWarnings.add(log, msg);
 		sessionKey2 = string;
 	}
 	public String getSessionKey2() {

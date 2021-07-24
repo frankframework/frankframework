@@ -1,0 +1,28 @@
+{
+    "$schema":"http://json-schema.org/draft-04/schema#",
+    "$id":"urn:fbp",
+    "$ref":"#/definitions/EmbeddedChoice",
+    "definitions":{
+        "EmbeddedChoice":{
+            "$ref":"#/definitions/EmbeddedChoiceType"
+        },
+        "EmbeddedChoiceType":{
+            "type":"object",
+            "additionalProperties":false,
+            "properties":{
+                "EnableFuzzySearch":{
+                    "type":"string"
+                },
+                "BusinessPartnerId":{
+                    "type":"string"
+                },
+                "Qualifier":{
+                    "type":"string"
+                },
+                "IgnoreFilter":{
+                    "type":"string"
+                }
+            }
+        }
+    }
+}

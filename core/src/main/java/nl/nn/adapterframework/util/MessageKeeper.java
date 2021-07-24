@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package nl.nn.adapterframework.util;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.INamedObject;
 
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
@@ -28,6 +30,10 @@ import org.apache.log4j.Logger;
 public class MessageKeeper extends SizeLimitedVector {
 	protected Logger log = LogUtil.getLogger(this);
 
+	public enum MessageKeeperLevel {
+		INFO, WARN, ERROR
+	}
+
 	public MessageKeeper() {
 		super();
 	}
@@ -37,15 +43,15 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 	
 	public synchronized void add(String message) {
-		add(message, MessageKeeperMessage.INFO_LEVEL);
+		add(message, MessageKeeperLevel.INFO);
 	}
-	public synchronized void add(String message, String level) {
+	public synchronized void add(String message, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, level));
 	}
 	public synchronized void add(String message, Date date) {
-		add(message, date, MessageKeeperMessage.INFO_LEVEL);
+		add(message, date, MessageKeeperLevel.INFO);
 	}
-	public synchronized void add(String message, Date date, String level) {
+	public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 		super.add(new MessageKeeperMessage(message, date, level));
 	}
 	/**
@@ -64,7 +70,34 @@ public class MessageKeeper extends SizeLimitedVector {
 		if(t.getMessage() != null) {
 			msgToLog += ": "+t.getMessage();
 		}
-		add(msgToLog);
+		add(msgToLog, MessageKeeperLevel.ERROR);
 		log.warn(msgToLog, t);
+	}
+
+	public void info(String msg) {
+		add(msg);
+	}
+
+	public void info(INamedObject namedObject, String msg) {
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		info(prefix + msg);
+	}
+
+	public void warn(String msg) {
+		add("WARNING: " + msg, MessageKeeperLevel.WARN);
+	}
+
+	public void warn(INamedObject namedObject, String msg) {
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		warn(prefix + msg);
+	}
+
+	public void error(String msg) {
+		add("ERROR: " + msg, MessageKeeperLevel.ERROR);
+	}
+
+	public void error(INamedObject namedObject, String msg) {
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		error(prefix + msg);
 	}
 }

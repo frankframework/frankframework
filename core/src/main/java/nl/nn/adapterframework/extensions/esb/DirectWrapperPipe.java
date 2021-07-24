@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
  */
 package nl.nn.adapterframework.extensions.esb;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Kind of extension to EsbSoapWrapperPipe for real time destinations.
@@ -39,19 +38,16 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 	protected final static String CMHVERSION = "cmhVersion";
 	protected final static String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
-	public String doPipeWithTimeoutGuarded(Object input,
-			IPipeLineSession session) throws PipeRunException {
-		String result;
+	@Override
+	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
+		Message result;
 
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext(
-					(String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session)
-						+ "exception extracting parameters", e);
+				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
 			}
 		}
 
@@ -77,16 +73,13 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			}
 		}
 		PipeForward pf = new PipeForward();
-		pf.setName("success");
-		eswPipe.registerForward(pf);
+		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		try {
+			eswPipe.registerForward(pf);
 			eswPipe.configure();
-			PipeRunResult prr = eswPipe.doPipe(input, session);
-			result = (String) prr.getResult();
+			return eswPipe.doPipe(message, session);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)
-					+ "Exception on wrapping input", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "Exception on wrapping input", e);
 		}
-		return result;
 	}
 }

@@ -1,0 +1,18 @@
+<Options>
+	<singleInt>33</singleInt>
+	<singleString>tja</singleString>
+	<intArray>
+		<intElem>11</intElem>
+		<intElem>22</intElem>
+	</intArray>
+	<stringArray>
+		<stringElem>xx</stringElem>
+		<stringElem>yy</stringElem>
+	</stringArray>
+	<stringArray2>
+		<stringElem2>aa</stringElem2>
+		<stringElem2>bb</stringElem2>
+	</stringArray2>
+	<stringElem3>aa</stringElem3>
+	<stringElem3>bb</stringElem3>
+</Options>

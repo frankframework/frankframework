@@ -17,7 +17,7 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 /**

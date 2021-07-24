@@ -9,19 +9,15 @@ import javax.json.Json;
 import javax.json.JsonStructure;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
-
-	@Mock
-	private IPipeLineSession session;
+public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 
 	@Override
 	public JsonXsltPipe createPipe() {
@@ -36,8 +32,8 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
-		PipeRunResult prr = pipe.doPipe(input,session);
-		String jsonOut=(String)prr.getResult();
+		PipeRunResult prr = doPipe(pipe, input,session);
+		String jsonOut=prr.getResult().asString();
 		assertJsonEqual(null,expectedJson,jsonOut);
 	}
 
@@ -50,8 +46,8 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		PipeRunResult prr = pipe.doPipe(input,session);
-		String xmlOut=(String)prr.getResult();
+		PipeRunResult prr = doPipe(pipe, input,session);
+		String xmlOut=prr.getResult().asString();
 		assertEquals(expectedXml,xmlOut);
 	}
 
@@ -65,8 +61,8 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		String input=TestFileUtils.getTestFile("/Xslt3/employees.json");
 		log.debug("inputfile ["+input+"]");
 		String expectedText="James";
-		PipeRunResult prr = pipe.doPipe(input,session);
-		String textOut=(String)prr.getResult();
+		PipeRunResult prr = doPipe(pipe, input,session);
+		String textOut=prr.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
 

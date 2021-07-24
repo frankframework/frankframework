@@ -1,191 +1,197 @@
-<?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<repositories>
-		<repository>
-    		<id>AsposeJavaAPI</id>
-   		 	<name>Aspose Java API</name>
-    		<url>http://repository.aspose.com/repo/</url>
-		</repository> 
-	</repositories>
+
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-SNAPSHOT</version>
+		<version>7.7-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>ibis-adapterframework-aspose</artifactId>
 	<name>Ibis AdapterFramework support for Aspose</name>
+
+	<properties>
+		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
+		<aspose.version>19.1</aspose.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>AsposeJavaAPI</id>
+			<name>Aspose Java API</name>
+			<url>https://repository.aspose.com/repo/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
-	
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
-		
-		<!-- Libraries -->
+
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
 			<version>1.14</version>
 			<exclusions>
-					<exclusion>
-						<artifactId>json-simple</artifactId>
-						<groupId>com.googlecode.json-simple</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>cxf-rt-rs-client</artifactId>
-						<groupId>org.apache.cxf</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>geoapi</artifactId>
-						<groupId>org.opengis</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>jackcess-encrypt</artifactId>
-						<groupId>com.healthmarketscience.jackcess</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>xz</artifactId>
-						<groupId>org.tukaani</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>json</artifactId>
-						<groupId>org.json</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>pdfbox</artifactId>
-						<groupId>org.apache.pdfbox</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>sis-metadata</artifactId>
-						<groupId>org.apache.sis.core</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>jhighlight</artifactId>
-						<groupId>org.codelibs</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>sis-netcdf</artifactId>
-						<groupId>org.apache.sis.storage</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>apache-mime4j-core</artifactId>
-						<groupId>org.apache.james</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>jmatio</artifactId>
-						<groupId>net.sourceforge.jmatio</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>junrar</artifactId>
-						<groupId>com.github.junrar</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>juniversalchardet</artifactId>
-						<groupId>com.googlecode.juniversalchardet</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>java-libpst</artifactId>
-						<groupId>com.pff</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>vorbis-java-tika</artifactId>
-						<groupId>org.gagravarr</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>tagsoup</artifactId>
-						<groupId>org.ccil.cowan.tagsoup</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>httpservices</artifactId>
-						<groupId>edu.ucar</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>commons-exec</artifactId>
-						<groupId>org.apache.commons</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>commons-csv</artifactId>
-						<groupId>org.apache.commons</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>commons-codec</artifactId>
-						<groupId>commons-codec</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>apache-mime4j-dom</artifactId>
-						<groupId>org.apache.james</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>bcmail-jdk15on</artifactId>
-						<groupId>org.bouncycastle</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>asm</artifactId>
-						<groupId>org.ow2.asm</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>isoparser</artifactId>
-						<groupId>com.googlecode.mp4parser</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>sis-utility</artifactId>
-						<groupId>org.apache.sis.core</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>jackcess</artifactId>
-						<groupId>com.healthmarketscience.jackcess</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>bcprov-jdk15on</artifactId>
-						<groupId>org.bouncycastle</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>opennlp-tools</artifactId>
-						<groupId>org.apache.opennlp</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>rome</artifactId>
-						<groupId>rome</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>grib</artifactId>
-						<groupId>edu.ucar</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>boilerpipe</artifactId>
-						<groupId>de.l3s.boilerpipe</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>vorbis-java-core</artifactId>
-						<groupId>org.gagravarr</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>netcdf4</artifactId>
-						<groupId>edu.ucar</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>cdm</artifactId>
-						<groupId>edu.ucar</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>poi-scratchpad</artifactId>
-						<groupId>org.apache.poi</groupId>
-					</exclusion>
-					<exclusion>
-						<artifactId>metadata-extractor</artifactId>
-						<groupId>com.drewnoakes</groupId>
-					</exclusion>
-				</exclusions>
+				<exclusion>
+					<artifactId>json-simple</artifactId>
+					<groupId>com.googlecode.json-simple</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>cxf-rt-rs-client</artifactId>
+					<groupId>org.apache.cxf</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>geoapi</artifactId>
+					<groupId>org.opengis</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackcess-encrypt</artifactId>
+					<groupId>com.healthmarketscience.jackcess</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>xz</artifactId>
+					<groupId>org.tukaani</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>json</artifactId>
+					<groupId>org.json</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>pdfbox</artifactId>
+					<groupId>org.apache.pdfbox</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>sis-metadata</artifactId>
+					<groupId>org.apache.sis.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jhighlight</artifactId>
+					<groupId>org.codelibs</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>sis-netcdf</artifactId>
+					<groupId>org.apache.sis.storage</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>apache-mime4j-core</artifactId>
+					<groupId>org.apache.james</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jmatio</artifactId>
+					<groupId>net.sourceforge.jmatio</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>junrar</artifactId>
+					<groupId>com.github.junrar</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>juniversalchardet</artifactId>
+					<groupId>com.googlecode.juniversalchardet</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>java-libpst</artifactId>
+					<groupId>com.pff</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>vorbis-java-tika</artifactId>
+					<groupId>org.gagravarr</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>tagsoup</artifactId>
+					<groupId>org.ccil.cowan.tagsoup</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>httpservices</artifactId>
+					<groupId>edu.ucar</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-exec</artifactId>
+					<groupId>org.apache.commons</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-csv</artifactId>
+					<groupId>org.apache.commons</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-codec</artifactId>
+					<groupId>commons-codec</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>apache-mime4j-dom</artifactId>
+					<groupId>org.apache.james</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcmail-jdk15on</artifactId>
+					<groupId>org.bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>asm</artifactId>
+					<groupId>org.ow2.asm</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>isoparser</artifactId>
+					<groupId>com.googlecode.mp4parser</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>sis-utility</artifactId>
+					<groupId>org.apache.sis.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackcess</artifactId>
+					<groupId>com.healthmarketscience.jackcess</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bcprov-jdk15on</artifactId>
+					<groupId>org.bouncycastle</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>opennlp-tools</artifactId>
+					<groupId>org.apache.opennlp</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>rome</artifactId>
+					<groupId>rome</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>grib</artifactId>
+					<groupId>edu.ucar</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>boilerpipe</artifactId>
+					<groupId>de.l3s.boilerpipe</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>vorbis-java-core</artifactId>
+					<groupId>org.gagravarr</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>netcdf4</artifactId>
+					<groupId>edu.ucar</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>cdm</artifactId>
+					<groupId>edu.ucar</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>poi-scratchpad</artifactId>
+					<groupId>org.apache.poi</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>metadata-extractor</artifactId>
+					<groupId>com.drewnoakes</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>dsn</artifactId>
@@ -193,67 +199,62 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
 		</dependency>
 
-		<!-- Logging -->
+
+		<!-- LOG4J to SLF4J Bridge required for ehcache -->
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-			
-		<!-- Bridge required for ehcache -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.7</version>
-		</dependency>
+
 		<!-- ASPOSE LIBRARIES -->
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-pdf</artifactId>
-			<version>19.1</version>
-<!-- 			<scope>provided</scope> -->
+			<version>${aspose.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-email</artifactId>
-			<version>19.1</version>
+			<version>${aspose.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-words</artifactId>
-			<version>19.1</version>
+			<version>${aspose.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cells</artifactId>
-			<version>19.1</version>
+			<version>${aspose.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-slides</artifactId>
-			<version>19.1</version>
+			<version>${aspose.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
-	
-		<dependency> 
+
+		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
+			<!-- for some reason version 19.1 does not exist for aspose-imaging -->
+<!-- 			<version>${aspose.version}</version> -->
 			<version>18.11</version>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version> 
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -261,6 +262,20 @@
 			<artifactId>mockito-core</artifactId>
 			<version>1.10.19</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.testautomationguru.pdfutil</groupId>
+			<artifactId>pdf-util</artifactId>
+			<version>0.0.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>

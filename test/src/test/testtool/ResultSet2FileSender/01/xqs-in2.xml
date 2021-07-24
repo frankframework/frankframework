@@ -5,6 +5,6 @@
 	</select>
 	<sql>
 		<type>select</type>
-		<query>SELECT COUNT(*) FROM IBISTEMP WHERE TTIMESTAMP IS NULL</query>
+		<query>SELECT COUNT(*) AS NUM_NO_TIMESTAMP FROM IBISTEMP WHERE TTIMESTAMP IS NULL</query>
 	</sql>
 </root>

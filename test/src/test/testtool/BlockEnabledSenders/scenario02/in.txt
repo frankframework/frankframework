@@ -1,0 +1,4 @@
+insert into IBISTEMP (tkey,tchar,tnumber) values (SEQ_IBISTEMP.NEXTVAL,'a',260902)
+insert into IBISTEMP (tkey,tchar,tnumber) values (SEQ_IBISTEMP.NEXTVAL,'b',260902)
+insert into IBISTEMP (tkey,tchar,tnumber) values (SEQ_IBISTEMP.NEXTVAL,'c',260902)
+update IBISTEMP set tchar='d' where tnumber=260902 and tchar='b'

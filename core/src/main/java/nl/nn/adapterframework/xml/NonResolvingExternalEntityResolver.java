@@ -18,14 +18,14 @@ package nl.nn.adapterframework.xml;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
 import nl.nn.adapterframework.util.LogUtil;
 
-/*
+/**
  * Entity resolver which resolves external entities to an empty string. This
  * will prevent the XML parser from downloading resources as specified by URI's
  * in a DOCTYPE.

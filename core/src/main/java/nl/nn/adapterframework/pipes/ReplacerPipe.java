@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,17 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Replaces all occurrences of one string with another.
@@ -44,6 +46,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		setSizeStatistics(true);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		if (StringUtils.isEmpty(getFind())) {
@@ -51,7 +54,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 //		}
 		if (StringUtils.isNotEmpty(getFind())) {
 			if (getReplace() == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have a null replace-attribute");
+				throw new ConfigurationException("cannot have a null replace-attribute");
 			}		
 			log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
@@ -62,7 +65,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		if (isReplaceNonXmlChars()) {
 			if (getReplaceNonXmlChar()!=null) {
 				if (getReplaceNonXmlChar().length()>1) {
-					throw new ConfigurationException(getLogPrefix(null) + "replaceNonXmlChar ["+getReplaceNonXmlChar()+"] has to be one character");
+					throw new ConfigurationException("replaceNonXmlChar ["+getReplaceNonXmlChar()+"] has to be one character");
 				}
 			}
 		}
@@ -72,6 +75,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		// target is the original string
 		// from   is the string to be replaced
 		// to     is the string which will used to replace
+		if (target == null) return target;
 		int start = target.indexOf(from);
 		if (start == -1)
 			return target;
@@ -89,23 +93,25 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return buffer.toString();
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-		throws PipeRunException {
-		String string = new Variant(input).asString();
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		String input;
+		try {
+			input = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 		if (StringUtils.isNotEmpty(getFind())) {
-			string = replace(string,getFind(),getReplace());
+			input = replace(input,getFind(),getReplace());
 		}
 		if (isReplaceNonXmlChars()) {
 			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
-				string = XmlUtils.stripNonValidXmlCharacters(string,
-						isAllowUnicodeSupplementaryCharacters());
+				input = XmlUtils.stripNonValidXmlCharacters(input, isAllowUnicodeSupplementaryCharacters());
 			} else {
-				string = XmlUtils.replaceNonValidXmlCharacters(string,
-						getReplaceNonXmlChar().charAt(0), false,
-						isAllowUnicodeSupplementaryCharacters());
+				input = XmlUtils.replaceNonValidXmlCharacters(input, getReplaceNonXmlChar().charAt(0), false, isAllowUnicodeSupplementaryCharacters());
 			}
 		}
-		return new PipeRunResult(getForward(),string);
+		return new PipeRunResult(getSuccessForward(),input);
 	}
 	
 	/**

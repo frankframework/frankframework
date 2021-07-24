@@ -10,9 +10,9 @@
     <ClassName>nl.nn.adapterframework.extensions.bis.BisJmsListener</ClassName>
   </Element>
   <Element>
-    <Name>CmisListener</Name>
+    <Name>CmisEventListener</Name>
     <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisListener</ClassName>
+    <ClassName>nl.nn.adapterframework.extensions.cmis.CmisEventListener</ClassName>
   </Element>
   <Element>
     <Name>DirectoryListener</Name>
@@ -110,9 +110,14 @@
     <ClassName>nl.nn.adapterframework.http.RestListener</ClassName>
   </Element>
   <Element>
-    <Name>SapListener</Name>
+    <Name>Samba2Listener</Name>
     <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.sap.SapListener</ClassName>
+    <ClassName>nl.nn.adapterframework.receivers.Samba2Listener</ClassName>
+  </Element>
+  <Element>
+    <Name>SambaListener</Name>
+    <Type>listener</Type>
+    <ClassName>nl.nn.adapterframework.receivers.SambaListener</ClassName>
   </Element>
   <Element>
     <Name>SimpleJdbcListener</Name>
@@ -138,6 +143,11 @@
     <Name>Afm2EdiFactSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.afm.Afm2EdiFactSender</ClassName>
+  </Element>
+  <Element>
+    <Name>AmazonS3Sender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.AmazonS3Sender</ClassName>
   </Element>
   <Element>
     <Name>BisJmsSender</Name>
@@ -180,9 +190,24 @@
     <ClassName>nl.nn.adapterframework.extensions.esb.EsbJmsSender</ClassName>
   </Element>
   <Element>
+    <Name>ExchangeFolderSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.ExchangeFolderSender</ClassName>
+  </Element>
+  <Element>
     <Name>FileSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.senders.FileSender</ClassName>
+  </Element>
+  <Element>
+    <Name>FileSystemSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.filesystem.FileSystemSender</ClassName>
+  </Element>
+  <Element>
+    <Name>FileSystemSenderWithAttachmentsSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.filesystem.FileSystemSenderWithAttachments</ClassName>
   </Element>
   <Element>
     <Name>FixedQuerySender</Name>
@@ -195,6 +220,11 @@
     <ClassName>nl.nn.adapterframework.senders.FixedResultSender</ClassName>
   </Element>
   <Element>
+    <Name>FtpFileSystemSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.FtpFileSystemSender</ClassName>
+  </Element>
+  <Element>
     <Name>FtpSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.ftp.FtpSender</ClassName>
@@ -203,6 +233,11 @@
     <Name>HttpSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.http.HttpSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IMSSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.ibm.IMSSender</ClassName>
   </Element>
   <Element>
     <Name>IbisJavaSender</Name>
@@ -220,14 +255,14 @@
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
   </Element>
   <Element>
-    <Name>IdocSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.IdocSender</ClassName>
-  </Element>
-  <Element>
     <Name>IfsaSimulatorJmsSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
+  </Element>
+  <Element>
+    <Name>JavascriptSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.JavascriptSender</ClassName>
   </Element>
   <Element>
     <Name>JmsSender</Name>
@@ -235,9 +270,19 @@
     <ClassName>nl.nn.adapterframework.jms.JmsSender</ClassName>
   </Element>
   <Element>
+    <Name>JsonXsltSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.JsonXsltSender</ClassName>
+  </Element>
+  <Element>
     <Name>LdapSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.ldap.LdapSender</ClassName>
+  </Element>
+  <Element>
+    <Name>LocalFileSystemSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.LocalFileSystemSender</ClassName>
   </Element>
   <Element>
     <Name>LogSender</Name>
@@ -260,9 +305,19 @@
     <ClassName>nl.nn.adapterframework.jdbc.MessageStoreSender</ClassName>
   </Element>
   <Element>
+    <Name>MongoDbSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.mongodb.MongoDbSender</ClassName>
+  </Element>
+  <Element>
     <Name>MqttSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.mqtt.MqttSender</ClassName>
+  </Element>
+  <Element>
+    <Name>MultipartHttpSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.http.MultipartHttpSender</ClassName>
   </Element>
   <Element>
     <Name>NetStorageSender</Name>
@@ -290,9 +345,24 @@
     <ClassName>nl.nn.adapterframework.jdbc.ResultSet2FileSender</ClassName>
   </Element>
   <Element>
+    <Name>Samba1Sender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.Samba1Sender</ClassName>
+  </Element>
+  <Element>
+    <Name>Samba2Sender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.Samba2Sender</ClassName>
+  </Element>
+  <Element>
     <Name>SambaSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.senders.SambaSender</ClassName>
+  </Element>
+  <Element>
+    <Name>SambaSenderOldSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.SambaSenderOld</ClassName>
   </Element>
   <Element>
     <Name>SapSender</Name>
@@ -303,6 +373,11 @@
     <Name>SchedulerSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.scheduler.SchedulerSender</ClassName>
+  </Element>
+  <Element>
+    <Name>SendGridSender</Name>
+    <Type>sender</Type>
+    <ClassName>nl.nn.adapterframework.senders.SendGridSender</ClassName>
   </Element>
   <Element>
     <Name>SenderSeriesSender</Name>
@@ -323,11 +398,6 @@
     <Name>TibcoSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoSender</ClassName>
-  </Element>
-  <Element>
-    <Name>TimeoutGuardSenderWithParametersBaseSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase</ClassName>
   </Element>
   <Element>
     <Name>WebServiceNtlmSender</Name>
@@ -470,11 +540,6 @@
     <ClassName>nl.nn.adapterframework.pipes.CounterSwitchPipe</ClassName>
   </Element>
   <Element>
-    <Name>CreateRestViewPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.CreateRestViewPipe</ClassName>
-  </Element>
-  <Element>
     <Name>CredentialCheckingPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.CredentialCheckingPipe</ClassName>
@@ -483,6 +548,11 @@
     <Name>CrlPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.CrlPipe</ClassName>
+  </Element>
+  <Element>
+    <Name>CsvParserPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.CsvParserPipe</ClassName>
   </Element>
   <Element>
     <Name>DelayPipe</Name>
@@ -535,16 +605,6 @@
     <ClassName>nl.nn.adapterframework.pipes.ExceptionPipe</ClassName>
   </Element>
   <Element>
-    <Name>ExecuteJdbcPropertiesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ExecuteJdbcProperties</ClassName>
-  </Element>
-  <Element>
-    <Name>ExecutePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.ExecutePipe</ClassName>
-  </Element>
-  <Element>
     <Name>FileLineIteratorPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.FileLineIteratorPipe</ClassName>
@@ -555,19 +615,24 @@
     <ClassName>nl.nn.adapterframework.pipes.FilePipe</ClassName>
   </Element>
   <Element>
+    <Name>FileSystemPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.filesystem.FileSystemPipe</ClassName>
+  </Element>
+  <Element>
     <Name>FilenameSwitchPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.FilenameSwitch</ClassName>
   </Element>
   <Element>
-    <Name>FixedForwardPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.FixedForwardPipe</ClassName>
-  </Element>
-  <Element>
     <Name>FixedResultPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.FixedResult</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.FixedResultPipe</ClassName>
+  </Element>
+  <Element>
+    <Name>ForEachAttachmentPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.filesystem.ForEachAttachmentPipe</ClassName>
   </Element>
   <Element>
     <Name>ForEachChildElementPipe</Name>
@@ -605,19 +670,14 @@
     <ClassName>nl.nn.adapterframework.pipes.GetPrincipalPipe</ClassName>
   </Element>
   <Element>
-    <Name>GetTibcoQueuesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.GetTibcoQueues</ClassName>
-  </Element>
-  <Element>
     <Name>HashPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.HashPipe</ClassName>
   </Element>
   <Element>
-    <Name>IbisDocPipe</Name>
+    <Name>IbisMetricsPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.doc.IbisDocPipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.IbisMetricsPipe</ClassName>
   </Element>
   <Element>
     <Name>IfMultipartPipe</Name>
@@ -638,11 +698,6 @@
     <Name>IsXmlIfPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.IsXmlIfPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>JmsCommunicatorPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.JmsCommunicator</ClassName>
   </Element>
   <Element>
     <Name>Json2XmlValidatorPipe</Name>
@@ -670,6 +725,11 @@
     <ClassName>nl.nn.adapterframework.extensions.rekenbox.LabelFormat</ClassName>
   </Element>
   <Element>
+    <Name>LadybugPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.ibistesttool.LadybugPipe</ClassName>
+  </Element>
+  <Element>
     <Name>LarvaPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.LarvaPipe</ClassName>
@@ -680,9 +740,19 @@
     <ClassName>nl.nn.adapterframework.ldap.LdapChallengePipe</ClassName>
   </Element>
   <Element>
+    <Name>LdapFindGroupMembershipsPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe</ClassName>
+  </Element>
+  <Element>
     <Name>LdapFindMemberPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.ldap.LdapFindMemberPipe</ClassName>
+  </Element>
+  <Element>
+    <Name>LocalFileSystemPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.LocalFileSystemPipe</ClassName>
   </Element>
   <Element>
     <Name>MailSenderPipe</Name>
@@ -693,6 +763,11 @@
     <Name>MoveFilePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.MoveFilePipe</ClassName>
+  </Element>
+  <Element>
+    <Name>PGPPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.PGPPipe</ClassName>
   </Element>
   <Element>
     <Name>PasswordGeneratorPipe</Name>
@@ -708,11 +783,6 @@
     <Name>PostboxRetrieverPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.PostboxRetrieverPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>PostboxSenderPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.PostboxSenderPipe</ClassName>
   </Element>
   <Element>
     <Name>PutInSessionPipe</Name>
@@ -760,9 +830,19 @@
     <ClassName>nl.nn.adapterframework.pipes.RhinoPipe</ClassName>
   </Element>
   <Element>
-    <Name>SapLUWManagerPipe</Name>
+    <Name>Samba1Pipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.SapLUWManager</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.Samba1Pipe</ClassName>
+  </Element>
+  <Element>
+    <Name>Samba2Pipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.Samba2Pipe</ClassName>
+  </Element>
+  <Element>
+    <Name>SambaPipe</Name>
+    <Type>pipe</Type>
+    <ClassName>nl.nn.adapterframework.pipes.SambaPipe</ClassName>
   </Element>
   <Element>
     <Name>ScanTibcoSolutionPipe</Name>
@@ -770,39 +850,14 @@
     <ClassName>nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe</ClassName>
   </Element>
   <Element>
-    <Name>SendTibcoMessagePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.SendTibcoMessage</ClassName>
-  </Element>
-  <Element>
     <Name>SenderPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.SenderPipe</ClassName>
   </Element>
   <Element>
-    <Name>ShowConfigPipe</Name>
+    <Name>SignaturePipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfig</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowConfigurationPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfiguration</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowConfigurationStatusPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowConfigurationStatus</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowEnvironmentVariablesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowEnvironmentVariables</ClassName>
-  </Element>
-  <Element>
-    <Name>ShowFlowDiagramPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.ShowFlowDiagram</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.SignaturePipe</ClassName>
   </Element>
   <Element>
     <Name>SizePipe</Name>
@@ -845,24 +900,14 @@
     <ClassName>nl.nn.adapterframework.batch.StreamTransformerPipe</ClassName>
   </Element>
   <Element>
-    <Name>TestIfsaServicePipe</Name>
+    <Name>StringIteratorPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.TestIfsaService</ClassName>
-  </Element>
-  <Element>
-    <Name>TestPipeLinePipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.TestPipeLine</ClassName>
+    <ClassName>nl.nn.adapterframework.pipes.StringIteratorPipe</ClassName>
   </Element>
   <Element>
     <Name>Text2XmlPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.Text2XmlPipe</ClassName>
-  </Element>
-  <Element>
-    <Name>TimeoutGuardPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.TimeoutGuardPipe</ClassName>
   </Element>
   <Element>
     <Name>UUIDGeneratorPipe</Name>
@@ -875,19 +920,9 @@
     <ClassName>nl.nn.adapterframework.pipes.UnzipPipe</ClassName>
   </Element>
   <Element>
-    <Name>UploadConfigPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.UploadConfig</ClassName>
-  </Element>
-  <Element>
     <Name>UploadFilePipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.UploadFilePipe</ClassName>
-  </Element>
-  <Element>
-    <Name>WebservicesPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.webcontrol.pipes.Webservices</ClassName>
   </Element>
   <Element>
     <Name>WsdlGeneratorPipe</Name>
@@ -898,11 +933,6 @@
     <Name>WsdlXmlValidatorPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.WsdlXmlValidator</ClassName>
-  </Element>
-  <Element>
-    <Name>XPathPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.XPathPipe</ClassName>
   </Element>
   <Element>
     <Name>XQueryPipe</Name>
@@ -925,11 +955,6 @@
     <ClassName>nl.nn.adapterframework.pipes.XmlIf</ClassName>
   </Element>
   <Element>
-    <Name>XmlParamSwitchPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.XmlParamSwitch</ClassName>
-  </Element>
-  <Element>
     <Name>XmlSwitchPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.XmlSwitch</ClassName>
@@ -943,11 +968,6 @@
     <Name>XmlWellFormedCheckerPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.XmlWellFormedChecker</ClassName>
-  </Element>
-  <Element>
-    <Name>XsltParamPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.XsltParamPipe</ClassName>
   </Element>
   <Element>
     <Name>XsltPipe</Name>
@@ -985,11 +1005,6 @@
     <ClassName>nl.nn.adapterframework.jms.JmsTransactionalStorage</ClassName>
   </Element>
   <Element>
-    <Name>OracleErrorStorage</Name>
-    <Type>errorStorage</Type>
-    <ClassName>nl.nn.adapterframework.jdbc.OracleTransactionalStorage</ClassName>
-  </Element>
-  <Element>
     <Name>DummyMessageLog</Name>
     <Type>messageLog</Type>
     <ClassName>nl.nn.adapterframework.jdbc.DummyTransactionalStorage</ClassName>
@@ -1010,14 +1025,14 @@
     <ClassName>nl.nn.adapterframework.jms.JmsTransactionalStorage</ClassName>
   </Element>
   <Element>
-    <Name>OracleMessageLog</Name>
-    <Type>messageLog</Type>
-    <ClassName>nl.nn.adapterframework.jdbc.OracleTransactionalStorage</ClassName>
-  </Element>
-  <Element>
     <Name>Afm2EdiFactErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.extensions.afm.Afm2EdiFactSender</ClassName>
+  </Element>
+  <Element>
+    <Name>AmazonS3ErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.AmazonS3Sender</ClassName>
   </Element>
   <Element>
     <Name>BisJmsErrorSender</Name>
@@ -1060,9 +1075,19 @@
     <ClassName>nl.nn.adapterframework.extensions.esb.EsbJmsSender</ClassName>
   </Element>
   <Element>
+    <Name>ExchangeFolderErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.ExchangeFolderSender</ClassName>
+  </Element>
+  <Element>
     <Name>FileErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.senders.FileSender</ClassName>
+  </Element>
+  <Element>
+    <Name>FileSystemErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.filesystem.FileSystemSender</ClassName>
   </Element>
   <Element>
     <Name>FixedQueryErrorSender</Name>
@@ -1080,9 +1105,19 @@
     <ClassName>nl.nn.adapterframework.ftp.FtpSender</ClassName>
   </Element>
   <Element>
+    <Name>FtpFileSystemErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.FtpFileSystemSender</ClassName>
+  </Element>
+  <Element>
     <Name>HttpErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.http.HttpSender</ClassName>
+  </Element>
+  <Element>
+    <Name>IMSErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.extensions.ibm.IMSSender</ClassName>
   </Element>
   <Element>
     <Name>IbisJavaErrorSender</Name>
@@ -1100,14 +1135,14 @@
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
   </Element>
   <Element>
-    <Name>IdocErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.sap.jco3.IdocSender</ClassName>
-  </Element>
-  <Element>
     <Name>IfsaSimulatorJmsErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
+  </Element>
+  <Element>
+    <Name>JavascriptErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.JavascriptSender</ClassName>
   </Element>
   <Element>
     <Name>JmsErrorSender</Name>
@@ -1115,9 +1150,19 @@
     <ClassName>nl.nn.adapterframework.jms.JmsSender</ClassName>
   </Element>
   <Element>
+    <Name>JsonXsltErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.JsonXsltSender</ClassName>
+  </Element>
+  <Element>
     <Name>LdapErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.ldap.LdapSender</ClassName>
+  </Element>
+  <Element>
+    <Name>LocalFileSystemErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.LocalFileSystemSender</ClassName>
   </Element>
   <Element>
     <Name>LogErrorSender</Name>
@@ -1145,6 +1190,11 @@
     <ClassName>nl.nn.adapterframework.extensions.mqtt.MqttSender</ClassName>
   </Element>
   <Element>
+    <Name>MultipartHttpErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.http.MultipartHttpSender</ClassName>
+  </Element>
+  <Element>
     <Name>NetStorageErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.extensions.akamai.NetStorageSender</ClassName>
@@ -1165,6 +1215,16 @@
     <ClassName>nl.nn.adapterframework.jdbc.ResultSet2FileSender</ClassName>
   </Element>
   <Element>
+    <Name>Samba1ErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.Samba1Sender</ClassName>
+  </Element>
+  <Element>
+    <Name>Samba2ErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.Samba2Sender</ClassName>
+  </Element>
+  <Element>
     <Name>SambaErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.senders.SambaSender</ClassName>
@@ -1178,6 +1238,11 @@
     <Name>SchedulerErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.scheduler.SchedulerSender</ClassName>
+  </Element>
+  <Element>
+    <Name>SendGridErrorSender</Name>
+    <Type>errorSender</Type>
+    <ClassName>nl.nn.adapterframework.senders.SendGridSender</ClassName>
   </Element>
   <Element>
     <Name>ShadowErrorSender</Name>
@@ -1367,56 +1432,56 @@
   <Element>
     <Name>Adapter</Name>
     <Type>adapter</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Cache</Name>
     <Type>cache</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Configuration</Name>
     <Type>configuration</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>DirectoryCleaner</Name>
     <Type>directoryCleaner</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Exit</Name>
     <Type>exit</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Forward</Name>
     <Type>forward</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Job</Name>
     <Type>job</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Locker</Name>
     <Type>locker</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Param</Name>
     <Type>param</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Pipeline</Name>
     <Type>pipeline</Type>
-    <ClassName></ClassName>
+    <ClassName/>
   </Element>
   <Element>
     <Name>Receiver</Name>
     <Type>receiver</Type>
-    <ClassName>nl.nn.adapterframework.receivers.GenericReceiver</ClassName>
+    <ClassName/>
   </Element>
 </Elements>

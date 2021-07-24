@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 */
 package nl.nn.adapterframework.processors;
 
-import org.apache.commons.lang.StringUtils;
+import java.io.IOException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -30,10 +32,21 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Message senderInput=message;
+		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SenderException("Could not preserve input",e);
+			}
+			session.put(senderWrapperBase.getStoreInputInSessionKey(), message);
+		}
 		if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromSessionKey())) {
-			senderInput=new Message(session.get(senderWrapperBase.getGetInputFromSessionKey()));
+			if (!session.containsKey(senderWrapperBase.getGetInputFromSessionKey())) {
+				throw new SenderException("getInputFromSessionKey ["+senderWrapperBase.getGetInputFromSessionKey()+"] is not present in session");
+			}
+			senderInput=session.getMessage(senderWrapperBase.getGetInputFromSessionKey());
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set contents of session variable ["+senderWrapperBase.getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
 		} else {
 			if (StringUtils.isNotEmpty(senderWrapperBase.getGetInputFromFixedValue())) {
@@ -41,10 +54,24 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"set input to fixed value ["+senderInput+"]");
 			}
 		}
-		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
+		if (senderWrapperBase.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SenderException("Could not preserve input",e);
+			}
+		}
+		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
+			if (!senderWrapperBase.isPreserveInput()) {
+				try {
+					message.preserve();
+				} catch (IOException e) {
+					throw new SenderException("Could not preserve result",e);
+				}
+			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(),result);
+			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject()); //TODO Store raw (repeatable?) Message!
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}

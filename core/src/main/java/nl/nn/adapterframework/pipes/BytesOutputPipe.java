@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,17 +18,16 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.Variant;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
+
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
@@ -122,27 +121,26 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class BytesOutputPipe extends FixedForwardPipe {
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result = null;
-		Variant in = new Variant(input);
 
 		try {
-			XMLReader parser = XMLReaderFactory.createXMLReader();
 			FieldsContentHandler fieldsContentHandler = new FieldsContentHandler();
-			parser.setContentHandler(fieldsContentHandler);
-			parser.parse(in.asXmlInputSource());
+			XmlUtils.parseXml(message.asInputSource(), fieldsContentHandler);
 			result = fieldsContentHandler.getResult();
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "SAXException", e);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private class FieldsContentHandler extends DefaultHandler {
 		private byte[] result = new byte[0];
 
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes attributes) throws SAXException {
 			if ("field".equals(qName)) {
 				String type = attributes.getValue("type");

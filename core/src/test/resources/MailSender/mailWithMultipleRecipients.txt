@@ -1,8 +1,10 @@
 Date: DATE
 From: "Me, Myself and I" <myself@address.org>
 To: dummy <me@address.org>
-Cc:  <cc@address.org>
-Bcc: bcc@address.org, name <i@address.org>
+Cc: cc@address.org
+Bcc: bcc@address.org, name <i@address.org>,
+	fulladdress <addresspart1@address.org>,
+	personalpart2 <addresspart2@address.org>
 Message-ID: MESSAGE-ID
 Subject: My Subject
 MIME-Version: 1.0

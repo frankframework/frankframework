@@ -1,16 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
-
-    private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public CredentialCheckingPipe createPipe() {
@@ -117,7 +117,11 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         pipe.setTargetUserid(targetId);
         pipe.setDefaultUserid(defaultId);
 
-        return pipe.doPipe(input, session).getResult().toString();
+        try {
+			return doPipe(pipe, input, session).getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(pipe, "cannot convert results", e);
+		}
     }
 
 

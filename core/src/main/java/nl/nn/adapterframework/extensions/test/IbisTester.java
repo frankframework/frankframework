@@ -1,3 +1,18 @@
+/*
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.extensions.test;
 
 import java.io.File;
@@ -20,17 +35,18 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -67,8 +83,7 @@ public class IbisTester {
 			request.setServletPath("/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
-				String ibisContextKey = appConstants
-						.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
+				String ibisContextKey = appConstants.getResolvedProperty(IbisApplicationServlet.KEY_CONTEXT);
 				application = new MockServletContext("file:" + webAppPath, null);
 				application.setAttribute(ibisContextKey, ibisContext);
 				silent = false;
@@ -83,8 +98,7 @@ public class IbisTester {
 			Writer writer = new StringWriter();
 			runScenarios(application, request, writer, silent);
 			if (scenario == null) {
-				String htmlString = "<html><head/><body>" + writer.toString()
-						+ "</body></html>";
+				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(htmlString);
 			} else {
 				return writer.toString();
@@ -140,7 +154,7 @@ public class IbisTester {
 		}
 		System.setProperty("log.level", "INFO");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("application.server.type", "IBISTEST");
+		System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 		System.setProperty("flow.create.url", "");
 		debug("***start***");
 		ibisContext = null;
@@ -153,9 +167,12 @@ public class IbisTester {
 		debug("***end***");
 	}
 
+	/**
+	 * returns a string containing the error, if any
+	 */
 	public String testStartAdapters() {
-		BasicConfigurator.configure();
-		Logger.getRootLogger().setLevel(Level.INFO);
+		// Log4J2 will automatically create a console appender and basic pattern layout.
+		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
@@ -175,10 +192,19 @@ public class IbisTester {
 		long configLoadEndTime = System.currentTimeMillis();
 		debug("***configuration loaded in ["+ (configLoadEndTime - configLoadStartTime) + "] msec***");
 
+		List<Configuration> configurations = ibisContext.getIbisManager().getConfigurations();
+		for(Configuration configuration : configurations) {
+			if(configuration.getConfigurationException() != null) {
+				error("error loading configuration ["+configuration.getName()+"]: "+ configuration.getConfigurationException().getMessage());
+			} else {
+				debug("loading configuration ["+configuration.getName()+"] with ["+configuration.getRegisteredAdapters().size()+"] adapters");
+			}
+		}
+
+		debug("***starting adapters***");
 		int adaptersStarted = 0;
 		int adaptersCount = 0;
-		List<IAdapter> registeredAdapters = ibisContext.getIbisManager().getRegisteredAdapters();
-		for (IAdapter adapter : registeredAdapters) {
+		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
 			RunStateEnum runState = adapter.getRunState();
 			if (!(RunStateEnum.STARTED).equals(runState)) {
@@ -206,10 +232,12 @@ public class IbisTester {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
 		}
+
 		String msg = "adapters started [" + adaptersStarted + "] from [" + adaptersCount + "]";
+
 		if (adaptersCount == adaptersStarted) {
 			debug(msg);
-			return null;
+			return null; // null == good
 		} else {
 			return error(msg);
 		}
@@ -344,14 +372,15 @@ public class IbisTester {
 			ScenarioRunner scenarioRunner = new ScenarioRunner(
 					scenariosRootDir, scenario);
 			ExecutorService service = Executors.newSingleThreadExecutor();
-			Future future = service.submit(scenarioRunner);
+			Future<String> future = service.submit(scenarioRunner);
 			long timeout = 60;
 			try {
 				try {
-					resultString = (String) future.get(timeout, TimeUnit.SECONDS);
+					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
 				} catch (Exception e) {
+					e.printStackTrace();
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
 			} finally {
@@ -434,6 +463,7 @@ public class IbisTester {
 						}
 					}
 				} catch (AccessControlException e) {
+					error(e.getMessage());
 					return null;
 				}
 			}

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2020 sp1 (x64) (http://www.altova.com) by  (Nationale Nederlanden) -->
+<xsd:schema xmlns="urn:items" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:items" elementFormDefault="qualified">
+	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="cmh.xsd"/>
+	<xsd:element name="Item_Request">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" default="b" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+							<xsd:enumeration value="c"/>
+							<xsd:enumeration value="d"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="Item_Response">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="SpecialResponse">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="InputValidationFailure">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="OutputValidationFailure">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="Status" minOccurs="0">
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:string">
+							<xsd:enumeration value="a"/>
+							<xsd:enumeration value="b"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:element>
+				<xsd:element name="Item" type="ItemType" minOccurs="0"/>
+				<xsd:element ref="cmh:Result"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="ItemType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="xsd:string" minOccurs="0"/>
+			<xsd:element name="Attributes" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Attribute" minOccurs="0" maxOccurs="10">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="Id" type="xsd:string"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

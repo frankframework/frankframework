@@ -28,9 +28,9 @@ import javax.jms.Session;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.Logger;
 
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;

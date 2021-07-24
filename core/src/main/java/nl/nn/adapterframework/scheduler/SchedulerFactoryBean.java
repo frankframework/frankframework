@@ -15,10 +15,14 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import javax.sql.DataSource;
+
+import org.springframework.transaction.PlatformTransactionManager;
+
 /**
  * Extending the Spring SchedulerFactoryBean because it starts the Quartz scheduler instance.
  * This instance can get detached from the ApplicationContext when it fails to execute the refresh method.
- * The issue arose when the IBIS is reconnecting but failes to init the txManager.
+ * The issue arose when the IBIS is reconnecting but fails to init the txManager.
  * 
  * @author	Niels Meijer
  *
@@ -34,5 +38,14 @@ public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.
 			getScheduler().shutdown(true);
 			throw e;
 		}
+	}
+
+	@Override
+	public void setDataSource(DataSource dataSource) {
+		//Make sure this isn't autowired by Spring
+	}
+	@Override
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		//Make sure this isn't autowired by Spring
 	}
 }

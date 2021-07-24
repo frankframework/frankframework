@@ -1,7 +1,17 @@
 dist: trusty
 language: java
+os:
+  - linux
 jdk:
   - openjdk8
+
+cache:
+  directories:
+  - $HOME/.m2
+
+before_install:
+  - cp .travis.settings.xml $HOME/.m2/settings.xml
+  - export TZ=Europe/Amsterdam
 
 # Skip separate install phase as for some reason running the two default phases
 # on Travis seem to cause the second phases to select the wrong profile
@@ -10,7 +20,15 @@ jdk:
 # Default install phase: mvn install -DskipTests=true -B
 # Default script phase: mvn test -B
 install: echo 'Skipping separate install phase'
-script: mvn install -B -Dmaven.javadoc.skip=true
+
+script:
+  - >
+    if [ -z "$TRAVIS_CI_USER" ];
+    then
+    mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pibissource,codecoverage;
+    else
+    mvn install -B -V -T1 -Dmaven.javadoc.skip=true -Pproprietary,ibissource,codecoverage;
+    fi
 
 notifications:
   email:
@@ -22,6 +40,3 @@ notifications:
       - travis-g@ibissource.org
 #    on_success: always # default: change
 #    on_failure: always # default: always
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

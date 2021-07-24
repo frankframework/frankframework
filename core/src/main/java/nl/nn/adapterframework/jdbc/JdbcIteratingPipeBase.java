@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,27 +15,26 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.pipes.StringIteratorPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -44,39 +43,42 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implements HasPhysicalDestination {
+public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
-	
-	protected class MixedQuerySender extends JdbcQuerySenderBase {
+
+	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
+
+	protected class MixedQuerySender extends DirectQuerySender {
 		
 		private String query;
-		
+
+		@Override
+		public void configure() throws ConfigurationException {
+			super.configure(query!=null);
+		}
+
 		@Override
 		protected String getQuery(Message message) throws SenderException {
 			if (query!=null) {
 				return query;
 			}
-			try {
-				return message.asString();
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
+			return super.getQuery(message);
 		}
 
 		public void setQuery(String query) {
 			this.query = query;
 		}
 	}
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		try {
@@ -93,25 +95,19 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	@Override
-	protected void iterateOverInput(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext, ItemCallback callback) throws SenderException {
-		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
-	}
-
-
-	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
 	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Object input, IPipeLineSession session, String correlationID, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			Message msg = new Message(input);
-			QueryContext queryContext = querySender.getQueryExecutionContext(connection, msg, session);
-			statement=queryContext.getStatement();
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			statement=queryExecutionContext.getStatement();
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");
@@ -120,7 +116,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 				JdbcUtil.fullClose(connection, rs);
 				return null; // no results
 			}
-			return getIterator(connection, rs);
+			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
 			try {
 				if (rs!=null) {
@@ -149,24 +145,6 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.addParameter(p);
 	}
 
-
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
-	public void setQuery(String query) {
-		querySender.setQuery(query);
-	}
-
-	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
-		querySender.setProxiedDataSources(proxiedDataSources);
-	}
-
-	@IbisDoc({"2", "can be configured from jmsrealm, too", ""})
-	public void setDatasourceName(String datasourceName) {
-		querySender.setDatasourceName(datasourceName);
-	}
-	public String getDatasourceName() {
-		return querySender.getDatasourceName();
-	}
-
 	@Override
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
@@ -175,14 +153,45 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
+
+	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
+	public void setQuery(String query) {
+		querySender.setQuery(query);
+	}
+
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	public void setDatasourceName(String datasourceName) {
+		querySender.setDatasourceName(datasourceName);
+	}
+
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	public void setUseNamedParams(boolean b) {
+		querySender.setUseNamedParams(b);
+	}
+
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	public void setTrimSpaces(boolean b) {
+		querySender.setTrimSpaces(b);
+	}
+
+	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	public void setSqlDialect(String string) {
+		querySender.setSqlDialect(string);
+	}
 	
-	@IbisDoc({"3", "When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)", "false"})
+	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDoc({"4", "When set and >=0, ' FOR UPDATE WAIT #' is used instead of ' FOR UPDATE NOWAIT SKIP LOCKED'", "-1"})
+	@IbisDocRef({"7", FIXEDQUERYSENDER})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
+
+	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	public void setAvoidLocking(boolean avoidLocking) {
+		querySender.setAvoidLocking(avoidLocking);
+	}
+
 }

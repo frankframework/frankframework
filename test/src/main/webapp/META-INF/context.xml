@@ -1,16 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
+
+	<!-- 
+		Support for XA using BTM requires JDBC datasources to be configured via
+		factory="org.apache.naming.factory.BeanFactory" and a proper XADataSource classname.
+		Configuration via driverClassName only works for the standard transaction manager.
+	-->
+
+
 	<Resource
-		name="jdbc/ibis4test"
+		name="jdbc/ibis4test-h2"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.h2.jdbcx.JdbcDataSource"
+		URL="jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE"
+	/>
+
+	<Resource
+		name="jdbc/ibis4test-oracle-xe"
 		type="javax.sql.DataSource"
-		username="testiaf_user"
-		password="testiaf_user"
 		driverClassName="oracle.jdbc.driver.OracleDriver"
 		url="jdbc:oracle:thin:@localhost:1521:xe"
-		maxActive="50"
-		maxIdle="2"
-		maxWait="30000"
+		username="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		maxTotal="10"
+		maxWaitMillis="5000"
 	/>
+
+	<Resource
+		name="jdbc/ibis4test-oracle"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="oracle.jdbc.xa.client.OracleXADataSource"
+		URL="jdbc:oracle:thin:@host.docker.internal:1521:ORCLCDB"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+	/>
+
+	<Resource 
+		name="jdbc/ibis4test-mssql" 
+		auth="Container" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+		URL="jdbc:sqlserver://host.docker.internal:1433;database=testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		sendStringParametersAsUnicode="false"
+		sendTimeAsDatetime="true"
+		selectMethod="direct"
+		responseBuffering="adaptive"
+		packetSize="4096"
+		loginTimeout="10"
+		lockTimeout="2000"
+		lastUpdateCount="false"
+		encrypt="false"
+		disableStatementPooling="true"
+		applicationName="iaf-test on TomCat"
+		applicationIntent="readwrite"
+	/>
+
+
+	<Resource
+		name="jdbc/ibis4test-mysql"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
+		url="jdbc:mysql://host.docker.internal:3307/testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		sslMode="DISABLED"
+		allowPublicKeyRetrieval="true"
+		pinGlobalTxToPhysicalConnection="true"
+		socketTimeout="5000"
+	/>
+
+ 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
+
+	<!-- Use MySQL driver for MariaDB for proper XA support. -->
+	<Resource
+		name="jdbc/ibis4test-mariadb"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.mysql.cj.jdbc.MysqlXADataSource"
+		url="jdbc:mysql://host.docker.internal:3306/testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		sslMode="DISABLED"
+		allowPublicKeyRetrieval="true"
+		pinGlobalTxToPhysicalConnection="true"
+		socketTimeout="5000"
+	/>
+<!-- 
+	<Resource
+		name="jdbc/ibis4test-mariadb"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.mariadb.jdbc.MariaDbDataSource"
+		user="testiaf_user"
+		password="testiaf_user00"
+		url="jdbc:mariadb://host.docker.internal:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
+	/>
+ -->
+ 	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
+	
+
+	<Resource 
+		name="jdbc/ibis4test-postgres-xa" 
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.postgresql.xa.PGXADataSource" 
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+	/>
+
+	<Resource name="jdbc/ibis4test-postgres" auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="org.postgresql.Driver"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+		maxTotal="10"
+		maxWaitMillis="5000"
+	/>
+
+	<Resource 
+		name="mongodb/ibis4test"
+		type="com.mongodb.MongoClient"
+		factory="com.mongodb.client.MongoClientFactory"
+		connectionString="mongodb://testiaf_user:testiaf_user00@host.docker.internal"
+		auth="Container"
+		closeMethod="close"
+		singleton="true"
+	/>
+
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -37,4 +154,12 @@
 		SSLTrace="false"
 		SSLDebugTrace="false"
 	/>
+
+	<Resource
+		name="jms/qcf-activemq"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		brokerURL="vm://localhost"
+	/>
+	
 </Context>

@@ -1,1 +1,28 @@
-<throwable><class>nl.nn.adapterframework.core.SenderException</class><message>[nl.nn.adapterframework.senders.IbisJavaSender] [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception: (UnexpectedRollbackException) JTA transaction unexpectedly rolled back (maybe due to a timeout); nested exception is javax.transaction.RollbackException: (RollbackException)</message><cause><throwable><class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class><message>RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception</message><cause><throwable><class>org.springframework.transaction.UnexpectedRollbackException</class><message>JTA transaction unexpectedly rolled back (maybe due to a timeout); nested exception is javax.transaction.RollbackException</message><cause><throwable><class>javax.transaction.RollbackException</class><message>null</message></throwable></cause></throwable></cause></throwable></cause></throwable>
+<throwable>
+  <class>nl.nn.adapterframework.core.SenderException</class>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception: Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+  <cause>
+    <throwable>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <message>RequestProcessor [ibis4test-TransactionTimeoutHandlingTransacted] caught exception</message>
+      <cause>
+        <throwable>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+              <cause>
+                <throwable>
+                  <class>java.lang.InterruptedException</class>
+                  <message>sleep interrupted</message>
+                </throwable>
+              </cause>
+            </throwable>
+          </cause>
+        </throwable>
+      </cause>
+    </throwable>
+  </cause>
+</throwable>

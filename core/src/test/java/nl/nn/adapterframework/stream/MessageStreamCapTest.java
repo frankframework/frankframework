@@ -4,12 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.Writer;
 
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeRunResult;
 
@@ -18,9 +20,11 @@ public class MessageStreamCapTest {
 	@Test
 	public void testStringCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		IForwardTarget forward = null;
 		String responseMessage = "fakeResponseMessage";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		StringWriter captureWriter = null;
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
+			captureWriter = cap.captureCharacterStream();
 			try (Writer capWriter = cap.asWriter()) {
 			
 				Object capNative = cap.asNative();
@@ -32,16 +36,19 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage,result.getResult());
+			assertEquals(responseMessage,result.getResult().asString());
 		}
+		assertEquals(responseMessage,captureWriter.toString());
 	}
 
 	@Test
 	public void testBytesCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		IForwardTarget forward = null;
 		byte[] responseMessage = "fakeResponseMessage".getBytes();
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		StringWriter captureWriter = null;
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
+			captureWriter = cap.captureCharacterStream();
 			try (OutputStream capStream = cap.asStream()) {
 			
 				Object capNative = cap.asNative();
@@ -53,9 +60,10 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage.getClass(),result.getResult().getClass());
-			assertEquals(new String(responseMessage),new String((byte[])result.getResult()));
+			assertEquals(responseMessage.getClass(),result.getResult().asObject().getClass());
+			assertEquals(new String(responseMessage),new String((byte[])result.getResult().asObject()));
 		}
+		assertEquals(new String(responseMessage),captureWriter.toString());
 	}
 
 	@Test
@@ -64,9 +72,11 @@ public class MessageStreamCapTest {
 	 */
 	public void testContentHandlerCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		IForwardTarget forward = null;
 		String expectedResponseMessage = "<root/>";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		StringWriter captureWriter = null;
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
+			captureWriter = cap.captureCharacterStream();
 			ContentHandler capContentHandler = cap.asContentHandler();
 			
 			Object capNative = cap.asNative();
@@ -80,8 +90,9 @@ public class MessageStreamCapTest {
 
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(expectedResponseMessage,result.getResult());
+			assertEquals(expectedResponseMessage,result.getResult().asString());
 		}
+		assertEquals(expectedResponseMessage,captureWriter.toString());
 	}
 
 	@Test
@@ -90,9 +101,11 @@ public class MessageStreamCapTest {
 	 */
 	public void testNativeCap() throws Exception {
 		INamedObject owner = new Owner();
-		IOutputStreamingSupport nextProvider = null;
+		IForwardTarget forward = null;
 		String responseMessage = "fakeResponseMessage";
-		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,nextProvider)) {
+		StringWriter captureWriter = null;
+		try (MessageOutputStreamCap cap = new MessageOutputStreamCap(owner,forward)) {
+			captureWriter = cap.captureCharacterStream();
 			Object capNative = cap.asNative();
 			assertTrue(capNative instanceof Writer);
 
@@ -101,8 +114,9 @@ public class MessageStreamCapTest {
 			}
 			PipeRunResult result = cap.getPipeRunResult();
 			
-			assertEquals(responseMessage,result.getResult());
+			assertEquals(responseMessage,result.getResult().asString());
 		}
+		assertEquals(responseMessage,captureWriter.toString());
 	}
 
 	private class Owner implements INamedObject {

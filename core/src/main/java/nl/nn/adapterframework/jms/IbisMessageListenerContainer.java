@@ -20,12 +20,13 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
 
 import nl.nn.adapterframework.unmanaged.SpringJmsConnector;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -38,50 +39,57 @@ import nl.nn.adapterframework.util.LogUtil;
 public class IbisMessageListenerContainer extends DefaultMessageListenerContainer {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private CredentialFactory credentialFactory;
+
 	@Override
 	protected Connection createConnection() throws JMSException {
-		Connection conn = super.createConnection();
-		log.trace("createConnection() - connection["+(conn==null?"null":conn.toString())+"]");
+		Connection conn; 
+		if (credentialFactory!=null) {
+			conn = getConnectionFactory().createConnection(credentialFactory.getUsername(), credentialFactory.getPassword());
+		} else {
+			conn = super.createConnection();
+		}
+		if (log.isTraceEnabled()) log.trace("createConnection() - connection["+(conn==null?"null":conn.toString())+"]");
 		return conn;
 	}
 
 	@Override
 	protected Session createSession(Connection conn) throws JMSException {
 		Session session = super.createSession(conn);
-		log.trace("createSession() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("createSession() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"] session["+(session==null?"null":session.toString())+"]");
 		return session;
 	}
 
 	@Override
 	protected Connection getConnection(JmsResourceHolder holder) {
 		Connection conn = super.getConnection(holder);
-		log.trace("getConnection() - jmsResourceHolder[" + holder.toString() + "] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("getConnection() - jmsResourceHolder[" + holder.toString() + "] connection["+(conn==null?"null":conn.toString())+"]");
 		return conn;
 	}
 
 	@Override
 	protected Session getSession(JmsResourceHolder holder) {
 		Session session = super.getSession(holder);
-		log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder.toString() + "] session["+(session==null?"null":session.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("getSession() - ackMode["+getSessionAcknowledgeMode()+"] jmsResourceHolder[" + holder.toString() + "] session["+(session==null?"null":session.toString())+"]");
 		return session;
 	}
 
 	@Override
 	protected Connection createSharedConnection() throws JMSException {
 		Connection conn = super.createSharedConnection();
-		log.trace("createSharedConnection() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"]");
+		if (log.isTraceEnabled()) log.trace("createSharedConnection() - ackMode["+getSessionAcknowledgeMode()+"] connection["+(conn==null?"null":conn.toString())+"]");
 		return conn;
 	}
 
 	@Override
 	protected boolean receiveAndExecute(Object asyncMessageListenerInvoker, Session session, MessageConsumer consumer) throws JMSException {
-		log.trace("receiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled()) log.trace("receiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
 		return super.receiveAndExecute(asyncMessageListenerInvoker, session, consumer);
 	}
 
 	@Override
 	protected boolean doReceiveAndExecute(Object invoker, Session session, MessageConsumer consumer, TransactionStatus txStatus) throws JMSException {
-		log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
+		if (log.isTraceEnabled()) log.trace("doReceiveAndExecute() - destination["+getDestinationName()+"] clientId["+getClientId()+"] session["+session+"]");
 		boolean messageReceived = super.doReceiveAndExecute(invoker, session, consumer, txStatus);
 		if (getMessageListener() instanceof SpringJmsConnector) {
 			SpringJmsConnector springJmsConnector = (SpringJmsConnector)getMessageListener();
@@ -89,4 +97,12 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 		}
 		return messageReceived;
 	}
+
+	public void setCredentialFactory(CredentialFactory credentialFactory) {
+		this.credentialFactory = credentialFactory;
+	}
+	public CredentialFactory getCredentialFactory() {
+		return credentialFactory;
+	}
+
 }

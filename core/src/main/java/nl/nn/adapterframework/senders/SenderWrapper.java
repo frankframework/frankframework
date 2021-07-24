@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -40,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class SenderWrapper extends SenderWrapperBase {
 	private ISender sender;
-	
+
 	@Override
 	protected boolean isSenderConfigured() {
 		return getSender()!=null;
@@ -49,9 +49,6 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSender() instanceof ConfigurationAware) {
-			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
-		}
 		getSender().configure();
 	}
 	@Override
@@ -66,7 +63,7 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message,session);
 	}
 

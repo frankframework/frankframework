@@ -26,24 +26,15 @@ TagDatabase
  		<comment>For some reason oracle is a bit silly so we cant update?</comment>
 		<dropColumn tableName="IBISPROP" columnName="LASTMODBY"/>
 		<addColumn tableName="IBISPROP">
-       		<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
 		</addColumn>
  	</changeSet>
  	
-	<changeSet id="IBISDATA" author="Robert Karajev">
-		<comment>Add IBISDATA Table</comment>
-		<createTable tableName="IBISDATA">
-			<column name="DATAKEY" type="java.sql.Types.DECIMAL(10)">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISDATA"/>
-			</column>
-			<column name="DATA" type="BLOB"/>
-		</createTable>
-	</changeSet>
-
 	<changeSet id="IBISTEMP" author="Robert Karajev">
+		<validCheckSum>7:4e0dba09800e08930e4d452e11f83566</validCheckSum>
 		<comment>Add IBISTEMP Table</comment>
 		<createTable tableName="IBISTEMP">
-			<column name="TKEY" type="java.sql.Types.DECIMAL(10)">
+			<column name="TKEY" type="INT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISTEMP"/>
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
@@ -51,15 +42,13 @@ TagDatabase
 			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/>
 			<column name="TTIMESTAMP" type="DATETIME"/>
 			<column name="TDATE" type="TIME"/>
-			<column name="TBLOB1" type="BLOB"/>
-			<column name="TCLOB" type="CLOB"/>
-			<column name="TBLOB2" type="BLOB"/>
+			<column name="TBLOB1" type="LONGBLOB"/>
+			<column name="TCLOB" type="CLOB"/> <!-- is set as LONGTEXT for MySQL and MariaDB -->
+			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
-	</changeSet>
-
-	<changeSet id="IBISDATA_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
-		<comment>Set sequence for IBISDATA Table</comment>
-		<createSequence sequenceName="SEQ_IBISDATA" startValue="34567"/>
+		<modifySql dbms="mssql" >
+			<replace replace="[int] IDENTITY (1, 1)" with="INT"/>
+		</modifySql>
 	</changeSet>
 
 	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">

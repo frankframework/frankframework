@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -42,15 +43,16 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String>, ConfigurationAware {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled<String,String> {
 
-	private String getInputFromSessionKey; 
-	private String getInputFromFixedValue=null;
-	private String storeResultInSessionKey; 
-	private boolean preserveInput=false; 
-	protected SenderWrapperProcessor senderWrapperProcessor;
-	private ICacheAdapter<String,String> cache=null;
-	private Configuration configuration;
+	private @Getter String getInputFromSessionKey;
+	private @Getter String getInputFromFixedValue=null;
+	private @Getter String storeResultInSessionKey;
+	private @Getter String storeInputInSessionKey;
+	private @Getter boolean preserveInput=false;
+	
+	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
+	private @Getter @Setter ICache<String,String> cache=null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -87,10 +89,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException; 
+	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException; 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
@@ -103,63 +105,33 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 	@Override
-	public void registerCache(ICacheAdapter<String,String> cache) {
-		this.cache=cache;
-	}
-	@Override
-	public ICacheAdapter<String,String> getCache() {
-		return cache;
-	}
-
-	
-	@Override
 	public abstract boolean isSynchronous() ;
-
 	public abstract void setSender(ISender sender);
-	
-	@IbisDoc({"when set, input is taken from this session key, instead of regular input", ""})
+
+
+	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
-	public String getGetInputFromSessionKey() {
-		return getInputFromSessionKey;
-	}
 
-	@IbisDoc({"when set, this fixed value is taken as input, instead of regular input", ""})
+	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
-	public String getGetInputFromFixedValue() {
-		return getInputFromFixedValue;
-	}
 
-	@IbisDoc({"when set, the result is stored under this session key", ""})
-	public void setStoreResultInSessionKey(String string) {
-		storeResultInSessionKey = string;
-	}
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	@IbisDoc({"3", "If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
-	public boolean isPreserveInput() {
-		return preserveInput;
+
+	@IbisDoc({"4", "If set, the result is stored under this session key", ""})
+	public void setStoreResultInSessionKey(String string) {
+		storeResultInSessionKey = string;
 	}
 
-	public void setSenderWrapperProcessor(SenderWrapperProcessor senderWrapperProcessor) {
-		this.senderWrapperProcessor = senderWrapperProcessor;
-	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
+	@IbisDoc({"5", "If set, the input is stored under this session key", ""})
+	public void setStoreInputInSessionKey(String string) {
+		storeInputInSessionKey = string;
 	}
 
 }

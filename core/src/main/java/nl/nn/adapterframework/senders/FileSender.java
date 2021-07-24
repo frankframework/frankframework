@@ -16,7 +16,8 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -30,6 +31,8 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  * @author Jaco de Groot
  */
+@Deprecated
+@ConfigurationWarning("Please use LocalFileSystemSender instead, or when retrieving files from the classpath use the FixedResultSender")
 public class FileSender extends FileHandler implements ISenderWithParameters {
 	private String name;
 	protected ParameterList paramList = null;
@@ -37,11 +40,8 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (!outputType.equalsIgnoreCase("string")
-				&& !outputType.equalsIgnoreCase("base64")) {
-			throw new ConfigurationException(getLogPrefix(null)
-					+ "sender doesn't support outputType ["
-					+ outputType + "], use file pipe instead");
+		if (!outputType.equalsIgnoreCase("string") && !outputType.equalsIgnoreCase("base64")) {
+			throw new ConfigurationException(getLogPrefix(null) + "sender doesn't support outputType [" + outputType + "], use file pipe instead");
 		}
 		if (paramList!=null) {
 			paramList.configure();
@@ -49,9 +49,9 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
-			return new Message(handle(message, session, getParameterList()));
+			return Message.asMessage(handle(message, session, getParameterList()));
 		} catch(Exception e) {
 			throw new SenderException(e);
 		}
@@ -88,8 +88,8 @@ public class FileSender extends FileHandler implements ISenderWithParameters {
 		paramList.add(p);
 	}
 
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}
-
 }

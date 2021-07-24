@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,20 @@
 */
 package nl.nn.adapterframework.soap;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.StringTokenizer;
 
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.axis.Message;
-import org.apache.axis.MessageContext;
-import org.apache.axis.client.AxisClient;
-import org.apache.axis.configuration.NullProvider;
-import org.apache.axis.message.SOAPEnvelope;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityEngine;
@@ -44,7 +42,9 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -58,14 +58,14 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SoapWrapper {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private TransformerPool extractBody;
-	private TransformerPool extractBody2;
+	private TransformerPool extractBodySoap11;
+	private TransformerPool extractBodySoap12;
 	private TransformerPool extractHeader;
 	private TransformerPool extractFaultCount;
 	private TransformerPool extractFaultCode;
 	private TransformerPool extractFaultString;
-	private static final String EXTRACT_NAMESPACE_DEFS  = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private static final String EXTRACT_NAMESPACE_DEFS2 = "soapenv=http://www.w3.org/2003/05/soap-envelope";
+	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv="+SoapVersion.SOAP11.namespace;
+	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv="+SoapVersion.SOAP12.namespace;
 	private static final String EXTRACT_BODY_XPATH = "/soapenv:Envelope/soapenv:Body/*";
 	private static final String EXTRACT_HEADER_XPATH = "/soapenv:Envelope/soapenv:Header/*";
 	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
@@ -80,12 +80,12 @@ public class SoapWrapper {
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_BODY_XPATH, "xml", false, null, false));
-			extractBody2 = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS2, EXTRACT_BODY_XPATH,"xml",false,null,false));
-			extractHeader = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_HEADER_XPATH, "xml"));
-			extractFaultCount = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTCOUNTER_XPATH, "text"));
-			extractFaultCode = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTCODE_XPATH, "text"));
-			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(EXTRACT_NAMESPACE_DEFS, EXTRACT_FAULTSTRING_XPATH, "text"));
+			extractBodySoap11  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, "xml", false, null, false));
+			extractBodySoap12  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, "xml", false, null, false));
+			extractHeader      = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, "xml"));
+			extractFaultCount  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, "text"));
+			extractFaultCode   = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, "text"));
+			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, "text"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -99,11 +99,12 @@ public class SoapWrapper {
 		return self;
 	}
 
-	public void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
+	public void checkForSoapFault(Message responseBody, Throwable nested) throws SenderException {
 		String faultString = null;
 		String faultCode = null;
 		int faultCount = 0;
 		try {
+			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
 			log.debug("fault count=" + faultCount);
 			if (faultCount > 0) {
@@ -123,34 +124,43 @@ public class SoapWrapper {
 		}
 	}
 
-	public String getBody(String message) throws SAXException, TransformerException, IOException  {
-		String result = extractBody.transform(message,null,true);
-		if (StringUtils.isNotEmpty(result))
+	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
+		return getBody(message, false, null, null);
+	}
+	
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+		message.preserve();
+		Message result = new Message(extractBodySoap11.transform(message.asSource()));
+		if (!Message.isEmpty(result)) {
+			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
+			}
 			return result;
-		return extractBody2.transform(message,null,true);
-	}
-
-	public String getBody(InputStream request) throws TransformerException, IOException {
-		String result = extractBody.transform(new StreamSource(request));
-		if (StringUtils.isNotEmpty(result))
+		}
+		result = new Message(extractBodySoap12.transform(message.asSource()));
+		if (!Message.isEmpty(result)) {
+			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
+			}
 			return result;
-		return extractBody2.transform(new StreamSource(request));
+		}
+		if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+			session.put(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
+		}
+		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
 	}
 
-	public String getHeader(String message) throws SAXException, TransformerException, IOException {
-		return extractHeader.transform(message, null, true);
+
+	public String getHeader(Message message) throws SAXException, TransformerException, IOException {
+		return extractHeader.transform(message.asSource());
 	}
 
-	public String getHeader(InputStream request) throws TransformerException, IOException {
-		return extractHeader.transform(new StreamSource(request));
-	}
-
-	public int getFaultCount(String message) throws SAXException, TransformerException, IOException {
-		if (StringUtils.isEmpty(message)) {
+	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
+		if (Message.isEmpty(message)) {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		String faultCount = extractFaultCount.transform(message, null, true);
+		String faultCount = extractFaultCount.transform(message.asSource());
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
@@ -161,32 +171,31 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 
-	public String getFaultCode(String message) throws SAXException, TransformerException, IOException {
-		return extractFaultCode.transform(message, null, true);
+	public String getFaultCode(Message message) throws SAXException, TransformerException, IOException {
+		return extractFaultCode.transform(message.asSource());
 	}
 
-	public String getFaultString(String message) throws SAXException, TransformerException, IOException {
-		return extractFaultString.transform(message, null, true);
+	public String getFaultString(Message message) throws SAXException, TransformerException, IOException {
+		return extractFaultString.transform(message.asSource());
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
+	public Message putInEnvelope(Message message, String encodingStyleUri) throws IOException {
+		return putInEnvelope(message, encodingStyleUri, null);
+	}
+
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace) throws IOException {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, null);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
-			String soapHeader) {
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeader) throws IOException {
 		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, null);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
-			String soapHeader, String namespaceDefs) {
-		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null,
-				false);
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) throws IOException {
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, namespaceDefs, null, null, false);
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace,
-			String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf,
-			boolean passwordDigest) {
+	public Message putInEnvelope(Message message, String encodingStyleUri, String targetObjectNamespace, String soapHeaderInitial, String namespaceDefs, String soapNamespace, CredentialFactory wsscf, boolean passwordDigest) throws IOException {
 		String soapHeader = "";
 		String encodingStyle = "";
 		String targetObjectNamespaceClause = "";
@@ -209,57 +218,52 @@ public class SoapWrapper {
 				if (separatorPos < 1) {
 					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
 				} else {
-					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\""
-							+ namespaceDef.substring(separatorPos + 1) + "\"");
+					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
 				}
 			}
 			log.debug("namespaceClause [" + namespaceClause + "]");
 		}
-		String soapns = "http://schemas.xmlsoap.org/soap/envelope/";
-		if (StringUtils.isNotEmpty(soapNamespace)) {
-			soapns = soapNamespace;
-		}
-		message = "<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
-				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message)
-				+ "</soapenv:Body>" + "</soapenv:Envelope>";
+		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
+		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
+				+ namespaceClause + ">" + soapHeader + "<soapenv:Body>" + XmlUtils.skipXmlDeclaration(message.asString())
+				+ "</soapenv:Body>" + "</soapenv:Envelope>");
 		if (wsscf != null) {
-			message = signMessage(message, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
+			result = signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
 		}
-		return message;
+		return result;
 	}
 
-	public String putInEnvelope(String message, String encodingStyleUri) {
-		return putInEnvelope(message, encodingStyleUri, null);
-	}
-
-	public String createSoapFaultMessage(String faultcode, String faultstring) {
+	public Message createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
-		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + "<faultstring>"
-				+ faultCdataString + "</faultstring>" + "</soapenv:Fault>";
-		return putInEnvelope(fault, null, null, null);
+		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + 
+						"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
+		try {
+			return putInEnvelope(new Message(fault), null, null, null);
+		} catch (IOException e) {
+			log.warn("Could not create SoapFaultMessage", e);
+			return new Message(faultstring);
+		}
 	}
 
-	public String createSoapFaultMessage(String faultstring) {
+	public Message createSoapFaultMessage(String faultstring) {
 		return createSoapFaultMessage("soapenv:Server", faultstring);
 	}
 
-	public String signMessage(String soapMessage, String user, String password, boolean passwordDigest) {
+	public Message signMessage(Message soapMessage, String user, String password, boolean passwordDigest) {
 		try {
 			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
 			WSSConfig config = secEngine.getWssConfig();
 			config.setPrecisionInMilliSeconds(false);
 
-			// create context
-			AxisClient tmpEngine = new AxisClient(new NullProvider());
-			MessageContext msgContext = new MessageContext(tmpEngine);
-
-			InputStream in = new ByteArrayInputStream(soapMessage.getBytes());
-			Message msg = new Message(in);
-			msg.setMessageContext(msgContext);
+			// We only support signing for soap1_1 ?
+			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
+			SOAPMessage msg = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL).createMessage();
+			SOAPPart part = msg.getSOAPPart();
+			part.setContent(new StreamSource(soapMessage.asInputStream()));
 
 			// create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = msg.getSOAPEnvelope();
-			Document doc = unsignedEnvelope.getAsDocument();
+			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
+			Document doc = unsignedEnvelope.getOwnerDocument();
 
 			// create security header and insert it into unsigned envelope
 			WSSecHeader secHeader = new WSSecHeader();
@@ -293,7 +297,7 @@ public class SoapWrapper {
 
 			Document signedDoc = doc;
 
-			return DOM2Writer.nodeToString(signedDoc);
+			return new Message(DOM2Writer.nodeToString(signedDoc));
 
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);

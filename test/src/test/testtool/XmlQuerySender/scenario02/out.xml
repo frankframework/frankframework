@@ -1,0 +1,50 @@
+<results>
+  <result item="1">
+    <result>
+      <rowsupdated>2</rowsupdated>
+    </result>
+  </result>
+  <result item="2">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="3">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="4">
+    <result>
+      <rowsupdated>1</rowsupdated>
+    </result>
+  </result>
+  <result item="5">
+    <result>
+      <fielddefinition>
+        <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+        <field name="TNUMBER" type="DECIMAL" columnDisplaySize="17" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="TKEY">56889</field>
+          <field name="TNUMBER">1000.123</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+  <result item="6">
+    <result>
+      <fielddefinition>
+        <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+        <field name="TNUMBER" type="DECIMAL" columnDisplaySize="17" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
+      </fielddefinition>
+      <rowset>
+        <row number="0">
+          <field name="TKEY">56889</field>
+          <field name="TNUMBER">1000.123</field>
+        </row>
+      </rowset>
+    </result>
+  </result>
+</results>

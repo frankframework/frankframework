@@ -1,4 +1,6 @@
 <!DOCTYPE configuration [
+	<!ENTITY MonitorConfig SYSTEM "./MonitorConfig.xml">
+
 	<!ENTITY TransactionTimeoutHandling SYSTEM "./TransactionTimeoutHandling.xml">
 	<!ENTITY TransactionTimeoutFxfListener SYSTEM "./TransactionTimeoutFxfListener.xml">
 
@@ -22,4 +24,6 @@
 	&TransactionHandlingRequiredSubAdapterException;
 
 	&TransactionHandlingMultiAdapter;
+
+	&MonitorConfig;
 </configuration>

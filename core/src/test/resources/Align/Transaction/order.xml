@@ -1,5 +1,0 @@
-<transaction xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:///C:/Gerrit/Workspaces/neon/XmlAligner/src/test/resources/Transaction/transaction.xsd">
-	<order>1</order>
-	<customer>A</customer>
-	<vendor>B</vendor>
-</transaction>

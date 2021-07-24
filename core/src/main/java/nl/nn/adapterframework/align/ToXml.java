@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden
+   Copyright 2017,2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,10 +29,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.xerces.xs.PSVIProvider;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -47,11 +46,14 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Base class for XML Schema guided Object to XML conversion;
@@ -82,8 +84,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	private int prefixPrefixCounter=1;
 	private Map<String,String>prefixMap=new HashMap<String,String>();
 
-	protected final boolean DEBUG=false; 
-	
+
 	public ToXml() {
 		super();
 	}
@@ -132,7 +133,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (input!=null && (input instanceof ToXml.XmlAlignerInputSource)) {
 			container= ((XmlAlignerInputSource)input).container;
 		}
-		if (DEBUG) log.debug("parse(InputSource) container ["+container+"]");
+		if (log.isTraceEnabled()) log.trace("parse(InputSource) container ["+container+"]");
 		startParse(container);
 	}
 
@@ -140,7 +141,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * Align the XML according to the schema. 
 	 */
 	public void startParse(C container) throws SAXException {
-		//if (DEBUG) log.debug("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
+		//if (log.isTraceEnabled()) log.trace("startParse() rootNode ["+node.toString()+"]"); // result of node.toString() is confusing. Do not log this.
 		try {
 			validatorHandler.startDocument();
 			handleNode(container, getRootElement(), getTargetNamespace());
@@ -170,7 +171,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	 * Must set current=node before calling validatorHandler.startElement(), in order to get the right argument for the onStartElement / performAlignment callbacks.
 	 */
 	public void handleNode(C container, String name, String nodeNamespace) throws SAXException {
-		if (DEBUG) log.debug("handleNode() name ["+name+"] namespace ["+nodeNamespace+"]");
+		if (log.isTraceEnabled()) log.trace("handleNode() name ["+name+"] namespace ["+nodeNamespace+"]");
 		N rootNode=getRootNode(container);
 		if (StringUtils.isEmpty(nodeNamespace)) {
 			nodeNamespace=getNodeNamespaceURI(rootNode);
@@ -178,29 +179,28 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		XSElementDeclaration elementDeclaration=findElementDeclarationForName(nodeNamespace,name);
 		if (elementDeclaration==null) {
 			throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" for ["+name+"] in namespace ["+nodeNamespace+"]");
-//			if (DEBUG) log.debug("node ["+name+"] did not find elementDeclaration, assigning targetNamespace ["+getTargetNamespace()+"]");
+//			if (log.isTraceEnabled()) log.trace("node ["+name+"] did not find elementDeclaration, assigning targetNamespace ["+getTargetNamespace()+"]");
 //			nodeNamespace=getTargetNamespace();
 		}
 		handleElement(elementDeclaration,rootNode);
 	}
 
-//	@Override
 	public void handleElement(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		String name = elementDeclaration.getName();
 		String elementNamespace=elementDeclaration.getNamespace();
 		String qname=getQName(elementNamespace, name);
-		if (DEBUG) log.debug("handleNode() name ["+name+"] elementNamespace ["+elementNamespace+"]");
+		if (log.isTraceEnabled()) log.trace("handleNode() name ["+name+"] elementNamespace ["+elementNamespace+"]");
 		newLine();
 		AttributesImpl attributes=new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(elementDeclaration, node);
-		if (DEBUG) log.debug("node ["+name+"] search for attributeDeclaration");
+		if (log.isTraceEnabled()) log.trace("node ["+name+"] search for attributeDeclaration");
 		XSTypeDefinition typeDefinition=elementDeclaration.getTypeDefinition();
 		XSObjectList attributeUses=getAttributeUses(typeDefinition);
 		if (attributeUses==null || attributeUses.getLength()==0) {
 			if (nodeAttributes!=null && nodeAttributes.size()>0) {
 				log.warn("node ["+name+"] found ["+nodeAttributes.size()+"] attributes, but no declared AttributeUses");
 			} else {
-				if (DEBUG) log.debug("node ["+name+"] no attributeUses, no attributes");
+				if (log.isTraceEnabled()) log.trace("node ["+name+"] no attributeUses, no attributes");
 			}
 		} else {
 			if (nodeAttributes==null || nodeAttributes.isEmpty()) {
@@ -208,18 +208,16 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			} else {
 				for (int i=0;i<attributeUses.getLength(); i++) {
 					XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
-					//if (DEBUG) log.debug("startElement ["+localName+"] attributeUse ["+ToStringBuilder.reflectionToString(attributeUse)+"]");
 					XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-					if (DEBUG) log.debug("node ["+name+"] attributeDeclaration ["+ToStringBuilder.reflectionToString(attributeDeclaration)+"]");
-					XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
-					if (DEBUG) log.debug("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
+					//XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
+					//if (log.isTraceEnabled()) log.trace("node ["+name+"] attTypeDefinition ["+ToStringBuilder.reflectionToString(attTypeDefinition)+"]");
 					String attName=attributeDeclaration.getName();
 					if (nodeAttributes.containsKey(attName)) {
 						String value=nodeAttributes.remove(attName);
 						String uri=attributeDeclaration.getNamespace();
 						String attqname=getQName(uri,attName);
 						String type=null;
-						if (DEBUG) log.debug("node ["+name+"] adding attribute ["+attName+"] value ["+value+"]");
+						if (log.isTraceEnabled()) log.trace("node ["+name+"] adding attribute ["+attName+"] value ["+value+"]");
 						attributes.addAttribute(uri, attName, attqname, type, value);
 					}
 				}
@@ -232,15 +230,23 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			validatorHandler.endElement(elementNamespace, name, qname);
 			validatorHandler.endPrefixMapping(XSI_PREFIX_MAPPING);
 		} else {
-			validatorHandler.startElement(elementNamespace, name, qname, attributes);
-			handleElementContents(elementDeclaration, node);
-			validatorHandler.endElement(elementNamespace, name, qname);
+			if (isMultipleOccurringChildElement(name) && node instanceof List) {
+				for(Object o:(List)node) {
+					doHandleElement(elementDeclaration, (N)o, elementNamespace, name, qname, attributes);
+				}
+			} else {
+				doHandleElement(elementDeclaration, node, elementNamespace, name, qname, attributes);
+			}
 		}
-//		if (createdPrefix!=null) {
-//			validatorHandler.endPrefixMapping(createdPrefix);
-//		}
 	}
 	
+	private void doHandleElement(XSElementDeclaration elementDeclaration, N node, String elementNamespace, String name, String qname, Attributes attributes) throws SAXException {
+		validatorHandler.startElement(elementNamespace, name, qname, attributes);
+		handleElementContents(elementDeclaration, node);
+		validatorHandler.endElement(elementNamespace, name, qname);
+	}
+
+
 	public void handleElementContents(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition==null) {
@@ -250,17 +256,18 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		switch (typeDefinition.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
-			if (DEBUG) log.debug("handleElementContents typeDefinition.typeCategory is SimpleType, no child elements");
+			if (log.isTraceEnabled()) log.trace("handleElementContents typeDefinition.typeCategory is SimpleType, no child elements");
 			handleSimpleTypedElement(elementDeclaration, (XSSimpleTypeDefinition)typeDefinition, node);
 			return;
 		case XSTypeDefinition.COMPLEX_TYPE:
 			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 			switch (complexTypeDefinition.getContentType()) {
 			case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
-				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Empty, no child elements");
+				if (log.isTraceEnabled()) log.trace("handleElementContents complexTypeDefinition.contentType is Empty, no child elements");
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
-				if (DEBUG) log.debug("handleElementContents complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+				if (log.isTraceEnabled()) log.trace("handleElementContents complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+				handleSimpleTypedElement(elementDeclaration, null, node);
 				return;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
@@ -277,11 +284,11 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	protected void handleComplexTypedElement(XSElementDeclaration elementDeclaration, N node) throws SAXException {
 		String name = elementDeclaration.getName();
 		//List<XSParticle> childParticles = getChildElementDeclarations(typeDefinition);
-		if (DEBUG) log.debug("ToXml.handleComplexTypedElement() search for best path for available children of element ["+name+"]"); 
+		if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element ["+name+"]"); 
 		List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
-		if (DEBUG) {
+		if (log.isTraceEnabled()) {
 			if (childParticles==null) {
-				log.debug("Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] path found is null");
+				log.trace("Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] path found is null");
 			} else {
 				String msg="Examined node ["+name+"] deepSearch ["+isDeepSearch()+"] found path length ["+childParticles.size()+"]: ";
 				boolean tail=false;
@@ -293,24 +300,24 @@ public abstract class ToXml<C,N> extends XmlAligner {
 					}
 					msg+=particle.getTerm().getName();
 				}
-				log.debug(msg);
+				log.trace(msg);
 			}
 		}
 		Set<String> processedChildren = new HashSet<String>();
 		
 		if (childParticles!=null) {
-//			if (DEBUG) log.debug("ToXml.handleComplexTypedElement() iterating over childParticles, size ["+childParticles.size()+"]"); 
+//			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() iterating over childParticles, size ["+childParticles.size()+"]"); 
 //			if (DEBUG) {
 //				for (int i=0;i<childParticles.size();i++) {
 //					XSParticle childParticle=childParticles.get(i);
 //					XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
-//					if (DEBUG) log.debug("ToXml.handleComplexTypedElement() list children ["+i+"], name ["+childElementDeclaration.getName()+"]");
+//					if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() list children ["+i+"], name ["+childElementDeclaration.getName()+"]");
 //				}
 //			}
 			for (int i=0;i<childParticles.size();i++) {
 				XSParticle childParticle=childParticles.get(i);
 				XSElementDeclaration childElementDeclaration = (XSElementDeclaration)childParticle.getTerm();
-				if (DEBUG) log.debug("ToXml.handleComplexTypedElement() processing child ["+i+"], name ["+childElementDeclaration.getName()+"]"); 
+				if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() processing child ["+i+"], name ["+childElementDeclaration.getName()+"]"); 
 				processChildElement(node, name, childElementDeclaration, childParticle.getMinOccurs()>0, processedChildren);
 			}
 		}
@@ -333,7 +340,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		// the below is used for mixed content nodes containing text
 		if (processedChildren.isEmpty()) {  
-			if (DEBUG) log.debug("ToXml.handleComplexTypedElement() handle element ["+name+"] as simple, because none processed"); 
+			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() handle element ["+name+"] as simple, because none processed"); 
 			handleSimpleTypedElement(elementDeclaration, null, node);
 		}
 		
@@ -344,7 +351,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	
 	protected void handleSimpleTypedElement(XSElementDeclaration elementDeclaration, @SuppressWarnings("unused") XSSimpleTypeDefinition simpleTypeDefinition, N node) throws SAXException {
 		String text = getText(elementDeclaration, node);
-		if (DEBUG) log.debug("textnode name ["+elementDeclaration.getName()+"] text ["+text+"]");
+		if (log.isTraceEnabled()) log.trace("textnode name ["+elementDeclaration.getName()+"] text ["+text+"]");
 		if (StringUtils.isNotEmpty(text)) {
 			sendString(text);
 		}
@@ -352,7 +359,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 
 	protected void processChildElement(N node, String parentName, XSElementDeclaration childElementDeclaration, boolean mandatory, Set<String> processedChildren) throws SAXException {
 		String childElementName = childElementDeclaration.getName(); 
-		if (DEBUG) log.debug("To2Xml.processChildElement() parent name ["+parentName+"] childElementName ["+childElementName+"]");
+		if (log.isTraceEnabled()) log.trace("To2Xml.processChildElement() parent name ["+parentName+"] childElementName ["+childElementName+"]");
 		Iterable<N> childNodes = getChildrenByName(node,childElementDeclaration);
 		boolean childSeen=false;
 		if (childNodes!=null) {
@@ -362,16 +369,16 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				i++;
 				handleElement(childElementDeclaration,childNode);
 			}
-			if (DEBUG) log.debug("processed ["+i+"] children found by name ["+childElementName+"] in ["+parentName+"]");
+			if (log.isTraceEnabled()) log.trace("processed ["+i+"] children found by name ["+childElementName+"] in ["+parentName+"]");
 			if (i==0 && isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
-				if (DEBUG) log.debug("no children processed, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
+				if (log.isTraceEnabled()) log.trace("no children processed, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
 				handleElement(childElementDeclaration,node);
 				childSeen=true;
 			}
 		} else {
-			if (DEBUG) log.debug("no children found by name ["+childElementName+"] in ["+parentName+"]");
+			if (log.isTraceEnabled()) log.trace("no children found by name ["+childElementName+"] in ["+parentName+"]");
 			if (isDeepSearch() && childElementDeclaration.getTypeDefinition().getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
-				if (DEBUG) log.debug("no children found, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
+				if (log.isTraceEnabled()) log.trace("no children found, and deepSearch, not a simple type therefore handle node ["+childElementName+"] in ["+parentName+"]");
 				handleElement(childElementDeclaration,node);
 				childSeen=true;
 			}
@@ -396,16 +403,16 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		switch (typeDefinition.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
-			if (DEBUG) log.debug("getBestChildElementPath typeDefinition.typeCategory is SimpleType, no child elements");
+			if (log.isTraceEnabled()) log.trace("getBestChildElementPath typeDefinition.typeCategory is SimpleType, no child elements");
 			return null;
 		case XSTypeDefinition.COMPLEX_TYPE:
 			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 			switch (complexTypeDefinition.getContentType()) {
 			case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
-				if (DEBUG) log.debug("getBestChildElementPath complexTypeDefinition.contentType is Empty, no child elements");
+				if (log.isTraceEnabled()) log.trace("getBestChildElementPath complexTypeDefinition.contentType is Empty, no child elements");
 				return null;
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
-				if (DEBUG) log.debug("getBestChildElementPath complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+				if (log.isTraceEnabled()) log.trace("getBestChildElementPath complexTypeDefinition.contentType is Simple, no child elements (only characters)");
 				return null;
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
@@ -415,7 +422,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 //					log.warn("typeDefinition particle is null, is this a problem?");
 //					return null;
 				} 
-				if (DEBUG) log.debug("typeDefinition particle ["+ToStringBuilder.reflectionToString(particle,ToStringStyle.MULTI_LINE_STYLE)+"]");
+				if (log.isTraceEnabled()) log.trace("typeDefinition particle ["+ToStringBuilder.reflectionToString(particle,ToStringStyle.MULTI_LINE_STYLE)+"]");
 				List<XSParticle> result=new LinkedList<XSParticle>();
 				List<String> failureReasons=new LinkedList<String>();
 				if (getBestMatchingElementPath(elementDeclaration, node, particle, result, failureReasons)) {
@@ -458,7 +465,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			XSModelGroup modelGroup = (XSModelGroup)term;
 			short compositor = modelGroup.getCompositor();			
 			XSObjectList particles = modelGroup.getParticles();
-			if (DEBUG) log.debug("getBestMatchingElementPath() modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
+			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath() modelGroup particles ["+ToStringBuilder.reflectionToString(particles,ToStringStyle.MULTI_LINE_STYLE)+"]");
 			switch (compositor) {
 			case XSModelGroup.COMPOSITOR_SEQUENCE:
 			case XSModelGroup.COMPOSITOR_ALL:
@@ -487,7 +494,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 					failureReasons.addAll(choiceFailureReasons);
 					return false;
 				}
-				if (DEBUG) log.debug("Replace path with best path of Choice Compositor, size ["+bestPath.size()+"]");
+				if (log.isTraceEnabled()) log.trace("Replace path with best path of Choice Compositor, size ["+bestPath.size()+"]");
 				path.clear();
 				path.addAll(bestPath);
 				return true;
@@ -498,44 +505,44 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		if (term instanceof XSElementDeclaration) {
 			XSElementDeclaration elementDeclaration=(XSElementDeclaration)term;
 			String elementName=elementDeclaration.getName();
-			if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration name ["+elementName+"]");
+			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration name ["+elementName+"]");
 			if (!hasChild(baseElementDeclaration, baseNode, elementName)) {
 				if (isDeepSearch()) {
-					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, perform deep search");
+					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, perform deep search");
 					try {
 						List<XSParticle> subList=getBestChildElementPath(elementDeclaration,baseNode, true);
 						if (subList!=null && !subList.isEmpty()) {
 							path.add(particle);
-							if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
+							if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
 							return true;
 						}
-						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search");
+						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search");
 					} catch (Exception e) {
-						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search: "+e.getMessage());
+						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, no nested elements found in deep search: "+e.getMessage());
 						return false;
 					}
 				}
 				if (particle.getMinOccurs()>0) {
-//					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
+//					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration mandatory element ["+elementName+"] not found, path fails, autoInsertMandatory ["+isAutoInsertMandatory()+"]");
 //					if (isAutoInsertMandatory()) {
 //						path.add(particle);
-//						if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
+//						if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] not found, nested elements found in deep search");
 //						return true;
 //					}
 					failureReasons.add(MSG_EXPECTED_ELEMENT+" ["+elementName+"]");
 					return false;
 				}
-				if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration optional element ["+elementName+"] not found, path continues");
+				if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration optional element ["+elementName+"] not found, path continues");
 				return true;
 			}
 			for (XSParticle resultParticle:path) {
 				if (elementName.equals(resultParticle.getTerm().getName())) {
-					if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
+					if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found but required multiple times");
 					failureReasons.add("element ["+elementName+"] required multiple times");
 					return false;
 				}
 			}
-			if (DEBUG) log.debug("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found");
+			if (log.isTraceEnabled()) log.trace("getBestMatchingElementPath().XSElementDeclaration element ["+elementName+"] found");
 			path.add(particle);
 			return true;
 		}
@@ -646,7 +653,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			for (int i=0;i<components.getLength();i++) {
 				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
 				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
-					if (DEBUG) log.debug("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
+					if (log.isTraceEnabled()) log.trace("name ["+item.getName()+"] found in namespace ["+item.getNamespace()+"]");
 					result.add(item);
 				}
 			}
@@ -654,6 +661,13 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return result;
 	}
 
+	public String translate(C data) throws SAXException {
+		XmlWriter xmlWriter = new XmlWriter();
+		setContentHandler(xmlWriter);
+		startParse(data);
+		return xmlWriter.toString();
+	}
+	
 	public String getRootElement() {
 		return rootElement;
 	}

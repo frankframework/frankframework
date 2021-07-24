@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<n1:simple xmlns:n1="urn:simple" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:simple simple.xsd">
+<n1:simple xmlns:n1="urn:simple">
 	<n1:Name>Th. G. Lucassen</n1:Name>
 	<n1:Address>
 		<n1:Street>Stationsstraat</n1:Street>

@@ -1,7 +1,21 @@
+/*
+Copyright 2020 WeAreFrank!
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package nl.nn.adapterframework.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Dir2Map {
-	private String directory;
+	private File directory;
 	private String wildcard = "*.*";
 	private boolean sizeFormat = true;
 	private boolean showDirectories = false;
@@ -17,38 +31,17 @@ public class Dir2Map {
 	private int fileListSize = 0;
 	private List<Map<String, Object>> fileInfoList = new ArrayList<Map<String, Object>>();
 
-	public Dir2Map(String directory) {
-		this.directory = directory;
-		build();
-	}
-
-	public Dir2Map(String directory, boolean sizeFormat) {
-		this.directory = directory;
-		this.sizeFormat = sizeFormat;
-		build();
-	}
-
-	public Dir2Map(String directory, boolean sizeFormat, String wildcard) {
-		this.directory = directory;
-		this.sizeFormat = sizeFormat;
-		this.wildcard = wildcard;
-		build();
-	}
-
-	public Dir2Map(String directory, boolean sizeFormat, String wildcard, boolean showDirectories) {
-		this.directory = directory;
-		this.sizeFormat = sizeFormat;
-		this.wildcard = wildcard;
-		this.showDirectories = showDirectories;
-		build();
-	}
-
 	public Dir2Map(String directory, boolean sizeFormat, String wildcard, boolean showDirectories, int maxItems) {
+		this(new File(directory), sizeFormat, wildcard, showDirectories, maxItems);
+	}
+
+	public Dir2Map(File directory, boolean sizeFormat, String wildcard, boolean showDirectories, int maxItems) {
 		this.directory = directory;
 		this.sizeFormat = sizeFormat;
 		this.wildcard = wildcard;
 		this.showDirectories = showDirectories;
 		this.maxItems = maxItems;
+
 		build();
 	}
 
@@ -60,10 +53,13 @@ public class Dir2Map {
 		return fileInfoList;
 	}
 
+	public String getDirectory() {
+		return normalizePath(directory);
+	}
+
 	private void build() {
 		WildCardFilter filter = new WildCardFilter(wildcard);
-		File dir = new File(directory);
-		File files[] = dir.listFiles(filter);
+		File files[] = directory.listFiles(filter);
 		if (files != null) {
 			Arrays.sort(files, new FileNameComparator());
 		}
@@ -75,7 +71,7 @@ public class Dir2Map {
 			count = maxItems;
 		}
 		if (showDirectories) {
-			File parent = dir.getParentFile();
+			File parent = directory.getParentFile();
 			if (parent != null) {
 				fileInfoList.add(FileInfo(parent, ".."));
 			}
@@ -98,16 +94,15 @@ public class Dir2Map {
 		Map<String, Object> fileInfo = new HashMap<String, Object>(5);
 
 		fileInfo.put("name", displayName);
-		try {
-			fileInfo.put("path", file.getCanonicalPath());
-		}
-		catch (IOException e) {
-			fileInfo.put("path", file.getPath());
-		}
+		fileInfo.put("path", normalizePath(file));
 		fileInfo.put("lastModified", file.lastModified());
 		fileInfo.put("type", file.isDirectory() ? "directory" : "file");
 		fileInfo.put("size", (sizeFormat) ? Misc.toFileSize(file.length(), true) : file.length());
 
 		return fileInfo;
+	}
+
+	private String normalizePath(File file) {
+		return FilenameUtils.normalize(file.getPath(), true); // Do not use canonical path which causes access permission problem for mounted directories
 	}
 }

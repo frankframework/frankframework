@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,24 @@
 */
 package nl.nn.adapterframework.ftp;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * Listener that polls a directory via FTP for files according to a wildcard. 
@@ -42,41 +42,47 @@ import org.apache.commons.lang.builder.ToStringStyle;
  *
  * @author  John Dekker
  */
-public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
+public class FtpListener extends FtpSession implements IPullingListener<String>, RunStateEnquiring {
 
-	private LinkedList remoteFilenames;
+	private LinkedList<String> remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
 
-	private String name;
 	private String remoteDirectory;
 	private long responseTime = 3600000; // one hour
 
 	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
-	
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+	@Override
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
 	}
 
+	@Override
 	public void open() throws ListenerException {
 	}
 
+	@Override
 	public void close() throws ListenerException {
 	}
 
-	public Map openThread() throws ListenerException {
+	@Override
+	public Map<String,Object> openThread() throws ListenerException {
 		return null;
 	}
 
-	public void closeThread(Map threadContext) throws ListenerException {
+	@Override
+	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
 	}
 
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
 	 *
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		remoteFilenames = new LinkedList();
+		remoteFilenames = new LinkedList<>();
 	}
 
 	/**
@@ -86,9 +92,10 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
 	 */
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public String getIdFromRawMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
-		PipeLineSessionBase.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 
@@ -96,14 +103,15 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
-	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
+	@Override
+	public synchronized String getRawMessage(Map<String, Object> threadContext) throws ListenerException {
 		log.debug("FtpListener [" + getName() + "] in getRawMessage, retrieving contents of directory [" +remoteDirectory+ "]");
 		if (remoteFilenames.isEmpty()) {
 			try {
 				openClient(remoteDirectory);
-				List names = ls(remoteDirectory, true, true);
+				List<String> names = ls(remoteDirectory, true, true);
 				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
-				if (names != null && names.size() > 0) {
+				if (names.size() > 0) {
 					remoteFilenames.addAll(names);
 				}
 			}
@@ -115,8 +123,8 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 			}
 		}
 		if (! remoteFilenames.isEmpty()) {
-			Object result = remoteFilenames.removeFirst();
-			log.debug("FtpListener " + getName() + " returns " + result.toString());
+			String result = remoteFilenames.removeFirst();
+			log.debug("FtpListener " + getName() + " returns " + result);
 			return result;
 		}
 		waitAWhile();
@@ -139,6 +147,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 		}
 	}
 
+	@Override
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -151,28 +160,20 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	/**
 	 * Returns a string of the rawMessage
 	 */
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return rawMessage.toString();
+	@Override
+	public Message extractMessage(String rawMessage, Map<String, Object> threadContext) throws ListenerException {
+		return new Message(rawMessage);
 	}
 
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
 	}
 
+	@Override
 	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
 
-
-	
-	@IbisDoc({"name of the listener", ""})
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getName() {
-		return name;
-	}
-	
 	@IbisDoc({"time between pollings", "3600000 (one hour)"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;

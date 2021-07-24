@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden
+   Copyright 2016, 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,14 +25,15 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.ldap.InitialLdapContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
 /**
@@ -48,14 +49,13 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
@@ -85,10 +85,10 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				throw new PipeRunException(this, msg);
 			} else {
 				log.info(msg);
-				return new PipeRunResult(notFoundForward, input);
+				return new PipeRunResult(notFoundForward, message);
 			}
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
@@ -140,7 +140,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return false;
 	}
 
-
+	@IbisDoc({"1", "The dn of the group to search in when the parameter dnSearchIn is not set", ""})
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
 	}
@@ -148,6 +148,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnSearchIn;
 	}
 
+	@IbisDoc({"2", "The dn of the member to search for when the parameter dnFind is not set", ""})
 	public void setDnFind(String string) {
 		dnFind = string;
 	}
@@ -155,6 +156,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnFind;
 	}
 
+	@IbisDoc({"3", "when <code>true</code>, the member attribute is also searched in all the found members", "true"})
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

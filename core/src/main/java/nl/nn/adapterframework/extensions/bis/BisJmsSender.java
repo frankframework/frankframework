@@ -22,8 +22,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -64,6 +64,8 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
+@Deprecated
+@ConfigurationWarning("Please change to JmsSender combined with BisWrapperPipe")
 public class BisJmsSender extends JmsSender {
 
 	private String responseXPath = null;
@@ -87,9 +89,6 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	public void configure() throws ConfigurationException {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to JmsSender combined with BisWrapperPipe";
-		configWarnings.add(log, msg);
 		super.configure();
 		if (!isSoap()) {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
@@ -105,12 +104,12 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
-		return rawMessageText;
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
+		return message;
 	}
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, PipeLineSession session) throws SenderException, TimeOutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));
@@ -119,11 +118,11 @@ public class BisJmsSender extends JmsSender {
 		}
 		String replyMessage;
 		try {
-			String payload = bisUtils.prepareReply(input.asString(), isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
+			Message payload = bisUtils.prepareReply(input, isMessageHeaderInSoapBody() ? messageHeader : null, null, false);
 			if (StringUtils.isNotEmpty(getRequestNamespace())) {
-				payload = XmlUtils.addRootNamespace(payload, getRequestNamespace());
+				payload = new Message(XmlUtils.addRootNamespace(payload.asString(), getRequestNamespace()));
 			}
-			replyMessage = super.sendMessage(new Message(payload), session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
+			replyMessage = super.sendMessage(payload, session, isMessageHeaderInSoapBody() ? null : messageHeader).asString();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

@@ -19,13 +19,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.S3Object;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -34,7 +35,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -90,7 +90,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, IPipeLineSession session, IOutputStreamingSupport next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		if (!specificActions.contains(getAction())) {
 			return super.sendMessage(message, session, next);
 		}
@@ -202,5 +202,16 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
 		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
 	}
+	
+	@IbisDoc({ "setting proxy host", "" })
+	public void setProxyHost(String proxyHost) {
+		getFileSystem().setProxyHost(proxyHost);
+	}
+	
+	@IbisDoc({ "setting proxy port", "" })
+	public void setProxyPort(Integer proxyPort) {
+		getFileSystem().setProxyPort(proxyPort);
+	}
+
 	
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe that sleeps for a specified time, which defaults to 5000 msecs.
@@ -30,7 +31,8 @@ public class DelayPipe extends FixedForwardPipe {
 
 	private long delayTime=5000;
 	
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			log.info(getLogPrefix(session)+"starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());
@@ -38,7 +40,7 @@ public class DelayPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)+"delay interrupted", e);
 		}
 		log.info(getLogPrefix(session)+"ends waiting for " + getDelayTime() + " ms.");
-		return new PipeRunResult(getForward(),input);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 

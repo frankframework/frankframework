@@ -1,16 +1,17 @@
 package nl.nn.adapterframework.testtool;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
@@ -24,15 +25,17 @@ public class ListenerMessageHandler implements IMessageHandler {
 	private long requestTimeOut = TestTool.DEFAULT_TIMEOUT;
 	private long responseTimeOut = TestTool.DEFAULT_TIMEOUT;
 
-	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
-		ListenerMessage listenerMessage = new ListenerMessage(correlationId, message, context);
-		putRequestMessage(listenerMessage);
-		String response = null;
-		listenerMessage = getResponseMessage();
-		if (listenerMessage != null) {
-			response = listenerMessage.getMessage();
+	@Override
+	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message, Map context) throws ListenerException {
+		ListenerMessage listenerMessage;
+		try {
+			listenerMessage = new ListenerMessage(correlationId, message.asString(), context);
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert message to string",e);
 		}
-		return response;
+		putRequestMessage(listenerMessage);
+		listenerMessage = getResponseMessage();
+		return listenerMessage != null ? new Message(listenerMessage.getMessage()) : Message.nullMessage();
 	}
 	
 	public void putRequestMessage(ListenerMessage listenerMessage) {
@@ -109,38 +112,28 @@ public class ListenerMessageHandler implements IMessageHandler {
 		this.responseTimeOut = responseTimeOut;
 	}
 
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext) throws ListenerException {
+	@Override
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
-		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		processRequest(origin, correlationId, message, threadContext);
+		Message message = origin.extractMessage(rawMessage, threadContext);
+		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime) throws ListenerException {
-		processRawMessage(origin, rawMessage, threadContext);
+	@Override
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		processRawMessage(origin, rawMessage, threadContext, duplicatesAlreadyChecked);
 	}
 
+	@Override
 	public void processRawMessage(IListener origin, Object rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null);
+		processRawMessage(origin, rawMessage, null, false);
 	}
 
-	public String processRequest(IListener origin, String message) throws ListenerException {
-		return processRequest(origin, null, message, null);
-	}
 
-	public String processRequest(IListener origin, String correlationId, String message) throws ListenerException {
-		return processRequest(origin, correlationId, message, null);
-	}
-
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
-		return processRequest(origin, correlationId, message, (Map)context);
-	}
-
-	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
-		return processRequest(origin, correlationId, message, context);
-	}
-
-	public String formatException(String origin, String arg1, String arg2, Throwable arg3) {
+	@Override
+	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
 		log.error("formatException(String arg0, String arg1, String arg2, Throwable arg3) not implemented");
 		return null;
 	}
+
 }

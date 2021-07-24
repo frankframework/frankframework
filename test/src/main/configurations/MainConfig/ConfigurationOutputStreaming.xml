@@ -1,0 +1,51 @@
+<module>
+	<adapter name="OutputStreaming" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-OutputStreaming" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<SenderPipe name="retrieveData" storeResultInSessionKey="dataSessionKey"> <!-- Should not stream to XsltPipe, because of storeResultInSessionKey -->
+				<FixedQuerySender 
+					queryType="select"
+					query="SELECT COUNT(*) AS MSGCOUNT FROM IBISTEMP WHERE TKEY = 0 AND TKEY != 0"
+				>	
+				</FixedQuerySender>
+			</SenderPipe>
+
+			<XsltPipe           name="transformData"      xpathExpression="*/result" />
+			<GetFromSessionPipe name="retrieveSessionKey" sessionKey="dataSessionKey" />
+		</pipeline>
+	</adapter>
+	
+	<adapter name="RestoreMovedElements" >
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-RestoreMovedElements" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<FixedResultPipe name="createData" returnString="data" storeResultInSessionKey="ref_FileContent" />
+			<pipe 
+				name="TransformResponse" 
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				styleSheetName="OutputStreaming/xsl/TransformResponse.xsl"
+				getInputFromFixedValue="&lt;dummy /&gt;"
+			>
+			</pipe>
+			<!-- next pipe should not provide outputstream because restoreMovedElements=true -->
+			<pipe 
+				name="outputSoapWrapper" 
+				className="nl.nn.adapterframework.pipes.XsltPipe" 
+				styleSheetName="OutputStreaming/xsl/Soapwrapper.xsl"
+				restoreMovedElements="true"
+			>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	
+</module>

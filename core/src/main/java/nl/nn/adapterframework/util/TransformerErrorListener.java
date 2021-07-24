@@ -20,7 +20,7 @@ import java.io.IOException;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Generic Transformer ErrorListener.

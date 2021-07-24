@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ package nl.nn.adapterframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Puts the input in the PipeLineSession, under the key specified by
@@ -38,21 +39,21 @@ public class PutInSession extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "attribute sessionKey must be specified");
+			throw new ConfigurationException("attribute sessionKey must be specified");
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object v;
 		if (getValue() == null) {
-			v = input;
+			v = message.asObject();
 		} else {
 			v = value;
 		}
 		session.put(getSessionKey(), v);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session) + "stored [" + v + "] in pipeLineSession under key [" + getSessionKey() + "]");
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@IbisDoc({"1", "Key of the session variable to store the input in", "" })

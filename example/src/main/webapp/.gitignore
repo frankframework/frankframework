@@ -1,2 +1,13 @@
-META-INF/maven
-META-INF/MANIFEST.MF
+# Ignore files copied by maven war:inplace (called by Frank!Runner)
+/iaf/
+/images/
+/js/
+/jsp/
+/larva/
+/META-INF/maven/
+/META-INF/MANIFEST.MF
+/WEB-INF/
+/body.css
+/favicon.ico
+/ie4.css
+/ie55.css

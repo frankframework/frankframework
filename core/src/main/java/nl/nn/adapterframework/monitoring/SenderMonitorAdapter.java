@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@
 */
 package nl.nn.adapterframework.monitoring;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -38,17 +32,17 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class SenderMonitorAdapter extends MonitorAdapterBase {
 
 	private ISender sender;
-	
 	private boolean senderConfigured=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getSender()==null) {
-			throw new ConfigurationException("must have sender configured");
+			throw new ConfigurationException("No sender found");
 		}
 		if (StringUtils.isEmpty(getSender().getName())) {
-			getSender().setName("sender of "+getName()); 
+			getSender().setName("sender of "+getName());
 		}
+
 		super.configure();
 		if (!senderConfigured) {
 			getSender().configure();
@@ -68,58 +62,22 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+	public void fireEvent(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		try {
-			getSender().sendMessage(new Message(makeXml(subSource,eventType,severity,message,t)),null);
+			getSender().sendMessage(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
 		} catch (Exception e) {
-			log.error("Could not signal event",e);
+			log.error("Could not signal event", e);
 		}
 	}
 
-	public void addNonDefaultAttribute(XmlBuilder senderXml, ISender sender, String attribute) {
-		try {
-			PropertyUtilsBean pub = new PropertyUtilsBean();
-
-			if (pub.isReadable(sender,attribute) && pub.isWriteable(sender,attribute)) {
-				String value = BeanUtils.getProperty(sender,attribute);
-
-				Object defaultSender;
-				Class[] classParm = null;
-				Object[] objectParm = null;
-
-				Class cl = sender.getClass();
-				java.lang.reflect.Constructor co = cl.getConstructor(classParm);
-				defaultSender = co.newInstance(objectParm);
-
-				String defaultValue = BeanUtils.getProperty(defaultSender,attribute);				
-				if (value!=null && !value.equals(defaultValue)) {
-					senderXml.addAttribute(attribute,value);
-				}
-			}
-		} catch (Exception e) {
-			log.error("cannot retrieve attribute ["+attribute+"] from sender ["+ClassUtils.nameOf(sender)+"]");
-		}
-	}
-
+	@Override
 	public XmlBuilder toXml() {
 		XmlBuilder result=super.toXml();
 		XmlBuilder senderXml=new XmlBuilder("sender");
-		senderXml.addAttribute("className",getSender().getClass().getName());
-		try {
-			Map properties = BeanUtils.describe(sender);
-			for (Iterator it=properties.keySet().iterator();it.hasNext();) {
-				String property = (String)it.next();
-				if (!property.equals("name")) {
-					addNonDefaultAttribute(senderXml,sender,property);
-				}
-			}
-		} catch (Exception e) {
-			log.error("cannot set attributes of sender ["+ClassUtils.nameOf(sender)+"]");
-		}
+		senderXml.addAttribute("className", getUserClass(getSender()).getCanonicalName());
 		result.addSubElement(senderXml);
 		return result;
 	}
-
 
 	public void setSender(ISender sender) {
 		this.sender = sender;
@@ -127,6 +85,4 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	public ISender getSender() {
 		return sender;
 	}
-
-
 }

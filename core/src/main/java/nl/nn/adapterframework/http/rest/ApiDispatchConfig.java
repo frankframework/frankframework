@@ -15,21 +15,22 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.ListenerException;
 
 public class ApiDispatchConfig {
 	private String uriPattern;
-	private Map<String, ApiListener> methods = new HashMap<String, ApiListener>();
+	private Map<String, ApiListener> methods = new ConcurrentHashMap<String, ApiListener>();
 
 	public ApiDispatchConfig(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
 
-	public void register(String method, ApiListener listener) throws ListenerException {
+	public synchronized void register(String method, ApiListener listener) throws ListenerException {
 		method = method.toUpperCase();
 		if(methods.containsKey(method))
 			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
@@ -44,13 +45,17 @@ public class ApiDispatchConfig {
 		return methods.get(method);
 	}
 
-	public void destroy(String method) {
+	public void remove(String method) {
 		method = method.toUpperCase();
 		methods.remove(method);
 	}
 
 	public Set<String> getMethods() {
-		return methods.keySet();
+		return Collections.unmodifiableSet(methods.keySet());
+	}
+
+	public void clear() {
+		methods.clear();
 	}
 
 	public boolean hasMethod(String method) {

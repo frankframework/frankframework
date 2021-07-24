@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden
+   Copyright 2017-2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package nl.nn.adapterframework.extensions.akamai;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -37,17 +37,17 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -76,8 +76,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Niels Meijer
  * @since	7.0-B4
  */
-public class NetStorageSender extends HttpSenderBase implements HasPhysicalDestination {
+public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
+	private String URL_PARAM_KEY = "urlParameter";
 
 	private String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
@@ -96,6 +97,13 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 	@Override
 	public void configure() throws ConfigurationException {
+		//The HttpSenderBase dictates that you must use a Parameter with 'getUrlParam()' as name to use a dynamic endpoint.
+		//In order to not force everyone to use the URL parameter but instead the input of the sender as 'dynamic' path, this exists.
+		Parameter urlParameter = new Parameter();
+		urlParameter.setName(getUrlParam());
+		urlParameter.setSessionKey(URL_PARAM_KEY);
+		addParameter(urlParameter);
+
 		super.configure();
 
 		//Safety checks
@@ -133,27 +141,24 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	 * @param path to append to the root
 	 * @return full path to use as endpoint
 	 */
-	private URIBuilder buildUri(String path) throws SenderException {
+	@Override
+	protected URI getURI(String path) throws URISyntaxException {
 		if (!path.startsWith("/")) path = "/" + path;
-		try {
-			String url = getUrl() + getCpCode();
+		String url = getUrl() + getCpCode();
 
-			if(getRootDir() != null)
-				url += getRootDir();
+		if(getRootDir() != null)
+			url += getRootDir();
 
-			url += path;
+		url += path;
 
-			if(url.endsWith("/")) //The path should never end with a '/'
-				url = url.substring(0, url.length() -1);
+		if(url.endsWith("/")) //The path should never end with a '/'
+			url = url.substring(0, url.length() -1);
 
-			return new URIBuilder(url);
-		} catch (URISyntaxException e) {
-			throw new SenderException(e);
-		}
+		return new URIBuilder(url).build();
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;
@@ -162,14 +167,16 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
-		staticUri = buildUri(path); // TODO: this is not thread safe!
+		//Store the input in the PipeLineSession, so it can be resolved as ParameterValue.
+		//See {@link HttpSenderBase#getURI getURI(..)} how this is resolved
+		session.put(URL_PARAM_KEY, path);
 
 		//We don't need to send any message to the HttpSenderBase
 		return super.sendMessage(new Message(""), session);
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		NetStorageAction netStorageAction = new NetStorageAction(getAction());
 		netStorageAction.setVersion(actionVersion);
@@ -179,23 +186,14 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 			netStorageAction.mapParameters(parameters);
 
 		try {
-			URL url = uri.build().toURL();
-
 			setMethodType(netStorageAction.getMethod());
 			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
 
-			NetStorageCmsSigner signer = new NetStorageCmsSigner(url, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
+			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 			Map<String, String> headers = signer.computeHeaders();
 
-			boolean queryParametersAppended = false;
-			StringBuffer path = new StringBuffer(uri.getPath());
-
-			if (getMethodType().equals("GET")) {
-				if (parameters!=null) {
-					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
-				}
-				HttpGet method = new HttpGet(uri.build());
+			if (getMethodTypeEnum() == HttpMethod.GET) {
+				HttpGet method = new HttpGet(uri);
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
@@ -205,8 +203,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 
 				return method;
 			}
-			else if (getMethodType().equals("PUT")) {
-				HttpPut method = new HttpPut(uri.build());
+			else if (getMethodTypeEnum() == HttpMethod.PUT) {
+				HttpPut method = new HttpPut(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
@@ -221,8 +219,8 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 				}
 				return method;
 			}
-			else if (getMethodType().equals("POST")) {
-				HttpPost method = new HttpPost(uri.build());
+			else if (getMethodTypeEnum() == HttpMethod.POST) {
+				HttpPost method = new HttpPost(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
@@ -246,7 +244,7 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int statusCode = responseHandler.getStatusLine().getStatusCode();
 
 		boolean ok = false;
@@ -267,18 +265,18 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 		if (!ok) {
 			throw new SenderException(getLogPrefix() + "httpstatus "
 					+ statusCode + ": " + responseHandler.getStatusLine().getReasonPhrase()
-					+ " body: " + getResponseBodyAsString(responseHandler));
+					+ " body: " + getResponseBodyAsString(responseHandler, false));
 		}
 
 		XmlBuilder result = new XmlBuilder("result");
 
-		HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
+		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if(response == null) {
 			XmlBuilder statuscode = new XmlBuilder("statuscode");
 			statuscode.setValue(statusCode + "");
 			result.addSubElement(statuscode);
 
-			String responseString = getResponseBodyAsString(responseHandler);
+			String responseString = getResponseBodyAsString(responseHandler, true);
 			responseString = XmlUtils.skipDocTypeDeclaration(responseString.trim());
 			responseString = XmlUtils.skipXmlDeclaration(responseString);
 
@@ -313,14 +311,29 @@ public class NetStorageSender extends HttpSenderBase implements HasPhysicalDesti
 			}
 		}
 
-		return result.toXML();
+		return Message.asMessage(result.toXML());
 	}
 
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	/**
+	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception. 
+	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
+	 */
+	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		String charset = responseHandler.getCharset();
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 
-		String responseBody = responseHandler.getResponseAsString(true);
+		Message response = responseHandler.getResponseMessage();
+
+		String responseBody = null;
+		try {
+			responseBody = response.asString();
+		} catch(IOException e) {
+			if(throwIOExceptionWhenParsingResponse) {
+				throw e;
+			}
+			return null;
+		}
+
 		int rbLength = responseBody.length();
 		long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
 		if (rbLength >= rbSizeWarn) {

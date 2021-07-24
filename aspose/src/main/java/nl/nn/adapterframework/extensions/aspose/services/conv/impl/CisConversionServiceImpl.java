@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
@@ -72,8 +72,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 	}
 
 	@Override
-	public CisConversionResult convertToPdf(InputStream inputStream, String filename,
-			ConversionOption conversionOption) throws IOException {
+	public CisConversionResult convertToPdf(InputStream inputStream, String filename, ConversionOption conversionOption) throws IOException {
 
 		// InputStream should always be available.
 		if (inputStream == null) {
@@ -180,10 +179,6 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
 	 */
 	private File getUniqueFile() {
 
@@ -191,8 +186,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		int count = atomicCount.addAndGet(1);
 
 		// Save to disc
-		String fileNamePdf = String.format("%s_%s_%05d%s", this.getClass().getSimpleName(), format.format(new Date()),
-				count, ".bin");
+		String fileNamePdf = String.format("%s_%s_%05d%s", this.getClass().getSimpleName(), format.format(new Date()), count, ".bin");
 		return new File(pdfOutputlocation, fileNamePdf);
 
 	}

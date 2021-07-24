@@ -1,6 +1,6 @@
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 	<soapenv:Header>
-		<MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+		<MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/2">
 			<From>
 				<Id>IJA_Toegang</Id>
 			</From>

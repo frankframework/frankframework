@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,54 +30,41 @@ import nl.nn.adapterframework.stream.Message;
  */
 public interface IbisDebugger {
 
-	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input);
+	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
+	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);
+	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
 
 	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
 
-	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output);
-
-	public Throwable pipeLineAbort(PipeLine pipeLine, String correlationId, Throwable throwable);
-
-	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Object input);
-	
-	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Object output);
-
+	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input);
+	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output);
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
-	public Message senderInput(ISender sender, String correlationId, Message input);
-
-	public Message senderOutput(ISender sender, String correlationId, Message output);
-
+	public <T> T senderInput(ISender sender, String correlationId, T input);
+	public <T> T senderOutput(ISender sender, String correlationId, T output);
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
-	public String replyListenerInput(IListener listener, String correlationId, String input);
-
-	public String replyListenerOutput(IListener listener, String correlationId, String output);
-
-	public Throwable replyListenerAbort(IListener listener, String correlationId, Throwable throwable);
+	public String replyListenerInput(IListener<?> listener, String messageId, String correlationId);
+	public String replyListenerOutput(IListener<?> listener, String correlationId, String output);
+	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable);
 
 	public void createThread(Object sourceObject, String threadId, String correlationId);
-
+	public void cancelThread(Object sourceObject, String threadId, String correlationId);
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input);
-
 	public Object endThread(Object sourceObject, String correlationId, Object output);
-
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable);
 
 	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue);
-
 	public Object getInputFromFixedValue(String correlationId, Object fixedValue);
-
 	public Object getEmptyInputReplacement(String correlationId, Object replacementValue);
+	public Object storeInSessionKey(String correlationId, String sessionKey, Object result);
+	public Message preserveInput(String correlationId, Message input);
 
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
-	
-	public Object storeInSessionKey(String correlationId, Object sessionKey, Object result);
+	public <T> T showValue(String correlationId, String label, T value);
 
-	public Object preserveInput(String correlationId, Object input);
-	
 	public boolean stubSender(ISender sender, String correlationId);
-	
-	public boolean stubReplyListener(IListener listener, String correlationId);
+
+	public boolean stubReplyListener(IListener<?> listener, String correlationId);
 
 }

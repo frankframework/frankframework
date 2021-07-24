@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -57,16 +57,16 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private String xpathExpression;
 
 	@Override
-	public String format(String message, Throwable t, INamedObject location, String originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
 
-		String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
+		Message result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
 				Transformer errorTransformer;
 
 				if (StringUtils.isNotEmpty(getStyleSheet())) {
-					URL url = ClassUtils.getResourceURL(getClassLoader(), styleSheet);
+					URL url = ClassUtils.getResourceURL(this, styleSheet);
 					errorTransformer = XmlUtils.createTransformer(url);
 				}
 				else {
@@ -85,17 +85,16 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 						log.error("exception while configuring parameters",e);
 					}
 
-					ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSessionBase());
 					Map<String, Object> parametervalues = null;
 					try {
-						parametervalues = prc.getValueMap(params);
+						parametervalues = params.getValues(new Message(errorMessage), new PipeLineSession()).getValueMap();
 					} catch (ParameterException e) {
 						log.error("got exception extracting parameters",e);
 					}
 
 					XmlUtils.setTransformerParameters(errorTransformer, parametervalues );
 				}
-				result = XmlUtils.transformXml(errorTransformer, result);
+				result = new Message(XmlUtils.transformXml(errorTransformer, result.asSource()));
 			} catch (IOException e) {
 				log.error(" cannot retrieve [" + styleSheet + "]", e);
 			} catch (javax.xml.transform.TransformerConfigurationException te) {

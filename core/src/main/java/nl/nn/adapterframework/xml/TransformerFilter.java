@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,43 +15,99 @@
 */
 package nl.nn.adapterframework.xml;
 
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class TransformerFilter extends FullXmlFilter {
 
-	private FullXmlFilter lastFilter;
 	private TransformerHandler transformerHandler;
+	private @Getter ErrorListener errorListener;
 	
-	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, IPipeLineSession session, boolean expectChildThreads) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
 		if (expectChildThreads) {
-			lastFilter = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session);
-		} else {
-			lastFilter = new FullXmlFilter();
+			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
-		transformedStream.setHandler(lastFilter);
-		transformedStream.setLexicalHandler((LexicalHandler)lastFilter);
+		transformedStream.setHandler(handler);
+		if (handler instanceof LexicalHandler) {
+			transformedStream.setLexicalHandler((LexicalHandler)handler);
+		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
-		super.setContentHandler(transformerHandler);
+		errorListener = transformerHandler.getTransformer().getErrorListener();
+		ContentHandler inputHandler = transformerHandler;
+		if (expectChildThreads) {
+			/*
+			 * If XSLT processing is done in another thread than the SAX events are provided, which is the 
+			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up
+			 * through the transformerHandler automatically.
+			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
+			 */
+			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
+			inputHandler = exceptionInsertingFilter;
+			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
+				
+				@Override
+				public void error(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.error(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
+					}
+				}
+
+				@Override
+				public void fatalError(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.fatalError(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
+					}
+					
+				}
+
+				@Override
+				public void warning(TransformerException paramTransformerException) throws TransformerException {
+					try {
+						if (errorListener!=null) {
+							errorListener.warning(paramTransformerException);
+						}
+					} catch (TransformerException e) {
+						exceptionInsertingFilter.insertException(new SaxException(e));
+						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
+						// If absent, Xslt tests fail.
+						throw e; 
+					}
+					
+				}
+			});
+		}
+		setContentHandler(inputHandler);
 	}
 
 
-	@Override
-	public void setContentHandler(ContentHandler handler) {
-		lastFilter.setContentHandler(handler);
-	}
-	
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
 	}

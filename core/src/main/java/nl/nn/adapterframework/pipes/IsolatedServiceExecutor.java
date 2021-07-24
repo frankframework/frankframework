@@ -17,7 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.receivers.JavaListener;

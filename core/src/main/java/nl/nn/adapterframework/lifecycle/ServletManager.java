@@ -15,31 +15,29 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Enables the use of programmatically adding servlets to the given ServletContext<br/>
  * <br/>
  * The following properties can be set to change the DynamicRegistration.Servlet registration behaviour<br/>
  * <code>servlet.<name>.transportGuarantee</code> - forces https when set to CONFIDENTIAL<br/>
- * <code>servlet.<name>.securityroles</code> - use the default IBIS roles or create your own<br/>
+ * <code>servlet.<name>.securityRoles</code> - use the default IBIS roles or create your own<br/>
  * <code>servlet.<name>.urlMapping</code> - path the servlet listens to<br/>
  * <code>servlet.<name>.loadOnStartup</code> - automatically load or use lazyloading<br/>
  * 
@@ -83,8 +81,8 @@ public class ServletManager {
 	}
 
 	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiated IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
-		getServletContext().log("instantiated IbisInitializer servlet ["+servletName+"]");
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
+		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
 		AppConstants appConstants = AppConstants.getInstance();
@@ -94,23 +92,19 @@ public class ServletManager {
 			return;
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servletClass);
-
-		ServletSecurity.TransportGuarantee transportGuarantee = ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
 		String stage = appConstants.getString("dtap.stage", null);
-		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
-			transportGuarantee = ServletSecurity.TransportGuarantee.NONE;
-		}
-
-		String constraintType = appConstants.getString(propertyPrefix+"transportGuarantee", null);
-		if (StringUtils.isNotEmpty(constraintType)) {
-			transportGuarantee = ServletSecurity.TransportGuarantee.valueOf(constraintType);
-		}
-
 		String[] rolesCopy = new String[0];
-		if(roles != null && !stage.equalsIgnoreCase("LOC"))
+		if(roles != null && stage != null && !stage.equalsIgnoreCase("LOC"))
 			rolesCopy = roles;
+
 		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
+		if(StringUtils.isNotEmpty(roleNames)) {
+			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
+		}
+		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
+
 		if(StringUtils.isNotEmpty(roleNames))
 			rolesCopy = roleNames.split(",");
 		declareRoles(rolesCopy);
@@ -119,7 +113,7 @@ public class ServletManager {
 		ServletSecurityElement constraint = new ServletSecurityElement(httpConstraintElement);
 
 		String urlMappingCopy = appConstants.getString(propertyPrefix+"urlMapping", urlMapping);
-		if(!urlMappingCopy.startsWith("/")) {
+		if(!urlMappingCopy.startsWith("/") && !urlMappingCopy.startsWith("*")) {
 			urlMappingCopy = "/"+urlMappingCopy;
 		}
 		serv.addMapping(urlMappingCopy);
@@ -141,11 +135,11 @@ public class ServletManager {
 		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servletClass+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
 	}
 
-	private void log(String msg, Priority priority) {
+	private void log(String msg, Level level) {
 		if(log.isInfoEnabled() )
 			getServletContext().log(msg);
 
-		log.log(priority, msg);
+		log.log(level, msg);
 	}
 
 	public void register(DynamicRegistration.Servlet servlet) {
@@ -154,5 +148,19 @@ public class ServletManager {
 			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
 
 		registerServlet(servlet.getName(), servlet.getServlet(), servlet.getUrlMapping(), servlet.getRoles(), servlet.loadOnStartUp(), parameters);
+	}
+
+	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
+		AppConstants appConstants = AppConstants.getInstance();
+		String constraintType = appConstants.getString(propertyName, null);
+		if (StringUtils.isNotEmpty(constraintType))
+			return ServletSecurity.TransportGuarantee.valueOf(constraintType);
+
+		String stage = appConstants.getString("dtap.stage", null);
+		if (StringUtils.isNotEmpty(stage) && stage.equalsIgnoreCase("LOC")) {
+			return ServletSecurity.TransportGuarantee.NONE;
+		}
+		return ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+
 	}
 }

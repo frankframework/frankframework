@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,17 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * @author Jaco de Groot
  */
 public interface PipeLineProcessor {
 
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, IPipeLineSession pipeLineSession, String firstPipe
-			) throws PipeRunException;
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException;
 
 }

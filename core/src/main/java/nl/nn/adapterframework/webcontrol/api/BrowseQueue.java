@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package nl.nn.adapterframework.webcontrol.api;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -32,12 +34,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
+import nl.nn.adapterframework.jms.JmsBrowser;
+import nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
 
 /**
  * Send a message with JMS.
@@ -55,10 +57,14 @@ public final class BrowseQueue extends Base {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getBrowseQueue() throws ApiException {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
-
-		List<String> jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
-		returnMap.put("jmsRealms", jmsRealms);
+		JndiConnectionFactoryFactory connectionFactoryFactory = getIbisContext().getBean("connectionFactoryFactory", JndiConnectionFactoryFactory.class);
+		Set<String> connectionFactories = new LinkedHashSet<String>();
+		// connection factories used in configured jmsSenders etc.
+		connectionFactories.addAll(connectionFactoryFactory.getConnectionFactoryNames());
+		// configured jms realm
+		connectionFactories.addAll(JmsRealmFactory.getInstance().getConnectionFactoryNames());
+		if (connectionFactories.size()==0) connectionFactories.add("no connection factories found");
+		returnMap.put("connectionFactories", connectionFactories);
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();
 	}
@@ -72,12 +78,17 @@ public final class BrowseQueue extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
-		String jmsRealm = null, destination = null, type = null;
+		String connectionFactory = null,
+				destination = null,
+				type = null;
+		boolean rowNumbersOnly = false,
+				showPayload = false,
+				lookupDestination=false;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if(key.equalsIgnoreCase("realm")) {
-				jmsRealm = entry.getValue().toString();
+			if(key.equalsIgnoreCase("connectionFactory")) {
+				connectionFactory = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("destination")) {
 				destination = entry.getValue().toString();
@@ -85,57 +96,72 @@ public final class BrowseQueue extends Base {
 			if(key.equalsIgnoreCase("type")) {
 				type = entry.getValue().toString();
 			}
+			if(key.equalsIgnoreCase("rowNumbersOnly")) {
+				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("payload")) {
+				showPayload = Boolean.parseBoolean(entry.getValue().toString());
+			}
+			if(key.equalsIgnoreCase("lookupDestination")) {
+				lookupDestination = Boolean.parseBoolean(entry.getValue().toString());
+			}
 		}
 
-		if(jmsRealm == null)
-			throw new ApiException("No realm provided");
+		if(connectionFactory == null)
+			throw new ApiException("No connection factory provided");
 		if(destination == null)
 			throw new ApiException("No destination provided");
 		if(type == null)
 			throw new ApiException("No type provided");
 
-		IMessageBrowsingIterator it = null;
-
 		try {
-			JmsMessageBrowser jmsBrowser = new JmsMessageBrowser();
+			JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
-			jmsBrowser.setJmsRealm(jmsRealm);
+			if(type.equals("QUEUE")) {
+				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);
+			} else {
+				jmsBrowser.setTopicConnectionFactoryName(connectionFactory);
+			}
 			jmsBrowser.setDestinationName(destination);
 			jmsBrowser.setDestinationType(type);
-			IMessageBrowser browser = jmsBrowser;
+			jmsBrowser.setLookupDestination(lookupDestination);
 
-			it = browser.getIterator();
 			List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
-			while (it.hasNext()) {
-				IMessageBrowsingIteratorItem item = it.next();
-				Map<String, Object> message = new HashMap<String, Object>();
-				message.put("comment", item.getCommentString());
-				message.put("correlationId", item.getCorrelationId());
-				message.put("expiryDate", item.getExpiryDate());
-				message.put("host", item.getHost());
-				message.put("id", item.getId());
-				message.put("insertDate", item.getInsertDate());
-				message.put("type", item.getType());
-				message.put("label", item.getLabel());
-
-				messages.add(message);
+			try (IMessageBrowsingIterator it = jmsBrowser.getIterator()) {
+				while (it.hasNext()) {
+					IMessageBrowsingIteratorItem item = it.next();
+					Map<String, Object> message = new HashMap<String, Object>();
+					message.put("comment", item.getCommentString());
+					message.put("correlationId", item.getCorrelationId());
+					try {
+						message.put("expiryDate", item.getExpiryDate());
+					} catch (Exception e) {
+						log.warn("Could not get expiryDate",e);
+					}
+					message.put("host", item.getHost());
+					message.put("id", item.getId());
+					try {
+						message.put("insertDate", item.getInsertDate());
+					} catch (Exception e) {
+						log.warn("Could not get insertDate",e);
+					}
+					if(showPayload && item instanceof JmsMessageBrowserIteratorItem) {
+						message.put("text", ((JmsMessageBrowserIteratorItem) item).getText());
+					}
+	
+					messages.add(message);
+				}
 			}
 
 			log.debug("Browser returned " + messages.size() + " messages");
 			returnMap.put("numberOfMessages", messages.size());
-			returnMap.put("messages", messages);
 
+			if(!rowNumbersOnly) {
+				returnMap.put("messages", messages);
+			}
 		}
 		catch (Exception e) {
 			throw new ApiException("Error occured browsing messages", e);
-		}
-		finally {
-			try {
-				if (it!=null)
-					it.close();
-			} catch (ListenerException e) {
-				log.error(e);
-			}
 		}
 
 		return Response.status(Response.Status.OK).entity(returnMap).build();

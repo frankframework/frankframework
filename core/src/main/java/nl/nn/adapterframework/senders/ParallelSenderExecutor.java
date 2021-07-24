@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,38 @@
 */
 package nl.nn.adapterframework.senders;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Semaphore;
 
 public class ParallelSenderExecutor extends RequestReplyExecutor {
 	private Logger log = LogUtil.getLogger(this);
 	private ISender sender;
-	private IPipeLineSession session;
-	private Guard guard;
+	private PipeLineSession session;
+	private Semaphore semaphore; // supports to limit the number of threads processing in parallel, may be null
+	private Guard guard;         // supports to wait for all threads to have ended
 	private StatisticsKeeper sk;
 
-	public ParallelSenderExecutor(ISender sender, Message message, IPipeLineSession session, Guard guard, StatisticsKeeper sk) {
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Guard guard, StatisticsKeeper sk) {
+		this(sender, message, session, null, guard, sk);
+	}
+	
+	public ParallelSenderExecutor(ISender sender, Message message, PipeLineSession session, Semaphore semaphore, Guard guard, StatisticsKeeper sk) {
 		super();
 		this.sender=sender;
 		request=message;
 		this.session=session;
 		this.guard=guard;
+		this.semaphore=semaphore;
 		this.sk=sk;
+		correlationID = session.getMessageId();
 	}
 
 	@Override
@@ -54,6 +62,9 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			long t2 = System.currentTimeMillis();
 			sk.addValue(t2-t1);
 		} finally {
+			if (semaphore!=null) {
+				semaphore.release();
+			}
 			guard.releaseResource();
 		}
 	}

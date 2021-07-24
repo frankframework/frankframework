@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,31 +16,29 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Return simply the input message from stream to string.
  *
  * @author  Tom van der Heijden
+ * @deprecated not necessary when using Messages.
  */
-
+@Deprecated
 public class Stream2StringPipe extends FixedForwardPipe {
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;
 		try {
-			result = Misc.streamToString((InputStream) input);
+			result = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, "Could not convert stream to text",
-					e);
+			throw new PipeRunException(this, "Could not convert stream to text", e);
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 }

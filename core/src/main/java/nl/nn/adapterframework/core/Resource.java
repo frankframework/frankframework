@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,71 +36,77 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class Resource {
 
-	private ClassLoader classLoader;
+	private IScopeProvider scopeProvider;
 	private URL url;
 	private String systemId;
-	
-	private Resource(ClassLoader classLoader, URL url, String systemId) {
-		this.classLoader=classLoader;
+
+	private Resource(IScopeProvider scopeProvider, URL url, String systemId) {
+		this.scopeProvider=scopeProvider;
 		this.url=url;
 		this.systemId=systemId;
 	}
-	
+
 	public static Resource getResource(String resource) {
 		return getResource(null, resource);
 	}
 
-	public static Resource getResource(ClassLoader classLoader, String resource) {
-		return getResource(classLoader, resource, null);
+	public static Resource getResource(IScopeProvider scopeProvider, String resource) {
+		return getResource(scopeProvider, resource, null);
 	}
-	
-	public static Resource getResource(ClassLoader classLoader, String resource, String allowedProtocols) {
-		if(classLoader == null) {
-			classLoader = Thread.currentThread().getContextClassLoader();
+
+	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+		if(scopeProvider == null) {
+			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
 		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
-		URL url = ClassUtils.getResourceURL(classLoader, ref, allowedProtocols);
+		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
 			return null;
 		}
+
 		String systemId;
 		if (ref.indexOf(':')<0) {
 			systemId=ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+ref;
 		} else {
 			systemId=url.toExternalForm();
 		}
-		return new Resource(classLoader, url, systemId);
+		return new Resource(scopeProvider, url, systemId);
+	}
+
+	private static class GlobalScopeProvider implements IScopeProvider {
+		@Override
+		public ClassLoader getConfigurationClassLoader() {
+			return this.getClass().getClassLoader();
+		}
 	}
 
 	public String getCacheKey() {
 		return url.toExternalForm();
 	}
-	
+
 	public InputStream openStream() throws IOException {
 		return url.openStream();
 	}
-	
+
 	public InputSource asInputSource() throws IOException {
 		InputSource inputSource = new InputSource(openStream());
 		inputSource.setSystemId(systemId);
 		return inputSource;
 	}
-	
+
 	public Source asSource() throws SAXException, IOException {
-		return XmlUtils.inputSourceToSAXSource(asInputSource(), true, true);
+		return XmlUtils.inputSourceToSAXSource(this);
 	}
 
-	public ClassLoader getClassLoader() {
-		return classLoader;
+	public IScopeProvider getScopeProvider() {
+		return scopeProvider;
 	}
 
 	public String getSystemId() {
 		return systemId;
 	}
-	
+
 	public URL getURL() {
 		return url;
 	}
-
-
 }

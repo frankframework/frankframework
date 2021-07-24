@@ -24,9 +24,9 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.INamedObject;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Base class for items of global lists.

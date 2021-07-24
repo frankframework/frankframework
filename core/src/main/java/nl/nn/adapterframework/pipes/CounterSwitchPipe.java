@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Selects an exitState, based on the number of received messages by this pipe.
@@ -37,23 +38,22 @@ import nl.nn.adapterframework.statistics.StatisticsKeeper;
 public class CounterSwitchPipe extends FixedForwardPipe {
 	private int divisor = 2;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (getDivisor() < 2) {
-			throw new ConfigurationException(getLogPrefix(null) + "mod ["
-					+ getDivisor() + "] should be greater than or equal to 2");
+			throw new ConfigurationException("mod [" + getDivisor() + "] should be greater than or equal to 2");
 		}
 
 		for (int i = 1; i <= getDivisor(); i++) {
 			if (null == findForward("" + i))
-				throw new ConfigurationException(getLogPrefix(null)
-						+ "forward [" + i + "] is not defined");
+				throw new ConfigurationException("forward [" + i + "] is not defined");
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = "";
 		PipeForward pipeForward = null;
 
@@ -63,18 +63,15 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 			forward = "" + (getDivisor() - (count % getDivisor()));
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward
-				+ "]");
+		log.debug(getLogPrefix(session) + "determined forward [" + forward + "]");
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null)
-					+ "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, getLogPrefix(null) + "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward
-				+ "] to path [" + pipeForward.getPath() + "]");
-		return new PipeRunResult(pipeForward, input);
+		log.debug(getLogPrefix(session) + "resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		return new PipeRunResult(pipeForward, message);
 	}
 
 	public int getDivisor() {

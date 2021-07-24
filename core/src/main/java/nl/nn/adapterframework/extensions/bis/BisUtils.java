@@ -18,16 +18,18 @@ package nl.nn.adapterframework.extensions.bis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -197,12 +199,12 @@ public class BisUtils {
 		}
 		return resultElement.toXML();
 	}
-	public String prepareReply(String rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
-		ArrayList messages = new ArrayList();
+	public Message prepareReply(Message rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
+		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {
 			messages.add(messageHeader);
 		}
-		messages.add(rawReply);
+		messages.add(rawReply.asString());
 
 		String payload = null;
 		if (result == null) {
@@ -220,7 +222,7 @@ public class BisUtils {
 				payload = Misc.listToString(messages);
 			}
 		}
-		return payload;
+		return new Message(payload);
 	}
 
 	public String errorCodeToText(String errorCode) {

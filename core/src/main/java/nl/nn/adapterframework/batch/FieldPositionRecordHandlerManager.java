@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package nl.nn.adapterframework.batch;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
@@ -30,10 +29,11 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
-	private int fieldNr;
-	private String separator;
+	private @Getter int fieldNr;
+	private @Getter String separator;
 	
-	public RecordHandlingFlow getRecordHandler(IPipeLineSession session, String record) throws Exception {
+	@Override
+	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		int startNdx = -1, endNdx = -1;
 		int curField = 0;
 		while (curField++ != fieldNr) {
@@ -46,9 +46,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 		if (endNdx == -1) {
 			return getRecordHandlerByKey(record.substring(startNdx));
 		}
-		else {
-			return getRecordHandlerByKey(record.substring(startNdx, endNdx));
-		}
+		return getRecordHandlerByKey(record.substring(startNdx, endNdx));
 	}
 
 
@@ -57,27 +55,10 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
-	public int getFieldNr() {
-		return fieldNr;
-	}
-
-	/** 
-	 * @deprecated typo has been fixed: please use 'separator' instead of 'seperator'
-	 */
-	public void setSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'separator' instead of 'seperator'";
-		configWarnings.add(log, msg);
-
-		separator = string;
-	}
 
 	@IbisDoc({"separator that separates the fields in the record", ""})
 	public void setSeparator(String string) {
 		separator = string;
-	}
-	public String getSeparator() {
-		return separator;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package nl.nn.adapterframework.pipes;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe for converting text to or from xml. 
@@ -44,6 +44,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	private boolean useCdataSection = true;
 	
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -53,42 +54,39 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	}
 	
 	
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
-	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (isSplitLines() && input != null) {
-			try {
-				Reader reader = new StringReader(input.toString());
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		String result;
+		try {
+			if (isSplitLines() && message != null) {
+				Reader reader = message.asReader();
 				if (replaceNonXmlChars) {
 					reader = new EncapsulatingReader(reader, "", "", true);
 				}
 				BufferedReader br = new BufferedReader(reader);
 
 				String l;
-				StringBuffer result = new StringBuffer();
+				StringBuffer buffer = new StringBuffer();
 
 				while ((l = br.readLine()) != null) {
-					result.append("<line>"+addCdataSection(l)+"</line>");
+					buffer.append("<line>"+addCdataSection(l)+"</line>");
 				}
 					
-				input = result.toString();
+				result = buffer.toString();
 				br.close();
+			} else if (replaceNonXmlChars && message != null) {
+				result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
+			} else {
+				result = addCdataSection((message == null ? null : message.asString()));
 			}
-			catch (IOException e) {
-				throw new PipeRunException(this, "Unexpected exception during splitting", e); 
-			}
-			
-						
-		} else if (replaceNonXmlChars && input != null) {
-			input = addCdataSection(XmlUtils.encodeCdataString(input.toString()));
-		} else {
-			input = addCdataSection((input == null ? null : input.toString()));
+		} catch (IOException e) {
+			throw new PipeRunException(this, "Unexpected exception during splitting", e); 
 		}
+		
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
-		"<" + getXmlTag() + ">"+input+"</" + xmlTag + ">";	
-		return new PipeRunResult(getForward(), resultString);
+		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
+		return new PipeRunResult(getSuccessForward(), resultString);
 	}
 
 	private String addCdataSection(String input) {

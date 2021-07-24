@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
@@ -57,9 +57,6 @@ public class ConvertorFactory {
 
 	/**
 	 * Return <code>null</code> when no convertor is found.
-	 * 
-	 * @param mediaType
-	 * @return
 	 */
 	public Convertor getConvertor(MediaType mediaType) {
 		return convertorLookupMap.get(mediaType);

@@ -1,0 +1,20 @@
+digraph {
+node [shape=box]
+START [shape=ellipse]
+START -> "appending";
+"appending" [label="appending\n(LocalFileSystemPipe)"]
+"appending" -> "echoSomethingError" [label="exception"];
+"appending" -> "echoSomethingNext" [label="success"];
+"echoSomethingNext" [label="echoSomethingNext\n(EchoPipe)"]
+"echoSomethingNext" -> "echoSomething1" [label="success"];
+"echoSomethingError" [label="echoSomethingError\n(EchoPipe)"]
+"echoSomethingError" -> "echoSomething1" [label="success"];
+"echoSomething1" [label="echoSomething1\n(EchoPipe)"]
+"echoSomething1" -> "EXIT" [label="success"];
+"echoSomething1" -> "echoSomethingSomethingError" [label="exception"];
+"echoSomethingSomethingError" [label="echoSomethingSomethingError\n(EchoPipe)"]
+"echoSomethingSomethingError" -> "EXIT" [label="success"];
+"EXIT" [style=rounded]
+"EXIT" -> "END" [label="success"];
+END [shape=ellipse]
+}

@@ -19,7 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsSender.
@@ -49,6 +49,7 @@ public class EsbJmsSender extends JmsSender {
 	private String messageProtocol = null;
 	private long timeOut = 20000;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
@@ -57,7 +58,7 @@ public class EsbJmsSender extends JmsSender {
 			throw new ConfigurationException(getLogPrefix() + "illegal value for messageProtocol [" + getMessageProtocol() + "], must be '" + REQUEST_REPLY + "' or '" + FIRE_AND_FORGET + "'");
 		}
 		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
-			setDeliveryMode(MODE_NON_PERSISTENT);
+			setDeliveryModeEnum(DeliveryMode.NON_PERSISTENT);
 			setMessageTimeToLive(getTimeOut());
 			setReplyTimeout((int) getTimeOut());
 			setSynchronous(true);

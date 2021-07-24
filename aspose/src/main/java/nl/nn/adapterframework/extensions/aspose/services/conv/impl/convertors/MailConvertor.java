@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.email.Attachment;
@@ -187,10 +187,6 @@ class MailConvertor extends AbstractConvertor {
 
 	/**
 	 * Converts an email attachment to a pdf via the cisConversionService.
-	 * 
-	 * @param attachment
-	 * @return
-	 * @throws IOException
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
 

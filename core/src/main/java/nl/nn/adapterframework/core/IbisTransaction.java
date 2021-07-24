@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -39,7 +39,6 @@ public class IbisTransaction {
 
 	private PlatformTransactionManager txManager;
 	private TransactionStatus txStatus;
-	private TransactionDefinition txDef;
 	private String object;
 
 	private boolean txClientIsActive;
@@ -49,10 +48,9 @@ public class IbisTransaction {
 	private String txName;
 	private boolean txIsNew;
 
-	public IbisTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String object) {
+	public IbisTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
 		this.txManager = txManager;
-		this.txDef = txDef;
-		this.object = object;
+		this.object = descriptionOfOwner;
 
 		txClientIsActive = TransactionSynchronizationManager.isActualTransactionActive();
 		txClientName = TransactionSynchronizationManager.getCurrentTransactionName();
@@ -66,19 +64,22 @@ public class IbisTransaction {
 			txName = Misc.createSimpleUUID();
 			TransactionSynchronizationManager.setCurrentTransactionName(txName);
 			int txTimeout = txDef.getTimeout();
-			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + object + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
+			log.debug("Transaction manager ["+getRealTransactionManager()+"] created a new transaction ["+txName+"] for " + descriptionOfOwner + " with timeout [" + (txTimeout<0?"system default(=120s)":""+txTimeout) + "]");
 		} else {
 			txName = TransactionSynchronizationManager.getCurrentTransactionName();
 			if (txClientIsActive && !txIsActive) {
-				log.debug("Transaction manager ["+getRealTransactionManager()+"] suspended the transaction [" + txClientName + "] for " + object);
+				log.debug("Transaction manager ["+getRealTransactionManager()+"] suspended the transaction [" + txClientName + "] for " + descriptionOfOwner);
 			}
 		}
 	}
 
-	public TransactionStatus getStatus() {
-		return txStatus;
+	/**
+	 * Returns a transaction if a TransactionManager is supplied, otherwise returns null.
+	 */
+	public static IbisTransaction getTransaction(PlatformTransactionManager txManager, TransactionDefinition txDef, String descriptionOfOwner) {
+		return txManager!=null ? new IbisTransaction(txManager, txDef, descriptionOfOwner) : null;
 	}
-
+	
 	private String getRealTransactionManager() {
 		if (txManager == null) {
 			return null;
@@ -103,16 +104,33 @@ public class IbisTransaction {
 			return txManager.getClass().getName();
 		}
 	}
+	
+	public void setRollbackOnly() {
+		txStatus.setRollbackOnly();
+	}
 
+	public boolean isRollbackOnly() {
+		return txStatus.isRollbackOnly();
+	}
+	
+	public boolean isCompleted() {
+		return txStatus.isCompleted();
+	}
+	
 	public void commit() {
+		boolean mustRollback = txStatus.isRollbackOnly();
 		if (txIsNew) {
-			if (txStatus.isRollbackOnly()) {
+			if (mustRollback) {
 				log.debug("Transaction ["+txName+"] marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is rolling back the transaction for " + object);
 			} else {
 				log.debug("Transaction ["+txName+"] is not marked for rollback, so transaction manager ["+getRealTransactionManager()+"] is committing the transaction for " + object);
 			}
 		}
-		txManager.commit(txStatus);
+		if (mustRollback) {
+			txManager.rollback(txStatus);
+		} else {
+			txManager.commit(txStatus);
+		}
 		if (!txIsNew && txClientIsActive && !txIsActive) {
 			log.debug("Transaction manager ["+getRealTransactionManager()+"] resumed the transaction [" + txClientName + "] for " + object);
 		}

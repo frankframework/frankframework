@@ -1,42 +1,42 @@
-<document name="pion.csv">
+<document name="Test Tool correlation id">
   <Record>
     <VA-nr>1</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>Regio</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straat 202</Bezoekadresstraat>
     <Bezoekadrespostcode>1337 BB</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp mag niet incasseren</Incasso-omsschade>
     <Incasso-omsleven>niet van toepassing</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>NV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>N</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -45,46 +45,46 @@
     <Aanst_nnfdz>J</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>2</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>Regio</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Weg 129</Bezoekadresstraat>
     <Bezoekadrespostcode>9120 FF</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
-    <Telefoonnummer></Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefoonnummer/>
+    <Telefax/>
     <Incasso-omsschade>niet van toepassing</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>BV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>J</Aanst_nnfd>
@@ -93,46 +93,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>3</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>Regio</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straat 25-A</Bezoekadresstraat>
     <Bezoekadrespostcode>1888 JK</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp - incasso</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso alleen voor Schade</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>VOF</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>N</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -141,46 +141,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>4</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>Regio</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Laan 1887</Bezoekadresstraat>
     <Bezoekadrespostcode>6300 BK</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp - incasso behalve voor Leven - prolongatie</Incasso-omsschade>
     <Incasso-omsleven>niet van toepassing</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>Eenmanszaak</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -189,94 +189,94 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>5</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>Regio</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straat 1</Bezoekadresstraat>
     <Bezoekadrespostcode>7447 AK</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp mag niet incasseren</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>CV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
-    <Aanst_leven></Aanst_leven>
-    <Aanst_schade></Aanst_schade>
-    <Aanst_nnfd></Aanst_nnfd>
-    <Aanst_comb></Aanst_comb>
-    <Aanst_hyp></Aanst_hyp>
-    <Aanst_nnfdz></Aanst_nnfdz>
-    <Aanst_belrek></Aanst_belrek>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
+    <Aanst_leven/>
+    <Aanst_schade/>
+    <Aanst_nnfd/>
+    <Aanst_comb/>
+    <Aanst_hyp/>
+    <Aanst_nnfdz/>
+    <Aanst_belrek/>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>6</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>NACL</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straatlaan 145</Bezoekadresstraat>
     <Bezoekadrespostcode>1531 BD</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>DORP</Bezoekadreswoonplaats>
-    <Telefoonnummer></Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefoonnummer/>
+    <Telefax/>
     <Incasso-omsschade>niet van toepassing</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso alleen voor Schade</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>Cooperatie</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>J</Aanst_nnfd>
@@ -285,46 +285,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>7</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>NACL</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straatlaanpad 27</Bezoekadresstraat>
     <Bezoekadrespostcode>2019 VA</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp - incasso</Incasso-omsschade>
     <Incasso-omsleven>niet van toepassing</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>NV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -333,46 +333,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>8</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>NACL</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straatlaanpadweg 4</Bezoekadresstraat>
     <Bezoekadrespostcode>3150 WP</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp - incasso behalve voor Leven - prolongatie</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>BV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Fictief Bedrijf NV</SER-naam>
     <SER-nummer>00000</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -381,46 +381,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>9</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>NACL</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straatlaanpadwegsingel 18</Bezoekadresstraat>
     <Bezoekadrespostcode>1080 PI</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>tp - incasso</Incasso-omsschade>
     <Incasso-omsleven>tp - incasso alleen voor Schade</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>VOF</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Test om te wijzigen</SER-naam>
     <SER-nummer>12345</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -429,46 +429,46 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>J</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>10</VA-nr>
     <Naam>Willem Keurig</Naam>
     <Regio>NACL</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Straatlaanpadwegsingelkade 82</Bezoekadresstraat>
     <Bezoekadrespostcode>0175 BG</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
     <Telefoonnummer>707 707 1414</Telefoonnummer>
-    <Telefax></Telefax>
+    <Telefax/>
     <Incasso-omsschade>niet van toepassing</Incasso-omsschade>
     <Incasso-omsleven>niet van toepassing</Incasso-omsleven>
     <Feitelijk_Leider>Onbekend</Feitelijk_Leider>
     <Bedrijfsvorm>Eenmanszaak</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
     <Naam_Hoofdfiliaal_Leven>FB NV</Naam_Hoofdfiliaal_Leven>
     <SER-naam>Gewijzigd</SER-naam>
     <SER-nummer>12345</SER-nummer>
     <Register>A</Register>
-    <BF-nummer_Leven></BF-nummer_Leven>
-    <Telefoon_BF_Leven></Telefoon_BF_Leven>
-    <Telefax_BF_Leven></Telefax_BF_Leven>
-    <Naam_BF_Leven></Naam_BF_Leven>
-    <BF-nummer_Schade></BF-nummer_Schade>
-    <Telefoon_BF_Schade></Telefoon_BF_Schade>
-    <Telefax_BF_Schade></Telefax_BF_Schade>
-    <Naam_BF_Schade></Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_Leven/>
+    <Telefoon_BF_Leven/>
+    <Telefax_BF_Leven/>
+    <Naam_BF_Leven/>
+    <BF-nummer_Schade/>
+    <Telefoon_BF_Schade/>
+    <Telefax_BF_Schade/>
+    <Naam_BF_Schade/>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>N</Aanst_nnfd>
@@ -477,7 +477,7 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>11</VA-nr>
@@ -511,11 +511,11 @@
     <Naam_BF_Schade>Grote Kaas Schade</Naam_BF_Schade>
     <BF-nummer_PABZ>88</BF-nummer_PABZ>
     <Telefoon_BF_PABZ>748574857</Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
+    <Telefax_BF_PABZ/>
     <Naam_BF_PABZ>Grote Kaas PABZ</Naam_BF_PABZ>
     <BF-nummer_EBA>851</BF-nummer_EBA>
     <Telefoon_BF_EBA>384384384</Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
+    <Telefax_BF_EBA/>
     <Naam_BF_EBA>J.M.H.W.</Naam_BF_EBA>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
@@ -525,11 +525,11 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>12</VA-nr>
-    <Naam>Van &#39;t in &#39;t Veld BV</Naam>
+    <Naam>Van 't in 't Veld BV</Naam>
     <Regio>Zuidoost</Regio>
     <Postadresstraat>Postbus 875</Postadresstraat>
     <Postadrespostcode>4800 UP</Postadrespostcode>
@@ -543,10 +543,10 @@
     <Incasso-omsleven>error</Incasso-omsleven>
     <Feitelijk_Leider>Dhr. Ir. Onbesloten</Feitelijk_Leider>
     <Bedrijfsvorm>BV</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
-    <Naam_Hoofdfiliaal_Leven></Naam_Hoofdfiliaal_Leven>
-    <SER-naam>Van &#39;t in &#39;t Veld BV</SER-naam>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
+    <Naam_Hoofdfiliaal_Leven/>
+    <SER-naam>Van 't in 't Veld BV</SER-naam>
     <SER-nummer>0000000</SER-nummer>
     <Register>A</Register>
     <BF-nummer_Leven>0000</BF-nummer_Leven>
@@ -562,8 +562,8 @@
     <Telefax_BF_PABZ>581947539</Telefax_BF_PABZ>
     <Naam_BF_PABZ>VAN DER EEN</Naam_BF_PABZ>
     <BF-nummer_EBA>0000</BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
     <Naam_BF_EBA>HETGEEN</Naam_BF_EBA>
     <Aanst_leven>N</Aanst_leven>
     <Aanst_schade>N</Aanst_schade>
@@ -573,15 +573,15 @@
     <Aanst_nnfdz>N</Aanst_nnfdz>
     <Aanst_belrek>N</Aanst_belrek>
     <ISKeten>N</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
   <Record>
     <VA-nr>13</VA-nr>
     <Naam>Nam Jef</Naam>
     <Regio>Oude Noorden</Regio>
-    <Postadresstraat></Postadresstraat>
-    <Postadrespostcode></Postadrespostcode>
-    <Postadreswoonplaats></Postadreswoonplaats>
+    <Postadresstraat/>
+    <Postadrespostcode/>
+    <Postadreswoonplaats/>
     <Bezoekadresstraat>Zijlaan 0</Bezoekadresstraat>
     <Bezoekadrespostcode>1024 KB</Bezoekadrespostcode>
     <Bezoekadreswoonplaats>STAD</Bezoekadreswoonplaats>
@@ -591,9 +591,9 @@
     <Incasso-omsleven>niet van toepassing</Incasso-omsleven>
     <Feitelijk_Leider>Dhr. Perzikenmelk</Feitelijk_Leider>
     <Bedrijfsvorm>VOF</Bedrijfsvorm>
-    <Eigenaar></Eigenaar>
-    <Naam_Hoofdfiliaal_Schade></Naam_Hoofdfiliaal_Schade>
-    <Naam_Hoofdfiliaal_Leven></Naam_Hoofdfiliaal_Leven>
+    <Eigenaar/>
+    <Naam_Hoofdfiliaal_Schade/>
+    <Naam_Hoofdfiliaal_Leven/>
     <SER-naam>NAM JEF</SER-naam>
     <SER-nummer>0000000</SER-nummer>
     <Register>A</Register>
@@ -605,14 +605,14 @@
     <Telefoon_BF_Schade>384 327686</Telefoon_BF_Schade>
     <Telefax_BF_Schade>5536 131072</Telefax_BF_Schade>
     <Naam_BF_Schade>WAARDERS</Naam_BF_Schade>
-    <BF-nummer_PABZ></BF-nummer_PABZ>
-    <Telefoon_BF_PABZ></Telefoon_BF_PABZ>
-    <Telefax_BF_PABZ></Telefax_BF_PABZ>
-    <Naam_BF_PABZ></Naam_BF_PABZ>
-    <BF-nummer_EBA></BF-nummer_EBA>
-    <Telefoon_BF_EBA></Telefoon_BF_EBA>
-    <Telefax_BF_EBA></Telefax_BF_EBA>
-    <Naam_BF_EBA></Naam_BF_EBA>
+    <BF-nummer_PABZ/>
+    <Telefoon_BF_PABZ/>
+    <Telefax_BF_PABZ/>
+    <Naam_BF_PABZ/>
+    <BF-nummer_EBA/>
+    <Telefoon_BF_EBA/>
+    <Telefax_BF_EBA/>
+    <Naam_BF_EBA/>
     <Aanst_leven>J</Aanst_leven>
     <Aanst_schade>J</Aanst_schade>
     <Aanst_nnfd>J</Aanst_nnfd>
@@ -621,6 +621,6 @@
     <Aanst_nnfdz>J</Aanst_nnfdz>
     <Aanst_belrek>J</Aanst_belrek>
     <ISKeten>J</ISKeten>
-    <ADNPostbusNr></ADNPostbusNr>
+    <ADNPostbusNr/>
   </Record>
 </document>

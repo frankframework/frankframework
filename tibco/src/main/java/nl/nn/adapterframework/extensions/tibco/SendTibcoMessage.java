@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden
+   Copyright 2013-2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,15 +28,16 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
@@ -100,8 +101,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 	private String soapAction;
 
 	@Override
-	public String doPipeWithTimeoutGuarded(Object input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
+	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		Session jSession = null;
 		MessageProducer msgProducer = null;
@@ -117,11 +117,15 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		String soapAction_work;
 
 		String result = null;
-
+		try {
+			input.preserve();
+		} catch (IOException e) {
+			throw new PipeRunException(this,"cannot preserve input",e);
+		}
 		ParameterValueList pvl = null;
 		if (getParameterList()!=null) {
 			try {
-				pvl = getParameterList().getValues(message, session);
+				pvl = getParameterList().getValues(input, session);
 			} catch (ParameterException e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
 			}
@@ -177,9 +181,9 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (StringUtils.isEmpty(soapAction_work)) {
 			log.debug(getLogPrefix(session) + "deriving default soapAction");
 			try {
-				Resource resource = Resource.getResource(getConfigurationClassLoader(), "/xml/xsl/esb/soapAction.xsl");
+				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
-				soapAction_work = tp.transform(message.asString(), null);
+				soapAction_work = tp.transform(input.asString(), null);
 			} catch (Exception e) {
 				log.error(getLogPrefix(session) + "failed to execute soapAction.xsl");
 			}
@@ -236,7 +240,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			
 			msgProducer = jSession.createProducer(destination);
 			TextMessage msg = jSession.createTextMessage();
-			msg.setText(message.asString());
+			msg.setText(input.asString());
 			Destination replyQueue = null;
 			if (messageProtocol_work.equalsIgnoreCase(REQUEST_REPLY)) {
 				replyQueue = jSession.createTemporaryQueue();
@@ -307,7 +311,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				}
 			}
 		}
-		return result;
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getUrl() {

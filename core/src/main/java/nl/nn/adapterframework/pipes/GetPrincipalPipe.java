@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@ package nl.nn.adapterframework.pipes;
 
 import java.security.Principal;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns the name of the user executing the request.
@@ -30,7 +31,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class GetPrincipalPipe extends FixedForwardPipe {
 	
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException{
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
 		Principal principal=session.getPrincipal();
 		String principalName = "";
 		if (principal==null) {
@@ -43,6 +45,6 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(),principalName);
+		return new PipeRunResult(getSuccessForward(),principalName);
 	}
 }

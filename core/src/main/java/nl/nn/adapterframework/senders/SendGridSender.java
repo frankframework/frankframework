@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,6 +39,7 @@ import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
@@ -114,12 +115,6 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Creates sendgrid mail object
-	 * @param input : XML file content
-	 * @param prc	
-	 * @return 
-	 * @throws SenderException
-	 * @throws DomBuilderException
-	 * @throws IOException 
 	 */
 	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException, IOException {
 		Mail mail = new Mail();
@@ -184,10 +179,6 @@ public class SendGridSender extends MailSenderBase {
 
 	/**
 	 * Sets content of email to mail Object
-	 * @param mail 
-	 * @param message 
-	 * @param messageBase64 
-	 * @param messageType 
 	 */
 	private void setMessage(Mail mail, MailSession mailSession) {
 		String message = mailSession.getMessage();
@@ -318,10 +309,14 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
-	public void setProxyUserName(String string) {
-		httpclient.setProxyUserName(string);
+	public void setProxyUsername(String string) {
+		httpclient.setProxyUsername(string);
 	}
-
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
+	}
 	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
 	public void setProxyPassword(String string) {
 		httpclient.setProxyPassword(string);

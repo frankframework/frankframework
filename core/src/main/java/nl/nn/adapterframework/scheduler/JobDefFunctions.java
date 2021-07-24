@@ -15,7 +15,9 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-public enum JobDefFunctions {
+import nl.nn.adapterframework.doc.DocumentedEnum;
+
+public enum JobDefFunctions implements DocumentedEnum {
 	STOP_ADAPTER("StopAdapter"),
 	START_ADAPTER("StartAdapter"),
 	STOP_RECEIVER("StopReceiver"),
@@ -31,28 +33,20 @@ public enum JobDefFunctions {
 	LOAD_DATABASE_SCHEDULES("loadDatabaseSchedules", true);
 
 	private boolean servicejob = false;
-	private final String name;
+	private final String label;
 
-	private JobDefFunctions(String name) {
-		this(name, false);
+	private JobDefFunctions(String label) {
+		this(label, false);
 	}
 
-	private JobDefFunctions(String name, boolean servicejob) {
-		this.name = name;
+	private JobDefFunctions(String label, boolean servicejob) {
+		this.label = label;
 		this.servicejob = servicejob;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public static JobDefFunctions fromValue(String v) {
-		for (JobDefFunctions c : JobDefFunctions.values()) {
-			if (c.name.equalsIgnoreCase(v)) {
-				return c;
-			}
-		}
-		throw new IllegalArgumentException(v);
+	@Override
+	public String getLabel() {
+		return label;
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {
@@ -66,19 +60,6 @@ public enum JobDefFunctions {
 				equals = true;
 		}
 		return equals;
-	}
-
-	/**
-	 * Comma separated list of all ENUMs
-	 */
-	public static String getNames() {
-		String returnString = "[";
-		for(JobDefFunctions func : values()) {
-			returnString += func.getName()+", ";
-		}
-
-		//Cut off last comma and append closing bracket
-		return returnString.substring(0, returnString.length()-2) + "]";
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 /**
  * Perform a call to a RekenBox.
  *
@@ -38,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setRekenBoxName(String) rekenBoxName}</td><td>fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRunPath(String) runPath}</td><td>directory on server where rekenbox-executable can be found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTemplateDir(String) templateDir}</td><td>rekenbox template directory on server</td><td>&nbsp;</td></tr>
@@ -51,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  * </ul></td><td>"straigth"</td></tr>
  * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
- * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.IPipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
  * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>
@@ -90,14 +91,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			!(getCommandLineType().equals("straight") || 
 			  getCommandLineType().equals("switches") || 
 			  getCommandLineType().equals("redirected"))) {
-			  	throw new ConfigurationException(getLogPrefix(null)+"commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
+			  	throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
 			  }
 		inputOutputDir= new File(getInputOutputDirectory());
 		if (!inputOutputDir.exists()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
 		}
 		if (!inputOutputDir.isDirectory()) {
-			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
+			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
 		}
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();
@@ -132,12 +133,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	/**
 	 * positie 1 t/m 8 bepalen de naam van de executable, of tot aan de ':' (wat het eerst komt)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-	    if (!(input instanceof String))
-	        throw new PipeRunException(this, 
-	            getLogPrefix(session)+"expected java.lang.String, got [" + input.getClass().getName() + "], value ["+input+"]");
-	    String sInput = (String) input;
-	//	log.debug("Pipe ["+name+"] got input ["+sInput+"]");
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		String sInput;
+		try {
+			sInput = message.asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+		}
 	
 	
 		String rekenboxName=getRekenBoxName();
@@ -218,7 +221,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	        
 			
 	//		log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
-		    return new PipeRunResult(getForward(), result);
+		    return new PipeRunResult(getSuccessForward(), result);
 			
 	    } catch (Exception e) {
 		   	throw new PipeRunException(this, getLogPrefix(session)+"got Exception executing rekenbox", e);

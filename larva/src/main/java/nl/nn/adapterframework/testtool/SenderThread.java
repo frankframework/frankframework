@@ -1,18 +1,14 @@
 package nl.nn.adapterframework.testtool;
 
-import java.io.IOException;
-
-import org.apache.log4j.Logger;
-
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 /**
  * @author Jaco de Groot
  */
@@ -21,7 +17,7 @@ public class SenderThread extends Thread {
 
 	private String name;
 	private ISender sender;
-	private IPipeLineSession session;
+	private PipeLineSession session;
 	private String request;
 	private String response;
 	private SenderException senderException;
@@ -29,7 +25,7 @@ public class SenderThread extends Thread {
 	private TimeOutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
-	SenderThread(ISender sender, String request, IPipeLineSession session, boolean convertExceptionToMessage) {
+	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
@@ -39,36 +35,37 @@ public class SenderThread extends Thread {
 		log.debug("Request: " + request);
 	}
 
-    public void run() {
-        try {
-        	if (session==null) {
-        		session = new PipeLineSessionBase();
-        	}
-        	session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+	@Override
+	public void run() {
+		try {
+			if (session==null) {
+				session = new PipeLineSession();
+			}
+			session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 			response = sender.sendMessage(new Message(request), session).asString();
-        } catch(SenderException e) {
-        	if (convertExceptionToMessage) {
-        		response = Util.throwableToXml(e);
-        	} else {
+		} catch(SenderException e) {
+			if (convertExceptionToMessage) {
+				response = Util.throwableToXml(e);
+			} else {
 				log.error("SenderException for ISender '" + name + "'", e);
 				senderException = e;
-        	}
-        } catch(IOException e) {
+			}
+		} catch(IOException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
-        } catch(TimeOutException e) {
+		} catch(TimeOutException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
 				log.error("timeOutException for ISender '" + name + "'", e);
 				timeOutException = e;
 			}
-        }
-    }
+		}
+	}
 
     public String getResponse() {
     	log.debug("Getting response for Sender: " + name);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Integration Partners B.V.
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -27,7 +26,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Wrapper around DBMS provided OutputStream for BLOB, that updates BLOB and ResultSet and closes connections at stream.close().
+ * Wrapper around DBMS provided OutputStream for BLOB, that updates BLOB and ResultSet and closes them at stream.close().
  * 
  * @author Gerrit van Brakel
  */
@@ -36,11 +35,10 @@ public class BlobOutputStream extends FilterOutputStream {
 	private IDbmsSupport dbmsSupport;
 	private Object blobUpdateHandle;
 	private int blobColumn;
-	private Connection connection;
 	private ResultSet resultSet;
 	private XmlBuilder warnings;
 	
-	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, Connection connection, ResultSet resultSet, XmlBuilder warnings) {
+	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, ResultSet resultSet, XmlBuilder warnings) {
 		super(blobOutputStream);
 		this.dbmsSupport=dbmsSupport;
 		this.blobUpdateHandle=blobUpdateHandle;
@@ -59,7 +57,7 @@ public class BlobOutputStream extends FilterOutputStream {
 		} catch (JdbcException | SQLException e) {
 			throw new IOException("cannot write BLOB",e);
 		} finally {
-			JdbcUtil.fullClose(connection, resultSet);
+			JdbcUtil.fullClose(null, resultSet);
 		}
 	}
 

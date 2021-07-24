@@ -5,13 +5,13 @@
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/aop classpath:xml/xsd/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 		"
 	>
 
 	<bean
-		name="ibisDebuggerAdvice,threadLifeCycleEventListener"
+		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
 	/>
@@ -41,15 +41,16 @@
 						*
 						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, String, Object,
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeInputOutputAbort"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=
@@ -58,63 +59,97 @@
 						*
 						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, String, Object,
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
-					args(pipeLine, pipe, messageId, message, pipeLineSession)
+					args(pipeLine, pipe, message, pipeLineSession)
 					"
 				method="debugPipeGetInputFrom"
-				arg-names="pipeLine, pipe, messageId, message, pipeLineSession"
+				arg-names="pipeLine, pipe, message, pipeLineSession"
 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.core.ISender.sendMessage(
-	 							nl.nn.adapterframework.stream.Message, 
-	 							nl.nn.adapterframework.core.IPipeLineSession
-	 						)
-	 					)
-	 					and
-	 					args(message, session)
-	 					"
-	 				method="debugSenderInputOutputAbort"
-	 				arg-names="message, session"
-	 			/>
-	 			<aop:around
-	 				pointcut=
-	 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-	 							nl.nn.adapterframework.stream.Message, 
-	 							nl.nn.adapterframework.core.IPipeLineSession, 
-	 							nl.nn.adapterframework.stream.IOutputStreamingSupport
-	 						)
-	 					)
-	 					and
-	 					args(message, session, next)
-	 					"
-	 				method="debugStreamingSenderInputOutputAbort"
-	 				arg-names="message, session, next"
-	 			/>
 			<aop:around
 				pointcut=
 					"
-	 					execution(
-	 						*
-	 						nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 							nl.nn.adapterframework.core.IPipeLineSession, nl.nn.adapterframework.stream.IOutputStreamingSupport
-	 						)
+					execution(
+						*
+						nl.nn.adapterframework.core.ISender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.PipeLineSession
+						)
+					)
+					and
+					args(message, session)
+					"
+				method="debugSenderInputOutputAbort"
+				arg-names="message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
+							*,
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.PipeLineSession
+						)
+					)
+					and
+					args(blockHandle, message, session)
+					"
+				method="debugBlockEnabledSenderInputOutputAbort"
+				arg-names="blockHandle, message, session"
+			/>
+			<aop:around
+				pointcut=
+					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
+	 						nl.nn.adapterframework.core.PipeLineSession, 
+	 						..
 	 					)
-	 					and
-	 					args(session, nextProvider)
-	 					"
+	 				)
+	 				and
+	 				args(session, ..)
+	 				"
 				method="debugProvideOutputStream"
-				arg-names="session, nextProvider"
+				arg-names="session"
+			/>
+			<aop:around
+				pointcut=
+					"
+	 				execution(
+	 					*
+	 					nl.nn.adapterframework.stream.StreamingPipe.provideOutputStream(
+	 						nl.nn.adapterframework.core.PipeLineSession
+	 					)
+	 				)
+	 				and
+	 				args(session)
+	 				"
+				method="debugProvideOutputStream"
+				arg-names="session"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
+						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
+							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.core.PipeLineSession, 
+							nl.nn.adapterframework.core.IForwardTarget
+						)
+					)
+					and
+					args(message, session, next)
+					"
+				method="debugStreamingSenderInputOutputAbort"
+				arg-names="blockHandle, message, session, next"
 			/>
 			<aop:around
 				pointcut=
@@ -124,7 +159,7 @@
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
 							nl.nn.adapterframework.senders.SenderWrapperBase, 
 							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.IPipeLineSession
+							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -140,7 +175,7 @@
 						*
 						nl.nn.adapterframework.processors.CoreListenerProcessor.getMessage(
 							nl.nn.adapterframework.core.ICorrelatedPullingListener,
-							String, nl.nn.adapterframework.core.IPipeLineSession
+							String, nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
 					and
@@ -172,7 +207,7 @@
 						nl.nn.adapterframework.parameters.Parameter.getValue(
 							nl.nn.adapterframework.parameters.ParameterValueList,
 							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.IPipeLineSession,
+							nl.nn.adapterframework.core.PipeLineSession,
 							boolean
 						)
 					)

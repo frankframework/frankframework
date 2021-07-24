@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@ package nl.nn.adapterframework.stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.AppConstants;
@@ -33,98 +31,103 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	public final String AUTOMATIC_STREAMING = "streaming.auto";
 
 	private boolean streamingActive=AppConstants.getInstance().getBoolean(AUTOMATIC_STREAMING, false);
-	
-	private boolean determinedStreamTarget=false;
-	private IOutputStreamingSupport streamTarget;
+	private boolean canProvideOutputStream;
+	private boolean canStreamToNextPipe; 
 
 
 	@Override
-	public void start() throws PipeStartException {
-		super.start();
-		getStreamTarget();
+	public void configure() throws ConfigurationException {
+		super.configure();
+		
+		boolean outputSideEffectsPresent = StringUtils.isNotEmpty(getStoreResultInSessionKey()) || isPreserveInput() || isRestoreMovedElements()
+				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain()); 
+		
+		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
+				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
+				&& getLocker()==null && StringUtils.isEmpty(getIfParam()) && !outputSideEffectsPresent;
+		canStreamToNextPipe = !outputSideEffectsPresent && !isWriteToSecLog();
 	}
 
-	@Override
-	public void stop() {
-		super.stop();
-	}
-
-	public IPipe getNextPipe() {
-		return getPipeLine().getPipe(getForwardName());
+	/**
+	 * Find the target to receive this pipes output, i.e that could provide an output stream
+	 */
+	protected IForwardTarget getNextPipe() {
+		if (getPipeLine()==null) {
+			return null;
+		}
+		
+		PipeForward forward = getSuccessForward();
+		try {
+			return getPipeLine().resolveForward(this, forward);
+		} catch (PipeRunException e) {
+			log.warn("no next pipe found",e);
+			return null;
+		}
 	}
 	
-	public boolean canProvideOutputStream() {
-		return StringUtils.isEmpty(getGetInputFromSessionKey());
+
+	/**
+	 * returns true when:
+	 *  a) the pipe might be able to accept an input by providing an OutputStream, and 
+	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe (e.g. storeResultInSessionKey)
+	 *  c) there are no side effects that require the input to be available at the end of the pipe (e.g. preserveInput=true)
+	 */
+	protected boolean canProvideOutputStream() {
+		return canProvideOutputStream;
 	}
 
-	public boolean requiresOutputStream() {
-		return StringUtils.isEmpty(this.getStoreResultInSessionKey());
+	/**
+	 * returns true when:
+	 *  a) the operation needs to have an OutputStream, and 
+	 *  b) there are no side effects configured that require the output of this pipe to be available at the return of the doPipe() method.
+	 */
+	protected boolean canStreamToNextPipe() {
+		return canStreamToNextPipe;
 	}
 
 	/**
 	 * provide the outputstream, or null if a stream cannot be provided.
-	 * If nextProvider is null, then descendants must replace it with getStreamTarget().
+	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
 	 */
-	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
 		return null;
 	}
 
 	/**
-	 * Descendants of this class must implement this method. When nextProvider is not null, they can use that to obtain an OutputStream to write their results to. 
+	 * Don't override unless you're absolutely sure what you're doing!
 	 */
-	public abstract PipeRunResult doPipe(Object input, IPipeLineSession session, IOutputStreamingSupport nextProvider) throws PipeRunException;
-	
-	@Override
-	public final PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		return doPipe(input, session, getStreamTarget());
-	}
-
-	
-	public IOutputStreamingSupport getStreamTarget() {
-		if (!determinedStreamTarget) {
-			determinedStreamTarget=true;
-			PipeLine pipeline=getPipeLine();
-			if (!isStreamingActive()) {
-				log.debug("Do not try to setup streaming because streamingActive=false");
-				return null;
-			}
-			if (pipeline==null) {
-				log.debug("Cannot stream, no pipeline");
-				return null;
-			}
-			PipeForward forward=getForward();
-			if (forward==null) {
-				log.debug("Forward is null, streaming stops");
-				return null;
-			}
-			String forwardPath=forward.getPath();
-			if (forwardPath==null) {
-				log.debug("ForwardPath is null, streaming stops");
-				return null;
-			}
-			IPipe nextPipe=pipeline.getPipe(forwardPath);
-			if (nextPipe==null) {
-				log.debug("Pipeline ends here, streaming stops");
-				return null;
-			}
-			if (!(nextPipe instanceof IOutputStreamingSupport)) {
-				log.debug("nextPipe ["+forwardPath+"] type ["+nextPipe.getClass().getSimpleName()+"] does not support streaming");
-				return null;
-			}
-			
-			if (nextPipe instanceof StreamingPipe && !((StreamingPipe)nextPipe).isStreamingActive()) {
-				log.debug("nextPipe ["+forwardPath+"] has not activated streaming");
-				return null;
-			}
-			streamTarget = (IOutputStreamingSupport)nextPipe;
+	@Override //Can't make AOP'd methods final
+	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("pipe [{}] cannot provide outputstream", () -> getName());
+			return null;
 		}
-		return streamTarget;
+		log.debug("pipe [{}] creating outputstream", () -> getName());
+		return provideOutputStream(session);
 	}
-
 	
 
-	@IbisDoc({"controls whether output streaming is used. Can be used to switch streaming off for debugging purposes","set by appconstant streaming.auto"})
+	/**
+	 * Provides a non-null MessageOutputStream, that the caller can use to obtain a Writer, OutputStream or ContentHandler.
+	 */
+	protected MessageOutputStream getTargetStream(PipeLineSession session) throws StreamingException {
+		if (canStreamToNextPipe()) {
+			IForwardTarget nextPipe = getNextPipe();
+			if (log.isDebugEnabled()) {
+				if (nextPipe != null) {
+					log.debug("pipe [{}] can stream to next pipe [{}]", getName(), nextPipe.getName());
+				} else {
+					log.debug("pipe [{}] can stream, but no target to stream to", getName());
+				}
+			}
+			return MessageOutputStream.getTargetStream(this, session, nextPipe);
+		}
+		return new MessageOutputStreamCap(this, getNextPipe());
+	}
+
+
+	@IbisDoc({"If true, then this pipe can provide an OutputStream to the previous pipe, to write its output to. Can be used to switch this streaming off for debugging purposes","set by appconstant streaming.auto"})
 	public void setStreamingActive(boolean streamingActive) {
 		this.streamingActive = streamingActive;
 	}

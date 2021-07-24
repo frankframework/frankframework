@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * List the contents of a directory as XML.

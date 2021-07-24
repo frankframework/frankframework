@@ -15,40 +15,39 @@
  */
 package nl.nn.adapterframework.extensions.graphviz;
 
-import static org.junit.Assert.*;
-import static nl.nn.adapterframework.util.TestAssertions.*;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
 
-import nl.nn.adapterframework.extensions.graphviz.Format;
-import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.extensions.graphviz.Options;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-
-import org.junit.After;
-import org.junit.Test;
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphvizEngineTest {
 
 	private String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
-
-	@After
-	public void destroy() {
-		GraphvizEngine.releaseThread();
-	}
+	private IScopeProvider scopeProvider = new TestScopeProvider();
 
 	@Test
 	public void canInitDefaultWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
+		engine.close();
 	}
 
 	@Test
 	public void canInitNullWithoutErrors() throws IOException {
 		GraphvizEngine engine = new GraphvizEngine(null);
 		assertNotNull(engine);
+		engine.close();
 	}
 
 	@Test
@@ -57,9 +56,10 @@ public class GraphvizEngineTest {
 		assertNotNull(engine);
 
 		String result = engine.execute(dot);
-		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -69,9 +69,10 @@ public class GraphvizEngineTest {
 
 		String render = "render('" + dot + "'," + Options.create().toJson(false) + ");";
 		String result = engine.execute(render);
-		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -80,9 +81,10 @@ public class GraphvizEngineTest {
 		assertNotNull(engine);
 
 		String result = engine.execute(dot, Options.create().format(Format.SVG_STANDALONE));
-		URL svg = ClassUtils.getResourceURL(this, "flow.svg_standalone");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -96,10 +98,11 @@ public class GraphvizEngineTest {
 
 		String render = "render('" + dot + "'," + options.toJson(false) + ");";
 		String result = engine.execute(render, options); //We also have to give options here to make sure SVG_STANDALONE is used
-		URL svg = ClassUtils.getResourceURL(this, "flow.svg_standalone");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -109,16 +112,18 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, Options.create().format(Format.SVG));
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(this, "flow.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
-
+	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test(expected = IOException.class)
-	public void getUnknownVizJsVersion() throws IOException, GraphvizException {
+	public void zgetUnknownVizJsVersion() throws IOException, GraphvizException {
 		GraphvizEngine engine = new GraphvizEngine("1.2.3");
 		assertNotNull(engine);
 		engine.execute(dot);
+		engine.close();
 	}
 
 	@Test(expected = GraphvizException.class)
@@ -126,6 +131,7 @@ public class GraphvizEngineTest {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		engine.execute("i'm not a dot!");
+		engine.close();
 	}
 
 	@Test
@@ -138,9 +144,10 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, options);
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(this, "flow.0.5.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.0.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 
 	@Test
@@ -153,8 +160,9 @@ public class GraphvizEngineTest {
 		String result = engine.execute(dot, options);
 		assertNotNull(result);
 
-		URL svg = ClassUtils.getResourceURL(this, "flow.1.5.svg");
+		URL svg = ClassUtils.getResourceURL(scopeProvider, "flow.1.5.svg");
 		assertNotNull(svg);
 		assertEqualsIgnoreWhitespaces(Misc.streamToString(svg.openStream()), result);
+		engine.close();
 	}
 }

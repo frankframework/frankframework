@@ -1079,6 +1079,11 @@ button.dim:active:before {
 .btn:focus {
   outline: none !important;
 }
+button.btn-invisible {
+  padding: 0;
+  border: none;
+  background: none;
+}
 .label {
   background-color: #d1dade;
   color: #5e5e5e;
@@ -1147,8 +1152,10 @@ button.dim:active:before {
 .label-height-20 {
   line-height: 20px;
 }
-.label-height-30 {
-  line-height: 30px;
+@media (min-width: 768px) {
+  .label-height-30 {
+    line-height: 30px;
+  }
 }
 /* TOOGLE SWICH */
 .onoffswitch {
@@ -1660,6 +1667,20 @@ table.dataTable thead .sorting_desc_disabled {
 }
 .dataTables_filter label {
   margin-right: 5px;
+}
+td.storageActions {
+  min-width: 120px !important;
+  height: 100px;
+}
+td.storageActions > div.icheckbox_square-green {
+  margin: 38px 6px 0 0;
+}
+td.storageActions > div {
+  float: left;
+}
+td.storageActions a, .storageActions button {
+  float: left;
+  clear: both;
 }
 .html5buttons {
   float: right;
@@ -2469,31 +2490,6 @@ label.error {
   border-right: none;
 }
 /* Toastr custom style */
-#toast-container > .toast {
-  background-image: none !important;
-}
-#toast-container > .toast:before {
-  position: fixed;
-  font-family: FontAwesome;
-  font-size: 24px;
-  line-height: 24px;
-  float: left;
-  color: #FFF;
-  padding-right: 0.5em;
-  margin: auto 0.5em auto -1.5em;
-}
-#toast-container > .toast-warning:before {
-  content: "\f0e7";
-}
-#toast-container > .toast-error:before {
-  content: "\f071";
-}
-#toast-container > .toast-info:before {
-  content: "\f005";
-}
-#toast-container > .toast-success:before {
-  content: "\f00C";
-}
 #toast-container > div {
   -moz-box-shadow: 0 0 3px #999;
   -webkit-box-shadow: 0 0 3px #999;
@@ -2510,6 +2506,12 @@ label.error {
   -ms-filter: alpha(opacity=100);
   filter: alpha(opacity=100);
   cursor: pointer;
+}
+.toast-close-button {
+  right: -0.3em;
+  top: -0.7em;
+  -webkit-text-shadow: none;
+  text-shadow: none;
 }
 .toast {
   background-color: #1ab394;
@@ -3651,7 +3653,7 @@ body.body-small .footer.fixed {
   line-height: 1.42857;
   padding: 5px;
   vertical-align: top;
-  min-width: 75px;
+  min-width: 30px;
 }
 .table > thead > tr > th > input {
   font-weight: 400;
@@ -3844,6 +3846,8 @@ code {
   margin-bottom: 0;
   padding: 14px 15px 7px;
   min-height: 48px;
+}
+.disableUserSelect {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select:none;
@@ -3916,6 +3920,10 @@ code {
 }
 .adapters .ibox {
   margin-bottom: 10px;
+}
+.row.form-group {
+  margin-left: 0px;
+  margin-right: 0px;
 }
 .row .ibox {
 	box-shadow: 2px 2px 1px 0px rgba(103,106,108,0.4);
@@ -4630,7 +4638,6 @@ body.mini-navbar.fixed-sidebar .logo-element {
   padding: 100px 20px 20px 20px;
 }
 .logo-name {
-  color: #e6e6e6;
   font-size: 180px;
   font-weight: 800;
   letter-spacing: -10px;
@@ -5193,6 +5200,20 @@ dd.project-people {
   position: absolute;
   max-height: 100%;
   max-width: 100%;
+}
+.configurationFlow {
+  position: relative;
+}
+.configurationFlow a {
+  display: block;
+  overflow: hidden;
+}
+.configurationFlow img {
+  max-height: 100%;
+  max-width: 100%;
+  height: 100px;
+  padding: 2px;
+  width: 100%;
 }
 @media (min-width: 1200px) {
   .messages {
@@ -5856,6 +5877,9 @@ body.body-small .vote-icon {
 }
 .metismenu .fa-info-circle {
   color: #fff;
+}
+.metismenu .fa-book {
+  color: #8bc34a;
 }
 .metismenu .fa-commenting-o {
   color: #00e5ff;
@@ -6777,6 +6801,13 @@ body.body-small .vote-icon {
 .hideBtn1170.minw180px {
   min-width: 180px;
 }
+.hamburger {
+  display: none;
+  padding: 2px 6px;
+  margin-left: 20px;
+  vertical-align: unset;
+  margin-top: 17px;
+}
 
 @media (max-width: 1170px) {
   .hideBtn1170 span {
@@ -6806,6 +6837,16 @@ body.body-small .vote-icon {
 @media (max-width: 768px) {
   .maxWidth768 {
     width: 100%;
+  }
+  .minimalize {
+    display: none;
+  }
+  .hamburger {
+    display: inline-block;
+  }
+  ul.navbar-top-links.navbar-right {
+    clear: both;
+    margin-left: 20px;
   }
   #page-wrapper {
     position: inherit;

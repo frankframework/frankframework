@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -75,24 +76,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class CrlPipe extends FixedForwardPipe {
 	private String issuerSessionKey;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		X509CRL crl;
-		InputStream inputStream = (InputStream)input;
-		try {
+		try (InputStream inputStream = message.asInputStream()) {
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
 			crl = (X509CRL)cf.generateCRL(inputStream);
-		} catch (CertificateException e) {
+		} catch (CertificateException | IOException | CRLException e) {
 			throw new PipeRunException(this, "Could not read CRL", e);
-		} catch (CRLException e) {
-			throw new PipeRunException(this, "Could not read CRL", e);
-		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					log.warn("Could not close CRL input stream", e);
-				}
-			}
 		}
 		String result = null;
 		if (isCRLOK(crl, (InputStream)session.get(getIssuerSessionKey()))) {
@@ -106,7 +97,7 @@ public class CrlPipe extends FixedForwardPipe {
 			}
 			result = root.toXML();
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private boolean isCRLOK(X509CRL x509crl, InputStream issuer) throws PipeRunException {

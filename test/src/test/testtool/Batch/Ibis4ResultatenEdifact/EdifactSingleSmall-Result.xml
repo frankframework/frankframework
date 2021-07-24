@@ -1,4 +1,4 @@
-<document name="i4rEdifact.txt">
+<document name="Test Tool correlation id">
   <UNA_block>
     <UNB_block>
       <UNB>
@@ -8,69 +8,69 @@
         <geadresseerde>I094324000118613</geadresseerde>
         <aanmaakDatumTijd>060127:1406</aanmaakDatumTijd>
         <filler>PMB0000449-026</filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler></filler>
-        <filler>1&#39;</filler>
-        <testAanduiding></testAanduiding>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler/>
+        <filler>1'</filler>
+        <testAanduiding/>
       </UNB>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002485-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>VP</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>ANAAM</label>
-            <waarde>MEINEN&#39;</waarde>
+            <waarde>JAUWEN'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VOORL</label>
-            <waarde>JN&#39;</waarde>
+            <waarde>KB'</waarde>
           </LBW>
         </ENT_block>
         <UNT>
           <recordSoort>UNT</recordSoort>
           <aantalSegmenten>29</aantalSegmenten>
-          <soortBericht>PMB0002485-026&#39;</soortBericht>
+          <soortBericht>PMB0002485-026'</soortBericht>
         </UNT>
       </UNH_block>
       <UNH_block>
         <UNH>
           <recordSoort>UNH</recordSoort>
           <filler>PMB0002486-026</filler>
-          <soortBericht>INSLBW:1:0:IN:PMB&#39;</soortBericht>
+          <soortBericht>INSLBW:1:0:IN:PMB'</soortBericht>
         </UNH>
         <ENT_block>
           <ENT>
             <recordSoort>ENT</recordSoort>
             <entiteit>AL</entiteit>
-            <volgNummer>0&#39;</volgNummer>
+            <volgNummer>0'</volgNummer>
           </ENT>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VIEWCOD</label>
-            <waarde>00901&#39;</waarde>
+            <waarde>00901'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>VERSIEV</label>
-            <waarde>102&#39;</waarde>
+            <waarde>102'</waarde>
           </LBW>
           <LBW>
             <recordSoort>LBW</recordSoort>
             <label>PFUNK</label>
-            <waarde>100&#39;</waarde>
+            <waarde>100'</waarde>
           </LBW>
         </ENT_block>
       </UNH_block>

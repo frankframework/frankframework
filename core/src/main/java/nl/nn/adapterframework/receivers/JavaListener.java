@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,10 +23,16 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -35,10 +42,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 
 /** *
@@ -46,8 +51,10 @@ import org.apache.log4j.Logger;
  *
  * @author  Gerrit van Brakel
  */
-public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
+public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String serviceName;
@@ -58,11 +65,11 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	private boolean httpWsdl = false;
 
 	private static Map<String, JavaListener> registeredListeners;
-	private IMessageHandler handler;
+	private IMessageHandler<String> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (isIsolated()) {
+		if (isolated) {
 			throw new ConfigurationException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine");
 		}
 		try {
@@ -83,15 +90,6 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		try {
 			// add myself to local list so that IbisLocalSenders can find me
 			registerListener();
-
-//			// display transaction status, to force caching of UserTransaction.
-//			// UserTransaction is not found in context if looked up from javalistener.
-//			try {
-//				String transactionStatus = JtaUtil.displayTransactionStatus();
-//				log.debug("transaction status at startup ["+transactionStatus+"]");
-//			} catch (Exception e) {
-//				log.warn("could not get transaction status at startup",e);
-//			}
 
 			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
 			// (performed only if serviceName is not empty
@@ -123,8 +121,12 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		}
 	}
 
+	public synchronized boolean isOpen() {
+		return opened;
+	}
+
 	@Override
-	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
+	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
@@ -136,20 +138,28 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 			if (object != null) {
 				if (object instanceof HttpServletRequest) {
 					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(IPipeLineSession.securityHandlerKey, securityHandler);
+					context.put(PipeLineSession.securityHandlerKey, securityHandler);
 				} else {
 					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
 				}
 			}
 		}
+		Message message =  new Message(rawMessage);
 		if (throwException) {
-			return handler.processRequest(this, correlationId, message, context);
-		} else {
 			try {
-				return handler.processRequest(this, correlationId, message, context);
+				return handler.processRequest(this, correlationId, rawMessage, message, (Map<String,Object>)context).asString();
+			} catch (IOException e) {
+				throw new ListenerException("cannot convert stream", e);
 			}
-			catch (ListenerException e) {
-				return handler.formatException(null,correlationId, message,e);
+		} 
+		try {
+			return handler.processRequest(this, correlationId, rawMessage, message, context).asString();
+		} catch (ListenerException | IOException e) {
+			try {
+				return handler.formatException(null,correlationId, message, e).asString();
+			} catch (IOException e1) {
+				e.addSuppressed(e1);
+				throw new ListenerException(e);
 			}
 		}
 	}
@@ -170,7 +180,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	 * Returns JavaListener registered under the given name
 	 */
 	public static JavaListener getListener(String name) {
-		return (JavaListener)getListeners().get(name);
+		return getListeners().get(name);
 	}
 
 	/**
@@ -178,7 +188,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	 */
 	private static synchronized Map<String, JavaListener> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap());
+			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
 		}
 		return registeredListeners;
 	}
@@ -193,53 +203,51 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 	}
 
 
 	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
+	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
 	@Override
-	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
-		return (String)rawMessage;
+	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
+		return new Message(rawMessage);
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			return "external: "+getServiceName();
-		} else {
-			return "internal: "+getName();
-		}
+		} 
+		return "internal: "+getName();
 	}
 
 
-	/**
-	 * The <code>toString()</code> method retrieves its value
-	 * by reflection.
-	 * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
-	 *
-	 **/
 	@Override
-	public String toString() {
-		return super.toString();
-		// This gives stack overflows:
-		// return ToStringBuilder.reflectionToString(this);
-	}
-
-	@Override
-	public void setHandler(IMessageHandler handler) {
+	public void setHandler(IMessageHandler<String> handler) {
 		this.handler = handler;
 	}
-	public IMessageHandler getHandler() {
+	public IMessageHandler<String> getHandler() {
 		return handler;
 	}
 
+	@IbisDoc({"1", "Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	
+	@IbisDoc({"2", "External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
 	}
@@ -247,29 +255,18 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return serviceName;
 	}
 
-	@IbisDoc({"name of the listener as known to the adapter. an {@link nl.nn.adapterframework.pipes.ibislocalsender ibislocalsender} refers to this name in its <code>javalistener</code>-attribute.", ""})
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-
+	@Deprecated
 	public void setLocal(String name) {
 		throw new RuntimeException("do not set attribute 'local=true', just leave serviceName empty!");
 	}
 
+	@Deprecated
 	public void setIsolated(boolean b) {
 		isolated = b;
 	}
-	public boolean isIsolated() {
-		return isolated;
-	}
 
-	@IbisDoc({" when set <code>false</code>, the request is executed asynchronously. this implies <code>isolated=true</code>. n.b. be aware that there is no limit on the number of threads generated", "true"})
+	@Deprecated
+	@IbisDoc({"3", "If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated", "true"})
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
@@ -277,11 +274,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return synchronous;
 	}
 
-	public synchronized boolean isOpen() {
-		return opened;
-	}
-
-	@IbisDoc({"should the javalistener throw a listenerexception when it occurs or return an error message", "<code>true</code>"})
+	@IbisDoc({"4", "Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -289,7 +282,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return throwException;
 	}
 	
-	@IbisDoc({"when <code>true</code>, the wsdl of the service provided by this listener is available for download ", "<code>false</code>"})
+	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "<code>false</code>"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

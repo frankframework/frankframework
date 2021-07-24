@@ -7,7 +7,6 @@
 			function="cleanupDatabase"
 		>
 			<locker
-				jmsRealm="jdbc"
 				objectId="CleanupDatabase"
 				ignoreTableNotExist="true"
 			/>

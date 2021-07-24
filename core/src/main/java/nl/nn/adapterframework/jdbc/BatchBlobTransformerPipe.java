@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.sql.ResultSet;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  *
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link nl.nn.adapterframework.batch.InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link nl.nn.adapterframework.batch.InputStreamReaderFactory} just converts using the specified characterset</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. 
  * 			If no manager is specified, a default manager and flow are created. The default manager 
  * 			always uses the default flow. The default flow always uses the first registered recordHandler 
@@ -47,19 +47,19 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	@Override
-	protected Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException {
+	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
 		try {
-			InputStream blobStream=JdbcUtil.getBlobInputStream(rs,1,querySender.isBlobsCompressed());
+			InputStream blobStream=JdbcUtil.getBlobInputStream(querySender.getDbmsSupport(), rs ,1 , querySender.isBlobsCompressed());
 			return getReaderFactory().getReader(blobStream, charset, streamId, session);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
 
-	@IbisDoc({"charset used to read and write blobs", "utf-8"})
+	@Deprecated
+	@ConfigurationWarning("please use attribute 'charset' instead")
 	public void setBlobCharset(String charset) {
 		setCharset(charset);
-		ConfigurationWarnings.getInstance().add(log,"attribute blobCharset is replaced by charset for class ["+this.getClass().getName()+"]");
 	}
 
 	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})

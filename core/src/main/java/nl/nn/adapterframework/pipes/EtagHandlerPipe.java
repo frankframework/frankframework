@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Integration Partners
+   Copyright 2017, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -30,8 +31,8 @@ import nl.nn.adapterframework.http.rest.ApiEhcache;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe to manage RESTFUL etag caching
@@ -52,10 +53,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		super.configure();
 		String action = getAction();
 		if (action==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
+			throw new ConfigurationException("action must be set");
 		}
 		if (!actions.contains(action)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for action ["+action+"], must be one of " + actions.toString());
+			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + actions.toString());
 		}
 
 		boolean hasUriPatternParameter = false;
@@ -67,28 +68,24 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		if(getUriPattern() == null && !hasUriPatternParameter) {
-			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
+			throw new ConfigurationException("no uriPattern found!");
 		}
 
 		cache = ApiCacheManager.getInstance();
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		if (input==null) {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
-		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got an invalid type as input, expected String, got "+ input.getClass().getName());
 		}
 
 		String uriPatternSessionKey = null;
 		ParameterValueList pvl = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
-			ParameterResolutionContext prc = new ParameterResolutionContext((String) input, session);
 			try {
-				pvl = prc.getValues(getParameterList());
+				pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
 					String uriPattern = (String)pvl.getValue("uriPattern");
 					if (uriPattern!=null) {
@@ -110,14 +107,22 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			Object returnCode = false;
 
 			if(getAction().equalsIgnoreCase("generate")) {
-				cache.put(cacheKey, RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), input.hashCode()));
+				try {
+					cache.put(cacheKey, RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), message.asString().hashCode()));
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				returnCode = true;
 			}
 			else if(getAction().equalsIgnoreCase("get")) {
 				returnCode = cache.get(cacheKey);
 			}
 			else if(getAction().equalsIgnoreCase("set")) {
-				cache.put(cacheKey, input.toString());
+				try {
+					cache.put(cacheKey, message.asString());
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				returnCode = true;
 			}
 			else if(getAction().equalsIgnoreCase("delete")) {
@@ -138,10 +143,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			}
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 
-			return new PipeRunResult(getForward(), returnCode);
+			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
-			PipeForward pipeForward = findForward("exception");
+			PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			String msg;
 
 			if(cache == null)

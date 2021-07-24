@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -39,22 +37,20 @@ import nl.nn.adapterframework.util.ClassUtils;
  * 
  * @author  John Dekker
  */
-public class RecordXml2Sender extends RecordXmlTransformer implements ConfigurationAware {
+public class RecordXml2Sender extends RecordXmlTransformer {
 
 	private ISender sender = null;
-	private Configuration configuration; 
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		if (sender==null) {
 			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
-		if (sender instanceof ConfigurationAware) {
-			((ConfigurationAware)sender).setConfiguration(getConfiguration());
-		}
 		sender.configure();
 	}
+
 	@Override
 	public void open() throws SenderException {
 		super.open();
@@ -67,11 +63,10 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	}
 
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
-		String xml = (String)super.handleRecord(session,parsedRecord);
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
+		String xml = super.handleRecord(session,parsedRecord);
 		return getSender().sendMessage(new Message(xml), session).asString(); 
 	}
-	
 
 
 	public void setSender(ISender sender) {
@@ -80,14 +75,4 @@ public class RecordXml2Sender extends RecordXmlTransformer implements Configurat
 	public ISender getSender() {
 		return sender;
 	}
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
 }

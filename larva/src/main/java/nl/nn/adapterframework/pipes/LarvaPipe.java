@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,15 +20,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -52,7 +54,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
  * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * 
  * @author Jaco de Groot
@@ -86,7 +87,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 		failForward=findForward(FORWARD_FAIL);
 		if (failForward==null) {
-			failForward=getForward();
+			failForward=getSuccessForward();
 		}
 	}
 
@@ -94,7 +95,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	
 	
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
 		AppConstants appConstants = TestTool.getAppConstants(ibisContext);
 		// Property webapp.realpath is not available in appConstants which was
@@ -126,7 +127,7 @@ public class LarvaPipe extends FixedForwardPipe {
 								paramWaitBeforeCleanUp, realPath,
 								paramScenariosRootDirectory,
 								out, silent);
-		PipeForward forward=numScenariosFailed==0? getForward(): failForward;
+		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;
 		return new PipeRunResult(forward, out.toString());
 	}
 
@@ -138,6 +139,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.writeToSystemOut = writeToSystemOut;
 	}
 
+	@IbisDoc("The scenario sub directory to execute")
 	public void setExecute(String execute) {
 		this.execute = execute;
 	}

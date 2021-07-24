@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.List;
 import nl.nn.adapterframework.extensions.cmis.CmisUtils;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
-import nl.nn.adapterframework.extensions.cmis.server.HttpSessionCmisService;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -31,28 +30,25 @@ import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionList;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisRepositoryService implements RepositoryService {
 
 	private RepositoryService repositoryService;
 	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private CallContext callContext;
 
-	public IbisRepositoryService(RepositoryService repositoryService) {
+	public IbisRepositoryService(RepositoryService repositoryService, CallContext callContext) {
 		this.repositoryService = repositoryService;
-	}
-
-	private CmisVersion getCmisVersion() {
-		CallContext context = HttpSessionCmisService.callContext.get();
-		if(context != null) {
-			return HttpSessionCmisService.callContext.get().getCmisVersion();
-		}
-
-		return CmisVersion.CMIS_1_1;
+		this.callContext = callContext;
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
@@ -72,7 +68,8 @@ public class IbisRepositoryService implements RepositoryService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML());
+
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML(), callContext);
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 
 			List<RepositoryInfo> repositoryInfoList = new ArrayList<RepositoryInfo>();
@@ -92,7 +89,8 @@ public class IbisRepositoryService implements RepositoryService {
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.toXML());
+
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORY_INFO, cmisXml.toXML(), callContext);
 
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 			Element repository = XmlUtils.getFirstChildTag(repositories, "repository");
@@ -104,7 +102,6 @@ public class IbisRepositoryService implements RepositoryService {
 	@Override
 	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions, 
 			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.getTypeChildren(repositoryId, typeId, includePropertyDefinitions, maxItems, skipCount, extension);
 	}
 
@@ -122,10 +119,10 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("depth", depth));
 			cmisXml.addSubElement(buildXml("includePropertyDefinitions", includePropertyDefinitions));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML());
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DESCENDANTS, cmisXml.toXML(), callContext);
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDescendants");
 
-			return CmisUtils.xml2TypeDescendants(typesXml, getCmisVersion());
+			return CmisUtils.xml2TypeDescendants(typesXml, callContext.getCmisVersion());
 		}
 	}
 
@@ -140,29 +137,26 @@ public class IbisRepositoryService implements RepositoryService {
 			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
 			cmisXml.addSubElement(buildXml("typeId", typeId));
 
-			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML());
+			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_TYPE_DEFINITION, cmisXml.toXML(), callContext);
 
 			Element typesXml = XmlUtils.getFirstChildTag(cmisResult, "typeDefinitions");
 
-			return CmisUtils.xml2TypeDefinition(XmlUtils.getFirstChildTag(typesXml, "typeDefinition"), getCmisVersion());
+			return CmisUtils.xml2TypeDefinition(XmlUtils.getFirstChildTag(typesXml, "typeDefinition"), callContext.getCmisVersion());
 		}
 	}
 
 	@Override
 	public TypeDefinition createType(String repositoryId, TypeDefinition type, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.createType(repositoryId, type, extension);
 	}
 
 	@Override
 	public TypeDefinition updateType(String repositoryId, TypeDefinition type, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.updateType(repositoryId, type, extension);
 	}
 
 	@Override
 	public void deleteType(String repositoryId, String typeId, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		repositoryService.deleteType(repositoryId, typeId, extension);
 	}
 }

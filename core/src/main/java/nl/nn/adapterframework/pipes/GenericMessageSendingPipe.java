@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -43,7 +43,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * </table>
@@ -52,19 +51,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author  Dennis van Loon
  * @since   4.1.1
  */
-
-public class GenericMessageSendingPipe extends MessageSendingPipe {
-
-	public void setListener(ICorrelatedPullingListener listener) {
-		super.setListener(listener);
-	}
-
-	public void setSender(Object sender) {
-		if (sender instanceof ISender) {
-			super.setSender((ISender)sender);
-		} else {
-			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
-		}
-	}
+@Deprecated
+@ConfigurationWarning("Use SenderPipe instead")
+public class GenericMessageSendingPipe extends SenderPipe {
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ package nl.nn.adapterframework.extensions.javascript;
 import java.io.File;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import com.eclipsesource.v8.JavaCallback;
+import com.eclipsesource.v8.JavaVoidCallback;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -36,22 +37,21 @@ public class J2V8 implements JavascriptEngine<V8> {
 
 	private Logger log = LogUtil.getLogger(this);
 	private V8 v8;
+	private String alias = null;
 
 	@Override
-	public void startRuntime() {
-		startRuntime(null, null);
+	public void setGlobalAlias(String alias) {
+		this.alias = alias;
 	}
 
 	/**
-	 * If path is null or empty, it will use the log.dir
-	 * If the log.dir is relative it will turn it into an absolute path
+	 * Use the ${ibis.tmpdir} to extract the SO/DLL files into.
+	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
 	 */
-	public void startRuntime(String alias, String path) {
-		String directory = path;
-		if(StringUtils.isEmpty(directory)) {
-			directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
-		}
-		if(directory != null) {
+	private String getTempDirectory() {
+		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+
+		if (StringUtils.isNotEmpty(directory)) {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
 				String absPath = new File("").getAbsolutePath();
@@ -59,26 +59,43 @@ public class J2V8 implements JavascriptEngine<V8> {
 					file = new File(absPath, directory);
 				}
 			}
-			String fileDir = file.toString();
+			if(!file.exists()) {
+				file.mkdirs();
+			}
+			String fileDir = file.getPath();
 			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
 				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
 			}
 			directory = file.getAbsolutePath();
-			log.info("resolved J2V8 tempDirectory from path ["+path+"] to directory ["+directory+"]");
 		}
+		log.info("resolved J2V8 tempDirectory to directory [" + directory + "]");
 
 		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
-		v8 = V8.createV8Runtime(alias, directory);
+		return StringUtils.isEmpty(directory) ? null : directory;
 	}
 
 	@Override
-	public void executeScript(String script) {
-		v8.executeScript(script);
+	public void startRuntime() {
+		String directory = getTempDirectory();
+		v8 = V8.createV8Runtime(alias, directory); // The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path. Defaults to ${ibis.tmpdir}
 	}
 
 	@Override
-	public Object executeFunction(String name, Object... parameters) {
-		return v8.executeJSFunction(name, parameters);
+	public void executeScript(String script) throws JavascriptException {
+		try {
+			v8.executeScript(script);
+		} catch(Exception e) {
+			throw new JavascriptException("error executing script", e);
+		}
+	}
+
+	@Override
+	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
+		try {
+			return v8.executeJSFunction(name, parameters);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing function [" + name + "]", e);
+		}
 	}
 
 	@Override
@@ -92,17 +109,33 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	@Override
-	public void registerCallback(final ISender sender, final IPipeLineSession session) {
+	public void registerCallback(final ISender sender, final PipeLineSession session) {
 		v8.registerJavaMethod(new JavaCallback() {
 			@Override
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
-					Message msg = new Message(parameters.get(0));
+					Message msg = Message.asMessage(parameters.get(0));
 					return sender.sendMessage(msg, session).asString();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}, sender.getName());
+	}
+
+	@Override
+	public void setResultHandler(ResultHandler resultHandler) {
+		getEngine().registerJavaMethod(new JavaVoidCallback() {
+			@Override
+			public void invoke(V8Object receiver, V8Array parameters) {
+				resultHandler.setResult(parameters.getString(0));
+			}
+		}, "result");
+		getEngine().registerJavaMethod(new JavaVoidCallback() {
+			@Override
+			public void invoke(V8Object receiver, V8Array parameters) {
+				resultHandler.setError(parameters.getString(0));
+			}
+		}, "error");
 	}
 }

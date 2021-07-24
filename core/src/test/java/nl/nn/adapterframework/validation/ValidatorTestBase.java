@@ -1,9 +1,7 @@
 package nl.nn.adapterframework.validation;
 
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,9 +10,10 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.pipes.XmlValidator;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -65,8 +64,8 @@ public abstract class ValidatorTestBase extends TestCase {
 	public String SCHEMA_LOCATION_ARRAYS                            	="urn:arrays /Arrays/arrays.xsd";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
-	
-	private ClassLoader testClassLoader = this.getClass().getClassLoader();
+
+	private IScopeProvider testScopeProvider = new TestScopeProvider();
 
     public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
     	validate(rootNamespace,schemaLocation, false, inputFile, null);
@@ -78,13 +77,13 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expectedFailureReasons);
     }
 
-    protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
     	String expected[]={ expectedFailureReason };
     	if (expectedFailureReason==null) expected=null;
     	validate(rootElement, rootNamespace,schemaLocation,addNamespaceToSchema,false,inputfile, expected);
     }
 
-    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws IllegalAccessException, InstantiationException, XmlValidatorException, IOException, PipeRunException, ConfigurationException {
+    protected void validation(String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
     	validation(null,rootNamespace,schemaLocation,inputfile,addNamespaceToSchema, expectedFailureReason);
     }
 
@@ -104,12 +103,12 @@ public abstract class ValidatorTestBase extends TestCase {
     	validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
     }
 
-    public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException;
-    public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException, PipeRunException, IOException {
+    public abstract String validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception;
+    public String validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
     	return validate(null, rootNamespace, schemaLocation, addNamespaceToSchema, ignoreUnknownNamespaces, inputFile, expectedFailureReasons);
     }
 
-    public void evaluateResult(String event, IPipeLineSession session, Exception e, String[] expectedFailureReasons) {
+    public void evaluateResult(String event, PipeLineSession session, Exception e, String[] expectedFailureReasons) {
         String failureReason=(String)(session.get("failureReason"));
         if (failureReason!=null) {
         	System.out.println("no failure reason");
@@ -194,7 +193,7 @@ public abstract class ValidatorTestBase extends TestCase {
 //						xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 //						xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 //						xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-						xsd.initNamespace(split[i], testClassLoader, split[i + 1]);
+						xsd.initNamespace(split[i], testScopeProvider, split[i + 1]);
 						xsds.add(xsd);
 					}
 //				}
@@ -210,7 +209,7 @@ public abstract class ValidatorTestBase extends TestCase {
 					Map<String, Set<XSD>> xsdsGroupedByNamespace =
 							SchemaUtils.getXsdsGroupedByNamespace(xsds, false);
 					xsds = SchemaUtils.mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(
-							this.getClass().getClassLoader(), xsdsGroupedByNamespace, null);
+							testScopeProvider, xsdsGroupedByNamespace, null);
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);
 				}
@@ -225,12 +224,12 @@ public abstract class ValidatorTestBase extends TestCase {
 			}
 
 			@Override
-			public String getSchemasId(IPipeLineSession session) throws PipeRunException {
+			public String getSchemasId(PipeLineSession session) throws PipeRunException {
 				return null;
 			}
 
 			@Override
-			public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+			public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
 				return null;
 			}
 

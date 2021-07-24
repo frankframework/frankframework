@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
 package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
+import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -60,19 +64,30 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	private String instanceName;
 	private String instanceNameLowerCase;
 	private String fxfDir;
-	private String flowId;
+	private @Getter String flowId;
 	private String environment;
-	private boolean transformFilename = true;
-	private String fxfVersion = "3.1";
+	private @Getter boolean transformFilename = true;
+	private @Getter String flowOutFolder = "";
+	private @Getter String fxfVersion = "3.1";
 	private TransformerPool transferFlowIdTp = null;
 	private TransformerPool clientFilenameTp = null;
-	private String soapBodySessionKey = "soapBody";
-	private String transferFlowIdSessionKey = "transferFlowId";
-	private String clientFilenameSessionKey = "clientFilename";
-	private String flowIdSessionKey = "flowId";
-	private String fxfDirSessionKey = "fxfDir";
-	private String fxfFileSessionKey = "fxfFile";
+	private @Getter String soapBodySessionKey = "soapBody";
+	private @Getter String transferFlowIdSessionKey = "transferFlowId";
+	private @Getter String clientFilenameSessionKey = "clientFilename";
+	private @Getter String flowIdSessionKey = "flowId";
+	private @Getter String fxfDirSessionKey = "fxfDir";
+	private @Getter String fxfFileSessionKey = "fxfFile";
+	private @Getter boolean createFolder = false;
+	private @Getter boolean useServerFilename = false;
 
+	private final String DESTINATION_PREFIX = "ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer";
+	private final String DESTINATION_SUFFIX = "Action";
+	private final String ON_COMPLETED_TRANSFER_NOTIFY_ACTION = "/OnCompletedTransferNotify_Action/";
+	private final String TRANSFORMER_FLOW_ID_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION + "TransferFlowId";
+	private final String SERVER_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ServerFilename";
+	private final String CLIENT_FILENAME_XPATH = ON_COMPLETED_TRANSFER_NOTIFY_ACTION+"ClientFilename";
+	private final String TRANSFER_ACTION_NAMESPACE_PREFIX = "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/";
+	private final String FILEPATH_PREFIX = "/opt/data/FXF/";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -83,7 +98,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (parameter == null) {
 				parameter = new Parameter();
 				parameter.setName(DESTINATION);
-				parameter.setValue("ESB.Infrastructure.US.Transfer.FileTransfer.1.StartTransfer."+retrieveStartTransferVersion()+".Action");
+				parameter.setValue(DESTINATION_PREFIX+"."+retrieveStartTransferVersion()+"."+DESTINATION_SUFFIX);
 				parameterList.add(parameter);
 			}
 		}
@@ -115,15 +130,22 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("fxf.dir");
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
-			} else if (!new File(fxfDir).isDirectory()) {
-				throw new ConfigurationException("fxf.dir '" + fxfDir + "' doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/TransferFlowId", "text", false, getParameterList());
-			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, "/OnCompletedTransferNotify_Action/ClientFilename", "text", false, getParameterList());
+			if(isCreateFolder() && !new File(fxfDir).exists() && !new File(fxfDir).mkdirs()) {
+				throw new ConfigurationException("cannot create fxf.dir in the path [" + fxfDir + "]");
+			}
+			if(!new File(fxfDir).isDirectory()) {
+				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
+			}
+			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, "text", false, getParameterList());
+			String xpathFilename = isUseServerFilename() ? SERVER_FILENAME_XPATH : CLIENT_FILENAME_XPATH;
+			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, "text", false, getParameterList());
+		}
+		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
+			setFlowOutFolder(getFlowOutFolder()+"/");
 		}
 		if (!getFxfVersion().equals("3.1") && !getFxfVersion().equals("3.2")) {
-			throw new ConfigurationException("illegal value for fxfVersion ["
-					+ getFxfVersion() + "], must be '3.1' or '3.2'");
+			throw new ConfigurationException("illegal value for fxfVersion [" + getFxfVersion() + "], must be '3.1' or '3.2'");
 		}
 	}
 
@@ -158,10 +180,10 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if ("wrap".equalsIgnoreCase(getDirection())) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
-			xmlStartTransfer_Action.addAttribute("xmlns", "http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/StartTransfer/"+retrieveStartTransferVersion());
+			xmlStartTransfer_Action.addAttribute("xmlns", TRANSFER_ACTION_NAMESPACE_PREFIX+retrieveStartTransferVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
 			xmlStartTransfer_Action.addSubElement(xmlTransferDetails);
 			XmlBuilder xmlSenderApplication = new XmlBuilder("SenderApplication");
@@ -170,26 +192,33 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			XmlBuilder xmlRecipientApplication = new XmlBuilder("RecipientApplication");
 			xmlTransferDetails.addSubElement(xmlRecipientApplication);
 			XmlBuilder xmlFilename = new XmlBuilder("Filename");
-			if (input != null) {
-				String filename = input.toString();
+			if (message != null) {
+				String filename;
+				try {
+					filename = message.asString();
+				} catch (IOException e) {
+					throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+				}
 				if (isTransformFilename()) {
-					String filenameOnIufState = "/opt/data/FXF/"
-							+ instanceNameLowerCase + "/" + getFlowId()
-							+ "/out/" + new File(filename).getName();
+					String filenameOnIufState = FILEPATH_PREFIX + instanceNameLowerCase + "/" + getFlowId() + "/out/" + new File(filename).getName();
 					xmlFilename.setValue(filenameOnIufState);
 				} else {
-					xmlFilename.setValue(filename);
+					xmlFilename.setValue(getFlowOutFolder()+filename);
 				}
 			}
 			xmlTransferDetails.addSubElement(xmlFilename);
 			XmlBuilder xmlTransferFlowId = new XmlBuilder("TransferFlowId");
-			String transferFlowId = getFlowId().substring(0, 2) + environment
-					+ getFlowId().substring(3);
+			String transferFlowId = getFlowId().substring(0, 2) + environment + getFlowId().substring(3);
 			xmlTransferFlowId.setValue(transferFlowId);
 			xmlTransferDetails.addSubElement(xmlTransferFlowId);
-			return super.doPipe(xmlStartTransfer_Action.toXML(), session);
+			return super.doPipe(new Message(xmlStartTransfer_Action.toXML()), session);
 		} else {
-			String soapBody = (String)super.doPipe(input, session).getResult();
+			String soapBody;
+			try {
+				soapBody = super.doPipe(message, session).getResult().asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this,"cannot convert result",e);
+			}
 			session.put(getSoapBodySessionKey(), soapBody);
 			String transferFlowId;
 			String clientFilename;
@@ -204,14 +233,16 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
 			session.put(getFlowIdSessionKey(), flowId);
 			session.put(getFxfDirSessionKey(), fxfDir);
+			// Windows style file separator will be a problem in linux with new File(clientFilename).getName() so replace it
+			if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
+				clientFilename = clientFilename.replace("\\", File.separator);
+			}
 			// Transform the filename as it is known locally on the IUF state
 			// machine to the filename as know on the application server (which
 			// has a mount to the IUF state machine).
-			String fxfFile = fxfDir + File.separator + flowId + File.separator
-							+ "in" + File.separator
-							+ new File(clientFilename).getName();
+			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
 			session.put(getFxfFileSessionKey(), fxfFile);
-			return new PipeRunResult(getForward(), fxfFile);
+			return new PipeRunResult(getSuccessForward(), fxfFile);
 		}
 	}
 
@@ -224,64 +255,39 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	public String getFlowId() {
-		return flowId;
-	}
-
+	@IbisDoc({"1", "specifies the id of the transfer flow", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
 
-	public boolean isTransformFilename() {
-		return transformFilename;
+	@IbisDoc({"2", "specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
+	public void setFlowOutFolder(String flowOutFolder) {
+		this.flowOutFolder = flowOutFolder;
 	}
 
+	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the folder the output folder <code>flowOutFolder</code> will be constructed as <code>/opt/data/FXF/&lt;instanceNameLowerCase&gt;/&lt;flowId&gt;/out/</code> ", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
-	}
-
-	public String getSoapBodySessionKey() {
-		return soapBodySessionKey;
 	}
 
 	public void setSoapBodySessionKey(String soapBodySessionKey) {
 		this.soapBodySessionKey = soapBodySessionKey;
 	}
 
-	public String getTransferFlowIdSessionKey() {
-		return transferFlowIdSessionKey;
-	}
-
 	public void setTransferFlowIdSessionKey(String transferFlowIdSessionKey) {
 		this.transferFlowIdSessionKey = transferFlowIdSessionKey;
-	}
-
-	public String getClientFilenameSessionKey() {
-		return clientFilenameSessionKey;
 	}
 
 	public void setClientFilenameSessionKey(String clientFilenameSessionKey) {
 		this.clientFilenameSessionKey = clientFilenameSessionKey;
 	}
 
-	public String getFlowIdSessionKey() {
-		return flowIdSessionKey;
-	}
-
 	public void setFlowIdSessionKey(String flowIdSessionKey) {
 		this.flowIdSessionKey = flowIdSessionKey;
 	}
 
-	public String getFxfDirSessionKey() {
-		return fxfDirSessionKey;
-	}
-
 	public void setFxfDirSessionKey(String fxfDirSessionKey) {
 		this.fxfDirSessionKey = fxfDirSessionKey;
-	}
-
-	public String getFxfFileSessionKey() {
-		return fxfFileSessionKey;
 	}
 
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
@@ -292,7 +298,13 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfVersion = fxfVersion;
 	}
 
-	public String getFxfVersion() {
-		return fxfVersion;
+	@IbisDoc({"when set to <code>true</code>, the folder corresponding fxf.dir property will be created in case it does not exist", "false"})
+	public void setCreateFolder(boolean createFolder) {
+		this.createFolder = createFolder;
+	}
+
+	@IbisDoc({"when set to <code>true</code>, ServerFileName from the input will be used as the filename", "false"})
+	public void setUseServerFilename(boolean useServerFilename) {
+		this.useServerFilename = useServerFilename;
 	}
 }

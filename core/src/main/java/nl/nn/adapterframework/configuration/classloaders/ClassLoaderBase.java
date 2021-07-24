@@ -22,15 +22,17 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Abstract base class for for IBIS Configuration ClassLoaders.
@@ -41,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Niels Meijer
  *
  */
-public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader, ReloadAware {
+public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
 
 	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
@@ -54,7 +56,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
 	private String basePath = null;
-	private String logPrefix = null;
+	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
 	public ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -126,10 +128,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	/**
-	 * Only for internal use within classloaders
+	 * Only for internal use within ClassLoaders
+	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
 	 */
-	@Override
-	public IbisContext getIbisContext() {
+	protected IbisContext getIbisContext() {
 		return ibisContext;
 	}
 
@@ -139,7 +141,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
 		catch (IllegalArgumentException e) {
-			ConfigurationWarnings.getInstance().add(log, "Invalid reportLevel ["+level+"], using default [ERROR]");
+			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
 
@@ -148,12 +150,21 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		return reportLevel;
 	}
 
+	public void setAllowCustomClasses(boolean allow) {
+		allowCustomClasses = allow;
+	}
+
 	/**
 	 * Override this method and make it final so nobody can overwrite it.
 	 * Implementations of this class should use {@link ClassLoaderBase#getLocalResource(String)}
 	 */
 	@Override
 	public final URL getResource(String name) {
+		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
+			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
+			return null;
+		}
+
 		//It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
 		if(name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
@@ -182,6 +193,10 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	public URL getResource(String name, boolean useParent) {
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
+		if(normalizedFilename == null) {
+			return null; //if the path after normalization equals null, return null
+		}
+
 		url = getLocalResource(normalizedFilename);
 		if(log.isTraceEnabled()) log.trace("["+getConfigurationName()+"] "+(url==null?"failed to retrieve":"retrieved")+" local resource ["+normalizedFilename+"]");
 
@@ -218,26 +233,57 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public String toString() {
-		if(StringUtils.isEmpty(getConfigurationName())) {
-			return super.toString();
+	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		if(name == null) {
+			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
-		if(logPrefix==null) {
-			String superString = super.toString();
-			logPrefix = superString.substring(superString.lastIndexOf(".")+1)+"["+getConfigurationName()+"]";
+		Throwable throwable = null;
+		try {
+			return getParent().loadClass(name); // First try to load the class natively
+		} catch (Throwable t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
+			throwable = t;
 		}
-		return logPrefix;
+
+		String path = name.replace(".", "/")+".class";
+		URL url = null;
+		if(allowCustomClasses) {
+			if(log.isTraceEnabled()) log.trace(String.format("attempting to load custom class [%s] path [%s]", name, path));
+
+			url = getResource(path);
+			if(url != null && log.isDebugEnabled()) log.debug(String.format("loading custom class url [%s] from classloader [%s]", url, this.toString()));
+		} else {
+			url = getParent().getResource(path); //only allow custom code to be on the actual jvm classpath and not in a config
+		}
+
+		if(url != null) {
+			try {
+				byte[] bytes = Misc.streamToBytes(url.openStream());
+				return defineClass(name, bytes, 0, bytes.length);
+			} catch (Exception e) {
+				throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this.toString()+"]", e);
+			}
+		}
+
+		throw new ClassNotFoundException("class ["+path+"] not found in classloader ["+this.toString()+"]", throwable); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override
 	public void reload() throws ConfigurationException {
-		log.debug("reloading configuration ["+getConfigurationName()+"]");
-
-		if (getParent() instanceof ReloadAware) {
-			((ReloadAware)getParent()).reload();
-		}
+		log.debug("reloading classloader ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);
+	}
+
+	@Override
+	public void destroy() {
+		log.debug("removing classloader ["+this.toString()+"]");
+
+		AppConstants.removeInstance(this);
+	}
+
+	@Override
+	public String toString() {
+		return ClassUtils.nameOf(this);
 	}
 }

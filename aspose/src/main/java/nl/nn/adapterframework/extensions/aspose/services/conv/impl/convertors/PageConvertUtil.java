@@ -35,9 +35,6 @@ public class PageConvertUtil {
 
 	/**
 	 * Converts centimeter to points (DPI).
-	 * 
-	 * @param cm
-	 * @return
 	 */
 	public static float convertCmToPoints(float cm) {
 		return cm * DPCM;

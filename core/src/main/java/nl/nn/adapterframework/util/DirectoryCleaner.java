@@ -18,8 +18,8 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Cleans up a directory.

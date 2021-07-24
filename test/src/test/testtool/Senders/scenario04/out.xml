@@ -1,13 +1,12 @@
 <results>
-	<result senderClass="SenderWrapper$$EnhancerBySpringCGLIB$$b74afd59" type="SenderException">
-		[nl.nn.adapterframework.senders.IbisLocalSender] [null] exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] msgId [Test Tool correlation id] caught exception: [nl.nn.adapterframework.senders.IbisLocalSender] [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;test/&gt;
-	</result>
-	<result senderClass="SenderWrapper$$EnhancerBySpringCGLIB$$b74afd59" type="String">[LESS_THAN]</result>
-	<result senderClass="SenderWrapper$$EnhancerBySpringCGLIB$$b74afd59" type="String">
-		<email>
-			<recipients>
-				<recipient type="to">rfax@natned</recipient>
-			</recipients>
-		</email>
-	</result>
+  <result senderClass="SenderWrapper" type="SenderException">IbisLocalSender [null] exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] msgId [Test Tool correlation id] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;test/&gt;</result>
+  <result senderClass="SenderWrapper" type="String">[LESS_THAN]</result>
+  <result senderClass="SenderWrapper" type="String">
+    <email>
+      <recipients>
+        <recipient type="to">rfax@natned</recipient>
+      </recipients>
+    </email>
+  </result>
 </results>

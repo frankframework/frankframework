@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 
 import javax.json.stream.JsonGenerator;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -39,11 +39,10 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	private boolean skipArrayElementContainers;
 	private boolean skipRootElement;
 	private String attributePrefix="@";
+	private String mixedContentLabel="#text";
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
-	
-	private final boolean DEBUG=false; 	
 	
 	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name=name;
@@ -53,33 +52,15 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	
 	@Override
 	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
-		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, typeDefinition);
+		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, mixedContentLabel, typeDefinition);
 	}
 
 	@Override
 	protected void addContent(JsonElementContainer parent, JsonElementContainer child) {
-		if (DEBUG) log.debug("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
+		if (log.isTraceEnabled()) log.trace("DocCont.addGroupContent name ["+parent.getName()+"] child ["+child.getName()+"]");
 		parent.addContent(child);
 	}
 
-//	@Override
-//	protected void addElementContent(JsonNodeContainer parent, JsonNodeContainer child) {
-//		if (DEBUG) log.debug("DocCont.addElementContent (do nothing) name ["+parent.getName()+"] child ["+child.getName()+"]");
-//	}
-
-	
-
-
-//	public JSONObject toJson() {
-//		Object content=getRoot().getContent();
-//		if (content==null) {
-//			return null;
-//		}
-//		if (content instanceof JSONObject) {
-//			return (JSONObject)content;
-//		}
-//		return new JSONObject(content);
-//	}
 	
 	@Override
 	public String toString() {
@@ -139,6 +120,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
+		} else if (item instanceof JsonElementContainer) {
+			toString(sb,((JsonElementContainer)item).getContent(), indentLevel);
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}

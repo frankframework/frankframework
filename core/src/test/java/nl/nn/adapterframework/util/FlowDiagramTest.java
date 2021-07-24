@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,36 +17,89 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
-import javax.xml.transform.TransformerConfigurationException;
-
-import nl.nn.adapterframework.util.FlowDiagram;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
+import nl.nn.adapterframework.util.flow.IFlowGenerator;
+import nl.nn.adapterframework.util.flow.JavaScriptFlowGenerator;
 
 public class FlowDiagramTest {
 
 	@Test
-	public void canInitDefaultWithoutErrors() throws TransformerConfigurationException, IOException {
-		FlowDiagram flow = new FlowDiagram();
+	public void canInitDefaultWithoutErrors() throws Exception {
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
+		generator.afterPropertiesSet();
+
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
+
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
 
 	@Test
-	public void canInitNullWithoutErrors() throws TransformerConfigurationException, IOException {
-		FlowDiagram flow = new FlowDiagram(null, null);
-		assertNotNull(flow);
-	}
+	public void canInitSVGWithoutErrors() throws Exception {
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
+		generator.setFileExtension("svG");
+		generator.afterPropertiesSet();
 
-	@Test
-	public void canInitSVGWithoutErrors() throws TransformerConfigurationException, IOException {
-		FlowDiagram flow = new FlowDiagram("svg");
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
+
 		assertNotNull(flow);
+		flow.afterPropertiesSet();
+		assertEquals("svg", generator.getFileExtension());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void getUnknownFormat() throws TransformerConfigurationException, IOException {
-		new FlowDiagram("application/pdf");
+	public void getUnknownFormat() throws Exception {
+		IFlowGenerator generator = new JavaScriptFlowGenerator();
+		generator.setFileExtension("application/pdf");
+		generator.afterPropertiesSet();
+
+		FlowDiagramManager flow = new FlowDiagramManager() {
+			@Override
+			protected IFlowGenerator createFlowGenerator() {
+				return generator;
+			}
+		};
+
+		assertNotNull(flow);
+		flow.afterPropertiesSet();
 	}
+
+	@Test
+	public void testAdapter2DotXslWithoutFirstPipe() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xml/xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
+	@Test
+	public void testAdapter2DotXslExitInMiddle() throws Exception {
+		TransformerPool.clearTransformerPools();
+		Resource resource = Resource.getResource("xml/xsl/adapter2dot.xsl");
+		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
+		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
+		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
+		String result = transformerPool.transform(adapter, null);
+
+		assertEquals(dot, result);
+	}
+
 }

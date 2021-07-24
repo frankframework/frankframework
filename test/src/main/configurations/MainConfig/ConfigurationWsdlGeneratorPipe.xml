@@ -1,7 +1,6 @@
 <module>
 	<adapter name="WsdlGeneratorPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WsdlGeneratorPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGeneratorPipe" />
 		</receiver>
@@ -11,18 +10,18 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="getFileInfo" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="info">
+			<pipe name="getFileInfo" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="info">
 				<forward name="success" path="getFileName" />
 			</pipe>
 
 			<pipe name="getFileName" className="nl.nn.adapterframework.pipes.XsltPipe"
-				xpathExpression="file/name" xslt2="true" storeResultInSessionKey="fileName">
+				xpathExpression="file/@name" storeResultInSessionKey="fileName">
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="stream" getInputFromSessionKey="originalMessage"
+			<pipe name="readFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read" getInputFromSessionKey="originalMessage"
 				storeResultInSessionKey="file">
 				<forward name="success" path="generateWsdl" />
 			</pipe>
@@ -34,13 +33,12 @@
 			</pipe>
 
 			<pipe name="getWsdlFullFileName" className="nl.nn.adapterframework.pipes.XsltPipe"
-				xpathExpression="directory/file[ends-with(@name,'.wsdl')]/@canonicalName"
-				xslt2="true">
+				xpathExpression="directory/file[ends-with(@name,'.wsdl')]/@canonicalName">
 				<forward name="success" path="readWsdlFile" />
 			</pipe>
 
-			<pipe name="readWsdlFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read">
+			<pipe name="readWsdlFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

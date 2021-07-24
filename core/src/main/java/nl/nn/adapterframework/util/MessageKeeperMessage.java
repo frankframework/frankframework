@@ -15,12 +15,13 @@
 */
 package nl.nn.adapterframework.util;
 
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.logging.IbisMaskingLayout;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+
 import java.util.Date;
-
-import org.apache.commons.lang.StringUtils;
-
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import java.util.Set;
 /**
  * A message for the MessageKeeper. <br/>
  * Although this could be an inner class of the MessageKeeper,
@@ -30,18 +31,14 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class MessageKeeperMessage {
 
-	public static final String INFO_LEVEL = "INFO";
-	public static final String WARN_LEVEL = "WARN";
-	public static final String ERROR_LEVEL = "ERROR";
-	
 	private Date messageDate=new Date();
 	private String messageText;
-	private String messageLevel;
+	private MessageKeeperLevel messageLevel;
 	
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, String level){
+	public MessageKeeperMessage(String message, MessageKeeperLevel level){
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=maskMessage(message);
 		this.messageLevel=level;
@@ -49,7 +46,7 @@ public class MessageKeeperMessage {
 	/**
 	* Set the messagetext and -date of this message. The text will be xml-encoded.
 	*/
-	public MessageKeeperMessage(String message, Date date, String level) {
+	public MessageKeeperMessage(String message, Date date, MessageKeeperLevel level) {
 	//	this.messageText=XmlUtils.encodeChars(message);
 		this.messageText=maskMessage(message);
 		this.messageDate=date;
@@ -58,15 +55,11 @@ public class MessageKeeperMessage {
 
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
-			String hideRegex = LogUtil.getLog4jHideRegex();
-			if (StringUtils.isNotEmpty(hideRegex)) {
-				message = Misc.hideAll(message, hideRegex);
-			}
+			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
+			message = Misc.hideAll(message, hideRegex);
 
-			String threadHideRegex = LogUtil.getThreadHideRegex();
-			if (StringUtils.isNotEmpty(threadHideRegex)) {
-				message = Misc.hideAll(message, threadHideRegex);
-			}
+			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
+			message = Misc.hideAll(message, threadHideRegex);
 		}
 		return message;
 	}
@@ -78,6 +71,6 @@ public class MessageKeeperMessage {
 		return messageText;
 	}
 	public String getMessageLevel() {
-		return messageLevel;
+		return messageLevel.name();
 	}
 }

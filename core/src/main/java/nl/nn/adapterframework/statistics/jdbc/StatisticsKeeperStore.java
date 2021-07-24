@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -77,26 +75,15 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		int eventKey;
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException("datasource must be specified");
-		}
+		super.configure();
 		createQueries();
 		String instance=AppConstants.getInstance().getString("instance.name","");
-		Connection connection=null;
-		try {
-			connection = getConnection();
-			instanceKey=instances.findOrInsert(connection,instance);			
-		} catch (JdbcException e) {
+		try (Connection connection = getConnection()) {
+			instanceKey=instances.findOrInsert(connection,instance);
+		} catch (JdbcException | SQLException e) {
 			throw new ConfigurationException("could not find instancekey for instance ["+instance+"]",e);
-		} finally {
-			if (connection!=null) {
-				try {
-					connection.close();
-				} catch (SQLException e1) {
-					throw new ConfigurationException("could not close connection to find instancekey for instance ["+instance+"]",e1);
-				}
-			}
 		}
 	}	
 
@@ -151,6 +138,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 
+	@Override
 	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException {
 		List nameList=new LinkedList();
 		List valueList=new LinkedList();
@@ -165,55 +153,57 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		addPeriodIndicator(nameList,valueList,now,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"s",mainMark);
 		addPeriodIndicator(nameList,valueList,now,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"s",mainMark);
 		try {
-			Connection connection = getConnection();
-			sessionInfo.connection=connection;
-			String hostname=Misc.getHostname();
-			int hostKey=hosts.findOrInsert(connection,hostname);	
-			sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);		
-			
-			String insertEventQuery=null;
-			try {
-				String insertClause=insertEventQueryInsertClause;
-				String valuesClause=insertEventQueryValuesClause;
-				for(Iterator it=nameList.iterator();it.hasNext();) {
-					String name=(String)it.next();
-					insertClause+=","+name;
-					valuesClause+=",?";
-				}
-				insertEventQuery=insertClause+valuesClause+")";
-				if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
-				stmt = connection.prepareStatement(insertEventQuery);
-				int pos=1;
-				stmt.setInt(pos++,sessionInfo.eventKey);
-				stmt.setInt(pos++,instanceKey);
-				stmt.setInt(pos++,hostKey);
-				stmt.setLong(pos++,totalMem-freeMem);
-				stmt.setLong(pos++,totalMem);
-				stmt.setTimestamp(pos++,new Timestamp(now.getTime()));
-				stmt.setTimestamp(pos++,new Timestamp(mainMark.getTime()));
-				for(Iterator it=valueList.iterator();it.hasNext();) {
-					String value=(String)it.next();
-					stmt.setString(pos++,value);
-				}
-				stmt.execute();
-			} catch (Exception e) {
-				throw new JdbcException("could not execute query ["+insertEventQuery+"]",e);
-			} finally {
-				if (stmt!=null) {
-					try {
-						stmt.close();
-					} catch (Exception e) {
-						throw new JdbcException("could not close statement for query ["+insertEventQuery+"]",e);
+			try (Connection connection = getConnection()) {
+				sessionInfo.connection=connection;
+				String hostname=Misc.getHostname();
+				int hostKey=hosts.findOrInsert(connection,hostname);	
+				sessionInfo.eventKey=JdbcUtil.executeIntQuery(connection,selectNextValueQuery);		
+				
+				String insertEventQuery=null;
+				try {
+					String insertClause=insertEventQueryInsertClause;
+					String valuesClause=insertEventQueryValuesClause;
+					for(Iterator it=nameList.iterator();it.hasNext();) {
+						String name=(String)it.next();
+						insertClause+=","+name;
+						valuesClause+=",?";
+					}
+					insertEventQuery=insertClause+valuesClause+")";
+					if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
+					stmt = connection.prepareStatement(insertEventQuery);
+					int pos=1;
+					stmt.setInt(pos++,sessionInfo.eventKey);
+					stmt.setInt(pos++,instanceKey);
+					stmt.setInt(pos++,hostKey);
+					stmt.setLong(pos++,totalMem-freeMem);
+					stmt.setLong(pos++,totalMem);
+					stmt.setTimestamp(pos++,new Timestamp(now.getTime()));
+					stmt.setTimestamp(pos++,new Timestamp(mainMark.getTime()));
+					for(Iterator it=valueList.iterator();it.hasNext();) {
+						String value=(String)it.next();
+						stmt.setString(pos++,value);
+					}
+					stmt.execute();
+				} catch (Exception e) {
+					throw new JdbcException("could not execute query ["+insertEventQuery+"]",e);
+				} finally {
+					if (stmt!=null) {
+						try {
+							stmt.close();
+						} catch (Exception e) {
+							throw new JdbcException("could not close statement for query ["+insertEventQuery+"]",e);
+						}
 					}
 				}
+				
+				return sessionInfo;
 			}
-			
-			return sessionInfo;
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
 
+	@Override
 	public void end(Object data) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		try {
@@ -243,6 +233,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
@@ -289,6 +280,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleScalar(Object data, String scalarName, long value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;
 		PreparedStatement stmt = null;
@@ -316,6 +308,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void handleScalar(Object data, String scalarName, Date value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
@@ -347,6 +340,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public Object openGroup(Object parentData, String name, String type) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)parentData;
 		int parentKey=sessionInfo.groupKey;
@@ -363,6 +357,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		}
 	}
 
+	@Override
 	public void closeGroup(Object data) throws SenderException {
 		// nothing to do
 	}

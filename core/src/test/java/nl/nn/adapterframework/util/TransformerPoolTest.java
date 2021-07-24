@@ -1,13 +1,12 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import nl.nn.adapterframework.core.Resource;
+import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 
 import javax.xml.transform.Source;
 
-import org.apache.log4j.Logger;
-import org.junit.Test;
-
-import nl.nn.adapterframework.core.Resource;
+import static org.junit.Assert.assertEquals;
 
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);
@@ -73,14 +72,14 @@ public class TransformerPoolTest {
 	@Test
 	public void useCachingUrl() throws Exception {
 		TransformerPool.clearTransformerPools();
-		Resource resource = Resource.getResource("xml/xsl/active.xsl");
+		Resource resource = Resource.getResource("xml/xsl/RemoveNamespaces.xsl");
 		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(1, TransformerPool.getTransformerPoolsKeys().size());
 		TransformerPool.getInstance(resource, 2, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
 		TransformerPool.getInstance(resource, 1, true);
 		assertEquals(2, TransformerPool.getTransformerPoolsKeys().size());
-		Resource resource2 = Resource.getResource("xml/xsl/AttributesGetter.xsl");
+		Resource resource2 = Resource.getResource("xml/xsl/active.xsl");
 		TransformerPool.getInstance(resource2, 2, true);
 		assertEquals(3, TransformerPool.getTransformerPoolsKeys().size());
 	}

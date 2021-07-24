@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -27,7 +28,6 @@ import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
@@ -36,37 +36,40 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
-public class CmisHttpSender extends HttpSenderBase {
-
-	public CmisHttpSender() {
-	}
+/**
+ * Abstract class to prevent Frank!Developers from including/using this Sender in their configurations.
+ * It should solely be used by the @{link CmisHttpInvoker}.
+ */
+public abstract class CmisHttpSender extends HttpSenderBase {
 
 	@Override
-	public HttpRequestBase getMethod(URIBuilder uri, String message, ParameterValueList pvl, IPipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
-		String methodType = (String) session.get("method");
-		if(StringUtils.isEmpty(methodType))
+		HttpMethod methodType = (HttpMethod) session.get("method");
+		if(methodType == null) {
 			throw new SenderException("unable to determine method from pipeline session");
+		}
 
 		try {
-			if(methodType.equals("GET")) {
-				method = new HttpGet(uri.build());
-			}
-			else if (methodType.equals("POST")) {
-				HttpPost httpPost = new HttpPost(uri.build());
+			switch (methodType) {
+			case GET:
+				method = new HttpGet(uri);
+				break;
+
+			case POST:
+				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -87,9 +90,10 @@ public class CmisHttpSender extends HttpSenderBase {
 
 					method = httpPost;
 				}
-			}
-			else if (methodType.equals("PUT")) {
-				HttpPut httpPut = new HttpPut(uri.build());
+				break;
+
+			case PUT:
+				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
 				if (pvl.getParameterValue("writer") != null) {
@@ -110,11 +114,12 @@ public class CmisHttpSender extends HttpSenderBase {
 
 					method = httpPut;
 				}
-			}
-			else if (methodType.equals("DELETE")) {
-				method = new HttpDelete(uri.build());
-			}
-			else {
+				break;
+			case DELETE:
+				method = new HttpDelete(uri);
+				break;
+
+			default:
 				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
 			}
 		}
@@ -123,10 +128,11 @@ public class CmisHttpSender extends HttpSenderBase {
 		}
 
 		if (session.get("headers") != null) {
+			@SuppressWarnings("unchecked")
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+				if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}
@@ -137,20 +143,23 @@ public class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public String extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
 			responseCode = statusline.getStatusCode();
 
+			Message responseMessage = responseHandler.getResponseMessage();
+			responseMessage.closeOnCloseOf(session);
+
 			InputStream responseStream = null;
 			InputStream errorStream = null;
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
 			if (responseCode == 200 || responseCode == 201 || responseCode == 203 || responseCode == 206) {
-				responseStream = responseHandler.getResponse();
+				responseStream = responseMessage.asInputStream();
 			}
 			else {
-				errorStream = responseHandler.getResponse();
+				errorStream = responseMessage.asInputStream();
 			}
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
 			session.put("response", response);
@@ -159,22 +168,23 @@ public class CmisHttpSender extends HttpSenderBase {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 
-		return "response";
+		return new Message("response");
 	}
 
-	public Response invoke(String method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
 		//Prepare the message. We will overwrite things later...
 
 		int responseCode = -1;
 
-		IPipeLineSession pls = new PipeLineSessionBase();
+		PipeLineSession pls = new PipeLineSession();
 		pls.put("writer", writer);
 		pls.put("url", url);
 		pls.put("method", method);
 		pls.put("headers", headers);
 
 		try {
-			sendMessage(null, pls);
+			// Message is unused, we use 'Output writer' instead
+			sendMessage(new Message(""), pls);
 			return (Response) pls.get("response");
 		}
 		catch(Exception e) {

@@ -28,7 +28,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Helper class for browsing queues.
@@ -54,14 +54,17 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 		this.enm=queueBrowser.getEnumeration(); 
 	}
 
+	@Override
 	public boolean hasNext() {
 		return enm.hasMoreElements();
 	}
 
+	@Override
 	public IMessageBrowsingIteratorItem next() {
 		return new JmsMessageBrowserIteratorItem((Message)enm.nextElement());
 	}
 
+	@Override
 	public void close() throws ListenerException {
 		try {
 			queueBrowser.close();

@@ -18,11 +18,11 @@ package nl.nn.adapterframework.extensions.xfb;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -109,7 +109,7 @@ public class XfbSender extends SenderWithParametersBase {
  	} 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			File file = new File(message.asString());
 			if (getCopy()) {

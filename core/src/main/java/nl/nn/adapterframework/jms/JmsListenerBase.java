@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,27 +24,25 @@ import java.util.StringTokenizer;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -58,7 +57,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private String replyMessageType=null;
 	private long replyMessageTimeToLive=0;
 	private int replyPriority=-1;
-	private String replyDeliveryMode=MODE_NON_PERSISTENT;
+	private DeliveryMode replyDeliveryMode=DeliveryMode.NON_PERSISTENT;
 	private ISender sender;
 	
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
@@ -153,7 +152,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @param threadContext - Thread context to be populated, can not be <code>null</code>
 	 */
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public String getIdFromRawMessage(javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
 		TextMessage message = null;
 		try {
 			message = (TextMessage) rawMessage;
@@ -165,14 +164,14 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 	
 	
-	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
+	protected String retrieveIdFromMessage(javax.jms.Message message, Map<String, Object> threadContext) throws ListenerException {
 		String cid = "unset";
-		String mode = "unknown";
+		DeliveryMode mode = null;
 		String id = "unset";
 		Date tsSent = null;
 		Destination replyTo=null;
 		try {
-			mode = deliveryModeToString(message.getJMSDeliveryMode());
+			mode = DeliveryMode.parse(message.getJMSDeliveryMode());
 		} catch (JMSException ignore) {
 			log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
 		}
@@ -232,11 +231,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 				+ "] \n Message=[" + message.toString()
 				+ "]");
 		}    
-		PipeLineSessionBase.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {
-			if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
+			if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				message.acknowledge();
 				log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
 			}
@@ -252,29 +251,33 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			return getStringFromRawMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(),soapWrapper);
+			return extractMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
-	public String prepareReply(String rawReply, Map<String,Object> threadContext) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String,Object> threadContext) throws ListenerException {
 		return prepareReply(rawReply, threadContext, null);
 	}
 
-	public String prepareReply(String rawReply, Map<String,Object> threadContext, String soapHeader) throws ListenerException {
+	public Message prepareReply(Message rawReply, Map<String,Object> threadContext, String soapHeader) throws ListenerException {
 		if (!isSoap()) {
 			return rawReply;
 		}
-		String replyMessage;
+		Message replyMessage;
 		if (soapHeader==null) {
 			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 				soapHeader=(String)threadContext.get(getSoapHeaderSessionKey());
 			}
 		}
-		replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
+		try {
+			replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert message",e);
+		}
 		if (log.isDebugEnabled()) log.debug("wrapped message [" + replyMessage + "]");
 		return replyMessage;
 	}
@@ -318,6 +321,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	/**
 	 * return the Parameters
 	 */
+	@Override
 	public ParameterList getParameterList() {
 		return paramList;
 	}
@@ -401,11 +405,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'", "not set by application"})
-	public void setReplyDeliveryMode(String string) {
-		replyDeliveryMode = string;
+	@IbisDoc({"Controls mode that reply messages are sent with", "not set by application"})
+	public void setReplyDeliveryMode(String replyDeliveryMode) {
+		this.replyDeliveryMode = EnumUtils.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
 	}
-	public String getReplyDeliveryMode() {
+	public DeliveryMode getReplyDeliveryModeEnum() {
 		return replyDeliveryMode;
 	}
 

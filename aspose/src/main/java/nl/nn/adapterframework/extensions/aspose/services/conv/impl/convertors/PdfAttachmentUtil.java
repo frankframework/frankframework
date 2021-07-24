@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,8 +25,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.axis.utils.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
@@ -35,7 +36,6 @@ import com.aspose.pdf.SaveFormat;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
-import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -81,12 +81,6 @@ public class PdfAttachmentUtil {
 	 * </p>
 	 * 
 	 * if there are no attachments null is returned otherwise rootPdf.
-	 * 
-	 * @param cisConversionResult
-	 *            wiht the given pdf and its attachments.
-	 * @param rootPdf
-	 *            the pdf created with the attachments embedded.
-	 * @throws IOException
 	 */
 	protected void addAttachmentInSinglePdf() throws IOException {
 		try {
@@ -137,7 +131,7 @@ public class PdfAttachmentUtil {
 
 	private String convertToValidFileName(String value) {
 		String result = value;
-		if (!StringsUtil.isBlank(value)) {
+		if (StringUtils.isNotEmpty(value)) {
 			result = value.replaceAll(FileConstants.REPLACE_CHARACTERS_IN_NAME_REGEX, FileConstants.REPLACE_CHARACTER);
 			if (!result.equals(value)) {
 				LOGGER.debug("Updated filename to a valid filename from \"" + value + "\" to \"" + result + "\"");

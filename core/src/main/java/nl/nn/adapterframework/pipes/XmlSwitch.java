@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -32,8 +33,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>
- * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
+ * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setStyleSheetName(String) styleSheetName} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
  * </table>
  * </p>
  * @author Johan Verrips
@@ -57,18 +57,19 @@ public class XmlSwitch extends AbstractPipe {
 	public static final String XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = "Switch: Forward Not Found";
 	private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 
-	private String serviceSelectionStylesheetFilename=null;
-	private String xpathExpression=null;
+	private String styleSheetName = null;
+	private String xpathExpression = null;
 	private String namespaceDefs = null; 
-	private String sessionKey=null;
-	private String notFoundForwardName=null;
-	private String emptyForwardName=null;
-	private int xsltVersion=0; // set to 0 for auto detect.
+	private String sessionKey = null;
+	private String storeForwardInSessionKey = null;
+	private String notFoundForwardName = null;
+	private String emptyForwardName = null;
+	private int xsltVersion = 0; // set to 0 for auto detect.
 
-	private TransformerPool transformerPool=null;
+	private TransformerPool transformerPool = null;
 
 	/**
-	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
+	 * If no {@link #setStyleSheetName(String) styleSheetName} is specified, the
 	 * switch uses the root node. 
 	 */
 	@Override
@@ -86,23 +87,23 @@ public class XmlSwitch extends AbstractPipe {
 		}
 
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
-			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
+			if (!StringUtils.isEmpty(getStyleSheetName())) {
+				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getConfigurationClassLoader(), getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
 		} 
 		else {
-			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
+			if (!StringUtils.isEmpty(getStyleSheetName())) {
 				try {
-					Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getServiceSelectionStylesheetFilename());
+					Resource stylesheet = Resource.getResource(this, getStyleSheetName());
 					if (stylesheet==null) {
-						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
+						throw new ConfigurationException("cannot find stylesheet ["+getStyleSheetName()+"]");
 					}
 					transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
 				} catch (IOException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
+					throw new ConfigurationException("cannot retrieve ["+ styleSheetName + "]", e);
 				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
+					throw new ConfigurationException("got error creating transformer from file [" + styleSheetName + "]", te);
 				}
 			} else {
 				if (StringUtils.isEmpty(getSessionKey())) {
@@ -110,7 +111,7 @@ public class XmlSwitch extends AbstractPipe {
 						// create a transformer that looks to the root node 
 						transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
 					} catch (TransformerConfigurationException te) {
-						throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
+						throw new ConfigurationException("got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
 					}
 				}
 			}
@@ -148,29 +149,38 @@ public class XmlSwitch extends AbstractPipe {
 	 * transformer is re-initialized.
 	 */
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward="";
-	    String sInput=(String) input;
-	    PipeForward pipeForward=null;
+		PipeForward pipeForward = null;
 
-		if (StringUtils.isNotEmpty(getSessionKey())) {
-			sInput = (String) session.get(sessionKey);
-		}
 		if (transformerPool!=null) {
 			ParameterList parameterList = null;
-			ParameterResolutionContext prc = new ParameterResolutionContext(sInput, session, isNamespaceAware());
 			try {
 				Map<String,Object> parametervalues = null;
-				if (getParameterList()!=null) {
-					parameterList =  getParameterList();
-					parametervalues = prc.getValueMap(parameterList);
+				parameterList =  getParameterList();
+				if (parameterList!=null) {
+					message.preserve();
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
-				forward = transformerPool.transform(prc.getInputSource(isNamespaceAware()), parametervalues);
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = transformerPool.transform(session.getMessage(sessionKey), parametervalues);
+				} else {
+					message.preserve();
+					forward = transformerPool.transform(message, parametervalues);
+				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
 			}
 		} else {
-			forward=sInput;
+			try {
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					forward = session.getMessage(sessionKey).asString();
+				} else {
+					forward = message.asString();
+				}
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			}
 		}
 
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
@@ -193,23 +203,30 @@ public class XmlSwitch extends AbstractPipe {
 		}
 		
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
-		return new PipeRunResult(pipeForward, input);
+		if(StringUtils.isNotEmpty(getStoreForwardInSessionKey())) {
+			session.put(getStoreForwardInSessionKey(), pipeForward.getName());
+		}
+		
+		return new PipeRunResult(pipeForward, message);
 	}
-	
-	/**
-	 * Set the stylesheet to use. The stylesheet should return a <code>String</code>
-	 * that indicates the name of the Forward or Pipe to execute.
-	 */
+
 	@IbisDoc({"1", "stylesheet may return a string representing the forward to look up", "<i>a stylesheet that returns the name of the root-element</i>"})
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
+	}
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
+
+	@IbisDoc({"stylesheet may return a string representing the forward to look up", "<i>a stylesheet that returns the name of the root-element</i>"})
+	@Deprecated
+	@ConfigurationWarning("Please use the attribute styleSheetName.")
 	public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
-		serviceSelectionStylesheetFilename = newServiceSelectionStylesheetFilename;
+		setStyleSheetName(newServiceSelectionStylesheetFilename); 
 	}
-	public String getServiceSelectionStylesheetFilename() {
-		return serviceSelectionStylesheetFilename;
-	}
-	
+
 	@IbisDoc({"2", "xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $", ""})
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
@@ -226,7 +243,9 @@ public class XmlSwitch extends AbstractPipe {
 		return namespaceDefs;
 	}
 
-	@IbisDoc({"4", "name of the key in the <code>pipelinesession</code> to retrieve the input message from. (n.b. same as <code>getinputfromsessionkey</code>)", ""})
+	@IbisDoc({"4", "Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified. " + 
+					"If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward. " + 
+					"If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
@@ -234,7 +253,7 @@ public class XmlSwitch extends AbstractPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"5", "forward returned when the pipename derived from the stylesheet could not be found.", ""})
+	@IbisDoc({"5", "Forward returned when the pipename derived from the stylesheet could not be found.", ""})
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}
@@ -242,7 +261,7 @@ public class XmlSwitch extends AbstractPipe {
 		return notFoundForwardName;
 	}
 
-	@IbisDoc({"6", "forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used.", ""})
+	@IbisDoc({"6", "Forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used.", ""})
 	public void setEmptyForwardName(String empty){
 		emptyForwardName=empty;
 	}
@@ -251,7 +270,7 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	
-	@IbisDoc({"7", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	@IbisDoc({"7", "If set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
@@ -259,15 +278,19 @@ public class XmlSwitch extends AbstractPipe {
 		return xsltVersion;
 	}
 
-	@IbisDoc({"Deprecated: when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
+	@IbisDoc({"when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
 	@Deprecated
+	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
-		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
+	}
+
+	public String getStoreForwardInSessionKey() {
+		return storeForwardInSessionKey;
+	}
+
+	@IbisDoc({"8", "Selected forward name will be stored in the specified session key.", ""})
+	public void setStoreForwardInSessionKey(String storeForwardInSessionKey) {
+		this.storeForwardInSessionKey = storeForwardInSessionKey;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2020 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
@@ -55,11 +56,11 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			if (StringUtils.isNotEmpty(getHost()) || getPort()>0) {
-				throw new ConfigurationException(getLogPrefix(null) + "attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
+				throw new ConfigurationException("attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
 			}
 		} else {
 			if (StringUtils.isEmpty(getHost())) {
-				throw new ConfigurationException(getLogPrefix(null) + "either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
+				throw new ConfigurationException("either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
 			}
 		}
 		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
@@ -72,20 +73,20 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {
 			try {
-				return doPipeWithException(input, session);
+				return doPipeWithException(message, session);
 			} catch (Throwable t) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward [" + exceptionForward.getPath() +"], exception:\n", t);
-				return new PipeRunResult(exceptionForward, input);
+				return new PipeRunResult(exceptionForward, message);
 			}
 		} else {
-			return doPipeWithException(input, session);
+			return doPipeWithException(message, session);
 		}
 	}
 
-	public abstract PipeRunResult doPipeWithException(Object input, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url; 

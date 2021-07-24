@@ -15,11 +15,13 @@
 */
 package nl.nn.ibistesttool.filter;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.ibistesttool.tibet2.Storage;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
@@ -39,9 +41,15 @@ public class TibetView extends View {
 	/**
 	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
 	 */
+	@Override
 	public void initBean(BeanParent beanParent) {
 		super.initBean(beanParent);
 		Storage storage = (Storage)getStorage();
+		try {
+			storage.configure();
+		} catch (ConfigurationException e) {
+			System.out.println("Could not configure storage: ("+ClassUtils.nameOf(e)+")"+ e.getMessage());
+		}
 		storage.setSecurityContext(getEcho2Application());
 	}
 
@@ -56,13 +64,13 @@ public class TibetView extends View {
 		if(adapter == null) {
 			return "Not allowed. Could not find adapter " + AUTHORISATION_CHECK_ADAPTER;
 		} else {
-			IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+			PipeLineSession pipeLineSession = new PipeLineSession();
 			if(app.getUserPrincipal() != null)
 				pipeLineSession.put("principal", app.getUserPrincipal().getName());
 			pipeLineSession.put("StorageId", StorageId);
 			pipeLineSession.put("View", getName());
-			PipeLineResult processResult = adapter.processMessage(null, "<dummy/>", pipeLineSession);
-			if ((processResult.getState().equalsIgnoreCase("success"))) {
+			PipeLineResult processResult = adapter.processMessage(null, new Message("<dummy/>"), pipeLineSession);
+			if (processResult.isSuccessful()) {
 				return "Allowed";
 			} else {
 				return "Not allowed. Result of adapter "

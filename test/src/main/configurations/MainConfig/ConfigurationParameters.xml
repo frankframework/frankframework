@@ -1,0 +1,47 @@
+<ibis>
+	<adapter name="Parameters" description="Test the resolution of parameters">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Parameters" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
+			xpathExpression="request/@action"/>
+
+			<pipe name="XsltPipe-viaInput" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt">
+				<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
+				<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
+				<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="XsltPipe-viaSessionKey" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt" getInputFromSessionKey="originalMessage">
+				<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
+				<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
+				<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="MessageSendingPipe-viaInput" >
+				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
+					<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
+					<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
+					<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="MessageSendingPipe-viaSessionKey" getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
+					<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
+					<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
+					<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+		</pipeline>
+	</adapter>
+</ibis>

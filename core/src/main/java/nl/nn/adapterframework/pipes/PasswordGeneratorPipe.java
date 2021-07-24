@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import java.util.List;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -49,7 +50,8 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	int numOfUCharacters=2; 
 	int numOfDigits=2;
 	int numOfSigns=2; 
-    
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
@@ -64,12 +66,12 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 					throw new ConfigurationException("PasswordGeneratorPipe: ", ex);
 				}
 			}
-		}        
-	  
+		}
 	}
 
 	
-	public PipeRunResult doPipe (Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		
 		String result;
 		 try {
@@ -79,10 +81,9 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "failed to generate password",e);
 			}
 
-		return new PipeRunResult(getForward(),result);
+		return new PipeRunResult(getSuccessForward(),result);
 	}
 
-    
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
 		StringBuffer resultSb=new StringBuffer();
 		resultSb.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
@@ -102,10 +103,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 			else
 				rnd=new Double((Math.random()*input.length()-0.5)).intValue();
 			resultSb.append(input.charAt(rnd));
-            
 		}
 		return resultSb.toString();
 	}
+
 	/**
 	 * Change the order of the characters in a <code>String</code>
 	 */
@@ -125,14 +126,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	}
 
 
-	/**
-	 */
 	public boolean isUseSecureRandom() {
 		return useSecureRandom;
 	}
 
-	/**
-	 */
 	@IbisDoc({"whether the securerandom algorithm is to be used (slower)", "true"})
 	public void setUseSecureRandom(boolean b) {
 		useSecureRandom = b;

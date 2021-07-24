@@ -1,16 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
+import nl.nn.adapterframework.stream.Message;
 
 
 
@@ -20,7 +20,6 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public static final String CHECKSUM_SHA="SHA";
 	public static final String CHECKSUM_CRC32="CRC32";
 	public static final String CHECKSUM_ADLER32="Adler32";
-	private IPipeLineSession session = new PipeLineSessionBase();
 
 	@Override
 	public ChecksumPipe createPipe() {
@@ -123,13 +122,13 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	@Test(expected = PipeRunException.class)
 	public void cantCalculate() throws PipeRunException {
-		pipe.doPipe(null, session);
+		doPipe(pipe, new Message((String)null), session);
 	}
 
 	@Test(expected = PipeRunException.class)
 	public void wrongPathToFile() throws PipeRunException {
 		pipe.setInputIsFile(true);
-		pipe.doPipe("dummyPathToFile", session);
+		doPipe(pipe,"dummyPathToFile", session);
 	}
 
 
@@ -137,14 +136,14 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public void badCharset() throws PipeRunException {
 		pipe.setInputIsFile(false);
 		pipe.setCharset("dummy");
-		pipe.doPipe("anotherDummy", session);
+		doPipe(pipe,"anotherDummy", session);
 	}
 
 	@Test
 	public void emptyCharset() throws PipeRunException {
 		pipe.setInputIsFile(false);
 		pipe.setCharset("");
-		assertNotNull(pipe.doPipe("anotherDummy", session));
+		assertNotNull(doPipe(pipe,"anotherDummy", session));
 	}
 
 }

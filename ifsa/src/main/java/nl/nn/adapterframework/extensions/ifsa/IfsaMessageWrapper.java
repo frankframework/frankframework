@@ -22,6 +22,7 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Wrapper for messages that are not serializable.
@@ -34,12 +35,12 @@ public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 	static final long serialVersionUID = 6543734487515204545L;
 	
 	private HashMap context = new HashMap();
-	private String text; 
+	private Message message; 
 	private String id; 
 	
 	public IfsaMessageWrapper(Object message, IListener listener) throws ListenerException  {
 		super();
-		text = listener.getStringFromRawMessage(message, context);
+		message = listener.extractMessage(message, context);
 		id = listener.getIdFromRawMessage(message, context);
 	}
 
@@ -51,8 +52,8 @@ public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 		return id;
 	}
 
-	public String getText() {
-		return text;
+	public Message getMessage() {
+		return message;
 	}
 
 }

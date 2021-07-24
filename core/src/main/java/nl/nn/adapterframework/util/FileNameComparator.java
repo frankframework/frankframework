@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.util;
 
 import java.io.File;
-import java.util.Comparator;
 
 /**
  * Compares filenames, so directory listings appear in a kind of natural order.
@@ -24,110 +23,21 @@ import java.util.Comparator;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class FileNameComparator implements Comparator<File> {
-
-	protected static int getNextIndex(String s, int start, boolean numericPart) {
-		int pos=start;
-		while (pos<s.length() && !Character.isWhitespace(s.charAt(pos)) && 
-								  numericPart == Character.isDigit(s.charAt(pos))) {
-			pos++;
-		}
-		return pos;
-	}
-
-	protected static int skipWhitespace(String s, int start) {
-		while (start<s.length() && Character.isWhitespace(s.charAt(start))) {
-			start++;
-		}
-		return start;
-	}
-
-
-	public static int compareStringsNaturalOrder(String s0, String s1, boolean caseSensitive) {
-		int result=0;
-		int start_pos0=0;
-		int start_pos1=0;
-		int end_pos0=0;
-		int end_pos1=0;
-		boolean numeric=false;
-		
-		while(result ==0 && end_pos0<s0.length() && end_pos1<s1.length()) {
-			start_pos0=skipWhitespace(s0, start_pos0);
-			start_pos1=skipWhitespace(s1, start_pos1);
-			end_pos0=getNextIndex(s0, start_pos0, numeric);			
-			end_pos1=getNextIndex(s1, start_pos1, numeric);
-			String part0=s0.substring(start_pos0,end_pos0);
-			String part1=s1.substring(start_pos1,end_pos1);
-			if (numeric) {
-				long lres;
-				try {
-					lres = Long.parseLong(part0)-Long.parseLong(part1); 
-				} catch (NumberFormatException e) {
-					lres = part0.compareTo(part1);
-				}
-				if (lres!=0) {
-					if (lres<0) {
-						return -1;
-					} 
-					return 1;
-				}
-			} else {
-				if (caseSensitive) {
-					result = part0.compareTo(part1);
-				} else {
-					result = part0.compareToIgnoreCase(part1);
-				}
-			}
-			start_pos0=end_pos0;
-			start_pos1=end_pos1;
-			numeric=!numeric;
-		}
-		if (result!=0) {
-			return result;
-		}
-		if (end_pos0<s0.length()) {
-			return 1;
-		}
-		if (end_pos1<s1.length()) {
-			return -1;
-		}
-		return 0;
-	}
+public class FileNameComparator extends NameComparatorBase<File> {
 
 	public static int compareFilenames(File f0, File f1) {
-		int result;
 		if (f0.isDirectory()!=f1.isDirectory()) {
 			if (f0.isDirectory()) {
 				return -1;
 			}
 			return 1;
 		}
-		result = compareStringsNaturalOrder(f0.getName(),f1.getName(),false);
-		if (result!=0) {
-			return result; 
-		}
-		result = compareStringsNaturalOrder(f0.getName(),f1.getName(),true);
-		if (result!=0) {
-			return result; 
-		}
-		result = f0.getName().compareToIgnoreCase(f1.getName());
-		if (result!=0) {
-			return result; 
-		}
-		result = f0.getName().compareTo(f1.getName());
-		if (result==0) {
-			long lendif = f1.length()-f0.length();
-			if (lendif > 0) {
-				result=1;
-			} else if (lendif < 0) {
-				result=-1;
-			}
-		}
-		return result;
+
+		return compareNames(f0.getName(), f1.getName());
 	}
 
+	@Override
 	public int compare(File arg0, File arg1) {
 		return compareFilenames(arg0, arg1);
 	}
-
 }

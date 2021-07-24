@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -78,5 +79,16 @@ public class MediaTypeTest {
 
 			assertTrue("can parse ["+header+"]", MediaTypes.MULTIPART.isConsumable(acceptHeader));
 		}
+	}
+
+	@Test
+	public void defaultJsonCharsetUtf8() {
+		assertEquals("json should not have utf-8 charset", "UTF-8", MediaTypes.JSON.getDefaultCharset().name());
+	}
+
+	@Test
+	public void noCharsetOnOctetstreams() {
+		assertNull("octet-stream should not have a charset", MediaTypes.OCTET.getDefaultCharset());
+		assertNull("pdf should not have a charset", MediaTypes.PDF.getDefaultCharset());
 	}
 }

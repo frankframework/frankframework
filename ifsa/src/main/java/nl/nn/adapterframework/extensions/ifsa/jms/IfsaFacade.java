@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
@@ -37,9 +37,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAMessage;
@@ -47,6 +48,9 @@ import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAQueueSender;
 import com.ing.ifsa.IFSAServerQueueSender;
 import com.ing.ifsa.IFSATextMessage;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
@@ -78,9 +82,11 @@ import com.ing.ifsa.IFSATextMessage;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-    protected Logger log = LogUtil.getLogger(this);
-    
+public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
+	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+
  	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
  	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
@@ -141,6 +147,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	/**
 	 * Checks if messageProtocol and serviceId (only for Requestors) are specified
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 
 		// perform some basic checks
@@ -402,7 +409,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		if (messageProtocol==null) {
 			return null;
 		} else {
-			return messageProtocol.getName();
+			return messageProtocol.getLabel();
 		}
     }
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
@@ -564,16 +571,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
      * @param newMessageProtocol String
      */
     public void setMessageProtocol(String newMessageProtocol) {
-	    if (null==IfsaMessageProtocolEnum.getEnum(newMessageProtocol)) {
-        	throw new IllegalArgumentException(getLogPrefix()+
-                "illegal messageProtocol ["
-                    + newMessageProtocol
-                    + "] specified, it should be one of the values "
-                    + IfsaMessageProtocolEnum.getNames());
-
-        	}
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
-        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
+        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getLabel());
     }
  
 	public boolean isSessionsArePooled() {
@@ -594,13 +593,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
+	@Override
 	public String toString() {
 	    String result = super.toString();
 	    ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("applicationId", applicationId);
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
-			ts.append("messageProtocol", messageProtocol.getName());
+			ts.append("messageProtocol", messageProtocol.getLabel());
 //			ts.append("transacted", isTransacted());
 			ts.append("jmsTransacted", isJmsTransacted());
 	    }
@@ -612,6 +612,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 	
 		String result = null;
@@ -675,10 +676,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return useSelectorsStore.booleanValue();
 	}
 
-
+	@Override
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

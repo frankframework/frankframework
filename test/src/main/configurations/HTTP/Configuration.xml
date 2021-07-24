@@ -6,6 +6,7 @@
 	<!ENTITY WebServiceListenerSenderNoSoap SYSTEM "./ConfigurationWebServiceListenerSenderNoSoap.xml">
 	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
 	<!ENTITY RestListener SYSTEM "./ConfigurationRestListener.xml">
+	<!ENTITY ApiListener SYSTEM "./ConfigurationApiListener.xml">
 ]>
 <configuration name="HTTP">
 	&WebServiceListenerSender;
@@ -15,4 +16,5 @@
 	&WebServiceListenerSenderNoSoap;
 	&HttpListenerSender;
 	&RestListener;
+	&ApiListener;
 </configuration>

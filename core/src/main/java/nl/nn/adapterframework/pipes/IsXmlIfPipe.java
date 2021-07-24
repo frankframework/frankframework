@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Selects an exitState, based on if the input is a XML string.
@@ -39,17 +42,22 @@ public class IsXmlIfPipe extends AbstractPipe {
 	private String elseForwardName = "else";
 	private boolean elseForwardOnEmptyInput = true;
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session)
-			throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = "";
-		if (input==null) {
+		if (message==null) {
 			if (isElseForwardOnEmptyInput()) {
 				forward = elseForwardName;
 			} else {
 				forward = thenForwardName;
 			}
 		} else {
-			String sInput = input.toString();
+			String sInput;
+			try {
+				sInput = message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			}
 			if (StringUtils.isEmpty(sInput)) {
 				if (isElseForwardOnEmptyInput()) {
 					forward = elseForwardName;
@@ -77,7 +85,7 @@ public class IsXmlIfPipe extends AbstractPipe {
 		}
 		log.debug(getLogPrefix(session) + "resolved forward [" + forward
 				+ "] to path [" + pipeForward.getPath() + "]");
-		return new PipeRunResult(pipeForward, input);
+		return new PipeRunResult(pipeForward, message);
 	}
 
 	@IbisDoc({"forward returned when <code>'true'</code>", "then"})

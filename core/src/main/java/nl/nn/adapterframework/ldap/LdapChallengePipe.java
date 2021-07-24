@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@ package nl.nn.adapterframework.ldap;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe to check if a username and password are valid in LDAP.
@@ -52,17 +53,19 @@ import org.apache.commons.lang.StringUtils;
  * @deprecated
  * @author  Milan Tomc
  */
-public class LdapChallengePipe extends AbstractPipe {
+@Deprecated
+@ConfigurationWarning("please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>")
+public class LdapChallengePipe extends FixedForwardPipe {
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
 	private String errorSessionKey=null;
 	
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		configWarnings.add(log, "LdapChallengePipe is deprecated, please use LdapSender with operation challenge and check for returned message <LdapResult>Success</LdapResult>");
+
 		if (StringUtils.isEmpty(ldapProviderURL) && getParameterList().findParameter("ldapProviderURL")==null) {
 			throw new ConfigurationException("ldapProviderURL must be specified, either as attribute or as parameter");
 		}
@@ -79,9 +82,10 @@ public class LdapChallengePipe extends AbstractPipe {
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object msg, IPipeLineSession pls) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message msg, PipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
 		
@@ -89,10 +93,9 @@ public class LdapChallengePipe extends AbstractPipe {
 		String credentials;
 		String principal;
 		
-		ParameterResolutionContext prc;
+		Map<String,Object> paramMap=null;
 		try {
-			prc = new ParameterResolutionContext((String)msg, pls);
-			Map paramMap = prc.getValueMap(getParameterList());
+			paramMap = getParameterList().getValues(msg, pls).getValueMap();
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {
@@ -110,12 +113,12 @@ public class LdapChallengePipe extends AbstractPipe {
 		}
 		if (StringUtils.isEmpty(principal)) {
 //			throw new PipeRunException(this, "principal is empty");
-			handleError(ldapSender,prc,34,"Principal is Empty");
+			handleError(ldapSender,pls,34,"Principal is Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 		if (StringUtils.isEmpty(credentials)) {
 //			throw new PipeRunException(this, "credentials are empty");			
-			handleError(ldapSender,prc,49,"Credentials are Empty");
+			handleError(ldapSender,pls,49,"Credentials are Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 			
@@ -131,26 +134,26 @@ public class LdapChallengePipe extends AbstractPipe {
 		}
 		ldapSender.setPrincipal(principal);
 		ldapSender.setCredentials(credentials);
-		ldapSender.setOperation(LdapSender.OPERATION_READ);
+		ldapSender.setOperation(Operation.OPERATION_READ.getLabel());
 		try {
 			log.debug("Looking up context for principal ["+principal+"]");
 			ldapSender.configure();
 			log.debug("Succesfully looked up context for principal ["+principal+"]");
 		} catch (Exception e) {
 			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
-				ldapSender.storeLdapException(e, prc.getSession());
+				ldapSender.storeLdapException(e, pls);
 			} else {
 				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 						
-		return new PipeRunResult(findForward("success"), msg);
+		return new PipeRunResult(getSuccessForward(), msg);
 	}
 	
-	protected void handleError(LdapSender ldapSender, ParameterResolutionContext prc, int code, String message) {
+	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
-		ldapSender.storeLdapException(t, prc.getSession());
+		ldapSender.storeLdapException(t, session);
 	}
 
 	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})

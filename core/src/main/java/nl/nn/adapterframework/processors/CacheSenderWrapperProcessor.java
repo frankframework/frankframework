@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.cache.ICache;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -33,8 +33,8 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
-		ICacheAdapter<String,String> cache=senderWrapperBase.getCache();
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		ICache<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 		}
@@ -59,17 +59,13 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
 			result=senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);
 			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
-			try {
-				String cacheValue=cache.transformValue(result.asString(), session);
-				if (cacheValue==null) {
-					if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
-					return result;
-				}
-				cache.put(key, cacheValue);
-				result = new Message(cacheValue);
-			} catch (IOException e) {
-				throw new SenderException(e);
+			String cacheValue = cache.transformValue(result, session);
+			if (cacheValue==null) {
+				if (log.isDebugEnabled()) log.debug("transformed cache value is null, will not cache");
+				return result;
 			}
+			cache.put(key, cacheValue);
+			result = new Message(cacheValue);
 		}
 		return result;
 	}

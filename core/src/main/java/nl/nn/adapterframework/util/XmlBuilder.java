@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
 import org.jdom2.Document;
@@ -45,6 +45,8 @@ import org.jdom2.output.XMLOutputter;
  **/
 public class XmlBuilder {
 	static Logger log = LogUtil.getLogger(XmlBuilder.class);
+	
+	private final String CDATA_END="]]>";
 
 	private Element element;
 
@@ -113,7 +115,16 @@ public class XmlBuilder {
 
 	public void setCdataValue(String value) {
 		if (value != null) {
-			element.setContent(new CDATA(value));
+			if (value.contains(CDATA_END)) {
+				int cdata_end_pos;
+				while ((cdata_end_pos=value.indexOf(CDATA_END))>=0) {
+					element.addContent(new CDATA(value.substring(0, cdata_end_pos+1)));
+					value = value.substring(cdata_end_pos+1);
+				}
+				element.addContent(new CDATA(value));
+			} else {
+				element.setContent(new CDATA(value));
+			}
 		}
 	}
 
@@ -141,8 +152,7 @@ public class XmlBuilder {
 		}
 	}
 
-	private Element buildElement(String value)
-			throws JDOMException, IOException {
+	private Element buildElement(String value) throws JDOMException, IOException {
 		StringReader stringReader = new StringReader(value);
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document;

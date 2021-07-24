@@ -15,8 +15,8 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;

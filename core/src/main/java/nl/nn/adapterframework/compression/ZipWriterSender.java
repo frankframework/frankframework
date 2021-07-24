@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -71,7 +71,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);
@@ -90,7 +90,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());
 				}
 			} else {
-				Object paramValue=pvl.getParameterValue(PARAMETER_CONTENTS).getValue();
+				Message paramValue=Message.asMessage(pvl.getParameterValue(PARAMETER_CONTENTS).getValue());
 				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
 			}
 			return message;
@@ -108,8 +108,9 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
+	@Deprecated
+	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeInputstreamOnExit'")
 	public void setCloseStreamOnExit(boolean b) {
-		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeInputstreamOnExit'");
 		setCloseInputstreamOnExit(b);
 	}
 	public boolean isCloseInputstreamOnExit() {

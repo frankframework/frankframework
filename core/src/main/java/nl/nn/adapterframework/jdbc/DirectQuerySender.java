@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,17 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
+import java.sql.Connection;
 
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * QuerySender that interprets the input message as a query, possibly with attributes.
@@ -36,7 +42,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public class DirectQuerySender extends JdbcQuerySenderBase {
+public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -46,9 +52,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 	public void configure(boolean trust) throws ConfigurationException {
 		super.configure();
 		if (!trust) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = "The class ["+getClass().getName()+"] is used one or more times. Please change to ["+FixedQuerySender.class.getName()+"] for better security";
-			configWarnings.add(log, msg, true);
+			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
 		}
 	}
 
@@ -58,6 +62,53 @@ public class DirectQuerySender extends JdbcQuerySenderBase {
 			return message.asString();
 		} catch (IOException e) {
 			throw new SenderException(e);
+		}
+	}
+
+
+	@Override
+	public Connection openBlock(PipeLineSession session) throws SenderException, TimeOutException {
+		try {
+			return super.getConnectionForSendMessage(null);
+		} catch (JdbcException e) {
+			throw new SenderException("cannot get Connection",e);
+		}
+	}
+
+	@Override
+	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
+		try {
+			super.closeConnectionForSendMessage(connection, session);
+		} catch (JdbcException | TimeOutException e) {
+			throw new SenderException("cannot close Connection",e);
+		}
+	}
+	
+	@Override
+	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeOutException {
+		return blockHandle;
+	}
+
+	@Override
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
+		// postpone close to closeBlock()
+	}
+
+
+	@Override
+	// implements IBlockEnabledSender.sendMessage()
+	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		return sendMessageOnConnection(blockHandle, message, session, null).getResult();
+	}
+
+	@Override
+	// implements IStreamingSender.sendMessage()
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		Connection blockHandle = openBlock(session);
+		try {
+			return sendMessageOnConnection(blockHandle, message, session, next);
+		} finally {
+			closeBlock(blockHandle, session);
 		}
 	}
 

@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.align;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
@@ -24,8 +26,12 @@ public abstract class AlignTestBase {
 		testFiles(schemaFile, namespace, rootElement, inputFile, false, null);
 	}
 
-	public URL getSchemaURL(String schemaFile) {
-		 return AlignTestBase.class.getResource(BASEDIR+schemaFile);
+	public URL getSchemaURL(String schemaFile) throws IOException {
+		URL result=TestFileUtils.getTestFileURL(BASEDIR+schemaFile);
+		if (result==null) {
+			fail("cannot find schema ["+schemaFile+"]");
+		}
+	 return result;
 	}
 	
 	protected String getTestFile(String file) throws IOException, TimeoutException {
@@ -149,15 +155,50 @@ public abstract class AlignTestBase {
 
     @Test
 	public void testChoiceOfSequence() throws Exception {
-		testFiles("Transaction/transaction.xsd","","transaction","Transaction/order");
-		testFiles("Transaction/transaction.xsd","","transaction","Transaction/invoice");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/order");
+		testFiles("ChoiceOfSequence/transaction.xsd","","transaction","ChoiceOfSequence/invoice");
 	}
 
-    @Test
+	@Test
 	public void testOptionalArray() throws Exception {
-    	// this test was originally for a wildcard, but conversion fails on multiple occurences of element 'Id' (for Party and OrganisationName)
-    	// wildcard was 'solved' by setting a proper type for PartyAgreementRole
+		// this test was originally for a wildcard, but conversion fails on multiple occurences of element 'Id' (for Party and OrganisationName)
+		// wildcard was 'solved' by setting a proper type for PartyAgreementRole
 		testFiles("OptionalArray/hbp.xsd","urn:pim","Root","OptionalArray/hbp",true);
 	}
+
+	@Test
+	public void testChoiceOfOptions() throws Exception {
+		testFiles("ChoiceOfOptions/Options.xsd","","Options","ChoiceOfOptions/option");
+	}
+
+	@Test
+	public void testEmbeddedChoice() throws Exception {
+		testFiles("EmbeddedChoice/EmbeddedChoice.xsd", "", "EmbeddedChoice", "/EmbeddedChoice/EmbeddedChoice");
+	}
+
+	@Test
+	public void testDoubleId() throws Exception {
+		testFiles("DoubleId/Party.xsd","","Party","DoubleId/Party");
+	}
+
+	@Test
+	public void testFamilyTree() throws Exception {
+		testFiles("FamilyTree/family.xsd", "urn:family", "family", "FamilyTree/family", true);
+	}
+
+	@Test
+	public void testPetstorePet() throws Exception {
+		testFiles("Petstore/petstore.xsd", "", "Pet", "Petstore/pet");
+	}
+
+	@Test
+	public void testTextAndAttributes() throws Exception {
+		testFiles("TextAndAttributes/schema.xsd", "", "Root", "TextAndAttributes/input", true);
+	}
+
+//	@Test
+//	public void testPetstorePets() throws Exception {
+//		testFiles("Petstore/petstore.xsd", "", "Pets", "Petstore/petstore", true);
+//	}
 
 }

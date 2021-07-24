@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -29,9 +30,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -40,29 +39,32 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  * 
- * <table align="top">
+ * <table align="top" border="1">
  * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder: taken from parameter <code>foldername</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
+ * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
+ * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
+ * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
+ * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
+ * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
  * <tr><td>write</td><td>write contents to a file<td>
- *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
  *  At least one of the parameters must be specified.<br/>
  *  The missing parameter defaults to the input message.<br/>
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
  * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
- *  filename: taken from parameter <code>filename</code> or input message<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
  *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
  *  At least one of the parameters must be specified.<br/>
  *  The missing parameter defaults to the input message.<br/>
  *  For streaming operation, the parameter <code>filename</code> must be specified.
  *  </td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>parameter <code>destination</code></td></tr>
+ * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
  * <table>
  * 
  * @author Gerrit van Brakel
@@ -78,7 +80,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void configure() throws ConfigurationException {
 		super.configure();
 		getFileSystem().configure();
-		actor.configure(fileSystem, getParameterList(), this);
+		try { 
+			actor.configure(fileSystem, getParameterList(), this);
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(null),e);
+		}
 	}
 	
 	@Override
@@ -106,24 +112,19 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
-		return false;  
+		return false;
 	}
 	
 	@Override
-	public MessageOutputStream provideOutputStream(IPipeLineSession session, IOutputStreamingSupport nextProvider) throws StreamingException {
-		MessageOutputStream result = actor.provideOutputStream(session, nextProvider);
-		if (result!=null && result.getForward()==null) {
-			result.setForward(getForward());
-		}
- 		return result;
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 
 	@Override
-	public PipeRunResult doPipe (Object input, IPipeLineSession session, IOutputStreamingSupport next) throws PipeRunException {
+	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
-		Message message = new Message(input);
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
@@ -137,23 +138,20 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeOutException e) {
 			Map<String, PipeForward> forwards = getForwards();
-			if (forwards!=null && forwards.containsKey("exception")) {
-				return new PipeRunResult(getForwards().get("exception"), e.getMessage());
+			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
 		if (result!=null) {
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		}
-		return new PipeRunResult(getForward(), input);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
-		}
-		return null;
+		return getFileSystem().getPhysicalDestinationName();
 	}
 
 	public FS getFileSystem() {
@@ -181,6 +179,11 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		actor.setFilename(filename);
 	}
 
+	@IbisDocRef({"2", FILESYSTEMACTOR})
+	public void setDestination(String destination) {
+		actor.setDestination(destination);
+	}
+
 	@IbisDocRef({"3", FILESYSTEMACTOR})
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
@@ -192,8 +195,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	}
 
 	@IbisDocRef({"5", FILESYSTEMACTOR})
-	public void setBase64(String base64) {
-		actor.setBase64(base64);
+	public void setOverwrite(boolean overwrite) {
+		actor.setOverwrite(overwrite);
 	}
 
 	@IbisDocRef({"6", FILESYSTEMACTOR})
@@ -210,5 +213,45 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
+	
+	@IbisDocRef({"9", FILESYSTEMACTOR})
+	@Deprecated
+	public void setBase64(String base64) {
+		actor.setBase64(base64);
+	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
+	public void setWildCard(String wildcard) {
+		setWildcard(wildcard);
+	}
+	@IbisDocRef({"10", FILESYSTEMACTOR})
+	public void setWildcard(String wildcard) {
+		actor.setWildcard(wildcard);
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
+	public void setExcludeWildCard(String excludeWildcard) {
+		setExcludeWildcard(excludeWildcard);
+	}
+	@IbisDocRef({"11", FILESYSTEMACTOR})
+	public void setExcludeWildcard(String excludeWildcard) {
+		actor.setExcludeWildcard(excludeWildcard);
+	}
+
+	@IbisDocRef({"12", FILESYSTEMACTOR})
+	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
+		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
+	}
+
+	@IbisDocRef({"13", FILESYSTEMACTOR})
+	public void setWriteLineSeparator(boolean writeLineSeparator) {
+		actor.setWriteLineSeparator(writeLineSeparator);
+	}
+
+	@IbisDocRef({"14", FILESYSTEMACTOR})
+	public void setCharset(String charset) {
+		actor.setCharset(charset);
+	}
 }

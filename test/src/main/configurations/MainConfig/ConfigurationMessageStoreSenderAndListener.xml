@@ -1,0 +1,42 @@
+<ibis>
+	<Adapter name="writeIbisstore">
+		<Receiver name="writeIbisstoreReceiver">
+			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"  />
+			<errorStorage
+				className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline firstPipe="sendMessagePipe">
+			<SenderPipe name="sendMessagePipe">
+				<sender
+					className="nl.nn.adapterframework.jdbc.MessageStoreSender"
+					slotId="TestMessageStoreSenderAndListener-Queue"
+					sessionKeys="key1,key2">
+					<param name="messageId"
+						xpathExpression="/Envelope/Header/MessageID" />
+				</sender>
+				<messageLog
+					className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+					slotId="TestMessageStoreSenderAndListener-WriteLog" />
+				<Forward name="success" path="EXIT" />
+			</SenderPipe>
+			<Exit path="EXIT" state="success" code="200"></Exit>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="readIbisstore">
+		<Receiver name="readIbisstoreReceiver">
+			<listener name="MyListener"
+				className="nl.nn.adapterframework.jdbc.MessageStoreListener"
+				slotId="TestMessageStoreSenderAndListener-Queue"
+				sessionKeys="key1,key2" />
+		</Receiver>
+		<Pipeline firstPipe="DoIt">
+			<Exit state="success" path="EXIT" code="200" />
+			<FixedResultPipe name="DoIt"
+				returnString="Hello World">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+	
+</ibis>

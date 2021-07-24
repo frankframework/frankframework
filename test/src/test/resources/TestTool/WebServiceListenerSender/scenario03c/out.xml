@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><EXCEPTION>
 <errorMessage message="Pipe [send2ws_forward_exception] msgId [Test Tool correlation id] : nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out" originator="IAF_ss9 6.0-RC3" timestamp="Fri Sep 04 09:26:33 CEST 2015">
-	<location class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" name="send2ws_forward_exception"/>
+	<location class="nl.nn.adapterframework.pipes.SenderPipe" name="send2ws_forward_exception"/>
 	<details>nl.nn.adapterframework.core.TimeOutException: nl.nn.adapterframework.core.TimeOutException: (SocketTimeoutException) Read timed out
 	at nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase.sendMessage(TimeoutGuardSenderWithParametersBase.java:99)
 	at nl.nn.adapterframework.core.TimeoutGuardSenderWithParametersBase$$FastClassByCGLIB$$37e7968.invoke(&lt;generated&gt;)

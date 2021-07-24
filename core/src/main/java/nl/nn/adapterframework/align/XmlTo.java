@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,32 +16,26 @@
 package nl.nn.adapterframework.align;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.Stack;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import nl.nn.adapterframework.align.content.DocumentContainer;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * XML Schema guided XML converter;
@@ -52,7 +46,6 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private boolean writeAttributes=true;
-	private boolean DEBUG=false; 
 
 	private XmlAligner aligner;
 	
@@ -73,16 +66,16 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XSTypeDefinition typeDefinition=aligner.getTypeDefinition();
 		if (!localName.equals(topElement)) {
 			if (topElement!=null) {
-				if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+				if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
 				documentContainer.endElementGroup(topElement);	
 			}
-			if (DEBUG) log.debug("startElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
 			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);	
 			topElement=localName;			
 		}
 		element.push(topElement);
 		topElement=null;
-		if (DEBUG) log.debug("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
+		if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] xml array container ["+aligner.isParentOfSingleMultipleOccurringChildElement()+"] repeated element ["+aligner.isMultipleOccurringChildInParentElement(localName)+"]");
 		documentContainer.startElement(localName,xmlArrayContainer,repeatedElement, typeDefinition);
 		super.startElement(uri, localName, qName, atts);
 		if (aligner.isNil(atts)) {
@@ -101,11 +94,11 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 						XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
 						String attName=attributeDeclaration.getName();
 						String attNS=attributeDeclaration.getNamespace();
-						if (DEBUG) log.debug("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
+						if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
 						int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
 						if (attIndex>=0) {
 							String value=atts.getValue(attIndex);
-							if (DEBUG) log.debug("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
 							if (StringUtils.isNotEmpty(value)) {
 								documentContainer.setAttribute(attName, value, attTypeDefinition);
 							}
@@ -119,15 +112,15 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {
-			if (DEBUG) log.debug("endElementGroup ["+topElement+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup ["+topElement+"]");
 			documentContainer.endElementGroup(topElement);	
 		}
 		topElement=element.pop();
-		if (DEBUG) log.debug("endElement ["+localName+"]");
+		if (log.isTraceEnabled()) log.trace("endElement ["+localName+"]");
 		documentContainer.endElement(localName);
 		super.endElement(uri, localName, qName);
 		if (element.isEmpty()) {
-			if (DEBUG) log.debug("endElementGroup ["+localName+"]");
+			if (log.isTraceEnabled()) log.trace("endElementGroup ["+localName+"]");
 			documentContainer.endElementGroup(localName);
 		}
 	}
@@ -136,30 +129,28 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		XSSimpleType simpleType=aligner.getElementType();
 		ScalarType scalarType=ScalarType.findType(simpleType);
-		if (DEBUG && simpleType!=null) {
-			log.debug("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
+		if (log.isTraceEnabled() && simpleType!=null) {
+			log.trace("SimpleType ["+simpleType+"] ScalarType ["+scalarType+"] characters ["+new String(ch,start,length)+"]");
 		}
 		documentContainer.characters(ch, start, length);
 		super.characters(ch, start, length);
 	}
 
-	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+	public static ValidatorHandler setupHandler(URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 
-		// create the ValidatorHandler
-    	SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Schema schema = sf.newSchema(schemaURL); 
-		ValidatorHandler validatorHandler = schema.newValidatorHandler();
- 	
-    	// create the parser, setup the chain
-    	XMLReader parser = new SAXParser();
-    	XmlAligner aligner = new XmlAligner(validatorHandler);
-    	XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);   	
-    	parser.setContentHandler(validatorHandler);
-    	aligner.setContentHandler(xml2object);
+		ValidatorHandler validatorHandler = XmlAligner.getValidatorHandler(schemaURL);
+
+		// create the parser, setup the chain
+		XmlAligner aligner = new XmlAligner(validatorHandler);
+		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
+		aligner.setContentHandler(xml2object);
+		
+		return validatorHandler;
+	} 
 	
-    	// start translating
-    	InputSource is = new InputSource(new StringReader(xml));
-		parser.parse(is);
+	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+		ValidatorHandler validatorHandler = setupHandler(schemaURL, documentContainer);
+		XmlUtils.parseXml(xml, validatorHandler);
 	}
 
 	@Override
@@ -177,6 +168,5 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 	public void setWriteAttributes(boolean writeAttributes) {
 		this.writeAttributes = writeAttributes;
 	}
-
 
 }

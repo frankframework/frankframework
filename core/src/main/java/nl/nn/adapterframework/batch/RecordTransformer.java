@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,13 +29,11 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Translate a record using an outputFields description. 
@@ -68,7 +66,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 	
 	@Override
-	public Object handleRecord(IPipeLineSession session, List<String> parsedRecord) throws Exception {
+	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
 		Stack<IOutputField> conditions = new Stack<>();
 		
@@ -116,11 +114,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 		outputFields.clear();
 	}
 	
-	public void addOutputInput(int inputFieldIndex) throws ConfigurationException {
+	public void addOutputInput(int inputFieldIndex) {
 		addOutputField(new OutputInput(inputFieldIndex-1));
 	}
 
-	public void addAlignedInput(int inputFieldIndex, int lenght, boolean leftAlign, char fillCharacter) throws ConfigurationException {
+	public void addAlignedInput(int inputFieldIndex, int lenght, boolean leftAlign, char fillCharacter) {
 		addOutputField(new OutputAlignedInput(inputFieldIndex-1, lenght, leftAlign, fillCharacter));
 	}
 
@@ -136,15 +134,15 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addOutputField(new FixedAlignedOutput(fixedValue, lenght, leftAlign, fillCharacter));
 	} 
 	
-	public void addDateOutput(String outformat) throws ConfigurationException {
+	public void addDateOutput(String outformat) {
 		addOutputField(new FixedDateOutput(outformat, null, -1));
 	}
 
-	public void addDateOutput(int inputFieldIndex, String informat, String outformat) throws ConfigurationException {
+	public void addDateOutput(int inputFieldIndex, String informat, String outformat) {
 		addOutputField(new FixedDateOutput(outformat, informat, inputFieldIndex-1));
 	}
 	
-	public void addLookup(int inputFieldIndex, Map<String,String> lookupValues) throws ConfigurationException {
+	public void addLookup(int inputFieldIndex, Map<String,String> lookupValues) {
 		addOutputField(new Lookup(inputFieldIndex-1, lookupValues));
 	}
 	
@@ -165,7 +163,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addIf(inputFieldIndex, comparator, compareValue);
 	}
 
-	public void addEndIf() throws ConfigurationException {
+	public void addEndIf() {
 		addOutputField(new EndIfCondition());
 	}
 	
@@ -270,7 +268,12 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * Added to allow usage from Configuration file without the need to modify the 
 	 * digester-rules 
 	 */
+	@Deprecated
 	public void registerChild(OutputfieldsPart part) throws ConfigurationException {
+		registerOutputFields(part);
+	}
+	
+	public void registerOutputFields(OutputfieldsPart part) throws ConfigurationException {
 		setOutputFields(part.getValue());
 	}
 
@@ -311,7 +314,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			if (inputFieldIndex < 0 || inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
-			String val = (String)inputFields.get(inputFieldIndex);
+			String val = inputFields.get(inputFieldIndex);
 			if ((! StringUtils.isEmpty(getOutputSeparator())) && (val != null)) {
 				return val.trim();
 			}
@@ -350,7 +353,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
-			String val = ((String)super.toValue(inputFields)).trim();
+			String val = super.toValue(inputFields).trim();
 			
 			if (startIndex >= val.length()) {
 				if (StringUtils.isEmpty(getOutputSeparator())) {
@@ -382,7 +385,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		private char fillchar;
 		private boolean leftAlign;
 		
-		OutputAlignedInput(int inputFieldIndex, int length, boolean leftAlign, char fill) throws ConfigurationException {
+		OutputAlignedInput(int inputFieldIndex, int length, boolean leftAlign, char fill) {
 			super(inputFieldIndex);
 			this.fillchar = fill;
 			this.length = length;
@@ -391,7 +394,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List<String> inputFields) throws ConfigurationException {
-			String val = ((String)super.toValue(inputFields)).trim();
+			String val = super.toValue(inputFields).trim();
 			FileUtils.align(result, val, length, leftAlign, fillchar);
 			return null;
 		}
@@ -501,7 +504,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				if (inputFieldIndex >= inputFields.size()) {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 				}
-				date = inFormatter.parse((String)inputFields.get(inputFieldIndex));
+				date = inFormatter.parse(inputFields.get(inputFieldIndex));
 			}
 			result.append(outFormatter.format(date));
 			return null;
@@ -580,7 +583,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 			if (inputFieldIndex < 0 && inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
-			String val = (String)inputFields.get(inputFieldIndex);
+			String val = inputFields.get(inputFieldIndex);
 
 			if (compareValue.startsWith("{") && compareValue.endsWith("}")) { 
 				Vector<String> v = new Vector<String>();
@@ -593,7 +596,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 						return v.contains(val);
 					case 3: // sw
 						for (int i = 0; i < v.size(); i++) {
-							String  vs = (String)v.elementAt(i);
+							String  vs = v.elementAt(i);
 							if (val.startsWith(vs)) {
 								return true;
 							}
@@ -601,7 +604,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 						return false;
 					case 4: // ns
 						for (int i = 0; i < v.size(); i++) {
-							String  vs = (String)v.elementAt(i);
+							String  vs = v.elementAt(i);
 							if (val.startsWith(vs)) {
 								return false;
 							}
@@ -610,17 +613,16 @@ public class RecordTransformer extends AbstractRecordHandler {
 					default: // ne
 						return ! v.contains(val);
 				}
-			} else {
-				switch(comparator) {
-					case 1: // eq
-						return val.equals(compareValue);
-					case 3: // sw
-						return val.startsWith(compareValue);
-					case 4: // ns
-						return ! val.startsWith(compareValue);
-					default: // ne
-						return ! val.equals(compareValue);
-				}
+			} 
+			switch(comparator) {
+				case 1: // eq
+					return val.equals(compareValue);
+				case 3: // sw
+					return val.startsWith(compareValue);
+				case 4: // ns
+					return ! val.startsWith(compareValue);
+				default: // ne
+					return ! val.equals(compareValue);
 			}
 		}
 		
@@ -660,8 +662,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			
 			this.params = params;
 			try {
-				Class delegateClass = Class.forName(delegateName);
-				Constructor constructor = delegateClass.getConstructor(new Class[0]);
+				Class<?> delegateClass = Class.forName(delegateName);
+				Constructor<?> constructor = delegateClass.getConstructor(new Class[0]);
 				delegate = (IOutputDelegate)constructor.newInstance(new Object[0]);
 			}
 			catch(Exception e) {
@@ -675,14 +677,6 @@ public class RecordTransformer extends AbstractRecordHandler {
 			result.append(transform);
 			return null;
 		}
-	}
-	
-
-	public void setOutputSeperator(String string) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'";
-		configWarnings.add(log, msg);
-		setOutputSeparator(string);
 	}
 
 	@IbisDoc({"optional separator to add between the fields", ""})

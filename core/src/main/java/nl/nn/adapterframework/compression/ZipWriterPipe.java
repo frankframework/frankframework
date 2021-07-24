@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,22 +22,23 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that creates a ZipStream.
@@ -67,20 +68,21 @@ public class ZipWriterPipe extends FixedForwardPipe {
 
 	private static final String PARAMETER_FILENAME="filename";
 
- 	private String action=null;
-	private String zipWriterHandle="zipwriterhandle";
-	private boolean closeInputstreamOnExit=true;
-	private boolean closeOutputstreamOnExit=true;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private boolean completeFileHeader=false;
+ 	private @Getter String action=null;
+	private @Getter String zipWriterHandle="zipwriterhandle";
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter boolean closeOutputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean completeFileHeader=false;
 
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
 
 
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		super.configure(pipeline);
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
 		if (!(ACTION_OPEN.equals(getAction()) || ACTION_WRITE.equals(getAction())  || ACTION_STREAM.equals(getAction()) || ACTION_CLOSE.equals(getAction()))) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
+			throw new ConfigurationException("action must be either '"+ACTION_OPEN+"','"+ACTION_WRITE+"','"+ACTION_STREAM+"' or '"+ACTION_CLOSE+"'");
 		}
 		if (ACTION_OPEN.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
@@ -88,25 +90,26 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (ACTION_WRITE.equals(getAction()) || ACTION_STREAM.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter==null) {
-				throw new ConfigurationException(getLogPrefix(null)+"a parameter '"+PARAMETER_FILENAME+"' is required");
+				throw new ConfigurationException("a parameter '"+PARAMETER_FILENAME+"' is required");
 			}
 		}
 		if (ACTION_CLOSE.equals(getAction())) {
 			filenameParameter=getParameterList().findParameter(PARAMETER_FILENAME);
 			if (filenameParameter!=null) {
-				throw new ConfigurationException(getLogPrefix(null)+"with action ["+getAction()+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
+				throw new ConfigurationException("with action ["+getAction()+"] parameter '"+PARAMETER_FILENAME+"' cannot not be configured");
 			}
 		}
 	}
 
 
-	protected ZipWriter getZipWriter(IPipeLineSession session) {
+	protected ZipWriter getZipWriter(PipeLineSession session) {
 		return ZipWriter.getZipWriter(session,getZipWriterHandle());
 	}
 
-	protected ZipWriter createZipWriter(IPipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
+	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Message message) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
+		Object input=message.asObject();
 		if (input==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"input cannot be null, must be OutputStream, HttpResponse or String containing filename");
 		}
@@ -137,21 +140,20 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 		}
 		if (resultStream==null) {
-			throw new PipeRunException(this,getLogPrefix(session)+"Dit not find OutputStream or HttpResponse, and could not find filename");
+			throw new PipeRunException(this,getLogPrefix(session)+"did not find OutputStream or HttpResponse, and could not find filename");
 		}
 		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseOutputstreamOnExit());
 		return sessionData;
 	}
 
 
-	protected void closeZipWriterHandle(IPipeLineSession session, boolean mustFind) throws PipeRunException {
+	protected void closeZipWriterHandle(PipeLineSession session, boolean mustFind) throws PipeRunException {
 		ZipWriter sessionData=getZipWriter(session);
 		if (sessionData==null) {
 			if (mustFind) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find session data");
-			} else {
-				log.debug(getLogPrefix(session)+"did find session data, assuming already closed");
-			}
+			} 
+			log.debug(getLogPrefix(session)+"did find session data, assuming already closed");
 		} else {
 			try {
 				sessionData.close();
@@ -162,19 +164,17 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		session.remove(getZipWriterHandle());
 	}
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (ACTION_CLOSE.equals(getAction())) {
 			closeZipWriterHandle(session,true);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
-		String msg=null;
-		if (input instanceof String) {
-			msg=(String)input;
-		}
-		ParameterResolutionContext prc = new ParameterResolutionContext(msg, session);
-		ParameterValueList pvl;
+		ParameterValueList pvl=null;
 		try {
-			pvl = prc.getValues(getParameterList());
+			if (getParameterList()!=null) {
+				pvl = getParameterList().getValues(input, session);
+			}
 		} catch (ParameterException e1) {
 			throw new PipeRunException(this,getLogPrefix(session)+"cannot determine filename",e1);
 		}
@@ -185,7 +185,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"zipWriterHandle in session key ["+getZipWriterHandle()+"] is already open");
 			}
 			sessionData=createZipWriter(session,pvl,input);
-			return new PipeRunResult(getForward(),input);
+			return new PipeRunResult(getSuccessForward(),input);
 		}
 		// from here on action must be 'write' or 'stream'
 		if (sessionData==null) {
@@ -198,7 +198,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		try {
 			if (ACTION_STREAM.equals(getAction())) {
 				sessionData.openEntry(filename);
-				PipeRunResult prr = new PipeRunResult(getForward(),sessionData.getZipoutput());
+				PipeRunResult prr = new PipeRunResult(getSuccessForward(),sessionData.getZipoutput());
 				return prr;
 			}
 			if (ACTION_WRITE.equals(getAction())) {
@@ -211,7 +211,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 				} catch (IOException e) {
 					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
 				}
-				return new PipeRunResult(getForward(),input);
+				return new PipeRunResult(getSuccessForward(),input);
 			}
 			throw new PipeRunException(this,getLogPrefix(session)+"illegal action ["+getAction()+"]");
 		} catch (CompressionException e) {
@@ -219,59 +219,43 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		}
 	}
 
-	protected String getLogPrefix(IPipeLineSession session) {
-		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
+	@Override
+	protected String getLogPrefix(PipeLineSession session) {
+		return super.getLogPrefix(session)+"action ["+getAction()+"] zipWriterHandle ["+getZipWriterHandle()+"]";
 	}
 
-	@IbisDoc({"only for action='write': when set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
+	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
-	}
 
-	@IbisDoc({"only for action='open': when set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
+	@IbisDoc({"Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
 	public void setCloseOutputstreamOnExit(boolean b) {
 		closeOutputstreamOnExit = b;
 	}
+	@Deprecated
+	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeOutputstreamOnExit'")
 	public void setCloseStreamOnExit(boolean b) {
-		ConfigurationWarnings.getInstance().add(getLogPrefix(null)+"attribute 'closeStreamOnExit' has been renamed into 'closeOutputstreamOnExit'");
 		setCloseOutputstreamOnExit(b);
 	}
-	public boolean isCloseOutputstreamOnExit() {
-		return closeOutputstreamOnExit;
-	}
 
-	@IbisDoc({"only for action='write': charset used to write strings to zip entries", "utf-8"})
+	@IbisDoc({"Only for action='write': Charset used to write strings to zip entries", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	@IbisDoc({"session key used to refer to zip session. must be used if zipwriterpipes are nested", "zipwriterhandle"})
+	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;
 	}
-	public String getZipWriterHandle() {
-		return zipWriterHandle;
-	}
 
-	@IbisDoc({"one of <ul><li>open: to open a new zip file or stream</li> <li>close: to close the zip file or stream</li> <li>write: write the input to the zip as a new entry</li> <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
+	@IbisDoc({"One of <ul><li>open: To open a new zip file or stream</li> <li>close: To close the zip file or stream</li> <li>write: Write the input to the zip as a new entry</li> <li>stream: Create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> </ul>", ""})
 	public void setAction(String string) {
 		action = string;
 	}
-	public String getAction() {
-		return action;
-	}
 
-	@IbisDoc({"only for action='write': when set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
+	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
 	public void setCompleteFileHeader(boolean b) {
 		completeFileHeader = b;
-	}
-	public boolean isCompleteFileHeader() {
-		return completeFileHeader;
 	}
 }

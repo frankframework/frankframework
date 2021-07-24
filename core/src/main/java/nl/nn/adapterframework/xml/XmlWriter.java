@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,42 +17,43 @@ package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	
-	private final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
-	private final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
-	
-	private Writer writer;
-	private boolean includeXmlDeclaration=false;
-	private boolean newlineAfterXmlDeclaration=false;
-	private boolean includeComments=true;
-	private boolean textMode=false;
-	
+
+	public static final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
+	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
+
+	private @Getter Writer writer;
+	private @Setter boolean includeXmlDeclaration=false;
+	private @Setter boolean newlineAfterXmlDeclaration=false;
+	private @Setter boolean includeComments=true;
+	private @Setter boolean textMode=false;
+
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
 	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
-	
+
 	private class PrefixMapping {
 
 		public String prefix;
@@ -67,24 +68,20 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public XmlWriter() {
 		writer=new StringWriter();
 	}
-	
+
 	public XmlWriter(Writer writer) {
 		this.writer=writer;
 	}
-	
+
 	public XmlWriter(OutputStream stream) {
-		try {
-			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-		}
+		this.writer=new XmlStreamWriter(stream);
 	}
 
 	@Override
 	public void startDocument() throws SAXException {
 		try {
 			if (includeXmlDeclaration) {
-				writer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+				writer.append("<?xml version=\"1.0\" encoding=\""+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"\"?>");
 				if (newlineAfterXmlDeclaration) {
 					writer.append("\n");
 				}
@@ -120,13 +117,10 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		prefixMappingList.add(prefixMapping);
 	}
 
-
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
 		storePrefixMapping(namespaceDefinitions, prefix, uri);
 	}
-
-
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -137,7 +131,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 			if (!textMode) {
 				writer.append("<"+qName);
 				for (int i=0; i<attributes.getLength(); i++) {
-					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i)).replace("&#39;", "'")+"\"");
+					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i), true).replace("&#39;", "'")+"\"");
 				}
 				for (int i=0; i<namespaceDefinitions.size(); i++) {
 					writePrefixMapping(namespaceDefinitions.get(i));
@@ -183,7 +177,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				if (inCdata || !outputEscaping) {
 					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeChars(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
+					writer.append(XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
 				}
 			}
 		} catch (IOException e) {
@@ -274,30 +268,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 //		System.out.println("endEntity ["+arg0+"]");
 	}
 
-	public Writer getWriter() {
-		return writer;
-	}
-
 	@Override
 	public String toString() {
 		return writer.toString();
-	}
-
-	
-	public void setIncludeXmlDeclaration(boolean includeXmlDeclaration) {
-		this.includeXmlDeclaration = includeXmlDeclaration;
-	}
-
-	public void setNewlineAfterXmlDeclaration(boolean newlineAfterXmlDeclaration) {
-		this.newlineAfterXmlDeclaration = newlineAfterXmlDeclaration;
-	}
-
-	public void setIncludeComments(boolean includeComments) {
-		this.includeComments = includeComments;
-	}
-
-	public void setTextMode(boolean textMode) {
-		this.textMode = textMode;
 	}
 
 }

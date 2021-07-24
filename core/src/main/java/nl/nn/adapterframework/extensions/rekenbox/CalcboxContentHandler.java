@@ -20,26 +20,16 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
-import org.w3c.dom.Document;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
-import java.io.File;
 import java.io.StringWriter;
-import java.io.FileReader;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import java.io.StringReader;
 
 /**

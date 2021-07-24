@@ -1,0 +1,5 @@
+<transaction>
+	<order>1</order>
+	<customer>A</customer>
+	<vendor>B</vendor>
+</transaction>

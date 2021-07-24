@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.tika.mime.MediaType;
-
-import com.google.common.base.MoreObjects;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -57,17 +55,6 @@ public class CisConversionResult {
 	 */
 	private File pdfResultFile;
 
-	/**
-	 * CreateCisConversionResult
-	 * 
-	 * @param conversionOption
-	 * @param mediaType
-	 * @param documentName
-	 * @param pdfResultFile
-	 * @param failureReason
-	 * @param argAttachments
-	 * @return
-	 */
 	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
 			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
 
@@ -88,12 +75,6 @@ public class CisConversionResult {
 
 	/**
 	 * Create a successful CisConversionResult
-	 *
-	 * @param conversionOption
-	 * @param mediaTypeReceived
-	 * @param pdfResultFile
-	 * @param attachments
-	 * @return
 	 */
 	public static CisConversionResult createSuccessResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, File pdfResultFile,
@@ -193,25 +174,32 @@ public class CisConversionResult {
 	}
 
 	@Override
-	public final String toString() {
-		return MoreObjects.toStringHelper(this).add("ConversionOption", getConversionOption())
-				.add("mediaType", getMediaType()).add("documentName", getDocumentName())
-				.add("pdfResultFile", getPdfResultFile() == null ? "null" : getPdfResultFile().getName())
-				.add("failureReason", getFailureReason()).add("attachments", getAttachments()).toString();
+	public final String toString() { //HIER
+		StringBuilder builder = new StringBuilder(super.toString());
+		builder.append(String.format("ConversionOption=[%s]", getConversionOption()));
+		builder.append(String.format("mediaType=[%s]", getMediaType()));
+		builder.append(String.format("documentName=[%s]", getDocumentName()));
+		builder.append(String.format("pdfResultFile=[%s]", getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
+		builder.append(String.format("failureReason=[%s]", getFailureReason()));
+		builder.append(String.format("attachments=[%s]", getAttachments()));
+
+		return builder.toString();
 	}
 
 	/**
 	 * Creates and xml containing conversion results both attachments and the main document.
 	 */
-	public void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
+	public void buildXmlFromResult(XmlBuilder main, boolean isRoot) {
+		buildXmlFromResult(main, this, isRoot);
+	}
+	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
 		if(isRoot) {
-			main.addAttribute("CONVERSION_OPTION", this.getConversionOption().getValue());
-			main.addAttribute("MEDIA_TYPE", this.getMediaType().toString());
-			main.addAttribute("DOCUMENT_NAME", this.getDocumentName());
-			main.addAttribute("FAILURE_REASON", this.getFailureReason());
-			main.addAttribute("PARENT_CONVERSION_ID", null);
-			main.addAttribute("NUMBER_OF_PAGES", this.getNumberOfPages());
-			main.addAttribute("CONVERTED_DOCUMENT", this.getResultFilePath());
+			main.addAttribute("conversionOption", this.getConversionOption().getValue());
+			main.addAttribute("mediaType", this.getMediaType().toString());
+			main.addAttribute("documentName", this.getDocumentName());
+			main.addAttribute("failureReason", this.getFailureReason());
+			main.addAttribute("numberOfPages", this.getNumberOfPages());
+			main.addAttribute("convertedDocument", this.getResultFilePath());
 		}
 		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
 		if (attachmentList != null && !attachmentList.isEmpty()) {
@@ -225,7 +213,7 @@ public class CisConversionResult {
 				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
 				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
 				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("filePath", attachment.getResultFilePath());
+				attachmentAsXml.addAttribute("convertedDocument", attachment.getResultFilePath());
 				attachmentsAsXml.addSubElement(attachmentAsXml);
 
 				buildXmlFromResult(attachmentAsXml, attachment, false);

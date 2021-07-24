@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.servlet.ServletContext;
@@ -39,22 +36,17 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
-import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -71,10 +63,6 @@ public class RestServiceDispatcher  {
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
-	private final String SVG_FILE_NO_IMAGE_AVAILABLE = "/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg";
-
-	private static AppConstants appConstants = AppConstants.getInstance();
-	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
 
 	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
 
@@ -141,27 +129,12 @@ public class RestServiceDispatcher  {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, IPipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
 		
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
-			if (uri != null && (uri.equals("/showFlowDiagram")
-					|| uri.startsWith("/showFlowDiagram/"))) {
-				log.info("no REST listener configured for uri ["+uri+"], so using 'no image available'");
-				noImageAvailable(httpServletResponse);
-				return "";
-			}
-			if (uri != null && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/"))) {
-				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
-				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
-					httpServletResponse.setHeader("REFRESH", "0");
-					return "";
-				} else {
-					return retrieveNoIbisContext(httpServletRequest, servletContext);
-				}
-			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
@@ -169,9 +142,6 @@ public class RestServiceDispatcher  {
 		
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
-		}
-		if (context==null) {
-			context=new PipeLineSessionBase();
 		}
 		context.put("restPath", restPath);
 		context.put("uri", uri);
@@ -273,9 +243,9 @@ public class RestServiceDispatcher  {
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-			if (httpServletRequest!=null) context.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			if (httpServletResponse!=null) context.put(IPipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
-			if (servletContext!=null) context.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
+			if (httpServletRequest!=null) context.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			if (httpServletResponse!=null) context.put(PipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
+			if (servletContext!=null) context.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
 			if (writeToSecLog) {
 				secLog.info(HttpUtils.getExtendedCommandIssuedBy(httpServletRequest));
@@ -284,7 +254,7 @@ public class RestServiceDispatcher  {
 			//Caching: check for etags
 			if(uri.startsWith("/")) uri = uri.substring(1);
 			if(uri.indexOf("?") > -1) {
-				uri = uri.split("?")[0];
+				uri = uri.split("\\?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
 
@@ -305,8 +275,12 @@ public class RestServiceDispatcher  {
 				}
 			}
 
-			String result=listener.processRequest(null, request, context);
-
+			String result;
+			try {
+				result=listener.processRequest(null, new Message(request), context).asString();
+			} catch (IOException e) {
+				throw new ListenerException(e);
+			}
 			//Caching: pipeline has been processed, save etag
 			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
@@ -320,54 +294,6 @@ public class RestServiceDispatcher  {
 			if (listener instanceof RestListener) {
 				Thread.currentThread().setName(ctName);
 			}
-		}
-	}
-
-	private void noImageAvailable(HttpServletResponse httpServletResponse)
-			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(this,
-				SVG_FILE_NO_IMAGE_AVAILABLE);
-		if (svgSource == null) {
-			throw new ListenerException("cannot find resource ["
-					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
-		}
-		try {
-			httpServletResponse.setContentType("image/svg+xml");
-			InputStream inputStream = null;
-			try {
-				inputStream = svgSource.openStream();
-				Misc.streamToStream(inputStream,
-						httpServletResponse.getOutputStream());
-			} finally {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest,
-			ServletContext servletContext) throws ListenerException {
-		try {
-			CreateRestViewPipe pipe = new CreateRestViewPipe();
-			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
-			//pipe.setXslt2(true);
-			PipeForward pipeForward = new PipeForward();
-			pipeForward.setName("success");
-			pipe.registerForward(pipeForward);
-			pipe.configure();
-			pipe.start();
-			IPipeLineSession session = new PipeLineSessionBase();
-			session.put(IPipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			session.put(IPipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = (String) pipe.doPipe("<dummy/>", session)
-					.getResult();
-			pipe.stop();
-			return result;
-		} catch (Exception e) {
-			throw new ListenerException(e);
 		}
 	}
 	

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="Start">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
+          <xs:group ref="DElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="A">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.FirstGrandChild</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="a" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.FirstGrandChild" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="B">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.SecondGrandChild</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="b" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.SecondGrandChild" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="CElementGroup">
+    <xs:choice>
+      <xs:element name="C">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="A" />
+              <xs:element ref="B" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="c" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="CElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="CElementGroupBase">
+    <xs:choice>
+      <xs:element name="Child1C">
+        <xs:annotation>
+          <xs:documentation>Child1C - nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Child1 used as C</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Child1Type">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="c" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Child1" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="Child1Type">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="Child1DeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:group name="Child1DeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="A" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="B" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="DElementGroup">
+    <xs:choice>
+      <xs:element name="D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="A" />
+              <xs:element ref="B" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="d" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="DElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="DElementGroupBase">
+    <xs:choice>
+      <xs:element name="Child1D">
+        <xs:annotation>
+          <xs:documentation>Child1D - nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Child1 used as D</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="Child1Type">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="d" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Child1" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:simpleType name="frankBoolean">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="frankInt">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:simpleType name="variableRef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="$\{[^\}]+\}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

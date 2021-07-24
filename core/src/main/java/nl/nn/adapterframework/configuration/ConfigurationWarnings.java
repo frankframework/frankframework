@@ -1,110 +1,118 @@
 /*
-   Copyright 2013, 2016, 2017, 2019 Nationale-Nederlanden
+Copyright 2021 WeAreFrank!
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 package nl.nn.adapterframework.configuration;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurationAware;
 
-/**
- * Singleton class that has the configuration warnings for this application.
- * 
- * @author Peter Leeuwenburgh
- */
-public final class ConfigurationWarnings extends BaseConfigurationWarnings {
-	private static ConfigurationWarnings self = null;
-	private Configuration activeConfiguration = null;
-	
-	public static synchronized ConfigurationWarnings getInstance() {
-		if (self == null) {
-			self = new ConfigurationWarnings();
-		}
-		return self;
+public class ConfigurationWarnings extends ApplicationWarningsBase {
+
+	/**
+	 * Add a ConfigurationWarning with INamedObject prefix
+	 */
+	public static void add(IConfigurationAware source, Logger log, String message) {
+		add(source, log, message, (Throwable) null);
 	}
-	
-	public static void add(INamedObject object, Logger log, String message) {
-		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = (object==null?"":ClassUtils.nameOf(object) +"["+object.getName()+"]")+": "+message;
-		configWarnings.add(log, msg);		
-	}
-	
-	public static void add(Adapter adapter, Logger log, String message) {
-		add(adapter,null,log,message);
-	}
-	public static void add(Adapter adapter, INamedObject object, Logger log, String message) {
-		if (adapter==null) {
-			add(object, log, message);
+
+	/**
+	 * Add a ConfigurationWarning with INamedObject prefix and log the exception stack
+	 */
+	public static void add(IConfigurationAware source, Logger log, String message, Throwable t) {
+		ConfigurationWarnings instance = getInstance(source);
+		if(instance != null) {
+			instance.doAdd(source, log, message, t);
 		} else {
-			Configuration configuration = adapter.getConfiguration();
-			if (configuration==null) {
-				add(object, log, message);
-			} else {
-				configuration.getConfigurationWarnings().add(log, message, null, false);
+			ApplicationWarnings.add(log, message, t);
+		}
+	}
+
+	/**
+	 * Add a (globally-)suppressable ConfigurationWarning with INamedObject prefix
+	 */
+	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey) {
+		add(source, log, message, suppressionKey, null);
+	}
+
+	/**
+	 * Add a suppressable ConfigurationWarning with INamedObject prefix
+	 */
+	public static void add(IConfigurationAware source, Logger log, String message, SuppressKeys suppressionKey, IAdapter adapter) {
+		ConfigurationWarnings instance = getInstance(source); //We could call two statics, this prevents a double getInstance(..) lookup.
+		if(instance != null && !instance.doIsSuppressed(suppressionKey, adapter)) {
+			// provide suppression hint as info 
+			String hint = null;
+			if(log.isInfoEnabled()) {
+				if(adapter != null) {
+					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+					if(suppressionKey.isAllowGlobalSuppression()) {
+						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
+					}
+				} else if(suppressionKey.isAllowGlobalSuppression()) {
+					hint = ". This warning can be suppressed globally by setting the property '"+suppressionKey.getKey()+"=true'";
+				}
 			}
+
+			instance.doAdd(source, log, message, hint);
 		}
 	}
 
-	public boolean add(Logger log, String msg) {
-		return add(log, msg, null, false);
-	}
-	
-	public boolean add(Logger log, String msg, Throwable t) {
-		return add(log, msg, t, false);
-	}
-	
-	public boolean add(Logger log, String msg, boolean onlyOnce) {
-		return add(log, msg, null, onlyOnce);
-	}
-
-	@Override
-	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce) {
-		return add(log, msg, null, onlyOnce, null);
-	}
-
-	public boolean add(Logger log, String msg, Throwable t, boolean onlyOnce, Configuration config) {
-		if (config!=null) {
-			return config.getConfigurationWarnings().add(log, msg, t, onlyOnce);
-		} else {
-			if (activeConfiguration!=null) {
-				return activeConfiguration.getConfigurationWarnings().add(log, msg, t, onlyOnce);
-			} else {
-				return super.add(log, msg, t, onlyOnce);
-			}
+	//Helper method to retrieve ConfigurationWarnings from the Configuration Context
+	private static ConfigurationWarnings getInstance(IConfigurationAware source) {
+		if(source == null) {
+			IllegalArgumentException e = new IllegalArgumentException("no source provided");
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);
+			return null;
 		}
+
+		ApplicationContext applicationContext = source.getApplicationContext();
+		if(applicationContext == null) {
+			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source ["+source+"]", e);
+			return null;
+		}
+
+		return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
-	public boolean containsDefaultValueExceptions(String key) {
-		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().containsDefaultValueExceptions(key);
-		} else {
-			return super.containsDefaultValueExceptions(key);
+	private boolean doIsSuppressed(SuppressKeys key, IAdapter adapter) {
+		if(key == null) {
+			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
+
+		return isSuppressed(key) || adapter!=null && getAppConstants().getBoolean(key.getKey()+"."+adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 
-	public boolean addDefaultValueExceptions(String key) {
-		if (activeConfiguration!=null) {
-			return activeConfiguration.getConfigurationWarnings().addDefaultValueExceptions(key);
-		} else {
-			return super.addDefaultValueExceptions(key);
+	public boolean isSuppressed(SuppressKeys key) {
+		if(key == null) {
+			throw new IllegalArgumentException("SuppressKeys may not be NULL");
 		}
+
+		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters
 	}
-	
-	public void setActiveConfiguration (Configuration configuration) {
-		activeConfiguration = configuration;
+
+	public static boolean isSuppressed(SuppressKeys key, IAdapter adapter) {
+		ConfigurationWarnings instance = getInstance(adapter);
+		if(instance == null) {
+			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
+		}
+
+		return instance.doIsSuppressed(key, adapter);
 	}
 }

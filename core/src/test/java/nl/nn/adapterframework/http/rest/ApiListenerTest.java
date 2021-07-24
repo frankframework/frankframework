@@ -45,7 +45,7 @@ public class ApiListenerTest {
 		listener.setProduces("xml");
 		listener.configure();
 
-		assertEquals("XML", listener.getProduces());
+		assertEquals(MediaTypes.XML, listener.getProducesEnum());
 	}
 
 	@Test
@@ -53,7 +53,17 @@ public class ApiListenerTest {
 		listener.setProduces("XML");
 		listener.configure();
 
-		assertEquals("XML", listener.getProduces());
+		assertEquals(MediaTypes.XML, listener.getProducesEnum());
+	}
+
+	@Test
+	public void testProducesTextWithCharset() throws ConfigurationException {
+		listener.setProduces("TEXT");
+		listener.setCharacterEncoding("utf-8");
+		listener.configure();
+
+		assertEquals(MediaTypes.TEXT, listener.getProducesEnum());
+		assertEquals("text/plain;charset=UTF-8", listener.getContentType());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -66,7 +76,7 @@ public class ApiListenerTest {
 		listener.setConsumes("xml");
 		listener.configure();
 
-		assertEquals("XML", listener.getConsumes());
+		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
 	}
 
 	@Test
@@ -74,7 +84,7 @@ public class ApiListenerTest {
 		listener.setConsumes("XML");
 		listener.configure();
 
-		assertEquals("XML", listener.getConsumes());
+		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -88,7 +98,7 @@ public class ApiListenerTest {
 			listener.setProduces(type.name());
 			listener.configure(); //Check if the mediatype passes the configure checks
 
-			assertEquals(type.getContentType(), listener.getContentType());
+			assertTrue(listener.getContentType().startsWith(type.getContentType()));
 		}
 
 		//Check empty produces
@@ -145,19 +155,55 @@ public class ApiListenerTest {
 		}
 	}
 
+	@Test
+	public void listenerAcceptsAll() throws ConfigurationException {
+		String contentType = "application/octet-stream";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("ANY");
+		assertTrue("accepts anything", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void clientAcceptsAll() throws ConfigurationException {
+		String contentType = "application/xhtml+xml, application/xml";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertTrue("accepts anything", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void doesNotAcceptOctetStreamWhenJSON() throws ConfigurationException {
+		String contentType = "application/octet-stream";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertFalse("does not accept an octet-stream when set to JSON", listener.accepts(acceptHeader));
+	}
+
+	@Test
+	public void acceptsJson() throws ConfigurationException {
+		String contentType = "application/json";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
+
+		listener.setProduces("JSON");
+		assertTrue("accepts JSON", listener.accepts(acceptHeader));
+	}
+
 	@Test(expected = ConfigurationException.class)
 	public void testFaultyAuthMethod() throws ConfigurationException {
 		try{
 			listener.setAuthenticationMethod("unknown$df");
 		}
 		finally {
-			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethod());
+			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethodEnum());
 		}
 	}
 
 	@Test
 	public void testAuthRoleMethod() throws ConfigurationException {
 		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE.name());
-		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
+		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethodEnum());
 	}
 }

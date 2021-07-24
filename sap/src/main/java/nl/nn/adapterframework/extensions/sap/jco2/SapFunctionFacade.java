@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,16 @@ package nl.nn.adapterframework.extensions.sap.jco2;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.sap.mw.jco.IFunctionTemplate;
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
@@ -56,6 +59,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SapFunctionFacade implements ISapFunctionFacade {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String sapSystemName;
@@ -76,6 +81,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 		return this.getClass().getName()+" ["+getName()+"] ";
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 //		if (StringUtils.isEmpty(getSapSystemName())) {
 //			throw new ConfigurationException("attribute sapSystemName must be specified");
@@ -245,7 +251,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 
-	public String functionCall2message(JCO.Function function) {
+	public Message functionCall2message(JCO.Function function) {
 		JCO.ParameterList input = function.getImportParameterList();
 		
 		int messageFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
@@ -268,7 +274,7 @@ public class SapFunctionFacade implements ISapFunctionFacade {
 			result+="</request>";
 		}
 
-		return result;
+		return new Message(result);
 	}
 
 	public Message functionResult2message(JCO.Function function) {

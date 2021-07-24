@@ -31,7 +31,7 @@ function f4(x,y) {
 }
 
 //Used to test the performance.
-function performance(x){
+function performance(x) {
 	var data = [];
 	for (var i = 0; i < x; i++) {
 		data[i] = i;
@@ -49,4 +49,7 @@ function performance(x){
 	return "1";
 }
 
-
+function promise() {
+	let prom = new Promise((resolve, reject) => {});
+	return (Promise.resolve(prom) === prom); 
+}

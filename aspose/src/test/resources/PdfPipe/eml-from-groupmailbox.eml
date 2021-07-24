@@ -1,0 +1,75 @@
+From: Finance_Services_Incasso@deltalloyd.nl
+X-Notes-Item: Wed, 13 Dec 2017 15:34:45 +0100;
+ type=400; name=OriginalModTime
+X-Notes-Item: Memo;
+ name=Form
+X-Notes-Item: StdNotesLtr25;
+ name=Logo
+X-Notes-Item: StdNotesLtr25;
+ name=dLogo
+X-Notes-Item: True;
+ name=useApplet
+X-Notes-Item: 1;
+ name=DefaultMailSaveOptions
+X-Notes-Item: 1;
+ name=ExpandPersonalGroups
+X-Notes-Item: ;
+ name=tmpImp
+X-Notes-Item: test;
+ flags=6; name=$Abstract
+X-Notes-Item: Vertrouwelijk;
+ name=ConfidentialString
+X-Notes-Item: ;
+ name=Classification
+Subject: test mailbox
+X-KeepSent: 3B87AEA4:A7995DD3-C12581F5:005007F0;
+ type=4; name=$KeepSent
+To: gerard_van_der_hoorn@deltalloyd.nl
+X-Notes-Item: ;
+ flags=45; name=InetCopyTo
+X-Notes-Item: 1;
+ name=$StorageTo
+X-Mailer: Lotus Notes Release 8.5.3FP6 November 22, 2013
+Message-ID: <OF3B87AEA4.A7995DD3-ONC12581F5.005007F0-C12581F5.00501654@LocalDomain>
+Sender: aberg@ohra.nl
+Date: Wed, 13 Dec 2017 15:34:46 +0100
+X-Notes-Item: 0;
+ name=Encrypt
+X-Notes-Item: CN=DL01NM20/OU=SERVER/O=DLVG;
+ type=501; flags=44; name=$UpdatedBy
+X-Notes-Item: CN=Alex Berg/OU=D251588/OU=ICT/O=OHRA;
+ name=$OnBehalfOf
+X-Notes-Item: CN=DL01NM20/OU=SERVER/O=DLVG,
+	CN=DL01NM22/OU=SERVER/O=DLVG;
+ type=501; flags=0; name=RouteServers
+X-Notes-Item: =?UTF-8?B?MTMtRGVjLTIwMTcgMTU6MzQ6NDYgQ0VULzEzLURlYy0yMDE3IDE1OjM0OjQ2?=
+ =?UTF-8?B?IENFVCwgMTMtRGVjLTIwMTcgMTU6MzQ6NDYgQ0VULzEzLURlYy0yMDE3IDE1?=
+ =?UTF-8?B?OjM0OjQ2IENFVA==?=;
+ type=401; flags=0; name=RouteTimes
+X-Notes-Item: 3B87AEA4:A7995DD3-C12581F5:005007F0;
+ type=4; name=$Orig
+X-Notes-Item: ;
+ type=501; name=Categories
+X-Notes-Item: ;
+ type=401; name=$Revisions
+X-Notes-Item: Wed, 13 Dec 2017 15:34:46 +0100;
+ type=400; name=DeliveredDate
+X-Notes-Item: 3B87AEA4:A7995DD3-C12581F5:005007F0;
+ type=4; name=$TUA
+X-Notes-Item: 1;
+ name=$NoteHasNativeMIME
+X-Notes-Item: CN=Gerard van der Hoorn/OU=D937275/OU=IS/O=DLVG@DLNO;
+ name=OriginalTo
+X-Notes-Item: CN=Alex Berg/OU=D251588/OU=ICT/O=OHRA;
+ name=OriginalFrom
+X-Notes-Item: Finance Services Incasso;
+ name=OriginalPrincipal
+X-MIMETrack: Serialize by Notes Client on Gerard van der Hoorn/D937275/IS/DLVG(Release
+ 8.5.3FP6 SHF738|September 20, 2016) at 13-12-2017 15:35:50
+MIME-Version: 1.0
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+
+<html><body>
+<p><font size="2" face="sans-serif">test</font></body></html>
+

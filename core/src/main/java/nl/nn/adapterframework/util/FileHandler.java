@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,19 +33,24 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -83,9 +88,10 @@ import org.apache.log4j.Logger;
  * @author Jaco de Groot (***@dynasol.nl)
  *
  */
-public class FileHandler {
+public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
@@ -95,10 +101,11 @@ public class FileHandler {
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
-	protected String fileName;
-	protected String fileNameSessionKey;
+	protected String filename;
+	protected String filenameSessionKey;
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
+	protected boolean testExists = true;
 	protected boolean testCanWrite = true;
 	protected boolean skipBOM = false;
 	protected boolean deleteEmptyDirectory = false;
@@ -160,22 +167,24 @@ public class FileHandler {
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
-//	public Object handle(Object input, IPipeLineSession session) throws Exception {
+//	public Object handle(Object input, PipeLineSession session) throws Exception {
 //		return handle(input, session, null);
 //	}
 	
-	public Object handle(Object input, IPipeLineSession session, ParameterList paramList) throws Exception {
+	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
-		if (input instanceof byte[]) {
-			output = (byte[])input;
-		} else if (input instanceof InputStream) {
-			if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
-				output = input;
+		if (input!=null) {
+			if (input.asObject() instanceof byte[]) {
+				output = input.asObject();
+			} else if (input.asObject() instanceof InputStream) {
+				if (transformers.get(0) instanceof TransformerActionWithInputTypeStream) {
+					output = input.asObject();
+				} else {
+					output = input.asByteArray();
+				}
 			} else {
-				output = Misc.streamToBytes((InputStream)input);
+				output = input.asByteArray(charset);
 			}
-		} else {
-			output = (input == null) ? null : input.toString().getBytes(charset);
 		}
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 			TransformerAction transformerAction = (TransformerAction)it.next();
@@ -196,9 +205,9 @@ public class FileHandler {
 		if (output == null || "bytes".equals(outputType) || "base64".equals(outputType) || "stream".equals(outputType)) {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
-				HttpServletResponse response = (HttpServletResponse) session.get(IPipeLineSession.HTTP_RESPONSE_KEY);
-				String contentType = (String) session.get("contentType");
-				String contentDisposition = (String) session.get("contentDisposition");
+				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
+				String contentType = session.getMessage("contentType").asString();
+				String contentDisposition = session.getMessage("contentDisposition").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
 					response.setHeader("Content-Type", contentType); 
 				}
@@ -233,17 +242,17 @@ public class FileHandler {
 		void configure() throws ConfigurationException;
 		/*
 		 * transform the in and return the result
-		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 		 */
-		byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception;
+		byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithInputTypeStream extends TransformerAction {
-		byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception;
+		byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception;
 	}
 	
 	protected interface TransformerActionWithOutputTypeStream extends TransformerAction {
-		InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList, String outputType) throws Exception;
+		InputStream go(byte[] in, PipeLineSession session, ParameterList paramList, String outputType) throws Exception;
 	}
 	
 	/**
@@ -251,7 +260,7 @@ public class FileHandler {
 	 */
 	private class Encoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.encodeBase64(in);
 		}
 	}
@@ -261,15 +270,15 @@ public class FileHandler {
 	 */
 	private class Decoder implements TransformerAction {
 		public void configure() {}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return Base64.decodeBase64(in == null ? null : new String(in));
 		}
 	}
 
-	private String getEffectiveFileName(byte[] in, IPipeLineSession session) {
-		String name = getFileName();
+	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
+		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
-			name = (String)session.get(fileNameSessionKey);
+			name = session.getMessage(filenameSessionKey).asString();
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);
@@ -277,11 +286,11 @@ public class FileHandler {
 		return name;
 	}
 
-	private Object getEffectiveFile(byte[] in, IPipeLineSession session)
+	private Object getEffectiveFile(byte[] in, PipeLineSession session)
 			throws IOException {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
-			return ClassUtils.getResourceURL(classLoader, name);
+			return ClassUtils.getResourceURL(this, name);
 		} else {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				return new File(getDirectory(), name);
@@ -291,7 +300,7 @@ public class FileHandler {
 		}
 	}
 
-	private File createFile(byte[] in, IPipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
+	private File createFile(byte[] in, PipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
 		File tmpFile;
 
 		String writeSuffix_work = null;
@@ -344,10 +353,10 @@ public class FileHandler {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			return go(new ByteArrayInputStream(in), session, paramList);
 		}
-		public byte[] go(InputStream in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(null, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -361,16 +370,9 @@ public class FileHandler {
 				}
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
-			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
-			try {
-				Misc.streamToStream(in, fos);
-				if (isWriteLineSeparator()) {
-					fos.write(eolArray);
-				}
-			} finally {
-				fos.close();
+			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
+				Misc.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null);
 			}
-			
 			return tmpFile.getPath().getBytes();
 		}
 	}
@@ -388,7 +390,7 @@ public class FileHandler {
 				}
 			}
 		}
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File tmpFile=createFile(in, session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
@@ -430,7 +432,7 @@ public class FileHandler {
 						throw new ConfigurationException(directory + " could not be created");
 					}
 				}
-				if (! (file.exists() && file.isDirectory() && file.canRead())) {
+				if (isTestExists() && ! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
@@ -442,7 +444,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			InputStream inputStream =
 					getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 			try {
@@ -454,13 +456,13 @@ public class FileHandler {
 			}
 		}
 
-		public InputStream go(byte[] in, IPipeLineSession session, ParameterList paramList,
+		public InputStream go(byte[] in, PipeLineSession session, ParameterList paramList,
 				String outputType) throws Exception {
 			return getSkipBomAndDeleteFileAfterReadInputStream(in, session);
 		}
 
 		private InputStream getSkipBomAndDeleteFileAfterReadInputStream(
-				byte[] in, IPipeLineSession session) throws IOException {
+				byte[] in, PipeLineSession session) throws IOException {
 			InputStream inputStream;
 			File file = null;
 			Object object = getEffectiveFile(in, session);
@@ -482,7 +484,7 @@ public class FileHandler {
 	private class FileDeleter implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
@@ -493,7 +495,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			// Can only return URL in case fileSource is classpath (which should
 			// have given a configuration warning before this method is called).
 			File file = (File)getEffectiveFile(in, session);
@@ -533,7 +535,7 @@ public class FileHandler {
 	private class FileLister implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -541,7 +543,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			String name = getEffectiveFileName(in, session);
 
 			String dir = getDirectory();
@@ -568,7 +570,7 @@ public class FileHandler {
 	private class FileInfoProvider implements TransformerAction {
 
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestExists()) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
@@ -576,7 +578,7 @@ public class FileHandler {
 			}
 		}
 
-		public byte[] go(byte[] in, IPipeLineSession session, ParameterList paramList) throws Exception {
+		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
 			File file = null;
 			Object object = getEffectiveFile(in, session);
 			if (object instanceof File) {
@@ -629,7 +631,7 @@ public class FileHandler {
 
 	}
 
-	protected String getLogPrefix(IPipeLineSession session){
+	protected String getLogPrefix(PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
 		if (this instanceof INamedObject) {
@@ -690,26 +692,45 @@ public class FileHandler {
 		return writeSuffix;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
+	public void setFileName(String filename) {
+		setFilename(filename);
+	}
 	/**
 	 * Sets filename of the file that is written
 	 */
 	@IbisDoc({"the name of the file to use", ""})
-	public void setFileName(String filename) {
-		this.fileName = filename;
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
-	public String getFileName() {
-		return fileName;
+	public String getFilename() {
+		return filename;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
+	public void setFileNameSessionKey(String filenameSessionKey) {
+		setFilenameSessionKey(filenameSessionKey);
 	}
 
 	/**
 	 * Sets filenameSessionKey the session key that contains the name of the file to be created
 	 */
 	@IbisDoc({"the session key that contains the name of the file to use (only used if filename is not set)", ""})
-	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
+	}
+
+	@IbisDoc({"test if the specified directory exists at configure()", "true"})
+	public void setTestExists(boolean testExists) {
+		this.testExists = testExists;
+	}
+	public boolean isTestExists() {
+		return testExists;
 	}
 
 	@IbisDoc({"when set to <code>true</code>, the directory to read from or write to is created if it does not exist", "false"})
@@ -763,11 +784,11 @@ public class FileHandler {
 	private class SkipBomAndDeleteFileAfterReadInputStream extends BufferedInputStream {
 		private File file;
 		private boolean deleteAfterRead;
-		private IPipeLineSession session;
+		private PipeLineSession session;
 		private boolean firstByteRead = false;
 
 		public SkipBomAndDeleteFileAfterReadInputStream(InputStream inputStream,
-				File file, boolean deleteAfterRead, IPipeLineSession session)
+				File file, boolean deleteAfterRead, PipeLineSession session)
 				throws FileNotFoundException {
 			super(inputStream);
 			this.file = file;

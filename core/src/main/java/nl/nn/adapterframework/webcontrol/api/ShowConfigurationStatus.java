@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -28,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.security.PermitAll;
@@ -44,21 +46,27 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.ftp.FtpSender;
@@ -66,17 +74,16 @@ import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
+import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunStateEnum;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
  * Get adapter information from either all or a specified adapter
@@ -90,10 +97,9 @@ public final class ShowConfigurationStatus extends Base {
 	@Context Request request;
 
 	private boolean showCountMessageLog = AppConstants.getInstance().getBoolean("messageLog.count.show", true);
-	private boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
 
 	private Adapter getAdapter(String adapterName) {
-		Adapter adapter = (Adapter) getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -109,10 +115,7 @@ public final class ShowConfigurationStatus extends Base {
 	public Response getAdapters(@QueryParam("expanded") String expanded, @QueryParam("showPendingMsgCount") boolean showPendingMsgCount) throws ApiException {
 
 		TreeMap<String, Object> adapterList = new TreeMap<String, Object>();
-		List<IAdapter> registeredAdapters = getIbisManager().getRegisteredAdapters();
-
-		for(Iterator<IAdapter> adapterIt=registeredAdapters.iterator(); adapterIt.hasNext();) {
-			Adapter adapter = (Adapter)adapterIt.next();
+		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
 
 			Map<String, Object> adapterInfo = mapAdapter(adapter);
 			if(expanded != null && !expanded.isEmpty()) {
@@ -214,9 +217,7 @@ public final class ShowConfigurationStatus extends Base {
 		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 		if(state.equals(RunStateEnum.STARTED)) {
-			Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-			while (receiverIterator.hasNext()) {
-				IReceiver receiver = receiverIterator.next();
+			for (Receiver<?> receiver: adapter.getReceivers()) {
 				RunStateEnum rState = receiver.getRunState();
 
 				if(!rState.equals(RunStateEnum.STARTED)) {
@@ -250,15 +251,15 @@ public final class ShowConfigurationStatus extends Base {
 	public Response updateAdapters(LinkedHashMap<String, Object> json) throws ApiException {
 
 		Response.ResponseBuilder response = Response.status(Response.Status.NO_CONTENT); //PUT defaults to no content
-		String action = null;
-		ArrayList<String> adapters = new ArrayList<String>();
+		IbisAction action = null;
+		ArrayList<String> adapters = new ArrayList<>();
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				if(value.equals("stop")) { action = "stopadapter"; }
-				if(value.equals("start")) { action = "startadapter"; }
+				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 			}
 			if(key.equalsIgnoreCase("adapters")) {
 				try {
@@ -272,13 +273,13 @@ public final class ShowConfigurationStatus extends Base {
 
 		if(action != null) {
 			response.status(Response.Status.ACCEPTED);
-			if(adapters.size() == 0) {
-				getIbisManager().handleAdapter(action, "*ALL*", "*ALL*", null, null, false);
+			if(adapters.isEmpty()) {
+				getIbisManager().handleAction(action, "*ALL*", "*ALL*", null, getUserPrincipalName(), false);
 			}
 			else {
 				for (Iterator<String> iterator = adapters.iterator(); iterator.hasNext();) {
 					String adapterName = iterator.next();
-					getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
+					getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 				}
 			}
 		}
@@ -300,12 +301,12 @@ public final class ShowConfigurationStatus extends Base {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				String action = null;
+				IbisAction action = null;
 
-				if(value.equals("stop")) { action = "stopadapter"; }
-				if(value.equals("start")) { action = "startadapter"; }
+				if(value.equals("stop")) { action = IbisAction.STOPADAPTER; }
+				if(value.equals("start")) { action = IbisAction.STARTADAPTER; }
 
-				getIbisManager().handleAdapter(action, "", adapterName, null, null, false);
+				getIbisManager().handleAction(action, "", adapterName, null, getUserPrincipalName(), false);
 
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -323,7 +324,7 @@ public final class ShowConfigurationStatus extends Base {
 
 		Adapter adapter = getAdapter(adapterName);
 
-		IReceiver receiver = adapter.getReceiverByName(receiverName);
+		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
 			throw new ApiException("Receiver ["+receiverName+"] not found!");
 		}
@@ -334,17 +335,17 @@ public final class ShowConfigurationStatus extends Base {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {//Start or stop an adapter!
-				String action = null;
+				IbisAction action = null;
 
-				if(value.equals("stop")) { action = "stopreceiver"; }
-				else if(value.equals("start")) { action = "startreceiver"; }
-				else if(value.equals("incthread")) { action = "incthreads"; }
-				else if(value.equals("decthread")) { action = "decthreads"; }
+				if(value.equals("stop")) { action = IbisAction.STOPRECEIVER; }
+				else if(value.equals("start")) { action = IbisAction.STARTRECEIVER; }
+				else if(value.equals("incthread")) { action = IbisAction.INCTHREADS; }
+				else if(value.equals("decthread")) { action = IbisAction.DECTHREADS; }
 
-				if(StringUtils.isEmpty(action))
-					throw new ApiException("unknown or empty action ["+action+"]");
+				if(action == null)
+					throw new ApiException("no or unknown action provided");
 
-				getIbisManager().handleAdapter(action, "", adapterName, receiverName, null, false);
+				getIbisManager().handleAction(action, "", adapterName, receiverName, getUserPrincipalName(), false);
 				response.entity("{\"status\":\"ok\"}");
 			}
 		}
@@ -395,9 +396,22 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("name") String adapterName) throws ApiException {
+	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
-		return Response.status(Response.Status.OK).entity(getFlow(adapter)).build();
+
+		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
+
+		try {
+			ResponseBuilder response = Response.status(Response.Status.OK);
+			if(dot) {
+				response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+			} else {
+				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
+			}
+			return response.build();
+		} catch (SAXException | TransformerException | IOException e) {
+			throw new ApiException(e);
+		}
 	}
 
 	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
@@ -409,7 +423,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", null);
 			certElem.put("info", "*** ERROR ***");
@@ -432,7 +446,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -455,7 +469,7 @@ public final class ShowConfigurationStatus extends Base {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getCertificateAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s.getConfigurationClassLoader(), certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -519,7 +533,6 @@ public final class ShowConfigurationStatus extends Base {
 			}
 
 			pipesInfo.put("name", pipename);
-			pipesInfo.put("type", pipe.getType());
 			pipesInfo.put("forwards", forwards);
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
@@ -558,7 +571,7 @@ public final class ShowConfigurationStatus extends Base {
 						pipesInfo.put("listenerDestination", pd);
 					}
 				}
-				ITransactionalStorage messageLog = msp.getMessageLog();
+				ITransactionalStorage<?> messageLog = msp.getMessageLog();
 				if (messageLog!=null) {
 					pipesInfo.put("hasMessageLog", true);
 					String messageLogCount;
@@ -590,144 +603,121 @@ public final class ShowConfigurationStatus extends Base {
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<Object>();
 
-		Iterator<?> recIt=adapter.getReceiverIterator();
-		if (recIt.hasNext()){
-			while (recIt.hasNext()){
-				IReceiver receiver=(IReceiver) recIt.next();
-				Map<String, Object> receiverInfo = new HashMap<String, Object>();
+		for (Receiver<?> receiver: adapter.getReceivers()) {
+			Map<String, Object> receiverInfo = new HashMap<>();
 
-				RunStateEnum receiverRunState = receiver.getRunState();
+			RunStateEnum receiverRunState = receiver.getRunState();
 
-				receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
-				receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
-				
-				receiverInfo.put("name", receiver.getName());
-				receiverInfo.put("class", ClassUtils.nameOf(receiver));
-				Map<String, Object> messages = new HashMap<String, Object>(3);
-				messages.put("received", receiver.getMessagesReceived());
-				messages.put("retried", receiver.getMessagesRetried());
-				messages.put("rejected", receiver.getMessagesRejected());
-				receiverInfo.put("messages", messages);
-				ISender sender=null;
-				if (receiver instanceof ReceiverBase ) {
-					ReceiverBase rb = (ReceiverBase) receiver;
-					Map<String, Object> listenerInfo = new HashMap<String, Object>();
-					IListener<?> listener=rb.getListener();
-					listenerInfo.put("name", listener.getName());
-					listenerInfo.put("class", ClassUtils.nameOf(listener));
-					if (listener instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
-						listenerInfo.put("destination", pd);
-					}
-					if (listener instanceof HasSender) {
-						sender = ((HasSender)listener).getSender();
-					}
-					//receiverInfo.put("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-					ITransactionalStorage ts;
-					ts=rb.getErrorStorage();
-					receiverInfo.put("hasErrorStorage", (ts!=null));
-					if (ts!=null) {
-						try {
-							if (showCountErrorStore) {
-								receiverInfo.put("errorStorageCount", ts.getMessageCount());
-							} else {
-								receiverInfo.put("errorStorageCount", "?");
-							}
-						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in errorstore ["+ts.getName()+"]", e);
-							receiverInfo.put("errorStorageCount", "error");
-						}
-					}
-					ts=rb.getMessageLog();
-					receiverInfo.put("hasMessageLog", (ts!=null));
-					if (ts!=null) {
-						try {
-							if (showCountMessageLog) {
-								receiverInfo.put("messageLogCount", ts.getMessageCount());
-							} else {
-								receiverInfo.put("messageLogCount", "?");
-							}
-						} catch (Exception e) {
-							log.warn("Cannot determine number of messages in messageLog ["+ts.getName()+"]", e);
-							receiverInfo.put("messageLogCount", "error");
-						}
-					}
-					boolean isRestListener = (listener instanceof RestListener);
-					listenerInfo.put("isRestListener", isRestListener);
-					if (isRestListener) {
-						RestListener rl = (RestListener) listener;
-						listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-						listenerInfo.put("isView", (rl.isView()==null?false:rl.isView()));
-					}
-					if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
-						JmsListenerBase jlb = (JmsListenerBase) listener;
-						JmsMessageBrowser jmsBrowser;
-						if (StringUtils.isEmpty(jlb.getMessageSelector())) {
-							jmsBrowser = new JmsMessageBrowser();
-						} else {
-							jmsBrowser = new JmsMessageBrowser(jlb.getMessageSelector());
-						}
-						jmsBrowser.setName("MessageBrowser_" + jlb.getName());
-						jmsBrowser.setJmsRealm(jlb.getJmsRealName());
-						jmsBrowser.setDestinationName(jlb.getDestinationName());
-						jmsBrowser.setDestinationType(jlb.getDestinationType());
-						String numMsgs;
-						try {
-							int messageCount = jmsBrowser.getMessageCount();
-							numMsgs = String.valueOf(messageCount);
-						} catch (Throwable t) {
-							log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
-							numMsgs = "?";
-						}
-						receiverInfo.put("pendingMessagesCount", numMsgs);
-					}
-					boolean isEsbJmsFFListener = false;
-					if (listener instanceof EsbJmsListener) {
-						EsbJmsListener ejl = (EsbJmsListener) listener;
-						if(ejl.getMessageProtocol() != null) {
-							if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
-								isEsbJmsFFListener = true;
-							}
-							if(showPendingMsgCount) {
-								String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-								if (esbNumMsgs == null) {
-									esbNumMsgs = "?";
-								}
-								receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
-							}
-						}
-					}
-					receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
-
-					receiverInfo.put("listener", listenerInfo);
-				}
-
-				if (receiver instanceof HasSender) {
-					ISender rsender = ((HasSender) receiver).getSender();
-					if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-						sender=rsender; 
-					}
-				}
-				if (sender != null) { 
-					receiverInfo.put("senderName", sender.getName());
-					receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
-					if (sender instanceof HasPhysicalDestination) {
-						String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-						receiverInfo.put("senderDestination", pd);
-					}
-				}
-				if (receiver instanceof IThreadCountControllable) {
-					IThreadCountControllable tcc = (IThreadCountControllable)receiver;
-					if (tcc.isThreadCountReadable()) {
-						receiverInfo.put("threadCount", tcc.getCurrentThreadCount());
-						receiverInfo.put("maxThreadCount", tcc.getMaxThreadCount());
-					}
-					if (tcc.isThreadCountControllable()) {
-						receiverInfo.put("threadCountControllable", "true");
-					}
-				}
-				receivers.add(receiverInfo);
+			receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
+			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
+			
+			receiverInfo.put("name", receiver.getName());
+			receiverInfo.put("class", ClassUtils.nameOf(receiver));
+			Map<String, Object> messages = new HashMap<String, Object>(3);
+			messages.put("received", receiver.getMessagesReceived());
+			messages.put("retried", receiver.getMessagesRetried());
+			messages.put("rejected", receiver.getMessagesRejected());
+			receiverInfo.put("messages", messages);
+			ISender sender=null;
+			Map<String, Object> listenerInfo = new HashMap<String, Object>();
+			IListener<?> listener=receiver.getListener();
+			listenerInfo.put("name", listener.getName());
+			listenerInfo.put("class", ClassUtils.nameOf(listener));
+			if (listener instanceof HasPhysicalDestination) {
+				String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
+				listenerInfo.put("destination", pd);
 			}
+			if (listener instanceof HasSender) {
+				sender = ((HasSender)listener).getSender();
+			}
+
+			Set<ProcessState> knownStates = receiver.knownProcessStates();
+			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
+			for (ProcessState state : knownStates) {
+				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
+				if(ts != null) {
+					Map<String, Object> info = new HashMap<>();
+					try {
+						info.put("numberOfMessages", ts.getMessageCount());
+					} catch (Exception e) {
+						log.warn("Cannot determine number of messages in process state ["+state+"]", e);
+						info.put("numberOfMessages", "error");
+					}
+					info.put("name", state.getName());
+					tsInfo.put(state, info);
+				}
+			}
+			receiverInfo.put("transactionalStores", tsInfo);
+
+			boolean isRestListener = (listener instanceof RestListener);
+			listenerInfo.put("isRestListener", isRestListener);
+			if (isRestListener) {
+				RestListener rl = (RestListener) listener;
+				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
+				listenerInfo.put("isView", (rl.getView()==null?false:rl.getView()));
+			}
+			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
+				JmsListenerBase jlb = (JmsListenerBase) listener;
+				JmsBrowser<javax.jms.Message> jmsBrowser;
+				if (StringUtils.isEmpty(jlb.getMessageSelector())) {
+					jmsBrowser = new JmsBrowser<>();
+				} else {
+					jmsBrowser = new JmsBrowser<>(jlb.getMessageSelector());
+				}
+				jmsBrowser.setName("MessageBrowser_" + jlb.getName());
+				jmsBrowser.setJmsRealm(jlb.getJmsRealmName());
+				jmsBrowser.setDestinationName(jlb.getDestinationName());
+				jmsBrowser.setDestinationTypeEnum(jlb.getDestinationTypeEnum());
+				String numMsgs;
+				try {
+					int messageCount = jmsBrowser.getMessageCount();
+					numMsgs = String.valueOf(messageCount);
+				} catch (Throwable t) {
+					log.warn("Cannot determine number of messages in errorstore ["+jmsBrowser.getName()+"]", t);
+					numMsgs = "?";
+				}
+				receiverInfo.put("pendingMessagesCount", numMsgs);
+			}
+			boolean isEsbJmsFFListener = false;
+			if (listener instanceof EsbJmsListener) {
+				EsbJmsListener ejl = (EsbJmsListener) listener;
+				if(ejl.getMessageProtocol() != null) {
+					if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+						isEsbJmsFFListener = true;
+					}
+					if(showPendingMsgCount) {
+						String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
+						if (esbNumMsgs == null) {
+							esbNumMsgs = "?";
+						}
+						receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
+					}
+				}
+			}
+			receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
+
+			receiverInfo.put("listener", listenerInfo);
+
+			ISender rsender = receiver.getSender();
+			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
+				sender=rsender; 
+			}
+			if (sender != null) { 
+				receiverInfo.put("senderName", sender.getName());
+				receiverInfo.put("senderClass", ClassUtils.nameOf(sender));
+				if (sender instanceof HasPhysicalDestination) {
+					String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+					receiverInfo.put("senderDestination", pd);
+				}
+			}
+			if (receiver.isThreadCountReadable()) {
+				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
+				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
+			}
+			if (receiver.isThreadCountControllable()) {
+				receiverInfo.put("threadCountControllable", "true");
+			}
+			receivers.add(receiverInfo);
 		}
 		return receivers;
 	}
@@ -769,10 +759,41 @@ public final class ShowConfigurationStatus extends Base {
 		adapterInfo.put("configured", adapter.configurationSucceeded());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
-		adapterInfo.put("lastMessage", (lastMessage == null) ? null : lastMessage.getTime());
-		adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
-		adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
-		adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+		if(lastMessage != null) {
+			adapterInfo.put("lastMessage", lastMessage.getTime());
+			adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
+			adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
+			adapterInfo.put("messagesInError", adapter.getNumOfMessagesInError());
+		}
+
+		Iterator<Receiver<?>> it = adapter.getReceivers().iterator();
+		int errorStoreMessageCount = 0;
+		int messageLogMessageCount = 0;
+		while(it.hasNext()) {
+			Receiver rcv = it.next();
+			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
+			if(esmb != null) {
+				try {
+					errorStoreMessageCount += esmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+				}
+			}
+			IMessageBrowser mlmb = rcv.getMessageBrowser(ProcessState.DONE);
+			if(mlmb != null) {
+				try {
+					messageLogMessageCount += mlmb.getMessageCount();
+				} catch (ListenerException e) {
+					log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+				}
+			}
+		}
+		if(errorStoreMessageCount != 0) {
+			adapterInfo.put("errorStoreMessageCount", errorStoreMessageCount);
+		}
+		if(messageLogMessageCount != 0) {
+			adapterInfo.put("messageLogMessageCount", messageLogMessageCount);
+		}
 
 		return adapterInfo;
 	}

@@ -36,7 +36,8 @@
         <div class="col-lg-12">
             <div class="ibox float-e-margins m-n">
                 <div class="ibox-title summary">
-                    <h4>Configuration summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span></h4>
+                    <h4 class="col-md-9">Configuration Summary <span ng-if="isConfigStubbed[selectedConfiguration]" class="label label-warning">STUBBED</span> <span ng-if="isConfigReloading[selectedConfiguration]" class="label label-warning">RELOADING</span></h4>
+                    <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
                 </div>
                 <div class="ibox-content">
                     <div class="row">
@@ -102,7 +103,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-3 configurationFlow" ng-if="configurationFlowDiagram && !reloading">
+                            <a ng-href="{{configurationFlowDiagram}}" target="_blank"><img ng-src="{{configurationFlowDiagram}}" alt="Configuration Flow Diagram"></a>
                         </div>
                     </div>
                 </div>
@@ -125,11 +127,11 @@
                                 <button title="Collapse All Adapters" ng-click="collapseAll()" class="btn btn-default btn-xs" id="collapse-all" type="button"><i class="fa fa-angle-double-up fa-size-up"></i></button>
                             </div>
                             <div class="text-center">
-                                <button ng-show="selectedConfiguration != 'All' && !reload" title="Reload Configuration" ng-click="reloadConfiguration()" class="btn btn-info btn-xs" id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
-                                <button ng-show="selectedConfiguration != 'All' && reload" disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                                <button ng-show="selectedConfiguration == 'All' && !reload" title="Full Reload" ng-click="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
-                                <button ng-show="selectedConfiguration == 'All' && reload" disabled="disabled" title="Full Reload" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                                <button title="Show Adapter References" ng-click="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
+                                <button ng-if="selectedConfiguration != 'All' && !reloading && !isConfigReloading[selectedConfiguration]" title="Reload Configuration" ng-click="reloadConfiguration()" class="btn btn-info btn-xs" id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
+                                <button ng-if="selectedConfiguration != 'All' && !reloading && isConfigReloading[selectedConfiguration]" disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
+                                <button ng-if="selectedConfiguration == 'All' && !reloading" title="Full Reload" ng-click="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
+                                <button ng-if="reloading" disabled="disabled" title="Full Reload in process" class="btn btn-danger btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
+                                <button ng-if="configurationFlowDiagram" title="Show Adapter References" ng-click="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i class="fa fa-file-picture-o"></i></button>
                             </div>
                         </div>
                         <div class="ibox-left">
@@ -167,7 +169,7 @@
                     </div>
                     <div class="row full-width">
                         <div class="col-lg-6 col-md-12 clear">
-                            <h4>Configuration messages</h4>
+                            <h4>Configuration Messages</h4>
                         </div>
                     </div>
                 </div>
@@ -214,19 +216,27 @@
                         </div>
                         <div class="col-lg-6 col-md-12">
                             <div class="row">
-                                <div class="col-sm-5" ng-if="adapter.upSince > 0" title="Uptime">
+                                <div class="col-sm-4" ng-if="adapter.upSince > 0" title="Uptime">
                                     <span to-date time="{{adapter.upSince}}"></span> (<span time-since time="{{adapter.upSince}}"></span>)
                                 </div>
-                                <div class="col-sm-5" ng-if="adapter.upSince == 0">
+                                <div class="col-sm-4" ng-if="adapter.upSince == 0">
                                 </div>
-                                <div class="col-sm-5" ng-if="::adapter.lastMessage > 0" title="Last Message">
+                                <div class="col-sm-4" ng-if="::adapter.lastMessage > 0" title="Last Message">
                                     <span to-date time="{{::adapter.lastMessage}}"></span> (<span time-since time="{{adapter.lastMessage}}"></span>)
                                 </div>
-                                <div class="col-sm-5" ng-if="!adapter.lastMessage > 0">
+                                <div class="col-sm-4" ng-if="!adapter.lastMessage > 0">
                                 </div>
-                                <div class="col-sm-2" title="Messages Processed">{{adapter.messagesProcessed}}
+                                <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">{{adapter.messagesProcessed}}
                                     <span ng-if="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
                                     <span ng-if="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                                </div>
+                                <div class="col-sm-2" title="Adapter Store" ng-if="!showContent">
+                                	<span ng-if="adapter.messageLogMessageCount > 0" class="text-success" title="Total # of processed messages">
+                                         <i class="fa fa-envelope-o"></i> ({{adapter.messageLogMessageCount}})
+                                   	</span>
+                                   	<span ng-if="adapter.errorStoreMessageCount > 0" class="text-danger" title="Total # of messages in Error">
+                                    &nbsp<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
+                                   </span>
                                 </div>
                             </div>
                         </div>
@@ -260,6 +270,9 @@
                                             <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
                                             <button style="float:right;" title="Start adapter" ng-click="startAdapter(adapter)" class="btn btn-xs primary-hover" type="button"><i class="fa fa-play"></i></button>
                                         </td>
+                                        <td class="col-md-6" ng-if="adapter.state =='error'">
+                                            <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>Configured</td>
@@ -274,6 +287,10 @@
                                         <td>Last message</td>
                                         <td ng-if="adapter.lastMessage"><span to-date time="{{adapter.lastMessage}}"></span></td>
                                         <td ng-if="!adapter.lastMessage">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Configuration</td>
+                                        <td>{{::adapter.configuration}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -316,9 +333,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="receiver in adapter.receivers">
+                                        <tr ng-repeat="receiver in adapter.receivers" ng-class="::{'text-danger' : (receiver.state == 'error')}">
                                             <td>{{::receiver.name}}</td>
-                                            <td>{{::receiver.listener.class}} ({{::receiver.listener.destination}})</td>
+                                            <td title="{{::receiver.listener.destination}}">{{::receiver.listener.class}} ({{::receiver.listener.destination|truncate:150}})</td>
                                             <td>{{::receiver.messages.retried}}</td>
                                             <td>{{::receiver.messages.received}}</td>
                                             <td>{{::receiver.messages.rejected}}</td>
@@ -332,20 +349,17 @@
                                             <td ng-if="!receiver.threadCount && receiver.state !='started'">-</td>
                                             <td>
                                                 <span class="pull-right">
+                                                	<span ng-repeat="store in receiver.transactionalStores">
+                                                		<span class="text-{{::getProcessStateIconColor(store.name)}}" title="Browse messages with ProcessState: {{::store.name}}" >
+	                                                        <button ui-lref="pages.storage.list({adapter: adapter.name, receiver: receiver.name, processState: store.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+	                                                            <i class="fa {{::getProcessStateIcon(store.name)}}"></i> ({{::store.numberOfMessages}})
+	                                                        </button>
+	                                                    </span>
+                                                	</span>
                                                     <button title="Stop receiver" class="btn btn-xs danger-hover" ng-show="receiver.state =='started'" type="button" ng-click="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
                                                     <button title="Start receiver" class="btn btn-xs primary-hover" ng-show="receiver.state =='stopped'" type="button" ng-click="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
-                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state !='started' && receiver.state !='stopped'" type="button"><i class="fa fa-cog fa-spin"></i></button>
-
-                                                    <span class="text-danger">
-                                                        <button ng-show="{{::receiver.hasErrorStorage}}" ui-sref="pages.errorstorage.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-times-circle"></i> ({{::receiver.errorStorageCount}})
-                                                        </button>
-                                                    </span>
-                                                    <span class="text-success">
-                                                        <button ng-show="{{::receiver.hasMessageLog}}" ui-sref="pages.messagelog.list({adapter: adapter.name, receiver: receiver.name})" class="btn btn-xs btn-default m-l-xs" type="button">
-                                                            <i class="fa fa-envelope-o"></i> ({{::receiver.messageLogCount}})
-                                                        </button>
-                                                    </span>
+                                                    <button title="Loading..." class="btn btn-warning btn-xs" ng-show="receiver.state =='starting' || receiver.state =='stopping'" type="button"><i class="fa fa-cog fa-spin"></i></button>
+                                                    <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs" ng-show="receiver.state =='error'" type="button" disabled><i class="fa fa-warning"></i></button>
                                                 </span>
                                             </td>
                                         </tr>
@@ -369,11 +383,11 @@
                                     <tbody>
                                         <tr ng-repeat="pipes in adapter.pipes" ng-if="pipes.sender">
                                             <td>{{::pipes.name}}</td>
-                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination"> ({{::pipes.destination}})</span></td>
+                                            <td>{{::pipes.sender}}<span ng-if="pipes.destination" title="{{::pipes.destination}"> ({{::pipes.destination|truncate:150}})</span></td>
                                             <td>
                                                 <span class="pull-right">
                                                     <span class="text-success">
-                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-sref="pages.pipemessagelog.list({pipe: pipes.name, adapter: adapter.name})" class="btn btn-xs btn-default m-l-xs" type="button">
+                                                        <button ng-show="{{pipes.hasMessageLog}}" ui-lref="pages.pipemessagelog.list({pipe: pipes.name, adapter: adapter.name})" class="btn btn-xs btn-default m-l-xs" type="button">
                                                             <i class="fa fa-envelope-o"></i> ({{::pipes.messageLogCount}})
                                                         </button>
                                                     </span>
@@ -414,7 +428,7 @@
                         </div>
                         <div class="col-lg-3 col-md-0 flow">
                             <h4>Flow</h4>
-                            <a ng-href="{{::adapter.flow}}" target="_blank"><img ng-src="{{::adapter.flow}}" alt="Flow diagram"></a>
+                            <a ng-href="{{::adapter.flow}}" target="_blank"><img ng-src="{{adapter.flow}}" alt="Flow diagram"></a>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,6 @@
 <ibis>
 	<adapter name="WsdlXmlValidator" description="Test the functioning of the WsdlXmlValidator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WsdlXmlValidator">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlXmlValidator" />
 		</receiver>
@@ -34,8 +33,7 @@
 			<!-- ndn (NoDefaultNamespace) -->
 			<pipe name="ndn" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
 				soapBody="Request"
-				wsdl="/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl"
-				schemaLocation="dummy schema1">
+				wsdl="/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->

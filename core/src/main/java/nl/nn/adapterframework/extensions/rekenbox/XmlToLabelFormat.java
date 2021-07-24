@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.rekenbox;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 
 import org.w3c.dom.*;
 

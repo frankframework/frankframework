@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 
 public class LdapFindMembershipsPipeTest {
 
@@ -34,9 +35,9 @@ public class LdapFindMembershipsPipeTest {
 	private LdapFindGroupMembershipsPipe pipe;
 	
 	@Before
-	public void setUp() {
+	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindGroupMembershipsPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
 //		pipe.setHost(host);
 //		pipe.setPort(port);
@@ -62,7 +63,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		String input="CN=ck08pu,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
-		PipeRunResult prr = pipe.doPipe(input, null);
+		PipeRunResult prr = pipe.doPipe(new Message(input), null);
 		
 		System.out.println("result:"+prr.getResult());
 		
@@ -78,7 +79,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		String input="CN=ck08pu,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
-		PipeRunResult prr = pipe.doPipe(input, null);
+		PipeRunResult prr = pipe.doPipe(new Message(input), null);
 		
 		System.out.println("result:"+prr.getResult());
 		
@@ -86,32 +87,32 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws ConfigurationException, PipeStartException, PipeRunException {
+	public void findMembershipsRecursivelyWithCache() throws Exception {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 		
 		EhCache<Set<String>> cache = new EhCache<Set<String>>();
 		cache.setTimeToLiveSeconds(3600);
-		pipe.registerCache(cache);
+		pipe.setCache(cache);
 		pipe.configure();
 		pipe.start();
 		
 		String input="CN=ni83nz,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ";
 		
 		long time0=System.currentTimeMillis();
-		PipeRunResult prr1 = pipe.doPipe(input, null);
+		PipeRunResult prr1 = pipe.doPipe(new Message(input), null);
 		long time1=System.currentTimeMillis();
 		
 		System.out.println("result:"+prr1.getResult());
 		
 		long time2=System.currentTimeMillis();
-		PipeRunResult prr2 = pipe.doPipe(input, null);
+		PipeRunResult prr2 = pipe.doPipe(new Message(input), null);
 		long time3=System.currentTimeMillis();
 		
 		System.out.println("first  duration ["+(time1-time0)+"] ms");
 		System.out.println("second duration ["+(time3-time2)+"] ms");
 		
-		assertEquals(prr1.getResult(), prr2.getResult());
+		assertEquals(prr1.getResult().asString(), prr2.getResult().asString());
 		
 	}
 }

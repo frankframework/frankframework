@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.pdf.Document;
@@ -174,10 +174,6 @@ abstract class AbstractConvertor implements Convertor {
 
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
 	 */
 	protected File getUniqueFile() {
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,28 +19,25 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.jms.Destination;
-//import javax.jms.Message;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.stream.Message;
-
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.util.CredentialFactory;
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
@@ -89,9 +86,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	private String listenerPort;
 	private String cacheMode;
-	private IListenerConnector jmsConnector;
+	private IListenerConnector<javax.jms.Message> jmsConnector;
 	private IMessageHandler<javax.jms.Message> handler;
-	private IReceiver receiver;
+	private Receiver<javax.jms.Message> receiver;
 	private IbisExceptionListener exceptionListener;
 	private long pollGuardInterval = Long.MIN_VALUE;
 
@@ -119,24 +116,26 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			setPollGuardInterval(getTimeOut() * 10);
 		}
 		if (getPollGuardInterval() <= getTimeOut()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			configWarnings.add(log, "The pollGuardInterval [" + getPollGuardInterval()
-					+ "] should be larger than the receive timeout [" + getTimeOut() + "]");
+			ConfigurationWarnings.add(this, log, "The pollGuardInterval ["+getPollGuardInterval()+"] should be larger than the receive timeout ["+getTimeOut()+"]");
+		}
+		CredentialFactory credentialFactory=null;
+		if (StringUtils.isNotEmpty(getAuthAlias())) {
+			credentialFactory=new CredentialFactory(getAuthAlias(), null, null);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination,
-					getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(),
-					getMessageSelector(), getTimeOut(), getPollGuardInterval());
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
+					destination, getExceptionListener(), getCacheMode(), getAckModeEnum().getAcknowledgeMode(),
+					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
 		}
 	}
 
-    @Override
-    public void open() throws ListenerException {
-        super.open();
-        jmsConnector.start();
-    }
+	@Override
+	public void open() throws ListenerException {
+		super.open();
+		jmsConnector.start();
+	}
 
 	@Override
 	public void close() {
@@ -151,8 +150,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, javax.jms.Message rawMessage, Map<String, Object> threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get(IPipeLineSession.technicalCorrelationIdKey);
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+		String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
 		Session session= (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
@@ -162,35 +161,41 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// handle reply
 			if (isUseReplyTo() && (replyTo != null)) {
 
-				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					javax.jms.Message messageReceived=rawMessage;
-					long expiration=messageReceived.getJMSExpiration();
-					if (expiration!=0) {
-						timeToLive=expiration-new Date().getTime();
-						if (timeToLive<=0) {
-							log.warn("message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
-							timeToLive=1000;
-							// In case of a temporary queue it might already
-							// have disappeared.
-							ignoreInvalidDestinationException = true;
+					if (rawMessageOrWrapper instanceof javax.jms.Message) {
+						javax.jms.Message messageReceived=(javax.jms.Message)rawMessageOrWrapper;
+						long expiration=messageReceived.getJMSExpiration();
+						if (expiration!=0) {
+							timeToLive=expiration-new Date().getTime();
+							if (timeToLive<=0) {
+								log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+								timeToLive=1000;
+								// In case of a temporary queue it might already
+								// have disappeared.
+								ignoreInvalidDestinationException = true;
+							}
 						}
+					} else {
+						log.warn(getLogPrefix()+"message with correlationID ["+cid+"] is not a JMS message, but ["+rawMessageOrWrapper.getClass().getName()+"], cannot determine time to live ["+timeToLive+"]ms, sending response with 20 second time to live");
+						timeToLive=1000;
+						ignoreInvalidDestinationException = true;
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(
-							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination"
-							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
+						log.debug("["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					getSender().sendMessage(new Message(plr.getResult()), null);
+					PipeLineSession pipeLineSession = new PipeLineSession();
+					pipeLineSession.put(PipeLineSession.messageIdKey,cid);
+					getSender().sendMessage(plr.getResult(), pipeLineSession);
 				}
 			}
 
@@ -216,14 +221,15 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-    public void setJmsConnector(IListenerConnector configurator) {
+	public void setJmsConnector(IListenerConnector<javax.jms.Message> configurator) {
 		jmsConnector = configurator;
 	}
-    public IListenerConnector getJmsConnector() {
-        return jmsConnector;
-    }
+	public IListenerConnector<javax.jms.Message> getJmsConnector() {
+		return jmsConnector;
+	}
+
 	@Override
-	public IListenerConnector getListenerPortConnector() {
+	public IListenerConnector<javax.jms.Message> getListenerPortConnector() {
 		return jmsConnector;
 	}
 
@@ -232,9 +238,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		this.exceptionListener = listener;
 	}
 	@Override
-    public IbisExceptionListener getExceptionListener() {
-        return exceptionListener;
-    }
+	public IbisExceptionListener getExceptionListener() {
+		return exceptionListener;
+	}
 
 	@Override
 	public void setHandler(IMessageHandler<javax.jms.Message> handler) {
@@ -247,17 +253,20 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 
-    /**
-     * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
-     *
-     * This property is only used in EJB Deployment mode and has no effect otherwise.
-     *
-     * @param listenerPort Name of the listener port, as configured in the application
-     * server.
-     */
-    public void setListenerPort(String listenerPort) {
-        this.listenerPort = listenerPort;
-    }
+	/**
+	 * Name of the WebSphere listener port that this JMS Listener binds to.
+	 * Optional.
+	 *
+	 * This property is only used in EJB Deployment mode and has no effect
+	 * otherwise.
+	 *
+	 * @param listenerPort Name of the listener port, as configured in the
+	 *                     application server.
+	 */
+	public void setListenerPort(String listenerPort) {
+		this.listenerPort = listenerPort;
+	}
+
 	/**
 	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
 	 *
@@ -271,21 +280,13 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 
-    @Override
-	public void setReceiver(IReceiver receiver) {
-        this.receiver = receiver;
-    }
-    @Override
-	public IReceiver getReceiver() {
-		return receiver;
+	@Override
+	public void setReceiver(Receiver<javax.jms.Message> receiver) {
+		this.receiver = receiver;
 	}
-
-	public ReceiverBase getReceiverBase() {
-		if (receiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) receiver;
-			return rb;
-		}
-		return null;
+	@Override
+	public Receiver<javax.jms.Message> getReceiver() {
+		return receiver;
 	}
 
 	public void setCacheMode(String string) {
@@ -295,7 +296,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return cacheMode;
 	}
 
-    @Override
+	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -305,7 +306,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return false;
 	}
 
-    @Override
+	@Override
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -315,7 +316,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return false;
 	}
 
-    @Override
+	@Override
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -325,7 +326,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return -1;
 	}
 
-    @Override
+	@Override
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -335,7 +336,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		return -1;
 	}
 
-    @Override
+	@Override
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -344,7 +345,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-    @Override
+	@Override
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -353,7 +354,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-    @Override
+	@Override
 	public int getDeliveryCount(javax.jms.Message rawMessage) {
 		try {
 			javax.jms.Message message=rawMessage;

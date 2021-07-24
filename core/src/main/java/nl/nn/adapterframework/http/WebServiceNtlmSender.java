@@ -21,7 +21,7 @@ import java.net.SocketTimeoutException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -51,7 +51,7 @@ import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -150,7 +150,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -201,6 +201,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		return new Message(result);
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return getUrl();
 	}

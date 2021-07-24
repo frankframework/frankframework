@@ -1,9 +1,6 @@
 <module>
 	<adapter name="HelloWorlds" active="${HelloWorlds.active}">
-		<receiver
-			name="HelloWorlds"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver name="HelloWorlds" >
 			<listener
 				name="HelloWorlds"
 				className="nl.nn.adapterframework.receivers.JavaListener"
@@ -47,7 +44,7 @@
 			</pipe>
 			<pipe
 				name="CreateNewMessage"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;tests>&lt;test>1&lt;/test>&lt;/tests>"
 				>
 				<forward name="success" path="HelloWorlds"/>

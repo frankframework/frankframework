@@ -23,7 +23,7 @@ import java.util.Date;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public interface IMessageBrowsingIteratorItem {
+public interface IMessageBrowsingIteratorItem extends AutoCloseable {
 
 	String getId() throws ListenerException;
 	String getOriginalId() throws ListenerException;
@@ -36,9 +36,10 @@ public interface IMessageBrowsingIteratorItem {
 	String getLabel() throws ListenerException;
 	
 	/**
-	 * Release must be called, in a finally clause, after the item is not used anymore, 
+	 * close() must be called, in a finally clause, after the item is not used anymore, 
 	 * to allow to free resources.
 	 */
-	void release();
+	@Override
+	void close();
 
 }

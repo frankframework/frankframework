@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.parameters;
 
-import java.util.Collection;
-
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import java.io.IOException;
+import java.util.Collection;
 /**
  * 
  * 
@@ -79,7 +79,7 @@ public class ParameterValue {
 	 * @return convert the value to a boolean
 	 */
 	public boolean asBooleanValue(boolean defaultValue) {
-		return value != null ? Boolean.valueOf(value.toString()).booleanValue() : defaultValue;
+		return value != null ? Boolean.valueOf(valueAsString()).booleanValue() : defaultValue;
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class ParameterValue {
 	 * @return convert the value to a byte
 	 */
 	public byte asByteValue(byte defaultValue) {
-		return value != null ? Byte.valueOf(value.toString()).byteValue() : defaultValue;
+		return value != null ? Byte.valueOf(valueAsString()).byteValue() : defaultValue;
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class ParameterValue {
 	 * @return convert the value to a double
 	 */
 	public double asDoubleValue(double defaultValue) {
-		return value != null ? Double.valueOf(value.toString()).doubleValue() : defaultValue;
+		return value != null ? Double.valueOf(valueAsString()).doubleValue() : defaultValue;
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		return value != null ? Integer.valueOf(value.toString()).intValue() : defaultValue;
+		return value != null ? Integer.valueOf(valueAsString()).intValue() : defaultValue;
 	}
 	
 	/**
@@ -111,7 +111,7 @@ public class ParameterValue {
 	 * @return convert the value to a long
 	 */
 	public long asLongValue(long defaultValue) {
-		return value != null ? Long.valueOf(value.toString()).longValue() : defaultValue;
+		return value != null ? Long.valueOf(valueAsString()).longValue() : defaultValue;
 	}
 	
 	/**
@@ -119,7 +119,7 @@ public class ParameterValue {
 	 * @return convert the value to a float
 	 */
 	public float asFloatValue(float defaultValue) {
-		return value != null ? Float.valueOf(value.toString()).floatValue() : defaultValue;
+		return value != null ? Float.valueOf(valueAsString()).floatValue() : defaultValue;
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class ParameterValue {
 	 * @return convert the value to a short
 	 */
 	public short asShortValue(short defaultValue) {
-		return value != null ? Short.valueOf(value.toString()).shortValue() : defaultValue;
+		return value != null ? Short.valueOf(valueAsString()).shortValue() : defaultValue;
 	}
 
 	/**
@@ -135,7 +135,19 @@ public class ParameterValue {
 	 * @return convert the value to a string
 	 */
 	public String asStringValue(String defaultValue) {
-		return value != null ? value.toString() : defaultValue;
+		return value != null ? valueAsString() : defaultValue;
+	}
+	
+	private String valueAsString() {
+		if (value instanceof Message) {
+			Message message = (Message)value;
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new RuntimeException("cannot open stream",e);
+			}
+		}
+		return value.toString();
 	}
 
 	public Collection<Node> asCollection() throws ParameterException {

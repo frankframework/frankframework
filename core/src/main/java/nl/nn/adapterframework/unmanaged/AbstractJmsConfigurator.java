@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 */
 package nl.nn.adapterframework.unmanaged;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.LogUtil;
+import org.apache.logging.log4j.Logger;
 
-import org.apache.log4j.Logger;
-
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
 /**
  * Base class for JMS Configurator implementations.
  * 
@@ -34,32 +33,31 @@ import org.apache.log4j.Logger;
  */
 abstract public class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);
-   
-    private IPortConnectedListener listener;
-    private ConnectionFactory connectionFactory;
-    private Destination destination;
-	private ReceiverBase receiver;
-	private IbisExceptionListener exceptionListener;        
 
-    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
-    	if (connectionFactory==null) {
-    		throw new ConfigurationException("ConnectionFactory must be specified");
-    	}
-		if (destination==null) {
+	private IPortConnectedListener<Message> listener;
+	private ConnectionFactory connectionFactory;
+	private Destination destination;
+	private Receiver<Message> receiver;
+	private IbisExceptionListener exceptionListener;
+
+	public void configureEndpointConnection(IPortConnectedListener<Message> listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
+		if (connectionFactory == null) {
+			throw new ConfigurationException("ConnectionFactory must be specified");
+		}
+		if (destination == null) {
 			throw new ConfigurationException("Destination must be specified");
 		}
 		setListener(listener);
 		setConnectionFactory(connectionFactory);
-        setDestination(destination);
-		this.receiver = (ReceiverBase)getListener().getReceiver();
+		setDestination(destination);
+		this.receiver = getListener().getReceiver();
 		this.exceptionListener = exceptionListener;
-    }
+	}
 
-
-    public void setListener(IPortConnectedListener listener) {
-        this.listener = listener;
-    }
-	public IPortConnectedListener getListener() {
+	public void setListener(IPortConnectedListener<Message> listener) {
+		this.listener = listener;
+	}
+	public IPortConnectedListener<Message> getListener() {
 		return listener;
 	}
 
@@ -70,14 +68,14 @@ abstract public class AbstractJmsConfigurator {
 		return connectionFactory;
 	}
 
-    public void setDestination(Destination destination) {
-        this.destination = destination;
-    }
+	public void setDestination(Destination destination) {
+		this.destination = destination;
+	}
 	public Destination getDestination() {
 		return destination;
 	}
 
-	public ReceiverBase getReceiver() {
+	public Receiver<Message> getReceiver() {
 		return receiver;
 	}
 

@@ -21,8 +21,8 @@ import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
@@ -84,7 +84,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 			if(sapSystem.isSncEncrypted()) {
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
-				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, sapSystem.getSncAuthMethod());
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
 				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());

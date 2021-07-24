@@ -1,0 +1,1 @@
+${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exception

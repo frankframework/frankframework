@@ -2,11 +2,12 @@ package nl.nn.adapterframework.pipes;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.util.TestAssertions;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
@@ -44,9 +45,9 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
-		String result = (String)prr.getResult();
+		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
 		TestAssertions.assertXpathValueEquals("test", 					result, "/Envelope/Header/MessageHeader/From/Id");
 //		TestAssertions.assertXpathValueEquals("test", 					result, "/Envelope/Header/MessageHeader/Service/Name");
@@ -92,9 +93,9 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
-		String result = (String)prr.getResult();
+		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
 		TestAssertions.assertXpathValueEquals("test", 			result, "/Envelope/Header/MessageHeader/From/Id");
 		TestAssertions.assertXpathValueEquals(destination, 		result, "/Envelope/Header/MessageHeader/To/Location");
@@ -148,9 +149,9 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<"+rootElement+"><attrib>1</attrib><attrib>2</attrib></"+rootElement+">";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
-		String result = (String)prr.getResult();
+		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
 		TestAssertions.assertXpathValueEquals("test", 			result, "/Envelope/Header/MessageHeader/From/Id");
 		TestAssertions.assertXpathValueEquals(destination, 		result, "/Envelope/Header/MessageHeader/To/Location");
@@ -182,9 +183,9 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		
 		String input = "<GetDocumentAndAttributes_Response><attrib>1</attrib><attrib>2</attrib></GetDocumentAndAttributes_Response>";
 		
-		PipeRunResult prr = pipe.doPipe(input,new PipeLineSessionBase());
+		PipeRunResult prr = pipe.doPipe(new Message(input),new PipeLineSession());
 		
-		String result = (String)prr.getResult();
+		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
 	}
 

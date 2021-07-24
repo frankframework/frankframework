@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,20 +15,13 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPullingListener;
-import nl.nn.adapterframework.core.IThreadCountControllable;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.Semaphore;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.SchedulingAwareRunnable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -36,79 +29,105 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.core.IHasProcessState;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IPeekableListener;
+import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.credentialprovider.util.Misc;
+
+
 /**
  * Container that provides threads to exectue pulling listeners.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PullingListenerContainer implements IThreadCountControllable {
+public class PullingListenerContainer<M> implements IThreadCountControllable {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private TransactionDefinition txNew=null;
+	private TransactionDefinition txNew = null;
 
-    private ReceiverBase receiver;
+	private Receiver<M> receiver;
 	private PlatformTransactionManager txManager;
-    private Counter threadsRunning = new Counter(0);
+	private Counter threadsRunning = new Counter(0);
 	private Counter tasksStarted = new Counter(0);
-	private Semaphore processToken = null;	// guard against to many messages being processed at the same time
-    private Semaphore pollToken = null;     // guard against to many threads polling at the same time 
-	private boolean idle=false;   			// true if the last messages received was null, will cause wait loop
-    private int retryInterval=1;
-    private int maxThreadCount=1;
- 
+	private Semaphore processToken = null; // guard against to many messages being processed at the same time
+	private Semaphore pollToken = null; // guard against to many threads polling at the same time
+	private boolean idle = false; // true if the last messages received was null, will cause wait loop
+	private int retryInterval = 1;
+	private int maxThreadCount = 1;
+
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
 	private TaskExecutor taskExecutor;
-   
-    private PullingListenerContainer() {
-        super();
-    }
-    
-    public void configure() {
-        if (receiver.getNumThreadsPolling()>0 && receiver.getNumThreadsPolling()<receiver.getNumThreads()) {
-            pollToken = new Semaphore(receiver.getNumThreadsPolling());
-        }
+
+	private PullingListenerContainer() {
+		super();
+	}
+
+	public void configure() {
+		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
+			pollToken = new Semaphore(receiver.getNumThreadsPolling());
+		}
+
 		processToken = new Semaphore(receiver.getNumThreads());
-		maxThreadCount=receiver.getNumThreads();
-        if (receiver.isTransacted()) {
+		maxThreadCount = receiver.getNumThreads();
+		if (receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
 			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-         	if (receiver.getTransactionTimeout()>0) {
+			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
-         	}
-			txNew=txDef;
-        }
-    }
-    
-    public void start() {
-    	taskExecutor.execute(new ControllerTask());
-    }
-    
-    public void stop() {
-    }
-    
+			}
+			txNew = txDef;
+		}
+	}
+
+	public void start() {
+		taskExecutor.execute(new ControllerTask());
+	}
+
+	public void stop() {
+		// nothing special here
+	}
+
+	@Override
 	public boolean isThreadCountReadable() {
 		return true;
 	}
 
+	@Override
 	public boolean isThreadCountControllable() {
 		return true;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		return (int)threadsRunning.getValue();
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		return maxThreadCount;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		maxThreadCount++;
 		processToken.release();
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (maxThreadCount>1) {
 			maxThreadCount--;
@@ -116,16 +135,25 @@ public class PullingListenerContainer implements IThreadCountControllable {
 		}
 	}
 
-	private class ControllerTask implements SchedulingAwareRunnable {
+	private class ControllerTask implements SchedulingAwareRunnable, INamedObject {
 
+		private @Getter @Setter String name;
+
+		@Override
 		public boolean isLongLived() {
 			return true;
 		}
 
+		public ControllerTask() {
+			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+		}
+
+		@Override
 		public void run() {
-			log.debug(receiver.getLogPrefix()+" taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
+			ThreadContext.push(getName());
+			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
 			receiver.setRunState(RunStateEnum.STARTED);
-			log.debug(receiver.getLogPrefix()+"started ControllerTask");
+			log.debug("started ControllerTask");
 			try {
 				while (receiver.isInRunState(RunStateEnum.STARTED) && !Thread.currentThread().isInterrupted()) {
 					processToken.acquire();
@@ -133,7 +161,7 @@ public class PullingListenerContainer implements IThreadCountControllable {
 						pollToken.acquire();
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
-						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug(receiver.getLogPrefix()+"is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
+						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
 						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
 							Thread.sleep(1000);
 						}
@@ -142,96 +170,191 @@ public class PullingListenerContainer implements IThreadCountControllable {
 				}
 			} catch (InterruptedException e) {
 				log.warn("polling interrupted", e);
+				Thread.currentThread().interrupt();
+			} finally {
+				log.debug("closing down ControllerTask");
+				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+					receiver.stopRunning();
+				}
+				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
+
+				ThreadContext.removeStack(); // potentially redundant, makes sure to remove the NDC/MDC
 			}
-			log.debug(receiver.getLogPrefix()+"closing down ControllerTask");
-			receiver.stopRunning();
-			receiver.closeAllResources();
-			NDC.remove();
 		}
 	}
-    
-    private class ListenTask implements SchedulingAwareRunnable {
 
+	private class ListenTask implements SchedulingAwareRunnable, INamedObject {
+
+		private @Getter @Setter String name;
+		private IHasProcessState<M> inProcessStateManager=null;
+
+		@Override
 		public boolean isLongLived() {
 			return false;
 		}
 
+		public ListenTask() {
+			setName("Receiver ["+receiver.getName()+"]");
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
 		public void run() {
-			IPullingListener listener = null;
-			Map threadContext = null;
+			final IPullingListener<M> listener = (IPullingListener<M>) receiver.getListener();
+			Map<String,Object> threadContext = null;
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
 				if (receiver.isInRunState(RunStateEnum.STARTED)) {
-					listener = (IPullingListener) receiver.getListener();
+					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
+						inProcessStateManager = (IHasProcessState<M>)listener;
+					}
 					threadContext = listener.openThread();
 					if (threadContext == null) {
-						threadContext = new HashMap();
+						threadContext = new HashMap<>();
 					}
-					long startProcessingTimestamp;
-					Object rawMessage = null;
+					M rawMessage = null;
 					TransactionStatus txStatus = null;
-					try {
+					int deliveryCount=0;
+					boolean messageHandled = false;
+					String messageId = null;
+					try { //  doesn't catch anything, rolls back transaction in finally clause when required
 						try {
-							if (receiver.isTransacted()) {
-								txStatus = txManager.getTransaction(txNew);
+							try {
+								boolean messageAvailable = true;
+								if (isIdle() && listener instanceof IPeekableListener) {
+									IPeekableListener<?> peekableListener = (IPeekableListener<?>) listener;
+									if (peekableListener.isPeekUntransacted()) {
+										messageAvailable = peekableListener.hasRawMessageAvailable();
+									}
+								}
+								if (messageAvailable) {
+									// Start a transaction if the entire processing is transacted, or
+									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
+									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
+										txStatus = txManager.getTransaction(txNew);
+									}
+									rawMessage = listener.getRawMessage(threadContext);
+								}
+								resetRetryInterval();
+								setIdle(rawMessage==null);
+							} catch (Exception e) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
+								if (receiver.isOnErrorContinue()) {
+									increaseRetryIntervalAndWait(e);
+								} else {
+									receiver.exceptionThrown("exception occured while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
+									return;
+								}
 							}
-							rawMessage = listener.getRawMessage(threadContext);
-							resetRetryInterval();
-							setIdle(rawMessage==null);
-						} catch (Exception e) {
-							if (txStatus!=null) {
-								txManager.rollback(txStatus);
-							}
-							if (receiver.isOnErrorContinue()) {
-								increaseRetryIntervalAndWait(e);
-							} else {
-								receiver.error("stopping receiver after exception in retrieving message", e);
-								receiver.stopRunning();
+							if (rawMessage == null) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
 								return;
 							}
+
+							if (inProcessStateManager!=null) {
+								if ((rawMessage = inProcessStateManager.changeProcessState(rawMessage, ProcessState.INPROCESS, "start processing"))==null) {
+									if (txStatus!=null) {
+										txManager.rollback(txStatus);
+									}
+									return;
+								}
+								// If inProcess-state is used, we'll commit the transaction that set the message state to the inProcess.
+								// This releases the lock on the record being processed.
+								// This is necessary for dbmses like MariaDB, that have no 'SKIP LOCKED' functionality, and for pipelines that do not support roll back
+								if (txStatus!=null) {
+									txManager.commit(txStatus);
+									if (receiver.isTransacted()) {
+										txStatus = txManager.getTransaction(txNew);
+									} else {
+										txStatus = null;
+									}
+								}
+							}
+
+							// found a message, process it
+							tasksStarted.increase(); 
+							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
+							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
 						} finally {
+							// release pollToken after message has been moved to inProcess, so it is not seen as 'available' by the next thread
 							pollTokenReleased=true;
 							if (pollToken != null) {
 								pollToken.release();
 							}
 						}
-						if (rawMessage != null) {
-							tasksStarted.increase(); 
-							log.debug(receiver.getLogPrefix()+"started ListenTask ["+tasksStarted.getValue()+"]");
-							Thread.currentThread().setName(receiver.getName()+"-listener["+tasksStarted.getValue()+"]");
-							// found a message, process it
-							startProcessingTimestamp = System.currentTimeMillis();
-							try {
-								receiver.processRawMessage(listener, rawMessage, threadContext);
-								if (txStatus != null) {
-									if (txStatus.isRollbackOnly()) {
-										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
-										txManager.rollback(txStatus);
-									} else {
-										txManager.commit(txStatus);
-									}
-								}
-							} catch (Exception e) {
-								if (txStatus != null && !txStatus.isCompleted()) {
-									txManager.rollback(txStatus);
-								}
-								if (receiver.isOnErrorContinue()) {
-									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
+
+						try {
+							if (receiver.getMaxRetries()>=0) {
+								messageId = listener.getIdFromRawMessage(rawMessage, threadContext);
+								deliveryCount = receiver.getDeliveryCount(messageId, rawMessage);
+							}
+							if (receiver.getMaxRetries()<0 || deliveryCount <= receiver.getMaxRetries()+1 || receiver.isSupportProgrammaticRetry()) {
+								receiver.processRawMessage(listener, rawMessage, threadContext, true);
+							} else {
+								String correlationId = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+								Date receivedDate = new Date();
+								String errorMessage = Misc.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(messageId));
+								final M rawMessageFinal = rawMessage;
+								final Map<String,Object> threadContextFinal = threadContext;
+								receiver.moveInProcessToError(messageId, correlationId, () -> listener.extractMessage(rawMessageFinal, threadContextFinal), receivedDate, errorMessage, rawMessage, Receiver.TXREQUIRED);
+								receiver.cacheProcessResult(messageId, errorMessage, receivedDate); // required here to increase delivery count
+							}
+							messageHandled = true;
+							if (txStatus != null) {
+								if (txStatus.isRollbackOnly()) {
+									messageHandled = false;
+									receiver.warn("pipeline processing ended with status RollbackOnly, so rolling back transaction");
+									rollBack(txStatus, rawMessage, "Pipeline processing ended with status RollbackOnly");
 								} else {
-									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
-									receiver.stopRunning();
+									txManager.commit(txStatus);
+								}
+								txStatus = null;
+							}
+						} catch (Exception e) {
+							receiver.error("caught Exception processing message", e);
+							try {
+								if (txStatus != null && !txStatus.isCompleted()) {
+									messageHandled = false;
+									rollBack(txStatus, rawMessage, "Exception caught ("+e.getClass().getTypeName()+"): "+e.getMessage());
+									txStatus = null;
+								}
+							} catch (Exception e2) {
+								receiver.error("caught Exception rolling back transaction after catching Exception", e2);
+							} finally {
+								if (receiver.isOnErrorContinue()) {
+									receiver.error("caught Exception processing message, will continue processing next message", e);
+								} else {
+									receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR and don't just stop the receiver
 								}
 							}
 						}
-					} finally  {
+					} finally {
 						if (txStatus != null && !txStatus.isCompleted()) {
-							 txManager.rollback(txStatus);
-						 }
+							messageHandled = false;
+							rollBack(txStatus, rawMessage, "Rollback because transaction has terminated unexpectedly");
+							txStatus = null;
+						}
+					}
+					if (!messageHandled && inProcessStateManager!=null) {
+						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
+						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
+						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
+						if (log.isDebugEnabled()) log.debug("noMoreRetries ["+noMoreRetries+"] deliveryCount ["+deliveryCount+"] targetState ["+targetState+"]");
+						String errorMessage = Misc.concatStrings(noMoreRetries? "too many retries":null, "; ", receiver.getCachedErrorMessage(messageId));
+						((IHasProcessState<M>)listener).changeProcessState(rawMessage, targetState, errorMessage!=null ? errorMessage : "processing not successful");
+						if (txStatus!=null) {
+							txManager.commit(txStatus);
+							txStatus = null;
+						}
 					}
 				}
-			} catch (Throwable e) {
-				receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
+			} catch (Exception e) {
+				receiver.error("error occured", e);
 			} finally {
 				processToken.release();
 				if (!pollTokenReleased && pollToken != null) {
@@ -242,152 +365,31 @@ public class PullingListenerContainer implements IThreadCountControllable {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
-						receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
+						receiver.error("Exception closing listener thread", e);
 					}
 				}
-				NDC.remove();
+				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
 			}
 		}
-    }
-    
-    
 
-    
-	/**
-	 * Starts the receiver. This method is called by the startRunning method.<br/>
-	 * Basically:
-	 * <ul>
-	 * <li>it calls the getRawMessage method to get a message<li>
-	 * <li> it performs the onMessage method, resulting a PipeLineResult</li>
-	 * <li>it calls the afterMessageProcessed() method of the listener<li>
-	 * <li> it optionally sends the result using the sender</li>
-	 * </ul>
-	 */
-//    public void run() {
-//		threadsRunning.increase(); 
-//        Thread.currentThread().setName(receiver.getName()+"-listener["+threadsRunning.getValue()+"]");
-//        IPullingListener listener = null;
-//        Map threadContext = null;
-//        try {
-//            listener = (IPullingListener) receiver.getListener();
-//            threadContext = listener.openThread();
-//            if (threadContext == null) {
-//                threadContext = new HashMap();
-//            }
-//            long startProcessingTimestamp;
-//            long finishProcessingTimestamp = System.currentTimeMillis();
-//            receiver.setRunState(RunStateEnum.STARTED);
-//            while (receiver.isInRunState(RunStateEnum.STARTED)) {
-//                boolean permissionToGo = true;
-//                if (pollToken != null) {
-//                    try {
-//                        permissionToGo = false;
-//                        pollToken.acquire();
-//                        permissionToGo = true;
-//                    } catch (Exception e) {
-//                        receiver.error("acquisition of polltoken interupted", e);
-//                        receiver.stopRunning();
-//                    }
-//                }
-//                Object rawMessage = null;
-//                TransactionStatus txStatus = null;
-//                try {
-//					try {
-//						if (permissionToGo && receiver.isInRunState(RunStateEnum.STARTED)) {
-//							try {
-//								if (receiver.isTransacted()) {
-//									txStatus = txManager.getTransaction(txNew);
-//								}
-//								rawMessage = listener.getRawMessage(threadContext);
-//								resetRetryInterval();
-//							} catch (Exception e) {
-//								if (txStatus!=null) {
-//									txManager.rollback(txStatus);
-//								}
-//								if (receiver.isOnErrorContinue()) {
-//									increaseRetryIntervalAndWait(e);
-//								} else {
-//									receiver.error("stopping receiver after exception in retrieving message", e);
-//									receiver.stopRunning();
-//								}
-//							}
-//						}
-//					} finally {
-//						if (pollToken != null) {
-//							pollToken.release();
-//						}
-//					}
-//					if (rawMessage != null) {
-//						// found a message, process it
-//						try {
-//							startProcessingTimestamp = System.currentTimeMillis();
-//							try {
-//								receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
-//								if (txStatus != null) {
-//									if (txStatus.isRollbackOnly()) {
-//										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
-//										txManager.rollback(txStatus);
-//									} else {
-//										txManager.commit(txStatus);
-//									}
-//								}
-//							} catch (Exception e) {
-//								if (txStatus != null && !txStatus.isCompleted()) {
-//									txManager.rollback(txStatus);
-//								}
-//								if (receiver.isOnErrorContinue()) {
-//									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
-//								} else {
-//									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
-//									receiver.stopRunning();
-//								}
-//							}
-//						} finally {
-//							finishProcessingTimestamp = System.currentTimeMillis();
-//						}
-//					} else {
-//						// no message found, cleanup
-//					   if (txStatus != null && !txStatus.isCompleted()) {
-//							txManager.rollback(txStatus);
-//						}
-//						if (receiver.getPollInterval()>0) {
-//							for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
-//								Thread.sleep(1000);
-//							}
-//						}
-//					}
-//                } finally  {
-//					if (txStatus != null && !txStatus.isCompleted()) {
-//						 txManager.rollback(txStatus);
-//					 }
-//                }
-//            }
-//        } catch (Throwable e) {
-//            receiver.error("error occured in receiver [" + receiver.getName() + "]", e);
-//        } finally {
-//            if (listener != null) {
-//                try {
-//                    listener.closeThread(threadContext);
-//                } catch (ListenerException e) {
-//                    receiver.error("Exception closing listener of Receiver [" + receiver.getName() + "]", e);
-//                }
-//            }
-//            long stillRunning = threadsRunning.decrease();
-//            if (stillRunning > 0) {
-//				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
-//				receiver.throwEvent(ReceiverBase.RCV_THREAD_EXIT_MONITOR_EVENT);
-//                return;
-//            }
-//			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
-//            receiver.closeAllResources();
-//            NDC.remove();
-//        }
-//    }
+		private void rollBack(TransactionStatus txStatus, M rawMessage, String reason) throws ListenerException {
+			try {
+				txManager.rollback(txStatus);
+			} finally {
+				if (inProcessStateManager!=null) {
+					TransactionStatus txStatusRevert = txManager.getTransaction(txNew);
+					inProcessStateManager.changeProcessState(rawMessage, ProcessState.AVAILABLE, reason);
+					txManager.commit(txStatusRevert);
+				}
+			}
+		}
+	}
+
 
 	private void resetRetryInterval() {
 		synchronized (receiver) {
-			if (retryInterval > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
+			if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+				receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -403,8 +405,8 @@ public class PullingListenerContainer implements IThreadCountControllable {
 			}
 		}
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
-		if (currentInterval*2 > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
+		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
@@ -417,13 +419,13 @@ public class PullingListenerContainer implements IThreadCountControllable {
 	}
 	
 	
-    public void setReceiver(ReceiverBase receiver) {
-        this.receiver = receiver;
-    }
-	public ReceiverBase getReceiver() {
+	public void setReceiver(Receiver<M> receiver) {
+		this.receiver = receiver;
+	}
+	public Receiver<M> getReceiver() {
 		return receiver;
 	}
-    
+
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;
 	}
@@ -444,6 +446,5 @@ public class PullingListenerContainer implements IThreadCountControllable {
 	public synchronized boolean isIdle() {
 		return idle;
 	}
-
 
 }

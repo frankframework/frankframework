@@ -1,6 +1,6 @@
 <project default="copy.files">
 	<target name="copy.files">
-		<property name="root.dir" value="c:/temp/testdata/generateWsdl" />
+		<property name="root.dir" value="${testdata.dir}/generateWsdl" />
 		<delete dir="${root.dir}" />
 		<mkdir dir="${root.dir}" />
 		<copy file="input.zip" todir="${root.dir}" />

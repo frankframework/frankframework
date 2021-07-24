@@ -1,25 +1,25 @@
 package nl.nn.adapterframework.pipes;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunResult;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.StringTokenizer;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.StringTokenizer;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
 
-	private IPipeLineSession session;
+	private PipeLineSession session;
 
 	protected PGPPipe encryptPipe;
 	protected PGPPipe decryptPipe;
@@ -85,15 +85,17 @@ public class PgpPipeTest {
 			configurePipe(decryptPipe, decryptParams);
 
 			// Encryption phase
-			PipeRunResult encryptionResult = encryptPipe.doPipe(MESSAGE, session);
+			Message encryptMessage = new Message(MESSAGE);
+			PipeRunResult encryptionResult = encryptPipe.doPipe(encryptMessage, session);
 
 			// Make sure it's PGP message
-			String mid = new String((byte[]) encryptionResult.getResult());
+			String mid = new String((byte[]) encryptionResult.getResult().asObject());
 			assertMessage(mid, MESSAGE);
 
 			// Decryption phase
-			PipeRunResult decryptionResult = decryptPipe.doPipe(encryptionResult.getResult(), session);
-			byte[] result = (byte[]) decryptionResult.getResult();
+			Message decryptMessage = Message.asMessage(encryptionResult.getResult());
+			PipeRunResult decryptionResult = decryptPipe.doPipe(decryptMessage, session);
+			byte[] result = (byte[]) decryptionResult.getResult().asObject();
 
 			// Assert decrypted message equals to the original message
 			Assert.assertEquals(MESSAGE, new String(result));
@@ -111,8 +113,8 @@ public class PgpPipeTest {
 	 * Creates pipes and pipeline session base for testing.
 	 */
 	@Before
-	public void setup() {
-		session = new PipeLineSessionBase();
+	public void setup() throws ConfigurationException {
+		session = new PipeLineSession();
 
 		encryptPipe = new PGPPipe();
 		decryptPipe = new PGPPipe();
@@ -186,7 +188,7 @@ public class PgpPipeTest {
 	 * @param c Class to be checked
 	 * @return True if one of the causes of the exception is the given class, false otherwise.
 	 */
-	private boolean checkExceptionClass(Throwable t, Class c) {
+	private boolean checkExceptionClass(Throwable t, Class<?> c) {
 		if (c.isInstance(t)) {
 			return true;
 		} else if (t.getCause() != null) {

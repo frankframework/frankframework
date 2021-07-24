@@ -1,17 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.XmlUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {
-
-    private IPipeLineSession session = new PipeLineSessionBase();
 
     @Override
     public EscapePipe createPipe() {
@@ -110,7 +109,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("encode");
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -120,7 +119,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("decode");
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
     @Test
     public void testRightSubstringsNoDirection() throws PipeRunException {
@@ -129,7 +128,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         Object input = "KappaPride";
         pipe.setDirection("");
 
-        assertNotNull(pipe.doPipe(input, session));
+        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
     }
 
     @Test
@@ -137,7 +136,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("encode");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -145,7 +144,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("decode");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session).getResult());
+        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
     }
 
     @Test
@@ -153,7 +152,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
         pipe.setDirection("");
         Object input = "dummyString";
 
-        assertNotNull(pipe.doPipe(input, session));
+        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
     }
 
 

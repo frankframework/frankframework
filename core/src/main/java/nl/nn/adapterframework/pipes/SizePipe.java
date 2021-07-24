@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Returns the number of bytes or characters in the input.
@@ -28,17 +29,19 @@ import nl.nn.adapterframework.core.PipeRunResult;
 public class SizePipe extends FixedForwardPipe {
 
 	/**
-* @see nl.nn.adapterframework.core.IPipe#doPipe(Object, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			int size = -1;
+			Object input = message.asObject();
 			if (input instanceof String) {
 				size = ((String)input).length();
 			} else if (input instanceof byte[]) {
 				size = ((byte[])input).length;
 			}
-			return new PipeRunResult(getForward(), "" + size);
+			return new PipeRunResult(getSuccessForward(), "" + size);
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Error while transforming input", e);
 		}

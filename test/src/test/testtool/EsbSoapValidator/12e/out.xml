@@ -1,10 +1,5 @@
 <Error>
-<errorCode>FAILURE</errorCode>
-<errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd http://nn.nl/XSD/Generic/MessageHeader/1 /xml/xsd/CommonMessageHeader.xsd http://schemas.xmlsoap.org/soap/envelope/ /xml/xsd/soap/envelope.xsd' failed:
-/Envelope/Header/MessageHeader: Unknown namespace 'http://nn.nl/XSD/test'
-/Envelope/Header/MessageHeader/From: Unknown namespace 'http://nn.nl/XSD/test'
-/Envelope/Header/MessageHeader/From/Id: Unknown namespace 'http://nn.nl/XSD/test'
-/Envelope/Header/MessageHeader/To: Unknown namespace 'http://nn.nl/XSD/test'
-/Envelope/Header/MessageHeader/To/Location: Unknown namespace 'http://nn.nl/XSD/test'
-/Envelope/Header/MessageHeader/HeaderFields: Unknown namespace 'http://nn.nl/XSD/test' (maximum number of namespace warnings reached)</errorMessage>
+	<errorCode>FAILURE</errorCode>
+	<errorMessage>Validation using EsbSoapValidator with 'http://nn.nl/XSD/PropertyCasualtyRetail/Log/LogConversion/1/SetPolicyDetails/1 /EsbSoapValidator/SetPolicyDetails/PropertyCasualtyRetail_Log_LogConversion_1_SetPolicyDetails_1.xsd http://nn.nl/XSD/Generic/MessageHeader/1 /xml/xsd/CommonMessageHeader.xsd http://schemas.xmlsoap.org/soap/envelope/ /xml/xsd/soap/envelope.xsd' failed:
+/Envelope/Header/MessageHeader: Unknown namespace 'http://nn.nl/XSD/test'</errorMessage>
 </Error>

@@ -2,8 +2,7 @@
 	<!-- Receiving Listeners -->
 	<adapter name="WebServiceListenerAddressAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute Address receiving attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments" />
 		</receiver>
@@ -19,8 +18,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerAddressAttachmentsMultipartSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute Address receiving attachments using multipart sessionkey">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddressMultipartSessionKey">
+		<receiver name="WebServiceListenerTimeoutAddressMultipartSessionKey">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/multipart" />
 		</receiver>
@@ -41,8 +39,7 @@
 	<!-- Returning Listeners -->
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute Address returning attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/returning" attachmentSessionKeys="attachment1"/>
 		</receiver>
@@ -55,7 +52,7 @@
 			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="attachment1" 
+				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="attachment1" 
 				preserveInput="true" createDirectory="true"
 				>
 				
@@ -66,8 +63,7 @@
 	</adapter>
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachmentsSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute Address returning attachments">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceListenerTimeoutAddress">
+		<receiver name="WebServiceListenerTimeoutAddress">
 			<listener className="nl.nn.adapterframework.http.WebServiceListener"
 				address="urn/ws/address/attachments/returning/sessionkey"/>
 		</receiver>
@@ -80,7 +76,7 @@
 			</pipe>
 			<pipe
 				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" fileName="filetext.txt" storeResultInSessionKey="file" 
+				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="file" 
 				preserveInput="true" createDirectory="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
@@ -97,8 +93,7 @@
 	<!-- Sending Senders -->
 	<adapter name="WebServiceSenderAddressAttachmentsWithParam" 
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsWithParam" />
 		</receiver>
@@ -106,11 +101,11 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender" firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
+					allowSelfSignedCertificates="true" verifyHostname="false" postType="MTOM"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -119,8 +114,7 @@
 	</adapter>
     <adapter name="WebServiceSenderAddressAttachments" 
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsMultipart" />
 		</receiver>
@@ -129,13 +123,13 @@
 				<exit path="EXIT" state="success" />
 			</exits> 
 			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt" storeResultInSessionKey="file"
+				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt" storeResultInSessionKey="file"
 				createDirectory="true"
 			>
 				<forward name="success" path="GetAttachment2" />
 			</pipe> 
 			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" fileName="textfile.txt"  storeResultInSessionKey="file2"
+				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt"  storeResultInSessionKey="file2"
 				createDirectory="true"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
@@ -146,11 +140,11 @@
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />
 			</pipe> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true" multipartXmlSessionKey="multipart"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender" firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
+					allowSelfSignedCertificates="true" verifyHostname="false" postType="MTOM" multipartXmlSessionKey="multipart"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -160,8 +154,7 @@
 	<!-- Receiving Senders -->
 	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachments" 
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturning" />
 		</receiver>
@@ -169,32 +162,31 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
-			<pipe
-				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}\webservices\received.txt"
+			<LocalFileSystemPipe
+				name="WriteStream"
+				action="write" getInputFromSessionKey="multipart1" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
-			</pipe>
-			<pipe
-				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}\webservices\received.txt"
+			</LocalFileSystemPipe>
+			<LocalFileSystemPipe
+				name="ReadFile"
+				action="read" filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
-			</pipe>
+			</LocalFileSystemPipe>
 		</pipeline>
 	</adapter>
 	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachmentsSessionKey" 
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address and multipartXml sessionkey">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="WebServiceSenderAddress">
+		<receiver name="WebServiceSenderAddress">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturningSessionKey" />
 		</receiver>
@@ -202,26 +194,47 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true" verifyHostname="false"
 				/>
-				<forward name="success" path="WriteStream" />
+				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>
-			<pipe
-				name="WriteStream" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" getInputFromSessionKey="multipart1" fileName="${testdata.dir}\webservices\received.txt"
+			<XsltPipe 
+				name="CheckIfMultipartSessionKeyPresent"
+				styleSheetName="WebServiceListenerSender/checkMultipartSessionkeyPresence.xsl"
+			>
+				<Param name="multipart1" sessionKey="multipart1" defaultValue="NoMultiPart1"/>
+				<Forward name="success" path="SwitchCases"/>
+			</XsltPipe>
+			<XmlSwitchPipe 
+				name="SwitchCases"
+				xpathExpression="/case"
+			>
+				<Forward name="noFiles" path="throwException"/>
+				<Forward name="oneFile" path="WriteStream"/>
+			</XmlSwitchPipe>
+			<LocalFileSystemPipe
+				name="WriteStream"
+				action="write"
+				getInputFromSessionKey="multipart1"
+				filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="ReadFile"/>
-			</pipe>
-			<pipe
-				name="ReadFile" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" fileName="${testdata.dir}\webservices\received.txt"
+			</LocalFileSystemPipe>
+			<LocalFileSystemPipe
+				name="ReadFile"
+				action="read"
+				filename="${testdata.dir}/webservices/received.txt"
 			>
 				<forward name="success" path="EXIT"/>
-			</pipe>
+			</LocalFileSystemPipe>
+			
+			<ExceptionPipe name="throwException" getInputFromFixedValue="Session key [multipart1] does not exists or not contains the expected data.">
+				<Forward name="success" path="EXIT" />
+			</ExceptionPipe>
 		</pipeline>
 	</adapter>
 </module>

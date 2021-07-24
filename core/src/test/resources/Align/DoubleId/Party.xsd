@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="urn:party" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:party" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="Party" type="PartyType"/>
+	<xsd:complexType name="PartyType">
+		<xsd:sequence>
+			<xsd:element name="Id" type="xsd:string"/>
+			<xsd:element name="Person" type="xsd:string"/>
+			<xsd:element name="Tail" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Id" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

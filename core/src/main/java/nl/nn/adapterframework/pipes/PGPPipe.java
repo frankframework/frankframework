@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -31,6 +31,8 @@ import nl.nn.adapterframework.pgp.PGPAction;
 import nl.nn.adapterframework.pgp.Sign;
 import nl.nn.adapterframework.pgp.Verify;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
@@ -76,7 +78,7 @@ import nl.nn.adapterframework.stream.Message;
  * you can seperate multiple values with ";" (semicolon).
  * </p>
  */
-public class PGPPipe extends FixedForwardPipe {
+public class PGPPipe extends StreamingPipe {
 	/**
 	 * Action to be taken by pipe.
 	 * Available Actions:
@@ -151,12 +153,12 @@ public class PGPPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {
-		Message message = new Message(input);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			pgpAction.run(message.asInputStream(), baos);
-			return new PipeRunResult(findForward("success"), baos.toByteArray());
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		try (MessageOutputStream target=getTargetStream(session)) {
+			try (OutputStream out = target.asStream()) {
+				pgpAction.run(message.asInputStream(), out);
+			}
+			return target.getPipeRunResult();
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 		}

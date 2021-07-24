@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ProcessMetrics;
 
 /**
@@ -40,8 +41,9 @@ import nl.nn.adapterframework.util.ProcessMetrics;
 
 public class IbisMetricsPipe extends FixedForwardPipe {
 
-	public PipeRunResult doPipe(Object input, IPipeLineSession session) throws PipeRunException {	
-		return new PipeRunResult(getForward(), ProcessMetrics.toXml());
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {	
+		return new PipeRunResult(getSuccessForward(), ProcessMetrics.toXml());
 	}
 
 }

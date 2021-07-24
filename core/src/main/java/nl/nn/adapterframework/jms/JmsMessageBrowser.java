@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,14 +21,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -39,19 +38,20 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * Get the messages on a queue without deleting them
- * @author  Johan Verrips / Gerrit van Brakel
- * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
+ * Basic browser of JMS Messages.
+ * @param <M> the payload message type as used by IMessageBrowser.
+ * @param <J> the physical JMS message to carry the payload.
+ * 
+ * @author  Johan Verrips
  */
-public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
+public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
 
 	private long timeOut = 3000;
 	private String selector=null;
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
-	
+
 	public JmsMessageBrowser() {
 		super();
 		setTransacted(true);
@@ -61,7 +61,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		this();
 		this.selector=selector;
 	}
-	
+
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
@@ -87,6 +87,20 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
+	@Override
+	public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		Object msg = browseJmsMessage(originalMessageId);
+		return msg != null;
+	}
+
+	@Override
+	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		log.warn("could not determine correct presence of a message with correlationId [" + correlationId + "], assuming it doesnot exist");
+		// TODO: check presence of a message with correlationId
+		return false;
+	}
+
+	@Override
 	public int getMessageCount() throws ListenerException {
 		QueueBrowser queueBrowser=null;
 		Session session = null;
@@ -117,15 +131,14 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	
-	@Override
-	public Object getMessage(String messageId) throws ListenerException {
+	public J getJmsMessage(String messageId) throws ListenerException {
 		Session session=null;
-		Object msg = null;
+		J msg = null;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
 			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
-			msg = mc.receive(getTimeOut());
+			msg = (J)mc.receive(getTimeOut());
 			return msg;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -146,22 +159,21 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		return new JmsMessageBrowserIteratorItem(doBrowse("JMSMessageID", messageId));
 	}
 
-	@Override
-	public Object browseMessage(String messageId) throws ListenerException {
-		return doBrowse("JMSMessageID", messageId);
+	public J browseJmsMessage(String messageId) throws ListenerException {
+		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
 
-	protected Message doBrowse(Map<String,String> selectors) throws ListenerException {
+	protected javax.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
-		Message msg = null;
+		javax.jms.Message msg = null;
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
 			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
-				msg=(Message)msgenum.nextElement();
+				msg=(javax.jms.Message)msgenum.nextElement();
 			}
 			return msg;
 		} catch (Exception e) {
@@ -178,7 +190,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
-	protected Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
+	protected javax.jms.Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
 		Map<String,String> selectorMap = new HashMap<>();
 		selectorMap.put(selectorKey, selectorValue);
 		return doBrowse(selectorMap);
@@ -228,6 +240,12 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		return result.toString();
 	}
 
+	public String getSelector() {
+		return selector;
+	}
+
+
+	@IbisDoc({"timeout for receiving a message from the queue", "3000 ms"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -235,13 +253,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		return timeOut;
 	}
 
-
-	public String getSelector() {
-		return selector;
-	}
-
 	@Override
-	@IbisDoc({"Regular expression to mask strings in the errorStore/logStore. Every character between to the strings in this expression will be replaced by a '*'. For example, the regular expression (?&lt;=&lt;party&gt;).*?(?=&lt;/party&gt;) will replace every character between keys<party> and </party> ", ""})
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
 	}
@@ -251,7 +263,6 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	@Override
-	@IbisDoc({"(Only used when hideRegex is not empty) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked", "all"})
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <param1>&lt;abc/&gt;</param1>
+  <param2>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;Wrapper&gt;&lt;abc/&gt;&lt;/Wrapper&gt;</param2>
+  <param3>&lt;request action="getFromPreserveAndStore-Pipe"/&gt;</param3>
+</root>
