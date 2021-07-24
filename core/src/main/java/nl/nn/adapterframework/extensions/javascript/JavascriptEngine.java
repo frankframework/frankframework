@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,28 +33,28 @@ public interface JavascriptEngine<E> {
 	/**
 	 * @param alias An identifier which describes the script(s) that are being executed.
 	 */
-	void setScriptAlias(String alias);
+	void setGlobalAlias(String alias);
 
 	/**
 	 * Initialize the runtime for the specified engine
 	 */
-	void startRuntime();
+	void startRuntime() throws JavascriptException;
 
 	/**
 	 * Read the functions of a given javascript file
 	 * 
 	 * @param script		String containing the contents of the javascript file in which the function(s) to be executed are specified.
 	 */
-	void executeScript(String script);
+	void executeScript(String script) throws JavascriptException;
 
 	/**
 	 * Executes a javascript function and returns the result of that function
 	 * 
-	 * @param name		The name of the javascript function as given in the javascript file.
-	 * @param parameters		An array containing the parameters for the javascript function, given in the adapter configuration
-	 * @return		The result of the javascript function is returned.
+	 * @param name			The name of the javascript function as given in the javascript file.
+	 * @param parameters	An array containing the parameters for the javascript function, given in the adapter configuration
+	 * @return				The result of the javascript function is returned.
 	 */
-	Object executeFunction(String name, Object... parameters);
+	Object executeFunction(String name, Object... parameters) throws JavascriptException;
 
 	/**
 	 * Closes the runtime for the specified engine
