@@ -62,7 +62,7 @@ permission java.net.SocketPermission "*", "connect,resolve";
 permission java.io.FilePermission "${user.home}${/}.mailcap", "read";
 permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}mailcap", "read";
 permission java.io.FilePermission "${java.home}${/}conf", "read";
-permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.registries;
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.registries";
 
 // property * write required for Quartz scheduler and SpringFramework,
 // as they call java.System.getProperties()
