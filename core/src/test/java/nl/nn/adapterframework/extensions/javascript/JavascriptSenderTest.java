@@ -42,7 +42,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@Test
 	public void callMain() throws ConfigurationException, SenderException, TimeOutException, IOException {
 		Message dummyInput = new Message("dummyinput");
-		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setEngineName(engine);
 
 		sender.configure();
@@ -364,20 +364,5 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		double duration = (double)(endTime - startTime)/1000000000; 
 		System.out.println("Run time: " + duration + " seconds");
-	}
-
-	//This test is used to compare the performance of J2V8 to that of Nashorn. J2V8 should finish about ten times faster than Nashorn.
-	@Test
-	@Ignore
-	public void promise() throws Exception {
-		Message dummyInput = new Message("dummyinput");
-		sender.setJsFileName("Javascript/JavascriptTest.js"); 
-		sender.setJsFunctionName("promise");
-		sender.setEngineName(engine);
-
-		sender.configure();
-		sender.open();
-
-		assertEquals("1", sender.sendMessage(dummyInput, session).asString());
 	}
 }
