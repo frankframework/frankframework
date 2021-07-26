@@ -41,4 +41,8 @@ public class Container extends ContainerParent {
 	@Override
 	public void setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated child) {
 	}
+
+	// To test TextConfigChild
+	public void registerText(String value) {
+	}
 }

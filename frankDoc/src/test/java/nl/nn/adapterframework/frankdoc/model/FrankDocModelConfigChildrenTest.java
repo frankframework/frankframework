@@ -61,6 +61,21 @@ public class FrankDocModelConfigChildrenTest {
 	}
 
 	@Test
+	public void whenTextConfigChildMethodThenTextConfigChildProduced() throws Exception {
+		ConfigChild rawActual = selectChild("roleNameText");
+		assertTrue(rawActual instanceof TextConfigChild);
+		TextConfigChild actual = (TextConfigChild) rawActual;
+		assertEquals("roleNameText", actual.getRoleName());
+		assertEquals("Container", actual.getOwningElement().getSimpleName());
+		assertFalse(actual.isDocumented());
+		assertTrue(actual.isAllowMultiple());
+		assertFalse(actual.isDeprecated());
+		assertFalse(actual.isMandatory());
+		assertNull(actual.getOverriddenFrom());
+		assertTrue(IN_XSD.test(actual));		
+	}
+
+	@Test
 	public void whenConfigChildMethodThenConfigChildProduced() throws Exception {
 		ConfigChild rawActual = selectChild("roleNameChild");
 		assertTrue(rawActual instanceof ObjectConfigChild);
@@ -153,7 +168,8 @@ public class FrankDocModelConfigChildrenTest {
 		String[] expectedConfigChildNames = new String[] {"ObjectConfigChild(Container.setChild(Child))", "ObjectConfigChild(Container.setDeprecatedChild(Child))",
 				"ObjectConfigChild(Container.registerInheritedChilds(InheritedChild))", "ObjectConfigChild(Container.setInheritedChildDocOnDerived(InheritedChildDocOnDerived))",
 				"ObjectConfigChild(Container.setInheritedChildDocWithDescriptionOverride(InheritedChildDocWithDescriptionOverride))", "ObjectConfigChild(Container.setInheritedChildNonSelected(InheritedChildNonSelected))",
-				"ObjectConfigChild(Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated))"};
+				"ObjectConfigChild(Container.setChildOverriddenOnlyParentAnnotated(ChildOverriddenOnlyParentAnnotated))",
+				"TextConfigChild(roleName = roleNameText)"};
 		assertArrayEquals(expectedConfigChildNames, actualConfigChildNames.toArray(new String[] {}));
 	}
 
