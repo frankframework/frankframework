@@ -113,7 +113,7 @@ public class FrankDocModel {
 	}
 
 	void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", path);
+		log.trace("Creating config child descriptors from file [{}]", () -> path);
 		Resource resource = Resource.getResource(path);
 		if(resource == null) {
 			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
@@ -173,11 +173,13 @@ public class FrankDocModel {
 		}
 
 		private void addTypeObject(String registerMethod, String roleName) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, roleName);
 			checkDuplicate(descriptor);
 		}
 
 		private void addTypeText(String registerMethod, String roleName) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, roleName);
 			checkDuplicate(descriptor);
 		}
