@@ -150,7 +150,7 @@ public class JavascriptSender extends SenderSeries {
 		if(engine != JavaScriptEngines.RHINO) {
 			for (ISender sender: getSenders()) {
 				jsInstance.registerCallback(sender, session);
-			} 
+			}
 		}
 
 		try {

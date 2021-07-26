@@ -259,7 +259,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private File retrieveFlowFile(File parent, String fileName) {
 		if(fileExtension == null) { //fail fast check to see if an IFlowGenerator is available.
-			log.debug("cannot generate FlowFile, file extensions is null");
+			log.debug("cannot generate FlowFile, file extension is null");
 			return null;
 		}
 
