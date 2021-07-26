@@ -4,4 +4,5 @@
   <rule pattern="*/roleNameItemPluralAdd" registerMethod="addItemPlural"/>
   <rule pattern="*/roleNameItemPluralRegister" registerMethod="registerItemPlural"/>
   <rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
+  <rule pattern="*/roleNameText" registerTextMethod="registerText" />
 </digester-rules>
