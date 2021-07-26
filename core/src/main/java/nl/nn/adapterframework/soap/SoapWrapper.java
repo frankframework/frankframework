@@ -19,10 +19,13 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -252,10 +255,14 @@ public class SoapWrapper {
 			WSSConfig config = secEngine.getWssConfig();
 			config.setPrecisionInMilliSeconds(false);
 
-			SOAPMessage msg = MessageFactory.newInstance().createMessage(null, soapMessage.asInputStream());
+			// We only support signing for soap1_1 ?
+			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
+			SOAPMessage msg = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL).createMessage();
+			SOAPPart part = msg.getSOAPPart();
+			part.setContent(new StreamSource(soapMessage.asInputStream()));
 
 			// create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = msg.getSOAPPart().getEnvelope();
+			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
 			Document doc = unsignedEnvelope.getOwnerDocument();
 
 			// create security header and insert it into unsigned envelope

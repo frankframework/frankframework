@@ -1,4 +1,5 @@
 /*
+
    Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -115,10 +116,11 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 			}
 		}
 
-		if (message.asObject() instanceof String) {
-			pipeLine.getRequestSizeStats().addValue(((String)message.asObject()).length());
+		long size = message.size();
+		if (size > 0) {
+			pipeLine.getRequestSizeStats().addValue(size);
 		}
-		
+
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			String input;
 			try {
@@ -209,7 +211,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (message.asObject()!=null && !plExit.getEmptyResult()) {
+						if (message.asObject()!=null && !plExit.getEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(Message.nullMessage());

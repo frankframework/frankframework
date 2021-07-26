@@ -32,6 +32,11 @@ import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisDiscoveryService implements DiscoveryService {
 
 	private DiscoveryService discoveryService;
@@ -86,7 +91,6 @@ public class IbisDiscoveryService implements DiscoveryService {
 			Holder<String> changeLogToken, Boolean includeProperties,
 			String filter, Boolean includePolicyIds, Boolean includeAcl,
 			BigInteger maxItems, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return discoveryService.getContentChanges(repositoryId, changeLogToken, includeProperties, filter, includePolicyIds, includeAcl, maxItems, extension);
 	}
 	

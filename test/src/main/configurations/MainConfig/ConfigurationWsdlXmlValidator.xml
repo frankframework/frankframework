@@ -33,8 +33,7 @@
 			<!-- ndn (NoDefaultNamespace) -->
 			<pipe name="ndn" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
 				soapBody="Request"
-				wsdl="/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl"
-				schemaLocation="dummy schema1">
+				wsdl="/WsdlXmlValidator/NoDefaultNamespace/NoDefaultNamespace.wsdl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->

@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -70,6 +69,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -78,6 +78,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -180,8 +181,8 @@ public class HttpSender extends HttpSenderBase {
 
 	private PostType postType = PostType.RAW;
 
-	private enum PostType {
-		RAW("raw text"), // text/html;charset=UTF8
+	public enum PostType implements DocumentedEnum {
+		RAW("raw text/xml/json"), // text/html;charset=UTF8
 		BINARY("binary content"), //application/octet-stream
 //		SWA("Soap with Attachments"), // text/xml
 		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
@@ -193,8 +194,12 @@ public class HttpSender extends HttpSenderBase {
 			this.description = description;
 		}
 		@Override
-		public String toString() {
+		public String getDescription() {
 			return description;
+		}
+		@Override
+		public String toString() {
+			return getDescription();
 		}
 	}
 
@@ -663,14 +668,9 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodType=POST</code>, the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
-	public void setPostType(String type) throws ConfigurationException {
-		try {
-			this.postType = PostType.valueOf(type.toUpperCase());
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("unknown postType ["+type+"]. Must be one of "+ Arrays.asList(PostType.values()));
-		}
+	@IbisDoc({"When <code>methodType=POST</code>, the type of post request", "RAW"})
+	public void setPostType(String type) {
+		this.postType = EnumUtils.parse(PostType.class, type);
 	}
 
 	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})

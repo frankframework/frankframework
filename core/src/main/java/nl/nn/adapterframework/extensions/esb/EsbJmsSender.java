@@ -49,6 +49,7 @@ public class EsbJmsSender extends JmsSender {
 	private String messageProtocol = null;
 	private long timeOut = 20000;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");

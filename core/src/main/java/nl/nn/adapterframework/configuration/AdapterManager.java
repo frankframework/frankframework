@@ -47,7 +47,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	public void registerAdapter(Adapter adapter) {
-		if(!inState(BootState.STARTING)) {
+		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add adapter, manager in state ["+getState()+"]");
 		}
 
