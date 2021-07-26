@@ -148,10 +148,8 @@ public class JavascriptSender extends SenderSeries {
 			}
 		}
 
-		if(engine != JavaScriptEngines.RHINO) {
-			for (ISender sender: getSenders()) {
-				jsInstance.registerCallback(sender, session);
-			} 
+		for (ISender sender: getSenders()) {
+			jsInstance.registerCallback(sender, session);
 		}
 
 		try {
@@ -166,7 +164,12 @@ public class JavascriptSender extends SenderSeries {
 
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
-		return new Message(jsResult.toString());
+		String result = String.valueOf(jsResult);
+		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
+			return Message.nullMessage();
+		} else {
+			return new Message(result);
+		}
 	}
 
 	/**

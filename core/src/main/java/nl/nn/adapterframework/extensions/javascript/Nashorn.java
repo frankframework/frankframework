@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.javascript;
 import java.util.function.Consumer;
 
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
@@ -26,12 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 
 public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
 	private ScriptEngine engine;
 	private String alias;
+	private ScriptContext localEngineScope;
 
 	@Override
 	public void setGlobalAlias(String alias) {
@@ -42,13 +45,14 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	public void startRuntime() throws JavascriptException {
 		ScriptEngineManager engineManager = new ScriptEngineManager();
 		if (StringUtils.isNotEmpty(alias)) {
-			engineManager.put("this", alias); // Register alias as 'this' in the Global Scope.
+			engineManager.put(alias, "this"); // Register alias as 'this' in the Global Scope.
 		}
 
 		try {
 			engine = engineManager.getEngineByName("nashorn");
+			localEngineScope = engine.getContext();
 
-			engine.eval("load('classpath:net/arnx/nashorn/lib/promise.js')");
+			engine.eval("load('classpath:net/arnx/nashorn/lib/promise.js')", localEngineScope);
 		} catch (Exception e) { //Catch all exceptions
 			throw new JavascriptException("error initializing Nashorn, unable to load Promise.js", e);
 		}
@@ -57,7 +61,7 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	@Override
 	public void executeScript(String script) throws JavascriptException {
 		try {
-			engine.eval(script);
+			engine.eval(script, localEngineScope);
 		} catch (Exception e) {
 			throw new JavascriptException("error executing script", e);
 		}
@@ -84,12 +88,12 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public void registerCallback(ISender sender, PipeLineSession session) {
-		CallbackInterface<String, String> method = (param) -> {
+		ThrowingFunction<String, String, JavascriptException> method = (param) -> {
 			try {
 				Message msg = Message.asMessage(param);
 				return sender.sendMessage(msg, session).asString();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new JavascriptException(e);
 			}
 		};
 		getEngine().put(sender.getName(), method);
@@ -99,10 +103,5 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	public void setResultHandler(ResultHandler resultHandler) {
 		getEngine().put("result", (Consumer<String>) resultHandler::setResult);
 		getEngine().put("error", (Consumer<String>) resultHandler::setError);
-	}
-
-	@FunctionalInterface
-	interface CallbackInterface<T, R> {
-		public R sendMessage(T b);
 	}
 }
