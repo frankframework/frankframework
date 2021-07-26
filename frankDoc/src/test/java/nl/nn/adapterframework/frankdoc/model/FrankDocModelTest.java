@@ -173,8 +173,10 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(3, actualChild.getAttributes(ALL).size());
-		FrankAttribute actualChildAttribute = findAttribute(actualChild, "childAttribute");
+		assertEquals(4, actualChild.getAttributes(ALL).size());
+		FrankAttribute actualChildAttribute = findAttribute(actualChild, "notTextConfigChildButAttribute");
+		assertEquals("notTextConfigChildButAttribute", actualChildAttribute.getName());
+		actualChildAttribute = findAttribute(actualChild, "childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
 		assertSame(actualChild, actualChildAttribute.getOwningElement());
 		assertSame(actualChild, actualChildAttribute.getDescribingElement());

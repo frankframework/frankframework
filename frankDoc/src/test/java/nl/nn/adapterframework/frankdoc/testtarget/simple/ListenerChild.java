@@ -37,6 +37,7 @@ public class ListenerChild extends ListenerParent {
 	public void registerTextConfigChild(String value) {
 	}
 
+	// This one becomes an attribute of ListenerChild
 	public void setNotTextConfigChildButAttribute(String value) {
 	}
 }
