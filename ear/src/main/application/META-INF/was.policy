@@ -90,15 +90,29 @@ permission com.ibm.oti.shared.SharedClassPermission "java.net.URLClassLoader", "
 permission java.lang.RuntimePermission "accessClassInPackage.sun.misc";
 permission java.lang.RuntimePermission "accessClassInPackage.sun.beans.infos";
 
+// required for Spring AOP
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.jmx.mbeanserver";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.proxy";
+
 permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
+// required for CXF jaxrs spring bean parser
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
+
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
+
+// required for Apache XML libraries
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xml.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xerces.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xalan.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xpath.*";
+
 
 // required for the Nashorn javascript engine
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
-permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig" "read";
+permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig", "read";
 
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
