@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
+import java.net.URL;
 import java.util.function.Consumer;
 
 import javax.script.Invocable;
@@ -29,6 +30,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
@@ -52,7 +55,9 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 			engine = engineManager.getEngineByName("nashorn");
 			localEngineScope = engine.getContext();
 
-			engine.eval("load('classpath:net/arnx/nashorn/lib/promise.js')", localEngineScope);
+			//Add PromiseJS polyfill
+			URL promise = ClassUtils.getResourceURL("net/arnx/nashorn/lib/promise.js");
+			executeScript(Misc.resourceToString(promise));
 		} catch (Exception e) { //Catch all exceptions
 			throw new JavascriptException("error initializing Nashorn, unable to load Promise.js", e);
 		}
