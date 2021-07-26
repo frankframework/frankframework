@@ -45,10 +45,10 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.COMPATIBILITY, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simpleForCompatibility.xsd", "simple.json"},
 			{XsdVersion.STRICT, "examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
 			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"},
-			{XsdVersion.STRICT, "compatibility-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-strict.xsd", null},
-			{XsdVersion.COMPATIBILITY, "compatibility-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-compatibility.xsd", null},
-			{XsdVersion.STRICT, "compatibility-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-strict.xsd", null},
-			{XsdVersion.COMPATIBILITY, "compatibility-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-compatibility.xsd", null}
+			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-strict.xsd", null},
+			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-compatibility.xsd", null},
+			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-strict.xsd", null},
+			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-compatibility.xsd", null}
 		});
 	}
 
