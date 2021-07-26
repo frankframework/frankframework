@@ -10,4 +10,5 @@
   <rule pattern="*/roleNameInheritedChildNonSelected" registerMethod="setInheritedChildNonSelected"/>
   <rule pattern="*/roleNameChildOverriddenOnlyParentAnnotated" registerMethod="setChildOverriddenOnlyParentAnnotated"/>
   <rule pattern="*/roleNameText" registerTextMethod="registerText" />
+  <rule pattern="*/roleNameIgnored" registerTextMethod="setNotConfigChildButAttribute" />
 </digester-rules>

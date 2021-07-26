@@ -162,6 +162,11 @@ public class FrankDocModelConfigChildrenTest {
 		assertTrue(result);
 	}
 
+	/*
+	 * Method Container.setNotConfigChildButAttribute() should not be included as config child, because
+	 * the argument type is String and the name starts with "set". Such a method is an attribute
+	 * setter.
+	 */
 	@Test
 	public void testSequenceOfConfigChildrenMatchesSequenceOfConfigChildSetters() {
 		List<String> actualConfigChildNames = configChildren.stream().map(ConfigChild::toString).collect(Collectors.toList());

@@ -45,4 +45,8 @@ public class Container extends ContainerParent {
 	// To test TextConfigChild
 	public void registerText(String value) {
 	}
+
+	// Not a config child because the name starts with "set" and the argument is String.
+	public void setNotConfigChildButAttribute(String value) {
+	}
 }
