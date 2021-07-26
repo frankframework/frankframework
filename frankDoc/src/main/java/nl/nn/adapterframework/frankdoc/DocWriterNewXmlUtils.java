@@ -49,11 +49,12 @@ class DocWriterNewXmlUtils {
 		return element;
 	}
 
-	static XmlBuilder addElement(XmlBuilder context, String elementName, String minOccurs, String maxOccurs) {
+	static XmlBuilder addElement(XmlBuilder context, String elementName, String elementType, String minOccurs, String maxOccurs) {
 		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
 		element.addAttribute("name", elementName);
 		element.addAttribute("minOccurs", minOccurs);
 		element.addAttribute("maxOccurs", maxOccurs);
+		element.addAttribute("type", elementType);
 		context.addSubElement(element);
 		return element;
 	}

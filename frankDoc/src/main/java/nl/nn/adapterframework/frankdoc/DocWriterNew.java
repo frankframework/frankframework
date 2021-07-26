@@ -931,7 +931,7 @@ public class DocWriterNew {
 	 * an attribute setter.
 	 */
 	private void addTextConfigChild(XmlBuilder context, String roleName) {
-		addElement(context, Utils.toUpperCamelCase(roleName), "0", "unbounded");
+		addElement(context, Utils.toUpperCamelCase(roleName), "xs:string", "0", "unbounded");
 	}
 
 	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
