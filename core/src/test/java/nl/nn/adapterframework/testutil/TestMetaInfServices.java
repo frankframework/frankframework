@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPException;
+import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 
@@ -38,5 +39,11 @@ public class TestMetaInfServices {
 	public void testXMLOutputFactory() {
 		Class<?> outputFactory = com.sun.xml.stream.ZephyrWriterFactory.class;
 		assertEquals(outputFactory, XMLOutputFactory.newInstance().getClass());
+	}
+
+	@Test //ZephyrWriterFactory to improve fix namespaces support in WSDL's
+	public void testXMLEventFactory() {
+		Class<?> outputFactory = org.apache.xerces.stax.XMLEventFactoryImpl.class;
+		assertEquals(outputFactory, XMLEventFactory.newInstance().getClass());
 	}
 }
