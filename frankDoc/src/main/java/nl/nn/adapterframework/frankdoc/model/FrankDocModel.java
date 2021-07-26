@@ -137,8 +137,6 @@ public class FrankDocModel {
 			this.path = path;
 		}
 
-		// TODO: Unit test that a registerTextMethod starting with "set" does not produce
-		// a config child setter.
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
 			String pattern = rule.getPattern();
@@ -160,8 +158,9 @@ public class FrankDocModel {
 				if(StringUtils.isNotEmpty(registerTextMethod)) {
 					if(registerTextMethod.startsWith("set")) {
 						log.warn("digester-rules.xml: Ignoring registerTextMethod {} because it starts with \"set\" to avoid confusion with attributes", registerTextMethod);
+					} else {
+						addTypeText(registerTextMethod, roleName);
 					}
-					addTypeText(registerTextMethod, roleName);
 				} else {
 					// roleName is not final, so a lambda wont work in the trace statement.
 					// We use isTraceEnabled() instead.
