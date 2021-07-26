@@ -689,9 +689,10 @@ public class FrankDocModel {
 	}
 
 	void handleMemberChildrenWithCommonRoleName(List<ConfigChild> configChildren, int recursionDepth) {
+		log.trace("Considering config children [{}]", () -> ConfigChild.toString(configChildren));
 		switch(ConfigChildGroupKind.groupKind(configChildren)) {
 		case TEXT:
-			log.trace("No ElementRoleSet needed for combination of TextConfigChild [()]", () -> ConfigChild.toString(configChildren));
+			log.trace("No ElementRoleSet needed for combination of TextConfigChild [{}]", () -> ConfigChild.toString(configChildren));
 			break;
 		case MIXED:
 			log.warn("Browsing member children produced a combination of ObjectConfigChild and TextConfigChild [{}], which is not supported", ConfigChild.toString(configChildren));
@@ -705,7 +706,6 @@ public class FrankDocModel {
 	}
 
 	void findOrCreateElementRoleSetForMemberChildren(List<ConfigChild> configChildren, int recursionDepth) {
-		log.trace("Considering config children [{}]", () -> ConfigChild.toString(configChildren));
 		Set<ElementRole> roles = ConfigChild.getElementRoleStream(configChildren).collect(Collectors.toSet());
 		Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
 		if(! allElementRoleSets.containsKey(key)) {
