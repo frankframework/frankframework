@@ -98,7 +98,7 @@ permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared"
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
-permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig" "read";
+permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig", "read";
 
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
