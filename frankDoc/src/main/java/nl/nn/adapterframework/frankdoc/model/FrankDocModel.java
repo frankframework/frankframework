@@ -186,7 +186,7 @@ public class FrankDocModel {
 
 		private void checkDuplicate(ConfigChildSetterDescriptor descriptor) {
 			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
-				log.warn("In digester rules [{}], duplicate method name [{}]", path, descriptor.getMethodName());
+				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
 			} else {
 				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
 			}
