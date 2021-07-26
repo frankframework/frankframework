@@ -44,6 +44,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -166,7 +168,6 @@ public class XmlUtils {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt, key, omitXmlDeclaration, indent, 0);
 	}
-	
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
@@ -1115,7 +1116,7 @@ public class XmlUtils {
 	}
 
 	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
-		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
 	}
@@ -1718,9 +1719,17 @@ public class XmlUtils {
 		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
 
 		try {
+			MessageFactory messageFactory = MessageFactory.newInstance();
+			map.put("MessageFactory-class", messageFactory.getClass().getName());
+		} catch (SOAPException e) {
+			log.warn("unable to create MessageFactory", e);
+			map.put("MessageFactory-class", "unable to create MessageFactory (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
+		}
+
+		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
 		} catch (Throwable t) {
-			log.warn("Could not get Xerces version", t);
+			log.warn("could not get Xerces version", t);
 			map.put("Xerces-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
@@ -1728,14 +1737,14 @@ public class XmlUtils {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
 			map.put("Xalan-Version", xalanVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Xalan version", t);
+			log.warn("could not get Xalan version", t);
 			map.put("Xalan-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
 			map.put("Saxon-Version", saxonVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Saxon version", t);
+			log.warn("could not get Saxon version", t);
 			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
@@ -1745,7 +1754,7 @@ public class XmlUtils {
 				map.put("Woodstox-Version", woodstoxVersion);
 			}
 		} catch (Throwable t) {
-			log.warn("Could not get Woodstox version", t);
+			log.warn("could not get Woodstox version", t);
 			map.put("Woodstox-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 

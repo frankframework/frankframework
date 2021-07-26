@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
 import java.io.StringReader;
-import java.io.Writer;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;

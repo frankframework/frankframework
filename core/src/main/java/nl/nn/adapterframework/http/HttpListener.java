@@ -60,6 +60,7 @@ public class HttpListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 		return "serviceName: "+getServiceName();
 	}

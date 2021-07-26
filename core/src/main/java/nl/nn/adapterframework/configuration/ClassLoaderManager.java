@@ -43,7 +43,7 @@ public class ClassLoaderManager {
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
-	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
+	private Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IbisContext ibisContext;
@@ -207,6 +207,10 @@ public class ClassLoaderManager {
 	 * @throws ConfigurationException when a ClassLoader failed to initialize
 	 */
 	public ClassLoader get(String configurationName, String classLoaderType) throws ConfigurationException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader == null) {
@@ -220,6 +224,10 @@ public class ClassLoaderManager {
 	 * See {@link #reload(ClassLoader)} for more information
 	 */
 	public void reload(String configurationName) throws ConfigurationException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader != null) {
 			reload(classLoader);
@@ -238,6 +246,10 @@ public class ClassLoaderManager {
 	 * used).
 	 */
 	public void reload(ClassLoader classLoader) throws ConfigurationException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		if (classLoader == null)
 			throw new ConfigurationException("classloader cannot be null");
 
@@ -256,6 +268,8 @@ public class ClassLoaderManager {
 	 * Removes all created ClassLoaders
 	 */
 	public void shutdown() {
+		ibisContext = null; //Remove ibisContext reference
+
 		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
 			String configurationClassLoader = iterator.next();
 			ClassLoader classLoader = classLoaders.get(configurationClassLoader);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 package nl.nn.adapterframework.configuration.classloaders;
 
 import java.io.File;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +26,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
-	private static ScheduledExecutorService EXECUTOR;
+	private ScheduledThreadPoolExecutor executor;
 	private int scanInterval = 10;
 	private ScheduledFuture<?> future;
 
@@ -57,22 +56,25 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 				return thread;
 			}
 		};
-		EXECUTOR = Executors.newScheduledThreadPool(1, namedThreadFactory);
+		executor = new ScheduledThreadPoolExecutor(1, namedThreadFactory);
+		executor.setRemoveOnCancelPolicy(true);
+		executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
 	}
 
 	@Override
 	public void destroy() {
+		super.destroy();
+
+		if(executor != null) {
+			executor.shutdownNow();
+			executor = null;
+		}
+
 		if (future != null) {
 			future.cancel(true);
 			future = null;
 		}
-
-		if(EXECUTOR != null) {
-			EXECUTOR.shutdownNow();
-			EXECUTOR = null;
-		}
-
-		super.destroy();
 	}
 
 	public void setScanInterval(int interval) throws ConfigurationException {
@@ -101,7 +103,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		}
 
 		log.debug("starting new scheduler, interval ["+scanInterval+"] delay ["+delay+"]");
-		future = EXECUTOR.scheduleAtFixedRate(new Runnable() {
+		future = executor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				ScanningDirectoryClassLoader.this.scan();

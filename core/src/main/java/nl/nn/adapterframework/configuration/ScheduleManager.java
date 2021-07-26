@@ -132,7 +132,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	}
 
 	public void register(JobDef job) {
-		if(!inState(BootState.STARTING)) {
+		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
 		}
 

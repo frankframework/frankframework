@@ -82,6 +82,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		final Path dir = toFile(folder);
 
 		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+			@Override
 			public boolean accept(Path file) throws IOException {
 				return !Files.isDirectory(file);
 			}
