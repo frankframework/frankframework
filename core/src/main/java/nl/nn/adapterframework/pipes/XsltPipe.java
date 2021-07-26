@@ -259,4 +259,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender;
 	}
 
+	public void registerMyText(String value) {
+	}
 }

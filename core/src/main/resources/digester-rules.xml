@@ -74,4 +74,6 @@
 
 	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter"/>
 	<rule pattern="*/adapterfilter/sources/source" registerTextMethod="registerSubObject"/>
+
+	<rule pattern="*/myText" registerTextMethod="registerMyText" />
 </digester-rules>
