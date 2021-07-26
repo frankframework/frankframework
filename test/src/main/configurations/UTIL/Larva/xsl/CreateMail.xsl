@@ -8,7 +8,7 @@
 	<xsl:param name="result" />
 	<xsl:variable name="sender">devopshelpdesk@wearefrank.nl</xsl:variable>
 	
-	<xsl:variable name="from" select="$sender"/>
+	<xsl:variable name="from" select="concat($hostname, ' &lt;', $sender, '&gt;')"/>
 	<xsl:variable name="to" select="tokenize($mailaddresses,',')[1]"/>
 	<xsl:variable name="cc" select="substring-after($mailaddresses,',')"/>
 	
