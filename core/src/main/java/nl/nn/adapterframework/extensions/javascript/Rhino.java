@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 
 public class Rhino implements JavascriptEngine<Context> {
 
@@ -28,7 +30,7 @@ public class Rhino implements JavascriptEngine<Context> {
 	private String alias = "jsScript";
 
 	@Override
-	public void setScriptAlias(String alias) {
+	public void setGlobalAlias(String alias) {
 		this.alias = alias;
 	}
 
@@ -39,14 +41,22 @@ public class Rhino implements JavascriptEngine<Context> {
 	}
 
 	@Override
-	public void executeScript(String script) {
-		cx.evaluateString(scope, script, alias, 1, null);
+	public void executeScript(String script) throws JavascriptException {
+		try {
+			cx.evaluateString(scope, script, alias, 1, null);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing script", e);
+		}
 	}
 
 	@Override
-	public Object executeFunction(String name, Object... parameters) {
-		Function fct = (Function)scope.get(name, scope);
-		return fct.call(cx, scope, scope, parameters);
+	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
+		try {
+			Function fct = (Function)scope.get(name, scope);
+			return fct.call(cx, scope, scope, parameters);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing function [" + name + "]", e);
+		}
 	}
 
 	@Override
