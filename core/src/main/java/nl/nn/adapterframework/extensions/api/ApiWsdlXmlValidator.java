@@ -47,7 +47,6 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		System.out.println("-->ApiWsdlXmlValidator.configure()");
 		setSoapHeader("MessageHeader,");
 		setSoapHeaderNamespace(API_NAMESPACE);
 		setSchemaLocationToAdd(API_NAMESPACE + " /xml/xsd/api/MessageHeader.xsd");
