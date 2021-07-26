@@ -50,7 +50,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-compatibility.xsd", null},
 			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-strict.xsd", null},
 			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-compatibility.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected.xsd", "textconfig-expected.json"}
+			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected.xsd", "textconfig-expected.json"},
+			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected-compatibility.xsd", null}
 		});
 	}
 
@@ -106,7 +107,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 		FrankDocJsonFactory jsonFactory = new FrankDocJsonFactory(model);
 		JsonObject jsonObject = jsonFactory.getJson();
 		String actual = jsonObject.toString();
-		// System.out.println(Misc.jsonPretty(actual));
+		System.out.println(Misc.jsonPretty(actual));
 		String expectedJson = TestFileUtils.getTestFile("/doc/examplesExpected/" + expectedJsonFileName);
 		assertJsonEqual("Comparing JSON", expectedJson, actual);
 	}

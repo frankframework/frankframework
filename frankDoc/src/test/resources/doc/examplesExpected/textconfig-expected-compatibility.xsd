@@ -6,9 +6,11 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="P" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
-        <xs:group ref="AElementGroup" minOccurs="0" maxOccurs="unbounded" />
-        <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="P" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+          <xs:group ref="AElementGroup" minOccurs="0" maxOccurs="unbounded" />
+          <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
       </xs:sequence>
       <xs:attribute name="i" type="xs:string" />
       <xs:attribute ref="active" />
@@ -21,7 +23,7 @@
     </xs:annotation>
     <xs:complexType>
       <xs:attribute ref="active" />
-      <xs:attribute name="elementRole" type="xs:string" fixed="c" use="prohibited" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="c" />
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.GrandChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
@@ -36,7 +38,7 @@
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="a" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
@@ -54,8 +56,8 @@
           <xs:complexContent>
             <xs:extension base="ChildImplType">
               <xs:attribute ref="active" />
-              <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.ChildImpl" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.ChildImpl" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -63,7 +65,11 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="ChildImplType">
-    <xs:group ref="ChildImplDeclaredChildGroup" />
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="ChildImplDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
   </xs:complexType>
   <xs:group name="ChildImplDeclaredChildGroup">
     <xs:sequence>
@@ -82,7 +88,7 @@
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="b" />
           <xs:attribute name="className" type="xs:string" use="required" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
@@ -100,8 +106,8 @@
           <xs:complexContent>
             <xs:extension base="ChildImplType">
               <xs:attribute ref="active" />
-              <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.ChildImpl" use="prohibited" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="b" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.ChildImpl" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
