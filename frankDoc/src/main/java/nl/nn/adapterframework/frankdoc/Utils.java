@@ -82,7 +82,6 @@ public final class Utils {
 				&& (method.getReturnType().getName().equals("void"));
 	}
 
-	// TODO: Cover with unit tests
 	private static boolean configChildSetter(String methodName, FrankType parameterType) {
 		boolean objectConfigChild = (! parameterType.isPrimitive())
 				&& (! JAVA_BOXED.contains(parameterType.getName()));

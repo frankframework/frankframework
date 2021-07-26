@@ -91,4 +91,14 @@ public class UtilsTest {
 	public void whenMethodReturnsStringThenNotConfigChildSetter()  throws FrankDocException {
 		assertFalse(isConfigChildSetter(getTestMethod("invalidConfigChildSetterReturnsString")));
 	}
+
+	@Test
+	public void whenMethodStartsWithRegisterAndTakesStringThenTextConfigChildSetter() throws FrankDocException {
+		assertTrue(isConfigChildSetter(getTestMethod("registerTextConfigChild")));
+	}
+
+	@Test
+	public void whenMethodStartsWithSetAndTakesStringThenNotConfigChildSetter() throws FrankDocException {
+		assertFalse(isConfigChildSetter(getTestMethod("setNotTextConfigChildButAttribute")));
+	}
 }
