@@ -41,7 +41,7 @@ public class TestMetaInfServices {
 		assertEquals(outputFactory, XMLOutputFactory.newInstance().getClass());
 	}
 
-	@Test //ZephyrWriterFactory to improve fix namespaces support in WSDL's
+	@Test //Xerces to ensure that the sax parser is the same as event factory
 	public void testXMLEventFactory() {
 		Class<?> outputFactory = org.apache.xerces.stax.XMLEventFactoryImpl.class;
 		assertEquals(outputFactory, XMLEventFactory.newInstance().getClass());
