@@ -475,7 +475,4 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");
 	}
-
-	public void registerMyText(String value) {
-	}
 }
