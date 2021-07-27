@@ -224,6 +224,11 @@ public class IbisApplicationContext {
 		return applicationContext;
 	}
 
+	/** TESTING ONLY */
+	public void setApplicationContext(AbstractApplicationContext ac) {
+		applicationContext = ac;
+	}
+
 	public BootState getBootState() {
 		return state;
 	}

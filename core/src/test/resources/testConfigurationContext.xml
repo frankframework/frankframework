@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	default-autowire="byName"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" /> -->
+
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
+</beans>
