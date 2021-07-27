@@ -160,14 +160,30 @@ public class FrankClassTest extends TestBase {
 	public void testGetEnumConstants() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "MyEnum");
 		assertTrue(clazz.isEnum());
-		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, clazz.getEnumConstants());
+		FrankEnumConstant[] actual = clazz.getEnumConstants();
+		String[] actualNames = Arrays.asList(actual).stream()
+				.map(c -> c.getName())
+				.collect(Collectors.toList()).toArray(new String[] {});
+		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, actualNames);
+		FrankEnumConstant aConstant = actual[0];
+		assertTrue(aConstant.isPublic());
+		assertNull(aConstant.getAnnotation());
+		assertEquals("", aConstant.getJavaDoc());
 	}
 
 	@Test
 	public void testGetEnumConstantsInnerEnum() throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(PACKAGE + "Child" + ".MyInnerEnum");
 		assertTrue(clazz.isEnum());
-		assertArrayEquals(new String[] {"INNER_FIRST", "INNER_SECOND"}, clazz.getEnumConstants());
+		FrankEnumConstant[] actual = clazz.getEnumConstants();
+		String[] actualNames = Arrays.asList(actual).stream()
+				.map(c -> c.getName())
+				.collect(Collectors.toList()).toArray(new String[] {});
+		assertArrayEquals(new String[] {"INNER_FIRST", "INNER_SECOND"}, actualNames);
+		FrankEnumConstant aConstant = actual[0];
+		assertTrue(aConstant.isPublic());
+		assertNull(aConstant.getAnnotation());
+		assertEquals("", aConstant.getJavaDoc());
 		clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod enumGetter = TestUtil.getDeclaredMethodOf(clazz, "getMyInnerEnum");
 		FrankType returnType = enumGetter.getReturnType();

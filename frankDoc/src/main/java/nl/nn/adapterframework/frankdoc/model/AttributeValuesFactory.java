@@ -32,6 +32,7 @@ class AttributeValuesFactory {
 
 	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
 		List<String> values = Arrays.asList(clazz.getEnumConstants()).stream()
+				.map(c -> c.getName())
 				.collect(Collectors.toList());
 		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
 	}
