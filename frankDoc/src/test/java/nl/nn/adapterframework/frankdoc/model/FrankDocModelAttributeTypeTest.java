@@ -42,7 +42,7 @@ public class FrankDocModelAttributeTypeTest {
 		// Test the attribute with a value list, which is of type STRING.
 		AttributeValues myEnum = model.findAttributeValues(MY_ENUM);
 		assertEquals(MY_ENUM, myEnum.getFullName());
-		assertArrayEquals(new String[] {"ONE", "TWO", "THREE"}, myEnum.getValues().toArray());
+		assertArrayEquals(new String[] {"TWO", "ONE", "THREE"}, myEnum.getValues().toArray());
 		// By fixing the list index like this, we test that the attributes are sorted correctly.
 		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
 		assertEquals("childStringAttribute", childAttribute.getName());
