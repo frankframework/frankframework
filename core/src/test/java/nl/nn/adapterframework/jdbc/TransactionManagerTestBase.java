@@ -1,10 +1,8 @@
 package nl.nn.adapterframework.jdbc;
 
-import java.sql.SQLException;
-
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.junit.Before;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.transaction.TransactionDefinition;
@@ -18,8 +16,10 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	protected ResourceTransactionManager txManager;
 	protected DataSource txManagedDataSource;
 
-	public TransactionManagerTestBase(DataSource dataSource) throws SQLException, NamingException {
-		super(dataSource);
+	@Override
+	@Before
+	public void setup() throws Exception {
+		super.setup();
 
 		// setup a TransactionManager like in springTOMCAT.xml
 		DataSourceTransactionManager dataSourceTransactionManager;
