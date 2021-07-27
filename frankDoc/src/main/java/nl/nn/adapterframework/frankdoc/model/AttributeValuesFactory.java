@@ -24,20 +24,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
+import nl.nn.adapterframework.util.LogUtil;
 
 class AttributeValuesFactory {
+	private static Logger log = LogUtil.getLogger(AttributeValuesFactory.class);
+
 	private Map<String, AttributeValues> allAttributeValuesInstances = new LinkedHashMap<>();
 	private Map<String, Integer> lastAssignedSeq = new HashMap<>();
 
 	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
-		List<String> values = Arrays.asList(clazz.getEnumConstants()).stream()
-				.map(c -> c.getName())
+		List<AttributeValue> values = Arrays.asList(clazz.getEnumConstants()).stream()
+				.map(AttributeValue::new)
 				.collect(Collectors.toList());
+		boolean labelsForgotten = values.stream().map(AttributeValue::isExplicitLabel).distinct().collect(Collectors.counting()).longValue() >= 2;
+		if(labelsForgotten) {
+			log.warn("Some enum values of class [{}] have a label, but not all. Did you forget some?", clazz.getName());
+		}
 		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
 	}
 
-	AttributeValues findOrCreateAttributeValues(String fullName, String simpleName, List<String> values) {
+	AttributeValues findOrCreateAttributeValues(String fullName, String simpleName, List<AttributeValue> values) {
 		if(allAttributeValuesInstances.containsKey(fullName)) {
 			return allAttributeValuesInstances.get(fullName);
 		}

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,8 @@ public class FrankDocModelAttributeTypeTest {
 		// Test the attribute with a value list, which is of type STRING.
 		AttributeValues myEnum = model.findAttributeValues(MY_ENUM);
 		assertEquals(MY_ENUM, myEnum.getFullName());
-		assertArrayEquals(new String[] {"TWO", "ONE", "THREE"}, myEnum.getValues().toArray());
+		String[] actualLabels = myEnum.getValues().stream().map(AttributeValue::getLabel).collect(Collectors.toList()).toArray(new String[] {});
+		assertArrayEquals(new String[] {"TWO", "ONE", "THREE"}, actualLabels);
 		// By fixing the list index like this, we test that the attributes are sorted correctly.
 		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
 		assertEquals("childStringAttribute", childAttribute.getName());

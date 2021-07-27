@@ -218,7 +218,7 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getValues(AttributeValues vl) {
 		final JsonArrayBuilder result = bf.createArrayBuilder();
-		vl.getValues().forEach(value -> result.add(value));
+		vl.getValues().forEach(value -> result.add(value.getLabel()));
 		return result.build();
 	}
 

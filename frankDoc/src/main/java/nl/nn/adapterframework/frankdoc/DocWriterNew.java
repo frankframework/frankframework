@@ -1047,7 +1047,7 @@ public class DocWriterNew {
 		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v));
+		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v.getLabel()));
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

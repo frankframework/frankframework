@@ -16,7 +16,6 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,14 +26,14 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 public class AttributeValues {
 	private @Getter String fullName;
 	private String simpleName;
-	private final @Getter List<String> values;
+	private final @Getter List<AttributeValue> values;
 	private final Set<String> valueSet;
 	private int seq;
 
-	AttributeValues(String fullName, String simpleName, List<String> values, int seq) {
+	AttributeValues(String fullName, String simpleName, List<AttributeValue> values, int seq) {
 		this.fullName = fullName;
 		this.values = values;
-		this.valueSet = new HashSet<>(values);
+		this.valueSet = values.stream().map(v -> v.getLabel()).collect(Collectors.toSet());
 		this.simpleName = simpleName;
 		this.seq = seq;
 	}
@@ -50,7 +49,7 @@ public class AttributeValues {
 	void typeCheck(String value) throws FrankDocException {
 		if(! valueSet.contains(value)) {
 			throw new FrankDocException(String.format("Value [%s] is not allowed, expected one of [%s]", value,
-					values.stream().collect(Collectors.joining(", "))), null);
+					valueSet.stream().collect(Collectors.joining(", "))), null);
 		}
 	}
 }
