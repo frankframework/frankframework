@@ -184,6 +184,13 @@ public class FrankClassTest extends TestBase {
 		assertTrue(aConstant.isPublic());
 		assertNull(aConstant.getAnnotation());
 		assertEquals("", aConstant.getJavaDoc());
+		aConstant = actual[1];
+		assertEquals("Description of INNER_SECOND", aConstant.getJavaDoc());
+		FrankAnnotation anAnnotation = aConstant.getAnnotation();
+		assertNotNull(anAnnotation);
+		assertArrayEquals(new String[] {"a", "b"}, (String[]) anAnnotation.getValueOf("myStringArray"));
+		assertEquals("s", anAnnotation.getValueOf("myString"));
+		assertEquals(4, anAnnotation.getValueOf("myInt"));
 		clazz = classRepository.findClass(PACKAGE + "Child");
 		FrankMethod enumGetter = TestUtil.getDeclaredMethodOf(clazz, "getMyInnerEnum");
 		FrankType returnType = enumGetter.getReturnType();
