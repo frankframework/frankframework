@@ -100,21 +100,15 @@ public abstract class JdbcTestBase {
 	}
 	
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType) throws JdbcException, SQLException {
-		return executeTranslatedQuery(connection, query, queryType, false);
-		
-	}
-	
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, String queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
 		dbmsSupport.convertQuery(context, "Oracle");
 		log.debug("executing translated query ["+context.getQuery()+"]");
 		if (queryType.equals("select")) {
-			if(!selectForUpdate) {
-				return  connection.prepareStatement(context.getQuery());
-			} else {
-				return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-			}
-		}	
+			return  connection.prepareStatement(context.getQuery());
+		}
+		if (queryType.equals("select for update")) {
+			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+		}
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}
