@@ -3,6 +3,7 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
@@ -44,7 +45,16 @@ public class FrankDocModelAttributeTypeTest {
 		AttributeValues myEnum = model.findAttributeValues(MY_ENUM);
 		assertEquals(MY_ENUM, myEnum.getFullName());
 		String[] actualLabels = myEnum.getValues().stream().map(AttributeValue::getLabel).collect(Collectors.toList()).toArray(new String[] {});
-		assertArrayEquals(new String[] {"TWO", "ONE", "THREE"}, actualLabels);
+		assertArrayEquals(new String[] {"TWO", "customLabelOne", "THREE"}, actualLabels);
+		AttributeValue v = myEnum.getValues().get(0);
+		// This one has no annotation and no description.
+		assertEquals("TWO", v.getLabel());
+		assertNull(v.getDescription());
+		// This one has a custom label and a description
+		v = myEnum.getValues().get(1);
+		assertEquals("customLabelOne", v.getLabel());
+		assertEquals("Description of customLabelOne", v.getDescription());
+
 		// By fixing the list index like this, we test that the attributes are sorted correctly.
 		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
 		assertEquals("childStringAttribute", childAttribute.getName());
