@@ -116,6 +116,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 				return null; // no results
 			}
 			return getIterator(querySender.getDbmsSupport(), connection, rs);
+		} catch (SenderException e) {
+			throw e;
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix(session),t);
 		} finally {
