@@ -18,10 +18,10 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -126,11 +126,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 						JdbcUtil.fullClose(connection, statement);
 					} else {
 						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e1) {
-								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
-							}
+							JdbcUtil.close(connection);
 						}
 					}
 				}
@@ -150,6 +146,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		return querySender.getPhysicalDestinationName();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Please use attribute dataSourceName instead")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

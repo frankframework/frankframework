@@ -44,7 +44,7 @@ class ResultSetIterator implements IDataIterator<String> {
 	private IDbmsSupport dbmsSupport;
 	private Connection conn;
 	private ResultSet rs;
-		
+
 	private ResultSetMetaData rsmeta;
 	private boolean lineChecked=true; // assumes at least one line is present, and cursor is on it!
 	private boolean lineAvailable=true;
