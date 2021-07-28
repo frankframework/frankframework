@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -34,6 +35,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		return new ResultSetIteratingPipe();
 	}
 
+	//Read a file, each row will be added to the database as (TKEY, TVARCHAR) with a new unique key.
 	private void readSqlInsertFile(URL url) throws Exception {
 		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
 		BufferedReader buf = new BufferedReader(reader);
@@ -98,7 +100,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String xmlResult = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
-		TestAssertions.assertEqualsIgnoreWhitespaces(xmlResult, sender.collectResults());
+		MatchUtils.assertXmlEquals(xmlResult, sender.collectResults());
 	}
 
 	@Test
