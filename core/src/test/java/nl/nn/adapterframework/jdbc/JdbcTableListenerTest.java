@@ -33,8 +33,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 */
 	private boolean testNegativePeekWhileGet = false;
 	
-	public JdbcTableListenerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
+	public JdbcTableListenerTest() {
 		listener = new JdbcTableListener() {
 
 			@Override

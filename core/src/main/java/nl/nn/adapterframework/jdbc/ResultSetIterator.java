@@ -63,8 +63,8 @@ class ResultSetIterator implements IDataIterator<String> {
 	public boolean hasNext() throws SenderException {
 		try {
 			if (!lineChecked) {
-				lineAvailable=!rs.isClosed() && rs.next();
-				lineChecked=true;
+				lineAvailable = rs.next();
+				lineChecked = true;
 			}
 			return lineAvailable;
 		} catch (Exception e) {
