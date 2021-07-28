@@ -2,6 +2,7 @@ package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,12 +24,12 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
+	private static final int PARALLEL_DELAY = 200;
 
 	@Override
 	public ResultSetIteratingPipe createPipe() {
@@ -78,7 +79,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String xmlResult = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
-		TestAssertions.assertEqualsIgnoreWhitespaces(xmlResult, sender.collectResults());
+		MatchUtils.assertXmlEquals(xmlResult, sender.collectResults());
 	}
 
 	@Test
@@ -89,17 +90,21 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setParallel(true);
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
-		pipe.setTaskExecutor(new SimpleAsyncTaskExecutor());
+		pipe.setTaskExecutor(new SimpleAsyncTaskExecutor()); //Should be sequential, not parallel, for testing purposes
 
-		ResultCollectingSender sender = new ResultCollectingSender();
+		ResultCollectingSender sender = new ResultCollectingSender(PARALLEL_DELAY);
 		pipe.setSender(sender);
 
 		configurePipe();
 		pipe.start();
 
+		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
+		long duration = System.currentTimeMillis() - startTime;
+		assertTrue(duration < PARALLEL_DELAY + 100);
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String xmlResult = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
+		Thread.sleep(PARALLEL_DELAY + 100);
 		MatchUtils.assertXmlEquals(xmlResult, sender.collectResults());
 	}
 
@@ -132,8 +137,27 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	private static class ResultCollectingSender extends EchoSender {
 		public List<Message> data = new LinkedList<>();
+		private int delay = 0;
+
+		public ResultCollectingSender() {
+			this(0);
+		}
+
+		public ResultCollectingSender(int delay) {
+			this.delay = delay;
+		}
+
 		@Override
 		public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+			if(delay > 0) {
+				try {
+					Thread.sleep(delay);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					return Message.nullMessage();
+				}
+			}
+
 			data.add(message);
 			return super.sendMessage(message, session);
 		}
