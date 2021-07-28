@@ -97,7 +97,6 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
-	@SuppressWarnings("finally")
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
@@ -118,20 +117,18 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			}
 			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
-			try {
-				if (rs!=null) {
-					JdbcUtil.fullClose(connection, rs);
+			throw new SenderException(getLogPrefix(session),t);
+		} finally {
+			if (rs!=null) {
+				JdbcUtil.fullClose(connection, rs);
+			} else {
+				if (statement!=null) {
+					JdbcUtil.fullClose(connection, statement);
 				} else {
-					if (statement!=null) {
-						JdbcUtil.fullClose(connection, statement);
-					} else {
-						if (connection!=null) {
-							JdbcUtil.close(connection);
-						}
+					if (connection!=null) {
+						JdbcUtil.close(connection);
 					}
 				}
-			} finally {
-				throw new SenderException(getLogPrefix(session),t);
 			}
 		}
 	}
