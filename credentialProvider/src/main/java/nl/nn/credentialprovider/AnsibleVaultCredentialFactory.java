@@ -33,10 +33,6 @@ import nl.nn.credentialprovider.util.StreamUtil;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	
-	public AnsibleVaultCredentialFactory() throws IOException {
-		super();
-	}
-
 	public final String PROPERTY_BASE="credentialFactory.ansibleVault";
 	
 	public final String VAULT_PROPERTY=PROPERTY_BASE+".vaultFile";
@@ -45,6 +41,11 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	private String vaultFile = "catalina-secure-store.vault";
 	private String vaultKeyFile = ".secure-vault-keyfile";
 	
+	
+	public AnsibleVaultCredentialFactory() throws IOException {
+		super();
+	}
+
 	@Override
 	public String getPropertyBase() {
 		return PROPERTY_BASE;

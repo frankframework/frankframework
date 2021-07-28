@@ -108,17 +108,6 @@ public class AnsibleVaultCredentialFactoryTest {
 	}
 	
 	@Test
-	public void testdecrypt() throws IOException {
-		decryptFile("C:/Gerrit/Workspaces/git/ibis-sapcm-app/conf/dev/ibis-app-secure-dev", "Sjaak123");
-	}
-
-	@Test
-	public void testencrypt() throws IOException {
-		encryptFile("C:/Gerrit/Workspaces/git/ibis-sapcm-app/conf/dev/ibis-app-secure-dev", "Sjaak123");
-	}
-	
-	
-	@Test
 	public void testNoAlias() {
 		
 		String alias = null;
