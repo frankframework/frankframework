@@ -136,6 +136,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	}
 
 	private static class ResultCollectingSender extends EchoSender {
+		private List<Message> data = new LinkedList<>();
 		private int delay = 0;
 		public ResultCollectingSender() {
 			this(0);
@@ -145,7 +146,6 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 			this.delay = delay;
 		}
 
-		public List<Message> data = new LinkedList<>();
 		@Override
 		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 			if(delay > 0) {
