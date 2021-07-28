@@ -18,7 +18,6 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -100,7 +99,6 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
-	@SuppressWarnings("finally")
 	@Override
 	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
@@ -125,21 +123,12 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 				if (rs!=null) {
 					JdbcUtil.fullClose(connection, rs);
 				} else {
-					if (statement!=null) {
-						JdbcUtil.fullClose(connection, statement);
-					} else {
-						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e1) {
-								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
-							}
-						}
-					}
+					JdbcUtil.fullClose(connection, statement);
 				}
-			} finally {
-				throw new SenderException(getLogPrefix(session),t);
+			} catch(Throwable t2) {
+				t.addSuppressed(t2);
 			}
+			throw new SenderException(getLogPrefix(session),t);
 		}
 	}
 
