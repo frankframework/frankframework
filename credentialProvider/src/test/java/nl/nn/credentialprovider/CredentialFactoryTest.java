@@ -2,8 +2,10 @@ package nl.nn.credentialprovider;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Can only run before other tests that use CredentialFactory")
 public class CredentialFactoryTest {
 
 	@Test
