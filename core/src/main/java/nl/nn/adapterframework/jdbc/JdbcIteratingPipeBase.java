@@ -117,12 +117,16 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 			}
 			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
-			if (rs!=null) {
-				JdbcUtil.fullClose(connection, rs);
-			} else {
-				JdbcUtil.fullClose(connection, statement);
+			try {
+				if (rs!=null) {
+					JdbcUtil.fullClose(connection, rs);
+				} else {
+					JdbcUtil.fullClose(connection, statement);
+				}
+			} catch (Throwable t2) {
+				t.addSuppressed(t2);
 			}
-			throw new SenderException(getLogPrefix(session),t);
+			throw new SenderException(getLogPrefix(session), t);
 		}
 	}
 
