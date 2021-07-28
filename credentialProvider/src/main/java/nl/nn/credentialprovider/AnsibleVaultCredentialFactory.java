@@ -33,6 +33,10 @@ import nl.nn.credentialprovider.util.StreamUtil;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	
+	public AnsibleVaultCredentialFactory() throws IOException {
+		super();
+	}
+
 	public final String PROPERTY_BASE="credentialFactory.ansibleVault";
 	
 	public final String VAULT_PROPERTY=PROPERTY_BASE+".vaultFile";
@@ -47,7 +51,7 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	}
 
 
-	private InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws MalformedURLException, IOException {
+	private InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
 		if (Misc.isEmpty(filename)) {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
