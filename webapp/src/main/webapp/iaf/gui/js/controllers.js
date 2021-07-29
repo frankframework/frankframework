@@ -2125,7 +2125,7 @@ angular.module('iaf.beheerconsole')
 			$scope.error = "";
 			$scope.processing = false;
 		}, function(errorData, status, errorMsg) {
-			$scope.error = (errorData.error) ? errorData.error : errorMsg;
+			$scope.error = (errorData && errorData.error) ? errorData.error : errorMsg;
 			$scope.processing = false;
 		});
 	};
@@ -2184,8 +2184,8 @@ angular.module('iaf.beheerconsole')
 			}
 			$scope.result = returnData;
 			$scope.processingMessage = false;
-		}, function(errorData) {
-			var error = (errorData.error) ? errorData.error : "";
+		}, function(errorData, status, errorMsg) {
+			var error = (errorData && errorData.error) ? errorData.error : "An error occured!";
 			$scope.error = error;
 			$scope.result = "";
 			$scope.processingMessage = false;

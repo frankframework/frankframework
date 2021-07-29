@@ -12,6 +12,17 @@ Upcoming
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...7.6-release)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
+- Add writeLineSeparator attribute to FileSystemPipe (#1916)
+- Fix exception pipe should to not follow exception forward (#1913)
+- Fix Single item combined blocks handling (#1928)
+- Fix ForEachChildElementPipe exception handling (#1956)
+- Only append FF! version to API endpoints when it's a HTML file (#1961)
+- Fix FTP filesystem (#1971)
+- Add charset attribute for the filesystems (#1945)
+- Browse messages from external jdbc errorStorage (#2000)
+- Add option to use ServerFileName as the filename to FxfWrapperPipe (#2019)
+- Throw exception when unable to load Promise.JS (#2037)
+- Skip ACL when no user or empty username is found (#2062)
 
 
 7.6-RC2
@@ -92,6 +103,7 @@ Upcoming
 
 ### Breaking changes
 
+- If a DSRA9110E (ObjectClosedException) is encountered see issue #2015 (DSRA9110E: ResultSet is closed)
 - It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it was required to override a file, do not forget to update the changes when upgrading the framework version! It is a good practice to keep the `.orig` suffixed original file also in the project to understand what change have been made. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult the Frank!Framework Team.
 
 7.5
