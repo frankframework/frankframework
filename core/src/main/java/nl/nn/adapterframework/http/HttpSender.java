@@ -199,7 +199,7 @@ public class HttpSender extends HttpSenderBase {
 		}
 		@Override
 		public String toString() {
-			return getDescription();
+			return getLabel();
 		}
 	}
 
