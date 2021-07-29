@@ -55,6 +55,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.doc.DocWriter;
+import nl.nn.adapterframework.frankdoc.model.AttributeValue;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildSet;
@@ -1047,7 +1048,14 @@ public class DocWriterNew {
 		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v.getLabel()));
+		attributeValues.getValues().forEach(v -> addEnumValue(restriction, v));
+	}
+
+	private void addEnumValue(XmlBuilder restriction, AttributeValue v) {
+		XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
+		if(v.getDescription() != null) {
+			addDocumentation(valueBuilder, v.getDescription());
+		}
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

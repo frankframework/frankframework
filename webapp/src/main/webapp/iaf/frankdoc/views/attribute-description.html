@@ -1,0 +1,20 @@
+<div>
+  <div ng-if="! attr.enum">{{ attr.description }}</div>
+  <div ng-if="attr.enum">
+    {{ attr.description }}
+    <p>
+    <p>
+    <table class="attributeEnumValues">
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tr ng-repeat="enumValue in enumValuesOfAttribute(attr)">
+        <td>{{ enumValue.label }}</td>
+        <td>{{ enumValue.description }}</td>
+      </tr>
+    </table>
+  </div>
+</div>

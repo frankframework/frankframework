@@ -19,6 +19,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let data = response.data;
 			let types = data.types;
 			let elements = data.elements;
+			let enums = data.enums;
 
 			//map elements so we can search
 			$scope.groups = data.groups;
@@ -37,6 +38,11 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				let element = elements[i];
 				$scope.elements[element.fullName] = element;
 			}
+			$scope.enums = {};
+			for(i in enums) {
+				let en = enums[i];
+				$scope.enums[en.name] = en;
+			}
 		}
 	}, function(response) {
 		if(response.data && response.data.error) {
@@ -54,6 +60,10 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
 		}
 	});
+
+	$scope.enumValuesOfAttribute = function(attr) {
+		return $scope.enums[attr.enum].values;
+	}
 }]).controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;
 

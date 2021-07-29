@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
+import nl.nn.adapterframework.frankdoc.model.AttributeValue;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
@@ -63,6 +64,7 @@ public class FrankDocJsonFactory {
 			result.add("groups", getGroups());
 			result.add("types", getTypes());
 			result.add("elements", getElements());
+			result.add("enums", getEnums());
 			return result.build();
 		} catch(JsonException e) {
 			log.warn("Error producing JSON", e);
@@ -192,7 +194,7 @@ public class FrankDocJsonFactory {
 			result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
 		}
 		if(frankAttribute.getAttributeValues() != null) {
-			result.add("values", getValues(frankAttribute.getAttributeValues()));
+			result.add("enum", frankAttribute.getAttributeValues().getFullName());
 		}
 		return result.build();
 	}
@@ -216,12 +218,6 @@ public class FrankDocJsonFactory {
 		}
 	}
 
-	private JsonArray getValues(AttributeValues vl) {
-		final JsonArrayBuilder result = bf.createArrayBuilder();
-		vl.getValues().forEach(value -> result.add(value.getLabel()));
-		return result.build();
-	}
-
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(ConfigChild child: frankElement.getConfigChildren(ElementChild.IN_COMPATIBILITY_XSD)) {
@@ -243,5 +239,33 @@ public class FrankDocJsonFactory {
 		addIfNotNull(result, "description", child.getDescription());
 		result.add("type", child.getElementType().getFullName());
 		return result.build();
+	}
+
+	private JsonArray getEnums() {
+		final JsonArrayBuilder result = bf.createArrayBuilder();
+		for(AttributeValues attributeValues: model.getAllAttributeValuesInstances()) {
+			result.add(getValues(attributeValues));
+		}
+		return result.build();
+	}
+
+	private JsonObject getValues(AttributeValues vl) {
+		final JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", vl.getFullName());
+		result.add("values", getTheValues(vl));
+		return result.build();
+	}
+
+	private JsonArray getTheValues(AttributeValues vl) {
+		JsonArrayBuilder result = bf.createArrayBuilder();
+		for(AttributeValue v: vl.getValues()) {
+			JsonObjectBuilder valueBuilder = bf.createObjectBuilder();
+			valueBuilder.add("label", v.getLabel());
+			if(v.getDescription() != null) {
+				valueBuilder.add("description", v.getDescription());
+			}
+			result.add(valueBuilder.build());
+		}
+		return result.build();	
 	}
 }

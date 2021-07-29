@@ -102,7 +102,11 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
   <xs:simpleType name="MyEnumAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="ONE" />
-      <xs:enumeration value="TWO" />
+      <xs:enumeration value="customLabelTwo">
+        <xs:annotation>
+          <xs:documentation>Description of TWO</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="frankBoolean">
