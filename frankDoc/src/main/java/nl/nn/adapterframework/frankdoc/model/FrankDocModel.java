@@ -656,8 +656,8 @@ public class FrankDocModel {
 		return attributeEnumFactory.findOrCreateAttributeEnum(clazz);
 	}
 
-	public AttributeEnum findAttributeValues(String enumTypeFullName) {
-		return attributeEnumFactory.findAttributeValues(enumTypeFullName);
+	public AttributeEnum findAttributeEnum(String enumTypeFullName) {
+		return attributeEnumFactory.findAttributeEnum(enumTypeFullName);
 	}
 
 	public List<AttributeEnum> getAllAttributeEnumInstances() {

@@ -43,10 +43,10 @@ class AttributeEnumFactory {
 		if(labelsForgotten) {
 			log.warn("Some enum values of class [{}] have a label, but not all. Did you forget some?", clazz.getName());
 		}
-		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
+		return findOrCreateAttributeEnum(clazz.getName(), clazz.getSimpleName(), values);
 	}
 
-	AttributeEnum findOrCreateAttributeValues(String fullName, String simpleName, List<AttributeEnumValue> values) {
+	AttributeEnum findOrCreateAttributeEnum(String fullName, String simpleName, List<AttributeEnumValue> values) {
 		if(allAttributeEnumInstances.containsKey(fullName)) {
 			return allAttributeEnumInstances.get(fullName);
 		}
@@ -58,7 +58,7 @@ class AttributeEnumFactory {
 		return result;
 	}
 
-	AttributeEnum findAttributeValues(String enumTypeFullName) {
+	AttributeEnum findAttributeEnum(String enumTypeFullName) {
 		return allAttributeEnumInstances.get(enumTypeFullName);
 	}
 

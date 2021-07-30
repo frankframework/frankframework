@@ -249,16 +249,16 @@ public class FrankDocJsonFactory {
 		return result.build();
 	}
 
-	private JsonObject getAttributeEnum(AttributeEnum vl) {
+	private JsonObject getAttributeEnum(AttributeEnum en) {
 		final JsonObjectBuilder result = bf.createObjectBuilder();
-		result.add("name", vl.getFullName());
-		result.add("values", getAttributeEnumValues(vl));
+		result.add("name", en.getFullName());
+		result.add("values", getAttributeEnumValues(en));
 		return result.build();
 	}
 
-	private JsonArray getAttributeEnumValues(AttributeEnum vl) {
+	private JsonArray getAttributeEnumValues(AttributeEnum en) {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(AttributeEnumValue v: vl.getValues()) {
+		for(AttributeEnumValue v: en.getValues()) {
 			JsonObjectBuilder valueBuilder = bf.createObjectBuilder();
 			valueBuilder.add("label", v.getLabel());
 			if(v.getDescription() != null) {
