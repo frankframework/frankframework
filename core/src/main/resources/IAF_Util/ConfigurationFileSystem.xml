@@ -13,7 +13,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="FileSystem-jl" serviceName="${fileSystem-jl.serviceName}" />
 		</receiver>
 
-		<pipeline firstPipe="switchCleanFilesystem">
+		<pipeline>
 			<exits>
 				<exit state="success" path="EXIT" code="200"/>
 				<exit state="error" path="ERROR" code="500"/>
@@ -56,7 +56,7 @@
 			<listener name="FileSystem_Child" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
 
-		<pipeline firstPipe="isZipfile">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
