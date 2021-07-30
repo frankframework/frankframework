@@ -39,11 +39,4 @@ public interface DocumentedEnum {
 
 	// returns the fieldname of the enum.
 	public String name();
-
-	/**
-	 * @return Optional description to explain the corresponding Label
-	 */
-	public default String getDescription() {
-		return null;
-	}
 }
