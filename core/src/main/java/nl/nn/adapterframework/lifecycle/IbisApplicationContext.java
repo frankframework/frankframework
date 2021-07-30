@@ -58,6 +58,8 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class IbisApplicationContext {
 	private Exception startupException;
+	public static final String APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Application";
+	public static final String CONFIGURATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Configuration";
 
 	public enum BootState {
 		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
@@ -165,7 +167,7 @@ public class IbisApplicationContext {
 		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
+		propertySources.addFirst(new PropertiesPropertySource(APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
 		classPathapplicationContext.setId("IbisApplicationContext");
 		classPathapplicationContext.setDisplayName("IbisApplicationContext");
