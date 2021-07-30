@@ -44,7 +44,6 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Pd
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -62,9 +61,10 @@ public class PdfPipe extends FixedForwardPipe {
 	private List<String> availableActions = Arrays.asList("combine", "convert");
 	private String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
 	private String filenameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
-	protected String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	protected String charset = null;
 	private boolean isTempDirCreated = false;
 	private AsposeFontManager fontManager;
+	private boolean unpackDefaultFonts = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,7 +101,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 		fontManager = new AsposeFontManager(fontsDirectory);
 		try {
-			fontManager.load();
+			fontManager.load(unpackDefaultFonts);
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
@@ -126,9 +126,9 @@ public class PdfPipe extends FixedForwardPipe {
 	public void stop() {
 		if(isTempDirCreated) {
 			try {
-				Files.delete(Paths.get(pdfOutputLocation));
+				Files.delete(Paths.get(pdfOutputLocation));//temp file should be removed after use, not when the ibis shuts down
 				log.info("Temporary directory is deleted : " + pdfOutputLocation);
-				pdfOutputLocation="";
+				pdfOutputLocation=null;
 			} catch (IOException e) {
 				log.debug("Could not delete the temp folder " + pdfOutputLocation);
 			}
@@ -169,7 +169,7 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({ "action to be processed by pdf pipe possible values:{combine, convert}", "null" })
-	public void setAction(String action) {
+	public void setAction(String action) { //TODO should be enum
 		this.action = action;
 	}
 	public String getAction() {
@@ -206,12 +206,13 @@ public class PdfPipe extends FixedForwardPipe {
 		return fontsDirectory;
 	}
 
-	@IbisDoc({ "charset to be used to encode the given input string ", "UTF-8" })
+	public void setUnpackCommonFontsArchive(boolean unpackDefaultFonts) {
+		this.unpackDefaultFonts = unpackDefaultFonts;
+	}
+
+	@IbisDoc({ "charset to be used to encode the given input string", "UTF-8" })
 	public void setCharset(String charset) {
 		this.charset = charset;
-	}
-	public String getCharset() {
-		return charset;
 	}
 
 	@IbisDoc({ "aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol", "" })

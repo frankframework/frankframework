@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -32,7 +33,9 @@ public abstract class JdbcTestBase {
 	protected String productKey = "unknown";
 
 	protected static Connection connection; // only to be used for setup and teardown like actions
-	protected DataSource dataSource;
+
+	@Parameterized.Parameter(0)
+	public DataSource dataSource;
 	protected IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{index}: {0}")
@@ -40,9 +43,8 @@ public abstract class JdbcTestBase {
 		return dataSourceFactory.getAvailableDataSources();
 	}
 
-	public JdbcTestBase(DataSource dataSource) throws SQLException {
-		this.dataSource = dataSource;
-
+	@Before
+	public void setup() throws Exception {
 		if(dataSource instanceof DriverManagerDataSource) {
 			Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
 			productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
@@ -50,6 +52,7 @@ public abstract class JdbcTestBase {
 		}
 
 		connection = dataSource.getConnection();
+
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
 		try {

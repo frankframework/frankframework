@@ -44,6 +44,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 	public void whenSingularRuleThenSingularInDictionary() {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("setItemSingular");
 		assertNotNull(configChildDescriptor);
+		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("setItemSingular", configChildDescriptor.getMethodName());
 		assertEquals("roleNameItemSingular", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
@@ -54,6 +55,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 	public void whenPluralAddRuleThenPluralInDictionary() {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("addItemPlural");
 		assertNotNull(configChildDescriptor);
+		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("addItemPlural", configChildDescriptor.getMethodName());
 		assertEquals("roleNameItemPluralAdd", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
@@ -64,6 +66,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 	public void whenPluralRegisterThenPluralInDictionary() {
 		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerItemPlural");
 		assertNotNull(configChildDescriptor);
+		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("registerItemPlural", configChildDescriptor.getMethodName());
 		assertEquals("roleNameItemPluralRegister", configChildDescriptor.getRoleName());
 		assertFalse(configChildDescriptor.isMandatory());
@@ -72,7 +75,18 @@ public class FrankDocModelConfigChildrenDetailTest {
 
 	@Test
 	public void onlyRulesWithRegisterMethodsGoInDictionary() {
-		assertEquals(3, instance.getConfigChildDescriptors().size());
+		assertEquals(4, instance.getConfigChildDescriptors().size());
+	}
+
+	@Test
+	public void whenHasRegisterTextMethodThenTextConfigChild() {
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerText");
+		assertNotNull(configChildDescriptor);
+		assertFalse(configChildDescriptor.isForObject());
+		assertEquals("registerText", configChildDescriptor.getMethodName());
+		assertEquals("roleNameText", configChildDescriptor.getRoleName());
+		assertFalse(configChildDescriptor.isMandatory());
+		assertTrue(configChildDescriptor.isAllowMultiple());
 	}
 
 	@Test

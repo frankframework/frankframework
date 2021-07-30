@@ -41,13 +41,18 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	private String vaultFile = "catalina-secure-store.vault";
 	private String vaultKeyFile = ".secure-vault-keyfile";
 	
+	
+	public AnsibleVaultCredentialFactory() throws IOException {
+		super();
+	}
+
 	@Override
 	public String getPropertyBase() {
 		return PROPERTY_BASE;
 	}
 
 
-	private InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws MalformedURLException, IOException {
+	private InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
 		if (Misc.isEmpty(filename)) {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);

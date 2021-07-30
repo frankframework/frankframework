@@ -41,6 +41,7 @@ import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.frankdoc.model.ObjectConfigChild;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocJsonFactory {
@@ -235,9 +236,11 @@ public class FrankDocJsonFactory {
 			result.add("mandatory", child.isMandatory());
 		}
 		result.add("multiple", child.isAllowMultiple());
-		result.add("roleName", child.getElementRole().getRoleName());
+		result.add("roleName", child.getRoleName());
 		addIfNotNull(result, "description", child.getDescription());
-		result.add("type", child.getElementType().getFullName());
+		if(child instanceof ObjectConfigChild) {
+			result.add("type", ((ObjectConfigChild) child).getElementType().getFullName());
+		}
 		return result.build();
 	}
 

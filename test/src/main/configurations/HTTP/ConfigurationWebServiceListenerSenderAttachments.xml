@@ -51,9 +51,9 @@
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="attachment1" 
-				preserveInput="true" createDirectory="true"
+				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="attachment1" 
+				preserveInput="true"
 				>
 				
 				<forward name="success" path="EXIT"/>
@@ -75,9 +75,9 @@
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="file" 
-				preserveInput="true" createDirectory="true"
+				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="file" 
+				preserveInput="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
@@ -122,15 +122,13 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt" storeResultInSessionKey="file"
-				createDirectory="true"
+			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read" filename="${testdata.dir}/webservices/textfile.txt" storeResultInSessionKey="file"
 			>
 				<forward name="success" path="GetAttachment2" />
 			</pipe> 
-			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt"  storeResultInSessionKey="file2"
-				createDirectory="true"
+			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read" filename="${testdata.dir}/webservices/textfile.txt"  storeResultInSessionKey="file2"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
 			</pipe>	

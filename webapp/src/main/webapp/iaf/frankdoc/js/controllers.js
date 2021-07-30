@@ -72,15 +72,20 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
 }]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
-		let groups = getGroupsOfType(child.type, $scope.groups);
-		let childElements = $scope.getElementsOfType(child.type);
-		let title = 'From ' + groups + ": ";
-		for(i = 0; i < childElements.length; ++i) {
-			if(i == 0) {
-				title = title + childElements[i];
-			} else {
-				title = title + ", " + childElements[i];
-			}
+		let title = '';
+		if(child.type) {
+			let groups = getGroupsOfType(child.type, $scope.groups);
+			let childElements = $scope.getElementsOfType(child.type);
+			title = 'From ' + groups + ": ";
+			for(i = 0; i < childElements.length; ++i) {
+				if(i == 0) {
+					title = title + childElements[i];
+				} else {
+					title = title + ", " + childElements[i];
+				}
+			}			
+		} else{
+			title = 'No child elements, only text';
 		}
 		return title;
 	}
