@@ -54,7 +54,7 @@ if(version.isEmpty()) {
 	</div>
 </div>
 
-<toaster-container toaster-options="{'time-out':5500, 'close-button': true}"></toaster-container>
+<toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container>
 
 <div ui-view style="display:none;" class="main"></div>
 

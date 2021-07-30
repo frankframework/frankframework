@@ -279,7 +279,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 		
-		List agreementNumbers = new ArrayList<>();
+		List<String> agreementNumbers = new ArrayList<>();
 		agreementNumbers.add("12.12");
 		agreementNumbers.add("33002118");
 		
@@ -322,7 +322,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.configure();
 		pipe.start();
 		
-		List agreementNumbers = new ArrayList<>();
+		List<String> agreementNumbers = new ArrayList<>();
 		agreementNumbers.add("12.12");
 		agreementNumbers.add("33002118");
 		

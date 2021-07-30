@@ -37,8 +37,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 */
 	private boolean testNegativePeekWhileGet = false;
 	
-	public JdbcTableListenerTest(DataSource dataSourceName) throws SQLException {
-		super(dataSourceName);
+	public JdbcTableListenerTest() {
 		listener = new JdbcTableListener() {
 
 			@Override

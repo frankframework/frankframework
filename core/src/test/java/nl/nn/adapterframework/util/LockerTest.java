@@ -11,9 +11,6 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,23 +19,30 @@ import org.springframework.transaction.support.ResourceTransactionManager;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 public class LockerTest extends TransactionManagerTestBase {
 
 	private Locker locker;
-	
+
 	private boolean tableCreated = false;
-	
+
+	@Override
 	@Before
-	public void setup() throws JdbcException {
+	public void setup() throws Exception {
+		super.setup();
 		if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
 			createDbTable();
 			tableCreated = true;
 		}
+
+		locker = new Locker();
+		locker.setDatasourceName(getDataSourceName());
+		locker.setDataSourceFactory(dataSourceFactory);
+		locker.setFirstDelay(0);
 	}
 
 	@After
@@ -46,15 +50,6 @@ public class LockerTest extends TransactionManagerTestBase {
 		if (tableCreated) {
 			JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
 		}
-	}
-
-	public LockerTest(DataSource dataSource) throws SQLException, NamingException {
-		super(dataSource);
-
-		locker = new Locker();
-		locker.setDatasourceName(getDataSourceName());
-		locker.setDataSourceFactory(dataSourceFactory);
-		locker.setFirstDelay(0);
 	}
 
 	@Test

@@ -1,0 +1,5 @@
+<configuration>
+	<jmsRealm realmName="jdbc" datasourceName="jdbc/test"/>
+	<jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf" />
+	<jmsRealm realmName="jdbcqcf" datasourceName="jdbc/test" queueConnectionFactoryName="jms/jdbc" />
+</configuration>

@@ -63,7 +63,7 @@
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
 			</xsl:attribute>
-			<xsl:apply-templates select="$baseReceiver/@*[name()!='transactionAttribute']" />
+			<xsl:apply-templates select="$baseReceiver/@*[local-name()!='transactionAttribute' and local-name()!='name']" />
 			<xsl:element name="listener">
 				<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 				<xsl:attribute name="serviceName">

@@ -35,7 +35,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 			for(i in elements) {
 				let element = elements[i];
-				addAttributeActive(element);
 				$scope.elements[element.fullName] = element;
 			}
 		}
@@ -46,18 +45,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.loadError = "Unable to load Frank!Doc.json file.";
 		}
 	});
-
-	function addAttributeActive(element) {
-		attributeActive = {
-			name: "active",
-			description: "If defined and empty or false, then this element and all its children are ignored"
-		};
-		if(element.attributes) {
-			element.attributes.unshift(attributeActive);
-		} else {
-			element.attributes = [attributeActive];
-		}
-	}
 
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {
@@ -88,9 +75,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		return title;
 	}
 
-	function fullNameToSimpleName(fullName) {
-		return fullName.substr(fullName.lastIndexOf(".")+1)
-	}
 	$scope.getElementsOfType = function(type) {
 		let fullNames = $scope.types[type];
 		let simpleNames = [];

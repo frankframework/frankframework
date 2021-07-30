@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -112,7 +112,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	@IbisDoc({"Direction of the transformation.", "json2xml"})
 	public void setDirection(String string) {
-		direction = Misc.parse(Direction.class, "direction", string);
+		direction = EnumUtils.parse(Direction.class, string);
 	}
 	public Direction getDirectionEnum() {
 		return direction;

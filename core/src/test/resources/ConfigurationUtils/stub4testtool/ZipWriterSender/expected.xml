@@ -1,0 +1,29 @@
+<configuration>
+	  <adapter name="ZipWriterSender">
+      <receiver name="testtool-ZipWriterSender">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-ZipWriterSender"/>
+      </receiver>
+		    <receiver name="ZipWriterSender">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="ZipWriterSender"/>
+		    </receiver>
+      <receiver name="testtool-ZipWriterSender-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-ZipWriterSender-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.compression.ZipWriterSender"/>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

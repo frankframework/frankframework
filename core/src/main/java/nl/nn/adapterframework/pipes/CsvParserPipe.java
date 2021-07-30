@@ -33,7 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -121,7 +121,7 @@ public class CsvParserPipe extends StreamingPipe {
 
 	@IbisDoc({"4", "When set, character casing will be changed for the header. Possible values ['lowercase', 'uppercase']","not set"})
 	public void setHeaderCase(String headerCase) {
-		this.headerCase = Misc.parse(HeaderCase.class, "headerCase", headerCase);
+		this.headerCase = EnumUtils.parse(HeaderCase.class, headerCase);
 	}
 	public HeaderCase getHeaderCaseEnum() {
 		return headerCase;

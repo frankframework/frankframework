@@ -132,7 +132,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 //		GENERIC cmis object
 		ObjectId objectId = mock(ObjectIdImpl.class);
 		doReturn(objectId).when(cmisSession).createObjectId(anyString());
-		CmisObject cmisObject = spy(new CmisTestObject());
+		CmisObject cmisObject = CmisTestObject.newInstance();
 		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class));
 		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class), any(OperationContext.class));
 

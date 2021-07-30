@@ -146,7 +146,7 @@ public class FrankDocJsonFactory {
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
 		result.add("elementNames", xmlElementNames);
-		JsonArray attributes = getAttributes(frankElement);
+		JsonArray attributes = getAttributes(frankElement, getParentOrNull(frankElement) == null);
 		if(! attributes.isEmpty()) {
 			result.add("attributes", attributes);
 		}
@@ -168,10 +168,13 @@ public class FrankDocJsonFactory {
 		return null;
 	}
 
-	private JsonArray getAttributes(FrankElement frankElement) throws JsonException {
+	private JsonArray getAttributes(FrankElement frankElement, boolean addAttributeActive) throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(FrankAttribute attribute: frankElement.getAttributes(ElementChild.IN_COMPATIBILITY_XSD)) {
 			result.add(getAttribute(attribute));
+		}
+		if(addAttributeActive) {
+			result.add(getAttributeActive());
 		}
 		return result.build();
 	}
@@ -191,6 +194,13 @@ public class FrankDocJsonFactory {
 		if(frankAttribute.getAttributeValues() != null) {
 			result.add("values", getValues(frankAttribute.getAttributeValues()));
 		}
+		return result.build();
+	}
+
+	private JsonObject getAttributeActive() {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", "active");
+		result.add("description", "If defined and empty or false, then this element and all its children are ignored");
 		return result.build();
 	}
 

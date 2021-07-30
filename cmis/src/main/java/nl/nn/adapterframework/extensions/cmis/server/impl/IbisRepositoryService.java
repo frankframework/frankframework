@@ -35,6 +35,11 @@ import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisRepositoryService implements RepositoryService {
 
 	private RepositoryService repositoryService;
@@ -97,7 +102,6 @@ public class IbisRepositoryService implements RepositoryService {
 	@Override
 	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions, 
 			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.getTypeChildren(repositoryId, typeId, includePropertyDefinitions, maxItems, skipCount, extension);
 	}
 
@@ -143,19 +147,16 @@ public class IbisRepositoryService implements RepositoryService {
 
 	@Override
 	public TypeDefinition createType(String repositoryId, TypeDefinition type, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.createType(repositoryId, type, extension);
 	}
 
 	@Override
 	public TypeDefinition updateType(String repositoryId, TypeDefinition type, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return repositoryService.updateType(repositoryId, type, extension);
 	}
 
 	@Override
 	public void deleteType(String repositoryId, String typeId, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		repositoryService.deleteType(repositoryId, typeId, extension);
 	}
 }

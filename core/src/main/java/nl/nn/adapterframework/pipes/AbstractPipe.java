@@ -15,14 +15,11 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -252,32 +249,26 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return sb.toString();
 	}
 
-	/**
-	 * Register a PipeForward object to this Pipe. Global Forwards are added
-	 * by the PipeLine. If a forward is already registered, it logs a warning.
-	 * @see PipeLine
-	 * @see PipeForward
-	 */
 	@Override
 	@IbisDoc({"30"})
-	public void registerForward(PipeForward forward) {
-		PipeForward current = pipeForwards.get(forward.getName());
-		if (current==null){
-			pipeForwards.put(forward.getName(), forward);
-		} else {
-			if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-				ConfigurationWarnings.add(this, log, "has forward ["+forward.getName()+"] which is already registered");
+	public void registerForward(PipeForward forward) throws ConfigurationException {
+		String forwardName = forward.getName();
+		if(forwardName != null) {
+			PipeForward current = pipeForwards.get(forwardName);
+			if (current==null){
+				pipeForwards.put(forwardName, forward);
 			} else {
-				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+				} else {
+					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
 			}
+		} else {
+			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
 		}
 	}
 
-	/**
-	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for each start and stop command of the
-	 * adapter.
-	 */
 	@Override
 	public void start() throws PipeStartException {
 //		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
@@ -290,35 +281,31 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 //		}
 	}
 
-	/**
-	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	 * For instance, closing JMS connections, dbms connections etc.
-	 */
 	@Override
 	public void stop() {}
 
-	/**
-	 * The <code>toString()</code> method retrieves its value
-	 * by reflection, so overriding this method is mostly not
-	 * useful.
-	 * @see ToStringBuilder#reflectionToString
-	 *
-	 **/
-	@Override
-	public String toString() {
-		try {
-			return (new ReflectionToStringBuilder(this) {
-				@Override
-				protected boolean accept(Field f) {
-					//TODO create a blacklist or whitelist
-					return super.accept(f) && !f.getName().contains("appConstants");
-				}
-			}).toString();
-		} catch (Throwable t) {
-			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
-		}
-		return null;
-	}
+//	/**
+//	 * The <code>toString()</code> method retrieves its value
+//	 * by reflection, so overriding this method is mostly not
+//	 * useful.
+//	 * @see ToStringBuilder#reflectionToString
+//	 *
+//	 **/
+//	@Override
+//	public String toString() {
+//		try {
+//			return (new ReflectionToStringBuilder(this) {
+//				@Override
+//				protected boolean accept(Field f) {
+//					//TODO create a blacklist or whitelist
+//					return super.accept(f) && !f.getName().contains("appConstants");
+//				}
+//			}).toString();
+//		} catch (Throwable t) {
+//			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
+//		}
+//		return null;
+//	}
 
 	/**
 	 * Add a parameter to the list of parameters

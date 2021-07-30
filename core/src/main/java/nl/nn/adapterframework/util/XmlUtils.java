@@ -44,6 +44,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -72,11 +74,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.dom4j.tree.DefaultDocument;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -106,9 +103,12 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Some utilities for working with XML.
@@ -154,41 +154,20 @@ public class XmlUtils {
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
-	public static final XMLEventFactory EVENT_FACTORY;
-	public static final XMLInputFactory INPUT_FACTORY;
-	public static final XMLOutputFactory OUTPUT_FACTORY;
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
+	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
+	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
 	static {
-		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
-		// on all Application Servers. Don't leave it up to the newFactory
-		// method of javax.xml.stream.XMLOutputFactory which for example on
-		// WAS 8.5 with classloader parent first will result in
-		// com.ibm.xml.xlxp2.api.stax.XMLOutputFactoryImpl being used while
-		// with parent last it will use com.ctc.wstx.sw.RepairingNsStreamWriter
-		// from woodstox-core-asl-4.2.0.jar. At the time of testing the
-		// woodstox-core-asl-4.2.0.jar and sjsxp-1.0.2.jar were part of the
-		// webapp which both provide META-INF/services/javax.xml.stream.*. On
-		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
-		// last woodstox was used (giving "Response already committed" error
-		// when a WSDL was generated).
-		EVENT_FACTORY = new com.sun.xml.stream.events.ZephyrEventFactory();
-		INPUT_FACTORY = new com.sun.xml.stream.ZephyrParserFactory();
-		OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
-		REPAIR_NAMESPACES_OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
-	public XmlUtils() {
-		super();
-	}
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt, key, omitXmlDeclaration, indent, 0);
 	}
-	
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
@@ -1137,7 +1116,7 @@ public class XmlUtils {
 	}
 
 	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
-		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
 	}
@@ -1717,10 +1696,8 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static Set<Entry<String,String>> getVersionInfo() {
+	public static Map<String, String> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
-		
-		map.put("XML tools:",null);
 
 		SAXParserFactory spFactory = getSAXParserFactory();
 		map.put("SAXParserFactory-class", spFactory.getClass().getName());
@@ -1734,30 +1711,41 @@ public class XmlUtils {
 		TransformerFactory tFactory2 = getTransformerFactory(2);
 		map.put("TransformerFactory2-class", tFactory2.getClass().getName());
 
+		XMLEventFactory xmlEventFactory = XMLEventFactory.newInstance();
+		map.put("XMLEventFactory-class", xmlEventFactory.getClass().getName());
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
-		
-		map.put("XML tool version info:", null);
+		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
+
+		try {
+			MessageFactory messageFactory = MessageFactory.newInstance();
+			map.put("MessageFactory-class", messageFactory.getClass().getName());
+		} catch (SOAPException e) {
+			log.warn("unable to create MessageFactory", e);
+			map.put("MessageFactory-class", "unable to create MessageFactory (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
+		}
+
 		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
 		} catch (Throwable t) {
-			log.warn("Could not get Xerces version", t);
-			map.put("Xerces-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Xerces version", t);
+			map.put("Xerces-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
 		try {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
 			map.put("Xalan-Version", xalanVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Xalan version", t);
-			map.put("Xalan-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Xalan version", t);
+			map.put("Xalan-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
 			map.put("Saxon-Version", saxonVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Saxon version", t);
-			map.put("Saxon-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Saxon version", t);
+			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			if (xmlInputFactory instanceof WstxInputFactory) {
@@ -1766,17 +1754,11 @@ public class XmlUtils {
 				map.put("Woodstox-Version", woodstoxVersion);
 			}
 		} catch (Throwable t) {
-			log.warn("Could not get Woodstox version", t);
-			map.put("Woodstox-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Woodstox version", t);
+			map.put("Woodstox-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
-//		try {
-//			map.put("XmlCommons-Version", org.apache.xmlcommons.Version.getVersion());
-//		} catch (Throwable t) {
-//			map.put("XmlCommons-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
-//		}
-
-		return map.entrySet();
+		return map;
 	}
 
 	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {
@@ -1897,17 +1879,17 @@ public class XmlUtils {
 		}
 	}
 
-	public static String canonicalize(String input) throws DocumentException, IOException {
-		if (StringUtils.isEmpty(input)) {
-			return null;
+	public static String canonicalize(String input) throws IOException {
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeComments(false);
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		handler = new CanonicalizeFilter(handler);
+		try {
+			XmlUtils.parseXml(input, handler);
+			return xmlWriter.toString();
+		} catch (SAXException e) {
+			throw new IOException("ERROR: could not canonicalize ["+input+"]",e);
 		}
-		org.dom4j.Document doc = DocumentHelper.parseText(input);
-		StringWriter sw = new StringWriter();
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		format.setExpandEmptyElements(true);
-		XMLWriter xw = new XMLWriter(sw, format);
-		xw.write(doc);
-		return sw.toString();
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
@@ -1988,16 +1970,6 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document) throws SAXException, IOException, TransformerException {
-		String input;
-		if (document instanceof DefaultDocument) {
-			DefaultDocument defaultDocument = (DefaultDocument) document;
-			input = defaultDocument.asXML();
-		} else {
-			input = document.toString();
-		}
-		return getAdapterSite(input, null);
-	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
 		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);

@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.graphviz;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +30,7 @@ import nl.nn.adapterframework.util.Misc;
 
 //TODO: consider moving this to a separate module
 /**
- * Javascript V8 engine wrapper for VizJs flow diagrams
+ * JavaScript engine wrapper for VizJs flow diagrams
  * 
  * @author Niels Meijer
  *
@@ -67,7 +68,7 @@ public class GraphvizEngine {
 	 * @param src dot file
 	 * @return {@link Format#SVG} string
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when some V8 engine error occurs
+	 * @throws GraphvizException when a JavaScript engine error occurs
 	 */
 	public String execute(String src) throws IOException, GraphvizException {
 		return execute(src, Options.create());
@@ -79,7 +80,7 @@ public class GraphvizEngine {
 	 * @param options see {@link Options}
 	 * @return string in specified {@link Format}
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when some V8 engine error occurs
+	 * @throws GraphvizException when a JavaScript engine error occurs
 	 */
 	public String execute(String src, Options options) throws IOException, GraphvizException {
 		if(StringUtils.isEmpty(src)) {
@@ -175,12 +176,12 @@ public class GraphvizEngine {
 			}
 
 			if (jsEngine == null)
-				throw new UnsupportedOperationException("Javascript engines could not be initialized.");
+				throw new UnsupportedOperationException("no usable Javascript engines found, tried "+Arrays.toString(engines));
 		}
 
 		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
 			log.info("Starting runtime for Javascript Engine...");
-			engine.setScriptAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
+			engine.setGlobalAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
 			engine.startRuntime();
 			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
 			engine.executeScript(graphvisJsLibrary);

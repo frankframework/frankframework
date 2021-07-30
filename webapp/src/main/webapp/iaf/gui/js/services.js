@@ -1049,6 +1049,8 @@ angular.module('iaf.beheerconsole')
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");
+									} else {
+										Toastr.error("Failed to connect to backend!");
 									}
 								}
 								else if(appConstants.init == 2 && rejection.config.poller) {

@@ -1152,8 +1152,10 @@ button.btn-invisible {
 .label-height-20 {
   line-height: 20px;
 }
-.label-height-30 {
-  line-height: 30px;
+@media (min-width: 768px) {
+  .label-height-30 {
+    line-height: 30px;
+  }
 }
 /* TOOGLE SWICH */
 .onoffswitch {
@@ -3918,6 +3920,10 @@ code {
 }
 .adapters .ibox {
   margin-bottom: 10px;
+}
+.row.form-group {
+  margin-left: 0px;
+  margin-right: 0px;
 }
 .row .ibox {
 	box-shadow: 2px 2px 1px 0px rgba(103,106,108,0.4);

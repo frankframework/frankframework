@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import javax.sql.DataSource;
-
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
@@ -42,13 +40,6 @@ public class DbmsSupportTest extends JdbcTestBase {
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
-	private boolean testSkipLocked;
-
-
-	public DbmsSupportTest(DataSource dataSource) throws SQLException {
-		super(dataSource);
-		testSkipLocked = dbmsSupport.hasSkipLockedFunctionality();
-	}
 
 	@Test
 	public void testGetDbmsSupport() {
@@ -456,7 +447,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 					assertEquals(40,rs1.getInt(1));			// find the first record
 					if (testPeekShouldSkipRecordsAlreadyLocked) assertFalse("Peek should skip records already locked, but it found one", peek(peekQueueQuery));	// assert no more records found
 
-					if (testSkipLocked) {
+					if (dbmsSupport.hasSkipLockedFunctionality()) {
 						try (Connection workConn2=getConnection()) {
 							workConn2.setAutoCommit(false);
 							try (Statement stmt2= workConn2.createStatement()) {

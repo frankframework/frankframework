@@ -68,21 +68,22 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
+	 * @throws ConfigurationException 
 	 * @see PipeLine
 	 * @see PipeForward
 	 */
-	void registerForward(PipeForward forward);
+	void registerForward(PipeForward forward) throws ConfigurationException;
 
 	/**
 	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for eacht start and stop command of the
+	 * after the {@link #configure()} method, for each start and stop command of the
 	 * adapter.
 	 */
 	void start() throws PipeStartException;
 
 	/**
 	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
-	 * For instance, closing JMS connections, dbms connections etc.
+	 * For instance, closing JMS connections, DBMS connections etc.
 	 */
 	void stop();
 }

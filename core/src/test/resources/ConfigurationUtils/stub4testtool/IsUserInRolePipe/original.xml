@@ -1,0 +1,18 @@
+<configuration>
+	<adapter name="IsUserInRolePipe">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="IsUserInRolePipe" />
+		</receiver>
+		<pipeline firstPipe="IsUserInRolePipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe
+				name="IsUserInRolePipe"
+				className="nl.nn.adapterframework.pipes.IsUserInRolePipe">
+				<forward name="success" path="EXIT" />
+				<forward name="notInRole" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

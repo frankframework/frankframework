@@ -112,7 +112,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
-		return false;  
+		return false;
 	}
 	
 	@Override
