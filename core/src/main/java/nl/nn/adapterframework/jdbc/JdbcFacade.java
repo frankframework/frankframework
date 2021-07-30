@@ -28,9 +28,10 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
@@ -82,7 +83,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
 	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean("warnings.suppress.resultSetHoldability", true);
+	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
@@ -151,7 +152,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 				// - the ResultSetIteratingPipe is transacted and sender contains a non transacted sender (transactionAttribute="NotSupported")
 				// Either none, or both need to be transacted.
 				// See issue #2015 ((ObjectClosedException) DSRA9110E: ResultSet is closed) on www.github.com
-				ConfigurationWarnings.addGlobalWarning(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
 			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
