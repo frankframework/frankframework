@@ -41,7 +41,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.enums = {};
 			for(i in enums) {
 				let en = enums[i];
-				$scope.enums[en.name] = en;
+				$scope.enums[en.name] = en.values;
 			}
 		}
 	}, function(response) {
@@ -62,7 +62,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	});
 
 	$scope.enumValuesOfAttribute = function(attr) {
-		return $scope.enums[attr.enum].values;
+		return $scope.enums[attr.enum];
 	}
 }]).controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;

@@ -1,7 +1,7 @@
 <div>
-  <div ng-if="! attr.enum">{{ attr.description }}</div>
+  <div ng-if="! attr.enum" ng-bind-html="attr.description" />
   <div ng-if="attr.enum">
-    {{ attr.description }}
+    <div ng-bind-html="attr.description" />
     <p>
     <p>
     <table class="attributeEnumValues">
@@ -11,9 +11,9 @@
           <th>Meaning</th>
         </tr>
       </thead>
-      <tr ng-repeat="enumValue in enumValuesOfAttribute(attr)">
-        <td>{{ enumValue.label }}</td>
-        <td>{{ enumValue.description }}</td>
+      <tr ng-repeat="enumValue in ::enumValuesOfAttribute(attr)">
+        <td ng-bind-html="enumValue.label" />
+        <td ng-bind-html="enumValue.description" />
       </tr>
     </table>
   </div>
