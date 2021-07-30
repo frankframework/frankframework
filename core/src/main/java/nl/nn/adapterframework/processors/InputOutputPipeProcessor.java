@@ -177,6 +177,12 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return pipeRunResult;
 	}
 
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
+	}
+
 	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		int startPos = invoerString.indexOf(ME_START);
@@ -214,10 +220,4 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return buffer.toString();
 	}
 	
-	// method needs to be overridden to enable AOP for debugger
-	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
-		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
-	}
-
 }
