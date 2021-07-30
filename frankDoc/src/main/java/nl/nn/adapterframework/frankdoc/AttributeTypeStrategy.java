@@ -33,7 +33,7 @@ import java.util.stream.IntStream;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -116,7 +116,7 @@ public enum AttributeTypeStrategy {
 
 		@Override
 		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
-			AttributeValues attributeValues = attribute.getAttributeValues();
+			AttributeEnum attributeValues = attribute.getAttributeValues();
 			XmlBuilder attributeBuilder = addAttributeWithType(context, attribute.getName());
 			XmlBuilder simpleType = addSimpleType(attributeBuilder);
 			return addUnion(simpleType, attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);

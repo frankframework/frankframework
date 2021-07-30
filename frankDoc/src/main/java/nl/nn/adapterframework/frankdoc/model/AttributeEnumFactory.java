@@ -29,44 +29,44 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.util.LogUtil;
 
-class AttributeValuesFactory {
-	private static Logger log = LogUtil.getLogger(AttributeValuesFactory.class);
+class AttributeEnumFactory {
+	private static Logger log = LogUtil.getLogger(AttributeEnumFactory.class);
 
-	private Map<String, AttributeValues> allAttributeValuesInstances = new LinkedHashMap<>();
+	private Map<String, AttributeEnum> allAttributeEnumInstances = new LinkedHashMap<>();
 	private Map<String, Integer> lastAssignedSeq = new HashMap<>();
 
-	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
-		List<AttributeValue> values = Arrays.asList(clazz.getEnumConstants()).stream()
-				.map(AttributeValue::new)
+	AttributeEnum findOrCreateAttributeEnum(FrankClass clazz) {
+		List<AttributeEnumValue> values = Arrays.asList(clazz.getEnumConstants()).stream()
+				.map(AttributeEnumValue::new)
 				.collect(Collectors.toList());
-		boolean labelsForgotten = values.stream().map(AttributeValue::isExplicitLabel).distinct().collect(Collectors.counting()).longValue() >= 2;
+		boolean labelsForgotten = values.stream().map(AttributeEnumValue::isExplicitLabel).distinct().collect(Collectors.counting()).longValue() >= 2;
 		if(labelsForgotten) {
 			log.warn("Some enum values of class [{}] have a label, but not all. Did you forget some?", clazz.getName());
 		}
 		return findOrCreateAttributeValues(clazz.getName(), clazz.getSimpleName(), values);
 	}
 
-	AttributeValues findOrCreateAttributeValues(String fullName, String simpleName, List<AttributeValue> values) {
-		if(allAttributeValuesInstances.containsKey(fullName)) {
-			return allAttributeValuesInstances.get(fullName);
+	AttributeEnum findOrCreateAttributeValues(String fullName, String simpleName, List<AttributeEnumValue> values) {
+		if(allAttributeEnumInstances.containsKey(fullName)) {
+			return allAttributeEnumInstances.get(fullName);
 		}
 		int seq = lastAssignedSeq.getOrDefault(simpleName, 0);
 		seq++;
-		AttributeValues result = new AttributeValues(fullName, simpleName, values, seq);
+		AttributeEnum result = new AttributeEnum(fullName, simpleName, values, seq);
 		lastAssignedSeq.put(simpleName, seq);
-		allAttributeValuesInstances.put(fullName, result);
+		allAttributeEnumInstances.put(fullName, result);
 		return result;
 	}
 
-	AttributeValues findAttributeValues(String enumTypeFullName) {
-		return allAttributeValuesInstances.get(enumTypeFullName);
+	AttributeEnum findAttributeValues(String enumTypeFullName) {
+		return allAttributeEnumInstances.get(enumTypeFullName);
 	}
 
-	List<AttributeValues> getAll() {
-		return new ArrayList<>(allAttributeValuesInstances.values());
+	List<AttributeEnum> getAll() {
+		return new ArrayList<>(allAttributeEnumInstances.values());
 	}
 
 	int size() {
-		return allAttributeValuesInstances.size();
+		return allAttributeEnumInstances.size();
 	}
 }

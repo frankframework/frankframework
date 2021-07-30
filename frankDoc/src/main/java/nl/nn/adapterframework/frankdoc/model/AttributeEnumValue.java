@@ -26,8 +26,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankEnumConstant;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class AttributeValue {
-	private static Logger log = LogUtil.getLogger(AttributeValue.class);
+public class AttributeEnumValue {
+	private static Logger log = LogUtil.getLogger(AttributeEnumValue.class);
 
 	private static final String ENUM_LABEL = EnumLabel.class.getName();
 
@@ -36,7 +36,7 @@ public class AttributeValue {
 	private @Getter String label;
 	private @Getter String description;
 
-	AttributeValue(FrankEnumConstant c) {
+	AttributeEnumValue(FrankEnumConstant c) {
 		this.javaTag = c.getName();
 		this.label = this.javaTag;
 		FrankAnnotation annotation = c.getAnnotation(ENUM_LABEL);

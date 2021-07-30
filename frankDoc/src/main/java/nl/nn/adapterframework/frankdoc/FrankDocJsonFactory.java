@@ -32,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeValue;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementType;
@@ -243,22 +243,22 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getEnums() {
 		final JsonArrayBuilder result = bf.createArrayBuilder();
-		for(AttributeValues attributeValues: model.getAllAttributeValuesInstances()) {
+		for(AttributeEnum attributeValues: model.getAllAttributeValuesInstances()) {
 			result.add(getAttributeEnum(attributeValues));
 		}
 		return result.build();
 	}
 
-	private JsonObject getAttributeEnum(AttributeValues vl) {
+	private JsonObject getAttributeEnum(AttributeEnum vl) {
 		final JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", vl.getFullName());
 		result.add("values", getAttributeEnumValues(vl));
 		return result.build();
 	}
 
-	private JsonArray getAttributeEnumValues(AttributeValues vl) {
+	private JsonArray getAttributeEnumValues(AttributeEnum vl) {
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(AttributeValue v: vl.getValues()) {
+		for(AttributeEnumValue v: vl.getValues()) {
 			JsonObjectBuilder valueBuilder = bf.createObjectBuilder();
 			valueBuilder.add("label", v.getLabel());
 			if(v.getDescription() != null) {

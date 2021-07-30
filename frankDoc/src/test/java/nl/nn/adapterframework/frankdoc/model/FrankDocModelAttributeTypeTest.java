@@ -42,11 +42,11 @@ public class FrankDocModelAttributeTypeTest {
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// Test the attribute with a value list, which is of type STRING.
-		AttributeValues myEnum = model.findAttributeValues(MY_ENUM);
+		AttributeEnum myEnum = model.findAttributeValues(MY_ENUM);
 		assertEquals(MY_ENUM, myEnum.getFullName());
-		String[] actualLabels = myEnum.getValues().stream().map(AttributeValue::getLabel).collect(Collectors.toList()).toArray(new String[] {});
+		String[] actualLabels = myEnum.getValues().stream().map(AttributeEnumValue::getLabel).collect(Collectors.toList()).toArray(new String[] {});
 		assertArrayEquals(new String[] {"TWO", "customLabelOne", "THREE"}, actualLabels);
-		AttributeValue v = myEnum.getValues().get(0);
+		AttributeEnumValue v = myEnum.getValues().get(0);
 		// This one has no annotation and no description.
 		assertEquals("TWO", v.getLabel());
 		assertNull(v.getDescription());

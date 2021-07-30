@@ -55,8 +55,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.doc.DocWriter;
-import nl.nn.adapterframework.frankdoc.model.AttributeValue;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildSet;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
@@ -1017,7 +1017,7 @@ public class DocWriterNew {
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 		XmlBuilder result = attributeTypeStrategy.addRestrictedAttribute(context, attribute);
-		AttributeValues attributeValues = attribute.getAttributeValues();
+		AttributeEnum attributeValues = attribute.getAttributeValues();
 		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
 			definedAttributeValuesInstances.add(attributeValues.getFullName());
 			addAttributeValuesType(attributeValues);
@@ -1044,14 +1044,14 @@ public class DocWriterNew {
 		return result.toString();
 	}
 
-	private void addAttributeValuesType(AttributeValues attributeValues) {
+	private void addAttributeValuesType(AttributeEnum attributeValues) {
 		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
 		attributeValues.getValues().forEach(v -> addEnumValue(restriction, v));
 	}
 
-	private void addEnumValue(XmlBuilder restriction, AttributeValue v) {
+	private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
 		XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
 		if(v.getDescription() != null) {
 			addDocumentation(valueBuilder, v.getDescription());
