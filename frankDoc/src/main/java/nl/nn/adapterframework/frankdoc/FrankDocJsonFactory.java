@@ -244,19 +244,19 @@ public class FrankDocJsonFactory {
 	private JsonArray getEnums() {
 		final JsonArrayBuilder result = bf.createArrayBuilder();
 		for(AttributeValues attributeValues: model.getAllAttributeValuesInstances()) {
-			result.add(getValues(attributeValues));
+			result.add(getAttributeEnum(attributeValues));
 		}
 		return result.build();
 	}
 
-	private JsonObject getValues(AttributeValues vl) {
+	private JsonObject getAttributeEnum(AttributeValues vl) {
 		final JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", vl.getFullName());
-		result.add("values", getTheValues(vl));
+		result.add("values", getAttributeEnumValues(vl));
 		return result.build();
 	}
 
-	private JsonArray getTheValues(AttributeValues vl) {
+	private JsonArray getAttributeEnumValues(AttributeValues vl) {
 		JsonArrayBuilder result = bf.createArrayBuilder();
 		for(AttributeValue v: vl.getValues()) {
 			JsonObjectBuilder valueBuilder = bf.createObjectBuilder();

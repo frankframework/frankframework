@@ -16,8 +16,6 @@
 package nl.nn.adapterframework.ldap;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -287,22 +285,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)) */ @EnumLabel("changeUnicodePwd")
 		OPERATION_CHANGE_UNICODE_PWD;
-
-		@Override
-		public String getLabel() {
-			Field enumConstant;
-			try {
-				enumConstant = Operation.class.getField(name());
-			} catch(NoSuchFieldException e) {
-				return name();
-			}
-			if(enumConstant.isAnnotationPresent(EnumLabel.class)) {
-				EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
-				return enumLabel.value();
-			} else {
-				return name();
-			}
-		}
 	}
 
 	public static final String MANIPULATION_ENTRY = "entry";
