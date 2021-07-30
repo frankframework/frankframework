@@ -211,7 +211,7 @@ public class FrankDocModel {
 			log.trace("Default [{}]", () -> attribute.getDefaultValue());
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
 				log.trace("Attribute {} has enum values", () -> attributeName);
-				attribute.setAttributeValues(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
+				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
 			try {
 				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
@@ -660,7 +660,7 @@ public class FrankDocModel {
 		return attributeEnumFactory.findAttributeValues(enumTypeFullName);
 	}
 
-	public List<AttributeEnum> getAllAttributeValuesInstances() {
+	public List<AttributeEnum> getAllAttributeEnumInstances() {
 		return attributeEnumFactory.getAll();
 	}
 

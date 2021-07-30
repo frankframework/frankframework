@@ -325,7 +325,7 @@ public class DocWriterNew {
 	private Set<String> namesCreatedFrankElements = new HashSet<>();
 	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 	private ElementGroupManager elementGroupManager;
-	private Set<String> definedAttributeValuesInstances = new HashSet<>();
+	private Set<String> definedAttributeEnumInstances = new HashSet<>();
 	private AttributeTypeStrategy attributeTypeStrategy;
 
 	public DocWriterNew(FrankDocModel model, AttributeTypeStrategy attributeTypeStrategy) {
@@ -1000,7 +1000,7 @@ public class DocWriterNew {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
 			XmlBuilder attribute = null;
-			if(frankAttribute.getAttributeValues() == null) {
+			if(frankAttribute.getAttributeEnum() == null) {
 				// The default value in the model is a *description* of the default value.
 				// Therefore, it should be added to the description in the xs:attribute.
 				// The "default" attribute of the xs:attribute should not be set.
@@ -1017,10 +1017,10 @@ public class DocWriterNew {
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 		XmlBuilder result = attributeTypeStrategy.addRestrictedAttribute(context, attribute);
-		AttributeEnum attributeValues = attribute.getAttributeValues();
-		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
-			definedAttributeValuesInstances.add(attributeValues.getFullName());
-			addAttributeValuesType(attributeValues);
+		AttributeEnum attributeEnum = attribute.getAttributeEnum();
+		if(! definedAttributeEnumInstances.contains(attributeEnum.getFullName())) {
+			definedAttributeEnumInstances.add(attributeEnum.getFullName());
+			addAttributeEnumType(attributeEnum);
 		}
 		return result;
 	}
@@ -1044,11 +1044,11 @@ public class DocWriterNew {
 		return result.toString();
 	}
 
-	private void addAttributeValuesType(AttributeEnum attributeValues) {
-		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+	private void addAttributeEnumType(AttributeEnum attributeEnum) {
+		XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeValues.getValues().forEach(v -> addEnumValue(restriction, v));
+		attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
 	}
 
 	private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {

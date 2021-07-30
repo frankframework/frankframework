@@ -572,7 +572,7 @@ public class FrankDocModelTest {
 			fail(e.toString());
 		}
 		assertEquals("String that does not match enum values.", attribute.getDefaultValue());
-		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.reflect.FrankAttributeTarget.FrankAttributeTargetEnum", attribute.getAttributeValues().getFullName());
+		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.reflect.FrankAttributeTarget.FrankAttributeTargetEnum", attribute.getAttributeEnum().getFullName());
 		attribute.typeCheckDefaultValue();
 	}
 }

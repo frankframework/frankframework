@@ -44,7 +44,7 @@ public class FrankAttribute extends ElementChild {
 	/**
 	 * Null if there is no restriction to the allowed attribute values. Should only be set if attributeType == {@link AttributeType#STRING}.
 	 */
-	private @Getter @Setter AttributeEnum attributeValues;
+	private @Getter @Setter AttributeEnum attributeEnum;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		super(attributeOwner);
@@ -65,8 +65,8 @@ public class FrankAttribute extends ElementChild {
 	void typeCheckDefaultValue() throws FrankDocException {
 		if(getDefaultValue() != null) {
 			attributeType.typeCheck(getDefaultValue());
-			if((attributeType == AttributeType.STRING) && (attributeValues != null)) {
-				attributeValues.typeCheck(getDefaultValue());
+			if((attributeType == AttributeType.STRING) && (attributeEnum != null)) {
+				attributeEnum.typeCheck(getDefaultValue());
 			}
 		}
 	}

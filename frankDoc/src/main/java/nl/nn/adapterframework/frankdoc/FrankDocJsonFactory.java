@@ -193,8 +193,8 @@ public class FrankDocJsonFactory {
 		if(! frankAttribute.getAttributeType().equals(AttributeType.STRING)) {
 			result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
 		}
-		if(frankAttribute.getAttributeValues() != null) {
-			result.add("enum", frankAttribute.getAttributeValues().getFullName());
+		if(frankAttribute.getAttributeEnum() != null) {
+			result.add("enum", frankAttribute.getAttributeEnum().getFullName());
 		}
 		return result.build();
 	}
@@ -243,8 +243,8 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getEnums() {
 		final JsonArrayBuilder result = bf.createArrayBuilder();
-		for(AttributeEnum attributeValues: model.getAllAttributeValuesInstances()) {
-			result.add(getAttributeEnum(attributeValues));
+		for(AttributeEnum attributeEnum: model.getAllAttributeEnumInstances()) {
+			result.add(getAttributeEnum(attributeEnum));
 		}
 		return result.build();
 	}
