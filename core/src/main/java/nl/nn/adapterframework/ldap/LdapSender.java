@@ -256,34 +256,44 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	public Operation operation = Operation.OPERATION_READ;
 	public enum Operation implements DocumentedEnum {
-		/** Read the contents of an entry */ @EnumLabel("read")
+		/** Read the contents of an entry */
+		@EnumLabel("read")
 		OPERATION_READ,
 
-		/** Create an attribute or an entry */ @EnumLabel("create")
+		/** Create an attribute or an entry */
+		@EnumLabel("create")
 		OPERATION_CREATE,
 
-		/** Update an attribute or an entry */ @EnumLabel("update")
+		/** Update an attribute or an entry */
+		@EnumLabel("update")
 		OPERATION_UPDATE,
 
-		/** Delete an attribute or an entry */ @EnumLabel("delete")
+		/** Delete an attribute or an entry */
+		@EnumLabel("delete")
 		OPERATION_DELETE,
 
-		/** Search for an entry in the direct children of the specified root */ @EnumLabel("search")
+		/** Search for an entry in the direct children of the specified root */
+		@EnumLabel("search")
 		OPERATION_SEARCH,
 
-		/** Search for an entry in the complete tree below the specified root */ @EnumLabel("deepSearch")
+		/** Search for an entry in the complete tree below the specified root */
+		@EnumLabel("deepSearch")
 		OPERATION_DEEP_SEARCH,
 
-		/** Get a list of the direct children of the specifed root */ @EnumLabel("getSubContexts")
+		/** Get a list of the direct children of the specifed root */
+		@EnumLabel("getSubContexts")
 		OPERATION_SUB_CONTEXTS,
 
-		/** Get a copy of the complete tree below the specified root */ @EnumLabel("getTree")
+		/** Get a copy of the complete tree below the specified root */
+		@EnumLabel("getTree")
 		OPERATION_GET_TREE,
 
-		/** Check username and password against LDAP specifying principal and credential using parameters */ @EnumLabel("challenge")
+		/** Check username and password against LDAP specifying principal and credential using parameters */
+		@EnumLabel("challenge")
 		OPERATION_CHALLENGE,
 
-		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)) */ @EnumLabel("changeUnicodePwd")
+		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)) */
+		@EnumLabel("changeUnicodePwd")
 		OPERATION_CHANGE_UNICODE_PWD;
 	}
 
