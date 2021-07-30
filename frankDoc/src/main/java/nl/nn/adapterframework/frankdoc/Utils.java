@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.frankdoc.doclet.FrankType;
 
 /**
  * Utility methods for the Frank!Doc.
@@ -76,12 +77,20 @@ public final class Utils {
 
 	public static boolean isConfigChildSetter(FrankMethod method) {
 		return (method.getParameterTypes().length == 1)
-				&& (! method.getParameterTypes()[0].isPrimitive())
-				&& (! JAVA_BOXED.contains(method.getParameterTypes()[0].getName()))
+				&& configChildSetter(method.getName(), method.getParameterTypes()[0])
 				&& (method.getReturnType().isPrimitive())
 				&& (method.getReturnType().getName().equals("void"));
 	}
 
+	private static boolean configChildSetter(String methodName, FrankType parameterType) {
+		boolean objectConfigChild = (! parameterType.isPrimitive())
+				&& (! JAVA_BOXED.contains(parameterType.getName()));
+		// A ConfigChildSetterDescriptor for a TextConfigChild should not start with "set".
+		// If that would be allowed then we would have confusing with attribute setters.
+		boolean textConfigChild = (! methodName.startsWith("set")) && parameterType.getName().equals(JAVA_STRING);
+		return objectConfigChild || textConfigChild;
+	}
+	
 	public static String promoteIfPrimitive(String typeName) {
 		if(primitiveToBoxed.containsKey(typeName)) {
 			return primitiveToBoxed.get(typeName);

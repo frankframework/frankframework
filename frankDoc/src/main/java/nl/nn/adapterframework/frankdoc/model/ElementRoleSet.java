@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,18 +56,6 @@ class ElementRoleSet {
 
 	boolean conflictsWithGenericElementOptionElementName(FrankElement frankElement) {
 		return conflicts.contains(frankElement);
-	}
-
-	Optional<FrankElement> getGenericElementDefaultCandidates() {
-		List<FrankElement> candidates = roles.stream()
-				.map(ElementRole::getDefaultElementOptionConflict)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-		if(candidates.size() == 1) {
-			return Optional.of(candidates.get(0));
-		} else {
-			return Optional.empty();
-		}
 	}
 
 	@Override

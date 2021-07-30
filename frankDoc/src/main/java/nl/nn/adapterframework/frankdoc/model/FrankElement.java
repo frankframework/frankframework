@@ -136,7 +136,13 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	<C extends ElementChild> ElementChild findElementChildMatch(C elementChild) {
-		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(elementChild.getClass());
+		Class<? extends ElementChild> clazz = elementChild.getClass();
+		// We do not have separate lookups for ObjectConfigChild and TextConfigChild.
+		// We only have a lookup for ConfigChild.
+		if(elementChild instanceof ConfigChild) {
+			clazz = ConfigChild.class;
+		}
+		Map<? extends AbstractKey, ? extends ElementChild> lookup = allChildren.get(clazz);
 		return lookup.get(elementChild.getKey());
 	}
 

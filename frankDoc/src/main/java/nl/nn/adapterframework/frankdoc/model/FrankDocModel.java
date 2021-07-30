@@ -113,7 +113,7 @@ public class FrankDocModel {
 	}
 
 	void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", path);
+		log.trace("Creating config child descriptors from file [{}]", () -> path);
 		Resource resource = Resource.getResource(path);
 		if(resource == null) {
 			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
@@ -148,17 +148,46 @@ public class FrankDocModel {
 					roleName = token;
 				}
 			}
+			String registerTextMethod = rule.getRegisterTextMethod();
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
-				add(rule.getRegisterMethod(), roleName);
-			}			
+				if(StringUtils.isNotEmpty(registerTextMethod)) {
+					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", roleName);
+				}
+				addTypeObject(rule.getRegisterMethod(), roleName);
+			} else {
+				if(StringUtils.isNotEmpty(registerTextMethod)) {
+					if(registerTextMethod.startsWith("set")) {
+						log.warn("digester-rules.xml: Ignoring registerTextMethod {} because it starts with \"set\" to avoid confusion with attributes", registerTextMethod);
+					} else {
+						addTypeText(registerTextMethod, roleName);
+					}
+				} else {
+					// roleName is not final, so a lambda wont work in the trace statement.
+					// We use isTraceEnabled() instead.
+					if(log.isTraceEnabled()) {
+						log.trace("digester-rules.xml, ignoring role name {} because there is no registerMethod and no registerTextMethod attribute", roleName);
+					}
+				}
+			}
 		}
 
-		private void add(String registerMethod, String roleName) throws SAXException {
-			ConfigChildSetterDescriptor item = new ConfigChildSetterDescriptor(registerMethod, roleName);
-			if(configChildDescriptors.containsKey(item.getMethodName())) {
-				log.warn("In digester rules [{}], duplicate method name [{}]", path, registerMethod);
+		private void addTypeObject(String registerMethod, String roleName) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, roleName);
+			checkDuplicate(descriptor);
+		}
+
+		private void addTypeText(String registerMethod, String roleName) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, roleName);
+			checkDuplicate(descriptor);
+		}
+
+		private void checkDuplicate(ConfigChildSetterDescriptor descriptor) {
+			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
+				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
 			} else {
-				configChildDescriptors.put(item.getMethodName(), item);
+				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
 			}
 		}
 	}
@@ -433,16 +462,17 @@ public class FrankDocModel {
 		for(int order = 0; order < frankMethods.size(); ++order) {
 			FrankMethod frankMethod = frankMethods.get(order);
 			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
-			ConfigChild configChild = new ConfigChild(parent, frankMethod);
 			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
-			log.trace("Have ConfigChildSetterDescriptor, methodName = [{}], roleName = [{}], mandatory = [{}], allowMultiple = [{}]",
-					() -> configChildDescriptor.getMethodName(), () -> configChildDescriptor.getRoleName(), () -> configChildDescriptor.isMandatory(), () -> configChildDescriptor.isAllowMultiple());
+			log.trace("Have ConfigChildSetterDescriptor [{}]", () -> configChildDescriptor.toString());
+			ConfigChild configChild = configChildDescriptor.createConfigChild(parent, frankMethod);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
-			log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
-			FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
-			configChild.setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
-			log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			if(configChildDescriptor.isForObject()) {
+				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
+				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
+				((ObjectConfigChild) configChild).setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
+			}
 			configChild.setOrder(order);
 			result.add(configChild);
 			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
@@ -477,7 +507,7 @@ public class FrankDocModel {
 		return allElementRoles.get(key);
 	}
 
-	public ElementRole findElementRole(ConfigChild configChild) {
+	public ElementRole findElementRole(ObjectConfigChild configChild) {
 		return findElementRole(new ElementRole.Key(configChild));
 	}
 
@@ -591,24 +621,37 @@ public class FrankDocModel {
 	private void createConfigChildSets(FrankElement frankElement) {
 		log.trace("Handling FrankElement [{}]", () -> frankElement.getFullName());
 		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
-				.collect(Collectors.groupingBy(c -> c.getElementRole().getRoleName()));
+				.collect(Collectors.groupingBy(c -> c.getRoleName()));
 		for(String roleName: cumChildrenByRoleName.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
 			if(configChildren.stream().map(ConfigChild::getOwningElement).anyMatch(childOwner -> (childOwner == frankElement))) {
-				log.trace("Found ConfigChildSet for syntax 1 name [{}]", roleName);
+				log.trace("Found ConfigChildSet for role name [{}]", roleName);
 				ConfigChildSet configChildSet = new ConfigChildSet(configChildren);
 				frankElement.addConfigChildSet(configChildSet);
-				ElementRoleSet elementRoleSet = findOrCreateElementRoleSet(configChildSet);
-				log.trace("The config child with syntax 1 name [{}] has ElementRoleSet [{}]", () -> roleName, () -> elementRoleSet.toString());
-				configChildSet.setElementRoleSet(elementRoleSet);
+				createElementRoleSetIfApplicable(configChildSet);
 			}
 		}
 		log.trace("Done handling FrankElement [{}]", () -> frankElement.getFullName());
 	}
 
-	private ElementRoleSet findOrCreateElementRoleSet(ConfigChildSet configChildSet) {
-		Set<ElementRole> roles = configChildSet.getConfigChildren().stream()
-				.map(ConfigChild::getElementRole)
+	private void createElementRoleSetIfApplicable(ConfigChildSet configChildSet) {
+		switch(configChildSet.getConfigChildGroupKind()) {
+		case TEXT:
+			log.trace("[{}] holds only TextConfigChild. No ElementRoleSet needed", () -> configChildSet.toString());
+			break;
+		case MIXED:
+			log.warn("[{}] combines ObjectConfigChild and TextConfigChild, which is not supported", configChildSet.toString());
+			break;
+		case OBJECT:
+			createElementRoleSet(configChildSet);
+			break;
+		default:
+			throw new IllegalArgumentException("Cannot happen, switch should cover all enum values");
+		}
+	}
+
+	void createElementRoleSet(ConfigChildSet configChildSet) {
+		Set<ElementRole> roles = configChildSet.getElementRoleStream()
 				.collect(Collectors.toSet());
 		Set<ElementRole.Key> key = roles.stream()
 				.map(ElementRole::getKey)
@@ -617,7 +660,8 @@ public class FrankDocModel {
 			log.trace("New ElementRoleSet for roles [{}]", () -> ElementRole.describeCollection(roles));
 			allElementRoleSets.put(key, new ElementRoleSet(roles));
 		}
-		return allElementRoleSets.get(key);
+		ElementRoleSet elementRoleSet = allElementRoleSets.get(key);
+		log.trace("[{}] has ElementRoleSet [{}]", () -> configChildSet.toString(), () -> elementRoleSet.toString());		
 	}
 
 	/**
@@ -638,18 +682,39 @@ public class FrankDocModel {
 		Collections.sort(names);
 		for(String name: names) {
 			List<ConfigChild> configChildren = configChildrenByRoleName.get(name);
-			Set<ElementRole> roles = configChildren.stream().map(ConfigChild::getElementRole).collect(Collectors.toSet());
-			Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
-			if(! allElementRoleSets.containsKey(key)) {
-				allElementRoleSets.put(key, new ElementRoleSet(roles));
-				log.trace("Added new ElementRoleSet [{}]", () -> allElementRoleSets.get(key).toString());
-				List<ElementRole> recursionParents = new ArrayList<>(roles);
-				recursionParents = recursionParents.stream().collect(Collectors.toList());
-				Collections.sort(recursionParents);
-				recursivelyCreateElementRoleSets(recursionParents, recursionDepth + 1);
-			}
+			handleMemberChildrenWithCommonRoleName(configChildren, recursionDepth);
 		}
 		log.trace("Leave for roles [{}] and recursion depth [{}]", () -> ElementRole.describeCollection(roleGroup), () -> recursionDepth);
+	}
+
+	void handleMemberChildrenWithCommonRoleName(List<ConfigChild> configChildren, int recursionDepth) {
+		log.trace("Considering config children [{}]", () -> ConfigChild.toString(configChildren));
+		switch(ConfigChildGroupKind.groupKind(configChildren)) {
+		case TEXT:
+			log.trace("No ElementRoleSet needed for combination of TextConfigChild [{}]", () -> ConfigChild.toString(configChildren));
+			break;
+		case MIXED:
+			log.warn("Browsing member children produced a combination of ObjectConfigChild and TextConfigChild [{}], which is not supported", ConfigChild.toString(configChildren));
+			break;
+		case OBJECT:
+			findOrCreateElementRoleSetForMemberChildren(configChildren, recursionDepth);
+			break;
+		default:
+			throw new IllegalArgumentException("Should not happen, because switch statement should cover all enum values");
+		}
+	}
+
+	void findOrCreateElementRoleSetForMemberChildren(List<ConfigChild> configChildren, int recursionDepth) {
+		Set<ElementRole> roles = ConfigChild.getElementRoleStream(configChildren).collect(Collectors.toSet());
+		Set<ElementRole.Key> key = roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
+		if(! allElementRoleSets.containsKey(key)) {
+			allElementRoleSets.put(key, new ElementRoleSet(roles));
+			log.trace("Added new ElementRoleSet [{}]", () -> allElementRoleSets.get(key).toString());
+			List<ElementRole> recursionParents = new ArrayList<>(roles);
+			recursionParents = recursionParents.stream().collect(Collectors.toList());
+			Collections.sort(recursionParents);
+			recursivelyCreateElementRoleSets(recursionParents, recursionDepth + 1);
+		}		
 	}
 
 	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {

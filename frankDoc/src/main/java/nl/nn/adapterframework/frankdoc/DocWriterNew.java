@@ -22,6 +22,7 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElement;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addEnumeration;
@@ -57,6 +58,7 @@ import org.apache.logging.log4j.ThreadContext;
 import nl.nn.adapterframework.doc.DocWriter;
 import nl.nn.adapterframework.frankdoc.model.AttributeValues;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
+import nl.nn.adapterframework.frankdoc.model.ConfigChildGroupKind;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildSet;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementRole;
@@ -64,6 +66,8 @@ import nl.nn.adapterframework.frankdoc.model.ElementType;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.frankdoc.model.ObjectConfigChild;
+import nl.nn.adapterframework.frankdoc.model.TextConfigChild;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -621,13 +625,23 @@ public class DocWriterNew {
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		log.trace("Adding config child [{}]", () -> child.toString());
 		version.checkForMissingDescription(child);
+		if(child instanceof ObjectConfigChild) {
+			addObjectConfigChild(context, (ObjectConfigChild) child);
+		} else if(child instanceof TextConfigChild) {
+			addTextConfigChild(context, (TextConfigChild) child);
+		} else {
+			throw new IllegalArgumentException("Cannot happen, there are no other ConfigChild subclasses than ObjectConfigChild or TextConfigChild");
+		}
+		log.trace("Done adding config child [{}]", () -> child.toString());
+	}
+
+	private void addObjectConfigChild(XmlBuilder context, ObjectConfigChild child) {
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
 			addConfigChildSingleReferredElement(context, child);
 		} else {
 			addConfigChildWithElementGroup(context, child);
-		}
-		log.trace("Done adding config child [{}]", () -> child.toString());
+		}		
 	}
 
 	private boolean isNoElementTypeNeeded(ElementRole role) {
@@ -640,7 +654,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private XmlBuilder addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildSingleReferredElement(XmlBuilder context, ObjectConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role);
 		if(elementInType == null) {
@@ -682,8 +696,10 @@ public class DocWriterNew {
 		addClassNameAttribute(context, frankElement);
 	}
 
-	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ObjectConfigChild child) {
 		log.trace("Config child appears as element group reference");
+		// If this is a ConfigChildGroupKind.MIXED config child set, then the warning about that has been written already
+		// during model creation. We can assume we only have OBJECT config children.
 		ConfigChildSet configChildSet = child.getOwningElement().getConfigChildSet(child.getRoleName());
 		if(log.isTraceEnabled()) {
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", child.getOwningElement().getSimpleName(), configChildSet.toString()));
@@ -730,7 +746,7 @@ public class DocWriterNew {
 	private void addElementGroupOptions(XmlBuilder context, List<ElementRole> roles) {
 		for(ElementRole role: roles) {
 			if(isNoElementTypeNeeded(role)) {
-				log.trace("ElementRole [{}] is not interface-based, nothing to do fot this role", () -> role.toString());
+				log.trace("ElementRole [{}] is not interface-based, nothing to do for this role", () -> role.toString());
 				continue;
 			}
 			String groupName = role.createXsdElementName(ELEMENT_GROUP_BASE);
@@ -842,7 +858,7 @@ public class DocWriterNew {
 	}
 
 	private void fillGenericOption(XmlBuilder context, List<ElementRole> parents) {
-		Map<String, List<ElementRole>> memberChildrenByRoleName = ConfigChildSet.getMemberChildren(
+		Map<String, List<ConfigChild>> memberChildrenByRoleName = ConfigChildSet.getMemberChildren(
 				parents, version.getChildSelector(), version.getChildRejector(), version.getElementFilter());
 		List<String> names = new ArrayList<>(memberChildrenByRoleName.keySet());
 		Collections.sort(names);
@@ -852,21 +868,44 @@ public class DocWriterNew {
 				XmlBuilder sequence = addSequence(context);
 				choice = addChoice(sequence, "0", "unbounded");				
 			}
-			List<ElementRole> childRoles = memberChildrenByRoleName.get(name);
-			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
-				log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
-				addElementRoleAsElement(choice, childRoles.get(0));				
-			} else {
-				if(log.isTraceEnabled()) {
-					ThreadContext.push(String.format("nest [%s]", name));
-				}
-				requestElementGroup(childRoles);
-				if(log.isTraceEnabled()) {
-					ThreadContext.pop();
-				}
-				DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(childRoles));
-			}
+			addConfigChildrenOfRoleNameToGenericOption(choice, memberChildrenByRoleName.get(name));
 		}
+	}
+
+	private void addConfigChildrenOfRoleNameToGenericOption(XmlBuilder context, List<ConfigChild> configChildren) {
+		String roleName = configChildren.get(0).getRoleName();
+		switch(ConfigChildGroupKind.groupKind(configChildren)) {
+		case TEXT:
+			addTextConfigChild(context, roleName);
+			break;
+		case MIXED:
+			log.warn("Encountered group of config children that mixes TextConfigChild and ObjectConfigChild, not supported: [{}]",
+					ConfigChild.toString(configChildren));
+			// No break, consider only the ObjectConfigChild instances instead of throwing exception.
+		case OBJECT:
+			addObjectConfigChildrenToGenericOption(context, configChildren);
+			break;
+		default:
+			throw new IllegalArgumentException("Should not come here because switch should cover all enum values");
+		}
+	}
+
+	private void addObjectConfigChildrenToGenericOption(XmlBuilder context, List<ConfigChild> configChildren) {
+		String roleName = configChildren.get(0).getRoleName();
+		List<ElementRole> childRoles = ElementRole.promoteIfConflict(ConfigChild.getElementRoleStream(configChildren).collect(Collectors.toList()));
+		if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
+			log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
+			addElementRoleAsElement(context, childRoles.get(0));				
+		} else {
+			if(log.isTraceEnabled()) {
+				ThreadContext.push(String.format("nest [%s]", roleName));
+			}
+			requestElementGroup(childRoles);
+			if(log.isTraceEnabled()) {
+				ThreadContext.pop();
+			}
+			DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(childRoles));
+		}		
 	}
 
 	private void addElementRoleAsElement(XmlBuilder context, ElementRole elementRole) {
@@ -878,6 +917,21 @@ public class DocWriterNew {
 		String referredXsdElementName = elementInType.getXsdElementName(elementRole);
 		addElementRef(context, referredXsdElementName);
 		recursivelyDefineXsdElement(elementInType, elementRole);
+	}
+
+	private void addTextConfigChild(XmlBuilder context, TextConfigChild child) {
+		addTextConfigChild(context, child.getRoleName());
+	}
+
+	/*
+	 * We can assume that a text config child has allowMultiple = true.
+	 * The reason is that TextConfigChild objects only correspond to
+	 * config child setter descriptors that start with "add" or "register".
+	 * They cannot start with "set" because a method setX(String) is
+	 * an attribute setter.
+	 */
+	private void addTextConfigChild(XmlBuilder context, String roleName) {
+		addElement(context, Utils.toUpperCamelCase(roleName), "xs:string", "0", "unbounded");
 	}
 
 	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -908,11 +962,30 @@ public class DocWriterNew {
 
 	private void addPluralConfigChild(XmlBuilder choice, ConfigChildSet configChildSet, FrankElement frankElement) {
 		if(log.isTraceEnabled()) {
-			log.trace("Adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+			log.trace("Adding ConfigChildSet [{}]", () -> configChildSet.toString());
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
 		}
 		configChildSet.getConfigChildren().forEach(version::checkForMissingDescription);
-		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
+		switch(configChildSet.getConfigChildGroupKind()) {
+		case OBJECT:
+		// The warning that MIXED is not supported has been written during model initialization.
+		case MIXED:
+			addPluralObjectConfigChild(choice, configChildSet);
+			break;
+		case TEXT:
+			addPluralTextConfigChild(choice, configChildSet);
+			break;
+		default:
+			throw new IllegalArgumentException("Cannot happen, switch should cover all enum values");
+		}
+		if(log.isTraceEnabled()) {
+			ThreadContext.pop();
+			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+		}
+	}
+
+	private void addPluralObjectConfigChild(XmlBuilder choice, ConfigChildSet configChildSet) {
+		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());		
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
 			log.trace("Config child set appears as element reference");
 			addElementRoleAsElement(choice, roles.get(0));
@@ -921,10 +994,10 @@ public class DocWriterNew {
 			requestElementGroupForConfigChildSet(configChildSet, roles);
 			DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(roles));
 		}
-		if(log.isTraceEnabled()) {
-			ThreadContext.pop();
-			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
-		}
+	}
+
+	private void addPluralTextConfigChild(XmlBuilder choice, ConfigChildSet configChildSet) {
+		addTextConfigChild(choice, configChildSet.getRoleName());
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
