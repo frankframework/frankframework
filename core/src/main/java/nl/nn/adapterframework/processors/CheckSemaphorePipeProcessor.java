@@ -64,4 +64,10 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 		return pipeThreadCounts.computeIfAbsent(pipe, k -> k.getMaxThreads()>0 ? new Semaphore(k.getMaxThreads()) : null);
 	}
 
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
+	}
+
 }

@@ -213,4 +213,11 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 		return buffer.toString();
 	}
+	
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
+	}
+
 }
