@@ -49,10 +49,10 @@ angular.module('iaf.frankdoc')
 		replace: true,
 		templateUrl: 'views/element-attributes.html'
 	};
-}]).directive('attributeDescription', [function() {
+}]).directive("attributeDescription", [function() {
 	return {
 		restrict: 'A',
 		replace: true,
-		templateUrl: 'views/attribute-description.html'
+		templateUrl: "views/attribute-description.html"
 	}
 }]);

@@ -39,7 +39,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				$scope.elements[element.fullName] = element;
 			}
 			$scope.enums = {};
-			for(i in enums) {
+			for(var i = 0; i < enums.length; i++) {
 				let en = enums[i];
 				$scope.enums[en.name] = en.values;
 			}
