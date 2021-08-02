@@ -1,7 +1,7 @@
 <div>
-  <div ng-if="! attr.enum" ng-bind-html="attr.description" />
+  <div ng-if="! attr.enum" ng-bind-html="::attr.description" />
   <div ng-if="attr.enum">
-    <div ng-bind-html="attr.description" />
+    <div ng-bind-html="::attr.description" />
     <p>
     <p>
     <table class="attributeEnumValues">
@@ -11,7 +11,7 @@
           <th>Meaning</th>
         </tr>
       </thead>
-      <tr ng-repeat="enumValue in ::enumValuesOfAttribute(attr)">
+      <tr ng-repeat="enumValue in ::enums[attr.enum]">
         <td ng-bind-html="enumValue.label" />
         <td ng-bind-html="enumValue.description" />
       </tr>
