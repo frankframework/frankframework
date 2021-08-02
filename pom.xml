@@ -637,14 +637,14 @@
 						<version>0.8.5</version>
 						<executions>
 							<execution>
-								<id>prepare-agent</id>
+								<id>prepare-jacoco</id>
 								<phase>initialize</phase>
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
 							</execution>
 							<execution>
-								<id>report</id>
+								<id>generate-jacoco-report</id>
 								<phase>test</phase>
 								<goals>
 									<goal>report</goal>
