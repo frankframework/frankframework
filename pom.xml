@@ -291,14 +291,14 @@
 				<version>2.22.2</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<!-- requires version 2.22.1 -->
+					<reuseForks>true</reuseForks>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>-Dfile.encoding=CP-1252</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -637,12 +637,14 @@
 						<version>0.8.5</version>
 						<executions>
 							<execution>
+								<id>prepare-jacoco</id>
+								<phase>initialize</phase>
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
 							</execution>
 							<execution>
-								<id>report</id>
+								<id>generate-jacoco-report</id>
 								<phase>test</phase>
 								<goals>
 									<goal>report</goal>
