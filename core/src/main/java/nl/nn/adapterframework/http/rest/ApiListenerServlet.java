@@ -43,10 +43,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -107,8 +109,16 @@ public class ApiListenerServlet extends HttpServletBase {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		String uri = request.getPathInfo();
-		String method = request.getMethod().toUpperCase();
 		String remoteUser = request.getRemoteUser();
+
+		HttpMethod method;
+		try {
+			method = EnumUtils.parse(HttpMethod.class, request.getMethod());
+		} catch (IllegalArgumentException e) {
+			response.setStatus(405);
+			log.warn(createAbortingMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
+			return;
+		}
 
 		if(log.isInfoEnabled()) {
 			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
@@ -153,6 +163,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+			messageContext.put("HttpMethod", method);
 	
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
@@ -168,7 +179,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * TODO check if request ip/origin header matches allowOrigin property
 				 */
 				String origin = request.getHeader("Origin");
-				if(method.equals("OPTIONS") || origin != null) {
+				if(method == HttpMethod.OPTIONS || origin != null) {
 					response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 					String headers = request.getHeader("Access-Control-Request-Headers");
 					if (headers != null)
@@ -176,13 +187,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 		
 					StringBuilder methods = new StringBuilder();
-					for (String mtd : config.getMethods()) {
+					for (HttpMethod mtd : config.getMethods()) {
 						methods.append(", ").append(mtd);
 					}
 					response.setHeader("Access-Control-Allow-Methods", methods.toString());
 	
 					//Only cut off OPTIONS (aka preflight) requests
-					if(method.equals("OPTIONS")) {
+					if(method == HttpMethod.OPTIONS) {
 						response.setStatus(200);
 						if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method ["+method+"]");
 						return;
@@ -292,7 +303,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					String cachedEtag = (String) cache.get(etagCacheKey);
 					log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
 	
-					if(method.equals("GET")) {
+					if(method == HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
@@ -455,7 +466,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				StringBuilder methods = new StringBuilder();
 				methods.append("OPTIONS, ");
-				for (String mtd : config.getMethods()) {
+				for (HttpMethod mtd : config.getMethods()) {
 					methods.append(mtd + ", ");
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
@@ -493,7 +504,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(messageContext.get("updateEtag", true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { //If the data has changed, generate a new eTag
+					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
 						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode()); //The eTag has nothing to do with the content and can be a random string.
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);
