@@ -63,7 +63,7 @@ limitations under the License.
  * Tags in Frank configs can have attributes, which are modeled by class {@link nl.nn.adapterframework.frankdoc.model.FrankAttribute}.
  * Attributes have a type that is modeled by {@link nl.nn.adapterframework.frankdoc.model.AttributeType} (not in diagram).
  * String attributes can have their values restricted by a Java enum type. In that case, the list of allowed values is stored in a
- * {@link nl.nn.adapterframework.frankdoc.model.AttributeValues}, which can be shared by multiple {@link nl.nn.adapterframework.frankdoc.model.FrankAttribute}. 
+ * {@link nl.nn.adapterframework.frankdoc.model.AttributeEnum}, which can be shared by multiple {@link nl.nn.adapterframework.frankdoc.model.FrankAttribute}. 
  * The tag in which the attribute occurs is modeled by its {@link nl.nn.adapterframework.frankdoc.model.FrankElement}, see relation
  * "attribute of". The documentation of an attribute may appear in a Java class that differs
  * from the attribute owning Java class (the IbisDocRef Java annotation). This is expressed

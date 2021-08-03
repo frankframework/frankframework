@@ -40,7 +40,6 @@ import javax.naming.directory.SearchResult;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -49,6 +48,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -256,23 +256,35 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	public Operation operation = Operation.OPERATION_READ;
 	public enum Operation implements DocumentedEnum {
-		OPERATION_READ("read", "Read the contents of an entry"),
-		OPERATION_CREATE("create", "Create an attribute or an entry"),
-		OPERATION_UPDATE("update", "Update an attribute or an entry"),
-		OPERATION_DELETE("delete", "Delete an attribute or an entry"),
-		OPERATION_SEARCH("search", "Search for an entry in the direct children of the specified root"),
-		OPERATION_DEEP_SEARCH("deepSearch", "Search for an entry in the complete tree below the specified root"),
-		OPERATION_SUB_CONTEXTS("getSubContexts", "Get a list of the direct children of the specifed root"),
-		OPERATION_GET_TREE("getTree", "Get a copy of the complete tree below the specified root"),
-		OPERATION_CHALLENGE("challenge", "Check username and password against LDAP specifying principal and credential using parameters"),
-		OPERATION_CHANGE_UNICODE_PWD("changeUnicodePwd", "Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991))");
+		/** Read the contents of an entry */
+		@EnumLabel("read") OPERATION_READ,
 
-		private @Getter String label;
-		private @Getter String description;
-		private Operation(String label, String description) {
-			this.label = label;
-			this.description = description;
-		}
+		/** Create an attribute or an entry */
+		@EnumLabel("create") OPERATION_CREATE,
+
+		/** Update an attribute or an entry */
+		@EnumLabel("update") OPERATION_UPDATE,
+
+		/** Delete an attribute or an entry */
+		@EnumLabel("delete") OPERATION_DELETE,
+
+		/** Search for an entry in the direct children of the specified root */
+		@EnumLabel("search") OPERATION_SEARCH,
+
+		/** Search for an entry in the complete tree below the specified root */
+		@EnumLabel("deepSearch") OPERATION_DEEP_SEARCH,
+
+		/** Get a list of the direct children of the specifed root */
+		@EnumLabel("getSubContexts") OPERATION_SUB_CONTEXTS,
+
+		/** Get a copy of the complete tree below the specified root */
+		@EnumLabel("getTree") OPERATION_GET_TREE,
+
+		/** Check username and password against LDAP specifying principal and credential using parameters */
+		@EnumLabel("challenge") OPERATION_CHALLENGE,
+
+		/** Typical user change-password operation (one of the two methods to modify the unicodePwd attribute in AD (http://support.microsoft.com/kb/263991)) */
+		@EnumLabel("changeUnicodePwd") OPERATION_CHANGE_UNICODE_PWD;
 	}
 
 	public static final String MANIPULATION_ENTRY = "entry";
@@ -1238,6 +1250,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public String getOperation() {
 		return operation.getLabel();
 	}
+
 	public Operation getOperationEnum() {
 		return operation;
 	}

@@ -19,6 +19,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let data = response.data;
 			let types = data.types;
 			let elements = data.elements;
+			let enums = data.enums;
 
 			//map elements so we can search
 			$scope.groups = data.groups;
@@ -36,6 +37,11 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			for(i in elements) {
 				let element = elements[i];
 				$scope.elements[element.fullName] = element;
+			}
+			$scope.enums = {};
+			for(var i = 0; i < enums.length; i++) {
+				let en = enums[i];
+				$scope.enums[en.name] = en.values;
 			}
 		}
 	}, function(response) {

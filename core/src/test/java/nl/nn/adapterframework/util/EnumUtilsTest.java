@@ -9,7 +9,6 @@ import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
-import nl.nn.adapterframework.ldap.LdapSender.Operation;
 
 public class EnumUtilsTest {
 	@Rule public ExpectedException exception = ExpectedException.none();
@@ -94,11 +93,5 @@ public class EnumUtilsTest {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("unknown fieldName value [3]. Must be one of [1, 2]");
 		EnumUtils.parseFromField(EnumWithInteger.class, "fieldName", 3, i -> i.i);
-	}
-
-	@Test
-	public void testDocumentedEnumDescription() {
-		Operation ldapOperation = EnumUtils.parse(Operation.class, "read");
-		assertEquals("Read the contents of an entry", ldapOperation.getDescription());
 	}
 }

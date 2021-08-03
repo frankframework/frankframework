@@ -32,7 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementType;
@@ -64,6 +65,7 @@ public class FrankDocJsonFactory {
 			result.add("groups", getGroups());
 			result.add("types", getTypes());
 			result.add("elements", getElements());
+			result.add("enums", getEnums());
 			return result.build();
 		} catch(JsonException e) {
 			log.warn("Error producing JSON", e);
@@ -192,8 +194,8 @@ public class FrankDocJsonFactory {
 		if(! frankAttribute.getAttributeType().equals(AttributeType.STRING)) {
 			result.add("type", frankAttribute.getAttributeType().name().toLowerCase());
 		}
-		if(frankAttribute.getAttributeValues() != null) {
-			result.add("values", getValues(frankAttribute.getAttributeValues()));
+		if(frankAttribute.getAttributeEnum() != null) {
+			result.add("enum", frankAttribute.getAttributeEnum().getFullName());
 		}
 		return result.build();
 	}
@@ -215,12 +217,6 @@ public class FrankDocJsonFactory {
 		if(! StringUtils.isBlank(value)) {
 			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
 		}
-	}
-
-	private JsonArray getValues(AttributeValues vl) {
-		final JsonArrayBuilder result = bf.createArrayBuilder();
-		vl.getValues().forEach(value -> result.add(value));
-		return result.build();
 	}
 
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
@@ -246,5 +242,33 @@ public class FrankDocJsonFactory {
 			result.add("type", ((ObjectConfigChild) child).getElementType().getFullName());
 		}
 		return result.build();
+	}
+
+	private JsonArray getEnums() {
+		final JsonArrayBuilder result = bf.createArrayBuilder();
+		for(AttributeEnum attributeEnum: model.getAllAttributeEnumInstances()) {
+			result.add(getAttributeEnum(attributeEnum));
+		}
+		return result.build();
+	}
+
+	private JsonObject getAttributeEnum(AttributeEnum en) {
+		final JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", en.getFullName());
+		result.add("values", getAttributeEnumValues(en));
+		return result.build();
+	}
+
+	private JsonArray getAttributeEnumValues(AttributeEnum en) {
+		JsonArrayBuilder result = bf.createArrayBuilder();
+		for(AttributeEnumValue v: en.getValues()) {
+			JsonObjectBuilder valueBuilder = bf.createObjectBuilder();
+			valueBuilder.add("label", v.getLabel());
+			if(v.getDescription() != null) {
+				valueBuilder.add("description", v.getDescription());
+			}
+			result.add(valueBuilder.build());
+		}
+		return result.build();	
 	}
 }

@@ -33,7 +33,7 @@ import java.util.stream.IntStream;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -116,10 +116,10 @@ public enum AttributeTypeStrategy {
 
 		@Override
 		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
-			AttributeValues attributeValues = attribute.getAttributeValues();
+			AttributeEnum attributeEnum = attribute.getAttributeEnum();
 			XmlBuilder attributeBuilder = addAttributeWithType(context, attribute.getName());
 			XmlBuilder simpleType = addSimpleType(attributeBuilder);
-			return addUnion(simpleType, attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
+			return addUnion(simpleType, attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
 		}
 
 		@Override
@@ -198,7 +198,7 @@ public enum AttributeTypeStrategy {
 
 		@Override
 		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
-			return DocWriterNewXmlUtils.addAttribute(context, attribute.getName(), attribute.getAttributeValues().getUniqueName(ATTRIBUTE_VALUES_TYPE));
+			return DocWriterNewXmlUtils.addAttribute(context, attribute.getName(), attribute.getAttributeEnum().getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		}
 
 		@Override

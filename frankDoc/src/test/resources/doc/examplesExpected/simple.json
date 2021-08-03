@@ -77,10 +77,7 @@
         {
           "name": "firstAttribute",
           "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
-          "values": [
-            "ONE",
-            "TWO"
-          ]
+          "enum": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.MyEnum"
         },
         {
           "name": "secondAttribute",
@@ -138,6 +135,18 @@
         "description":"If defined and empty or false, then this element and all its children are ignored"
       }]
     }
-  ]
+  ],
+  "enums": [{
+    "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.MyEnum",
+    "values": [
+      {
+        "label": "ONE"
+      },
+      {
+        "label": "customLabelTwo",
+        "description": "Description of TWO"
+      }
+    ]
+  }]
 }
         

@@ -76,7 +76,7 @@ public class FrankDocModel {
 	private @Getter Map<ElementRole.Key, ElementRole> allElementRoles = new HashMap<>();
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
-	private AttributeValuesFactory attributeValuesFactory = new AttributeValuesFactory();
+	private AttributeEnumFactory attributeEnumFactory = new AttributeEnumFactory();
 
 	FrankDocModel(FrankClassRepository classRepository) {
 		this.classRepository = classRepository;
@@ -240,7 +240,7 @@ public class FrankDocModel {
 			log.trace("Default [{}]", () -> attribute.getDefaultValue());
 			if(enumGettersByAttributeName.containsKey(attributeName)) {
 				log.trace("Attribute {} has enum values", () -> attributeName);
-				attribute.setAttributeValues(findOrCreateAttributeValues((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
+				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
 			}
 			try {
 				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
@@ -717,16 +717,16 @@ public class FrankDocModel {
 		}		
 	}
 
-	AttributeValues findOrCreateAttributeValues(FrankClass clazz) {
-		return attributeValuesFactory.findOrCreateAttributeValues(clazz);
+	AttributeEnum findOrCreateAttributeEnum(FrankClass clazz) {
+		return attributeEnumFactory.findOrCreateAttributeEnum(clazz);
+    }
+
+	public AttributeEnum findAttributeEnum(String enumTypeFullName) {
+		return attributeEnumFactory.findAttributeEnum(enumTypeFullName);
 	}
 
-	public AttributeValues findAttributeValues(String enumTypeFullName) {
-		return attributeValuesFactory.findAttributeValues(enumTypeFullName);
-	}
-
-	public List<AttributeValues> getAllAttributeValuesInstances() {
-		return attributeValuesFactory.getAll();
+	public List<AttributeEnum> getAllAttributeEnumInstances() {
+		return attributeEnumFactory.getAll();
 	}
 
 	public void calculateInterfaceBased() {
