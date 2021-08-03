@@ -16,6 +16,9 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,6 +40,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -50,7 +54,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -290,7 +293,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						return;
 					}
 				}
-	
+
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
@@ -395,9 +398,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				/**
-				 * Map multipart parts into messageContext
+				 * Process the request through the pipeline.
+				 * If applicable, map multipart parts into messageContext
 				 */
-				Message body = new Message("");
+				Message body = null;
 				if (ServletFileUpload.isMultipartContent(request)) {
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
@@ -410,8 +414,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						//First part -> pipeline input when multipartBodyName=null
 						if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
 							//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
-							// TODO: avoid converting stream to string before turning it into a message. 
-							body = new Message(Misc.streamToString(item.getInputStream(),"\n",false));
+							body = parseContentAsMessage(item.getInputStream(), item.getContentType());
 						}
 	
 						XmlBuilder attachment = new XmlBuilder("part");
@@ -459,8 +462,10 @@ public class ApiListenerServlet extends HttpServletBase {
 						i++;
 					}
 					messageContext.put("multipartAttachments", attachments.toXML());
+				} else {
+					body = parseContentAsMessage(request.getInputStream(), request.getContentType());
 				}
-	
+
 				/**
 				 * Compile Allow header
 				 */
@@ -470,15 +475,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					methods.append(mtd + ", ");
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
-	
-				/**
-				 * Process the request through the pipeline
-				 */
-				if (!ServletFileUpload.isMultipartContent(request)) {
-					// TODO: avoid converting stream to string before turning it into a message. 
-					body = new Message(Misc.streamToString(request.getInputStream(),"\n",false));
-				}
-	
+
 				String messageId = null;
 				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
 					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
@@ -487,15 +484,6 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
-//				if(StringUtils.isNotEmpty(listener.getCookieParams())) {
-//					String params[] = listener.getCookieParams().split(",");
-//					for (String cookieParam : params) {
-//						Cookie cookie = CookieUtil.getCookie(request, cookieParam);
-//						if(cookie != null) {
-//							messageContext.put(cookieParam, cookie.getValue());
-//						}
-//					}
-//				}
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**
@@ -528,7 +516,15 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				String contentType = listener.getContentType();
+				nl.nn.adapterframework.http.rest.ContentType mimeType = listener.getContentType();
+				if(StringUtils.isNotEmpty(result.getCharset())) {
+					try {
+						mimeType.setCharset(result.getCharset());
+					} catch (UnsupportedCharsetException e) {
+						log.warn("unable to set charset attribute on mimetype ["+mimeType.getContentType()+"]", e);
+					}
+				}
+				String contentType = mimeType.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 					contentType = messageContext.get("contentType", contentType);
 				}
@@ -566,6 +562,20 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	private Message parseContentAsMessage(InputStream inputStream, String contentType) {
+		String charset = null;
+		if(StringUtils.isNotEmpty(contentType)) {
+			try {
+				ContentType parsedContentType = ContentType.parse(contentType);
+				Charset parsetCharset = parsedContentType.getCharset();
+				charset = parsetCharset.displayName();
+			} catch (Exception e) {
+				//Silently fail if we cannot parse the charset.
+			}
+		}
+		return new Message(inputStream, charset);
 	}
 
 	@Override
