@@ -13,6 +13,31 @@
     ],
     "paths":{
         "/pets":{
+            "get":{
+                "summary":"List all pets",
+                "responses":{
+                    "200":{
+                        "description":"OK",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Pets"
+                                }
+                            }
+                        }
+                    },
+                    "500":{
+                        "description":"Internal Server Error",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "post":{
                 "summary":"Create a pet",
                 "requestBody":{
@@ -27,31 +52,6 @@
                 "responses":{
                     "201":{
                         "description":"Created"
-                    },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Error"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "get":{
-                "summary":"List all pets",
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Pets"
-                                }
-                            }
-                        }
                     },
                     "500":{
                         "description":"Internal Server Error",

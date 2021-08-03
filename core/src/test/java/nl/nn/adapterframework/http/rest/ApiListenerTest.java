@@ -97,7 +97,7 @@ public class ApiListenerTest {
 		listener.configure();
 
 		assertEquals(MediaTypes.TEXT, listener.getProducesEnum());
-		assertEquals("text/plain;charset=UTF-8", listener.getContentType());
+		assertEquals("text/plain;charset=UTF-8", listener.getContentType().getContentType());
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -132,7 +132,7 @@ public class ApiListenerTest {
 			listener.setProduces(type.name());
 			listener.configure(); //Check if the mediatype passes the configure checks
 
-			assertTrue(listener.getContentType().startsWith(type.getContentType()));
+			assertTrue(listener.getContentType().getContentType().startsWith(type.getContentType()));
 		}
 	}
 
@@ -143,7 +143,7 @@ public class ApiListenerTest {
 		listener.setConsumes("");
 		listener.configure();
 
-		assertEquals("*/*", listener.getContentType());
+		assertEquals("*/*", listener.getContentType().getContentType());
 		assertEquals(MediaTypes.ANY, listener.getConsumesEnum());
 	}
 

@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http.rest;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.ListenerException;
@@ -49,7 +50,8 @@ public class ApiDispatchConfig {
 	}
 
 	public Set<HttpMethod> getMethods() {
-		return Collections.unmodifiableSet(methods.keySet());
+		TreeSet<HttpMethod> sortedSet = new TreeSet<>(methods.keySet());
+		return Collections.unmodifiableSet(sortedSet);
 	}
 
 	public void clear() {

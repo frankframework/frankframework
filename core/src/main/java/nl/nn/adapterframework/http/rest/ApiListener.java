@@ -148,8 +148,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
 	}
 
-	public String getContentType() {
-		return producedContentType.getContentType();
+	public ContentType getContentType() {
+		return producedContentType;
 	}
 
 	@IbisDoc({"1", "HTTP method to listen to", ""})
