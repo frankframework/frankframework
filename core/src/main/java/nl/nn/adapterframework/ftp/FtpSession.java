@@ -103,7 +103,14 @@ public class FtpSession implements IConfigurable {
 
 	private Prot prot = Prot.C;
 	public enum Prot {
-		C, S, E, P
+		/** Clear */
+		C,
+		/** Safe(SSL protocol only) */
+		S,
+		/** Confidential(SSL protocol only) */
+		E,
+		/** Private */
+		P
 	}
 
 	private String name;
@@ -783,7 +790,7 @@ public class FtpSession implements IConfigurable {
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
-	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	@IbisDoc({"FTP protocol to use", "ftp"})
 	public void setFtpType(String value) {
 		ftpType = EnumUtils.parse(FtpType.class, value);
 	}
@@ -1020,16 +1027,7 @@ public class FtpSession implements IConfigurable {
 		prot = Prot.P;
 	}
 
-	/**
-	 * <ul>
-	 * <li>C - Clear</li>
-	 * <li>S - Safe(SSL protocol only)</li>
-	 * <li>E - Confidential(SSL protocol only)</li>
-	 * <li>P - Private</li>
-	 * </ul>
-	 *
-	 */
-	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>.", "C"})
 	public void setProt(String prot) {
 		this.prot = EnumUtils.parse(Prot.class, prot);
 	}
