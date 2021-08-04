@@ -1,20 +1,20 @@
 <div>
-  <div ng-if="! attr.enum" ng-bind-html="::attr.description" />
-  <div ng-if="attr.enum">
-    <div ng-bind-html="::attr.description" />
-    <p>
-    <p>
-    <table class="attributeEnumValues">
-      <thead>
-        <tr>
-          <th>Value</th>
-          <th>Meaning</th>
-        </tr>
-      </thead>
-      <tr ng-repeat="enumValue in ::enums[attr.enum]">
-        <td ng-bind-html="enumValue.label" />
-        <td ng-bind-html="enumValue.description" />
-      </tr>
-    </table>
-  </div>
+	<div ng-if="! attr.enum" ng-bind-html="::attr.description" />
+	<div ng-if="attr.enum">
+		<div ng-bind-html="::attr.description" />
+
+		<br />
+		<table class="attributeEnumValues">
+			<thead>
+				<tr>
+					<th>Value</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tr ng-repeat="enumValue in ::enums[attr.enum]">
+				<td>{{::enumValue.label}}</td>
+				<td ng-bind-html="enumValue.description" />
+			</tr>
+		</table>
+	</div>
 </div>
