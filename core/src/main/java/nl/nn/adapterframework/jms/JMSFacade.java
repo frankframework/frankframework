@@ -55,6 +55,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -118,16 +119,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private int correlationIdMaxLength = -1;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
-		NOT_SET(0, ""),
-		AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE, "auto"),
-		CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE, "client"),
-		DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE, "dups");
+		@EnumLabel("") NOT_SET(0),
+		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
+		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
+		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 
 		private @Getter int acknowledgeMode;
-		private @Getter String label;
-		private AcknowledgeMode(int acknowledgeMode, String label) {
+		private AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
-			this.label=label;
 		}
 	}
 	
@@ -763,7 +762,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		if (useTopicFunctions) {
 			sb.append("[topicName=" + destinationName + "]");

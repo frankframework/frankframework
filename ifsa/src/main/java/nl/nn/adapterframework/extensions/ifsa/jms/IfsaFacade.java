@@ -334,10 +334,10 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 		if (providerSelector==null && useSelectorsForProviders()) {
 			try {
 				providerSelector=""; // set default, also to avoid re-evaluation time and time again for lower ifsa-versions.
-				if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+				if (messageProtocol == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_RR;
 				}
-				if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+				if (messageProtocol == IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
 					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_FF;
 				}
 			} catch (Throwable t) {
@@ -485,13 +485,13 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 			}
 			String replyToQueueName="-"; 
 	        //Client side
-	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	        if (messageProtocol == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 	            // set reply-to address
 	            Queue replyTo=getMessagingSource().getClientReplyQueue(session);
 	            msg.setJMSReplyTo(replyTo);
 	            replyToQueueName=replyTo.getQueueName();
 	        }
-	        if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+	        if (messageProtocol == IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
 	         	// not applicable
 	        }
 			if (StringUtils.isNotEmpty(bifName)) {
@@ -590,7 +590,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
      * that should be present.
      */
     protected boolean isJmsTransacted() {
-		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.FIRE_AND_FORGET;
     }
     
 	@Override

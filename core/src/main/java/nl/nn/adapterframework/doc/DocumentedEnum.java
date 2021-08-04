@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 public interface DocumentedEnum {
 
 	/**
-	 * @return Optional 'SimpleName' or label that's used to parse the Enum, should never be null but return <code>name()</code> instead!
+	 * @return Optional 'FieldName' or label that's used to parse the Enum, should never be null but return <code>name()</code> instead!
 	 */
 	public default String getLabel() {
 		Field enumConstant;
