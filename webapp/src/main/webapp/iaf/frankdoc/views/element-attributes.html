@@ -16,7 +16,7 @@
 					{{::attr.name}} 
 				</td>
 				<td><div attribute-description /></td>
-				<td>{{::attr.default}}</td>
+				<td ng-bind-html="::attr.default"></td>
 				<td>{{::attr.type}}</td>
 			</tr>
 		</tbody>
