@@ -134,7 +134,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	 */
 	@Override
 	public boolean isSynchronous() {
-		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
+		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY;
 	}
 	
 	/**

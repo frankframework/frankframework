@@ -13,6 +13,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
+	$scope.enums = {};
 	$scope.search = "";
 	$http.get(getURI() + "frankdoc.json").then(function(response) {
 		if(response && response.data) {
@@ -30,16 +31,15 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				types: distinctTypes
 			});
 
-			for(i in types) {
+			for(let i in types) {
 				let aType = types[i];
 				$scope.types[aType.name] = aType.members;
 			}
-			for(i in elements) {
+			for(let i in elements) {
 				let element = elements[i];
 				$scope.elements[element.fullName] = element;
 			}
-			$scope.enums = {};
-			for(var i = 0; i < enums.length; i++) {
+			for(let i in enums) {
 				let en = enums[i];
 				$scope.enums[en.name] = en.values;
 			}
@@ -73,7 +73,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let groups = getGroupsOfType(child.type, $scope.groups);
 			let childElements = $scope.getElementsOfType(child.type);
 			title = 'From ' + groups + ": ";
-			for(i = 0; i < childElements.length; ++i) {
+			for(let i = 0; i < childElements.length; ++i) {
 				if(i == 0) {
 					title = title + childElements[i];
 				} else {

@@ -3,7 +3,7 @@
 	<p>The following sub-elements can be configured:</p>
 	<table class="table table-sm table-striped">
 		<tbody>
-			<tr ng-repeat="child in element.children" ng-attr-title="{{ getTitle(child) }}">
+			<tr ng-repeat="child in element.children" ng-attr-title="{{ getTitle(child) }}" ng-if="!child.deprecated || showDeprecatedElements">
 				<td class="font-weight-bold">{{::child.roleName}}</td>
 				<td ng-bind-html="::child.description"></td>
 			</tr>

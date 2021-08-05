@@ -250,7 +250,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			log.error(getLogPrefix()+"exception in closing or releasing session", e);
 		}
 	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessage instanceof javax.jms.Message) { 
 				originalRawMessage = (javax.jms.Message)rawMessage;
