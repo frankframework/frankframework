@@ -55,7 +55,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		configure((Configuration) getApplicationContext());
 	}
 
-	private void configure(Configuration configuration) throws ConfigurationException {
+	public void configure(Configuration configuration) throws ConfigurationException {
 		configure(configuration, null);
 	}
 
