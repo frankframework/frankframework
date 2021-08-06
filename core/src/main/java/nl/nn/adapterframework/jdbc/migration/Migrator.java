@@ -15,14 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-
 import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +23,13 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * LiquiBase implementation for IAF. 
@@ -50,18 +49,21 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		throw new IllegalStateException("No configuration is specified!");
+		if(!(getApplicationContext() instanceof Configuration)) {
+			throw new IllegalStateException("context not instanceof configuration");
+		}
+		configure((Configuration) getApplicationContext());
 	}
 
-	public void configure(Configuration configuration) throws ConfigurationException {
+	private void configure(Configuration configuration) throws ConfigurationException {
 		configure(configuration, null);
 	}
 
-	public synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
+	private synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
 		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
-		if(StringUtils.isEmpty(getDatasourceName())) {	
-			setDatasourceName(appConstants.getString("jdbc.migrator.dataSource", null));
+		if(StringUtils.isEmpty(getDatasourceName())) {
+			setDatasourceName(appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", null)));
 		}
 		super.configure();
 

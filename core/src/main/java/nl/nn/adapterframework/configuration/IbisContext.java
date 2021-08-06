@@ -378,7 +378,7 @@ public class IbisContext extends IbisApplicationContext {
 			if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
 				try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
 					databaseMigrator.setIbisContext(this);
-					databaseMigrator.configure(configuration);
+					databaseMigrator.configure();
 					databaseMigrator.update();
 				} catch (Exception e) {
 					log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
