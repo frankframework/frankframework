@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage
+  PROFILES: ibissource,codecoverage,cmis
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:

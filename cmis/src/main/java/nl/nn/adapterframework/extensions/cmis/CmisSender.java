@@ -1079,22 +1079,22 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
-	public void setMaxConnections(int i) throws ConfigurationException {
+	public void setMaxConnections(int i) {
 		sessionBuilder.setMaxConnections(i);
 	}
 
 	@IbisDoc({"the connection timeout in seconds", "10"})
-	public void setTimeout(int i) throws ConfigurationException {
+	public void setTimeout(int i) {
 		sessionBuilder.setTimeout(i);
 	}
 
 	@IbisDoc({"url to connect to", ""})
-	public void setUrl(String url) throws ConfigurationException {
+	public void setUrl(String url) {
 		sessionBuilder.setUrl(url);
 	}
 
 	@IbisDoc({"repository id", ""})
-	public void setRepository(String repository) throws ConfigurationException {
+	public void setRepository(String repository) {
 		sessionBuilder.setRepository(repository);
 	}
 
@@ -1131,7 +1131,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"'atompub', 'webservices' or 'browser'", "'atompub'"})
-	public void setBindingType(String bindingType) throws ConfigurationException {
+	public void setBindingType(String bindingType) {
 		sessionBuilder.setBindingType(bindingType);
 	}
 

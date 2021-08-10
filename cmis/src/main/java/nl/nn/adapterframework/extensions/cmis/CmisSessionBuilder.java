@@ -18,14 +18,6 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Arrays;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -35,14 +27,21 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private String bindingType = null;
+	private BindingTypes bindingType = null;
 	/**
 	 * 'atompub', 'webservices' or 'browser'
 	 */
@@ -124,10 +123,10 @@ public class CmisSessionBuilder {
 		if (StringUtils.isEmpty(repository)) {
 			throw new CmisSessionException("no repository configured");
 		}
-		if (StringUtils.isEmpty(getBindingType())) {
+		if (getBindingType() == null) {
 			throw new CmisSessionException("no bindingType configured");
 		}
-		if(overrideEntryPointWSDL != null && !"webservices".equals(getBindingType())) {
+		if(overrideEntryPointWSDL != null && BindingTypes.WEBSERVICES != getBindingType()) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 
@@ -138,10 +137,10 @@ public class CmisSessionBuilder {
 		if(StringUtils.isNotEmpty(userName))
 			parameterMap.setUserAndPassword(userName, password);
 
-		if (getBindingType().equalsIgnoreCase("atompub")) {
+		if (getBindingType() == BindingTypes.ATOMPUB) {
 			parameterMap.setAtomPubBindingUrl(url);
 			parameterMap.setUsernameTokenAuthentication(false);
-		} else if (getBindingType().equalsIgnoreCase("browser")) {
+		} else if (getBindingType() == BindingTypes.BROWSER) {
 			parameterMap.setBrowserBindingUrl(url);
 			parameterMap.setBasicAuthentication();
 			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
@@ -340,17 +339,17 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setUrl(String url) throws ConfigurationException {
+	public CmisSessionBuilder setUrl(String url) {
 		if(StringUtils.isEmpty(url))
-			throw new ConfigurationException("url must be set");
+			throw new IllegalArgumentException("url must be set");
 
 		this.url = url;
 		return this;
 	}
 
-	public CmisSessionBuilder setRepository(String repository) throws ConfigurationException {
+	public CmisSessionBuilder setRepository(String repository) {
 		if(StringUtils.isEmpty(repository))
-			throw new ConfigurationException("repository must be set");
+			throw new IllegalArgumentException("repository must be set");
 
 		this.repository = repository;
 		return this;
@@ -374,32 +373,22 @@ public class CmisSessionBuilder {
 	/**
 	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
-	public CmisSessionBuilder setBindingType(String bindingType) throws ConfigurationException {
-		try {
-			BindingTypes type = BindingTypes.valueOf(bindingType.toUpperCase());
-
-			this.bindingType = type.name();
-		}
-		catch(IllegalArgumentException e) {
-			throw new ConfigurationException("illegal value for bindingType ["+bindingType+"] must be one of " + Arrays.asList(BindingTypes.values()));
-		}
+	public CmisSessionBuilder setBindingType(String bindingType) {
+		this.bindingType = EnumUtils.parse(BindingTypes.class, bindingType);
 
 		return this;
 	}
 
-	private String getBindingType() {
-		if(bindingType != null)
-			return bindingType.toLowerCase();
-
-		return null;
+	private BindingTypes getBindingType() {
+		return bindingType;
 	}
 
 	/**
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
-	public CmisSessionBuilder setMaxConnections(int i) throws ConfigurationException {
+	public CmisSessionBuilder setMaxConnections(int i) {
 		if(i < 0)
-			throw new ConfigurationException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
+			throw new IllegalArgumentException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
 
 		maxConnections = i;
 		return this;
@@ -408,9 +397,9 @@ public class CmisSessionBuilder {
 	/**
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
-	public CmisSessionBuilder setTimeout(int i) throws ConfigurationException {
+	public CmisSessionBuilder setTimeout(int i) {
 		if(i < 1)
-			throw new ConfigurationException("illegal value ["+i+"] for timeout, must be 1 or larger");
+			throw new IllegalArgumentException("illegal value ["+i+"] for timeout, must be 1 or larger");
 
 		timeout = i;
 		return this;

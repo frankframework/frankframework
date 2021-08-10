@@ -46,15 +46,17 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
 
-	CmisHttpSender sender = null;
+	private CmisHttpSender sender = null;
 
-	public CmisHttpInvoker() {
+	//To stub during testing
+	protected CmisHttpSender createSender() {
+		return new CmisHttpSender() {};
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
-			sender = new CmisHttpSender() {};
+			sender = createSender();
 
 			sender.setUrlParam("url");
 
@@ -130,7 +132,6 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setMaxConnections(maxConnections);
 			}
 
-			sender.setMethodType("custom");
 			sender.configure();
 			sender.open();
 		}
