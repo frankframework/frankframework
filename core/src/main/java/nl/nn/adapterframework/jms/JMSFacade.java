@@ -119,7 +119,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private int correlationIdMaxLength = -1;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
-		@EnumLabel("") NOT_SET(0),
+		@EnumLabel("none") NOT_SET(0),
 		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
 		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
 		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
