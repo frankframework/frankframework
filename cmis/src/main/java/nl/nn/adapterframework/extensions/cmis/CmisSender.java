@@ -225,7 +225,20 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private CmisAction action;
 	private enum CmisAction {
-		CREATE,DELETE,GET,FIND,UPDATE,FETCH,DYNAMIC;
+		/** Create a document */
+		CREATE,
+		/** Delete a document */
+		DELETE,
+		/** Get the content of a document (and optional the properties) */
+		GET,
+		/** Perform a query that returns properties */
+		FIND,
+		/** Update the properties of an existing document */
+		UPDATE,
+		/** Get the (meta)data of a folder or document */
+		FETCH,
+		/** Determine action based on the incoming CmisEvent */
+		DYNAMIC;
 	}
 
 	private boolean runtimeSession = false;
@@ -1055,14 +1068,7 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"specifies action to perform. Must be one of \n" +
-			" * <ul>\n" +
-			" * <li><code>get</code>: get the content of a document (and optional the properties)</li>\n" +
-			" * <li><code>create</code>: create a document</li>\n" +
-			" * <li><code>find</code>: perform a query that returns properties</li>\n" +
-			" * <li><code>update</code>: update the properties of an existing document</li>\n" +
-			" * <li><code>fetch</code>: get the (meta)data of a folder or document</li>\n" +
-			" * </ul>", ""})
+	@IbisDoc({"specifies action to perform", ""})
 	public void setAction(String action) {
 		this.action = EnumUtils.parse(CmisAction.class, "action", action);
 	}

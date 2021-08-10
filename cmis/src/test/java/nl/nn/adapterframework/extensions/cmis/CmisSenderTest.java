@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
@@ -41,7 +40,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		sender.setBindingType(BindingType.BROWSER.value());
 		sender.setBindingType(BindingType.ATOMPUB.value());
 		sender.setBindingType(BindingType.WEBSERVICES.value());
-		assertTrue(true); //All BindingTypes should be parsed (and thus not throw an exception)
+		//All BindingTypes should be parsed (and thus not throw an exception)
 	}
 
 	@Test(expected = IllegalArgumentException.class)
