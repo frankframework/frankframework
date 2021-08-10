@@ -24,10 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -39,7 +37,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since   4.9
  * 
  */
-public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
+public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final int SOURCE_FILTERING_NONE=0;
@@ -60,6 +58,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	private LinkedList<Date> eventDates = null;
 	private boolean configured = false;
 
+	@Override
 	public void configure() {
 		if (eventCodes.isEmpty()) {
 			log.warn("trigger of Monitor ["+getMonitor().getName()+"] should have at least one eventCode specified");
@@ -76,6 +75,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		configured = true;
 	}
 
+	@Override
 	public boolean isConfigured() {
 		return configured;
 	}
@@ -118,6 +118,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 	}
 
+	@Override
 	public void clearEvents() {
 		if (eventDates!=null) {
 			eventDates.clear();
@@ -136,6 +137,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 	}
 
+	@Override
 	public void toXml(XmlBuilder monitor) {
 		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
 		monitor.addSubElement(trigger);
@@ -182,6 +184,7 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		}
 	}
 
+	@Override
 	public void setMonitor(Monitor monitor) {
 		this.monitor = monitor;
 	}
@@ -189,13 +192,16 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		return monitor;
 	}
 
+	@Override
 	public void setAlarm(boolean b) {
 		alarm = b;
 	}
+	@Override
 	public boolean isAlarm() {
 		return alarm;
 	}
 
+	@Override
 	public String getType() {
 		if (isAlarm()) {
 			return "Alarm";
@@ -203,6 +209,8 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 			return "Clearing";
 		}
 	}
+
+	@Override
 	public void setType(String type) {
 		if (type.equalsIgnoreCase("Alarm")) {
 			setAlarm(true);
@@ -224,12 +232,15 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		addEventCode(code);
 	}
 
+	@Override
 	public void setEventCodes(String[] arr) {
 		clearEventCodes();
 		for (int i=0;i<arr.length;i++) {
 			addEventCode(arr[i]);
 		}
 	}
+
+	@Override
 	public String[] getEventCodes() {
 		return eventCodes.toArray(new String[eventCodes.size()]);
 	}
@@ -241,39 +252,54 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 	public void setSeverity(String severity) {
 		setSeverityEnum(EnumUtils.parse(SeverityEnum.class, severity));
 	}
+
+	@Override
 	public void setSeverityEnum(SeverityEnum enumeration) {
 		severity = enumeration;
 	}
+
+	@Override
 	public SeverityEnum getSeverityEnum() {
 		return severity;
 	}
+
+	@Override
 	public String getSeverity() {
 		return severity==null?null:severity.name();
 	}
 
+	@Override
 	public void setThreshold(int i) {
 		threshold = i;
 	}
+
+	@Override
 	public int getThreshold() {
 		return threshold;
 	}
 
+	@Override
 	public void setPeriod(int i) {
 		period = i;
 	}
+
+	@Override
 	public int getPeriod() {
 		return period;
 	}
 
+	@Override
 	public Map<String, AdapterFilter> getAdapterFilters() {
 		return adapterFilters;
 	}
 
+	@Override
 	public void clearAdapterFilters() {
 		adapterFilters.clear();
 		setSourceFilteringEnum(SourceFiltering.NONE);
 	}
 
+	@Override
 	public void registerAdapterFilter(AdapterFilter af) {
 		adapterFilters.put(af.getAdapter(),af);
 		if(af.isFilteringToLowerLevelObjects()) {
@@ -290,12 +316,17 @@ public class Trigger implements LazyLoadingEventListener<FireMonitorEvent>, Disp
 		return sourceFiltering == SourceFiltering.ADAPTER;
 	}
 
+	@Override
 	public void setSourceFilteringEnum(SourceFiltering filtering) {
 		this.sourceFiltering = filtering;
 	}
+
+	@Override
 	public String getSourceFiltering() {
 		return sourceFiltering.name().toLowerCase();
 	}
+
+	@Override
 	public SourceFiltering getSourceFilteringEnum() {
 		return sourceFiltering;
 	}
