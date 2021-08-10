@@ -320,6 +320,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
+		// TODO: Is it OK to create a trigger whose alarm property is editable?
 		ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 		handleTrigger(trigger, json);
 		monitor.registerTrigger(trigger);

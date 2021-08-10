@@ -20,10 +20,12 @@ import java.util.Map;
 
 import org.springframework.beans.factory.DisposableBean;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+@FrankDocGroup(name = "Monitoring", order = 80)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
 	boolean isAlarm();
 	void clearEvents();
@@ -48,5 +50,4 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	void setSourceFilteringEnum(SourceFiltering filtering);
 	void registerAdapterFilter(AdapterFilter af);
 	void setMonitor(Monitor monitor);
-	void setAlarm(boolean b);
 }

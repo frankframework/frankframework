@@ -43,6 +43,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -468,6 +469,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return getClassLoader();
+	}
+
+	/**
+	 * Dummy method to include monitoring in the Frank!Doc.
+	 */
+	public void registerMonitoring(MonitorManager factory) {
 	}
 
 	@Override

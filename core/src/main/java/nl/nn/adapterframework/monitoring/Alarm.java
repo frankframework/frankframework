@@ -16,9 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.monitoring;
 
-public class Trigger extends TriggerBase {
-	@Override
-	public void setAlarm(boolean b) {
-		super.setAlarm(b);
+public class Alarm extends TriggerBase {
+	public Alarm() {
+		setAlarm(true);
 	}
 }
