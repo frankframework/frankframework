@@ -222,7 +222,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAckModeEnum().getAcknowledgeMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -794,7 +794,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
+	@IbisDoc({"2", "Either <code>QUEUE</code> or <code>TOPIC</code>", "<code>queue</code>"})
 	public void setDestinationType(String destinationType) {
 		this.destinationType = EnumUtils.parse(DestinationType.class, "destinationType", destinationType);
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
@@ -820,12 +820,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.ackMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
 	}
 
-	public AcknowledgeMode getAckModeEnum() {
+	public AcknowledgeMode getAcknowledgeModeEnum() {
 		return ackMode;
 	}
 
 
-	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
+	@IbisDoc({"3", "Acknowledge mode", "auto"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		try {
 			ackMode = EnumUtils.parseDocumented(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
