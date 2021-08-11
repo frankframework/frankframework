@@ -52,11 +52,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		if(!(getApplicationContext() instanceof Configuration)) {
 			throw new IllegalStateException("context not instanceof configuration");
 		}
-		configure((Configuration) getApplicationContext());
-	}
-
-	public void configure(Configuration configuration) throws ConfigurationException {
-		configure(configuration, null);
+		configure((Configuration) getApplicationContext(), null);
 	}
 
 	private synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
