@@ -375,7 +375,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			currentConfigurationVersion = configuration.getVersion();
 
-			// Execute any database changes before loading the configuration.
+			// Execute any database changes before calling configure.
 			// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 			if(AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
 				try(Migrator databaseMigrator = configuration.getBean("jdbcMigrator", Migrator.class)) {
