@@ -34,7 +34,7 @@
 		scope="singleton"
 	/>
 
-	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.Migrator" scope="prototype">
+	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.Migrator" scope="prototype" lazy-init="true">
 		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
 	</bean>
 

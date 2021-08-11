@@ -375,16 +375,6 @@ public class IbisContext extends IbisApplicationContext {
 
 			currentConfigurationVersion = configuration.getVersion();
 
-			if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
-				try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
-					databaseMigrator.setIbisContext(this);
-					databaseMigrator.configure();
-					databaseMigrator.update();
-				} catch (Exception e) {
-					log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
-				}
-			}
-
 			configuration.configure();
 
 			if (currentConfigurationVersion == null) {
@@ -437,6 +427,10 @@ public class IbisContext extends IbisApplicationContext {
 
 	private void log(String message, MessageKeeperLevel level) {
 		log(null, null, message, level, null, true);
+	}
+
+	public void log(String message, MessageKeeperLevel level, Exception e) {
+		log(null, null, message, level, e, true);
 	}
 
 	public void log(String configurationName, String configurationVersion, String message) {
