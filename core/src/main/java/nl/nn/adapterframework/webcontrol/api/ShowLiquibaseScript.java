@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 
 @Path("/")
@@ -62,10 +63,8 @@ public final class ShowLiquibaseScript extends Base {
 
 		String result = null;
 		Writer writer = new StringBuilderWriter();
-		try(Migrator databaseMigrator = getIbisContext().getBean("jdbcMigrator", Migrator.class)) {
-			databaseMigrator.setIbisContext(getIbisContext());
-			databaseMigrator.setDatasourceName(datasource);
-			databaseMigrator.configure(getIbisManager().getConfiguration(configuration));
+		Configuration config = getIbisManager().getConfiguration(configuration);
+		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
 			result = databaseMigrator.getUpdateSql(writer).toString();
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);

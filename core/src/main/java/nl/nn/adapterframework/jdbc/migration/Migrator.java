@@ -81,6 +81,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
 				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
+				SpringUtils.autowireByName(getApplicationContext(), instance);
 			}
 			catch (ValidationFailedException e) {
 				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);

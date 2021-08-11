@@ -375,6 +375,18 @@ public class IbisContext extends IbisApplicationContext {
 
 			currentConfigurationVersion = configuration.getVersion();
 
+			// Execute any database changes before loading the configuration.
+			// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
+			if(AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
+				try(Migrator databaseMigrator = configuration.getBean("jdbcMigrator", Migrator.class)) {
+					databaseMigrator.configure();
+					databaseMigrator.update();
+				} catch (Exception e) {
+					throw new IllegalStateException("unable to run JDBC migration", e);
+					//log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
+				}
+			}
+
 			configuration.configure();
 
 			if (currentConfigurationVersion == null) {

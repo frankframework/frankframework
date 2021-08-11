@@ -235,18 +235,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		log.info("configuring configuration ["+getId()+"]");
 		state = BootState.STARTING;
 
-		// Execute any database changes before loading the configuration.
-		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
-			try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
-				databaseMigrator.configure();
-				databaseMigrator.update();
-			} catch (Exception e) {
-				throw new IllegalStateException("unable to run JDBC migration", e);
-				//log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
-			}
-		}
-
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
 			configurationDigester.digest();
