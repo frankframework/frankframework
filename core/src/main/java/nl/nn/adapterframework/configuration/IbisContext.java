@@ -321,7 +321,7 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
+			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
 		}
 	}
 
@@ -426,7 +426,7 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagramManager.generate(configurations);
 			} catch (IOException e) {
-				log(ALL_CONFIGS_KEY, null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
+				log("error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}

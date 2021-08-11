@@ -16,12 +16,7 @@
 	<!-- AOP has to be enabled explicitly on a per Context basis -->
 	<aop:config proxy-target-class="true" />
 
-	<bean
-		name="configurationDigester"
-		class="nl.nn.adapterframework.configuration.ConfigurationDigester"
-		autowire="byName"
-		scope="singleton"
-	/>
+	<bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" scope="singleton" />
 
 	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
 
@@ -38,6 +33,10 @@
 		autowire="byType"
 		scope="singleton"
 	/>
+
+	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.Migrator" scope="prototype">
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
+	</bean>
 
 	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
 	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
