@@ -526,7 +526,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 				String contentType = mimeType.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
-					contentType = messageContext.get("contentType", contentType);
+					Message parsedContentType = messageContext.getMessage("contentType");
+					if(!Message.isEmpty(parsedContentType)) {
+						contentType = parsedContentType.asString();
+					}
 				}
 				response.setHeader("Content-Type", contentType);
 
