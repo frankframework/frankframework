@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jdbc.migration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
@@ -12,6 +13,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
@@ -34,6 +36,12 @@ public class MigratorTest extends JdbcTestBase {
 	@Override
 	protected void prepareDatabase() throws Exception {
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
+		if (dbmsSupport.isTablePresent(connection, "DUMMYTABLE")) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE DUMMYTABLE");
+		}
+		if (dbmsSupport.isTablePresent(connection, "DATABASECHANGELOG")) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE DATABASECHANGELOG");
+		}
 
 		migrator = getConfiguration().createBean(Migrator.class);
 		migrator.setDatasourceName(getDataSourceName());
@@ -51,6 +59,7 @@ public class MigratorTest extends JdbcTestBase {
 		migrator.update();
 
 		MessageKeeper messageKeeper = getMessageKeeper();
+		assertNotNull("no message logged to the messageKeeper", messageKeeper);
 		assertEquals(1, messageKeeper.size());
 		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
 	}

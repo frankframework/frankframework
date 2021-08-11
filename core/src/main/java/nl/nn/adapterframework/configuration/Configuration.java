@@ -39,7 +39,6 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
