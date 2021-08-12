@@ -145,7 +145,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 
 	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return sender.provideOutputStream(session, getNextPipe());
 	}
 

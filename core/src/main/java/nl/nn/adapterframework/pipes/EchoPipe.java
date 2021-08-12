@@ -42,7 +42,7 @@ public class EchoPipe extends StreamingPipe {
 	}
 
 	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return MessageOutputStream.getTargetStream(this, session, getNextPipe());
 	}
 

@@ -114,9 +114,9 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public boolean supportsOutputStreamPassThrough() {
 		return false;
 	}
-	
+
 	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		return actor.provideOutputStream(session, getNextPipe());
 	}
 
