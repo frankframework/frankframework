@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.regex.Pattern;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 
 /**
@@ -28,6 +30,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 enum JavadocStrategy {
 	IGNORE_JAVADOC(new DelegateIgnoreJavadoc()),
 	USE_JAVADOC(new DelegateUseJavadoc());
+
+	private static final Pattern DESCRIPTION_HEADER_SPLIT = Pattern.compile("(\\. )|(\\.\\n)|(\\.\\r\\n)");
 
 	private final Delegate delegate;
 
@@ -48,10 +52,10 @@ enum JavadocStrategy {
 		void completeFrankElement(FrankElement frankElement, FrankClass clazz) {
 			frankElement.setDescription(clazz.getJavaDoc());
 			if(frankElement.getDescription() != null) {
-				String descriptionHeader = frankElement.getDescription();
-				int idx = frankElement.getDescription().indexOf('.');
-				if(idx >= 0) {
-					descriptionHeader = frankElement.getDescription().substring(0, idx + 1);
+				String descriptionHeader = DESCRIPTION_HEADER_SPLIT.split(frankElement.getDescription())[0];
+				String remainder = frankElement.getDescription().substring(descriptionHeader.length());
+				if(remainder.startsWith(".")) {
+					descriptionHeader = descriptionHeader + ".";
 				}
 				frankElement.setDescriptionHeader(descriptionHeader);
 			}
