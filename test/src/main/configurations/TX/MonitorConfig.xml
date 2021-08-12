@@ -45,9 +45,7 @@
 			<event>Receiver Shutdown</event>
 		</trigger>
 		<trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING">
-			<events>
-				<event>Receiver Shutdown</event>
-			</events>
+			<event>Receiver Shutdown</event>
 		</trigger>
 	</monitor>
 </monitoring>

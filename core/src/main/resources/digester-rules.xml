@@ -61,7 +61,7 @@
 
 	<rule pattern="*/destination" registerMethod="registerDestination"/>
 
-	<rule pattern="*/monitors/monitor" registerMethod="addMonitor"/>
+	<rule pattern="*/monitoring/monitor" registerMethod="addMonitor"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger"/>
 	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
