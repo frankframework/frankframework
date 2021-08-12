@@ -129,7 +129,7 @@
 	 					*
 	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
 	 						nl.nn.adapterframework.core.PipeLineSession, 
-	 						..
+	 						nl.nn.adapterframework.core.IForwardTarget
 	 					)
 	 				)
 	 				and
@@ -168,7 +168,7 @@
 					args(message, session, next)
 					"
 				method="debugStreamingSenderInputOutputAbort"
-				arg-names="blockHandle, message, session, next"
+				arg-names="message, session, next"
 			/>
 			<aop:around
 				pointcut=
