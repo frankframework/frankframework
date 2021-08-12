@@ -88,10 +88,8 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	/**
 	 * provide the outputstream, or null if a stream cannot be provided.
 	 * Implementations should provide a forward target by calling {@link #getNextPipe()}.
-	 * <br/>
-	 * Must be public for ladybug AOP, should never be called directly
 	 */
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
 		return null;
 	}

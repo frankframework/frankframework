@@ -445,9 +445,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			return totalItems;
 		}
 	}
-
+	
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
 		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
 	}

@@ -360,7 +360,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		HandlerRecord handlerRecord = new HandlerRecord();
 		try {
 			MessageOutputStream target=getTargetStream(session);
