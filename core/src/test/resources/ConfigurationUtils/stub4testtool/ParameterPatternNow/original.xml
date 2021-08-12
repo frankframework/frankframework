@@ -16,6 +16,7 @@
 				className="nl.nn.adapterframework.pipes.PutParametersInSession"
 				>
 				<param name="date" type="datetime" pattern="{now,date,yyyy-MM-dd HH:mm:ss}"/>
+				<param name="date" type="datetime" pattern="{now}"/>
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>
