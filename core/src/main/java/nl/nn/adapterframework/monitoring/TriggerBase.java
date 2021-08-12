@@ -40,6 +40,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public abstract class TriggerBase implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private static final String CLASS_NAME_ALARM = Alarm.class.getName();
+	private static final String CLASS_NAME_CLEARING = Clearing.class.getName();
+
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
 	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
@@ -139,7 +142,8 @@ public abstract class TriggerBase implements ITrigger {
 
 	@Override
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
+		XmlBuilder trigger=new XmlBuilder("trigger");
+		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity",getSeverity());
@@ -150,31 +154,25 @@ public abstract class TriggerBase implements ITrigger {
 		if (getPeriod()>0) {
 			trigger.addAttribute("period",getPeriod());
 		}
-		XmlBuilder events=new XmlBuilder("events");
-		trigger.addSubElement(events);
 		for (int i=0; i<eventCodes.size(); i++) {
 			XmlBuilder event=new XmlBuilder("event");
-			events.addSubElement(event);
+			trigger.addSubElement(event);
 			event.setValue(eventCodes.get(i));
 		}
 		if (getAdapterFilters()!=null) {
-			XmlBuilder filtersXml=new XmlBuilder("filters");
-			trigger.addSubElement(filtersXml);
 			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 					String adapterName = it.next();
 					AdapterFilter af = getAdapterFilters().get(adapterName);
 					XmlBuilder adapter = new XmlBuilder("adapterfilter");
-					filtersXml.addSubElement(adapter);
+					trigger.addSubElement(adapter);
 					adapter.addAttribute("adapter",adapterName);
 					if (isFilterOnLowerLevelObjects()) {
-						XmlBuilder sourcesXml=new XmlBuilder("sources");
-						adapter.addSubElement(sourcesXml);
 						List<String> subobjectList=af.getSubObjectList();
 						if (subobjectList!=null) {
 							for(String subObjectName : subobjectList) {
 								XmlBuilder sourceXml=new XmlBuilder("source");
-								sourcesXml.addSubElement(sourceXml);
+								adapter.addSubElement(sourceXml);
 								sourceXml.setValue(subObjectName);
 							}
 						}

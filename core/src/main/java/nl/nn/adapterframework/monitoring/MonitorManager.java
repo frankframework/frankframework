@@ -201,7 +201,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public XmlBuilder toXml() {
 		XmlBuilder configXml=new XmlBuilder("monitoring");
 		configXml.addAttribute("enabled",isEnabled());
-		XmlBuilder destinationsXml=new XmlBuilder("destinations");
 		for(String name : destinations.keySet()) {
 			IMonitorAdapter ma=getDestination(name);
 
@@ -209,15 +208,12 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 			destinationXml.addAttribute("name",ma.getName());
 			destinationXml.addAttribute("className",ma.getClass().getName());
 
-			destinationsXml.addSubElement(ma.toXml());
+			configXml.addSubElement(ma.toXml());
 		}
-		configXml.addSubElement(destinationsXml);
-		XmlBuilder monitorsXml=new XmlBuilder("monitors");
 		for (int i=0; i<monitors.size(); i++) {
 			Monitor monitor=getMonitor(i);
-			monitorsXml.addSubElement(monitor.toXml());
+			configXml.addSubElement(monitor.toXml());
 		}
-		configXml.addSubElement(monitorsXml);
 
 		return configXml;
 	}
