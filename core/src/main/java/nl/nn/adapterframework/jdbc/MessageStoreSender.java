@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.FrankDocIgnoreTypeMembership;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -80,6 +81,7 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
+@FrankDocIgnoreTypeMembership("nl.nn.adapterframework.core.ITransactionalStorage")
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
 	
 	public final String PARAM_MESSAGEID = "messageId";
