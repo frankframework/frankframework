@@ -28,6 +28,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -73,8 +74,24 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				checkReadMethodType(pd, name, value, attributes);
 			}
 
-			BeanUtils.setProperty(getBean(), name, value);
+			Object valueToSet = getValueToSet(m, value);
+			log.trace("attempting to set method [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
+
+			BeanUtils.setProperty(getBean(), name, valueToSet);
 		}
+	}
+
+	private Object getValueToSet(Method m, String value) {
+		Class<?> setterArgumentClass = m.getParameters()[0].getType();
+		if(setterArgumentClass.isEnum()) {
+			return parseAsEnum(setterArgumentClass, value);
+		}
+		return value;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
+		return EnumUtils.parse((Class<E>) enumClass, value);
 	}
 
 	protected void checkReadMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {

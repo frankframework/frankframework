@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.digester.ValidateAttributeRuleTest.ClassWithEnum.TestEnum;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
@@ -86,7 +88,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		attr.put("deprecatedString", "deprecatedValue");
 		attr.put("testInteger", "3");
 		attr.put("testBoolean", "true");
-//		attr.put("testEnum", "two");
+		attr.put("testEnum", "two");
 
 		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
 
@@ -95,7 +97,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("deprecatedValue", bean.getDeprecatedString());
 		assertEquals(3, bean.getTestInteger());
 		assertEquals(true, bean.isTestBoolean());
-//		assertEquals(TestEnum.TWO, topBean.getTestEnum());
+		assertEquals(TestEnum.TWO, bean.getTestEnum());
 	}
 
 	@Test
@@ -159,14 +161,18 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 	@Test
 	public void testAttributeValueEqualToDefaultValue() throws Exception {
-		Map<String, String> attr = new HashMap<>();
+		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
+		attr.put("testInteger", "0");
+		attr.put("testBoolean", "false");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(1, configWarnings.size());
+		assertEquals(3, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [0]", configWarnings.get(1));
+		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(2));
 	}
 
 	@Test
@@ -241,7 +247,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Deprecated @Getter @Setter String deprecatedString;
 		private @Getter String configWarningString;
 		private @Getter String deprecatedConfigWarningString;
-		private @Getter @Setter int testInteger;
+		private @Getter @Setter int testInteger = 0;
 		private @Getter @Setter boolean testBoolean = false;
 
 		@ConfigurationWarning("my test warning")
