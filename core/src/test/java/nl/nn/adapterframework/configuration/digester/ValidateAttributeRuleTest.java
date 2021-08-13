@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -20,42 +19,13 @@ import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class ValidateAttributeRuleTest extends Mockito {
-	private ClassWithEnum topBean;
-	private ValidateAttributeRule rule;
-
-	@Before
-	public void setup() {
-		topBean = new ClassWithEnum();
-		rule = new ValidateAttributeRule() {
-			@Override
-			public Object getBean() {
-				return topBean;
-			}
-		};
-	}
-
-	@Test
-	public void testSimpleAttribute() throws Exception {
-		Map<String, String> attr = new HashMap<>();
-		attr.put("name", "my-string-value");
-		attr.put("testString", "testStringValue");
-		attr.put("deprecatedString", "deprecatedValue");
-		attr.put("testInteger", "3");
-		attr.put("testBoolean", "true");
-//		attr.put("testEnum", "two");
-
-		rule.begin(null, "ClassWithEnum", copyMapToAttrs(attr));
-
-		assertEquals("my-string-value", topBean.getName());
-		assertEquals("testStringValue", topBean.getTestString());
-		assertEquals("deprecatedValue", topBean.getDeprecatedString());
-		assertEquals(3, topBean.getTestInteger());
-		assertEquals(true, topBean.isTestBoolean());
-//		assertEquals(TestEnum.TWO, topBean.getTestEnum());
-	}
+	private TestConfiguration configuration;
 
 	//Convenience method to create an Attribute list to be parsed
 	private Attributes copyMapToAttrs(Map<String, String> map) {
@@ -83,9 +53,175 @@ public class ValidateAttributeRuleTest extends Mockito {
 		return attrs;
 	}
 
+	//Run the ValidateAttributeRule, returns the beanClass to validate setters being called
+	private <T> T runRule(Class<T> beanClass, Map<String, String> attributes) throws Exception {
+		configuration = new TestConfiguration();
+		T topBean = configuration.createBean(beanClass);
+		ValidateAttributeRule rule = new ValidateAttributeRule() {
+			@Override
+			public Object getBean() {
+				return topBean;
+			}
+		};
+		configuration.autowireByName(rule);
+
+		rule.begin(null, beanClass.getSimpleName(), copyMapToAttrs(attributes));
+
+		//Test the bean name with and without INamedObject interface
+		if(topBean instanceof ConfigWarningTestClass) {
+			assertEquals("ConfigWarningTestClass [name here]", rule.getObjectName());
+		}
+		if(topBean instanceof DeprecatedTestClass) {
+			assertEquals("DeprecatedTestClass", rule.getObjectName());
+		}
+
+		return topBean;
+	}
+
+	@Test
+	public void testSimpleAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("name", "my-string-value");
+		attr.put("testString", "testStringValue");
+		attr.put("deprecatedString", "deprecatedValue");
+		attr.put("testInteger", "3");
+		attr.put("testBoolean", "true");
+//		attr.put("testEnum", "two");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("my-string-value", bean.getName());
+		assertEquals("testStringValue", bean.getTestString());
+		assertEquals("deprecatedValue", bean.getDeprecatedString());
+		assertEquals(3, bean.getTestInteger());
+		assertEquals(true, bean.isTestBoolean());
+//		assertEquals(TestEnum.TWO, topBean.getTestEnum());
+	}
+
+	@Test
+	public void testAttributeThatDoesntExist() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("do-not-exist", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum does not have an attribute [do-not-exist] to set to value [string value here]", configWarnings.get(0));
+	}
+
+	@Test
+	public void testAttributeWithConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("configWarningString", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [configWarningString]: my test warning", configWarnings.get(0));
+	}
+
+	@Test
+	public void testDeprecatedAttributeWithConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("deprecatedConfigWarningString", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningString] is deprecated: my deprecated test warning", configWarnings.get(0));
+	}
+
+	@Test
+	public void testDeprecatedAttributeWithoutConfigWarning() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("deprecatedString", "string value here");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(0, configWarnings.size());
+	}
+
+	@Test
+	public void testAttributeWithPropertyRef() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("name", "${instance.name}");
+		attr.put("testString", "${instance.name}");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("${instance.name}", bean.getName()); //Does not resolve
+		assertEquals(TestConfiguration.TEST_CONFIGURATION_NAME, bean.getTestString()); //Does resolve
+	}
+
+	@Test
+	public void testAttributeValueEqualToDefaultValue() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testString", "test");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
+	}
+
+	@Test
+	public void testAttributeWithNoValue() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testString", "");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testString] has no value", configWarnings.get(0));
+	}
+
+
+	@Test
+	public void testAttributeWithNumberFormatException() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testInteger", "a String");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testInteger] with value [a String] cannot be converted to a number: For input string: \"a String\"", configWarnings.get(0));
+	}
+
+	@Test
+	public void testDeprecatedTestClass() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("name", "name here");
+
+		runRule(DeprecatedTestClass.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("DeprecatedTestClass is deprecated: warning above deprecated test class", configWarnings.get(0));
+	}
+
+	@Test
+	public void testConfigWarningTestClass() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("name", "name here");
+
+		runRule(ConfigWarningTestClass.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ConfigWarningTestClass [name here] : warning above test class", configWarnings.get(0));
+	}
+
 	@Test
 	public void testEnumGetterSetter() throws Exception {
-		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(topBean, "testEnum");
+		ClassWithEnum bean = new ClassWithEnum();
+		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, "testEnum");
 		Method writeMethod = pd.getWriteMethod();
 		assertNotNull(writeMethod);
 		assertEquals("TestEnum", writeMethod.getParameters()[0].getType().getSimpleName());
@@ -101,9 +237,33 @@ public class ValidateAttributeRuleTest extends Mockito {
 		}
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
-		private @Getter @Setter String testString;
+		private @Getter @Setter String testString = "test";
 		private @Deprecated @Getter @Setter String deprecatedString;
+		private @Getter String configWarningString;
+		private @Getter String deprecatedConfigWarningString;
 		private @Getter @Setter int testInteger;
 		private @Getter @Setter boolean testBoolean = false;
+
+		@ConfigurationWarning("my test warning")
+		public void setConfigWarningString(String str) {
+			configWarningString = str;
+		}
+
+		@ConfigurationWarning("my deprecated test warning")
+		@Deprecated
+		public void setDeprecatedConfigWarningString(String str) {
+			deprecatedConfigWarningString = str;
+		}
+	}
+
+	@ConfigurationWarning("warning above test class")
+	public static class ConfigWarningTestClass implements INamedObject {
+		private @Getter @Setter String name;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("warning above deprecated test class")
+	public static class DeprecatedTestClass {
+		private @Getter @Setter String name;
 	}
 }
