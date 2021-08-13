@@ -57,7 +57,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 	//Run the ValidateAttributeRule, returns the beanClass to validate setters being called
 	private <T> T runRule(Class<T> beanClass, Map<String, String> attributes) throws Exception {
 		configuration = new TestConfiguration();
-		T topBean = configuration.createBean(beanClass);
+		T topBean = beanClass.newInstance();
 		ValidateAttributeRule rule = new ValidateAttributeRule() {
 			@Override
 			public Object getBean() {
@@ -240,8 +240,8 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ONE, TWO;
 	}
 
-	public class ClassWithEnum implements INamedObject {
-		
+	public static class ClassWithEnum implements INamedObject {
+
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -264,13 +264,13 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@ConfigurationWarning("warning above test class")
-	public class ConfigWarningTestClass implements INamedObject {
+	public static class ConfigWarningTestClass implements INamedObject {
 		private @Getter @Setter String name;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("warning above deprecated test class")
-	public class DeprecatedTestClass {
+	public static class DeprecatedTestClass {
 		private @Getter @Setter String name;
 	}
 }
