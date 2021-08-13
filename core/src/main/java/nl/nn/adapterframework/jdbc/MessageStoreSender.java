@@ -81,7 +81,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Jaco de Groot
  */
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
-
+	
 	public final String PARAM_MESSAGEID = "messageId";
 	
 	private ParameterList paramList = null;
