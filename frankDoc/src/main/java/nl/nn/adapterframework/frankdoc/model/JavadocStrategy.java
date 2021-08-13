@@ -43,6 +43,15 @@ enum JavadocStrategy {
 		delegate.completeFrankElement(frankElement, frankClass);
 	}
 
+	static String calculateDescriptionHeader(String description) {
+		String descriptionHeader = DESCRIPTION_HEADER_SPLIT.split(description)[0];
+		String remainder = description.substring(descriptionHeader.length());
+		if(remainder.startsWith(".")) {
+			descriptionHeader = descriptionHeader + ".";
+		}
+		return descriptionHeader;
+	}
+
 	private static abstract class Delegate {
 		abstract void completeFrankElement(FrankElement frankElement, FrankClass frankClass);
 	}
@@ -52,12 +61,7 @@ enum JavadocStrategy {
 		void completeFrankElement(FrankElement frankElement, FrankClass clazz) {
 			frankElement.setDescription(clazz.getJavaDoc());
 			if(frankElement.getDescription() != null) {
-				String descriptionHeader = DESCRIPTION_HEADER_SPLIT.split(frankElement.getDescription())[0];
-				String remainder = frankElement.getDescription().substring(descriptionHeader.length());
-				if(remainder.startsWith(".")) {
-					descriptionHeader = descriptionHeader + ".";
-				}
-				frankElement.setDescriptionHeader(descriptionHeader);
+				frankElement.setDescriptionHeader(calculateDescriptionHeader(frankElement.getDescription()));
 			}
 		}
 	}

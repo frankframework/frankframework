@@ -47,6 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
+	private static final String DESCRIPTION = "description";
 	private static final String DESCRIPTION_HEADER = "descriptionHeader";
 
 	private FrankDocModel model;
@@ -144,6 +145,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
+		addDescription(result, frankElement.getDescription());
 		addDescriptionHeader(result, frankElement.getDescriptionHeader());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
@@ -211,6 +213,12 @@ public class FrankDocJsonFactory {
 		if(value != null) {
 			builder.add(field, value);
 		}
+	}
+
+	private void addDescription(JsonObjectBuilder builder, String value) {
+		if(! StringUtils.isBlank(value)) {
+			builder.add(DESCRIPTION, value.replaceAll("\"", "\\\\\\\""));
+		}		
 	}
 
 	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
