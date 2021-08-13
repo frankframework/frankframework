@@ -22,7 +22,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.digester.ValidateAttributeRuleTest.ClassWithEnum.TestEnum;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
@@ -237,10 +236,12 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("TestEnum", readMethod.getReturnType().getSimpleName());
 	}
 
-	public static class ClassWithEnum implements INamedObject {
-		public enum TestEnum {
-			ONE, TWO;
-		}
+	public enum TestEnum {
+		ONE, TWO;
+	}
+
+	public class ClassWithEnum implements INamedObject {
+		
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
 		private @Getter @Setter String testString = "test";
@@ -263,13 +264,13 @@ public class ValidateAttributeRuleTest extends Mockito {
 	}
 
 	@ConfigurationWarning("warning above test class")
-	public static class ConfigWarningTestClass implements INamedObject {
+	public class ConfigWarningTestClass implements INamedObject {
 		private @Getter @Setter String name;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("warning above deprecated test class")
-	public static class DeprecatedTestClass {
+	public class DeprecatedTestClass {
 		private @Getter @Setter String name;
 	}
 }
