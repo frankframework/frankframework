@@ -5,44 +5,82 @@ import static org.junit.Assert.assertNotNull;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.INamedObject;
 
-public class ValidateAttributeRuleTest {
-	private ClassWithEnum topBean = new ClassWithEnum();
+public class ValidateAttributeRuleTest extends Mockito {
+	private ClassWithEnum topBean;
+	private ValidateAttributeRule rule;
 
-	@Test
-	public void testSimpleRule() {
-		ValidateAttributeRule rule = new ValidateAttributeRule() {
+	@Before
+	public void setup() {
+		topBean = new ClassWithEnum();
+		rule = new ValidateAttributeRule() {
 			@Override
-			protected Object getBean() {
+			public Object getBean() {
 				return topBean;
 			}
 		};
-		Map<String, String> attr = new HashMap<>();
-		rule.begin(null, "ClassWithEnum", copyMapToAttrs(attr));
 	}
 
-	private Map<String, String> copyMapToAttrs(Attributes attrs) {
-		Map<String, String> map = new HashMap<>(attrs.getLength());
-		for (int i = 0; i < attrs.getLength(); ++i) {
-			String name = attrs.getLocalName(i);
-			if ("".equals(name)) {
-				name = attrs.getQName(i);
-			}
-			if(name != null && !name.equals("className")) {
-				String value = attrs.getValue(i);
-				map.put(name, value);
-			}
+	@Test
+	public void testSimpleAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("name", "my-string-value");
+		attr.put("testString", "testStringValue");
+		attr.put("deprecatedString", "deprecatedValue");
+		attr.put("testInteger", "3");
+		attr.put("testBoolean", "true");
+//		attr.put("testEnum", "two");
+
+		rule.begin(null, "ClassWithEnum", copyMapToAttrs(attr));
+
+		assertEquals("my-string-value", topBean.getName());
+		assertEquals("testStringValue", topBean.getTestString());
+		assertEquals("deprecatedValue", topBean.getDeprecatedString());
+		assertEquals(3, topBean.getTestInteger());
+		assertEquals(true, topBean.isTestBoolean());
+//		assertEquals(TestEnum.TWO, topBean.getTestEnum());
+	}
+
+	//Convenience method to create an Attribute list to be parsed
+	private Attributes copyMapToAttrs(Map<String, String> map) {
+		List<String[]> attList = new LinkedList<>();
+		for(String key : map.keySet()) {
+			attList.add(new String[] {key , map.get(key)});
 		}
-		return map;
+
+		Attributes attrs = spy(Attributes.class);
+		when(attrs.getLocalName(anyInt())).thenAnswer(new Answer<String>() {
+			@Override
+			public String answer(InvocationOnMock invocation) throws Throwable {
+				int i = (int) invocation.getArguments()[0];
+				return attList.get(i)[0];
+			}
+		});
+		when(attrs.getValue(anyInt())).thenAnswer(new Answer<String>() {
+			@Override
+			public String answer(InvocationOnMock invocation) throws Throwable {
+				int i = (int) invocation.getArguments()[0];
+				return attList.get(i)[1];
+			}
+		});
+		when(attrs.getLength()).thenReturn(attList.size());
+		return attrs;
 	}
 
 	@Test
@@ -57,10 +95,15 @@ public class ValidateAttributeRuleTest {
 		assertEquals("TestEnum", readMethod.getReturnType().getSimpleName());
 	}
 
-	private static class ClassWithEnum {
+	public static class ClassWithEnum implements INamedObject {
 		public enum TestEnum {
 			ONE, TWO;
 		}
-		private @Getter @Setter TestEnum testEnum;
+		private @Getter @Setter String name;
+		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
+		private @Getter @Setter String testString;
+		private @Deprecated @Getter @Setter String deprecatedString;
+		private @Getter @Setter int testInteger;
+		private @Getter @Setter boolean testBoolean = false;
 	}
 }
