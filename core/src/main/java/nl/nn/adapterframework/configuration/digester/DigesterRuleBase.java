@@ -92,7 +92,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	/**
 	 * @return the currently handled object, aka TOP object
 	 */
-	protected final Object getBean() {
+	protected Object getBean() {
 		return getDigester().peek();
 	}
 
