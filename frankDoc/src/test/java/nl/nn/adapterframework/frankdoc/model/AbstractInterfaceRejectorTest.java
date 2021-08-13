@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 @RunWith(Parameterized.class)
@@ -38,13 +39,22 @@ public class AbstractInterfaceRejectorTest {
 
 	@Parameter(2)
 	public String[] expectedAttributes;
-	
+
 	private FrankClassRepository classRepository;
 
 	@Test
-	public void testAttributeRejection() throws Exception {
+	public void testAttributeRejectionOnChild() throws Exception {
+		doAttributeRejectionTest("Child");
+	}
+
+	@Test
+	public void testAttributeRejectionOnGrandChild() throws Exception {
+		doAttributeRejectionTest("GrandChild");
+	}
+
+	private void doAttributeRejectionTest(String inputClass) throws FrankDocException {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		FrankClass clazz = classRepository.findClass(thePackage + "Child");
+		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
 		String excludedInterfaceFullName = thePackage + excludedInterface;
 		AttributesFromInterfaceRejector instance = new AttributesFromInterfaceRejector(new HashSet<>(Arrays.asList(
 				excludedInterfaceFullName)));
@@ -54,9 +64,18 @@ public class AbstractInterfaceRejectorTest {
 	}
 
 	@Test
-	public void testTypeIgnore() throws Exception {
+	public void testTypeIgnoreOnChild() throws Exception {
+		doTypeIngoreTest("Child");
+	}
+
+	@Test
+	public void testTypeIgnoreOnGrandChild() throws Exception {
+		doTypeIngoreTest("GrandChild");
+	}
+
+	private void doTypeIngoreTest(String inputClass) throws FrankDocException {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		FrankClass clazz = classRepository.findClass(thePackage + "Child");
+		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
 		String excludedInterfaceFullName = thePackage + excludedInterface;
 		GroupFromInterfaceRejector instance = new GroupFromInterfaceRejector(new HashSet<>(Arrays.asList(excludedInterfaceFullName)));
 		List<String> actualGroupRejections = new ArrayList<>(instance.getRejects(clazz));
