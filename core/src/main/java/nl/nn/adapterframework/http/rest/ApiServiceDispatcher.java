@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
@@ -120,7 +121,7 @@ public class ApiServiceDispatcher {
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
-		String method = listener.getMethod();
+		HttpMethod method = listener.getMethodEnum();
 
 		synchronized(patternClients) {
 			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
@@ -130,7 +131,7 @@ public class ApiServiceDispatcher {
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
-		String method = listener.getMethod();
+		HttpMethod method = listener.getMethodEnum();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
@@ -189,7 +190,7 @@ public class ApiServiceDispatcher {
 		for (ApiDispatchConfig config : clients) {
 			JsonObjectBuilder methods = Json.createObjectBuilder();
 			ApiListener listener = null;
-			for (String method : config.getMethods()) {
+			for (HttpMethod method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				listener = config.getApiListener(method);
 				if(listener != null && listener.getReceiver() != null) {
@@ -201,7 +202,7 @@ public class ApiServiceDispatcher {
 						methodBuilder.add("operationId", listener.getOperationId());
 					}
 					// GET and DELETE methods cannot have a requestBody according to the specs.
-					if(!method.equals("GET") && !method.equals("DELETE")) {
+					if(method != HttpMethod.GET && method != HttpMethod.DELETE) {
 						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
 					}
 					mapParamsInRequest(request, adapter, listener, methodBuilder);
@@ -210,7 +211,7 @@ public class ApiServiceDispatcher {
 					MediaTypes produces = listener.getProducesEnum();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
-				methods.add(method.toLowerCase(), methodBuilder);
+				methods.add(method.name().toLowerCase(), methodBuilder);
 			}
 			if(listener != null) {
 				paths.add(listener.getUriPattern(), methods);
@@ -294,14 +295,7 @@ public class ApiServiceDispatcher {
 				paramBuilder.add(addParameterToSchema(listener.getMessageIdHeader(), "header", false, Json.createObjectBuilder().add("type", "string")));
 			}
 		}
-		// cookie params
-//		if(StringUtils.isNotEmpty(listener.getCookieParams())) {
-//			String params[] = listener.getCookieParams().split(",");
-//			for (String parameter : params) {
-//				paramBuilder.add(addParameterToSchema(parameter, "cookie", false, Json.createObjectBuilder().add("type", "string")));
-//				paramsFromHeaderAndCookie.add(parameter);
-//			}
-//		}
+
 		return paramsFromHeaderAndCookie;
 	}
 
