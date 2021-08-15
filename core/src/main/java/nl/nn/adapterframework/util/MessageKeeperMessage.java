@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 /**
@@ -63,7 +64,7 @@ public class MessageKeeperMessage {
 		}
 		return message;
 	}
-	
+
 	public Date getMessageDate() {
 		return messageDate;
 	}
@@ -72,5 +73,11 @@ public class MessageKeeperMessage {
 	}
 	public String getMessageLevel() {
 		return messageLevel.name();
+	}
+
+	@Override
+	public String toString() {
+		String date = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(messageDate);
+		return String.format("%S: %s - %s", messageLevel, date, messageText);
 	}
 }

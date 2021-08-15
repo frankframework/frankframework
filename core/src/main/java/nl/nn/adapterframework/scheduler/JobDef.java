@@ -604,7 +604,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	 * Locate all Lockers, and find out which datasources are used.
 	 * @return distinct list of all datasourceNames used by lockers
 	 */
-	private List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+	protected List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
 		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
@@ -752,7 +752,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 					String resultString = result.asString();
 					log.info("deleted [" + resultString + "] rows");
 					int numberOfRowsAffected = Integer.valueOf(resultString);
-					if(numberOfRowsAffected<maxRows) {
+					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
 						deletedAllRecords = true;
 					} else {
 						log.info("executing the query again for job [cleanupDatabase]!");

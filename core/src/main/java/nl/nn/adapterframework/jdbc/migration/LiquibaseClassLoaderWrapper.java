@@ -56,7 +56,7 @@ public class LiquibaseClassLoaderWrapper extends ClassLoader {
 		}
 
 		// Return null by default if not an instance of ClassLoaderBase
-		log.info("unable to find resource ["+name+"] in parent classloader ["+getParent()+"]");
+		log.info("unable to determine ClassLoader hierarchy using classloader ["+getParent()+"], returning null");
 		return null;
 	}
 

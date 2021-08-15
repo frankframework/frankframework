@@ -225,7 +225,20 @@ public class CmisSender extends SenderWithParametersBase {
 
 	private CmisAction action;
 	private enum CmisAction {
-		CREATE,DELETE,GET,FIND,UPDATE,FETCH,DYNAMIC;
+		/** Create a document */
+		CREATE,
+		/** Delete a document */
+		DELETE,
+		/** Get the content of a document (and optional the properties) */
+		GET,
+		/** Perform a query that returns properties */
+		FIND,
+		/** Update the properties of an existing document */
+		UPDATE,
+		/** Get the (meta)data of a folder or document */
+		FETCH,
+		/** Determine action based on the incoming CmisEvent */
+		DYNAMIC;
 	}
 
 	private boolean runtimeSession = false;
@@ -1055,14 +1068,7 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"specifies action to perform. Must be one of \n" +
-			" * <ul>\n" +
-			" * <li><code>get</code>: get the content of a document (and optional the properties)</li>\n" +
-			" * <li><code>create</code>: create a document</li>\n" +
-			" * <li><code>find</code>: perform a query that returns properties</li>\n" +
-			" * <li><code>update</code>: update the properties of an existing document</li>\n" +
-			" * <li><code>fetch</code>: get the (meta)data of a folder or document</li>\n" +
-			" * </ul>", ""})
+	@IbisDoc({"specifies action to perform", ""})
 	public void setAction(String action) {
 		this.action = EnumUtils.parse(CmisAction.class, "action", action);
 	}
@@ -1079,22 +1085,22 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"the maximum number of concurrent connections", "10"})
-	public void setMaxConnections(int i) throws ConfigurationException {
+	public void setMaxConnections(int i) {
 		sessionBuilder.setMaxConnections(i);
 	}
 
 	@IbisDoc({"the connection timeout in seconds", "10"})
-	public void setTimeout(int i) throws ConfigurationException {
+	public void setTimeout(int i) {
 		sessionBuilder.setTimeout(i);
 	}
 
 	@IbisDoc({"url to connect to", ""})
-	public void setUrl(String url) throws ConfigurationException {
+	public void setUrl(String url) {
 		sessionBuilder.setUrl(url);
 	}
 
 	@IbisDoc({"repository id", ""})
-	public void setRepository(String repository) throws ConfigurationException {
+	public void setRepository(String repository) {
 		sessionBuilder.setRepository(repository);
 	}
 
@@ -1131,7 +1137,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@IbisDoc({"'atompub', 'webservices' or 'browser'", "'atompub'"})
-	public void setBindingType(String bindingType) throws ConfigurationException {
+	public void setBindingType(String bindingType) {
 		sessionBuilder.setBindingType(bindingType);
 	}
 
