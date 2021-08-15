@@ -75,7 +75,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 
 			Object valueToSet = getValueToSet(m, value);
-			log.trace("attempting to set method [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
+			log.trace("attempting to call method [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
 
 			BeanUtils.setProperty(getBean(), name, valueToSet);
 		}
