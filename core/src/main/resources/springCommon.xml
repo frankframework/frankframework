@@ -52,15 +52,6 @@
 		factory-method="getInstance"
 	/>
 
-	<bean
-		name="jdbcMigrator"
-		class="nl.nn.adapterframework.jdbc.migration.Migrator"
-		autowire="byName"
-		scope="prototype"
-		>
-		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
-	</bean>
-
 
 	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
 
