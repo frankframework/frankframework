@@ -23,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -39,6 +40,8 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +55,6 @@ import org.springframework.mock.web.MockServletContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -73,12 +75,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	private M jaxRsResource;
 	private SecurityContext securityContext = mock(SecurityContext.class);
-	private Configuration configuration = new TestConfiguration();
+	private TestConfiguration configuration = null;
 
 	abstract public M createJaxRsResource();
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		ApplicationWarnings.removeInstance(); //Remove old instance if present
 		M resource = createJaxRsResource();
 		checkContextFields(resource);
@@ -109,8 +111,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		}
 	}
 
-	private void registerAdapter(Configuration configuration) {
-		Adapter adapter = new Adapter();
+	public TestConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	protected void registerAdapter(TestConfiguration configuration) throws Exception{
+		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("dummyAdapter");
 		try {
 			PipeLine pipeline = new PipeLine();
@@ -302,6 +308,12 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 
 							System.out.println("setting method argument ["+i+"] to value ["+value+"] with type ["+value.getClass().getSimpleName()+"]");
 							methodArguments[i] = value;
+						} else if(mediaType.equals(MediaType.MULTIPART_FORM_DATA)){
+							if(jsonOrFormdata instanceof List<?>) {
+								@SuppressWarnings("unchecked")
+								MultipartBody multipartBody = new MultipartBody((List<Attachment>) jsonOrFormdata);
+								methodArguments[i] = multipartBody;
+							}
 						} else {
 							fail("mediaType ["+mediaType+"] not yet implemented"); //TODO: figure out how to deal with MultipartRequests
 						}
