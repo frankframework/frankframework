@@ -126,7 +126,7 @@ public class CmisSessionBuilder {
 		if (getBindingType() == null) {
 			throw new CmisSessionException("no bindingType configured");
 		}
-		if(overrideEntryPointWSDL != null && BindingTypes.WEBSERVICES != getBindingType()) {
+		if(overrideEntryPointWSDL != null && getBindingType() != BindingTypes.WEBSERVICES) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 
