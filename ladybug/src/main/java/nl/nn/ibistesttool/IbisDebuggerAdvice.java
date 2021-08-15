@@ -169,6 +169,11 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		String messageId = pipeLineSession.getMessageId();
 		message = ibisDebugger.pipeInput(pipeLine, validator, messageId, message);
 		PipeRunResult pipeRunResult = null;
+
+		if(StringUtils.isNotEmpty(messageRoot)) {
+			ibisDebugger.showValue(messageId, "ResponseRoot", messageRoot);
+		}
+
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[2] = message;
