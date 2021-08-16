@@ -171,7 +171,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		PipeRunResult pipeRunResult = null;
 
 		if(StringUtils.isNotEmpty(messageRoot)) {
-			ibisDebugger.showValue(messageId, "ResponseRoot", messageRoot);
+			ibisDebugger.showValue(messageId, "MessageRoot to be asserted", messageRoot);
 		}
 
 		try {
