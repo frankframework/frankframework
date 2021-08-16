@@ -200,8 +200,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(scheduleManager == null) { //Manually set the ScheduleManager bean
 			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 		}
-
-		publishEvent(new ConfigurationMessageEvent(this, "created in " + (System.currentTimeMillis() - getStartupDate()) + " ms"));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -228,11 +226,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
 
-		long startTime = System.currentTimeMillis();
 		super.start();
 		state = BootState.STARTED;
-
-		publishEvent(new ConfigurationMessageEvent(this, "startup in " + (System.currentTimeMillis() - startTime) + " ms"));
 	}
 
 	/**
@@ -241,7 +236,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
-		long startTime = System.currentTimeMillis();
 		state = BootState.STARTING;
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
@@ -265,7 +259,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		setConfigured(true);
-		publishEvent(new ConfigurationMessageEvent(this, "configured in " + (System.currentTimeMillis() - startTime) + " ms"));
 	}
 
 	@Override
@@ -391,7 +384,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
-			if(state == BootState.STARTING && getName() != name) {
+			if(state == BootState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 
@@ -412,7 +405,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
-			if(state == BootState.STARTING && this.version != null && this.version != version) {
+			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
 				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
 			}
 
