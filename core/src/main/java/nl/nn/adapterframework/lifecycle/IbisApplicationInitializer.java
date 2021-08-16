@@ -58,7 +58,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+		propertySources.addFirst(new PropertiesPropertySource(IbisApplicationContext.APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, AppConstants.getInstance()));
 
 		return applicationContext;
 	}
