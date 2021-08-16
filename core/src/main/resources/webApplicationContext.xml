@@ -32,4 +32,6 @@
 		autowire="byName"
 		class="nl.nn.adapterframework.lifecycle.ServletManager"
 	/>
+
+	<bean id="ConfigurationMessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 </beans>

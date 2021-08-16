@@ -27,9 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -50,6 +52,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -197,6 +200,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(scheduleManager == null) { //Manually set the ScheduleManager bean
 			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 		}
+
+		publishEvent(new ConfigurationMessageEvent(this, "created in " + (System.currentTimeMillis() - getStartupDate()) + " ms"));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -222,8 +227,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
+
+		long startTime = System.currentTimeMillis();
 		super.start();
 		state = BootState.STARTED;
+
+		publishEvent(new ConfigurationMessageEvent(this, "startup in " + (System.currentTimeMillis() - startTime) + " ms"));
 	}
 
 	/**
@@ -232,6 +241,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
+		long startTime = System.currentTimeMillis();
 		state = BootState.STARTING;
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
@@ -255,6 +265,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		setConfigured(true);
+		publishEvent(new ConfigurationMessageEvent(this, "configured in " + (System.currentTimeMillis() - startTime) + " ms"));
 	}
 
 	@Override
@@ -265,6 +276,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		} finally {
 			state = BootState.STOPPED;
 		}
+	}
+
+	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	@Override
+	public void publishEvent(ApplicationEvent event) {
+		if(event instanceof ContextClosedEvent) {
+			publishEvent(new ConfigurationMessageEvent(this, "closed"));
+		}
+
+		super.publishEvent(event);
 	}
 
 	public boolean isUnloadInProgressOrDone() {
@@ -370,6 +391,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
+			if(state == BootState.STARTING && getName() != name) {
+				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+			}
+
 			setId(name); //ID should never be NULL
 		}
 	}
@@ -387,6 +412,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
+			if(state == BootState.STARTING && this.version != null && this.version != version) {
+				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+			}
+
 			this.version = version;
 		}
 	}
