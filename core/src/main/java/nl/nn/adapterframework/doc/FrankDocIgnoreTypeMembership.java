@@ -34,10 +34,10 @@ import nl.nn.adapterframework.jdbc.MessageStoreSender;
  * that contain types that contain elements. This annotation removes only for the Frank!Doc
  * website {@link MessageStoreSender} and its derived classes from the type {@link ITransactionalStorage}.
  * <p>
- * Please note that you cannot re-introduce attributes lower in the class inheritance hierarchy if this
- * annotation is applied on a higher level to exclude an attribute. Allowing that would make the logic
- * of this annotation inconsistent. If you want to introduce an attribute lower in the inheritance
- * hierarchy, please do so by introducing a fake interface.
+ * Please note that you can re-introduce attributes lower in the class inheritance hierarchy if this
+ * annotation is applied on a higher level to exclude an attribute. The reason is that omitting
+ * attributes is only done on the class that is annotated with this annotation. A derived class that
+ * is not annotated is not analyzed for attributes to be omitted.
  * 
  * @author martijn
  *

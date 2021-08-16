@@ -53,7 +53,7 @@ public abstract class ElementChild {
 	/**
 	 * The value is inherited from ElementChild corresponding to superclass.
 	 */
-	private @Getter @Setter boolean deprecated;
+	private @Getter @Setter boolean deprecated = false;
 	
 	/**
 	 * Only set to true if there is an IbisDoc or IbisDocRef annotation for

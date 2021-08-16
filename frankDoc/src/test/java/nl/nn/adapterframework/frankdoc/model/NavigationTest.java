@@ -58,7 +58,20 @@ public class NavigationTest {
 			// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
 			{"GrandChild2", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
 			// All attributes of Parent are overridden by deprecated methods and should be de-inherited
-			{"GrandChild3", ALL_REAL, REJECT_DEPRECATED, asList()}
+			{"GrandChild3", ALL_REAL, REJECT_DEPRECATED, asList()},
+			// Reference class hierarchy for testing non-real attributes
+			{"NotRealChildNotExcludingInterface", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "NotRealChildNotExcludingInterface"), ref(RefKind.DECLARED, "NotRealParent"))},
+			// Attributes from interface excluded, attribute parentAttribute is repeated
+			{"NotRealChildExcludingInterface", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "NotRealChildExcludingInterface"), ref(RefKind.CHILD, "parentAttribute"))},
+			// Reintroduces notChildAttribute in NotRealGrandChild1, it was not an attribute before so no need to repeat
+			// attributes of NotRealChildExcludingInterface.
+			//
+			// We accept that the algorithm does not see that the cumulative group of NotRealChildExcludingInterface can be used.
+			// The algorithm does not see that the override of setNotChildAttribute from the superclass
+			// is not important, because notChildAttribute is excluded from the NotRealChildExcludingInterface cumulative group.
+			{"NotRealGrandChild1", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "NotRealGrandChild1"), ref(RefKind.DECLARED, "NotRealChildExcludingInterface"), ref(RefKind.CHILD, "parentAttribute"))},
+			// Reintroduces excludedAttribute2, but it was not a real attribute before so no need to repeat from NotRealChildExcludingInterface.
+			{"NotRealGrandChild2", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "NotRealGrandChild2"), ref(RefKind.DECLARED, "NotRealChildExcludingInterface"), ref(RefKind.CHILD, "parentAttribute"))}
 		});
 	}
 
