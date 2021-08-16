@@ -120,11 +120,21 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public enum AcknowledgeMode implements DocumentedEnum {
 		@EnumLabel("none") NOT_SET(0),
+		
+		/** auto or auto_acknowledge: Specifies that the session is to automatically acknowledge consumer receipt of
+		  * messages when message processing is complete. */
 		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
-		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
-		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 
+		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
+		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
+
+		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+		  * delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
+		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
+		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
+		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 		private @Getter int acknowledgeMode;
+
 		private AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
 		}
