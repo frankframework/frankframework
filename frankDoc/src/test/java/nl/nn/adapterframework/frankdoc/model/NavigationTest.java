@@ -16,10 +16,10 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import static java.util.Arrays.asList;
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.DEPRECATED;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_REAL;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.REJECT_DEPRECATED;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.NONE;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.NOT_REAL;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -45,20 +45,20 @@ public class NavigationTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return asList(new Object[][] {
-			{"Parent", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "Parent"))},
+			{"Parent", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "Parent"))},
 			// Attribute childAttribute is not selected, so we do not have a real override.
-			{"Child", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
+			{"Child", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.DECLARED, "Parent"))},
 			// Attribute parentAttributeFirst is overridden. Keep with Child, omit with Parent
-			{"Child", ALL, NONE, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeSecond"))},
+			{"Child", ALL_REAL, NOT_REAL, asList(ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeSecond"))},
 			// All attributes of Parent were overridden. Nothing to reference for Parent.
-			{"GrandChild", ALL, NONE, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
+			{"GrandChild", ALL_REAL, NOT_REAL, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"))},
 			// The override of parentAttributeSecond counts, in Child parentAttributeFirst is ignored as child
-			{"GrandChild", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeFirst"))},
-			{"GrandChild2", ALL, NONE, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
+			{"GrandChild", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "GrandChild"), ref(RefKind.DECLARED, "Child"), ref(RefKind.CHILD, "parentAttributeFirst"))},
+			{"GrandChild2", ALL_REAL, NOT_REAL, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.CUMULATIVE, "Child2"))},
 			// All children of Child2 are deprecated, so Child2 is ignored in the ancestor hierarchy
-			{"GrandChild2", IN_XSD, NONE, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
+			{"GrandChild2", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "GrandChild2"), ref(RefKind.DECLARED, "Parent"))},
 			// All attributes of Parent are overridden by deprecated methods and should be de-inherited
-			{"GrandChild3", ALL, DEPRECATED, asList()}
+			{"GrandChild3", ALL_REAL, REJECT_DEPRECATED, asList()}
 		});
 	}
 

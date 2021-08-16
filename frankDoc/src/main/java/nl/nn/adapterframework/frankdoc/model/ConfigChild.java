@@ -68,6 +68,15 @@ public abstract class ConfigChild extends ElementChild {
 		}
 	}
 
+	/**
+	 * This property only makes sense for attributes, but we need to define it in {@link ElementChild}
+	 * because then we can filter on it in attributes like {@link ElementChild#IN_XSD}.
+	 */
+	@Override
+	public final boolean isNotReal() {
+		return false;
+	}
+
 	public abstract String getRoleName();
 
 	private static boolean isDocumented(FrankMethod m) {

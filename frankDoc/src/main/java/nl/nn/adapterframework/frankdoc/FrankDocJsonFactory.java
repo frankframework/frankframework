@@ -163,7 +163,7 @@ public class FrankDocJsonFactory {
 	private static String getParentOrNull(FrankElement frankElement) {
 		if(frankElement != null) {
 			FrankElement parent = frankElement.getNextAncestorThatHasChildren(
-					elem -> elem.getAttributes(ElementChild.ALL).isEmpty() && elem.getConfigChildren(ElementChild.ALL).isEmpty());
+					elem -> elem.getAttributes(ElementChild.ALL_REAL).isEmpty() && elem.getConfigChildren(ElementChild.ALL_REAL).isEmpty());
 			if(parent != null) {
 				return parent.getFullName();
 			}

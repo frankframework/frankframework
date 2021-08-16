@@ -67,7 +67,7 @@ public class ConfigChildSet {
 			int order = configChildren.get(0).getOrder();
 			for(ConfigChild c: configChildren.subList(1, configChildren.size())) {
 				if(c.getOwningElement() != parent) {
-					if(c.getOwningElement() != parent.getNextAncestorThatHasConfigChildren(ElementChild.ALL)) {
+					if(c.getOwningElement() != parent.getNextAncestorThatHasConfigChildren(ElementChild.ALL_REAL)) {
 						throw new IllegalStateException(String.format("Cumulative config children are not sorted: [%s] should not be followed by [%s]",
 								parent.getFullName(), c.getOwningElement().getFullName()));
 					}

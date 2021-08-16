@@ -56,12 +56,12 @@ public class FrankDocModelAttributeTypeTest {
 		assertEquals("Description of customLabelOne", v.getDescription());
 
 		// By fixing the list index like this, we test that the attributes are sorted correctly.
-		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL).get(0);
+		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL_REAL).get(0);
 		assertEquals("childStringAttribute", childAttribute.getName());
 		assertEquals(myEnum, childAttribute.getAttributeEnum());
 		assertEquals(AttributeType.STRING, childAttribute.getAttributeType());
 		// Test the int attribute
-		childAttribute = child.getAttributes(ElementChild.ALL).get(1);
+		childAttribute = child.getAttributes(ElementChild.ALL_REAL).get(1);
 		assertEquals(AttributeType.INT, childAttribute.getAttributeType());
 	}
 }

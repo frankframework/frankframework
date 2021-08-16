@@ -88,15 +88,18 @@ public abstract class ElementChild {
 	private @Getter String defaultValue;
 
 	public static Predicate<ElementChild> IN_XSD = c ->
-		(! c.isDeprecated())
+		(! c.isNotReal())
+		&& (! c.isDeprecated())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		c.isDocumented() || (! c.isTechnicalOverride());
+		(! c.isNotReal())
+		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
-	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
-	public static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> NONE = c -> false;
+	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isNotReal() || c.isDeprecated();
+	static Predicate<ElementChild> ALL = c -> true;
+	public static Predicate<ElementChild> ALL_REAL = c -> ! c.isNotReal();
+	public static Predicate<ElementChild> NOT_REAL = c -> c.isNotReal();
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or
@@ -130,6 +133,8 @@ public abstract class ElementChild {
 	}
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
+
+	abstract boolean isNotReal();
 
 	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {

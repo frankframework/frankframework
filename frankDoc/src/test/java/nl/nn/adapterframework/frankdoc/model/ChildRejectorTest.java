@@ -61,7 +61,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenNoChildrenRejectedThenAllChildrenReturned() throws Exception {
-		init("Child", ElementChild.ALL, ElementChild.NONE, "Parent");
+		init("Child", ElementChild.ALL_REAL, ElementChild.NOT_REAL, "Parent");
 		assertEquals(setOf("parentAttributeFirst", "parentAttributeSecond"), childNames("Parent"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("Parent")));
 		assertTrue(instance.isNoCumulativeRejected(getElement("Parent")));
@@ -69,7 +69,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenChildRejectedThenChildNotReturned() throws Exception {
-		init("Child2", ElementChild.ALL, ElementChild.DEPRECATED, "Child2");
+		init("Child2", ElementChild.ALL_REAL, ElementChild.REJECT_DEPRECATED, "Child2");
 		assertEquals(setOf(), childNames("Child2"));
 		assertFalse(instance.isNoDeclaredRejected(getElement("Child2")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("Child2")));
@@ -77,7 +77,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenChildRejectsParentAttributeThenAttributeRejectedForChild() throws Exception {
-		init("Child3", ElementChild.ALL, ElementChild.DEPRECATED, "Child3");
+		init("Child3", ElementChild.ALL_REAL, ElementChild.REJECT_DEPRECATED, "Child3");
 		assertEquals(setOf("parentAttributeSecond"), childNames("Parent"));
 		assertFalse(instance.isNoDeclaredRejected(getElement("Parent")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("Parent")));
@@ -88,13 +88,13 @@ public class ChildRejectorTest {
 
 	@Test(expected = NullPointerException.class)
 	public void whenRejectorInitializedForParentThenChildDoesNotAppearAsInheritanceLevel() throws Exception {
-		init("Child3", ElementChild.ALL, ElementChild.DEPRECATED, "Parent");
+		init("Child3", ElementChild.ALL_REAL, ElementChild.REJECT_DEPRECATED, "Parent");
 		instance.getChildrenFor(getElement("Child3"));
 	}
 
 	@Test
 	public void cumulativeAttributesOfParentIncludeAttributesRejectedByIrrelevantChild() throws Exception {
-		init("Child3", ElementChild.ALL, ElementChild.DEPRECATED, "Parent");
+		init("Child3", ElementChild.ALL_REAL, ElementChild.REJECT_DEPRECATED, "Parent");
 		assertEquals(setOf("parentAttributeFirst", "parentAttributeSecond"), childNames("Parent"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("Parent")));
 		assertTrue(instance.isNoCumulativeRejected(getElement("Parent")));
@@ -102,7 +102,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenNonAttributeRejectedByChildThenThatAttributeRejectedByParent() throws Exception {
-		init("Child3", ElementChild.IN_XSD, ElementChild.DEPRECATED, "Child3");
+		init("Child3", ElementChild.IN_XSD, ElementChild.REJECT_DEPRECATED, "Child3");
 		assertEquals(setOf(), childNames("Child3"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("Child3")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("Child3")));
@@ -113,7 +113,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenBothParentAndGrandParentRejectThenCumulativeGroupRejected() throws Exception {
-		init("GrandChild3", ElementChild.ALL, ElementChild.DEPRECATED, "GrandChild3");
+		init("GrandChild3", ElementChild.ALL_REAL, ElementChild.REJECT_DEPRECATED, "GrandChild3");
 		assertEquals(setOf(), childNames("GrandChild3"));
 		assertFalse(instance.isNoDeclaredRejected(getElement("GrandChild3")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("GrandChild3")));
@@ -127,7 +127,7 @@ public class ChildRejectorTest {
 
 	@Test
 	public void whenChildrenRejectNonAttributesForParentAndGrandParentThenThoseAttributesRejected() throws Exception {
-		init("GrandChild4", ElementChild.IN_XSD, ElementChild.DEPRECATED, "GrandChild4");
+		init("GrandChild4", ElementChild.IN_XSD, ElementChild.REJECT_DEPRECATED, "GrandChild4");
 		assertEquals(setOf("grandChild4Attribute"), childNames("GrandChild4"));
 		assertTrue(instance.isNoDeclaredRejected(getElement("GrandChild4")));
 		assertFalse(instance.isNoCumulativeRejected(getElement("GrandChild4")));

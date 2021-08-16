@@ -620,7 +620,7 @@ public class FrankDocModel {
 
 	private void createConfigChildSets(FrankElement frankElement) {
 		log.trace("Handling FrankElement [{}]", () -> frankElement.getFullName());
-		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
+		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL_REAL, ElementChild.NOT_REAL).stream()
 				.collect(Collectors.groupingBy(c -> c.getRoleName()));
 		for(String roleName: cumChildrenByRoleName.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
@@ -676,7 +676,7 @@ public class FrankDocModel {
 				.distinct()
 				.collect(Collectors.toList());
 		Map<String, List<ConfigChild>> configChildrenByRoleName = rawMembers.stream()
-				.flatMap(element -> element.getConfigChildren(ElementChild.ALL).stream())
+				.flatMap(element -> element.getConfigChildren(ElementChild.ALL_REAL).stream())
 				.collect(Collectors.groupingBy(ConfigChild::getRoleName));
 		List<String> names = new ArrayList<>(configChildrenByRoleName.keySet());
 		Collections.sort(names);
