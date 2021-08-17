@@ -2064,7 +2064,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		pollInterval = i;
 	}
 
-	@IbisDoc({"11", "If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "<code>false</code>"})
+	@IbisDoc({"11", "If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
 	}
@@ -2163,7 +2163,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		hiddenInputSessionKeys = string;
 	}
 
-	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "<code>false</code>"})
+	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
 	public void setForceRetryFlag(boolean b) {
 		forceRetryFlag = b;
 	}

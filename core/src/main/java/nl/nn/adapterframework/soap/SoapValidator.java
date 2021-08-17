@@ -167,7 +167,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@IbisDoc({"5", "SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
+		this.soapVersion = SoapVersion.getSoapVersion(soapVersion); //TODO turn into DocumentedEnum
 	}
 	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;

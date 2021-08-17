@@ -440,7 +440,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return defaultFrom;
 	}
 
-	@IbisDoc({ "timeout (in milliseconds). used for socket connection timeout and socket i/o timeout", "20000" })
+	@IbisDoc({ "Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts", "20000" })
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
