@@ -48,7 +48,7 @@ public class NavigationCumulativeTest {
 			{"Child all", "Child", ALL_REAL, NOT_REAL, asList("parentAttributeFirst", "childAttribute", "parentAttributeSecond")},
 			{"GrandChild", "GrandChild", ALL_REAL, NOT_REAL, asList("parentAttributeSecond", "grandChildAttribute", "parentAttributeFirst", "childAttribute")},
 			{"GrandChild2 no reject", "GrandChild2", ALL_REAL, NOT_REAL, asList("grandChild2Attribute", "child2Attribute", "parentAttributeFirst", "parentAttributeSecond")},
-			{"GrandChild2 reject deprecated", "GrandChild2", ALL_REAL, REJECT_DEPRECATED, asList("grandChild2Attribute", "parentAttributeFirst", "parentAttributeSecond")} 
+			{"GrandChild2 reject deprecated", "GrandChild2", IN_XSD, REJECT_DEPRECATED, asList("grandChild2Attribute", "parentAttributeFirst", "parentAttributeSecond")} 
 		});
 	}
 
