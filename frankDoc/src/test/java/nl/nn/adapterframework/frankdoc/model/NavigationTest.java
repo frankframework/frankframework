@@ -61,6 +61,9 @@ public class NavigationTest {
 			{"GrandChild3", IN_XSD, REJECT_DEPRECATED, asList()},
 			// Same as above, but requires the algorithm to work around a technical override
 			{"GrandChild5", IN_XSD, REJECT_DEPRECATED, asList()},
+			// Below Parent are technical overrides in GrandParent6. We test here that we
+			// dont get Child6 which has no children, but Parent where the children are.
+			{"GrandChild6", IN_XSD, REJECT_DEPRECATED, asList(ref(RefKind.DECLARED, "Parent"))},
 			// Reference class hierarchy for testing non-real attributes
 			{"NotRealChildNotExcludingInterface", IN_XSD, NOT_REAL, asList(ref(RefKind.DECLARED, "NotRealChildNotExcludingInterface"), ref(RefKind.DECLARED, "NotRealParent"))},
 			// Attributes from interface excluded, attribute parentAttribute is repeated
