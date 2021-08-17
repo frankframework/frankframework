@@ -155,7 +155,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<5;i++) {
 			sb.append("message");
-		};
+		}
 		return Message.asMessage(sb.toString());
 	}
 
