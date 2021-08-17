@@ -27,7 +27,7 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class SkipContainersFilter extends FullXmlFilter {
 
-	private final String SKIPABLE_CONTAINERS[] = { "Exits", "Forwards", "JmsRealms", "Module", "Root" };
+	private final String SKIPABLE_CONTAINERS[] = { "Exits", "Forwards", "JmsRealms", "Module", "Root", "Global-Forwards", "Scheduler" };
 	
 	private Set<String> skipableContainers = new LinkedHashSet<String>(Arrays.asList(SKIPABLE_CONTAINERS));
 
