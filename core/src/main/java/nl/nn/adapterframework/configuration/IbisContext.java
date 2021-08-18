@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
+import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -401,7 +402,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			String msg;
 			if (configuration.isAutoStart()) {
-				ibisManager.startConfiguration(configuration);
+//				ibisManager.startConfiguration(configuration);
 				msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
 			}
 			else {
@@ -434,18 +435,18 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	private void log(String message) {
-		log(null, null, message, MessageKeeperLevel.INFO, null, true);
+		log(null, MessageKeeperLevel.INFO);
 	}
 
 	private void log(String message, MessageKeeperLevel level) {
-		log(null, null, message, level, null, true);
+		log(message, level, null);
 	}
 
 	public void log(String message, MessageKeeperLevel level, Exception e) {
 		log(null, null, message, level, e, true);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message) {
+	private void log(String configurationName, String configurationVersion, String message) {
 		log(configurationName, configurationVersion, message, MessageKeeperLevel.INFO);
 	}
 
@@ -453,11 +454,13 @@ public class IbisContext extends IbisApplicationContext {
 		log(configurationName, configurationVersion, message, level, null, false);
 	}
 
-	public void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e) {
+	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e) {
 		log(configurationName, configurationVersion, message, level, e, false);
 	}
 
 	private void log(String configurationName, String configurationVersion, String message, MessageKeeperLevel level, Exception e, boolean allOnly) {
+		getApplicationContext().publishEvent(new ApplicationMessageEvent(getApplicationContext(), message, level, e));
+
 		String key;
 		if (allOnly || configurationName == null) {
 			key = ALL_CONFIGS_KEY;
@@ -495,7 +498,10 @@ public class IbisContext extends IbisApplicationContext {
 		messageKeeper.add(m, level);
 		if (!allOnly) {
 			log(configurationName, configurationVersion, message, level, e, true);
+		} else {
+			System.err.println(m);
 		}
+
 	}
 
 	/**

@@ -237,6 +237,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
 		state = BootState.STARTING;
+		long start = System.currentTimeMillis();
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -259,6 +260,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		setConfigured(true);
+
+		String msg;
+		if (isAutoStart()) {
+			ibisManager.startConfiguration(this);
+			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
+		}
+		else {
+			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
+		}
+		publishEvent(new ConfigurationMessageEvent(this, msg));
 	}
 
 	@Override
