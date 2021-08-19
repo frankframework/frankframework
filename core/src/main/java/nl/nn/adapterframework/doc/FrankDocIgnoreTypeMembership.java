@@ -1,9 +1,8 @@
 package nl.nn.adapterframework.doc;
 
-import java.lang.annotation.ElementType;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -42,8 +41,8 @@ import nl.nn.adapterframework.jdbc.MessageStoreSender;
  * @author martijn
  *
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 public @interface FrankDocIgnoreTypeMembership {
 	/**
 	 * References a Java interface.
