@@ -128,7 +128,7 @@ public class ShowAdapterStatistics extends ActionBase {
 			Object pipelineData = handler.openGroup(handle,null,"pipeline");		
 			adapter.getPipeLine().iterateOverStatistics(handler, pipelineData, HasStatistics.STATISTICS_ACTION_FULL);
 		} catch (SenderException e) {
-			log.error(e);
+			log.error("unable to parse pipeline statistics", e);
 		} finally {
 			handler.end(handle);
 		}

@@ -574,7 +574,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							receiverXML.addAttribute("errorStorageCount", "?");
 						}
 					} catch (Exception e) {
-						log.warn(e);
+						log.warn("unable to get message count", e);
 						receiverXML.addAttribute("errorStorageCount", "error");
 					}
 				}
@@ -588,7 +588,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							receiverXML.addAttribute("messageLogCount", "?");
 						}
 					} catch (Exception e) {
-						log.warn(e);
+						log.warn("unable to get message count", e);
 						receiverXML.addAttribute("messageLogCount", "error");
 					}
 				}
@@ -742,7 +742,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							messageLogCount = "?";
 						}
 					} catch (Exception e) {
-						log.warn(e);
+						log.warn("unable to get message count", e);
 						messageLogCount = "error";
 					}
 					pipeElem.addAttribute("messageLogCount", messageLogCount);

@@ -400,7 +400,7 @@ public class ClassUtils {
 			f.setAccessible(true);
 			return f.get(o);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("unable to get field", e);
 			return e.getMessage();
 		}
 	}

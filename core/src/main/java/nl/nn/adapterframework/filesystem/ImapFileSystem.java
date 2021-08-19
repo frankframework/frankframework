@@ -372,7 +372,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 							part = null;
 						}
 					} catch (MessagingException e) {
-						log.warn(e);
+						log.warn("unable to find the part", e);
 					}
 				}
 

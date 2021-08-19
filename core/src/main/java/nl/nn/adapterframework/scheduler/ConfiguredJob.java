@@ -61,7 +61,7 @@ public class ConfiguredJob extends BaseJob {
 			log.debug(getLogPrefix(jobDef) + "completed");
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error("JobExecutionException while running "+getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}
 		finally {
