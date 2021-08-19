@@ -352,7 +352,7 @@
 		</xsl:element>
 	</xsl:template>
 	
-	<xsl:template match="param/@pattern[contains(.,'{now')]">
+	<xsl:template match="param/@pattern[contains(.,'{now,') or contains(.,'{now}')]">
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now','{fixedDate')"/></xsl:attribute>
 	</xsl:template>
 	
