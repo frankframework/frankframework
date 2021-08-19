@@ -490,7 +490,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					result != null && 
 					!(result instanceof IFSAPoisonMessage) ;
 		} catch (Throwable t) {
-			log.warn(t);
+			log.warn("unable to determine save action for the session", t);
 			return false;
 		}
 	}

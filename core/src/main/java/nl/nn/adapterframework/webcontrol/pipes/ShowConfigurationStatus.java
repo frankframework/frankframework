@@ -617,7 +617,7 @@ public class ShowConfigurationStatus extends ConfigurationBase {
 							int messageCount = jmsBrowser.getMessageCount();
 							numMsgs = String.valueOf(messageCount);
 						} catch (Throwable t) {
-							log.warn(t);
+							log.warn("unable to get message count", t);
 							numMsgs = "?";
 						}
 						receiverXML.addAttribute("pendingMessagesCount", numMsgs);
