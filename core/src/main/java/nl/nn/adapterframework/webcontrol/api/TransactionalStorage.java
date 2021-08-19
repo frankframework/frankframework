@@ -800,14 +800,8 @@ public class TransactionalStorage extends Base {
 
 		public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 			if(message != null) {
-				Object rawmsg = storage.browseMessage(iterItem.getId());
-				String msg = null;
-				if (listener != null) {
-					msg = listener.extractMessage(rawmsg, new HashMap<String, Object>()).asString();
-				} else {
-					msg = Message.asString(rawmsg);
-				}
-				if (msg == null || msg.indexOf(message)<0) {
+				String msg = getRawMessage(storage, listener, iterItem.getId());
+				if (msg == null || !StringUtils.containsIgnoreCase(msg, message)) {
 					return false;
 				}
 			}
