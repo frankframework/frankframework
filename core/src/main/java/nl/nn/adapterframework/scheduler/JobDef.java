@@ -389,14 +389,14 @@ public class JobDef {
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 
 	private class MessageLogObject {
-		private String jmsRealmName;
+		private String datasourceName;
 		private String tableName;
 		private String expiryDateField;
 		private String keyField;
 		private String typeField;
 
-		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField, String keyField, String typeField) {
-			this.jmsRealmName = jmsRealmName;
+		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
+			this.datasourceName = datasourceName;
 			this.tableName = tableName;
 			this.expiryDateField = expiryDateField;
 			this.keyField = keyField;
@@ -405,8 +405,10 @@ public class JobDef {
 
 		@Override
 		public boolean equals(Object o) {
+			if(o == null || !(o instanceof MessageLogObject)) return false;
+
 			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
+			if (mlo.getDatasourceName().equals(datasourceName) &&
 				mlo.getTableName().equals(tableName) &&
 				mlo.expiryDateField.equals(expiryDateField)) {
 				return true;
@@ -415,8 +417,8 @@ public class JobDef {
 			}
 		}
 
-		public String getJmsRealmName() {
-			return jmsRealmName;
+		public String getDatasourceName() {
+			return datasourceName;
 		}
 
 		public String getTableName() {
@@ -687,12 +689,12 @@ public class JobDef {
 						ITransactionalStorage transactionStorage = msp.getMessageLog();
 						if (transactionStorage instanceof JdbcTransactionalStorage) {
 							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
-							String jmsRealmName = messageLog.getJmsRealName();
+							String datasourceName = messageLog.getDatasourceName();
 							String expiryDateField = messageLog.getExpiryDateField();
 							String tableName = messageLog.getTableName();
 							String keyField = messageLog.getKeyField();
 							String typeField = messageLog.getTypeField();
-							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField, keyField, typeField);
+							MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
 							if (!messageLogs.contains(mlo)) {
 								messageLogs.add(mlo);
 							}
@@ -703,35 +705,48 @@ public class JobDef {
 		}
 
 		for (MessageLogObject mlo: messageLogs) {
-			setJmsRealm(mlo.getJmsRealmName());
-			DirectQuerySender qs;
-			qs = (DirectQuerySender)ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
-			qs.setJmsRealm(mlo.getJmsRealmName());
-			String deleteQuery;
-			if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-					+ mlo.getKeyField() + " IN (SELECT "
-						+ mlo.getKeyField() + " FROM " + mlo.getTableName()
-						+ " WITH (rowlock,updlock,readpast) WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+			DirectQuerySender qs = null;
+			try {
+				qs = ibisManager.getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
+				qs.setName("cleanupDatabase-"+mlo.getTableName());
+				qs.setDatasourceName(mlo.getDatasourceName());
+				qs.setQueryType("other");
+				qs.setTimeout(900);
+
+				String deleteQuery;
+				if (qs.getDatabaseType() == DbmsSupportFactory.DBMS_MSSQLSERVER) {
+					deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
+						+ mlo.getKeyField() + " IN (SELECT "
+							+ mlo.getKeyField() + " FROM " + mlo.getTableName()
+							+ " WITH (rowlock,updlock,readpast) WHERE "
+							+ mlo.getTypeField() + " IN ('"
+							+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+							+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+							+ "') AND " + mlo.getExpiryDateField()
+							+ " < CONVERT(datetime, '" + formattedDate + "', 120))";
+				}
+				else {
+					deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
+							+ mlo.getTypeField() + " IN ('"
+							+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
+							+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
+							+ "') AND " + mlo.getExpiryDateField()
+							+ " < TO_TIMESTAMP('" + formattedDate
+							+ "', 'YYYY-MM-DD HH24:MI:SS')";
+				}
+				qs.configure(true);
+				qs.open();
+				String result = qs.sendMessage("dummy", deleteQuery);
+				log.info("result [" + result + "]");
+			} catch (Exception e) {
+				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg,MessageKeeperMessage.ERROR_LEVEL);
+				log.error(getLogPrefix()+msg, e);
+			} finally {
+				if(qs != null) {
+					qs.close();
+				}
 			}
-			else {
-				deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE "
-						+ mlo.getTypeField() + " IN ('"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','"
-						+ JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER
-						+ "') AND " + mlo.getExpiryDateField()
-						+ " < TO_TIMESTAMP('" + formattedDate
-						+ "', 'YYYY-MM-DD HH24:MI:SS')";
-			}
-			qs = null;
-			setQuery(deleteQuery);
-			setQueryTimeout(900);
-			executeQueryJob(ibisManager);
 		}
 	}
 
