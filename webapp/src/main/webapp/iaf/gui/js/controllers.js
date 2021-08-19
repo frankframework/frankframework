@@ -2069,15 +2069,9 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
-	$scope.datasources = {};
-
-	Api.Get("jdbc", function(data) {
-		$.extend($scope, data);
-		if($scope.configurations)
-			$scope.form = {datasource: data.datasources[0], configuration: $scope.configurations[0].name};
-		else
-			$scope.form = {datasource: data.datasources[0]};
-	});
+	if($scope.configurations) {
+		$scope.form = {configuration: $scope.configurations[0].name};
+	}
 	$scope.generateSql=false;
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};

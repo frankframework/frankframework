@@ -17,19 +17,29 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.Writer;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF. 
@@ -39,13 +49,17 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since	7.0-B4
  *
  */
-public class Migrator extends JdbcFacade implements AutoCloseable {
+public class Migrator implements IConfigurable, AutoCloseable {
+
+	private Logger log = LogUtil.getLogger(this);
+	private @Setter IDataSourceFactory dataSourceFactory = null;
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+	private @Getter @Setter String name;
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IbisContext ibisContext;
 	private LiquibaseImpl instance;
-
-	public Migrator() {
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -55,17 +69,28 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		configure((Configuration) getApplicationContext(), null);
 	}
 
+	private DataSource getDatasource(String datasourceName) throws ConfigurationException {
+		DataSource datasource;
+		try {
+			datasource = dataSourceFactory.getDataSource(datasourceName);
+		} catch (NamingException e) {
+			throw new ConfigurationException("Could not find Datasource ["+datasourceName+"]", e);
+		}
+		log.debug("looked up Datasource ["+datasourceName+"] for JdbcMigrator ["+getName()+"]");
+
+		return new TransactionAwareDataSourceProxy(datasource);
+	}
+
 	private synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
 		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		setName("JdbcMigrator for configuration["+ configuration.getName() +"]");
-		if(StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", null)));
-		}
-		super.configure();
+		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
 
+		String datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", defaultDatasourceName));
+		DataSource datasource = getDatasource(datasourceName);
 
-		if(changeLogFile == null)
+		if(changeLogFile == null) {
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		}
 
 		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
 		if(cl.getResource(changeLogFile) == null) {
@@ -75,17 +100,17 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		}
 		else {
 			try {
-				JdbcConnection connection = new JdbcConnection(getConnection());
+				JdbcConnection connection = new JdbcConnection(datasource.getConnection());
 				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
+				ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
 			}
 			catch (LiquibaseException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
+				ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
 			}
 			catch (Throwable e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
+				ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
 			}
 		}
 	}
@@ -107,16 +132,12 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 
 	@Override
 	public void close() {
-		try {
-			if(this.instance != null) {
-				try {
-					instance.close();
-				} catch (DatabaseException e) {
-					log.error("Failed to close the connection", e);
-				}
+		if(this.instance != null) {
+			try {
+				instance.close();
+			} catch (DatabaseException e) {
+				log.error("Failed to close the connection", e);
 			}
-		} finally {
-			super.close();
 		}
 	}
 }
