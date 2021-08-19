@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
 public class ServletManager {
 
 	private ServletContext servletContext = null;
-	private List<String> registeredRoles = new ArrayList<String>();
+	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
 
 	private ServletContext getServletContext() {

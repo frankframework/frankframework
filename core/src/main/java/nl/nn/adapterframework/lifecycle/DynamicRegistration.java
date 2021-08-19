@@ -22,11 +22,27 @@ import javax.servlet.http.HttpServlet;
 public interface DynamicRegistration {
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
+		/**
+		 * @return The {@link javax.servlet.http.HttpServlet Servlet} to register using the {@link ServletManager}
+		 */
 		public HttpServlet getServlet();
+
+		/**
+		 * @return The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to.
+		 */
 		public String getUrlMapping();
+
+		/**
+		 * Not used when dtap.stage == LOC
+		 * @return The default roles the {@link javax.servlet.http.HttpServlet Servlet} has, or <code>null</code> to disable.
+		 */
 		public String[] getRoles();
 	}
+
 	public interface ServletWithParameters extends Servlet {
+		/**
+		 * @return {@link javax.servlet.http.HttpServlet Servlet} specific init parameters
+		 */
 		public Map<String, String> getParameters();
 	}
 
