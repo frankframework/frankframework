@@ -100,6 +100,7 @@ public abstract class ElementChild {
 	static Predicate<ElementChild> ALL = c -> true;
 	public static Predicate<ElementChild> ALL_REAL = c -> ! c.isNotReal();
 	public static Predicate<ElementChild> NOT_REAL = c -> c.isNotReal();
+	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isNotReal() && (c.getOverriddenFrom() != null);
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or

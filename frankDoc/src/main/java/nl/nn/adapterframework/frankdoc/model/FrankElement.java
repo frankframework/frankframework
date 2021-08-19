@@ -69,6 +69,8 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
 
+	private Set<String> syntax2ExcludedFromTypes = new HashSet<>();
+
 	FrankElement(FrankClass clazz) {
 		this(clazz.getName(), clazz.getSimpleName(), clazz.isAbstract());
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
@@ -289,6 +291,20 @@ public class FrankElement implements Comparable<FrankElement> {
 			inheritsPluralConfigChildren = ancestor.hasOrInheritsPluralConfigChildren(selector, rejector);
 		}
 		return hasPluralConfigChildren || inheritsPluralConfigChildren;
+	}
+
+	void addSyntax2ExcludedFromType(String typeName) {
+		syntax2ExcludedFromTypes.add(typeName);
+	}
+
+	boolean syntax2ExcludedFromType(String typeName) {
+		return syntax2ExcludedFromTypes.contains(typeName);
+	}
+
+	void inheritSyntax2ExcludedFromTypes() {
+		if(parent != null) {
+			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
+		}
 	}
 
 	@Override

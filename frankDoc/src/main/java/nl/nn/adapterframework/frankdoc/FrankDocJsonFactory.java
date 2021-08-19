@@ -153,6 +153,12 @@ public class FrankDocJsonFactory {
 		if(! attributes.isEmpty()) {
 			result.add("attributes", attributes);
 		}
+		List<FrankAttribute> nonInheritedAttributes = frankElement.getChildrenOfKind(ElementChild.JSON_NOT_INHERITED, FrankAttribute.class);
+		if(! nonInheritedAttributes.isEmpty()) {
+			JsonArrayBuilder b = bf.createArrayBuilder();
+			nonInheritedAttributes.forEach(nia -> b.add(nia.getName()));
+			result.add("nonInheritedAttributes", b.build());
+		}
 		JsonArray configChildren = getConfigChildren(frankElement);
 		if(! configChildren.isEmpty()) {
 			result.add("children", configChildren);
