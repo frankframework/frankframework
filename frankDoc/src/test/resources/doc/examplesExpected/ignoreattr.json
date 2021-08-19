@@ -24,6 +24,7 @@
         {
             "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.IChild2",
             "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild"
             ]
         },
@@ -35,6 +36,22 @@
         }
     ],
     "elements":[
+        {
+            "name":"GrandChild",
+            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild",
+            "parent":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild",
+            "elementNames":[
+                "GrandChildA",
+                "GrandChildB"
+            ],
+            "attributes":[
+                {
+                    "name":"suppressedAttribute2",
+                    "describer":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild",
+                    "description":"Documented, so re-introduced as attribute"
+                }
+            ]
+        },
         {
             "name":"Master",
             "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master",
@@ -99,6 +116,10 @@
                     "describer":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Parent"
                 },
                 {
+                    "name":"suppressedAttribute2",
+                    "describer":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Parent"
+                },
+                {
                     "name":"notSuppressedAttribute",
                     "describer":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Parent"
                 },
@@ -123,7 +144,8 @@
                 }
             ],
             "nonInheritedAttributes":[
-            	"suppressedAttribute"
+                "suppressedAttribute",
+                "suppressedAttribute2"
             ]
         }
     ],
