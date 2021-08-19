@@ -74,9 +74,9 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	
 	public XmlWriter(OutputStream stream) {
 		try {
-			this.writer=new OutputStreamWriter(stream,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			this.writer=new OutputStreamWriter(stream, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.error(e);
+			log.error("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 		}
 	}
 

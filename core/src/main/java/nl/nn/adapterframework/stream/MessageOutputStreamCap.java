@@ -26,7 +26,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 		try {
 			setResponse((StringWriter)asWriter());
 		} catch (StreamingException e) {
-			log.warn(e);
+			log.warn("unable to get writer", e);
 		}
 	}
 	
