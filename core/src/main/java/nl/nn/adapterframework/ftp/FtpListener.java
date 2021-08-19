@@ -174,7 +174,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-	@IbisDoc({"Time between each poll interval", "3600000"})
+	@IbisDoc({"Time <i>in milliseconds</i> between each poll interval", "3600000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

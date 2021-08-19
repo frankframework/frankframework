@@ -141,10 +141,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String convertedResultQuery;
 
 	public enum QueryType {
+		/** For queries that return data */
 		SELECT,
+		/** For queries that update a BLOB */
 		UPDATEBLOB,
+		/** For queries that update a CLOB */
 		UPDATECLOB,
+		/** To execute Oracle PL/SQL package */
 		PACKAGE,
+		/** For queries that return no data */
 		OTHER
 	}
 
@@ -943,27 +948,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-		 * Controls wheter the returned package content is db2 format or xml format. 
-		 * Possible values: 
-		 * <ul>
-		 * <li>select:</li> xml content s expected
-		 * <li><i>anything else</i>:</li> db2 content is expected
-		 * </ul>
-		 */
-		public void setPackageContent(String packageContent) {
-			this.packageContent = packageContent;
-		}
-		public String getPackageContent() {
-			return packageContent;
-		}
+	 * Controls wheter the returned package content is db2 format or xml format. 
+	 * Possible values: 
+	 * <ul>
+	 * <li>select:</li> xml content s expected
+	 * <li><i>anything else</i>:</li> db2 content is expected
+	 * </ul>
+	 */
+	public void setPackageContent(String packageContent) {
+		this.packageContent = packageContent;
+	}
+	public String getPackageContent() {
+		return packageContent;
+	}
 
-	@IbisDoc({"1", "One of: <ul>" 
-				+ "<li><code>select</code> for queries that return data</li>" 
-				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
-				+ "<li><code>updateClob</code> for queries that update a CLOB</li>" 
-				+ "<li><code>package</code> to execute Oracle PL/SQL package</li>" 
-				+ "<li><code>other</code> for queries that return no data.</li>" 
-				+ "</ul>", "other"})
 	public void setQueryType(String queryType) {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
