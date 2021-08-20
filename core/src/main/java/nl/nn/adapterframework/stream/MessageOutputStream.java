@@ -348,7 +348,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
-	 * after processing the stream. It is the responsability of the
+	 * after processing the stream. It is the responsibility of the
 	 * {@link MessageOutputStream target} to set this message.
 	 */
 	public void setResponse(Message response) {
@@ -382,7 +382,7 @@ public class MessageOutputStream implements AutoCloseable {
 	 */
 	public static MessageOutputStream getTargetStream(INamedObject owner, PipeLineSession session, IForwardTarget next) throws StreamingException {
 		IOutputStreamingSupport nextProvider=null;
-		if (next!=null && next instanceof IOutputStreamingSupport) {
+		if (next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;
 			if (next instanceof StreamingPipe && !((StreamingPipe)next).isStreamingActive()) {
 				nextProvider=null;
