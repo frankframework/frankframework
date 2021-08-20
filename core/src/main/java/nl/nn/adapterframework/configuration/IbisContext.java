@@ -359,7 +359,6 @@ public class IbisContext extends IbisApplicationContext {
 			// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 			if(AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
 				try(Migrator databaseMigrator = configuration.getBean("jdbcMigrator", Migrator.class)) {
-					databaseMigrator.setIbisContext(this);
 					databaseMigrator.configure();
 					databaseMigrator.update();
 				} catch (Exception e) {

@@ -33,7 +33,6 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -48,12 +47,10 @@ public class LiquibaseImpl {
 	private Liquibase liquibase = null;
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
-	private IbisContext ibisContext = null;
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
-		this.ibisContext = ibisContext;
+	public LiquibaseImpl(JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
 		this.configuration = configuration;
 
 		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(configuration.getClassLoader());
@@ -63,8 +60,6 @@ public class LiquibaseImpl {
 	}
 
 	private void log(String message) {
-//		if(ibisContext != null) 
-//			ibisContext.log(configuration.getName(), null, message);
 		configuration.publishEvent(new ConfigurationMessageEvent(configuration, message));
 	}
 

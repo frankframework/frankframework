@@ -65,7 +65,6 @@ public final class ShowLiquibaseScript extends Base {
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
 		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-			databaseMigrator.setIbisContext(getIbisContext());
 			databaseMigrator.setDatasourceName(datasource);
 			databaseMigrator.configure();
 			result = databaseMigrator.getUpdateSql(writer).toString();
