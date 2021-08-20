@@ -135,11 +135,10 @@ public class IbisApplicationContext {
 		List<String> baseConfigLocations = new ArrayList<>();
 		baseConfigLocations.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
 		baseConfigLocations.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
-		return getSpringConfigurationFiles(classLoader, baseConfigLocations, "SPRING.CONFIG.LOCATIONS",
-				ResourceUtils.CLASSPATH_URL_PREFIX, log);
+		return getSpringConfigurationFiles(classLoader, baseConfigLocations, "SPRING.CONFIG.LOCATIONS", log);
 	}
 
-	protected static String[] getSpringConfigurationFiles(ClassLoader classLoader, List<String> baseConfigLocations, String springConfigLocationsProperty, String classpathUrlPrefix, Logger log) {
+	protected static String[] getSpringConfigurationFiles(ClassLoader classLoader, List<String> baseConfigLocations, String springConfigLocationsProperty, Logger log) {
 		List<String> springConfigurationFiles = new ArrayList<>();
 		springConfigurationFiles.addAll(baseConfigLocations);
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty(springConfigLocationsProperty);
@@ -152,7 +151,7 @@ public class IbisApplicationContext {
 				log.error("unable to locate Spring configuration file ["+file+"]");
 			} else {
 				if(file.indexOf(":") == -1) {
-					file = classpathUrlPrefix+"/"+file;
+					file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
 				}
 
 				springConfigurationFiles.add(file);

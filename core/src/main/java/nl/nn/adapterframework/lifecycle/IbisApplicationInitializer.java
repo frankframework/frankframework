@@ -78,7 +78,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		List<String> baseConfigLocations = new ArrayList<>();
 		baseConfigLocations.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
 		return IbisApplicationContext.getSpringConfigurationFiles(classLoader, baseConfigLocations,
-				"SPRING.WAC.CONFIG.LOCATIONS", XmlWebApplicationContext.CLASSPATH_URL_PREFIX, log);
+				"SPRING.WAC.CONFIG.LOCATIONS", log);
 	}
 
 	@Override
