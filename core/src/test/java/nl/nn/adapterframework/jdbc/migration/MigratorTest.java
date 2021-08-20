@@ -6,10 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
@@ -19,7 +17,6 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MigratorTest extends JdbcTestBase {
 	private static TestConfiguration configuration; //Static to sync over all DMBS' tests
 	private Migrator migrator = null;
-	private IbisContext ibisContext = Mockito.spy(new IbisContext());
 
 	private TestConfiguration getConfiguration() {
 		if(configuration == null) {
@@ -45,7 +42,6 @@ public class MigratorTest extends JdbcTestBase {
 
 		migrator = getConfiguration().createBean(Migrator.class);
 		migrator.setDatasourceName(getDataSourceName());
-		migrator.setIbisContext(ibisContext);
 	}
 
 	@Test
