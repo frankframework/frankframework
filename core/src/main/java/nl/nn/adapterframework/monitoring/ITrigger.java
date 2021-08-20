@@ -27,6 +27,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 @FrankDocGroup(name = "Monitoring", order = 80)
 public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, DisposableBean {
+	public static enum TriggerType {
+		ALARM,
+		CLEARING
+	}
+
 	boolean isAlarm();
 	void clearEvents();
 	boolean isConfigured();

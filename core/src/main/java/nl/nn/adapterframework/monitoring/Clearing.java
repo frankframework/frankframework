@@ -16,8 +16,25 @@ limitations under the License.
 
 package nl.nn.adapterframework.monitoring;
 
-public class Clearing extends TriggerBase {
+/**
+ * A Trigger that starts its life with type = CLEARING. The type of the trigger can be changed dynamically.
+ * @author martijn
+ *
+ */
+public class Clearing extends Trigger {
 	public Clearing() {
 		setAlarm(false);
+	}
+
+	/** @ff.noAttribute */
+	@Override
+	public void setAlarm(boolean b) {
+		super.setAlarm(b);
+	}
+
+	/** @ff.noAttribute */
+	@Override
+	public void setType(String type) {
+		super.setType(type);
 	}
 }
