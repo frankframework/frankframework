@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServlet;
 public interface DynamicRegistration {
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
+		public static final String[] ALL_IBIS_ROLES = "IbisObserver,IbisAdmin,IbisDataAdmin,IbisTester,IbisWebService".split(",");
+		public static final String[] ALL_IBIS_USER_ROLES = "IbisObserver,IbisAdmin,IbisDataAdmin,IbisTester".split(",");
 		public HttpServlet getServlet();
 		public String getUrlMapping();
 		public String[] getRoles();

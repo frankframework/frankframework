@@ -125,18 +125,24 @@ public class IbisApplicationContext {
 	}
 
 	/**
-	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
 	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
-		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+		List<String> baseConfigLocations = new ArrayList<>();
+		baseConfigLocations.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
+		baseConfigLocations.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+		return getSpringConfigurationFiles(classLoader, baseConfigLocations, "SPRING.CONFIG.LOCATIONS",
+				ResourceUtils.CLASSPATH_URL_PREFIX, log);
+	}
 
-		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
+	protected static String[] getSpringConfigurationFiles(ClassLoader classLoader, List<String> baseConfigLocations, String springConfigLocationsProperty, String classpathUrlPrefix, Logger log) {
+		List<String> springConfigurationFiles = new ArrayList<>();
+		springConfigurationFiles.addAll(baseConfigLocations);
+		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty(springConfigLocationsProperty);
 		while(locationTokenizer.hasMoreTokens()) {
 			String file = locationTokenizer.nextToken();
 			if(log.isDebugEnabled()) log.debug("found spring configuration file to load ["+file+"]");
@@ -146,7 +152,7 @@ public class IbisApplicationContext {
 				log.error("unable to locate Spring configuration file ["+file+"]");
 			} else {
 				if(file.indexOf(":") == -1) {
-					file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
+					file = classpathUrlPrefix+"/"+file;
 				}
 
 				springConfigurationFiles.add(file);

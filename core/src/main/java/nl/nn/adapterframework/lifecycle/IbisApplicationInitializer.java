@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.ServletContext;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +55,8 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setConfigLocation(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		applicationContext.setConfigLocations(getSpringConfigurationFiles(applicationContext.getClassLoader()));
+
 		applicationContext.setDisplayName("IbisApplicationInitializer");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
@@ -61,6 +65,20 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
 
 		return applicationContext;
+	}
+
+	/**
+	 * Loads webApplicationContext and files specified by the SPRING.WAC.CONFIG.LOCATIONS
+	 * property in AppConstants.properties
+	 * 
+	 * @param classLoader to use in order to find and validate the Spring Configuration files
+	 * @return A String array containing all files to use.
+	 */
+	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+		List<String> baseConfigLocations = new ArrayList<>();
+		baseConfigLocations.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		return IbisApplicationContext.getSpringConfigurationFiles(classLoader, baseConfigLocations,
+				"SPRING.WAC.CONFIG.LOCATIONS", XmlWebApplicationContext.CLASSPATH_URL_PREFIX, log);
 	}
 
 	@Override

@@ -15,22 +15,24 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang3.StringUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Enables the use of programmatically adding servlets to the given ServletContext<br/>
@@ -80,8 +82,8 @@ public class ServletManager {
 		registerServlet(servletName, servletClass, urlMapping, new String[0], -1, null);
 	}
 
-	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
+	public void registerServlet(String servletName, Servlet servlet, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"] loadOnStartup ["+loadOnStartup+"]");
 		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
@@ -91,7 +93,7 @@ public class ServletManager {
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
-		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servletClass);
+		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
 		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
 		String stage = appConstants.getString("dtap.stage", null);
@@ -132,7 +134,7 @@ public class ServletManager {
 			}
 		}
 
-		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servletClass+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
 	}
 
 	private void log(String msg, Level level) {
