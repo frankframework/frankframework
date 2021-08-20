@@ -293,7 +293,6 @@ class FrankClassDoclet implements FrankClass {
 		return result;
 	}
 
-	// TODO: Unit test
 	@Override
 	public String getJavaDocTag(String tagName) {
 		Tag[] tags = clazz.tags(tagName);
