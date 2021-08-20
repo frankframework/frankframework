@@ -34,8 +34,11 @@ import org.apache.logging.log4j.Logger;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.doc.FrankDocIgnoreTypeMembership;
 import nl.nn.adapterframework.frankdoc.Utils;
+import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.util.LogUtil;
@@ -76,6 +79,21 @@ public class FrankElement implements Comparable<FrankElement> {
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
+	}
+
+	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
+		FrankAnnotation typeIgnoreAnnotation = clazz.getAnnotation(FrankDocIgnoreTypeMembership.class.getName());
+		if(typeIgnoreAnnotation != null) {
+			try {
+				String excludedFromType = (String) typeIgnoreAnnotation.getValue();
+				log.trace("FrankElement [{}] has annotation {}, excluding from type [{}]",
+						() -> fullName, () -> FrankDocIgnoreTypeMembership.class.getName(), () -> excludedFromType);
+				syntax2ExcludedFromTypes.add(excludedFromType);
+			} catch(FrankDocException e) {
+				log.warn("For FrankElement [{}], could not parse annotation {}", fullName, FrankDocIgnoreTypeMembership.class.getName());
+			}
+		}
 	}
 
 	/**
@@ -95,6 +113,9 @@ public class FrankElement implements Comparable<FrankElement> {
 
 	public void setParent(FrankElement parent) {
 		this.parent = parent;
+		if(parent != null) {
+			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
+		}
 		this.statistics = new FrankElementStatistics(this);
 	}
 
@@ -293,18 +314,8 @@ public class FrankElement implements Comparable<FrankElement> {
 		return hasPluralConfigChildren || inheritsPluralConfigChildren;
 	}
 
-	void addSyntax2ExcludedFromType(String typeName) {
-		syntax2ExcludedFromTypes.add(typeName);
-	}
-
 	boolean syntax2ExcludedFromType(String typeName) {
 		return syntax2ExcludedFromTypes.contains(typeName);
-	}
-
-	void inheritSyntax2ExcludedFromTypes() {
-		if(parent != null) {
-			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
-		}
 	}
 
 	@Override

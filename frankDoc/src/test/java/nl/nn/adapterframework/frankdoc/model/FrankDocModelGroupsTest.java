@@ -71,14 +71,15 @@ public class FrankDocModelGroupsTest {
 		assertEquals(2, members.size());
 		assertEquals("ChildListener", members.get(0).getSimpleName());
 		assertEquals("Parent", members.get(1).getSimpleName());
-		// Because of the FrankDocIgnoreGroupMembership annotation, ChildSender is not in.
+		// Because of the FrankDocIgnoreGroupMembership annotation, ChildSender and ChildSenderChild are not in.
 		group = groups.get(1);
 		assertEquals("Senders", group.getName());
 		assertEquals(1, group.getElementTypes().size());
 		elementType = group.getElementTypes().get(0);
 		members = elementType.getMembers();
-		assertEquals(2, members.size());
+		assertEquals(3, members.size());
 		assertEquals("ChildSender", members.get(0).getSimpleName());
-		assertEquals("ChildSenderSender", members.get(1).getSimpleName());
+		assertEquals("ChildSenderChild", members.get(1).getSimpleName());
+		assertEquals("ChildSenderSender", members.get(2).getSimpleName());
 	}
 }

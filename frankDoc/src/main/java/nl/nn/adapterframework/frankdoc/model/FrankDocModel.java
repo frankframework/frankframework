@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.digester.DigesterRule;
 import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.doc.FrankDocIgnoreTypeMembership;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
@@ -105,7 +103,6 @@ public class FrankDocModel {
 			result.setHighestCommonInterface();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
-			result.setInheritedSyntax2ExcludedFromType();
 			result.buildGroups();
 		} catch(Exception e) {
 			log.fatal("Could not populate FrankDocModel", e);
@@ -214,15 +211,6 @@ public class FrankDocModel {
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz, current));
 		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
-		// The FrankDocIgnoreTypeMembership annotation is inherited, but we do not just request
-		// the inherited annotations as well. That way, we would not detect multiple
-		// inherited FrankDocIgnoreTypeMembership annotations pointing to different interfaces.
-		// Instead we establish inherited ignored types in method setInheritedSyntax2ExcludedFromType().
-		FrankAnnotation typeIgnoreAnnotation = clazz.getAnnotation(FrankDocIgnoreTypeMembership.class.getName());
-		if(typeIgnoreAnnotation != null) {
-			String excludedFromType = (String) typeIgnoreAnnotation.getValue();
-			current.addSyntax2ExcludedFromType(excludedFromType);
-		}
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());
 		return current;
 	}
@@ -751,24 +739,6 @@ public class FrankDocModel {
 		allTypes.values().stream().filter(ElementType::isFromJavaInterface)
 			.flatMap(et -> et.getMembers().stream())
 			.forEach(f -> f.setInterfaceBased(true));
-	}
-
-	void setInheritedSyntax2ExcludedFromType() {
-		Set<FrankElement> elements = new HashSet<>(allElements.values());
-		while(! elements.isEmpty()) {
-			setInheritedSyntax2ExcludedFromType(elements.iterator().next(), elements);
-		}
-	}
-
-	private void setInheritedSyntax2ExcludedFromType(FrankElement current, Set<FrankElement> todo) {
-		FrankElement parent = current.getParent();
-		// Ensure that the direct parent is correct before we visit the inheritance child.
-		if((parent != null) && todo.contains(parent)) {
-			setInheritedSyntax2ExcludedFromType(parent, todo);
-		} else {
-			current.inheritSyntax2ExcludedFromTypes();
-			todo.remove(current);
-		}
 	}
 
 	public void buildGroups() {
