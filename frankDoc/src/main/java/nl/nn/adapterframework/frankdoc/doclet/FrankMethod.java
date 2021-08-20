@@ -30,6 +30,7 @@ public interface FrankMethod extends FrankProgramElement {
 	FrankAnnotation getAnnotationInludingInherited(String name) throws FrankDocException;
 	String getJavaDoc();
 	String getJavaDocIncludingInherited() throws FrankDocException;
+	// TODO: If there is no argument, we want an empty string. Unit test this.
 	String getJavaDocTag(String tagName);
 	String getJavaDocTagIncludingInherited(String tagName) throws FrankDocException;
 

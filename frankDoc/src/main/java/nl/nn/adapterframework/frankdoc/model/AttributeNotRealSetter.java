@@ -23,13 +23,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.doc.FrankDocIgnoreTypeMembership;
-import nl.nn.adapterframework.doc.NoFrankAttribute;
-import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
-import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -39,16 +36,14 @@ class AttributeNotRealSetter {
 	private Set<String> namesNonAttributesDueToIgnoredInterface = new HashSet<>();
 
 	AttributeNotRealSetter(FrankClass clazz) {
-		FrankAnnotation attributeIgnoreAnnotation = clazz.getAnnotation(FrankDocIgnoreTypeMembership.class.getName());
-		if(attributeIgnoreAnnotation != null) {
-			try {
-				String ignoredInterface = (String) attributeIgnoreAnnotation.getValue();
-				log.trace("Have annotation {} that refers to interface [{}]", () -> FrankDocIgnoreTypeMembership.class.getName(), () -> ignoredInterface);
+		String ignoredInterface = clazz.getJavaDocTag(FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
+		if(ignoredInterface != null) {
+			if(StringUtils.isBlank(ignoredInterface)) {
+				log.warn("Javadoc tag {} requires an argument that refers a Java interface", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
+			} else {
+				log.trace("Have Javadoc tag {} that refers to interface [{}]", () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> ignoredInterface);
 				AttributesFromInterfaceRejector rejector = new AttributesFromInterfaceRejector(new HashSet<>(Arrays.asList(ignoredInterface)));
 				namesNonAttributesDueToIgnoredInterface = rejector.getRejects(clazz);
-			} catch(FrankDocException e) {
-				log.warn("Could not parse annotation {}", FrankDocIgnoreTypeMembership.class.getName(), e);
-				return;
 			}
 			if(log.isTraceEnabled()) {
 				String namesNonAttributesStr = namesNonAttributesDueToIgnoredInterface.stream().collect(Collectors.joining(", "));
@@ -58,8 +53,8 @@ class AttributeNotRealSetter {
 	}
 
 	void updateAttribute(FrankAttribute attribute, FrankMethod method) {
-		if(method.getAnnotation(NoFrankAttribute.class.getName()) != null) {
-			log.trace("Attribute [{}] has annotation {}, marking as not real", () -> attribute.getName(), () -> NoFrankAttribute.class.getName());
+		if(method.getJavaDocTag(FrankAttribute.JAVADOC_NO_FRANK_ATTRIBUTE) != null) {
+			log.trace("Attribute [{}] has JavaDoc tag {}, marking as not real", () -> attribute.getName(), () -> FrankAttribute.JAVADOC_NO_FRANK_ATTRIBUTE);
 			attribute.setNotReal(true);
 		}
 		if(namesNonAttributesDueToIgnoredInterface.contains(attribute.getName())) {

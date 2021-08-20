@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.frankdoc.testtarget.walking;
 
-import nl.nn.adapterframework.doc.NoFrankAttribute;
-
 public class NotRealChildNotExcludingInterface extends NotRealParent {
 	/** This attribute is documented */
 	@Override
@@ -11,7 +9,7 @@ public class NotRealChildNotExcludingInterface extends NotRealParent {
 	public void setChildAttribute(String value) {
 	}
 
-	@NoFrankAttribute
+	/** @ff.noAttribute */
 	public void setNotChildAttribute(String value) {
 	}
 }

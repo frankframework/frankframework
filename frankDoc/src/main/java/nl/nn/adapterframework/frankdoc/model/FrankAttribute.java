@@ -20,11 +20,11 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.doc.FrankDocIgnoreTypeMembership;
-import nl.nn.adapterframework.doc.NoFrankAttribute;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 
 public class FrankAttribute extends ElementChild {
+	static final String JAVADOC_NO_FRANK_ATTRIBUTE = "@ff.noAttribute";
+
 	@EqualsAndHashCode(callSuper = false)
 	static class Key extends AbstractKey {
 		private String name;
@@ -50,8 +50,8 @@ public class FrankAttribute extends ElementChild {
 	private @Getter @Setter AttributeEnum attributeEnum;
 
 	/**
-	 * This field supports the {@link NoFrankAttribute} and {@link FrankDocIgnoreTypeMembership}
-	 * annotations. These annotations should cause attributes to not exist. If an attribute should
+	 * This field supports the ff.noAttribute and ff.ignoreTypeMembership JavaDoc tags. 
+	 * These annotations should cause attributes to not exist. If an attribute should
 	 * not exist, then it also should not be inherited.
 	 */
 	private @Getter(onMethod = @__(@Override)) @Setter(AccessLevel.PACKAGE) boolean notReal = false;
