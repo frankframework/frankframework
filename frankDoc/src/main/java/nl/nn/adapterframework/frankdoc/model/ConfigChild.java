@@ -73,7 +73,7 @@ public abstract class ConfigChild extends ElementChild {
 	 * because then we can filter on it in attributes like {@link ElementChild#IN_XSD}.
 	 */
 	@Override
-	public final boolean isNotReal() {
+	public final boolean isExcluded() {
 		return false;
 	}
 

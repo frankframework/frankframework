@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 public enum XsdVersion {
 	STRICT(ElementChild.IN_XSD, ElementChild.REJECT_DEPRECATED, f -> ! f.isDeprecated(), new DelegateStrict()),
-	COMPATIBILITY(ElementChild.IN_COMPATIBILITY_XSD, ElementChild.NOT_REAL, f -> true, new DelegateCompatibility());
+	COMPATIBILITY(ElementChild.IN_COMPATIBILITY_XSD, ElementChild.EXCLUDED, f -> true, new DelegateCompatibility());
 
 	private static Logger log = LogUtil.getLogger(XsdVersion.class);
 

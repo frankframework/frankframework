@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.frankdoc.model;
 
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_REAL;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_NOT_EXCLUDED;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -56,8 +56,8 @@ public class FrankDocModelConfigChildrenTest {
 		instance.findOrCreateElementType(classRepository.findClass(CONTAINER_DERIVED));
 		instance.findOrCreateElementType(classRepository.findClass(CONTAINER_OTHER));
 		instance.setOverriddenFrom();
-		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL_REAL);
-		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL_REAL);
+		configChildren = instance.getAllElements().get(CONTAINER).getConfigChildren(ALL_NOT_EXCLUDED);
+		configChildrenOfDerived = instance.getAllElements().get(CONTAINER_DERIVED).getConfigChildren(ALL_NOT_EXCLUDED);
 	}
 
 	@Test
@@ -225,33 +225,33 @@ public class FrankDocModelConfigChildrenTest {
 
 	@Test
 	public void whenInheritedConfigChildNotDeprecatedInheritedFromDeprecatedThenNotDeprecated() throws Exception {
-		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER).getConfigChildren(ElementChild.ALL_REAL).get(0);
+		ConfigChild theConfigChild = instance.findOrCreateFrankElement(CONTAINER_OTHER).getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		assertFalse(theConfigChild.isDeprecated());
 	}
 
 	@Test
 	public void whenConfigChildHasJavadocThenDocumentedAndTakenAsDescription() throws Exception {
-		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadoc").getConfigChildren(ElementChild.ALL_REAL).get(0);
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadoc").getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		assertTrue(configChild.isDocumented());
 		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());
 	}
 
 	@Test
 	public void whenConfigChildInheritsJavadocThenNotDocumentedButDescriptionTaken() throws Exception {
-		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocDerived").getConfigChildren(ElementChild.ALL_REAL).get(0);
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocDerived").getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		assertFalse(configChild.isDocumented());
 		assertEquals("JavaDoc of ContainerForConfigChildDescriptionJavadoc.setChild", configChild.getDescription());		
 	}
 
 	@Test
 	public void whenConfigChildHasIbisDocDescriptionThenJavadocOverruled() throws Exception {
-		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocOverruled").getConfigChildren(ElementChild.ALL_REAL).get(0);
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionJavadocOverruled").getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		assertEquals("Description of ContainerForConfigChildDescriptionJavadocOverruled.setChild", configChild.getDescription());
 	}
 
 	@Test
 	public void whenConfigChildHasIbisDocWithoutDescriptionThenJavadocTaken() throws Exception {
-		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken").getConfigChildren(ElementChild.ALL_REAL).get(0);
+		ConfigChild configChild = instance.findOrCreateFrankElement(PACKAGE + "ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken").getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		assertEquals("Description of ContainerForConfigChildDescriptionIbisDocOmitsDescriptionJavadocTaken.setChild", configChild.getDescription());
 	}
 }

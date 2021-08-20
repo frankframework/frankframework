@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.frankdoc.testtarget.walking;
 
-public class NotRealGrandChild2 extends NotRealChildExcludingInterface {
+public class TestingExcludedGrandChild2 extends TestingExcludedChildExcludingInterface {
 	// Technical override, not reintroduced.
 	@Override
 	public void setExcludedAttribute1(String value) {

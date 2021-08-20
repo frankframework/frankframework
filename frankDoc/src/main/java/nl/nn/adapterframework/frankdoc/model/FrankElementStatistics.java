@@ -16,7 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_REAL;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_NOT_EXCLUDED;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -94,8 +94,8 @@ public class FrankElementStatistics {
 	}
 
 	private void finishDescendantStatistics() {
-		numConfigChildren = subject.getConfigChildren(ALL_REAL).size();
-		numAttributes = subject.getAttributes(ALL_REAL).size();
+		numConfigChildren = subject.getConfigChildren(ALL_NOT_EXCLUDED).size();
+		numAttributes = subject.getAttributes(ALL_NOT_EXCLUDED).size();
 		boolean isFirstAncestor = true;
 		FrankElement ancestor = subject;
 		while(ancestor.getParent() != null) {
@@ -109,7 +109,7 @@ public class FrankElementStatistics {
 	}
 
 	private void finishConfigChildOverrideStatistics() {
-		for(ConfigChild configChild: subject.getConfigChildren(ALL_REAL)) {
+		for(ConfigChild configChild: subject.getConfigChildren(ALL_NOT_EXCLUDED)) {
 			if(configChild.getOverriddenFrom() != null) {
 				numOverriddenConfigChildren++;
 				addConfigChildOverriddenFrom(configChild.getOverriddenFrom());
@@ -148,7 +148,7 @@ public class FrankElementStatistics {
 	}
 
 	private void finishAttributeOverrideStatistics() {
-		for(FrankAttribute attribute: subject.getAttributes(ALL_REAL)) {
+		for(FrankAttribute attribute: subject.getAttributes(ALL_NOT_EXCLUDED)) {
 			if(attribute.getOverriddenFrom() != null) {
 				numOverriddenAttributes++;
 				addAttributeOverriddenFrom(attribute.getOverriddenFrom());

@@ -221,7 +221,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
-		AttributeNotRealSetter attributeNotRealSetter = new AttributeNotRealSetter(clazz);
+		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
 		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
@@ -251,14 +251,14 @@ public class FrankDocModel {
 			} catch(FrankDocException e) {
 				log.warn("Attribute [{}] has an invalid default value, [{}, detail {}]", attribute.toString(), attribute.getDefaultValue(), e.getMessage());
 			}
-			attributeNotRealSetter.updateAttribute(attribute, method);
+			attributeExcludedSetter.updateAttribute(attribute, method);
 			result.add(attribute);
 			log.trace("Attribute [{}] done", () -> attributeName);
 		}
 		// We may inherit attribute setters from an interface from which we have to reject the attributes.
 		// We must have FrankAttribute instances for these, because otherwise AncestorChildNavigation does not know
 		// how to omit them.
-		result.addAll(attributeNotRealSetter.getFakeNonRealAttributesForRemainingNames(attributeOwner));
+		result.addAll(attributeExcludedSetter.getExcludedAttributesForRemainingNames(attributeOwner));
 		log.trace("Done creating attributes for {}", attributeOwner.getFullName());
 		return result;
 	}
@@ -626,7 +626,7 @@ public class FrankDocModel {
 
 	private void createConfigChildSets(FrankElement frankElement) {
 		log.trace("Handling FrankElement [{}]", () -> frankElement.getFullName());
-		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL_REAL, ElementChild.NOT_REAL).stream()
+		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL_NOT_EXCLUDED, ElementChild.EXCLUDED).stream()
 				.collect(Collectors.groupingBy(c -> c.getRoleName()));
 		for(String roleName: cumChildrenByRoleName.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
@@ -682,7 +682,7 @@ public class FrankDocModel {
 				.distinct()
 				.collect(Collectors.toList());
 		Map<String, List<ConfigChild>> configChildrenByRoleName = rawMembers.stream()
-				.flatMap(element -> element.getConfigChildren(ElementChild.ALL_REAL).stream())
+				.flatMap(element -> element.getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).stream())
 				.collect(Collectors.groupingBy(ConfigChild::getRoleName));
 		List<String> names = new ArrayList<>(configChildrenByRoleName.keySet());
 		Collections.sort(names);

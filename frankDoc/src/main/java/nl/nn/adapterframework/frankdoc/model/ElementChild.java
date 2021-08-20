@@ -88,19 +88,19 @@ public abstract class ElementChild {
 	private @Getter String defaultValue;
 
 	public static Predicate<ElementChild> IN_XSD = c ->
-		(! c.isNotReal())
+		(! c.isExcluded())
 		&& (! c.isDeprecated())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		(! c.isNotReal())
+		(! c.isExcluded())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
-	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isNotReal() || c.isDeprecated();
+	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isExcluded() || c.isDeprecated();
 	static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> ALL_REAL = c -> ! c.isNotReal();
-	public static Predicate<ElementChild> NOT_REAL = c -> c.isNotReal();
-	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isNotReal() && (c.getOverriddenFrom() != null);
+	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
+	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
+	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or
@@ -135,7 +135,7 @@ public abstract class ElementChild {
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
 
-	abstract boolean isNotReal();
+	abstract boolean isExcluded();
 
 	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {

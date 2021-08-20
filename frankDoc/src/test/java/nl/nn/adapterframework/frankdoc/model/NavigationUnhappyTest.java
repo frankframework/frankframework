@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.frankdoc.model;
 
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_REAL;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_NOT_EXCLUDED;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.REJECT_DEPRECATED;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +38,6 @@ public class NavigationUnhappyTest {
 			@Override
 			public void handleCumulativeChildrenOf(FrankElement frankElement) {
 			}
-		}, ALL_REAL, REJECT_DEPRECATED);
+		}, ALL_NOT_EXCLUDED, REJECT_DEPRECATED);
 	}
 }

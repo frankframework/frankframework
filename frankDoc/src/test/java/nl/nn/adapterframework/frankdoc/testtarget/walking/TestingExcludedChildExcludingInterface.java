@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.frankdoc.testtarget.walking;
 
-public class NotRealChildNotExcludingInterface extends NotRealParent {
+/** @ff.ignoreTypeMembership nl.nn.adapterframework.frankdoc.testtarget.walking.ITestingExcluded */
+public class TestingExcludedChildExcludingInterface extends TestingExcludedParent {
 	/** This attribute is documented */
 	@Override
 	public void setExcludedAttribute2(String value) {
