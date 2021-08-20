@@ -42,7 +42,6 @@ public class TestConfiguration extends Configuration {
 		setName(TEST_CONFIGURATION_NAME);
 		refresh();
 		configure();
-		start();
 
 		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
 			fail("instance.name has been altered");
