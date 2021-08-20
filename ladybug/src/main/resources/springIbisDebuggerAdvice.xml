@@ -14,7 +14,6 @@
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
 		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
-		init-method="init"
 	/>
 
 	<aop:config proxy-target-class="true">

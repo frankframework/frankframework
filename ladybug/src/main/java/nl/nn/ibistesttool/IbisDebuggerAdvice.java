@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
 
@@ -73,7 +74,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
+public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Setter IbisDebugger ibisDebugger;
@@ -87,7 +88,9 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
 
-	public void init() {
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		// As ibisDebugger lives in the WebApplicationContext it cannot get wired with ibisManager by Spring
 		ibisDebugger.setIbisManager(ibisManager);
 	}
