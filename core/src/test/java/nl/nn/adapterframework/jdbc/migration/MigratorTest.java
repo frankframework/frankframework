@@ -48,20 +48,16 @@ public class MigratorTest extends JdbcTestBase {
 		migrator.setIbisContext(ibisContext);
 	}
 
-	private MessageKeeper getMessageKeeper() {
-		return ibisContext.getMessageKeeper(TestConfiguration.TEST_CONFIGURATION_NAME);
-	}
-
 	@Test
 	public void testSimpleChangelogFile() throws Exception {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		migrator.configure();
 		migrator.update();
 
-		MessageKeeper messageKeeper = getMessageKeeper();
+		MessageKeeper messageKeeper = configuration.getMessageKeeper();
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
-		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		assertEquals(2, messageKeeper.size()); //Configuration startup message + liquibase update
+		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
 	}
 
 	@Test

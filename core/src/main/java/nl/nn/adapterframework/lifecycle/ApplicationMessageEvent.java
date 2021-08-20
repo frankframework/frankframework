@@ -45,15 +45,16 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 			m.append("[" + version + "] ");
 		}
 
-		if (MessageKeeperLevel.ERROR.equals(level)) {
-			log.error(m, e);
-		} else if (MessageKeeperLevel.WARN.equals(level)) {
-			log.warn(m, e);
-		} else {
-			log.info(m, e);
-		}
-
 		m.append(message);
+
+		//We must use .toString() here else the StringBuilder will be passed on which add the stacktrace Message to the log
+		if (MessageKeeperLevel.ERROR.equals(level)) {
+			log.error(m.toString(), e);
+		} else if (MessageKeeperLevel.WARN.equals(level)) {
+			log.warn(m.toString(), e);
+		} else {
+			log.info(m.toString(), e);
+		}
 
 		if (e != null) {
 			m.append(": " + e.getMessage());

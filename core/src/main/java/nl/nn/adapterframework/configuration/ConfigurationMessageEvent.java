@@ -52,12 +52,13 @@ public class ConfigurationMessageEvent extends ApplicationMessageEvent {
 
 		m.append(message);
 
+		//We must use .toString() here else the StringBuilder will be passed on which add the stacktrace Message to the log
 		if (MessageKeeperLevel.ERROR.equals(level)) {
-			log.error(m, e);
+			log.error(m.toString(), e);
 		} else if (MessageKeeperLevel.WARN.equals(level)) {
-			log.warn(m, e);
+			log.warn(m.toString(), e);
 		} else {
-			log.info(m, e);
+			log.info(m.toString(), e);
 		}
 
 		if (e != null) {
