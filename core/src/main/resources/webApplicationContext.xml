@@ -33,5 +33,5 @@
 		class="nl.nn.adapterframework.lifecycle.ServletManager"
 	/>
 
-	<bean id="ConfigurationMessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 </beans>

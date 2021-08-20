@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -65,6 +66,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
+	private static final Logger secLog = LogUtil.getLogger("SEC");
 
 	private Boolean autoStart = null;
 	private boolean enabledAutowiredPostProcessing = false;
@@ -192,6 +194,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		setId(getId()); // Update the setIdCalled flag in AbstractRefreshableConfigApplicationContext. When wired through spring it calls the setBeanName method.
+
 		super.refresh();
 
 		if(adapterManager == null) { //Manually set the AdapterManager bean
@@ -269,6 +273,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
+		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
 	}
 
@@ -286,6 +291,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if(event instanceof ContextClosedEvent) {
+			secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] closed");
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
 
@@ -392,6 +398,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
+	/**
+	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
+	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
+	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
+	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
+	 * 
+	 * The DisplayName will always be updated, which is purely used for logging purposes.
+	 */
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
@@ -399,10 +413,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 
-			setId(name); //ID should never be NULL
+			setBeanName(name);
 		}
 	}
 
+	/**
+	 * Returns the original configured name of this configuration
+	 */
 	@Override
 	public String getName() {
 		return getId();
