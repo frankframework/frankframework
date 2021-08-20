@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServlet;
 
 /**
  * Interface to use in combination with the {@link IbisInitializer} annotation.
- * Classes that implement the annotation are automatically picked up by Spring, and allow you use to use:
+ * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
  * <code>
  * public void setServletManager(ServletManager servletManager) {
  *  ServletManager.register(this);
