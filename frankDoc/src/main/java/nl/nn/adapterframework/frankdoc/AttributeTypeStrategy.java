@@ -44,7 +44,10 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public enum AttributeTypeStrategy {
-	ALLOW_PROPERTY_REF(new DelegateAllowPropertyRef()),
+	ALLOW_PROPERTY_REF(new DelegateAllowPropertyRefEnumDocumentedCaseSensitive()),
+	ALLOW_PROPERTY_REF_ENUM_VALUES_IGNORE_CASE(new DelegateAllowPropertyRefEnumIgnoreCase()),
+
+	// TODO: This value is not used anymore, should we remove it?
 	VALUES_ONLY(new DelegateValuesOnly());
 
 	private static Logger log = LogUtil.getLogger(AttributeTypeStrategy.class);
@@ -92,14 +95,16 @@ public enum AttributeTypeStrategy {
 		abstract void addAttributeActive(XmlBuilder context);
 		abstract List<XmlBuilder> createHelperTypes();
 
-		XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
+		final XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
 			XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 			final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
 			attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
 			return simpleType;
 		}
 
-		private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+		abstract void addEnumValue(XmlBuilder restriction, AttributeEnumValue v);
+
+		final void addEnumValueCaseSensitiveAndDocumented(XmlBuilder restriction, AttributeEnumValue v) {
 			XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
 			if(v.getDescription() != null) {
 				addDocumentation(valueBuilder, v.getDescription());
@@ -127,7 +132,7 @@ public enum AttributeTypeStrategy {
 		}
 	}
 
-	private static class DelegateAllowPropertyRef extends Delegate {
+	private static abstract class DelegateAllowPropertyRef extends Delegate {
 		// This method ensures that references are still allowed for integer and boolean attributes.
 		// For example, an integer attribute can still be set like "${someIdentifier}".
 		// This method expects that methods DocWriterNewXmlUtils.createTypeFrankBoolean() and
@@ -206,10 +211,24 @@ public enum AttributeTypeStrategy {
 					.collect(Collectors.joining("|"));
 		}
 
-		private String getCaseInsensitivePattern(final String word) {
+		final String getCaseInsensitivePattern(final String word) {
 			return IntStream.range(0, word.length()).mapToObj(i -> Character.valueOf(word.charAt(i)))
 				.map(c -> "[" + Character.toLowerCase(c) + Character.toUpperCase(c) + "]")
 				.collect(Collectors.joining(""));
+		}
+	}
+
+	private static class DelegateAllowPropertyRefEnumDocumentedCaseSensitive extends DelegateAllowPropertyRef {
+		@Override
+		void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			addEnumValueCaseSensitiveAndDocumented(restriction, v);
+		}
+	}
+
+	private static class DelegateAllowPropertyRefEnumIgnoreCase extends DelegateAllowPropertyRef {
+		@Override
+		void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			addPattern(restriction, getCaseInsensitivePattern(v.getLabel()));
 		}
 	}
 
@@ -231,6 +250,11 @@ public enum AttributeTypeStrategy {
 		@Override
 		List<XmlBuilder> createHelperTypes() {
 			return new ArrayList<>();
+		}
+
+		@Override
+		void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			addEnumValueCaseSensitiveAndDocumented(restriction, v);
 		}
 	}
 }
