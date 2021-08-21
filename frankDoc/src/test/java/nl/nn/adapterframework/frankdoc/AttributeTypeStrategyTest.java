@@ -12,15 +12,34 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
+import nl.nn.adapterframework.frankdoc.model.ElementChild;
+import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
+import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class AttributeTypeStrategyTest {
-	private String schemaString = getXsd();
+	private String schemaString;
+
+	@Before
+	public void setUp() {
+		String packageOfEnum = "nl.nn.adapterframework.frankdoc.testtarget.attribute.type.strategy.";
+		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfEnum);
+		String digesterRulesFileName = "doc/empty-digester-rules.xml";
+		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, packageOfEnum + "Container", classRepository);
+		FrankAttribute attribute = model.findFrankElement(packageOfEnum + "Container").getAttributes(ElementChild.ALL).get(0);
+		AttributeEnum attributeEnum = model.findAttributeEnum(packageOfEnum + "Container.TestType");
+		schemaString = getXsd(attributeEnum, attribute);
+		System.out.println(schemaString);
+	}
 
 	@Test
 	public void whenNormalIntegerSuppliedThenAccepted() throws Exception {
@@ -122,14 +141,26 @@ public class AttributeTypeStrategyTest {
 		validate(getTestXmlActive("${myVar}true"));
 	}
 
-	private static String getXsd() {
+	@Test
+	public void whenRestrictedAttributeSatisfiesRestrictionThenAccepted() throws Exception {
+		validate(getEnumTestXml("TWO"));
+	}
+
+	@Test(expected = SAXException.class)
+	public void whenRestrictedAttributeDoesNotSatisfyRestrictionThenRejected() throws Exception {
+		validate(getEnumTestXml("xxx"));
+	}
+
+	private static String getXsd(AttributeEnum attributeEnum, FrankAttribute enumTypedAttribute) {
 		XmlBuilder schema = getXmlSchema();
 		XmlBuilder element = addElementWithType(schema, "myElement");
 		XmlBuilder complexType = addComplexType(element);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "boolAttr", AttributeType.BOOL);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttribute(complexType, "intAttr", AttributeType.INT);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addAttributeActive(complexType);
+		AttributeTypeStrategy.ALLOW_PROPERTY_REF.addRestrictedAttribute(complexType, enumTypedAttribute);
 		AttributeTypeStrategy.ALLOW_PROPERTY_REF.createHelperTypes().forEach(h -> schema.addSubElement(h));
+		schema.addSubElement(AttributeTypeStrategy.ALLOW_PROPERTY_REF.createAttributeEnumType(attributeEnum));
 		return schema.toXML(true);
 	}
 
@@ -139,6 +170,10 @@ public class AttributeTypeStrategyTest {
 
 	private static String getIntTestXml(String value) {
 		return String.format("<myElement intAttr=\"%s\"/>", value);
+	}
+
+	private static String getEnumTestXml(String value) {
+		return String.format("<myElement restrictedAttribute=\"%s\"/>", value);
 	}
 
 	private static String getTestXmlActive(String value) {

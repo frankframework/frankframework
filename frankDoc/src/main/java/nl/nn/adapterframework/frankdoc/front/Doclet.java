@@ -103,7 +103,7 @@ class Doclet {
 
 	void writeCompatibilityXsd() throws FrankDocException {
 		log.info("Calculating XSD with deprecated items that does not allow property references");
-		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.VALUES_ONLY);
+		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
 		docWriter.init(XsdVersion.COMPATIBILITY);
 		String schemaText = docWriter.getSchema();
 		log.info("Done calculating XSD with deprecated items that does not allow property references, writing it to file {}", xsdCompatibilityFile.getAbsolutePath());

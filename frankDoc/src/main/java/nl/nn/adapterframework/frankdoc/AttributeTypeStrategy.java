@@ -20,9 +20,13 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNew.ATTRIBUTE_VALUES_TYPE
 import static nl.nn.adapterframework.frankdoc.DocWriterNew.VARIABLE_REFERENCE;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.XML_SCHEMA_URI;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addAttributeWithType;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addPattern;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addSimpleType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addUnion;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createSimpleType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -77,11 +82,29 @@ public enum AttributeTypeStrategy {
 		return delegate.createHelperTypes();
 	}
 
+	XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
+		return delegate.createAttributeEnumType(attributeEnum);
+	}
+
 	private static abstract class Delegate {
 		abstract XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType);
 		abstract XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute);
 		abstract void addAttributeActive(XmlBuilder context);
 		abstract List<XmlBuilder> createHelperTypes();
+
+		XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
+			XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+			final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
+			attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
+			return simpleType;
+		}
+
+		private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
+			if(v.getDescription() != null) {
+				addDocumentation(valueBuilder, v.getDescription());
+			}
+		}
 
 		final XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType, String boolType, String intType) {
 			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
