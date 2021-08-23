@@ -104,7 +104,7 @@ public class AttributeTypeStrategyTest {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfEnum);
 		String digesterRulesFileName = "doc/empty-digester-rules.xml";
 		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, packageOfEnum + "Container", classRepository);
-		FrankAttribute attribute = model.findFrankElement(packageOfEnum + "Container").getAttributes(ElementChild.ALL).get(0);
+		FrankAttribute attribute = model.findFrankElement(packageOfEnum + "Container").getAttributes(ElementChild.ALL_NOT_EXCLUDED).get(0);
 		AttributeEnum attributeEnum = model.findAttributeEnum(packageOfEnum + "Container.TestType");
 		schemaStringAllowAttributeRef = getXsd(AttributeTypeStrategy.ALLOW_PROPERTY_REF, attributeEnum, attribute);
 		schemaStringAllowAttributeRefEnumValuesIgnoreCase = getXsd(AttributeTypeStrategy.ALLOW_PROPERTY_REF_ENUM_VALUES_IGNORE_CASE, attributeEnum, attribute);
