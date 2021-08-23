@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,35 +15,32 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-public enum JobDefFunctions {
-	STOP_ADAPTER("StopAdapter"),
-	START_ADAPTER("StartAdapter"),
-	STOP_RECEIVER("StopReceiver"),
-	START_RECEIVER("StartReceiver"),
-	SEND_MESSAGE("SendMessage"),
-	QUERY("ExecuteQuery"),
-	DUMPSTATS("dumpStatistics", true),
-	DUMPSTATSFULL("dumpStatisticsFull", true),
-	CLEANUPDB("cleanupDatabase", true),
-	CLEANUPFS("cleanupFileSystem", true),
-	RECOVER_ADAPTERS("recoverAdapters", true),
-	CHECK_RELOAD("checkReload", true), 
-	LOAD_DATABASE_SCHEDULES("loadDatabaseSchedules", true);
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
+
+public enum JobDefFunctions implements DocumentedEnum {
+	@EnumLabel("StopAdapter") STOP_ADAPTER(),
+	@EnumLabel("StartAdapter") START_ADAPTER(),
+	@EnumLabel("StopReceiver") STOP_RECEIVER(),
+	@EnumLabel("StartReceiver") START_RECEIVER(),
+	@EnumLabel("SendMessage") SEND_MESSAGE(),
+	@EnumLabel("ExecuteQuery") QUERY(),
+	@EnumLabel("dumpStatistics") DUMPSTATS(true),
+	@EnumLabel("dumpStatisticsFull") DUMPSTATSFULL(true),
+	@EnumLabel("cleanupDatabase") CLEANUPDB(true),
+	@EnumLabel("cleanupFileSystem") CLEANUPFS(true),
+	@EnumLabel("recoverAdapters") RECOVER_ADAPTERS(true),
+	@EnumLabel("checkReload") CHECK_RELOAD(true), 
+	@EnumLabel("loadDatabaseSchedules") LOAD_DATABASE_SCHEDULES(true);
 
 	private boolean servicejob = false;
-	private final String name;
 
-	private JobDefFunctions(String name) {
-		this(name, false);
+	private JobDefFunctions() {
+		this(false);
 	}
 
-	private JobDefFunctions(String name, boolean servicejob) {
-		this.name = name;
+	private JobDefFunctions(boolean servicejob) {
 		this.servicejob = servicejob;
-	}
-
-	public String getName() { // Beware: getName() is not the same as name()
-		return name;
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {

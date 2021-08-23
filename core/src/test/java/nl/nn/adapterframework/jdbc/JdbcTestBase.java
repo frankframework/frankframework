@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.junit.Assert.fail;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -32,7 +35,9 @@ public abstract class JdbcTestBase {
 	protected String productKey = "unknown";
 
 	protected static Connection connection; // only to be used for setup and teardown like actions
-	protected DataSource dataSource;
+
+	@Parameterized.Parameter(0)
+	public DataSource dataSource;
 	protected IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{index}: {0}")
@@ -40,9 +45,8 @@ public abstract class JdbcTestBase {
 		return dataSourceFactory.getAvailableDataSources();
 	}
 
-	public JdbcTestBase(DataSource dataSource) throws SQLException {
-		this.dataSource = dataSource;
-
+	@Before
+	public void setup() throws Exception {
 		if(dataSource instanceof DriverManagerDataSource) {
 			Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
 			productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
@@ -50,30 +54,33 @@ public abstract class JdbcTestBase {
 		}
 
 		connection = dataSource.getConnection();
+
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
+
 		try {
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
-				SQLWarning warnings = connection.getWarnings();
-				if(warnings != null) {
-					log.warn(JdbcUtil.warningsToString(warnings));
-				}
-			}
+			prepareDatabase();
 		} catch (Exception e) {
 			e.printStackTrace();
+			fail(e.getMessage());
 		}
-		try {
-			JdbcUtil.executeStatement(connection, 
-					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
-					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+	}
+
+	protected void prepareDatabase() throws Exception {
+		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		}
+		JdbcUtil.executeStatement(connection, 
+				"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
+				"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
+				"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
+		SQLWarning warnings = connection.getWarnings();
+		if(warnings != null) {
+			log.warn(JdbcUtil.warningsToString(warnings));
 		}
 	}
 
@@ -89,9 +96,12 @@ public abstract class JdbcTestBase {
 	}
 
 	@AfterClass
-	public static void stopDatabase() throws SQLException {
+	public static void stopDatabase() throws Exception {
 		try {
-			connection.createStatement().execute("DROP TABLE TEMP");
+			IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
+			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+				connection.createStatement().execute("DROP TABLE TEMP");
+			}
 		} finally {
 			connection.close();
 		}

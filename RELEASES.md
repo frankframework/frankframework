@@ -20,6 +20,7 @@ Upcoming
 - FixedErrorMessage is renamed to FixedErrorMessageFormatter.
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
+- CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 
 7.6-RC1
 --------

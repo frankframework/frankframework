@@ -30,7 +30,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
@@ -250,7 +250,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			log.error(getLogPrefix()+"exception in closing or releasing session", e);
 		}
 	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessage instanceof javax.jms.Message) { 
 				originalRawMessage = (javax.jms.Message)rawMessage;

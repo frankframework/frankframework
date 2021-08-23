@@ -35,7 +35,11 @@
                     "name":"value",
                     "deprecated":true,
                     "describer":"nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master"
-                }
+                },
+                {
+        			"name":"active",
+        			"description":"If defined and empty or false, then this element and all its children are ignored"
+      			}
             ],
             "children":[
                 {
@@ -50,7 +54,11 @@
             "name":"Object",
             "fullName":"java.lang.Object",
             "elementNames":[
-            ]
+            ],
+            "attributes":[{
+        		"name":"active",
+        		"description":"If defined and empty or false, then this element and all its children are ignored"
+      		}]
         },
         {
             "name":"TChild",
@@ -58,7 +66,13 @@
             "deprecated":true,
             "elementNames":[
                 "RoleNameTChild"
-            ]
+            ],
+            "attributes":[{
+        		"name":"active",
+        		"description":"If defined and empty or false, then this element and all its children are ignored"
+      		}]
         }
-    ]
+    ],
+  "enums": [
+  ]
 }

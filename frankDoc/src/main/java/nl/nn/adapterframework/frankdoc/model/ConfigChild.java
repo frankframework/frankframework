@@ -17,15 +17,17 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
-import lombok.EqualsAndHashCode;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.XsdVersion;
@@ -35,7 +37,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class ConfigChild extends ElementChild {
+public abstract class ConfigChild extends ElementChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
@@ -44,26 +46,9 @@ public class ConfigChild extends ElementChild {
 	private static final Comparator<ConfigChild> REMOVE_DUPLICATES_COMPARATOR =
 			SINGLE_ELEMENT_ONLY.thenComparing(c -> ! c.isMandatory());
 
-	@EqualsAndHashCode(callSuper = false)
-	static final class Key extends AbstractKey {
-		private final @Getter String roleName;
-		private final @Getter ElementType elementType;
-
-		public Key(ConfigChild configChild) {
-			roleName = configChild.getRoleName();
-			elementType = configChild.getElementType();
-		}
-
-		@Override
-		public String toString() {
-			return "(roleName=" + roleName + ", elementType=" + elementType.getFullName() + ")";
-		}
-	}
-
 	private @Getter @Setter boolean mandatory;
 	private @Getter @Setter boolean allowMultiple;
-	private @Getter @Setter ElementRole elementRole;
-	private String methodName;
+	private @Getter(AccessLevel.PACKAGE) String methodName;
 	private boolean isOverrideMeaningfulLogged = false;
 
 	ConfigChild(FrankElement owningElement, FrankMethod method) {
@@ -82,6 +67,8 @@ public class ConfigChild extends ElementChild {
 			}
 		}
 	}
+
+	public abstract String getRoleName();
 
 	private static boolean isDocumented(FrankMethod m) {
 		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
@@ -103,17 +90,7 @@ public class ConfigChild extends ElementChild {
 	}
 
 	@Override
-	Key getKey() {
-		return new Key(this);
-	}
-
-	public String getRoleName() {
-		return elementRole.getRoleName();
-	}
-
-	public ElementType getElementType() {
-		return elementRole.getElementType();
-	}
+	abstract ConfigChildKey getKey();
 
 	/**
 	 * Removes duplicate config children. As input this method expects a list of config children
@@ -138,17 +115,17 @@ public class ConfigChild extends ElementChild {
 	 * have a config child for the {@link ElementRole}.
 	 */
 	static List<ConfigChild> removeDuplicates(List<ConfigChild> orig) {
-		List<Key> keySequence = orig.stream().map(Key::new).collect(Collectors.toList());
-		Map<Key, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(Key::new));
+		List<ConfigChildKey> keySequence = orig.stream().map(ConfigChild::getKey).collect(Collectors.toList());
+		Map<ConfigChildKey, List<ConfigChild>> byKey = orig.stream().collect(Collectors.groupingBy(ConfigChild::getKey));
 		List<ConfigChild> result = new ArrayList<>();
-		for(Key key: keySequence) {
+		for(ConfigChildKey key: keySequence) {
 			List<ConfigChild> bucket = new ArrayList<>(byKey.get(key));
 			Collections.sort(bucket, REMOVE_DUPLICATES_COMPARATOR);
 			ConfigChild selected = bucket.get(0);
 			result.add(selected);
 			if(selected.isDeprecated()) {
-				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for ElementRole {}",
-						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.getElementRole().toString());
+				log.warn("From duplicate config children, only a deprecated one is selected. In mode {}, {} will not have a config child for {}",
+						() -> XsdVersion.STRICT, () -> selected.getOwningElement().getFullName(), () -> selected.toString());
 			}
 			if(log.isTraceEnabled() && (bucket.size() >= 2)) {
 				for(ConfigChild omitted: bucket.subList(1, bucket.size())) {
@@ -170,8 +147,15 @@ public class ConfigChild extends ElementChild {
 		return result;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("%s.%s(%s)", getOwningElement().getSimpleName(), methodName, getElementType().getSimpleName());
+	public static Stream<ElementRole> getElementRoleStream(Collection<ConfigChild> configChildren) {
+		return configChildren.stream()
+				.filter(c -> c instanceof ObjectConfigChild)
+				.map(c -> (ObjectConfigChild) c)
+				.map(ObjectConfigChild::getElementRole)
+				.distinct();
+	}
+
+	public static String toString(Collection<ConfigChild> configChildren) {
+		return configChildren.stream().map(ConfigChild::toString).collect(Collectors.joining(", "));
 	}
 }

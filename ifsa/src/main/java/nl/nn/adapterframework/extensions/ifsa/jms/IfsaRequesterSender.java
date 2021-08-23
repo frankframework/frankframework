@@ -26,8 +26,8 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
@@ -134,7 +134,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	 */
 	@Override
 	public boolean isSynchronous() {
-		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
+		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY;
 	}
 	
 	/**

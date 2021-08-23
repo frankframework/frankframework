@@ -81,12 +81,22 @@
 		</property>
 	</bean>
 
-	<bean name="testStorage,testStoragexxx,testStorageLOC" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+	<bean name="testStorageActive" class="java.lang.String">
+		<constructor-arg value="#{
+				'${dtap.stage}' == 'LOC' ||
+				'${dtap.stage}' == 'xxx' ||
+				'${dtap.stage}' == ''
+				?
+				'testStorageXml' : 'testStorageFile'
+				}"
+		/>
+	</bean>
+	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="testStorageDEV,testStorageTST,testStorageACC,testStoragePRD" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -194,7 +204,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="testStorage${dtap.stage}"/>
+			<ref bean="#{testStorageActive}"/>
 		</property>
 		<property name="reportsComponent">
 			<ref bean="reportsComponent"/>
@@ -211,7 +221,7 @@
 		<property name="treePane">
 			<bean class="nl.nn.testtool.echo2.test.TreePane" autowire="byName" init-method="initBean" >
 				<property name="storage">
-					<ref bean="testStorage${dtap.stage}"/>
+					<ref bean="#{testStorageActive}"/>
 				</property>
 			</bean>
 		</property>
@@ -226,7 +236,7 @@
 							<ref bean="debugStorage"/>
 						</property>
 						<property name="testStorage">
-							<ref bean="testStorage${dtap.stage}"/>
+							<ref bean="#{testStorageActive}"/>
 						</property>
 						<property name="reportXmlTransformer">
 							<ref bean="reportXmlTransformer"/>
@@ -245,7 +255,7 @@
 			<ref bean="testTool"/>
 		</property>
 		<property name="testStorage">
-			<ref bean="testStorage${dtap.stage}"/>
+			<ref bean="#{testStorageActive}"/>
 		</property>
 		<property name="reportsComponent1">
 			<bean parent="reportsComponent">

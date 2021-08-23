@@ -73,7 +73,7 @@ import nl.nn.adapterframework.stream.document.IDocumentBuilder;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
 public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
@@ -385,7 +385,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 	@IbisDoc({"10", "Action", ""})
 	public void setAction(String action) {
-		this.action = Misc.parse(MongoAction.class, action);
+		this.action = EnumUtils.parse(MongoAction.class, "action", action);
 	}
 	public MongoAction getActionEnum() {
 		return action;
@@ -408,7 +408,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 	@IbisDoc({"14", "OutputFormat", "JSON"})
 	public void setOutputFormat(String outputFormat) {
-		this.outputFormat = Misc.parse(DocumentFormat.class, outputFormat);
+		this.outputFormat = EnumUtils.parse(DocumentFormat.class, "outputFormat", outputFormat);
 	}
 	public DocumentFormat getOutputFormatEnum() {
 		return outputFormat;

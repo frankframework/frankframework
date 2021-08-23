@@ -136,7 +136,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	 * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		String messageToValidate;
 		try {
 			messageToValidate=input==null || input.asObject()==null?"{}":input.asString();
@@ -158,7 +158,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				storeInputFormat(FORMAT_XML,session, responseMode);
 				if (!getOutputFormat(session,responseMode).equalsIgnoreCase(FORMAT_JSON)) {
-					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode);
+					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
 					if (isProduceNamespaceLessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));

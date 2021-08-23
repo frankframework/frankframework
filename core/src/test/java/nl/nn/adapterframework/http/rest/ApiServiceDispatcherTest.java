@@ -95,7 +95,7 @@ public class ApiServiceDispatcherTest {
 		dispatcher.registerServiceClient(createServiceClient(Methods.POST, uri));
 		ApiDispatchConfig config = dispatcher.findConfigForUri("/"+uri);
 		assertNotNull(config);
-		assertEquals("[POST, GET]", config.getMethods().toString());
+		assertEquals("[GET, POST]", config.getMethods().toString());
 
 		//Test what happens after we remove 1 ServiceClient
 		dispatcher.unregisterServiceClient(createServiceClient(Methods.POST, uri));

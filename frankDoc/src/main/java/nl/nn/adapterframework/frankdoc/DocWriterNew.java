@@ -22,6 +22,7 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addChoice;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addComplexContent;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addComplexType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElement;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementWithType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addEnumeration;
@@ -55,8 +56,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.doc.DocWriter;
-import nl.nn.adapterframework.frankdoc.model.AttributeValues;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
+import nl.nn.adapterframework.frankdoc.model.ConfigChildGroupKind;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildSet;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementRole;
@@ -64,6 +67,8 @@ import nl.nn.adapterframework.frankdoc.model.ElementType;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
+import nl.nn.adapterframework.frankdoc.model.ObjectConfigChild;
+import nl.nn.adapterframework.frankdoc.model.TextConfigChild;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -324,7 +329,7 @@ public class DocWriterNew {
 	private Set<String> namesCreatedFrankElements = new HashSet<>();
 	private Set<ElementRole.Key> idsCreatedElementGroups = new HashSet<>();
 	private ElementGroupManager elementGroupManager;
-	private Set<String> definedAttributeValuesInstances = new HashSet<>();
+	private Set<String> definedAttributeEnumInstances = new HashSet<>();
 	private AttributeTypeStrategy attributeTypeStrategy;
 
 	public DocWriterNew(FrankDocModel model, AttributeTypeStrategy attributeTypeStrategy) {
@@ -388,17 +393,24 @@ public class DocWriterNew {
 		addDocumentation(elementBuilder, getElementDescription(frankElement));
 		xsdElements.add(elementBuilder);
 		XmlBuilder complexType = addComplexType(elementBuilder);
-		XmlBuilder sequence = addSequence(complexType);
 		log.trace("Adding cumulative config chidren of FrankElement [{}] to XSD element [{}]", () -> frankElement.getFullName(), () -> xsdElementName);
 		if(frankElement.hasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
 			log.trace("FrankElement [{}] has plural config children", () -> frankElement.getFullName());
+			XmlBuilder sequence = addSequence(complexType);
 			XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 			for(ConfigChildSet configChildSet: frankElement.getCumulativeConfigChildSets()) {
 				addPluralConfigChild(choice, configChildSet, frankElement);
 			}
 		} else {
 			log.trace("FrankElement [{}] does not have plural config children", () -> frankElement.getFullName());
-			frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector()).forEach(c -> addConfigChild(sequence, c));
+			List<ConfigChild> cumulativeConfigChildren = frankElement.getCumulativeConfigChildren(version.getChildSelector(), version.getChildRejector());
+			if(cumulativeConfigChildren.isEmpty()) {
+				log.trace("There are no config children, not adding <sequence><choice>");
+			} else {
+				XmlBuilder sequence = addSequence(complexType);
+				final XmlBuilder childContext = version.configChildBuilderWithinSequence(sequence);
+				cumulativeConfigChildren.forEach(c -> addConfigChild(childContext, c));				
+			}
 		}
 		log.trace("Adding cumulative attributes of FrankElement [{}] to XSD element [{}]", () -> frankElement.getFullName(), () -> xsdElementName);
 		addAttributeList(complexType, frankElement.getCumulativeAttributes(version.getChildSelector(), version.getChildRejector()));
@@ -461,6 +473,15 @@ public class DocWriterNew {
 	private abstract class ElementBuildingStrategy {
 		abstract void addGroupRef(String referencedGroupName);
 		abstract void addAttributeGroupRef(String referencedGroupName);
+		// When there are config children that share a role name (plural config children),
+		// then the element type under construction references only one config child group.
+		// The config child group does not check the sequence of the included elements.
+		// There is no need to also wrap the singleton config child group reference into
+		// <sequence><choice> if the order is not important.
+		//
+		// This method is added to ElementBuildingStrategy because we know here
+		// to which XmlBuilder we want to add the group reference.
+		abstract void addThePluralConfigChildGroup(String referencedGroupName);
 	}
 
 	private ElementBuildingStrategy getElementBuildingStrategy(FrankElement element) {
@@ -475,6 +496,7 @@ public class DocWriterNew {
 
 	private class ElementAdder extends ElementBuildingStrategy {
 		private final XmlBuilder complexType;
+		private XmlBuilder configChildBuilder;
 		private final FrankElement addingTo;
 
 		ElementAdder(FrankElement frankElement) {
@@ -486,13 +508,29 @@ public class DocWriterNew {
 		@Override
 		void addGroupRef(String referencedGroupName) {
 			log.trace("Appending XSD type def of [{}] with reference to XSD group [{}]", () -> addingTo.getFullName(), () -> referencedGroupName);
-			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
+			// We do not create configChildBuilder during construction, because
+			// that would produce an empty <seqneuce><choice> when there are no
+			// config children.
+			if(configChildBuilder == null) {
+				log.trace("Create <sequence><choice> to wrap the config children in");
+				configChildBuilder = version.configChildBuilder(complexType);				
+			} else {
+				log.trace("Already have <sequence><choice> for the config children");
+			}
+			DocWriterNewXmlUtils.addGroupRef(configChildBuilder, referencedGroupName);
 		}
 
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
 			log.trace("Appending XSD type def of [{}] with reference to XSD group [{}]", () -> addingTo.getFullName(), () -> referencedGroupName);
 			DocWriterNewXmlUtils.addAttributeGroupRef(complexType, referencedGroupName);
+		}
+
+		@Override
+		void addThePluralConfigChildGroup(String referencedGroupName) {
+			log.trace("Appending XSD type def of [{}] with reference to XSD group [{}], without adding <sequence><choice>",
+					() -> addingTo.getFullName(), () -> referencedGroupName);
+			DocWriterNewXmlUtils.addGroupRef(complexType, referencedGroupName);
 		}
 	}
 
@@ -502,6 +540,9 @@ public class DocWriterNew {
 		}
 		@Override
 		void addAttributeGroupRef(String referencedGroupName) {
+		}
+		@Override
+		void addThePluralConfigChildGroup(String referencedGroupName) {
 		}
 	}
 
@@ -585,13 +626,23 @@ public class DocWriterNew {
 	private void addConfigChild(XmlBuilder context, ConfigChild child) {
 		log.trace("Adding config child [{}]", () -> child.toString());
 		version.checkForMissingDescription(child);
+		if(child instanceof ObjectConfigChild) {
+			addObjectConfigChild(context, (ObjectConfigChild) child);
+		} else if(child instanceof TextConfigChild) {
+			addTextConfigChild(context, (TextConfigChild) child);
+		} else {
+			throw new IllegalArgumentException("Cannot happen, there are no other ConfigChild subclasses than ObjectConfigChild or TextConfigChild");
+		}
+		log.trace("Done adding config child [{}]", () -> child.toString());
+	}
+
+	private void addObjectConfigChild(XmlBuilder context, ObjectConfigChild child) {
 		ElementRole theRole = model.findElementRole(child);
 		if(isNoElementTypeNeeded(theRole)) {
 			addConfigChildSingleReferredElement(context, child);
 		} else {
 			addConfigChildWithElementGroup(context, child);
-		}
-		log.trace("Done adding config child [{}]", () -> child.toString());
+		}		
 	}
 
 	private boolean isNoElementTypeNeeded(ElementRole role) {
@@ -604,7 +655,7 @@ public class DocWriterNew {
 		}
 	}
 
-	private XmlBuilder addConfigChildSingleReferredElement(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildSingleReferredElement(XmlBuilder context, ObjectConfigChild child) {
 		ElementRole role = model.findElementRole(child);
 		FrankElement elementInType = singleElementOf(role);
 		if(elementInType == null) {
@@ -646,8 +697,10 @@ public class DocWriterNew {
 		addClassNameAttribute(context, frankElement);
 	}
 
-	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ConfigChild child) {
+	private XmlBuilder addConfigChildWithElementGroup(XmlBuilder context, ObjectConfigChild child) {
 		log.trace("Config child appears as element group reference");
+		// If this is a ConfigChildGroupKind.MIXED config child set, then the warning about that has been written already
+		// during model creation. We can assume we only have OBJECT config children.
 		ConfigChildSet configChildSet = child.getOwningElement().getConfigChildSet(child.getRoleName());
 		if(log.isTraceEnabled()) {
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", child.getOwningElement().getSimpleName(), configChildSet.toString()));
@@ -694,7 +747,7 @@ public class DocWriterNew {
 	private void addElementGroupOptions(XmlBuilder context, List<ElementRole> roles) {
 		for(ElementRole role: roles) {
 			if(isNoElementTypeNeeded(role)) {
-				log.trace("ElementRole [{}] is not interface-based, nothing to do fot this role", () -> role.toString());
+				log.trace("ElementRole [{}] is not interface-based, nothing to do for this role", () -> role.toString());
 				continue;
 			}
 			String groupName = role.createXsdElementName(ELEMENT_GROUP_BASE);
@@ -763,9 +816,7 @@ public class DocWriterNew {
 		String roleName = ElementGroupManager.getRoleName(roles);
 		XmlBuilder genericElementOption = addElementWithType(context, Utils.toUpperCamelCase(roleName));
 		XmlBuilder complexType = addComplexType(genericElementOption);
-		XmlBuilder sequence = addSequence(complexType);
-		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
-		fillGenericOption(choice, roles);
+		fillGenericOption(complexType, roles);
 		// We do not add the attributes here directly, because we may
 		// have to solve a conflict between a member FrankElement and
 		// the XML element name of the generic element option. We need a ConfigChildSet to find
@@ -808,26 +859,54 @@ public class DocWriterNew {
 	}
 
 	private void fillGenericOption(XmlBuilder context, List<ElementRole> parents) {
-		Map<String, List<ElementRole>> memberChildrenByRoleName = ConfigChildSet.getMemberChildren(
+		Map<String, List<ConfigChild>> memberChildrenByRoleName = ConfigChildSet.getMemberChildren(
 				parents, version.getChildSelector(), version.getChildRejector(), version.getElementFilter());
 		List<String> names = new ArrayList<>(memberChildrenByRoleName.keySet());
 		Collections.sort(names);
+		XmlBuilder choice = null;
 		for(String name: names) {
-			List<ElementRole> childRoles = memberChildrenByRoleName.get(name);
-			if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
-				log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
-				addElementRoleAsElement(context, childRoles.get(0));				
-			} else {
-				if(log.isTraceEnabled()) {
-					ThreadContext.push(String.format("nest [%s]", name));
-				}
-				requestElementGroup(childRoles);
-				if(log.isTraceEnabled()) {
-					ThreadContext.pop();
-				}
-				DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(childRoles));
+			if(choice == null) {
+				XmlBuilder sequence = addSequence(context);
+				choice = addChoice(sequence, "0", "unbounded");				
 			}
+			addConfigChildrenOfRoleNameToGenericOption(choice, memberChildrenByRoleName.get(name));
 		}
+	}
+
+	private void addConfigChildrenOfRoleNameToGenericOption(XmlBuilder context, List<ConfigChild> configChildren) {
+		String roleName = configChildren.get(0).getRoleName();
+		switch(ConfigChildGroupKind.groupKind(configChildren)) {
+		case TEXT:
+			addTextConfigChild(context, roleName);
+			break;
+		case MIXED:
+			log.warn("Encountered group of config children that mixes TextConfigChild and ObjectConfigChild, not supported: [{}]",
+					ConfigChild.toString(configChildren));
+			// No break, consider only the ObjectConfigChild instances instead of throwing exception.
+		case OBJECT:
+			addObjectConfigChildrenToGenericOption(context, configChildren);
+			break;
+		default:
+			throw new IllegalArgumentException("Should not come here because switch should cover all enum values");
+		}
+	}
+
+	private void addObjectConfigChildrenToGenericOption(XmlBuilder context, List<ConfigChild> configChildren) {
+		String roleName = configChildren.get(0).getRoleName();
+		List<ElementRole> childRoles = ElementRole.promoteIfConflict(ConfigChild.getElementRoleStream(configChildren).collect(Collectors.toList()));
+		if((childRoles.size() == 1) && isNoElementTypeNeeded(childRoles.get(0))) {
+			log.trace("A single ElementRole [{}] that appears as element reference", () -> childRoles.get(0).toString());
+			addElementRoleAsElement(context, childRoles.get(0));				
+		} else {
+			if(log.isTraceEnabled()) {
+				ThreadContext.push(String.format("nest [%s]", roleName));
+			}
+			requestElementGroup(childRoles);
+			if(log.isTraceEnabled()) {
+				ThreadContext.pop();
+			}
+			DocWriterNewXmlUtils.addGroupRef(context, elementGroupManager.getGroupName(childRoles));
+		}		
 	}
 
 	private void addElementRoleAsElement(XmlBuilder context, ElementRole elementRole) {
@@ -841,12 +920,27 @@ public class DocWriterNew {
 		recursivelyDefineXsdElement(elementInType, elementRole);
 	}
 
+	private void addTextConfigChild(XmlBuilder context, TextConfigChild child) {
+		addTextConfigChild(context, child.getRoleName());
+	}
+
+	/*
+	 * We can assume that a text config child has allowMultiple = true.
+	 * The reason is that TextConfigChild objects only correspond to
+	 * config child setter descriptors that start with "add" or "register".
+	 * They cannot start with "set" because a method setX(String) is
+	 * an attribute setter.
+	 */
+	private void addTextConfigChild(XmlBuilder context, String roleName) {
+		addElement(context, Utils.toUpperCamelCase(roleName), "xs:string", "0", "unbounded");
+	}
+
 	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
 		log.trace("Applying algorithm for plural config children for FrankElement [{}]", () -> frankElement.getFullName());
 		if(! frankElement.hasFilledConfigChildSets(version.getChildSelector(), version.getChildRejector())) {
 			FrankElement ancestor = frankElement.getNextPluralConfigChildrenAncestor(version.getChildSelector(), version.getChildRejector());
 			log.trace("No config children, inheriting from [{}]", () -> ancestor.getFullName());
-			elementBuildingStrategy.addGroupRef(xsdPluralGroupNameForChildren(ancestor));
+			elementBuildingStrategy.addThePluralConfigChildGroup(xsdPluralGroupNameForChildren(ancestor));
 		} else {
 			log.trace("Adding new group for plural config children for FrankElement [{}]", () -> frankElement.getFullName());
 			addConfigChildrenWithPluralConfigChildSetsUnchecked(elementBuildingStrategy, frankElement);
@@ -856,7 +950,7 @@ public class DocWriterNew {
 
 	private void addConfigChildrenWithPluralConfigChildSetsUnchecked(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
 		String groupName = xsdPluralGroupNameForChildren(frankElement);
-		elementBuildingStrategy.addGroupRef(groupName);
+		elementBuildingStrategy.addThePluralConfigChildGroup(groupName);
 		XmlBuilder builder = createGroup(groupName);
 		xsdComplexItems.add(builder);
 		XmlBuilder sequence = addSequence(builder);
@@ -869,11 +963,30 @@ public class DocWriterNew {
 
 	private void addPluralConfigChild(XmlBuilder choice, ConfigChildSet configChildSet, FrankElement frankElement) {
 		if(log.isTraceEnabled()) {
-			log.trace("Adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+			log.trace("Adding ConfigChildSet [{}]", () -> configChildSet.toString());
 			ThreadContext.push(String.format("Owning element [%s], ConfigChildSet [%s]", frankElement.getSimpleName(), configChildSet.toString()));
 		}
 		configChildSet.getConfigChildren().forEach(version::checkForMissingDescription);
-		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());
+		switch(configChildSet.getConfigChildGroupKind()) {
+		case OBJECT:
+		// The warning that MIXED is not supported has been written during model initialization.
+		case MIXED:
+			addPluralObjectConfigChild(choice, configChildSet);
+			break;
+		case TEXT:
+			addPluralTextConfigChild(choice, configChildSet);
+			break;
+		default:
+			throw new IllegalArgumentException("Cannot happen, switch should cover all enum values");
+		}
+		if(log.isTraceEnabled()) {
+			ThreadContext.pop();
+			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
+		}
+	}
+
+	private void addPluralObjectConfigChild(XmlBuilder choice, ConfigChildSet configChildSet) {
+		List<ElementRole> roles = configChildSet.getFilteredElementRoles(version.getChildSelector(), version.getChildRejector());		
 		if((roles.size() == 1) && isNoElementTypeNeeded(roles.get(0))) {
 			log.trace("Config child set appears as element reference");
 			addElementRoleAsElement(choice, roles.get(0));
@@ -882,10 +995,10 @@ public class DocWriterNew {
 			requestElementGroupForConfigChildSet(configChildSet, roles);
 			DocWriterNewXmlUtils.addGroupRef(choice, elementGroupManager.getGroupName(roles));
 		}
-		if(log.isTraceEnabled()) {
-			ThreadContext.pop();
-			log.trace("Done adding ConfigChildSet with ElementRoleSet [{}]", () -> configChildSet.toString());
-		}
+	}
+
+	private void addPluralTextConfigChild(XmlBuilder choice, ConfigChildSet configChildSet) {
+		addTextConfigChild(choice, configChildSet.getRoleName());
 	}
 
 	private void addAttributes(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -960,7 +1073,7 @@ public class DocWriterNew {
 		for(FrankAttribute frankAttribute: frankAttributes) {
 			log.trace("Adding attribute [{}]", () -> frankAttribute.getName());
 			XmlBuilder attribute = null;
-			if(frankAttribute.getAttributeValues() == null) {
+			if(frankAttribute.getAttributeEnum() == null) {
 				// The default value in the model is a *description* of the default value.
 				// Therefore, it should be added to the description in the xs:attribute.
 				// The "default" attribute of the xs:attribute should not be set.
@@ -977,10 +1090,10 @@ public class DocWriterNew {
 
 	private XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 		XmlBuilder result = attributeTypeStrategy.addRestrictedAttribute(context, attribute);
-		AttributeValues attributeValues = attribute.getAttributeValues();
-		if(! definedAttributeValuesInstances.contains(attributeValues.getFullName())) {
-			definedAttributeValuesInstances.add(attributeValues.getFullName());
-			addAttributeValuesType(attributeValues);
+		AttributeEnum attributeEnum = attribute.getAttributeEnum();
+		if(! definedAttributeEnumInstances.contains(attributeEnum.getFullName())) {
+			definedAttributeEnumInstances.add(attributeEnum.getFullName());
+			addAttributeEnumType(attributeEnum);
 		}
 		return result;
 	}
@@ -1004,11 +1117,18 @@ public class DocWriterNew {
 		return result.toString();
 	}
 
-	private void addAttributeValuesType(AttributeValues attributeValues) {
-		XmlBuilder simpleType = createSimpleType(attributeValues.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+	private void addAttributeEnumType(AttributeEnum attributeEnum) {
+		XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
 		xsdComplexItems.add(simpleType);
 		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeValues.getValues().forEach(v -> addEnumeration(restriction, v));
+		attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
+	}
+
+	private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+		XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
+		if(v.getDescription() != null) {
+			addDocumentation(valueBuilder, v.getDescription());
+		}
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

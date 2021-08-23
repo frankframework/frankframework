@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -70,11 +71,12 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DirectoryCleaner;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -587,7 +589,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			break;
 
 		default:
-			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
+			IbisAction action = EnumUtils.parse(IbisAction.class, "function", getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
 			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 			break;
 		}
@@ -602,7 +604,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	 * Locate all Lockers, and find out which datasources are used.
 	 * @return distinct list of all datasourceNames used by lockers
 	 */
-	private List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+	protected List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
 		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
@@ -750,7 +752,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 					String resultString = result.asString();
 					log.info("deleted [" + resultString + "] rows");
 					int numberOfRowsAffected = Integer.valueOf(resultString);
-					if(numberOfRowsAffected<maxRows) {
+					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
 						deletedAllRecords = true;
 					} else {
 						log.info("executing the query again for job [cleanupDatabase]!");
@@ -1021,7 +1023,9 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			try {
 				//sendMessage message cannot be NULL
 				Message message = new Message((getMessage()==null) ? "" : getMessage());
-				localSender.sendMessage(message, null);
+				PipeLineSession session = new PipeLineSession();
+				session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
+				localSender.sendMessage(message, session);
 			}
 			finally {
 				localSender.close();
@@ -1149,10 +1153,10 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 
 	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
 	public void setFunction(String function) {
-		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
+		this.function = EnumUtils.parse(JobDefFunctions.class, "function", function);
 	}
 	public String getFunction() {
-		return function==null?null:function.getName();
+		return function==null?null:function.getLabel();
 	}
 	public JobDefFunctions getFunctionEnum() {
 		return function;

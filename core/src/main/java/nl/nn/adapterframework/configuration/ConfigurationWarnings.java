@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.configuration;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -34,10 +35,6 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 	 * Add a ConfigurationWarning with INamedObject prefix and log the exception stack
 	 */
 	public static void add(IConfigurationAware source, Logger log, String message, Throwable t) {
-		if(source == null) {
-			throw new IllegalArgumentException("A source must be provided.");
-		}
-
 		ConfigurationWarnings instance = getInstance(source);
 		if(instance != null) {
 			instance.doAdd(source, log, message, t);
@@ -78,9 +75,16 @@ public class ConfigurationWarnings extends ApplicationWarningsBase {
 
 	//Helper method to retrieve ConfigurationWarnings from the Configuration Context
 	private static ConfigurationWarnings getInstance(IConfigurationAware source) {
+		if(source == null) {
+			IllegalArgumentException e = new IllegalArgumentException("no source provided");
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);
+			return null;
+		}
+
 		ApplicationContext applicationContext = source.getApplicationContext();
 		if(applicationContext == null) {
-//			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
+			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
+			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source ["+source+"]", e);
 			return null;
 		}
 

@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +45,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -69,6 +69,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -77,7 +78,9 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -178,8 +181,8 @@ public class HttpSender extends HttpSenderBase {
 
 	private PostType postType = PostType.RAW;
 
-	private enum PostType {
-		RAW("raw text"), // text/html;charset=UTF8
+	public enum PostType implements DocumentedEnum {
+		RAW("raw text/xml/json"), // text/html;charset=UTF8
 		BINARY("binary content"), //application/octet-stream
 //		SWA("Soap with Attachments"), // text/xml
 		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
@@ -199,13 +202,13 @@ public class HttpSender extends HttpSenderBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && (getMethodType().equals("POST") || getMethodType().equals("PUT"))) {
+		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getMethodTypeEnum() == HttpMethod.POST || getMethodTypeEnum() == HttpMethod.PUT || getMethodTypeEnum() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (!getMethodType().equals("POST")) {
+		if (getMethodTypeEnum() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
 				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
 			}
@@ -273,19 +276,23 @@ public class HttpSender extends HttpSenderBase {
 				queryParametersAppended = true;
 			}
 
-			if (getMethodType().equals("GET")) {
+			switch (getMethodTypeEnum()) {
+			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet method = new HttpGet(relativePath+(parameters==null? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters==null? message.asString():""));
 
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI().getQuery()+"]");
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
+					getMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
-				return method;
-			} else if (getMethodType().equals("POST") || getMethodType().equals("PUT")) {
+				return getMethod;
+
+			case POST:
+			case PUT:
+			case PATCH:
 				HttpEntity entity;
 				if(postType.equals(PostType.RAW)) {
 					String messageString = message.asString();
@@ -298,7 +305,7 @@ public class HttpSender extends HttpSenderBase {
 							messageString=msg.toString();
 						}
 					}
-					entity = new ByteArrayEntity(messageString.getBytes(getCharSet()), getFullContentType());
+					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
 				} else if(postType.equals(PostType.BINARY)) {
 					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
 				} else {
@@ -306,37 +313,38 @@ public class HttpSender extends HttpSenderBase {
 				}
 
 				HttpEntityEnclosingRequestBase method;
-				if (getMethodType().equals("POST")) {
+				if (getMethodTypeEnum() == HttpMethod.POST) {
 					method = new HttpPost(relativePath.toString());
+				} else if (getMethodTypeEnum() == HttpMethod.PATCH) {
+					method = new HttpPatch(relativePath.toString());
 				} else {
 					method = new HttpPut(relativePath.toString());
 				}
 
 				method.setEntity(entity);
 				return method;
-			}
-			if (getMethodType().equals("DELETE")) {
-				HttpDelete method = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return method;
-			}
-			if (getMethodType().equals("HEAD")) {
-				HttpHead method = new HttpHead(relativePath.toString());
-				return method;
-			}
 
-			if (getMethodType().equals("REPORT")) {
+			case DELETE:
+				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
+				if (null != getFullContentType()) { //Manually set Content-Type header
+					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
+				}
+				return deleteMethod;
+
+			case HEAD:
+				return new HttpHead(relativePath.toString());
+
+			case REPORT:
 				Element element = XmlUtils.buildElement(message.asString(), true);
-				HttpReport method = new HttpReport(relativePath.toString(), element);
+				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
 				if (null != getFullContentType()) { //Manually set Content-Type header
-					method.setHeader("Content-Type", getFullContentType().toString());
+					reportMethod.setHeader("Content-Type", getFullContentType().toString());
 				}
-				return method;
-			}
+				return reportMethod;
 
-			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either GET, PUT, POST, DELETE, HEAD or REPORT");
+			default:
+				return null;
+			}
 		} catch (Exception e) {
 			//Catch all exceptions and throw them as SenderException
 			throw new SenderException(e);
@@ -551,7 +559,7 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
-					String fileName = Message.asString(session.get(getStreamResultToFileNameSessionKey()));
+					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
 					File file = new File(fileName);
 					Misc.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
@@ -581,7 +589,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		if ("HEAD".equals(getMethodType())) {
+		if (getMethodTypeEnum() == HttpMethod.HEAD) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
 			for (Header header : headers) {
@@ -656,14 +664,9 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodType=POST</code>, the type of post request, must be one of [RAW (text/xml/json), BINARY (file), URLENCODED, FORMDATA, MTOM]", "RAW"})
-	public void setPostType(String type) throws ConfigurationException {
-		try {
-			this.postType = PostType.valueOf(type.toUpperCase());
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("unknown postType ["+type+"]. Must be one of "+ Arrays.asList(PostType.values()));
-		}
+	@IbisDoc({"When <code>methodType=POST</code>, the type of post request", "RAW"})
+	public void setPostType(String type) {
+		this.postType = EnumUtils.parse(PostType.class, type);
 	}
 
 	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})

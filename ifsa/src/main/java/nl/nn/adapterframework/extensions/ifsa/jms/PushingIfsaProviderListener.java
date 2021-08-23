@@ -27,8 +27,8 @@ import javax.jms.JMSException;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
@@ -210,7 +210,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			    		    
 	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessageOrWrapper instanceof javax.jms.Message) { 
 				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;

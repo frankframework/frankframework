@@ -46,8 +46,8 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -61,6 +61,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -331,10 +332,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					Object blobSessionVar=null;
 					Object clobSessionVar=null;
 					if (session!=null && StringUtils.isNotEmpty(getBlobSessionKey())) {
-						blobSessionVar=session.get(getBlobSessionKey());
+						blobSessionVar=session.getMessage(getBlobSessionKey()).asObject();
 					}
 					if (session!=null && StringUtils.isNotEmpty(getClobSessionKey())) {
-						clobSessionVar=session.get(getClobSessionKey());
+						clobSessionVar=session.getMessage(getClobSessionKey()).asObject();
 					}
 					if (isStreamResultToServlet()) {
 						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
@@ -967,7 +968,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
 		} else {
-			this.queryType = Misc.parse(QueryType.class, "queryType", queryType);
+			this.queryType = EnumUtils.parse(QueryType.class, queryType);
 		}
 	}
 	public QueryType getQueryTypeEnum() {

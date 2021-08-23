@@ -15,6 +15,9 @@ limitations under the License.
 */
 package nl.nn.adapterframework.frankdoc;
 
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addChoice;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addSequence;
+
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -26,6 +29,7 @@ import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 public enum XsdVersion {
 	STRICT(ElementChild.IN_XSD, ElementChild.DEPRECATED, f -> ! f.isDeprecated(), new DelegateStrict()),
@@ -61,11 +65,21 @@ public enum XsdVersion {
 		return delegate.getClassNameAttributeUse(frankElement);
 	}
 
+	XmlBuilder configChildBuilderWithinSequence(XmlBuilder context) {
+		return delegate.configChildBuilderWithinSequence(context);
+	}
+
+	XmlBuilder configChildBuilder(XmlBuilder context) {
+		return delegate.configChildBuilder(context);
+	}
+
 	private static abstract class Delegate {
 		abstract void checkForMissingDescription(FrankAttribute attribute);
 		abstract void checkForMissingDescription(ConfigChild configChild);
 		abstract AttributeUse getRoleNameAttributeUse();
 		abstract AttributeUse getClassNameAttributeUse(FrankElement frankElement);
+		abstract XmlBuilder configChildBuilderWithinSequence(XmlBuilder context);
+		abstract XmlBuilder configChildBuilder(XmlBuilder context);
 	}
 
 	private static class DelegateStrict extends Delegate {
@@ -92,6 +106,16 @@ public enum XsdVersion {
 		@Override
 		AttributeUse getClassNameAttributeUse(FrankElement frankElement) {
 			return AttributeUse.PROHIBITED;
+		}
+
+		@Override
+		XmlBuilder configChildBuilderWithinSequence(XmlBuilder context) {
+			return context;
+		}
+
+		@Override
+		XmlBuilder configChildBuilder(XmlBuilder context) {
+			return context;
 		}
 	}
 
@@ -126,6 +150,15 @@ public enum XsdVersion {
 			} else {
 				return AttributeUse.PROHIBITED;
 			}
+		}
+
+		XmlBuilder configChildBuilderWithinSequence(XmlBuilder context) {
+			return addChoice(context, "0", "unbounded");
+		}
+
+		XmlBuilder configChildBuilder(XmlBuilder context) {
+			XmlBuilder sequence = addSequence(context);
+			return addChoice(sequence, "0", "unbounded");
 		}
 	}
 }

@@ -16,21 +16,26 @@
 package nl.nn.ibistesttool;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Node;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
+import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.INamedObject;
@@ -38,7 +43,11 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Get a description of a specified pipe. The description contains the XML
@@ -139,9 +148,9 @@ public class PipeDescriptionProvider {
 					Document document = documents.get(configuration);
 					if (document == null) {
 						try {
-							document = DocumentHelper.parseText(configuration.getLoadedConfiguration());
+							document = XmlUtils.buildDomDocument(configuration.getLoadedConfiguration());
 							documents.put(configuration, document);
-						} catch (DocumentException e) {
+						} catch (DomBuilderException e) {
 							pipeDescription = new PipeDescription();
 							pipeDescription.setCheckpointName(getCheckpointName(pipe, checkpointName));
 							pipeDescription.setDescription("Could not parse configuration: " + e.getMessage());
@@ -149,19 +158,18 @@ public class PipeDescriptionProvider {
 						}
 					}
 					if (document != null) {
-						Node node = document.selectSingleNode(xpathExpression);
+						Node node = doXPath(document, xpathExpression);
 						if (node != null) {
-							StringWriter stringWriter = new StringWriter();
-							OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-							XMLWriter xmlWriter = new XMLWriter(stringWriter, outputFormat);
+							XmlWriter xmlWriter = new XmlWriter();
+							ContentHandler handler = new PrettyPrintFilter(xmlWriter);
 							try {
-								xmlWriter.write(node);
-								xmlWriter.flush();
-								pipeDescription.setDescription(stringWriter.toString());
-							} catch(IOException e) {
-								pipeDescription.setDescription("IOException: " + e.getMessage());
+								String input = XmlUtils.nodeToString(node);
+								XmlUtils.parseXml(input, handler);
+								pipeDescription.setDescription(xmlWriter.toString());
+							} catch (IOException | TransformerException | SAXException e) {
+								pipeDescription.setDescription("Exception: " + e.getMessage());
 							}
-							addResourceNamesToPipeDescription((Element)node, pipeDescription);
+							addResourceNamesToPipeDescription(node, pipeDescription);
 						} else {
 							pipeDescription.setDescription("Pipe not found in configuration.");
 						}
@@ -173,9 +181,20 @@ public class PipeDescriptionProvider {
 		return pipeDescription;
 	}
 
-	private void addResourceNamesToPipeDescription(Element element, PipeDescription pipeDescription) {
-		for (int i = 0, size = element.attributeCount(); i < size; i++) {
-			Attribute attribute = element.attribute(i);
+	private Node doXPath(Document document, String xpathExpression) {
+		XPath xPath = XmlUtils.getXPathFactory().newXPath();
+		try {
+			XPathExpression xPathExpression = xPath.compile(xpathExpression);
+			return (Node)xPathExpression.evaluate(document, XPathConstants.NODE);
+		} catch (XPathExpressionException e) {
+			return null;
+		}
+	}
+
+	private void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
+		NamedNodeMap attributes = element.getAttributes();
+		for (int i = 0, size = attributes.getLength(); i < size; i++) {
+			Attr attribute = (Attr) attributes.item(i);
 			if ("styleSheetName".equals(attribute.getName())
 					|| "serviceSelectionStylesheetFilename".equals(attribute.getName())
 					|| "schema".equals(attribute.getName())
@@ -199,10 +218,11 @@ public class PipeDescriptionProvider {
 				}
 			}
 		}
-		for (int i = 0, size = element.nodeCount(); i < size; i++) {
-			Node node = element.node(i);
-			if (node instanceof Element && "sender".equals(node.getName())) {
-				addResourceNamesToPipeDescription((Element)node, pipeDescription);
+		NodeList childNodes = element.getChildNodes();
+		for (int i = 0, size = childNodes.getLength(); i < size; i++) {
+			Node node = childNodes.item(i);
+			if (node instanceof Element && "sender".equals(node.getNodeName())) {
+				addResourceNamesToPipeDescription(node, pipeDescription);
 			}
 		}
 	}

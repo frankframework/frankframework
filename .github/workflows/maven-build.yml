@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage
+  PROFILES: ibissource,codecoverage,cmis
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES=ibissource,codecoverage,proprietary" >> $GITHUB_ENV
+        echo "PROFILES=ibissource,codecoverage,cmis,proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
@@ -60,3 +60,9 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
+
+    - name: Upload coverage to Codacy
+      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

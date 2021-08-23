@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Serializable;
 import java.util.Date;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
@@ -27,6 +28,8 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author Jaco de Groot
  */
+@Deprecated
+@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
 	@Override

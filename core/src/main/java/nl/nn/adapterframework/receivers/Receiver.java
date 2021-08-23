@@ -92,6 +92,7 @@ import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -892,7 +893,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		origin.afterMessageProcessed(plr, rawMessage, threadContext);
 	}
 
-	private void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
+	public void moveInProcessToError(String originalMessageId, String correlationId, ThrowingSupplier<Message,ListenerException> messageSupplier, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 		if (getListener() instanceof IHasProcessState) {
 			ProcessState targetState = knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 			try {
@@ -1358,7 +1359,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						threadContext.putAll(pipelineSession);
 					}
 					try {
-						if (getListener() instanceof IHasProcessState) {
+						if (getListener() instanceof IHasProcessState && !itx.isRollbackOnly()) {
 							ProcessState targetState = messageInError && knownProcessStates.contains(ProcessState.ERROR) ? ProcessState.ERROR : ProcessState.DONE;
 							changeProcessState(rawMessageOrWrapper, targetState, errorMessage);
 						}
@@ -1412,7 +1413,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	@SuppressWarnings("synthetic-access")
-	private synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
+	public synchronized void cacheProcessResult(String messageId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
 		if (cacheItem==null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for messageId ["+messageId+"]");
@@ -1435,6 +1436,18 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return prci!=null ? prci.comments : null;
 	}
 	
+	public int getDeliveryCount(String messageId, M rawMessage) {
+		IListener<M> origin = getListener(); // N.B. listener is not used when manualRetry==true
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking delivery count for messageId ["+messageId+"]");
+		if (origin instanceof IKnowsDeliveryCount) {
+			return ((IKnowsDeliveryCount<M>)origin).getDeliveryCount(rawMessage)-1;
+		}
+		ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+		if (prci==null) {
+			return 1;
+		}
+		return prci.receiveCount+1;
+	}
 	/*
 	 * returns true if message should not be processed
 	 */
@@ -2023,7 +2036,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
 	public void setOnError(String value) {
 		if(StringUtils.isNotEmpty(value)) {
-			onError = Misc.parse(OnError.class, "onError", value);
+			onError = EnumUtils.parse(OnError.class, value);
 		}
 	}
 	public void setOnErrorEnum(OnError value) {

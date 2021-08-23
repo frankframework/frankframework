@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -56,7 +57,6 @@ import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -162,6 +162,29 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		return (PipeRunResult)proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
 	}
 
+	public PipeRunResult debugValidatorInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws Throwable {
+		if (!isEnabled()) {
+			return (PipeRunResult)proceedingJoinPoint.proceed();
+		}
+		String messageId = pipeLineSession.getMessageId();
+		message = ibisDebugger.pipeInput(pipeLine, validator, messageId, message);
+		PipeRunResult pipeRunResult = null;
+
+		if(StringUtils.isNotEmpty(messageRoot)) {
+			ibisDebugger.showValue(messageId, "MessageRoot to be asserted", messageRoot);
+		}
+
+		try {
+			Object[] args = proceedingJoinPoint.getArgs();
+			args[2] = message;
+			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
+		} catch(Throwable throwable) {
+			throw ibisDebugger.pipeAbort(pipeLine, validator, messageId, throwable);
+		}
+		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, validator, messageId, pipeRunResult.getResult()));
+		return pipeRunResult;
+	}
+
 	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, boolean expectPipeRunResult) throws Throwable {
 		if (!isEnabled()) {
 			return (M)proceedingJoinPoint.proceed();
@@ -236,7 +259,6 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	 
 	/**
 	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(PipeLineSession session, IForwardTarget next)}
-	 * Provides advice for {@link StreamingPipe#provideOutputStream(PipeLineSession session)}
 	 */
 	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {

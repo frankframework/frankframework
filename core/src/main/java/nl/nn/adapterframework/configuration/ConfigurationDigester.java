@@ -20,10 +20,13 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.digester3.Digester;
@@ -52,9 +55,11 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.SaxException;
+import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -213,7 +218,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException {
+	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
 		return resolveEntitiesAndProperties(configuration, resource, appConstants, preparse);
 	}
 
@@ -221,12 +226,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException {
+	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
 		XmlWriter writer;
 		ContentHandler handler;
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
-			handler = getCanonicalizedConfiguration(writer);
+			handler = getStub4TesttoolContentHandler(writer, appConstants);
+			handler = getCanonicalizedConfiguration(configuration, handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
@@ -244,18 +250,18 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			loaded = StringResolver.substVars(loaded, appConstants);
 			loaded = ConfigurationUtils.getCanonicalizedConfiguration(loaded);
 			loaded = ConfigurationUtils.getActivatedConfiguration(loaded);
-		}
 
-		if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-			loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
+				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
+			}
 		}
 
 		return loaded;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
+	public ContentHandler getCanonicalizedConfiguration(Configuration configuration, ContentHandler writer) throws IOException, SAXException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(null, frankConfigXSD));
+		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(configuration, frankConfigXSD));
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
@@ -270,6 +276,28 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
+		}
+	}	
+	
+	/**
+	 * Get the contenthandler to stub configurations
+	 * If stubbing is disabled, the input ContentHandler is returned as-is
+	 */
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
+		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false"))) {
+			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
+			TransformerPool tp = TransformerPool.getInstance(xslt);
+
+			TransformerFilter filter = tp.getTransformerFilter(null, null, null, false, handler);
+			
+			Map<String,Object> parameters = new HashMap<String,Object>();
+			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
+			
+			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
+			
+			return filter;
+		} else {
+			return handler;
 		}
 	}
 

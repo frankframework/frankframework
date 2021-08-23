@@ -173,8 +173,10 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(3, actualChild.getAttributes(ALL).size());
-		FrankAttribute actualChildAttribute = findAttribute(actualChild, "childAttribute");
+		assertEquals(4, actualChild.getAttributes(ALL).size());
+		FrankAttribute actualChildAttribute = findAttribute(actualChild, "notTextConfigChildButAttribute");
+		assertEquals("notTextConfigChildButAttribute", actualChildAttribute.getName());
+		actualChildAttribute = findAttribute(actualChild, "childAttribute");
 		assertEquals("childAttribute", actualChildAttribute.getName());
 		assertSame(actualChild, actualChildAttribute.getOwningElement());
 		assertSame(actualChild, actualChildAttribute.getDescribingElement());
@@ -572,7 +574,7 @@ public class FrankDocModelTest {
 			fail(e.toString());
 		}
 		assertEquals("String that does not match enum values.", attribute.getDefaultValue());
-		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.reflect.FrankAttributeTarget.FrankAttributeTargetEnum", attribute.getAttributeValues().getFullName());
+		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.reflect.FrankAttributeTarget.FrankAttributeTargetEnum", attribute.getAttributeEnum().getFullName());
 		attribute.typeCheckDefaultValue();
 	}
 }

@@ -214,11 +214,11 @@ class FrankClassDoclet implements FrankClass {
 	}
 
 	@Override
-	public String[] getEnumConstants() {
+	public FrankEnumConstant[] getEnumConstants() {
 		FieldDoc[] fieldDocs = clazz.enumConstants();
-		String[] result = new String[fieldDocs.length];
+		FrankEnumConstant[] result = new FrankEnumConstant[fieldDocs.length];
 		for(int i = 0; i < fieldDocs.length; ++i) {
-			result[i] = fieldDocs[i].name();
+			result[i] = new FrankEnumConstantDoclet(fieldDocs[i]);
 		}
 		return result;
 	}

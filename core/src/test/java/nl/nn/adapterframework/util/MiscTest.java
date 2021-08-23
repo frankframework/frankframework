@@ -243,15 +243,6 @@ public class MiscTest {
 		assertEquals("test", writer.toString());
 	}
 
-	/**
-	 * Method: fileToString(String fileName)
-	 */
-	@Test
-	public void testFileToStringFileName() throws Exception {
-		// Misc.resourceToString()
-		assertEquals("inside the lebron file", Misc.fileToString(file.getName()));
-	}
-
 	@Test
 	public void testFileToStringFileNameEndLine() throws Exception {
 		// Misc.resourceToString()

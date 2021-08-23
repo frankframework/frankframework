@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -101,7 +102,12 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		else {
 			if (isReturnFixedDate()) {
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
-				String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
+				String fixedDateTime = null;
+				try {
+					fixedDateTime = session.getMessage(FIXEDDATE_STUB4TESTTOOL_KEY).asString();
+				} catch (IOException e1) {
+					throw new PipeRunException(this, getLogPrefix(session) + "unable to determine ["+FIXEDDATE_STUB4TESTTOOL_KEY+"] from pipeline session");
+				}
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = FIXEDDATETIME;
 				}

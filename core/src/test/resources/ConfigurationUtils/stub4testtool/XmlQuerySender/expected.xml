@@ -1,0 +1,30 @@
+<configuration>
+	  <adapter name="XmlQuerySender">
+      <receiver name="testtool-XmlQuerySender">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-XmlQuerySender"/>
+      </receiver>
+		    <receiver name="XmlQuerySender">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="XmlQuerySender"/>
+		    </receiver>
+      <receiver name="testtool-XmlQuerySender-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-XmlQuerySender-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.jdbc.XmlQuerySender"
+                    queryType="select"/>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

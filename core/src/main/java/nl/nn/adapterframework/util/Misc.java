@@ -39,7 +39,6 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -67,7 +65,6 @@ import javax.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -348,18 +345,20 @@ public class Misc {
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
-	public static String fileToString(String fileName) throws IOException {
+	private static String fileToString(String fileName) throws IOException {
 		return fileToString(fileName, null, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString) throws IOException {
 		return fileToString(fileName, endOfLineString, false);
 	}
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
+	@Deprecated
 	public static String fileToString(String fileName, String endOfLineString, boolean xmlEncode) throws IOException {
 		try (FileReader reader = new FileReader(fileName)) {
 			return readerToString(reader, endOfLineString, xmlEncode);
@@ -828,6 +827,7 @@ public class Misc {
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getDeployedApplicationBindings() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
@@ -839,6 +839,7 @@ public class Misc {
 		return fileToString(appBndFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getApplicationDeploymentDescriptorPath() throws IOException {
 		try {
 			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
@@ -851,7 +852,8 @@ public class Misc {
 		}
 	}
 
-	public static String getApplicationDeploymentDescriptor () throws IOException {
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
+	public static String getApplicationDeploymentDescriptor() throws IOException {
 		String addp = getApplicationDeploymentDescriptorPath();
 		if (addp==null) {
 			log.debug("applicationDeploymentDescriptorPath not found");
@@ -862,18 +864,22 @@ public class Misc {
 		return fileToString(appFile);
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationResources() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResources").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server: " + e.getMessage());
 			return null;
 		}
 	}
 
+	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
 	public static String getConfigurationServer() throws IOException {
 		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServer").invoke(null);
+			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
+			return fileToString(path);
 		} catch (Exception e) {
 			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server: " + e.getMessage());
 			return null;
@@ -1390,50 +1396,6 @@ public class Misc {
 			index = -index - 1;
 		}
 		return index;
-	}
-	
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, null, value);
-	}
-
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
-		E result = EnumUtils.getEnumIgnoreCase(enumClass, value);
-		if (result==null) {
-			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ EnumUtils.getEnumList(enumClass));
-		}
-		return result;
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String value, Function<E,String> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E,String> field) {
-		List<String> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			String fieldValue = field.apply(e);
-			if (fieldValue.equalsIgnoreCase(value)) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
-	}
-
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, int value, Function<E,Integer> field) {
-		return parseFromField(enumClass, null, value, field);
-	}
-	
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
-		List<Integer> fieldValues = new ArrayList<>();
-		for (E e:EnumUtils.getEnumList(enumClass)) {
-			int fieldValue = field.apply(e);
-			if (fieldValue==value) {
-				return e;
-			}
-			fieldValues.add(fieldValue);
-		}
-		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
 	}
 
 	public static String jsonPretty(String json) {

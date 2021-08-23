@@ -1,17 +1,26 @@
 angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'properties', function($scope, $http, properties) {
 	function getURI() {
-		return properties.server + "iaf/api/frankdoc/files/frankdoc.json";
+		return properties.server + "iaf/api/frankdoc/files/";
+	}
+	$scope.showDeprecatedElements = false;
+	$scope.showHideDeprecated = function() {
+		$scope.showDeprecatedElements = !$scope.showDeprecatedElements;
+	}
+	$scope.downloadXSD = function() {
+		window.open(getURI() + "frankdoc.xsd", 'Frank!Doc XSD');
 	}
 
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
+	$scope.enums = {};
 	$scope.search = "";
-	$http.get(getURI()).then(function(response) {
+	$http.get(getURI() + "frankdoc.json").then(function(response) {
 		if(response && response.data) {
 			let data = response.data;
 			let types = data.types;
 			let elements = data.elements;
+			let enums = data.enums;
 
 			//map elements so we can search
 			$scope.groups = data.groups;
@@ -22,14 +31,17 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				types: distinctTypes
 			});
 
-			for(i in types) {
+			for(let i in types) {
 				let aType = types[i];
 				$scope.types[aType.name] = aType.members;
 			}
-			for(i in elements) {
+			for(let i in elements) {
 				let element = elements[i];
-				addAttributeActive(element);
 				$scope.elements[element.fullName] = element;
+			}
+			for(let i in enums) {
+				let en = enums[i];
+				$scope.enums[en.name] = en.values;
 			}
 		}
 	}, function(response) {
@@ -39,18 +51,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.loadError = "Unable to load Frank!Doc.json file.";
 		}
 	});
-
-	function addAttributeActive(element) {
-		attributeActive = {
-			name: "active",
-			description: "If defined and empty or false, then this element and all its children are ignored"
-		};
-		if(element.attributes) {
-			element.attributes.unshift(attributeActive);
-		} else {
-			element.attributes = [attributeActive];
-		}
-	}
 
 	$scope.element = null;
 	$scope.$on('element', function(_, element) {
@@ -68,22 +68,24 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
 }]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
-		let groups = getGroupsOfType(child.type, $scope.groups);
-		let childElements = $scope.getElementsOfType(child.type);
-		let title = 'From ' + groups + ": ";
-		for(i = 0; i < childElements.length; ++i) {
-			if(i == 0) {
-				title = title + childElements[i];
-			} else {
-				title = title + ", " + childElements[i];
-			}
+		let title = '';
+		if(child.type) {
+			let groups = getGroupsOfType(child.type, $scope.groups);
+			let childElements = $scope.getElementsOfType(child.type);
+			title = 'From ' + groups + ": ";
+			for(let i = 0; i < childElements.length; ++i) {
+				if(i == 0) {
+					title = title + childElements[i];
+				} else {
+					title = title + ", " + childElements[i];
+				}
+			}			
+		} else{
+			title = 'No child elements, only text';
 		}
 		return title;
 	}
 
-	function fullNameToSimpleName(fullName) {
-		return fullName.substr(fullName.lastIndexOf(".")+1)
-	}
 	$scope.getElementsOfType = function(type) {
 		let fullNames = $scope.types[type];
 		let simpleNames = [];
