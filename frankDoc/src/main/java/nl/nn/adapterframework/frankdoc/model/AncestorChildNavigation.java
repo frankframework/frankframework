@@ -53,7 +53,7 @@ class AncestorChildNavigation<T extends ElementChild> {
 		addDeclaredGroupOrRepeatChildrenInXsd();
 		while(current.getNextAncestorThatHasChildren(noChildren) != null) {
 			enter(current.getNextAncestorThatHasChildren(noChildren));
-			if(! getOverriddenChilren().stream().anyMatch(childSelector)) {
+			if(! getOverriddenChildren().stream().anyMatch(childSelector)) {
 				safeAddCumulative();
 				return;
 			}
@@ -115,7 +115,7 @@ class AncestorChildNavigation<T extends ElementChild> {
 		}
 	}
 
-	private List<ElementChild> getOverriddenChilren() {
+	private List<ElementChild> getOverriddenChildren() {
 		Map<FrankElement, Set<AbstractKey>> overriddenByOwner = overridden.keySet().stream()
 				.collect(Collectors.groupingBy(k -> overridden.get(k), Collectors.toSet()));
 		return overriddenByOwner.keySet().stream()

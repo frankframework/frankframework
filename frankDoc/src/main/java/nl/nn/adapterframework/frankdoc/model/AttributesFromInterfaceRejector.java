@@ -16,6 +16,7 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,8 +25,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 
 class AttributesFromInterfaceRejector extends AbstractInterfaceRejector {
-	AttributesFromInterfaceRejector(Set<String> rejectedInterfaces) {
-		super(rejectedInterfaces);
+	AttributesFromInterfaceRejector(String rejectedInterface) {
+		super(new HashSet<String>(Arrays.asList(rejectedInterface)));
 	}
 
 	@Override

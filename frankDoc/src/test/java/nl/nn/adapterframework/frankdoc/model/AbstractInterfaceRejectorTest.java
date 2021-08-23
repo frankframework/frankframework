@@ -56,8 +56,7 @@ public class AbstractInterfaceRejectorTest {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
 		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
 		String excludedInterfaceFullName = thePackage + excludedInterface;
-		AttributesFromInterfaceRejector instance = new AttributesFromInterfaceRejector(new HashSet<>(Arrays.asList(
-				excludedInterfaceFullName)));
+		AttributesFromInterfaceRejector instance = new AttributesFromInterfaceRejector(excludedInterfaceFullName);
 		List<String> actualAttributes = new ArrayList<>(instance.getRejects(clazz));
 		Collections.sort(actualAttributes);
 		assertArrayEquals(expectedAttributes, actualAttributes.toArray(new String[] {}));

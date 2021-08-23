@@ -17,7 +17,6 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,8 +40,8 @@ class AttributeExcludedSetter {
 			if(StringUtils.isBlank(ignoredInterface)) {
 				log.warn("Javadoc tag {} requires an argument that refers a Java interface", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 			} else {
-				log.trace("Have Javadoc tag {} that refers to interface [{}]", () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> ignoredInterface);
-				AttributesFromInterfaceRejector rejector = new AttributesFromInterfaceRejector(new HashSet<>(Arrays.asList(ignoredInterface)));
+				log.trace("FrankElement has Javadoc tag {} that refers to interface [{}]", () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> ignoredInterface);
+				AttributesFromInterfaceRejector rejector = new AttributesFromInterfaceRejector(ignoredInterface);
 				namesExcludedDueToIgnoredInterface = rejector.getRejects(clazz);
 			}
 			if(log.isTraceEnabled()) {
