@@ -1,13 +1,11 @@
 package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -60,25 +58,5 @@ public class AbstractInterfaceRejectorTest {
 		List<String> actualAttributes = new ArrayList<>(instance.getRejects(clazz));
 		Collections.sort(actualAttributes);
 		assertArrayEquals(expectedAttributes, actualAttributes.toArray(new String[] {}));
-	}
-
-	@Test
-	public void testTypeIgnoreOnChild() throws Exception {
-		doTypeIngoreTest("Child");
-	}
-
-	@Test
-	public void testTypeIgnoreOnGrandChild() throws Exception {
-		doTypeIngoreTest("GrandChild");
-	}
-
-	private void doTypeIngoreTest(String inputClass) throws FrankDocException {
-		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
-		String excludedInterfaceFullName = thePackage + excludedInterface;
-		GroupFromInterfaceRejector instance = new GroupFromInterfaceRejector(new HashSet<>(Arrays.asList(excludedInterfaceFullName)));
-		List<String> actualGroupRejections = new ArrayList<>(instance.getRejects(clazz));
-		assertEquals(1, actualGroupRejections.size());
-		assertEquals(excludedInterfaceFullName, actualGroupRejections.get(0));
 	}
 }
