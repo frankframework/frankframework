@@ -64,4 +64,11 @@ public class FrankMethodDocletTest {
 		FrankMethod method = getMethodByName(innerClass, "myAnnotatedMethod");
 		assertEquals("InheritedDefault", method.getJavaDocTagIncludingInherited(TestUtil.JAVADOC_DEFAULT_VALUE_TAG));		
 	}
+
+	@Test
+	public void whenMethodHasJavaDocTagWithoutArgumentThenEmptyStringReturned() {
+		FrankMethod method = getMethodByName(clazz, "myMethod");
+		String actual = method.getJavaDocTag(TestUtil.JAVADOC_DEFAULT_VALUE_TAG);
+		assertEquals("", actual);
+	}
 }
