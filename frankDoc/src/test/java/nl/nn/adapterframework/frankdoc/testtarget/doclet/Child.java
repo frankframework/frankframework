@@ -5,6 +5,7 @@ package nl.nn.adapterframework.frankdoc.testtarget.doclet;
  * JavaDoc text is treated by the Doclet API.
  * @author martijn
  *
+ * @ff.myTag This is the tag argument.  
  */
 public class Child extends Parent implements MyInterface {
 	@Override
