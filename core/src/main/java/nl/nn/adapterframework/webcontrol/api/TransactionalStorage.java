@@ -39,7 +39,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -58,9 +57,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.CalendarParserException;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.MessageBrowsingFilter;
 import nl.nn.adapterframework.util.Misc;
 
 @Path("/")
@@ -541,7 +538,7 @@ public class TransactionalStorage extends Base {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener <?> listener, String messageId) {
+	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
 		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
 	}
 
@@ -681,192 +678,4 @@ public class TransactionalStorage extends Base {
 		return result;
 	}
 
-	public class MessageBrowsingFilter {
-		private String type = null;
-		private String host = null;
-		private String id = null;
-		private String messageId = null;
-		private String correlationId = null;
-		private String comment = null;
-		private String message = null;
-		private String label = null;
-		private Date startDate = null;
-		private Date endDate = null;
-
-		private int maxMessages = 0;
-		private int skipMessages = 0;
-
-		private SortOrder sortOrder = SortOrder.NONE;
-		private IMessageBrowser<?> storage = null;
-		private IListener listener = null;
-
-		public MessageBrowsingFilter() {
-			this(AppConstants.getInstance().getInt("browse.messages.max", 0), 0);
-		}
-
-		public MessageBrowsingFilter(int maxMessages, int skipMessages) {
-			this.maxMessages = maxMessages;
-			this.skipMessages = skipMessages;
-		}
-
-		public void setSortOrder(SortOrder order) {
-			sortOrder = order;
-		}
-		public SortOrder getSortOrder() {
-			return sortOrder;
-		}
-
-		public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
-			int count = 0;
-			int matches = 0;
-
-			if(type != null) {
-				count++;
-				matches += iterItem.getType().startsWith(type) ? 1 : 0;
-			}
-			if(host != null) {
-				count++;
-				matches += iterItem.getHost().startsWith(host) ? 1 : 0;
-			}
-			if(id != null) {
-				count++;
-				matches += iterItem.getId().startsWith(id) ? 1 : 0;
-			}
-			if(messageId != null) {
-				count++;
-				matches += iterItem.getOriginalId().startsWith(messageId) ? 1 : 0;
-			}
-			if(correlationId != null) {
-				count++;
-				matches += iterItem.getCorrelationId().startsWith(correlationId) ? 1 : 0;
-			}
-			if(comment != null) {
-				count++;
-				matches += (StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().indexOf(comment)>-1) ? 1 : 0;
-			}
-			if(label != null) {
-				count++;
-				matches += StringUtils.isNotEmpty(iterItem.getLabel()) && iterItem.getLabel().startsWith(label) ? 1 : 0;
-			}
-			if(startDate != null && endDate == null) {
-				count++;
-				matches += iterItem.getInsertDate().after(startDate) ? 1 : 0;
-			}
-			if(startDate == null && endDate != null) {
-				count++;
-				matches += iterItem.getInsertDate().before(endDate) ? 1 : 0;
-			}
-			if(startDate != null && endDate != null) {
-				count++;
-				matches += (iterItem.getInsertDate().after(startDate) && iterItem.getInsertDate().before(endDate)) ? 1 : 0;
-			}
-			if(message != null) {
-				count++;
-				matches += matchMessage(iterItem) ? 1 : 0;
-			}
-
-			return count == matches;
-		}
-
-		public void setTypeMask(String typeMask) {
-			if(!StringUtils.isEmpty(typeMask))
-				type = typeMask;
-		}
-
-		public void setHostMask(String hostMask) {
-			if(!StringUtils.isEmpty(hostMask))
-				host = hostMask;
-		}
-
-		public void setIdMask(String idMask) {
-			if(!StringUtils.isEmpty(idMask))
-				id = idMask;
-		}
-
-		public void setMessageIdMask(String messageIdMask) {
-			if(!StringUtils.isEmpty(messageIdMask))
-				messageId = messageIdMask;
-		}
-
-		public void setCorrelationIdMask(String correlationIdMask) {
-			if(!StringUtils.isEmpty(correlationIdMask))
-				correlationId = correlationIdMask;
-		}
-
-		public void setCommentMask(String commentMask) {
-			if(!StringUtils.isEmpty(commentMask))
-				comment = commentMask;
-		}
-
-		public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
-			if(message != null) {
-				String msg = getRawMessage(storage, listener, iterItem.getId());
-				if (msg == null || !StringUtils.containsIgnoreCase(msg, message)) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		public void setMessageMask(String messageMask, IMessageBrowser<?> storage) {
-			setMessageMask(messageMask, storage, null);
-		}
-
-		public void setMessageMask(String messageMask, IMessageBrowser<?> storage, IListener <?> listener) {
-			if(StringUtils.isNotEmpty(messageMask)) {
-				this.message = messageMask;
-				this.storage = storage;
-				this.listener = listener;
-			}
-		}
-
-		public void setLabelMask(String labelMask) {
-			if(!StringUtils.isEmpty(labelMask))
-				label = labelMask;
-		}
-
-		public void setStartDateMask(String startDateMask) {
-			if(!StringUtils.isEmpty(startDateMask)) {
-				try {
-					startDate = DateUtils.parseAnyDate(startDateMask);
-					if(startDate == null)
-						throw new ApiException("could not to parse date from ["+startDateMask+"]");
-				}
-				catch(CalendarParserException ex) {
-					throw new ApiException("could not parse date from ["+startDateMask+"] msg["+ex.getMessage()+"]");
-				}
-			}
-		}
-
-		public void setEndDateMask(String endDateMask) {
-			if(!StringUtils.isEmpty(endDateMask)) {
-				try {
-					endDate = DateUtils.parseAnyDate(endDateMask);
-					if(endDate == null)
-						throw new ApiException("could not to parse date from ["+endDateMask+"]");
-				}
-				catch(CalendarParserException ex) {
-					throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
-				}
-			}
-		}
-
-		public int skipMessages() {
-			return skipMessages;
-		}
-
-		public int maxMessages() {
-			return maxMessages;
-		}
-
-		@Override
-		public String toString() {
-			return ToStringBuilder.reflectionToString(this);
-//			return (new ReflectionToStringBuilder(this) {
-//				protected boolean accept(Field f) {
-//					return super.accept(f) && !f.getName().equals("passwd");
-//				}
-//			}).toString();
-		}
-	}
 }
