@@ -130,7 +130,7 @@ public final class TestPipeline extends Base {
 		ZipInputStream archive = new ZipInputStream(inputStream);
 		for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 			String name = entry.getName();
-			byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
+			byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(archive), true);
 			String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
 			if (result.length() > 0) {
 				result.append("\n");
