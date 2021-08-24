@@ -2229,15 +2229,17 @@ angular.module('iaf.beheerconsole')
 	$scope.form = {};
 
 	var executeQueryCookie = Cookies.get("executeQuery");
-	if(executeQueryCookie) {
-		$scope.form.query = executeQueryCookie.query;
-		//Maybe also prefill datasource and result type?
-	}
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
 		$scope.form.datasource = data.datasources[0];
 		$scope.form.resultType = data.resultTypes[0];
+		if(executeQueryCookie) {
+			$scope.form.query = executeQueryCookie.query;
+			$scope.form.datasource = executeQueryCookie.datasource;
+			$scope.form.resultType = executeQueryCookie.resultType;
+		}
+		
 	});
 
 	$scope.submit = function(formData) {
@@ -2270,6 +2272,11 @@ angular.module('iaf.beheerconsole')
 	$scope.reset = function() {
 		$scope.form.query = "";
 		$scope.result = "";
+		$scope.form.datasource = $scope.datasources[0];
+		$scope.form.resultType = $scope.resultTypes[0];
+		$scope.form.avoidLocking=false;
+		$scope.form.trimSpaces=false;
+		Cookies.remove("executeQuery");
 	};
 }])
 
