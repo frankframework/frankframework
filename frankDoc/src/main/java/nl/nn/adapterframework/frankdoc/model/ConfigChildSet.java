@@ -16,9 +16,9 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -157,14 +157,21 @@ public class ConfigChildSet {
 		return roles.stream().map(ElementRole::getKey).collect(Collectors.toSet());
 	}
 
-	public Optional<FrankElement> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
-		List<FrankElement> candidates = ConfigChild.getElementRoleStream(configChildren)
-				.map(ElementRole::getDefaultElementOptionConflict)
-				.filter(Objects::nonNull)
+	public Optional<String> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
+		List<String> candidates = ConfigChild.getElementRoleStream(configChildren)
+				.flatMap(e -> Arrays.asList(
+						Optional.ofNullable(e.getDefaultElementOptionConflict()).map(FrankElement::getFullName),
+						Optional.ofNullable(e.getDefaultElement())).stream())
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(Collectors.toList());
 		if(candidates.size() == 1) {
 			return Optional.of(candidates.get(0));
 		} else {
+			if(candidates.size() >= 2) {
+				log.warn("ConfigChildSet [{}] has multiple candidates for the default element: [{}]", toString(),
+						candidates.stream().collect(Collectors.joining(", ")));
+			}
 			return Optional.empty();
 		}
 	}
