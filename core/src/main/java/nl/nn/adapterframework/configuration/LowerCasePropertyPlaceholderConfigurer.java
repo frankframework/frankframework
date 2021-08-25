@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.lifecycle.PropertyConfigurer;
 import nl.nn.adapterframework.util.AppConstants;
-
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
  * Make a lower case variant of the instance.name property (instance.name.lc)
@@ -27,12 +26,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  *
  * @author Jaco de Groot
  */
-public class LowerCasePropertyPlaceholderConfigurer
-		extends PropertyPlaceholderConfigurer {
-
-	public LowerCasePropertyPlaceholderConfigurer() {
-		setIgnoreUnresolvablePlaceholders(true);
-	}
+public class LowerCasePropertyPlaceholderConfigurer extends PropertyConfigurer {
 
 	@Override
 	protected void convertProperties(Properties props) {
@@ -44,5 +38,4 @@ public class LowerCasePropertyPlaceholderConfigurer
 			props.put("instance.name.lc", lowerCase);
 		}
 	}
-
 }

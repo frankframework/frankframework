@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.lifecycle.PropertyConfigurer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**
  * Initialise the fxf.dir property when possible and not already available from
@@ -31,13 +31,8 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  *
  * @author Jaco de Groot
  */
-public class FxfPropertyPlaceholderConfigurer
-		extends PropertyPlaceholderConfigurer {
+public class FxfPropertyPlaceholderConfigurer extends PropertyConfigurer {
 	protected Logger log = LogUtil.getLogger(this);
-
-	public FxfPropertyPlaceholderConfigurer() {
-		setIgnoreUnresolvablePlaceholders(true);
-	}
 
 	@Override
 	protected void convertProperties(Properties props) {
