@@ -110,7 +110,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final Action[] ACTIONS_WRITABLE_FS= {Action.WRITE, Action.UPLOAD, Action.APPEND, Action.RENAME};
 	public final Action[] ACTIONS_MAIL_FS= {Action.FORWARD};
 
-	private Action action;
+	private IFileSystemAction action;
 	private @Getter String filename;
 	private @Getter String destination;
 	private @Getter String inputFolder; // folder for action=list
@@ -203,16 +203,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
-	private void checkConfiguration(Action action) throws ConfigurationException {
-		if (!actions.contains(action))
-			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action + "] supported actions are " + actions.toString() + "");
+	private void checkConfiguration(IFileSystemAction action2) throws ConfigurationException {
+		if (!actions.contains(action2))
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessary parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, Action.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, Action.MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, Action.COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, Action.RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, Action.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 	
 //	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
@@ -222,7 +222,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
 //	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, Action configuredAction, Action action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, IFileSystemAction configuredAction, IFileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction.equals(action)) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
@@ -314,7 +314,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				input.closeOnCloseOf(session); // don't know if the input will be used
 			}
 
-			Action action;
+			IFileSystemAction action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
 				action = EnumUtils.parse(Action.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getActionEnum().toString()));
 				if(action == null) {
@@ -324,7 +324,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				action = getActionEnum();
 			}
-			switch(action) {
+			switch((Action)action) {
 				case DELETE: {
 					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
@@ -624,7 +624,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public void setAction(String action) {
 		this.action = EnumUtils.parse(Action.class, action);
 	}
-	public Action getActionEnum() {
+	public IFileSystemAction getActionEnum() {
 		return action;
 	}
 
