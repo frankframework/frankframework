@@ -48,15 +48,19 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 	private boolean attachmentsAsSessionKeys=false;
 
+	private enum FileSystemSenderWithAttachmentsAction implements IFileSystemAction {
+		LISTATTACHMENTS
+	}
+	
 	@Override
 	public void configure() throws ConfigurationException {
-		addActions(Arrays.asList(ACTIONS_FS_WITH_ATTACHMENTS));
+		addActions(Arrays.asList(FileSystemSenderWithAttachmentsAction.values()));
 		super.configure();
 	}
 	
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (!getAction().equalsIgnoreCase("listAttachments")) {
+		if (getActionEnum()!=FileSystemSenderWithAttachmentsAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session, next);
 		} else {
 

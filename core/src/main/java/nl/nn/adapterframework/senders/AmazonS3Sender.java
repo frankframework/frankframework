@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
+import nl.nn.adapterframework.filesystem.IFileSystemAction;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -50,24 +51,31 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
-	private List<String> specificActions = Arrays.asList("createBucket", "deleteBucket", "copy", "restore");
+	private List<IFileSystemAction> specificActions = Arrays.asList(AmazonS3SenderAction.values());
 
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
 		addActions(specificActions);
 	}
 
+	public enum AmazonS3SenderAction implements IFileSystemAction {
+		CREATEBUCKET,
+		DELETEBUCKET,
+		COPY,
+		RESTORE
+	}
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (getAction().equalsIgnoreCase("createBucket") && getFileSystem().isForceGlobalBucketAccessEnabled() 
+		if (getActionEnum()==AmazonS3SenderAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
 				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
 						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
 			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
 					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
 		}
-		else if (getAction().equalsIgnoreCase("copy")) {
+		else if (getActionEnum()==AmazonS3SenderAction.COPY) {
 			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
 					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
 				throw new ConfigurationException(
@@ -75,13 +83,13 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 								+ "] please visit AWS to see correct bucket naming");
 			if (getParameterList().findParameter("destinationFileName") == null)
 				throw new ConfigurationException(" destinationFileName parameter requires to be present to perform ["
-						+ getAction() + "] action");
+						+ getActionEnum() + "] action");
 			if (getFileSystem().isStorageClassEnabled() && (StringUtils.isEmpty(getFileSystem().getStorageClass())
 					|| !AmazonS3FileSystem.STORAGE_CLASSES.contains(getFileSystem().getStorageClass())))
 				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
 						+ "] please use following supported storage classes "
 						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
-		} else if (getAction().equalsIgnoreCase("restore") && (StringUtils.isEmpty(getFileSystem().getTier())
+		} else if (getActionEnum()==AmazonS3SenderAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
 				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
 			throw new ConfigurationException(
 					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
@@ -91,7 +99,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (!specificActions.contains(getAction())) {
+		if (!specificActions.contains(getActionEnum())) {
 			return super.sendMessage(message, session, next);
 		}
 
@@ -112,24 +120,30 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 			}
 		}
 
-		if (getAction().equalsIgnoreCase("createBucket")) { //createBucket block
-			result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
-		} else if (getAction().equalsIgnoreCase("deleteBucket")) { //deleteBucket block
-			result = getFileSystem().deleteBucket();
-		} else if (getAction().equalsIgnoreCase("copy")) { //copy file block
-			if (pvl.getParameterValue("destinationFileName") != null) {
-				if (pvl.getParameterValue("destinationFileName").getValue() != null) {
-					String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
-					result = getFileSystem().copyObject(fileName, destinationFileName);
+		switch((AmazonS3SenderAction)getActionEnum()) {
+			case CREATEBUCKET: 
+				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
+				break;
+			case DELETEBUCKET:
+				result = getFileSystem().deleteBucket();
+				break;
+			case COPY:
+				if (pvl.getParameterValue("destinationFileName") != null) {
+					if (pvl.getParameterValue("destinationFileName").getValue() != null) {
+						String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
+						result = getFileSystem().copyObject(fileName, destinationFileName);
+					} else {
+						throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
+					}
 				} else {
-					throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
+					throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
 				}
-			} else {
-				throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
-			}
-		} else if (getAction().equalsIgnoreCase("restore")) { //restore block
-			result = getFileSystem().restoreObject(fileName);
+				break;
+			case RESTORE:
+				result = getFileSystem().restoreObject(fileName);
+				break;
 		}
+
 		return new PipeRunResult(null, result);
 	}
 	

@@ -162,7 +162,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		this.fileSystem = fileSystem;
 	}
 
-	protected void addActions(List<String> specificActions) {
+	protected void addActions(List<IFileSystemAction> specificActions) {
 		actor.addActions(specificActions);
 	}
 
@@ -170,8 +170,8 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
-	public String getAction() {
-		return actor.getAction();
+	public IFileSystemAction getActionEnum() {
+		return actor.getActionEnum();
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})

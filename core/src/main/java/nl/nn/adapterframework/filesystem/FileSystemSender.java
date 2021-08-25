@@ -144,7 +144,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return fileSystem;
 	}
 
-	protected void addActions(List<String> specificActions) {
+	protected void addActions(List<IFileSystemAction> specificActions) {
 		actor.addActions(specificActions);
 	}
 
@@ -154,8 +154,8 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	public void setAction(String action) {
 		actor.setAction(action);
 	}
-	public String getAction() {
-		return actor.getAction();
+	public IFileSystemAction getActionEnum() {
+		return actor.getActionEnum();
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})
