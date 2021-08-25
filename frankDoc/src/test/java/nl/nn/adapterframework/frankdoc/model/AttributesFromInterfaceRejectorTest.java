@@ -26,7 +26,8 @@ public class AttributesFromInterfaceRejectorTest {
 		return Arrays.asList(new Object[][] {
 			{"nl.nn.adapterframework.frankdoc.testtarget.reject.simple.", "ISuperseeded", new String[] {"rejectedAttribute"}},
 			{"nl.nn.adapterframework.frankdoc.testtarget.reject.simple2.", "IIgnored", new String[] {"attributeIIgnored"}},
-			{"nl.nn.adapterframework.frankdoc.testtarget.reject.complex.", "ISuperseded", new String[] {"superseded3"}}
+			{"nl.nn.adapterframework.frankdoc.testtarget.reject.complex.", "ISuperseded", new String[] {"superseded3"}},
+			{"nl.nn.adapterframework.frankdoc.testtarget.reject.complex2.", "ISuperseded", new String[] {"superseded3"}}
 		});
 	}
 
