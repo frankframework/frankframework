@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="Master">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="AElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="AElementGroup">
+    <xs:choice>
+      <xs:element name="A">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="AElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="AElementGroupBase">
+    <xs:choice>
+      <xs:element name="GrandChildA">
+        <xs:annotation>
+          <xs:documentation>GrandChildA - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild used as A</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="GrandChildType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NotSuppressingChildA">
+        <xs:annotation>
+          <xs:documentation>NotSuppressingChildA - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.NotSuppressingChild used as A</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="NotSuppressingChildType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.NotSuppressingChild" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ParentA">
+        <xs:annotation>
+          <xs:documentation>ParentA - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Parent used as A</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ParentType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Parent" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SuppressingChildA">
+        <xs:annotation>
+          <xs:documentation>SuppressingChildA - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild used as A</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SuppressingChildType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="GrandChildType">
+    <xs:attributeGroup ref="GrandChildCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="GrandChildDeclaredAttributeGroup">
+    <xs:attribute name="suppressedAttribute2" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Documented, so re-introduced as attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="GrandChildCumulativeAttributeGroup">
+    <xs:attributeGroup ref="GrandChildDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SuppressingChildCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SuppressingChildType">
+    <xs:attributeGroup ref="SuppressingChildCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="SuppressingChildDeclaredAttributeGroup">
+    <xs:attribute name="childAttribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SuppressingChildCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SuppressingChildDeclaredAttributeGroup" />
+    <xs:attribute name="notSuppressedAttribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:complexType name="ParentType">
+    <xs:attributeGroup ref="ParentDeclaredAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="ParentDeclaredAttributeGroup">
+    <xs:attribute name="suppressedAttribute" type="xs:string" />
+    <xs:attribute name="suppressedAttribute2" type="xs:string" />
+    <xs:attribute name="notSuppressedAttribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:complexType name="NotSuppressingChildType">
+    <xs:attributeGroup ref="NotSuppressingChildCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="NotSuppressingChildDeclaredAttributeGroup">
+    <xs:attribute name="childAttribute" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Documented child attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="NotSuppressingChildCumulativeAttributeGroup">
+    <xs:attributeGroup ref="NotSuppressingChildDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="ParentDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:group name="BElementGroup">
+    <xs:choice>
+      <xs:element name="B">
+        <xs:complexType>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="BElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="BElementGroupBase">
+    <xs:choice>
+      <xs:element name="GrandChildB">
+        <xs:annotation>
+          <xs:documentation>GrandChildB - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild used as B</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="GrandChildType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.GrandChild" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SuppressingChildB">
+        <xs:annotation>
+          <xs:documentation>SuppressingChildB - nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild used as B</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SuppressingChildType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.SuppressingChild" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:simpleType name="frankBoolean">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="frankInt">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:simpleType name="variableRef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="$\{[^\}]+\}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

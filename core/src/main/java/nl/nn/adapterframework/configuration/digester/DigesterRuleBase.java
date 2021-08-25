@@ -17,6 +17,7 @@ package nl.nn.adapterframework.configuration.digester;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
@@ -92,7 +93,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	/**
 	 * @return the currently handled object, aka TOP object
 	 */
-	protected final Object getBean() {
+	protected Object getBean() {
 		return getDigester().peek();
 	}
 
@@ -127,11 +128,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 
 		handleBean();
 
-		for (String attribute : map.keySet()) {
+		for (Entry<String, String> entry : map.entrySet()) {
+			String attribute = entry.getKey();
 			if (log.isTraceEnabled()) {
 				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
-			handleAttribute(attribute, map.get(attribute), map);
+			handleAttribute(attribute, entry.getValue(), map);
 		}
 	}
 

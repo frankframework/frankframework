@@ -13,17 +13,8 @@
     ],
     "paths":{
         "/simpleEndpointQueryParamTest":{
-            "post":{
+            "get":{
                 "summary":"get envelope adapter description",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/EnvelopeRequest"
-                            }
-                        }
-                    }
-                },
                 "parameters":[
                     {
                         "name":"parameter",
@@ -46,8 +37,17 @@
                     }
                 }
             },
-            "get":{
+            "post":{
                 "summary":"get envelope adapter description",
+                "requestBody":{
+                    "content":{
+                        "*/*":{
+                            "schema":{
+                                "$ref":"#/components/schemas/EnvelopeRequest"
+                            }
+                        }
+                    }
+                },
                 "parameters":[
                     {
                         "name":"parameter",

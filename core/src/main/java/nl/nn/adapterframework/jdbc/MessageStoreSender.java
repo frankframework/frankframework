@@ -79,6 +79,8 @@ import nl.nn.adapterframework.stream.Message;
  * </p>
  * 
  * @author Jaco de Groot
+ * 
+ * @ff.ignoreTypeMembership nl.nn.adapterframework.core.ITransactionalStorage
  */
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
 	

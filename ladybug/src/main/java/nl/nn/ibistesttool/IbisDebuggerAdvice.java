@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -159,6 +160,29 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[2] = message;
 		return (PipeRunResult)proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
+	}
+
+	public PipeRunResult debugValidatorInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws Throwable {
+		if (!isEnabled()) {
+			return (PipeRunResult)proceedingJoinPoint.proceed();
+		}
+		String messageId = pipeLineSession.getMessageId();
+		message = ibisDebugger.pipeInput(pipeLine, validator, messageId, message);
+		PipeRunResult pipeRunResult = null;
+
+		if(StringUtils.isNotEmpty(messageRoot)) {
+			ibisDebugger.showValue(messageId, "MessageRoot to be asserted", messageRoot);
+		}
+
+		try {
+			Object[] args = proceedingJoinPoint.getArgs();
+			args[2] = message;
+			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
+		} catch(Throwable throwable) {
+			throw ibisDebugger.pipeAbort(pipeLine, validator, messageId, throwable);
+		}
+		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, validator, messageId, pipeRunResult.getResult()));
+		return pipeRunResult;
 	}
 
 	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, boolean expectPipeRunResult) throws Throwable {

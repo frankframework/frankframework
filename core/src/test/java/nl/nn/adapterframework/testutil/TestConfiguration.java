@@ -10,6 +10,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.jdbc.migration.JunitTestClassLoaderWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
@@ -34,6 +35,7 @@ public class TestConfiguration extends Configuration {
 
 		this.mockBeanFactory = mockBeanFactory;
 
+		setClassLoader(new JunitTestClassLoaderWrapper()); //Add the test classpath
 		setConfigLocation("testConfigurationContext.xml");
 		setName(TEST_CONFIGURATION_NAME);
 		refresh();
