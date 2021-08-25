@@ -321,7 +321,7 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		//Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName, null, configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
+			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
 		}
 	}
 
@@ -375,13 +375,15 @@ public class IbisContext extends IbisApplicationContext {
 
 			currentConfigurationVersion = configuration.getVersion();
 
-			if(AppConstants.getInstance(classLoader).getBoolean("jdbc.migrator.active", false)) {
-				try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
+			// Execute any database changes before calling configure.
+			// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
+			if(AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
+				try(Migrator databaseMigrator = configuration.getBean("jdbcMigrator", Migrator.class)) {
 					databaseMigrator.setIbisContext(this);
-					databaseMigrator.configure(configuration);
+					databaseMigrator.configure();
 					databaseMigrator.update();
 				} catch (Exception e) {
-					log(currentConfigurationName, currentConfigurationVersion, e.getMessage(), MessageKeeperLevel.ERROR);
+					log(currentConfigurationName, currentConfigurationVersion, "unable to run JDBC migration", MessageKeeperLevel.ERROR, e);
 				}
 			}
 
@@ -426,7 +428,7 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagramManager.generate(configurations);
 			} catch (IOException e) {
-				log(ALL_CONFIGS_KEY, null, "error generating flow diagram", MessageKeeperLevel.WARN, e);
+				log("error generating flow diagram", MessageKeeperLevel.WARN, e);
 			}
 		}
 	}
@@ -437,6 +439,10 @@ public class IbisContext extends IbisApplicationContext {
 
 	private void log(String message, MessageKeeperLevel level) {
 		log(null, null, message, level, null, true);
+	}
+
+	public void log(String message, MessageKeeperLevel level, Exception e) {
+		log(null, null, message, level, e, true);
 	}
 
 	public void log(String configurationName, String configurationVersion, String message) {

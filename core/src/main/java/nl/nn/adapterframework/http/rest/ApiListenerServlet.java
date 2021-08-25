@@ -16,6 +16,9 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,18 +40,20 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -107,8 +112,16 @@ public class ApiListenerServlet extends HttpServletBase {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		String uri = request.getPathInfo();
-		String method = request.getMethod().toUpperCase();
 		String remoteUser = request.getRemoteUser();
+
+		HttpMethod method;
+		try {
+			method = EnumUtils.parse(HttpMethod.class, request.getMethod());
+		} catch (IllegalArgumentException e) {
+			response.setStatus(405);
+			log.warn(createAbortingMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
+			return;
+		}
 
 		if(log.isInfoEnabled()) {
 			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
@@ -153,6 +166,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+			messageContext.put("HttpMethod", method);
 	
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
@@ -168,7 +182,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * TODO check if request ip/origin header matches allowOrigin property
 				 */
 				String origin = request.getHeader("Origin");
-				if(method.equals("OPTIONS") || origin != null) {
+				if(method == HttpMethod.OPTIONS || origin != null) {
 					response.setHeader("Access-Control-Allow-Origin", CorsAllowOrigin);
 					String headers = request.getHeader("Access-Control-Request-Headers");
 					if (headers != null)
@@ -176,13 +190,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 		
 					StringBuilder methods = new StringBuilder();
-					for (String mtd : config.getMethods()) {
+					for (HttpMethod mtd : config.getMethods()) {
 						methods.append(", ").append(mtd);
 					}
 					response.setHeader("Access-Control-Allow-Methods", methods.toString());
 	
 					//Only cut off OPTIONS (aka preflight) requests
-					if(method.equals("OPTIONS")) {
+					if(method == HttpMethod.OPTIONS) {
 						response.setStatus(200);
 						if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method ["+method+"]");
 						return;
@@ -279,7 +293,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						return;
 					}
 				}
-	
+
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
 					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
@@ -292,7 +306,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					String cachedEtag = (String) cache.get(etagCacheKey);
 					log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
 	
-					if(method.equals("GET")) {
+					if(method == HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
@@ -384,9 +398,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 
 				/**
-				 * Map multipart parts into messageContext
+				 * Process the request through the pipeline.
+				 * If applicable, map multipart parts into messageContext
 				 */
-				Message body = new Message("");
+				Message body = null;
 				if (ServletFileUpload.isMultipartContent(request)) {
 					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
 					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
@@ -399,8 +414,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						//First part -> pipeline input when multipartBodyName=null
 						if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
 							//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
-							// TODO: avoid converting stream to string before turning it into a message. 
-							body = new Message(Misc.streamToString(item.getInputStream(),"\n",false));
+							body = parseContentAsMessage(item.getInputStream(), item.getContentType());
 						}
 	
 						XmlBuilder attachment = new XmlBuilder("part");
@@ -448,26 +462,20 @@ public class ApiListenerServlet extends HttpServletBase {
 						i++;
 					}
 					messageContext.put("multipartAttachments", attachments.toXML());
+				} else {
+					body = parseContentAsMessage(request.getInputStream(), request.getContentType());
 				}
-	
+
 				/**
 				 * Compile Allow header
 				 */
 				StringBuilder methods = new StringBuilder();
 				methods.append("OPTIONS, ");
-				for (String mtd : config.getMethods()) {
+				for (HttpMethod mtd : config.getMethods()) {
 					methods.append(mtd + ", ");
 				}
 				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
-	
-				/**
-				 * Process the request through the pipeline
-				 */
-				if (!ServletFileUpload.isMultipartContent(request)) {
-					// TODO: avoid converting stream to string before turning it into a message. 
-					body = new Message(Misc.streamToString(request.getInputStream(),"\n",false));
-				}
-	
+
 				String messageId = null;
 				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
 					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
@@ -476,15 +484,6 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				PipeLineSession.setListenerParameters(messageContext, messageId, null, null, null); //We're only using this method to keep setting id/cid/tcid uniform
-//				if(StringUtils.isNotEmpty(listener.getCookieParams())) {
-//					String params[] = listener.getCookieParams().split(",");
-//					for (String cookieParam : params) {
-//						Cookie cookie = CookieUtil.getCookie(request, cookieParam);
-//						if(cookie != null) {
-//							messageContext.put(cookieParam, cookie.getValue());
-//						}
-//					}
-//				}
 				Message result = listener.processRequest(null, body, messageContext);
 
 				/**
@@ -493,7 +492,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(messageContext.get("updateEtag", true)) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if(!Message.isEmpty(result) && method.equals("GET") && cleanPattern != null) { //If the data has changed, generate a new eTag
+					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
 						String eTag = ApiCacheManager.buildEtag(cleanPattern, result.asObject().hashCode()); //The eTag has nothing to do with the content and can be a random string.
 						log.debug("adding/overwriting etag with key["+etagCacheKey+"] value["+eTag+"]");
 						cache.put(etagCacheKey, eTag);
@@ -517,9 +516,20 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				String contentType = listener.getContentType();
+				nl.nn.adapterframework.http.rest.ContentType mimeType = listener.getContentType();
+				if(!Message.isEmpty(result) && StringUtils.isNotEmpty(result.getCharset())) {
+					try {
+						mimeType.setCharset(result.getCharset());
+					} catch (UnsupportedCharsetException e) {
+						log.warn("unable to set charset attribute on mimetype ["+mimeType.getContentType()+"]", e);
+					}
+				}
+				String contentType = mimeType.getContentType();
 				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
-					contentType = messageContext.get("contentType", contentType);
+					Message parsedContentType = messageContext.getMessage("contentType");
+					if(!Message.isEmpty(parsedContentType)) {
+						contentType = parsedContentType.asString();
+					}
 				}
 				response.setHeader("Content-Type", contentType);
 
@@ -555,6 +565,21 @@ public class ApiListenerServlet extends HttpServletBase {
 				}
 			}
 		}
+	}
+
+	private Message parseContentAsMessage(InputStream inputStream, String contentType) {
+		String charset = null;
+		if(StringUtils.isNotEmpty(contentType)) {
+			try {
+				ContentType parsedContentType = ContentType.parse(contentType);
+				Charset parsedCharset = parsedContentType.getCharset();
+				charset = parsedCharset.displayName();
+			} catch (Exception e) {
+				//For now just log when we cannot parse, perhaps we should abort the request?
+				log.warn("unable to parse charset from contentType [{}]", contentType, e);
+			}
+		}
+		return new Message(inputStream, charset);
 	}
 
 	@Override

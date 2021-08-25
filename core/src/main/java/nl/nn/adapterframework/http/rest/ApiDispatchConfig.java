@@ -18,48 +18,47 @@ package nl.nn.adapterframework.http.rest;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 
 public class ApiDispatchConfig {
 	private String uriPattern;
-	private Map<String, ApiListener> methods = new ConcurrentHashMap<String, ApiListener>();
+	private Map<HttpMethod, ApiListener> methods = new ConcurrentHashMap<>();
 
 	public ApiDispatchConfig(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
 
-	public synchronized void register(String method, ApiListener listener) throws ListenerException {
-		method = method.toUpperCase();
+	public synchronized void register(HttpMethod method, ApiListener listener) throws ListenerException {
 		if(methods.containsKey(method))
 			throw new ListenerException("ApiListener for uriPattern ["+uriPattern+"] method ["+method+"] has already registered");
 		methods.put(method, listener);
 	}
 
-	public ApiListener getApiListener(String method) {
-		method = method.toUpperCase();
+	public ApiListener getApiListener(HttpMethod method) {
 		if(!methods.containsKey(method))
 			return null;
 
 		return methods.get(method);
 	}
 
-	public void remove(String method) {
-		method = method.toUpperCase();
+	public void remove(HttpMethod method) {
 		methods.remove(method);
 	}
 
-	public Set<String> getMethods() {
-		return Collections.unmodifiableSet(methods.keySet());
+	public Set<HttpMethod> getMethods() {
+		TreeSet<HttpMethod> sortedSet = new TreeSet<>(methods.keySet());
+		return Collections.unmodifiableSet(sortedSet);
 	}
 
 	public void clear() {
 		methods.clear();
 	}
 
-	public boolean hasMethod(String method) {
-		method = method.toUpperCase();
+	public boolean hasMethod(HttpMethod method) {
 		return methods.containsKey(method);
 	}
 
