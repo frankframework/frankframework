@@ -65,28 +65,19 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
  */
 public class AttributesFromInterfaceRejector {
 	private final String rejectedInterface;
-
-	private static class Inheriteds {
-		Set<String> rejects;
-		Set<String> retains;
-	}
+	private final Set<String> rejectableAttributes;
 
 	/**
-	 * @param rejectedInterface The argument of an ff.ignoreTypeMembership annotation.
+	 * @param rejectedInterfaceClazz The FrankClass corresponding to the argument of an ff.ignoreTypeMembership annotation.
 	 */
-	AttributesFromInterfaceRejector(String rejectedInterface) {
-		this.rejectedInterface = rejectedInterface;
+	AttributesFromInterfaceRejector(FrankClass rejectedInterfaceClazz) {
+		this.rejectedInterface = rejectedInterfaceClazz.getName();
+		rejectableAttributes = getAttributeNamesOf(rejectedInterfaceClazz);
 	}
 
-	Set<String> getRetains(FrankClass clazz) {
-		if(rejectedInterface.equals(clazz.getName())) {
-			return new HashSet<>();
-		} else {
-			Inheriteds inheriteds = getInherits(clazz);
-			inheriteds.retains.addAll(getAttributeNamesOf(clazz));
-			inheriteds.retains.removeAll(inheriteds.rejects);
-			return inheriteds.retains;
-		}
+	Set<String> getAttributeNamesOf(FrankClass clazz) {
+		Map<String, FrankMethod> attributesByName = FrankDocModel.getAttributeToMethodMap(clazz.getDeclaredMethods(), "set");
+		return new HashSet<>(attributesByName.keySet());
 	}
 
 	/**
@@ -94,12 +85,23 @@ public class AttributesFromInterfaceRejector {
 	 * @return The names of the excluded attributes.
 	 */
 	public Set<String> getRejects(FrankClass clazz) {
-		if(rejectedInterface.equals(clazz.getName())) {
-			return getAttributeNamesOf(clazz);
+		if(! implementsRejectedInterface(clazz)) {
+			return new HashSet<>();
 		} else {
-			Inheriteds inheriteds = getInherits(clazz);
-			inheriteds.rejects.removeAll(inheriteds.retains);
-			return inheriteds.rejects;
+			return getRejectsUnchecked(clazz);
+		}
+	}
+
+	private boolean implementsRejectedInterface(FrankClass clazz) {
+		if(clazz.getName().equals(rejectedInterface)) {
+			return true;
+		} else {
+			List<FrankClass> parents = getSuperClassAndInheritedInterfaces(clazz);
+			if(parents.isEmpty()) {
+				return false;
+			} else {
+				return parents.stream().anyMatch(c -> implementsRejectedInterface(c));
+			}
 		}
 	}
 
@@ -111,19 +113,25 @@ public class AttributesFromInterfaceRejector {
 		return result;
 	}
 
-	private Inheriteds getInherits(FrankClass clazz) {
-		Inheriteds result = new Inheriteds();
-		result.rejects = new HashSet<>();
-		result.retains = new HashSet<>();
-		for(FrankClass superClazz: getSuperClassAndInheritedInterfaces(clazz)) {
-			result.rejects.addAll(getRejects(superClazz));
-			result.retains.addAll(getRetains(superClazz));
+	private Set<String> getRejectsUnchecked(FrankClass clazz) {
+		if(clazz.getName().equals(rejectedInterface)) {
+			return new HashSet<>(rejectableAttributes);
+		} else {
+			List<FrankClass> parents = getSuperClassAndInheritedInterfaces(clazz);
+			if(parents.isEmpty()) {
+				Set<String> result = new HashSet<>(rejectableAttributes);
+				result.removeAll(getAttributeNamesOf(clazz));
+				return result;
+			} else {
+				return parents.stream()
+						.map(c -> getRejectsUnchecked(c)).reduce(new HashSet<>(rejectableAttributes), AttributesFromInterfaceRejector::intersect);
+			}
 		}
-		return result;
 	}
 
-	Set<String> getAttributeNamesOf(FrankClass clazz) {
-		Map<String, FrankMethod> attributesByName = FrankDocModel.getAttributeToMethodMap(clazz.getDeclaredMethods(), "set");
-		return new HashSet<>(attributesByName.keySet());
+	private static Set<String> intersect(Set<String> s1, Set<String> s2) {
+		Set<String> result = new HashSet<>(s1);
+		result.retainAll(s2);
+		return result;
 	}
 }
