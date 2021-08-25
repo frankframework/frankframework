@@ -100,7 +100,7 @@ public class AttributesFromInterfaceRejector {
 			if(parents.isEmpty()) {
 				return false;
 			} else {
-				return parents.stream().anyMatch(c -> implementsRejectedInterface(c));
+				return parents.stream().anyMatch(p -> implementsRejectedInterface(p));
 			}
 		}
 	}
@@ -124,9 +124,9 @@ public class AttributesFromInterfaceRejector {
 				return result;
 			} else {
 				Set<String> result = parents.stream()
-						.map(c -> getRejectsUnchecked(c)).reduce(new HashSet<>(rejectableAttributes), AttributesFromInterfaceRejector::intersect);
+						.map(p -> getRejectsUnchecked(p)).reduce(new HashSet<>(rejectableAttributes), AttributesFromInterfaceRejector::intersect);
 				if(! implementsRejectedInterface(clazz)) {
-					// If interfaces from which we want to retain attributes extends another interface
+					// If an interfaces from which we want to retain attributes extends another interface
 					// then we want to retain all attributes that are declared or inherited.
 					result.removeAll(getAttributeNamesOf(clazz));
 				}

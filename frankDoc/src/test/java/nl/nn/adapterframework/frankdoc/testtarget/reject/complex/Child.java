@@ -11,7 +11,9 @@ public class Child implements ISuperseded, IJoin, INew2 {
 	public void setSuperseded2(String value) {
 	}
 
-	// Does not produce attribute because it is in ISuperseded
+	// Does not produce attribute because it is in ISuperseded. It
+	// is also in IJoin, but that does not count because IJoin extends
+	// ISuperseded.
 	@Override
 	public void setSuperseded3(String value) {
 	}
