@@ -316,8 +316,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 			IFileSystemAction action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
-				action = EnumUtils.parse(Action.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getActionEnum().toString()));
-				if(action == null) {
+				try {
+					action = EnumUtils.parse(Action.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getActionEnum()+""));
+				} catch(IllegalArgumentException e) {
 					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 				}
 				checkConfiguration(action);
