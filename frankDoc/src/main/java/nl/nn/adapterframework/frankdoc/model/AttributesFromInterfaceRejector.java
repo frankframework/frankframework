@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This class calculates what attributes are excluded because of an ff.ignoreTypeMembership JavaDoc tag.
@@ -64,6 +67,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
  *
  */
 public class AttributesFromInterfaceRejector {
+	private static Logger log = LogUtil.getLogger(AttributesFromInterfaceRejector.class);
+
 	private final String rejectedInterface;
 	private final Set<String> rejectableAttributes;
 
@@ -86,6 +91,7 @@ public class AttributesFromInterfaceRejector {
 	 */
 	public Set<String> getRejects(FrankClass clazz) {
 		if(! implementsRejectedInterface(clazz)) {
+			log.warn("JavaDoc tag {} has no effect because [{}] does not implement [{}]", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, clazz.getName(), rejectedInterface);
 			return new HashSet<>();
 		} else {
 			return getRejectsUnchecked(clazz);
