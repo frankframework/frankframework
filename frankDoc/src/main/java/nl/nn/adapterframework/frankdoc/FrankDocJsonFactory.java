@@ -222,7 +222,7 @@ public class FrankDocJsonFactory {
 	private void addDescription(JsonObjectBuilder builder, String value) {
 		if(! StringUtils.isBlank(value)) {
 			builder.add(DESCRIPTION, value.replaceAll("\"", "\\\\\\\""));
-		}		
+		}
 	}
 
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
