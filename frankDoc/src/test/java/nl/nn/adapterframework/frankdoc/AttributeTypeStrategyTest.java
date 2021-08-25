@@ -66,7 +66,10 @@ public class AttributeTypeStrategyTest {
 			{"RestrictedAttribute", getEnumTestXml("TWO"), true, true},
 			{"RestrictedAttributeMixedCase1", getEnumTestXml("Two"), false, true},
 			{"RestrictedAttributeMixedCase2", getEnumTestXml("twO"), false, true},
-			{"InvalidValueRestrictedAttribute", getEnumTestXml("xxx"), false, false}
+			{"InvalidValueRestrictedAttribute", getEnumTestXml("xxx"), false, false},
+			{"ArbitraryString", getStringTestXml("xxx"), true, true},
+			{"StringContainingVariableRef", getStringTestXml("${myVar}true"), true, true},
+			{"VariableRefAsString", getStringTestXml("${myVar}"), true, true},
 		});
 	}
 
@@ -76,6 +79,10 @@ public class AttributeTypeStrategyTest {
 
 	private static String getIntTestXml(String value) {
 		return String.format("<myElement intAttr=\"%s\"/>", value);
+	}
+
+	private static String getStringTestXml(String value) {
+		return String.format("<myElement stringAttr=\"%s\"/>", value);
 	}
 
 	private static String getEnumTestXml(String value) {
@@ -116,6 +123,7 @@ public class AttributeTypeStrategyTest {
 		XmlBuilder complexType = addComplexType(element);
 		attributeTypeStrategy.addAttribute(complexType, "boolAttr", AttributeType.BOOL);
 		attributeTypeStrategy.addAttribute(complexType, "intAttr", AttributeType.INT);
+		attributeTypeStrategy.addAttribute(complexType, "stringAttr", AttributeType.STRING);
 		attributeTypeStrategy.addAttributeActive(complexType);
 		attributeTypeStrategy.addRestrictedAttribute(complexType, enumTypedAttribute);
 		attributeTypeStrategy.createHelperTypes().forEach(h -> schema.addSubElement(h));
