@@ -70,7 +70,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 			accessKey = properties.getProperty("accessKey");
 			secretKey = properties.getProperty("secretKey");
 			proxyHost = properties.getProperty("proxyHost");
-			if (properties.getProperty("proxyHost") != null) {
+			if (properties.getProperty("proxyPort") != null) {
 				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
 			}
 		} catch (Exception e) {
@@ -144,15 +144,15 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		fileSystemSender.setBucketName(bucketName);
 		fileSystemSender.setDestinationBucketName(bucketName);
 
-		fileSystemSender.setAction("copy");
+		fileSystemSender.setAction("COPYS3OBJECT");
 		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
 		PipeLineSession session = new PipeLineSession();
 		String dest = "copiedObject.txt";
 		session.put("destinationFileName", dest);
 
-		Parameter p = new Parameter();
-		p.setName("destinationFileName");
-		p.setSessionKey("destinationFileName");
+//		Parameter p = new Parameter();
+//		p.setName("destinationFileName");
+//		p.setSessionKey("destinationFileName");
 
 		if (_fileExists(dest)) {
 			_deleteFile(null, dest);

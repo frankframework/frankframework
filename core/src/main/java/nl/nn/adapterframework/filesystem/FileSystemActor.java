@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -106,11 +107,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String BASE64_ENCODE="encode";
 	public final String BASE64_DECODE="decode";
 	
-	public final Action[] ACTIONS_BASIC= {Action.LIST, Action.INFO, Action.READ, Action.DOWNLOAD, Action.READDELETE, Action.MOVE, Action.COPY, Action.DELETE, Action.MKDIR, Action.RMDIR};
-	public final Action[] ACTIONS_WRITABLE_FS= {Action.WRITE, Action.UPLOAD, Action.APPEND, Action.RENAME};
-	public final Action[] ACTIONS_MAIL_FS= {Action.FORWARD};
+	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
+	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
-	private IFileSystemAction action;
+	private FileSystemAction action;
 	private @Getter String filename;
 	private @Getter String destination;
 	private @Getter String inputFolder; // folder for action=list
@@ -127,7 +127,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter boolean writeLineSeparator=false;
 	private @Getter String charset;
 
-	private Set<IFileSystemAction> actions = new LinkedHashSet<IFileSystemAction>(Arrays.asList(ACTIONS_BASIC));
+	private Set<FileSystemAction> actions = new LinkedHashSet<FileSystemAction>(Arrays.asList(FileSystemAction.values()));
 	
 	private INamedObject owner;
 	private FS fileSystem;
@@ -135,7 +135,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private byte[] eolArray=null;
 
-	public enum Action implements IFileSystemAction {
+	public enum FileSystemAction implements DocumentedEnum {
 		LIST,
 		INFO,
 		READ,
@@ -150,7 +150,18 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		UPLOAD,
 		APPEND,
 		RENAME,
-		FORWARD;
+		FORWARD,
+		/** AmazonS3Sender specific action */
+		CREATEBUCKET,
+		/** AmazonS3Sender specific action */
+		DELETEBUCKET,
+		/** AmazonS3Sender specific action */
+		RESTORE,
+		/** AmazonS3Sender specific action */
+		COPYS3OBJECT,
+		/** FileSystemSenderWithAttachments specific action */
+		LISTATTACHMENTS;
+
 	}
 
 	public void configure(FS fileSystem, ParameterList parameterList, IConfigurable owner) throws ConfigurationException {
@@ -171,13 +182,13 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 
 		if (action != null) {
-			if (getActionEnum() == Action.DOWNLOAD) {
-				ConfigurationWarnings.add(owner, log, "action ["+Action.DOWNLOAD+"] has been replaced with ["+Action.READ+"]");
-				action=Action.READ;
+			if (getActionEnum() == FileSystemAction.DOWNLOAD) {
+				ConfigurationWarnings.add(owner, log, "action ["+FileSystemAction.DOWNLOAD+"] has been replaced with ["+FileSystemAction.READ+"]");
+				action=FileSystemAction.READ;
 			}
-			if (getActionEnum()==Action.UPLOAD) {
-				ConfigurationWarnings.add(owner, log, "action ["+Action.UPLOAD+"] has been replaced with ["+Action.WRITE+"]");
-				action=Action.WRITE;
+			if (getActionEnum()==FileSystemAction.UPLOAD) {
+				ConfigurationWarnings.add(owner, log, "action ["+FileSystemAction.UPLOAD+"] has been replaced with ["+FileSystemAction.WRITE+"]");
+				action=FileSystemAction.WRITE;
 			}
 			checkConfiguration(getActionEnum());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
@@ -203,16 +214,16 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
 
-	private void checkConfiguration(IFileSystemAction action2) throws ConfigurationException {
+	private void checkConfiguration(FileSystemAction action2) throws ConfigurationException {
 		if (!actions.contains(action2))
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessary parameters are available
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
-		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, Action.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.MOVE,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.COPY,    PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.RENAME,  PARAMETER_DESTINATION, null, "destination", getDestination());
+		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 	
 //	protected void actionRequiresParameter(INamedObject owner, ParameterList parameterList, String action, String parameter) throws ConfigurationException {
@@ -222,7 +233,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action, parameter, null, null, null);
 //	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, IFileSystemAction configuredAction, IFileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction.equals(action)) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
@@ -234,7 +245,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	public void open() throws FileSystemException {
-		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && Action.MKDIR!=getActionEnum()) {
+		if (StringUtils.isNotEmpty(getInputFolder()) && !fileSystem.folderExists(getInputFolder()) && FileSystemAction.MKDIR!=getActionEnum()) {
 			if (isCreateFolder()) {
 				log.debug("creating inputFolder ["+getInputFolder()+"]");
 				fileSystem.createFolder(getInputFolder());
@@ -314,10 +325,10 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				input.closeOnCloseOf(session); // don't know if the input will be used
 			}
 
-			IFileSystemAction action;
+			FileSystemAction action;
 			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
 				try {
-					action = EnumUtils.parse(Action.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getActionEnum()+""));
+					action = EnumUtils.parse(FileSystemAction.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getActionEnum()+""));
 				} catch(IllegalArgumentException e) {
 					throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 				}
@@ -325,7 +336,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			} else {
 				action = getActionEnum();
 			}
-			switch((Action)action) {
+			switch(action) {
 				case DELETE: {
 					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
 				}
@@ -390,7 +401,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case WRITE: {
 					F file=getFile(input, pvl);
 					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), Action.WRITE.getLabel());
+						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE.getLabel());
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
@@ -537,7 +548,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	
 	protected boolean canProvideOutputStream() {
-		return (Action.WRITE == getActionEnum() || Action.APPEND==getActionEnum()) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
+		return (FileSystemAction.WRITE == getActionEnum() || FileSystemAction.APPEND==getActionEnum()) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
 	}
 
 	@Override
@@ -563,7 +574,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		try {
 			F file=getFile(null, pvl);
 			OutputStream out;
-			if (Action.APPEND==getActionEnum()) {
+			if (FileSystemAction.APPEND==getActionEnum()) {
 				out = ((IWritableFileSystem<F>)fileSystem).appendFile(file);
 			} else {
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
@@ -617,15 +628,15 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 
 
-	protected void addActions(List<IFileSystemAction> specificActions) {
+	protected void addActions(List<FileSystemAction> specificActions) {
 		actions.addAll(specificActions);
 	}
 
 	@IbisDoc({"1", "If parameter ["+PARAMETER_ACTION+"] is set, then the attribute action value will be overridden with the value of the parameter.", "" })
 	public void setAction(String action) {
-		this.action = EnumUtils.parse(Action.class, action);
+		this.action = EnumUtils.parse(FileSystemAction.class, action);
 	}
-	public IFileSystemAction getActionEnum() {
+	public FileSystemAction getActionEnum() {
 		return action;
 	}
 

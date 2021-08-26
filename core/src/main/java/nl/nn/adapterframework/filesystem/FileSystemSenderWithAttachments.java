@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -48,19 +49,9 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 	private boolean attachmentsAsSessionKeys=false;
 
-	private enum FileSystemSenderWithAttachmentsAction implements IFileSystemAction {
-		LISTATTACHMENTS
-	}
-	
-	@Override
-	public void configure() throws ConfigurationException {
-		addActions(Arrays.asList(FileSystemSenderWithAttachmentsAction.values()));
-		super.configure();
-	}
-	
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (getActionEnum()!=FileSystemSenderWithAttachmentsAction.LISTATTACHMENTS) {
+		if (getActionEnum()!=FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session, next);
 		} else {
 

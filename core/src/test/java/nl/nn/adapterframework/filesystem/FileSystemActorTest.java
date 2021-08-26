@@ -26,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.filesystem.FileSystemActor.Action;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -188,7 +188,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInvalidAction() throws Exception {
-		thrown.expectMessage("unknown action value [xxx]. Must be one of "+Arrays.asList(Action.values()));
+		thrown.expectMessage("unknown fileSystemAction value [xxx]. Must be one of "+Arrays.asList(FileSystemAction.values()));
 //		thrown.expectMessage("fake owner of FileSystemActor"); 
 		actor.setAction("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -1100,7 +1100,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
 		actor.setAction("move");
-		thrown.expectMessage("the ["+Action.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
+		thrown.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
 		actor.configure(fileSystem,null,owner);
 	}
 	
@@ -1157,7 +1157,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process ["+Action.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemActorMoveActionTest(null,"folder",false,false);
 	}
 	@Test

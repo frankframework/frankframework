@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystemAction;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -51,31 +49,20 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
-	private List<IFileSystemAction> specificActions = Arrays.asList(AmazonS3SenderAction.values());
-
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
-		addActions(specificActions);
 	}
 
-	public enum AmazonS3SenderAction implements IFileSystemAction {
-		CREATEBUCKET,
-		DELETEBUCKET,
-		COPY,
-		RESTORE
-	}
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-
-		if (getActionEnum()==AmazonS3SenderAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
+		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
 				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
 						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
 			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
 					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
 		}
-		else if (getActionEnum()==AmazonS3SenderAction.COPY) {
+		else if (getActionEnum()==FileSystemAction.COPYS3OBJECT) {
 			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
 					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
 				throw new ConfigurationException(
@@ -89,7 +76,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
 						+ "] please use following supported storage classes "
 						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
-		} else if (getActionEnum()==AmazonS3SenderAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
+		} else if (getActionEnum()==FileSystemAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
 				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
 			throw new ConfigurationException(
 					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
@@ -99,9 +86,6 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (!specificActions.contains(getActionEnum())) {
-			return super.sendMessage(message, session, next);
-		}
 
 		String result = null;
 		String fileName;
@@ -112,22 +96,22 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		}
 
 		ParameterValueList pvl = null;
-		if (paramList != null) {
+		if (getParameterList() != null) {
 			try {
-				pvl = paramList.getValues(message, session);
+				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
 			}
 		}
 
-		switch((AmazonS3SenderAction)getActionEnum()) {
+		switch(getActionEnum()) {
 			case CREATEBUCKET: 
 				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
 				break;
 			case DELETEBUCKET:
 				result = getFileSystem().deleteBucket();
 				break;
-			case COPY:
+			case COPYS3OBJECT:
 				if (pvl.getParameterValue("destinationFileName") != null) {
 					if (pvl.getParameterValue("destinationFileName").getValue() != null) {
 						String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
@@ -142,6 +126,8 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 			case RESTORE:
 				result = getFileSystem().restoreObject(fileName);
 				break;
+			default:
+				return super.sendMessage(message, session, next);
 		}
 
 		return new PipeRunResult(null, result);
