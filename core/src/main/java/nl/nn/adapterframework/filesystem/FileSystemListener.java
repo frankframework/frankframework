@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -80,7 +82,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter boolean overwrite = false;
 	private @Getter int numberOfBackups=0;
 	private @Getter boolean fileTimeSensitive=false;
-	private @Getter String messageType="path";
+	private MessageType messageType=MessageType.PATH;
 	private @Getter String messageIdPropertyKey = null;
 	private @Getter String storeMetadataInSessionKey;
 	
@@ -99,6 +101,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	protected abstract FS createFileSystem();
 
+	public enum MessageType implements DocumentedEnum {
+		PATH, NAME, CONTENTS, MIME, EMAIL,
+	}
 	public FileSystemListener() {
 		fileSystem=createFileSystem();
 	}
@@ -275,23 +280,23 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public Message extractMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
 		try {
-			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
+			if (MessageType.NAME == getMessageTypeEnum()) {
 				return new Message(getFileSystem().getName(rawMessage));
 			}
-			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
+			if (MessageType.PATH == getMessageTypeEnum()) {
 				return new Message(getFileSystem().getCanonicalName(rawMessage));
 			}
-			if (getMessageType().equalsIgnoreCase("contents")) {
+			if (MessageType.CONTENTS == getMessageTypeEnum()) {
 				return getFileSystem().readFile(rawMessage, getCharset());
 			}
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {
-				Object result=attributes.get(getMessageType());
+				Object result=attributes.get(getMessageTypeEnum().getLabel().toLowerCase());
 				if (result!=null) {
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute ["+getMessageType()+"] found for file ["+getFileSystem().getName(rawMessage)+"]");
+			log.warn("no attribute ["+getMessageTypeEnum().getLabel()+"] found for file ["+getFileSystem().getName(rawMessage)+"]");
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -329,10 +334,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}
-				if (!"path".equals(getMessageType())) {
+				if (MessageType.PATH == getMessageTypeEnum()) {
 					threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
 				}
-				if (!"name".equals(getMessageType())) {
+				if (MessageType.NAME == getMessageTypeEnum()) {
 					threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 				}
 			}
@@ -498,7 +503,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@IbisDoc({"11", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
-		this.messageType = messageType;
+		this.messageType = EnumUtils.parse(MessageType.class, messageType);
+	}
+	public MessageType getMessageTypeEnum() {
+		return messageType;
 	}
 
 	@IbisDoc({"12", "If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})

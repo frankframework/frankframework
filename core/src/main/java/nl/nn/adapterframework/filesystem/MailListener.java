@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,28 +58,25 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
 
-	public final String EMAIL_MESSAGE_TYPE="email";
-	public final String MIME_MESSAGE_TYPE="mime";
-	
 	private String storeEmailAsStreamInSessionKey;
 	private boolean simple = false;
 	
 	{
-		setMessageType(EMAIL_MESSAGE_TYPE);
+		setMessageType(MessageType.EMAIL.getLabel());
 		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 	
 
 	@Override
 	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
+		if (MessageType.MIME == getMessageTypeEnum()) {
 			try {
 				return getFileSystem().getMimeContent(rawMessage);
 			} catch (FileSystemException e) {
 				throw new ListenerException("cannot get MimeContents",e);
 			}
 		}
-		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
+		if (MessageType.EMAIL != getMessageTypeEnum()) {
 			return super.extractMessage(rawMessage, threadContext);
 		}
 		XmlWriter writer = new XmlWriter();

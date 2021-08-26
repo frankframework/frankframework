@@ -45,6 +45,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -107,6 +108,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String BASE64_ENCODE="encode";
 	public final String BASE64_DECODE="decode";
 	
+	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
 	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
 	public final FileSystemAction[] ACTIONS_MAIL_FS= {FileSystemAction.FORWARD};
 
@@ -127,7 +129,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter boolean writeLineSeparator=false;
 	private @Getter String charset;
 
-	private Set<FileSystemAction> actions = new LinkedHashSet<FileSystemAction>(Arrays.asList(FileSystemAction.values()));
+	private Set<FileSystemAction> actions = new LinkedHashSet<FileSystemAction>(Arrays.asList(ACTIONS_BASIC));
 	
 	private INamedObject owner;
 	private FS fileSystem;
@@ -136,31 +138,36 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private byte[] eolArray=null;
 
 	public enum FileSystemAction implements DocumentedEnum {
-		LIST,
-		INFO,
-		READ,
-		DOWNLOAD,
-		READDELETE,
-		MOVE,
-		COPY,
-		DELETE,
-		MKDIR,
-		RMDIR,
-		WRITE,
-		UPLOAD,
-		APPEND,
-		RENAME,
-		FORWARD,
-		/** AmazonS3Sender specific action */
-		CREATEBUCKET,
-		/** AmazonS3Sender specific action */
-		DELETEBUCKET,
-		/** AmazonS3Sender specific action */
-		RESTORE,
-		/** AmazonS3Sender specific action */
-		COPYS3OBJECT,
-		/** FileSystemSenderWithAttachments specific action */
-		LISTATTACHMENTS;
+		@EnumLabel("list") LIST,
+		@EnumLabel("info") INFO,
+		@EnumLabel("read") READ,
+		@EnumLabel("download") DOWNLOAD,
+		@EnumLabel("readDelete") READDELETE,
+		@EnumLabel("move") MOVE,
+		@EnumLabel("copy") COPY,
+		@EnumLabel("delete") DELETE,
+		@EnumLabel("mkdir") MKDIR,
+		@EnumLabel("rmdir") RMDIR,
+		@EnumLabel("write") WRITE,
+		@EnumLabel("upload") UPLOAD,
+		@EnumLabel("append") APPEND,
+		@EnumLabel("rename") RENAME,
+		@EnumLabel("forward") FORWARD,
+
+		/** Specific to AmazonS3Sender */
+		@EnumLabel("createBucket") CREATEBUCKET,
+
+		/** Specific to AmazonS3Sender */
+		@EnumLabel("deleteBucket") DELETEBUCKET,
+
+		/** Specific to AmazonS3Sender */
+		@EnumLabel("restore") RESTORE,
+
+		/** Specific to AmazonS3Sender */
+		@EnumLabel("copyS3Object") COPYS3OBJECT,
+
+		/** Specific to FileSystemSenderWithAttachments */
+		@EnumLabel("listAttachments") LISTATTACHMENTS;
 
 	}
 
@@ -401,7 +408,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case WRITE: {
 					F file=getFile(input, pvl);
 					if (fileSystem.exists(file)) {
-						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE.getLabel());
+						FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
 						file=getFile(input, pvl); // reobtain the file, as the object itself may have changed because of the rollover
 					}
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {

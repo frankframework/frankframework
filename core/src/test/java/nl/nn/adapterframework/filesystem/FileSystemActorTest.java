@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
@@ -188,7 +189,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInvalidAction() throws Exception {
-		thrown.expectMessage("unknown fileSystemAction value [xxx]. Must be one of "+Arrays.asList(FileSystemAction.values()));
+		thrown.expectMessage("unknown fileSystemAction value [xxx]. Must be one of "+Arrays.stream(FileSystemAction.values()).map(v->v.getLabel()).collect(Collectors.toList()));
 //		thrown.expectMessage("fake owner of FileSystemActor"); 
 		actor.setAction("xxx");
 		actor.configure(fileSystem,null,owner);

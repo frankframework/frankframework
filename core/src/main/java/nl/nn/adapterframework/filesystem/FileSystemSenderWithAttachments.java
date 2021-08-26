@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,9 +45,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
 	
-	public final String[] ACTIONS_FS_WITH_ATTACHMENTS= {"listAttachments"};
+	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
 	private boolean attachmentsAsSessionKeys=false;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		addActions(Arrays.asList(ACTIONS_FS_WITH_ATTACHMENTS));
+		super.configure();
+	}
 
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {

@@ -256,7 +256,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
 		assertThat(id,endsWith(filename));
 		
-		String filenameAttribute = (String)threadContext.get("filename");
+		String filenameAttribute = (String)threadContext.get("filepath");
 		assertThat(filenameAttribute, containsString(filename));
 		
 	}
@@ -279,7 +279,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
 		assertThat(id,endsWith(filename));
 		
-		String filepathAttribute = (String)threadContext.get("filepath");
+		String filepathAttribute = (String)threadContext.get("filename");
 		assertThat(filepathAttribute, containsString(filename));
 	}
 

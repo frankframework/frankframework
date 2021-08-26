@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,8 +51,11 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
+	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
+	
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
+		addActions(specificActions);
 	}
 
 	@Override

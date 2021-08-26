@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,7 +71,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 			accessKey = properties.getProperty("accessKey");
 			secretKey = properties.getProperty("secretKey");
 			proxyHost = properties.getProperty("proxyHost");
-			if (properties.getProperty("proxyPort") != null) {
+			if (StringUtils.isNotEmpty(properties.getProperty("proxyPort"))) {
 				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
 			}
 		} catch (Exception e) {
