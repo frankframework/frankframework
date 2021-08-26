@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +24,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -159,11 +159,7 @@ public class ConfigChildSet {
 
 	public Optional<String> getGenericElementOptionDefault(Predicate<FrankElement> elementFilter) {
 		List<String> candidates = ConfigChild.getElementRoleStream(configChildren)
-				.flatMap(e -> Arrays.asList(
-						Optional.ofNullable(e.getDefaultElementOptionConflict()).map(FrankElement::getFullName),
-						Optional.ofNullable(e.getDefaultElement())).stream())
-				.filter(Optional::isPresent)
-				.map(Optional::get)
+				.flatMap(ConfigChildSet::getCandidatesForGenericElementOptionDefault)
 				.collect(Collectors.toList());
 		if(candidates.size() == 1) {
 			return Optional.of(candidates.get(0));
@@ -174,6 +170,15 @@ public class ConfigChildSet {
 			}
 			return Optional.empty();
 		}
+	}
+
+	private static Stream<String> getCandidatesForGenericElementOptionDefault(ElementRole e) {
+		List<String> result = new ArrayList<>();
+		String forJavaDoc = e.getDefaultElement();
+		CollectionUtils.addIgnoreNull(result, forJavaDoc);
+		FrankElement forConflictElement = e.getDefaultElementOptionConflict();
+		Optional.ofNullable(forConflictElement).map(FrankElement::getFullName).ifPresent(result::add);
+		return result.stream();
 	}
 
 	@Override
