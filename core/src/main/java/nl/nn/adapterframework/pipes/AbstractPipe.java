@@ -190,50 +190,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public abstract PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException;
 
 	/**
-	 * looks up a key in the pipeForward hashtable. <br/>
-	 * A typical use would be on return from a Pipe: <br/>
-	 * <code><pre>
-	 * return new PipeRunResult(findForward("success"), result);
-	 * </pre></code>
-	 * In the pipeForward hashtable are available:
-	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
-	 * <li> All global forwards defined in xml under the PipeLine element</li>
-	 * <li> All pipenames with their (identical) path</li>
-	 * </ul>
-	 * Therefore, you can directly jump to another pipe, although this is not recommended
-	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
-	 * may come in handy for switcher-pipes.<br/><br/>
-	 * @param forward   Name of the forward
-	 * @return PipeForward
-	 */
-	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
-	public PipeForward findForward(String forward){
-		if (StringUtils.isEmpty(forward)) {
-			return null;
-		}
-		return pipeForwards.get(forward);
-	}
-
-	@Override
-	public Map<String, PipeForward> getForwards(){
-		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
-		PipeLine pipeline = getPipeLine();
-		if (pipeline==null) {
-			return null;
-		}
-
-		//Omit global pipeline-forwards and only return local pipe-forwards
-		List<IPipe> pipes = pipeline.getPipes();
-		for (int i=0; i<pipes.size(); i++) {
-			String pipeName = pipes.get(i).getName();
-			if(forwards.containsKey(pipeName))
-				forwards.remove(pipeName);
-		}
-		return forwards;
-	}
-
-
-	/**
 	 * Convenience method for building up log statements.
 	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
 	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
@@ -247,26 +203,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			sb.append("msgId ["+session.getMessageId()+"] ");
 		}
 		return sb.toString();
-	}
-
-	@Override
-	@IbisDoc({"30"})
-	public void registerForward(PipeForward forward) throws ConfigurationException {
-		String forwardName = forward.getName();
-		if(forwardName != null) {
-			PipeForward current = pipeForwards.get(forwardName);
-			if (current==null){
-				pipeForwards.put(forwardName, forward);
-			} else {
-				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
-					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
-				} else {
-					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
-				}
-			}
-		} else {
-			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
-		}
 	}
 
 	@Override
@@ -322,6 +258,69 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 */
 	public ParameterList getParameterList() {
 		return parameterList;
+	}
+
+	@Override
+	@IbisDoc({"30"})
+	public void registerForward(PipeForward forward) throws ConfigurationException {
+		String forwardName = forward.getName();
+		if(forwardName != null) {
+			PipeForward current = pipeForwards.get(forwardName);
+			if (current==null){
+				pipeForwards.put(forwardName, forward);
+			} else {
+				if (forward.getPath()!=null && forward.getPath().equals(current.getPath())) {
+					ConfigurationWarnings.add(this, log, "has forward ["+forwardName+"] which is already registered");
+				} else {
+					log.info(getLogPrefix(null)+"PipeForward ["+forwardName+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+				}
+			}
+		} else {
+			throw new ConfigurationException(getLogPrefix(null)+"has a forward without a name");
+		}
+	}
+
+	/**
+	 * looks up a key in the pipeForward hashtable. <br/>
+	 * A typical use would be on return from a Pipe: <br/>
+	 * <code><pre>
+	 * return new PipeRunResult(findForward("success"), result);
+	 * </pre></code>
+	 * In the pipeForward hashtable are available:
+	 * <ul><li>All forwards defined in xml under the pipe element of this pipe</li>
+	 * <li> All global forwards defined in xml under the PipeLine element</li>
+	 * <li> All pipenames with their (identical) path</li>
+	 * </ul>
+	 * Therefore, you can directly jump to another pipe, although this is not recommended
+	 * as the pipe should not know the existence of other pipes. Nevertheless, this feature
+	 * may come in handy for switcher-pipes.<br/><br/>
+	 * @param forward   Name of the forward
+	 * @return PipeForward
+	 */
+	//TODO: Create a 2nd findForwards method without all pipes in the hashtable and make the first one deprecated.
+	public PipeForward findForward(String forward){
+		if (StringUtils.isEmpty(forward)) {
+			return null;
+		}
+		return pipeForwards.get(forward);
+	}
+
+	@Override
+	public Map<String, PipeForward> getForwards(){
+		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+		PipeLine pipeline = getPipeLine();
+		if (pipeline==null) {
+			return null;
+		}
+	
+		//Omit global pipeline-forwards and only return local pipe-forwards
+		List<IPipe> pipes = pipeline.getPipes();
+		for (int i=0; i<pipes.size(); i++) {
+			String pipeName = pipes.get(i).getName();
+			if(forwards.containsKey(pipeName))
+				forwards.remove(pipeName);
+		}
+		return forwards;
 	}
 
 	@Override
