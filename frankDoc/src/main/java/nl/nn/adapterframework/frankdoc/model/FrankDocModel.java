@@ -99,8 +99,8 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(rootClassName);
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
-			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
+			result.setOverriddenFrom();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
 			result.buildGroups();

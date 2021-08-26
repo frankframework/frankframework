@@ -282,7 +282,9 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		String postfixToRemove = elementType.getGroupName();
+		// Depends on the fact that FrankDocModel.calculateHighestCommonInterfaces()
+		// and FrankDocModel.setHighestCommonInterface() have been executed.
+		String postfixToRemove = elementType.getHighestCommonInterface().getGroupName();
 		String result = simpleName;
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));

@@ -60,9 +60,9 @@
   </xs:group>
   <xs:group name="BElementGroupBase">
     <xs:choice>
-      <xs:element name="MyListenerB">
+      <xs:element name="MyB">
         <xs:annotation>
-          <xs:documentation>MyListenerB - nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener used as B</xs:documentation>
+          <xs:documentation>MyB - nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener used as B</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>

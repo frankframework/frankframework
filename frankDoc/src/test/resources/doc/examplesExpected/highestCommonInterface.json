@@ -60,7 +60,7 @@
             "fullName":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener",
             "elementNames":[
                 "MyA",
-                "MyListenerB"
+                "MyB"
             ],
             "attributes":[
                 {
