@@ -148,7 +148,7 @@
 	/>
 
 	<bean
-		name="proto-trigger"
+		name="proto-alarm,proto-clearing,proto-trigger"
 		class="nl.nn.adapterframework.monitoring.Trigger"
 		autowire="byName"
 		scope="prototype"
