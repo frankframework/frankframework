@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc;
+package nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface;
 
 public class Master {
 	public void registerA(IListener child) {
