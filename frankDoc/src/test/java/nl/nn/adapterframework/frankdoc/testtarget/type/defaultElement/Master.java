@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element;
+package nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement;
 
 public class Master {
 	public void registerA(IDefaultFromConflict child) {

@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Master">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.Master</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
@@ -11,7 +11,7 @@
         <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
       <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.Master" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:group name="AElementGroup">
@@ -20,7 +20,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.DefaultFromConflict" />
+          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.DefaultFromConflict" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -36,7 +36,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.TheDefault" />
+          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.TheDefault" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -47,14 +47,14 @@
     <xs:choice>
       <xs:element name="TheDefaultB">
         <xs:annotation>
-          <xs:documentation>TheDefaultB - nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.TheDefault used as B</xs:documentation>
+          <xs:documentation>TheDefaultB - nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.TheDefault used as B</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="TheDefaultType">
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.TheDefault" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.TheDefault" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -79,14 +79,14 @@
     <xs:choice>
       <xs:element name="SomeElementC">
         <xs:annotation>
-          <xs:documentation>SomeElementC - nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.SomeElement used as C</xs:documentation>
+          <xs:documentation>SomeElementC - nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.SomeElement used as C</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SomeElementType">
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="c" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.deflt.element.SomeElement" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.SomeElement" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
