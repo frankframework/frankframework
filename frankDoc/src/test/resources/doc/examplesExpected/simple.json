@@ -49,7 +49,7 @@
     {
       "name": "DescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
-      "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
+      "description": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".\n \n And this is remaining documentation of \\\"DescribedPossibleIChild\\\".",
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
@@ -128,7 +128,7 @@
     {
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-      "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
+      "description": "This is the header of the JavaDoc of \\\"TChild\\\", with package name nl.nn.something.\n \n And this is remaining documentation of \\\"TChild\\\".",
       "elementNames": ["RoleNameTChild"],
       "attributes": [{
         "name":"active",
@@ -149,4 +149,3 @@
     ]
   }]
 }
-        
