@@ -31,8 +31,8 @@ public class PipeLineTest {
 		adapter.setPipeLine(pipeline);
 
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
-		assertEquals(warnings.size(), 1);
-		String lastWarning = warnings.get(warnings.size()-1);
+		assertEquals(warnings.size(), 2);
+		String lastWarning = warnings.get(warnings.size()-2);
 		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 

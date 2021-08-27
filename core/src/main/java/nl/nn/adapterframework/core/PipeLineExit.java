@@ -55,7 +55,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	private String path;
 	private String state;
-	private int exitCode = 0;
+	private int exitCode = 200;
 	private boolean emptyResult = false;
 	private String responseRoot;
 
