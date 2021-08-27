@@ -101,6 +101,10 @@ public abstract class ElementChild {
 	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
 	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
 	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
+	// A config child is also relevant for the JSON if it is excluded. The frontend has to mention it as not inherited.
+	// Technical overrides are not relevant. But isTechnicalOverride() is also true for undocumented
+	// excluded children. Of course we have to include those.
+	public static Predicate<ElementChild> JSON_RELEVANT = c -> ! (c.isTechnicalOverride() && (! c.isExcluded()));
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or

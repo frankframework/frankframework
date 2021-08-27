@@ -53,7 +53,9 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected.xsd", "textconfig-expected.json"},
 			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected-compatibility.xsd", null},
 			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start", "textconfig-expected-strict-plural.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master", "ignoreattr.xsd", "ignoreattr.json"}
+			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master", "ignoreattr.xsd", "ignoreattr.json"},
+			// Tests that GroupCreator considers parent elements that only reject attributes, not introduce them.
+			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.exclude.Master", "exclude.xsd", "exclude.json"}
 		});
 	}
 
