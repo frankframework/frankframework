@@ -3,36 +3,36 @@
         {
             "name":"Other",
             "types":[
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IExtension",
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IListener",
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master"
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IExtension",
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IListener",
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master"
             ]
         }
     ],
     "types":[
         {
-            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IExtension",
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IExtension",
             "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener"
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener"
             ]
         },
         {
-            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IListener",
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IListener",
             "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener"
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener"
             ]
         },
         {
-            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master",
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master",
             "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master"
+                "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master"
             ]
         }
     ],
     "elements":[
         {
             "name":"Master",
-            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master",
+            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master",
             "elementNames":[
                 "Master"
             ],
@@ -46,18 +46,18 @@
                 {
                     "multiple":true,
                     "roleName":"a",
-                    "type":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IListener"
+                    "type":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IListener"
                 },
                 {
                     "multiple":true,
                     "roleName":"b",
-                    "type":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.IExtension"
+                    "type":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.IExtension"
                 }
             ]
         },
         {
             "name":"MyListener",
-            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener",
+            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener",
             "elementNames":[
                 "MyA",
                 "MyB"

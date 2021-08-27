@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="Master">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
@@ -10,7 +10,7 @@
         <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
       <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.Master" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:group name="AElementGroup">
@@ -30,14 +30,14 @@
     <xs:choice>
       <xs:element name="MyA">
         <xs:annotation>
-          <xs:documentation>MyA - nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener used as A</xs:documentation>
+          <xs:documentation>MyA - nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener used as A</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MyListenerType">
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="a" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -62,14 +62,14 @@
     <xs:choice>
       <xs:element name="MyB">
         <xs:annotation>
-          <xs:documentation>MyB - nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener used as B</xs:documentation>
+          <xs:documentation>MyB - nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener used as B</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MyListenerType">
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.common.interfc.MyListener" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.MyListener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
