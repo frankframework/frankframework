@@ -31,9 +31,9 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementType;
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
-	private static final String DESCRIPTION_HEADER = "descriptionHeader";
+	private static final String DESCRIPTION = "description";
 
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
@@ -144,7 +144,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
-		addDescriptionHeader(result, frankElement.getDescriptionHeader());
+		addDescription(result, frankElement.getDescription());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
@@ -219,9 +219,9 @@ public class FrankDocJsonFactory {
 		}
 	}
 
-	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+	private void addDescription(JsonObjectBuilder builder, String value) {
 		if(! StringUtils.isBlank(value)) {
-			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
+			builder.add(DESCRIPTION, value.replaceAll("\"", "\\\\\\\""));
 		}
 	}
 
