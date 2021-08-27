@@ -334,10 +334,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				if (attributes!=null) {
 					threadContext.putAll(attributes);
 				}
-				if (MessageType.PATH == getMessageTypeEnum()) {
+				if (MessageType.PATH != getMessageTypeEnum()) {
 					threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
 				}
-				if (MessageType.NAME == getMessageTypeEnum()) {
+				if (MessageType.NAME != getMessageTypeEnum()) {
 					threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 				}
 			}
