@@ -37,6 +37,12 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 			for(let i in elements) {
 				let element = elements[i];
+				if(element.attributes) {
+					element.showAttributes = true;
+				}
+				if(element.nonInheritedAttributes) {
+					element.showAttributes = true;
+				}
 				$scope.elements[element.fullName] = element;
 			}
 			for(let i in enums) {
