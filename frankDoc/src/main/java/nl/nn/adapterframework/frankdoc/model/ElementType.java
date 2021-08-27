@@ -156,6 +156,7 @@ public class ElementType implements Comparable<ElementType> {
 	public List<FrankElement> getSyntax2Members() {
 		return members.stream()
 				.filter(frankElement -> ! frankElement.getXmlElementNames().isEmpty())
+				.filter(f -> ! f.syntax2ExcludedFromType(this.getFullName()))
 				.sorted()
 				.collect(Collectors.toList());
 	}
