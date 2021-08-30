@@ -362,7 +362,7 @@ public class IbisContext extends IbisApplicationContext {
 					databaseMigrator.configure();
 					databaseMigrator.update();
 				} catch (Exception e) {
-					configuration.publishEvent(new ConfigurationMessageEvent(configuration, "unable to run JDBC migration", e));
+					configuration.log("unable to run JDBC migration", e);
 				}
 			}
 

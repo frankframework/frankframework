@@ -298,6 +298,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		super.publishEvent(event);
 	}
 
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message) {
+		log(message, (MessageKeeperLevel) null);
+	}
+
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message, MessageKeeperLevel level) {
+		this.publishEvent(new ConfigurationMessageEvent(this, message, level));
+	}
+
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message, Exception e) {
+		this.publishEvent(new ConfigurationMessageEvent(this, message, e));
+	}
+
 	public boolean isUnloadInProgressOrDone() {
 		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
 	}

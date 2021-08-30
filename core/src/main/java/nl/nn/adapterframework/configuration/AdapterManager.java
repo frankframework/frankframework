@@ -195,7 +195,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			doClose();
 		} catch(Exception e) {
 			if(!getAdapterList().isEmpty()) {
-				applicationContext.publishEvent(new ConfigurationMessageEvent((Configuration) applicationContext, "not all adapters have been unregistered " + getAdapterList(), e));
+				Configuration config = (Configuration) applicationContext;
+				config.log("not all adapters have been unregistered " + getAdapterList(), e);
 			}
 		}
 	}

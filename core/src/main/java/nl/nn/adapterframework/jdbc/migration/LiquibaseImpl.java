@@ -31,7 +31,6 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -60,7 +59,7 @@ public class LiquibaseImpl {
 	}
 
 	private void log(String message) {
-		configuration.publishEvent(new ConfigurationMessageEvent(configuration, message));
+		configuration.log(message);
 	}
 
 	public void update() {
