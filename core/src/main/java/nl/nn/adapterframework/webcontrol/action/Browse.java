@@ -192,7 +192,7 @@ public class Browse extends ActionBase {
 		try {
 			logCount = "(" + mb.getMessageCount() + ")";
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to get message count", e);
 			logCount = "(?)";
 		}
 

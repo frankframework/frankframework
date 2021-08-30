@@ -1804,7 +1804,7 @@ public class XmlUtils {
 			TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to remove namespaces", e);
 			return null;
 		}
 	}
@@ -1814,7 +1814,7 @@ public class XmlUtils {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to find root-namespace", e);
 			return null;
 		}
 	}
@@ -1824,7 +1824,7 @@ public class XmlUtils {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to add root-namespace", e);
 			return null;
 		}
 	}
@@ -1834,7 +1834,7 @@ public class XmlUtils {
 			TransformerPool tp = getRemoveUnusedNamespacesTransformerPool(true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to remove unused namespaces", e);
 			return null;
 		}
 	}
@@ -1844,7 +1844,7 @@ public class XmlUtils {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to execute xpath expression ["+xpath+"]", e);
 			return null;
 		}
 	}

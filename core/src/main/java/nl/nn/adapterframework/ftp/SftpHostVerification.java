@@ -54,7 +54,7 @@ public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
 			log.warn("The current allowed key for [" + host + "] is [" + pk.getFingerprint()+"]");
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error("the host key mismatches", e);
 		}
 	}
 
@@ -69,7 +69,7 @@ public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
 			log.warn("The host [" + host + "], key fingerprint [" + pk.getFingerprint()+"] is currently unknown to the system");
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error("unknown host", e);
 		}
 	}
 

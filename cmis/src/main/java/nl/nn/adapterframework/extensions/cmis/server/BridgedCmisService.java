@@ -98,9 +98,8 @@ public class BridgedCmisService extends FilterCmisService {
 		try {
 			Session session = sessionBuilder.build();
 			return session.getBinding();
-		}
-		catch (CmisSessionException e) {
-			log.error(e);
+		} catch (CmisSessionException e) {
+			log.error("unable to build cmis session", e);
 			throw new CmisConnectionException(e.getMessage());
 		}
 	}

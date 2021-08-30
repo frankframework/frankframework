@@ -1354,7 +1354,7 @@ public class Misc {
 		try {
 			return URLDecoder.decode(input,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
+			log.warn("unable to decode ["+input+"]", e);
 			return null;
 		}
 	}

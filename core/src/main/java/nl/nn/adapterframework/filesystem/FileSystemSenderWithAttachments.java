@@ -95,7 +95,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 					}
 				}
 			} catch (Exception e) {
-				log.error(e);
+				log.error("unable to list all attachments", e);
 				throw new SenderException(e);
 			}
 			return new PipeRunResult(null, attachments.toString());
