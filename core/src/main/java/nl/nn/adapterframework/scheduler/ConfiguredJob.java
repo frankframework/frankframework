@@ -49,6 +49,7 @@ public class ConfiguredJob extends BaseJob {
 	public static final String MANAGER_KEY = "manager";
 	public static final String JOBDEF_KEY = "jobdef";
 
+	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		String ctName = Thread.currentThread().getName();
 		try {
@@ -61,7 +62,7 @@ public class ConfiguredJob extends BaseJob {
 			log.debug(getLogPrefix(jobDef) + "completed");
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error("JobExecutionException while running "+getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}
 		finally {

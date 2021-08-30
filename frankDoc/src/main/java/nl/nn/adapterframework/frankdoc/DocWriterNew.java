@@ -828,9 +828,9 @@ public class DocWriterNew {
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
 		attributeTypeStrategy.addAttributeActive(complexType);
 		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getRoleNameAttributeUse());
-		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
-		if(defaultFrankElement.isPresent()) {
-			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
+		Optional<String> defaultFrankElementName = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
+		if(defaultFrankElementName.isPresent()) {
+			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElementName.get(), OPTIONAL);
 		} else {
 			addAttribute(complexType, CLASS_NAME, DEFAULT, null, REQUIRED);
 		}
