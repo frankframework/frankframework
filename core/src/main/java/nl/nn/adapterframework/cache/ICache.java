@@ -24,6 +24,8 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Gerrit van Brakel
  * @since   4.11
+ * 
+ * @ff.defaultElement nl.nn.adapterframework.cache.EhCache
  */
 public interface ICache<K,V> {
 

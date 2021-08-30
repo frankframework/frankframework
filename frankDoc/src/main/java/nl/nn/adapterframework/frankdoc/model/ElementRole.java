@@ -152,6 +152,10 @@ public class ElementRole implements Comparable<ElementRole> {
 		return getGenericOptionElementName() + kindDifferentiatingWord + disambiguation();
 	}
 
+	public String getDefaultElement() {
+		return elementType.getDefaultElement();
+	}
+
 	private String disambiguation() {
 		if(roleNameSeq == 1) {
 			return "";

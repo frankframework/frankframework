@@ -120,7 +120,7 @@ public final class ShowAdapterStatistics extends Base {
 			statisticsMap.put("durationPerPipe", tmp.get("pipeStats"));
 			statisticsMap.put("sizePerPipe", tmp.get("sizeStats"));
 		} catch (SenderException e) {
-			log.error(e);
+			log.error("unable to parse pipeline statistics", e);
 		} finally {
 			handler.end(handle);
 		}

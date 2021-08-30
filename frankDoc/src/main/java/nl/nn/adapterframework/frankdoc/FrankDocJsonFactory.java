@@ -31,9 +31,9 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementType;
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
-	private static final String DESCRIPTION_HEADER = "descriptionHeader";
+	private static final String DESCRIPTION = "description";
 
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
@@ -144,7 +144,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
-		addDescriptionHeader(result, frankElement.getDescriptionHeader());
+		addDescription(result, frankElement.getDescription());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
@@ -152,6 +152,12 @@ public class FrankDocJsonFactory {
 		JsonArray attributes = getAttributes(frankElement, getParentOrNull(frankElement) == null);
 		if(! attributes.isEmpty()) {
 			result.add("attributes", attributes);
+		}
+		List<FrankAttribute> nonInheritedAttributes = frankElement.getChildrenOfKind(ElementChild.JSON_NOT_INHERITED, FrankAttribute.class);
+		if(! nonInheritedAttributes.isEmpty()) {
+			JsonArrayBuilder b = bf.createArrayBuilder();
+			nonInheritedAttributes.forEach(nia -> b.add(nia.getName()));
+			result.add("nonInheritedAttributes", b.build());
 		}
 		JsonArray configChildren = getConfigChildren(frankElement);
 		if(! configChildren.isEmpty()) {
@@ -163,7 +169,7 @@ public class FrankDocJsonFactory {
 	private static String getParentOrNull(FrankElement frankElement) {
 		if(frankElement != null) {
 			FrankElement parent = frankElement.getNextAncestorThatHasChildren(
-					elem -> elem.getAttributes(ElementChild.ALL).isEmpty() && elem.getConfigChildren(ElementChild.ALL).isEmpty());
+					elem -> elem.getAttributes(ElementChild.ALL_NOT_EXCLUDED).isEmpty() && elem.getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).isEmpty());
 			if(parent != null) {
 				return parent.getFullName();
 			}
@@ -213,9 +219,9 @@ public class FrankDocJsonFactory {
 		}
 	}
 
-	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+	private void addDescription(JsonObjectBuilder builder, String value) {
 		if(! StringUtils.isBlank(value)) {
-			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
+			builder.add(DESCRIPTION, value.replaceAll("\"", "\\\\\\\""));
 		}
 	}
 

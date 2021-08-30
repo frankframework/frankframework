@@ -16,12 +16,15 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 
 public class FrankAttribute extends ElementChild {
+	static final String JAVADOC_NO_FRANK_ATTRIBUTE = "@ff.noAttribute";
+
 	@EqualsAndHashCode(callSuper = false)
 	static class Key extends AbstractKey {
 		private String name;
@@ -45,6 +48,13 @@ public class FrankAttribute extends ElementChild {
 	 * Null if there is no restriction to the allowed attribute values. Should only be set if attributeType == {@link AttributeType#STRING}.
 	 */
 	private @Getter @Setter AttributeEnum attributeEnum;
+
+	/**
+	 * This field supports the ff.noAttribute and ff.ignoreTypeMembership JavaDoc tags. 
+	 * These annotations should cause attributes to not exist. If an attribute should
+	 * not exist, then it also should not be inherited.
+	 */
+	private @Getter(onMethod = @__(@Override)) @Setter(AccessLevel.PACKAGE) boolean excluded = false;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		super(attributeOwner);
