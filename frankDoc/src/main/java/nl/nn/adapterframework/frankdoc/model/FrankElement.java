@@ -83,6 +83,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class FrankElement implements Comparable<FrankElement> {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
+	static final String JAVADOC_PARAMETERS = "@ff.parameters";
+	static final String JAVADOC_PARAMETER = "@ff.parameter";
 
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
 
@@ -110,6 +112,8 @@ public class FrankElement implements Comparable<FrankElement> {
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
+	private @Getter String meaningOfParameters;
+	private @Getter List<SpecificParameter> specificParameters = new ArrayList<>();
 
 	private Set<String> syntax2ExcludedFromTypes = new HashSet<>();
 
@@ -119,6 +123,7 @@ public class FrankElement implements Comparable<FrankElement> {
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
 		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
+		handlePossibleParameters(clazz);
 	}
 
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
@@ -131,6 +136,16 @@ public class FrankElement implements Comparable<FrankElement> {
 						() -> fullName, () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> excludedFromType);
 				syntax2ExcludedFromTypes.add(excludedFromType);
 			}
+		}
+	}
+
+	private void handlePossibleParameters(FrankClass clazz) {
+		this.meaningOfParameters = clazz.getJavaDocTag(JAVADOC_PARAMETERS);
+		for(String specificParameterStr: clazz.getAllJavaDocTagsOf(JAVADOC_PARAMETERS)) {
+			if(StringUtils.isBlank(specificParameterStr)) {
+				log.warn("FrankElement [{}] has specific parameters without a name or description", fullName);
+			}
+			this.specificParameters.add(SpecificParameter.getInstance(specificParameterStr));
 		}
 	}
 
