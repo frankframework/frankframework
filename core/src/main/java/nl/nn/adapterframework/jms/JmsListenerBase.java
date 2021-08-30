@@ -413,7 +413,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", "-1"})
+	@IbisDoc({"Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default", "-1"})
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}

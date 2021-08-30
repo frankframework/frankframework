@@ -645,7 +645,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return mode.toString();
 	}
 
-	@IbisDoc({"<b>only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 (default) or 2", "0"})
+	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
 	public void setCmhVersion(int i) {
 		cmhVersion = i;
 	}
