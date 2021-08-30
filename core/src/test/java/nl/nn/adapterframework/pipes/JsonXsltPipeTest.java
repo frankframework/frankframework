@@ -1,9 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URL;
 
 import javax.json.Json;
 import javax.json.JsonStructure;
@@ -14,6 +16,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
@@ -79,4 +82,18 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		//assertEquals(description,inputJson,jsonOut);
 	}
 
+	@Test
+	public void parseUsingByteStream() throws Exception {
+		pipe.setXpathExpression("/");
+		pipe.configure();
+		pipe.start();
+
+		URL url = TestFileUtils.getTestFileURL("/Misc/minified.json");
+		assertNotNull("cannot find json", url);
+		Message input = new Message(url.openStream());
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = Message.asMessage(prr.getResult()).asString();
+		assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
+	}
 }

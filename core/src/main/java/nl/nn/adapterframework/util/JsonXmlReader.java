@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 import javax.json.Json;
 import javax.json.stream.JsonParser;
@@ -132,7 +134,17 @@ public class JsonXmlReader implements XMLReader {
 		ContentHandler ch=getContentHandler();
 		ch.startDocument();
 		ch.startPrefixMapping("", TARGETNAMESPACE);
-		parse(null, Json.createParser(input.getCharacterStream()));
+		Reader reader = input.getCharacterStream();
+		if(reader == null) {
+			InputStream stream = input.getByteStream();
+			if(stream != null) {
+				reader = StreamUtil.getCharsetDetectingInputStreamReader(stream);
+			}
+		}
+		if(reader == null) {
+			throw new IOException("unable to read data from InputSource");
+		}
+		parse(null, Json.createParser(reader));
 		ch.endPrefixMapping("");
 		ch.endDocument();
 	}
