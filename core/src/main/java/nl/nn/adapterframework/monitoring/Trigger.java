@@ -30,6 +30,7 @@ import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -52,7 +53,7 @@ public class Trigger implements ITrigger {
 	private Monitor monitor;
 	private SeverityEnum severity;
 	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
-	private TriggerType triggerType;
+	private TriggerType triggerType = TriggerType.ALARM;
 
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
@@ -207,8 +208,9 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public String getType() {
-		return triggerType.name();
+	public String getTypeDisplayString() {
+		String nameLC = triggerType.name().toLowerCase();
+		return Misc.toUpperCamelCase(nameLC);
 	}
 
 	public TriggerType getTypeEnum() {

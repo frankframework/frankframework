@@ -24,6 +24,7 @@ import java.util.Set;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.frankdoc.doclet.FrankType;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Utility methods for the Frank!Doc.
@@ -100,6 +101,6 @@ public final class Utils {
 	}
 
 	public static String toUpperCamelCase(String arg) {
-		return arg.substring(0,  1).toUpperCase() + arg.substring(1);
+		return Misc.toUpperCamelCase(arg);
 	}
 }

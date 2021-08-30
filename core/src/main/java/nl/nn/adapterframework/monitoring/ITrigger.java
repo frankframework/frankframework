@@ -37,7 +37,7 @@ public interface ITrigger extends LazyLoadingEventListener<FireMonitorEvent>, Di
 	boolean isConfigured();
 	void configure();
 	void toXml(XmlBuilder monitor);
-	String getType();
+	String getTypeDisplayString();
 	String[] getEventCodes();
 	SeverityEnum getSeverityEnum();
 	String getSeverity();

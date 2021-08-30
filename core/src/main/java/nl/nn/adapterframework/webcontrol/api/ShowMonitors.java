@@ -163,7 +163,7 @@ public final class ShowMonitors extends Base {
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
-		triggerMap.put("type", trigger.getType());
+		triggerMap.put("type", trigger.getTypeDisplayString());
 		triggerMap.put("events", trigger.getEventCodes());
 		triggerMap.put("severity", trigger.getSeverity());
 		triggerMap.put("threshold", trigger.getThreshold());

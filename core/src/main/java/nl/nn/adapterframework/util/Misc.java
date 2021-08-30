@@ -1413,4 +1413,8 @@ public class Misc {
 
 		return sw.toString().trim();
 	}
+
+	public static String toUpperCamelCase(String arg) {
+		return arg.substring(0,  1).toUpperCase() + arg.substring(1);
+	}
 }
