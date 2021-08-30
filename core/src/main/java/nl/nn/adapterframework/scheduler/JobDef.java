@@ -688,6 +688,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
 				Parameter param = new Parameter();
@@ -699,7 +700,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.open();
 
 				Message result = qs.sendMessage(Message.nullMessage(), null);
-				log.info("result [" + result + "]");
+				String resultString = result.asString();
+				int numberOfRowsAffected = Integer.valueOf(resultString);
+				if(numberOfRowsAffected > 0) {
+					log.warn("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there had been some process(es) finished unexpectedly or failed to complete. Please investigate the log files!");
+				}
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
