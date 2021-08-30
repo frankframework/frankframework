@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -121,8 +120,8 @@ public class ClassUtils {
 	static public URL getResourceURL(ClassLoader classLoader, String resource, String allowedProtocols) {
 		if(classLoader == null) {
 			classLoader = Thread.currentThread().getContextClassLoader();
-			RuntimeException e = new IllegalStateException("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code");
-			log.warn(e);
+			RuntimeException e = new IllegalStateException("no classloader provided");
+			log.warn("getResourceURL called with null classLoader. Avoid this, it is only valid from configure(). Please change the code", e);
 		}
 		if (resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)) {
 			resource=resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length());
@@ -381,7 +380,7 @@ public class ClassUtils {
 			f.setAccessible(true);
 			return f.get(o);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("unable to retrieve field ["+name+"] from object ["+o+"]", e);
 			return e.getMessage();
 		}
 	}

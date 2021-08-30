@@ -127,7 +127,7 @@ public class Message {
 			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
+			log.warn("unable to parse message using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 			return null;
 		}
 	}

@@ -154,7 +154,7 @@ public final class BrowseQueue extends Base {
 				if (it!=null)
 					it.close();
 			} catch (ListenerException e) {
-				log.error(e);
+				log.error("unable to close MessageBrowsingIterator", e);
 			}
 		}
 

@@ -88,7 +88,7 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 				throw new IOException(getException());
 			}
 		} catch (InterruptedException e) {
-			log.warn(e);
+			log.warn("thread interrupted", e);
 		}
 	}
 

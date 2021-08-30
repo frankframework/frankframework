@@ -558,7 +558,7 @@ public class TransactionalStorage extends Base {
 		try {
 			messageCount = ((ITransactionalStorage) transactionalStorage).getMessageCount();
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to get messagecount from storage", e);
 			messageCount = -1;
 		}
 

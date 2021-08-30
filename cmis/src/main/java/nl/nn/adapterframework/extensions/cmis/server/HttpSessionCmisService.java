@@ -139,7 +139,7 @@ public class HttpSessionCmisService extends CachedBindingCmisService {
 			return session.getBinding();
 		}
 		catch (CmisSessionException e) {
-			log.error(e);
+			log.error("unable to create cmis session", e);
 			throw new CmisConnectionException(e.getMessage());
 		}
 	}
