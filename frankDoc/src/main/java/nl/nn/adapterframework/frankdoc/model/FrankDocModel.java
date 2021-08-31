@@ -99,8 +99,8 @@ public class FrankDocModel {
 			result.findOrCreateFrankElement(rootClassName);
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
-			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
+			result.setOverriddenFrom();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
 			result.buildGroups();
@@ -528,7 +528,7 @@ public class FrankDocModel {
 			return allTypes.get(clazz.getName());
 		}
 		FrankDocGroup group = groupFactory.getGroup(clazz);
-		final ElementType result = new ElementType(clazz, group);
+		final ElementType result = new ElementType(clazz, group, classRepository);
 		// If a containing FrankElement contains the type being created, we do not
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
@@ -599,7 +599,7 @@ public class FrankDocModel {
 			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), roleName));
 			if(result == null) {
 				log.warn("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
-						() -> toString(), () -> et.getFullName(), () -> roleName);
+						() -> role.toString(), () -> et.getFullName(), () -> roleName);
 				role.setHighestCommonInterface(role);
 			} else {
 				role.setHighestCommonInterface(result);

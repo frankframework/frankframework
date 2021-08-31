@@ -289,7 +289,23 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		String postfixToRemove = elementType.getGroupName();
+		// Depends on the fact that FrankDocModel.calculateHighestCommonInterfaces()
+		// and FrankDocModel.setHighestCommonInterface() have been executed.
+		//
+		// There is a subtle point here: the difference between ElementType.getHighestCommonInterface()
+		// and ElementRole.getHighestCommonInterface(). Consider for example the ElementRole
+		// (IWrapperPipe, outputWrapper). The highest common interface of ElementType IWrapperPipe is
+		// IPipe. For this reason, Java class ApiSoapWrapper will produce ApiSoapWrapperOutputWrapper
+		// as we want, not the erroneous name ApiSoapWrapperPipeOutputWrapper.
+		//
+		// On the other hand, the highest common interface of the mentioned ElementRole is just the same ElementRole.
+		// The reason is that there is no config child setter for ElementType IPipe and role name outputWrapper.
+		// This is also what we want. When the config children of Pipeline are calculated, all ElementRole-s of the
+		// config children are promoted to their highest common interface to avoid conflicts. We don't have a conflict
+		// here so there is no need to promote (IWrapperPipe, outputWrapper). This way, the outputWrapper config child
+		// only allows elements that implement IWrapperPipe, not all implementations of IPipe.
+		//
+		String postfixToRemove = elementType.getHighestCommonInterface().getGroupName();
 		String result = simpleName;
 		if(result.endsWith(postfixToRemove)) {
 			result = result.substring(0, result.lastIndexOf(postfixToRemove));

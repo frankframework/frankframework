@@ -81,7 +81,7 @@ public class PipeLineExit implements IForwardTarget {
 		return state;
 	}
 
-	@IbisDoc({"http statuscode e.g. <code>500</code>", "200"})
+	@IbisDoc({"http statuscode e.g. <code>500</code>", "0"})
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}

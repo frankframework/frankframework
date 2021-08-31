@@ -4,6 +4,10 @@
 		<a href="{{javaDocURL}}" target="_blank" rel="noreferrer">{{element.fullName}}</a>
 	</h5>
 
+	<br />
+	<p ng-bind-html="::element.description | javadoc:this"></p>
+	<br />
+
 	<div ng-if="element.children" element-children></div>
 	<table ng-if="element.attributes" element-attributes></table>
 
