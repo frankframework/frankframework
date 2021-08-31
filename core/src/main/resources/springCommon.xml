@@ -19,8 +19,8 @@
 	/>
 
 	<bean
-		name="lowerCasePropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
@@ -39,14 +39,14 @@
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
 	<bean
-		name="hostnamePropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.HostnamePropertyPlaceholderConfigurer"
+		name="hostnamePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.HostnamePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
 	<bean
-		name="fxfPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
+		name="fxfPropertySourcePostProcessor"
+		class="nl.nn.adapterframework.extensions.fxf.FxfPropertySourcePostProcessor"
 		autowire="byName"
 	/>
 

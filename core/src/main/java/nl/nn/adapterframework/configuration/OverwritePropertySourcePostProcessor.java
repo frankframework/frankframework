@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *
  * @author Jaco de Groot
  */
-public class OverwritePropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
+public class OverwritePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
 	private String propertyName;
 	private String propertyValue;
 

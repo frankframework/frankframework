@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author Jaco de Groot
  */
-public class HostnamePropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
+public class HostnamePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
 	private static String HOSTNAME_PROPERTY = "hostname";
 
 	@Override

@@ -13,29 +13,43 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration;
+package nl.nn.adapterframework.extensions.fxf;
 
+import java.io.File;
 import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
- /**
- * Make a lower case variant of the instance.name property (instance.name.lc)
- * available to the Ibis configuration and the Spring configuration.
+/**
+ * Initialise the fxf.dir property when possible and not already available from
+ * the AppConstants and make it available to the Ibis configuration and the
+ * Spring configuration.
  *
  * @author Jaco de Groot
  */
-public class LowerCasePropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
+public class FxfPropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
+	protected Logger log = LogUtil.getLogger(this);
 
 	@Override
 	protected void convertProperties(Properties props) {
 		AppConstants appConstants = AppConstants.getInstance();
-		String instanceName = appConstants.getProperty("instance.name");
-		if (instanceName != null) {
-			String lowerCase = instanceName.toLowerCase();
-			appConstants.setProperty("instance.name.lc", lowerCase);
-			props.put("instance.name.lc", lowerCase);
+		String fxfDir = appConstants.getResolvedProperty("fxf.dir");
+		if (fxfDir == null) {
+			// Use default location, see was.policy too
+			fxfDir = System.getProperty("APPSERVER_ROOT_DIR");
+			if (fxfDir != null) {
+				fxfDir = fxfDir + File.separator + "fxf-work";
+			}
 		}
+		if (fxfDir != null) {
+			appConstants.setProperty("fxf.dir", fxfDir);
+			props.put("fxf.dir", fxfDir);
+		}
+		log.debug("FxF directory: " + fxfDir);
 	}
+
 }
