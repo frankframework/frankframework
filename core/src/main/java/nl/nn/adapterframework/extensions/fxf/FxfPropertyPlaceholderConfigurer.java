@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.lifecycle.PropertyConfigurer;
+import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author Jaco de Groot
  */
-public class FxfPropertyPlaceholderConfigurer extends PropertyConfigurer {
+public class FxfPropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
 	protected Logger log = LogUtil.getLogger(this);
 
 	@Override

@@ -17,7 +17,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
-import nl.nn.adapterframework.lifecycle.PropertyConfigurer;
+import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 
  /**
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *
  * @author Jaco de Groot
  */
-public class OverwritePropertyPlaceholderConfigurer extends PropertyConfigurer {
+public class OverwritePropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
 	private String propertyName;
 	private String propertyValue;
 

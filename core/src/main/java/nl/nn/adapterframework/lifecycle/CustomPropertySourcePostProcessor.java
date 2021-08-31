@@ -29,13 +29,13 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 
 /**
-* Property Configurer that add's additional properties to the Spring environment.
+* Property Configurer that add's additional properties to the Spring environment through a custom property-source
 * Implements BeanFactoryPostProcessor so it's executed before other beans are created.
 *
 * @author Niels Meijer
 */
-public abstract class PropertyConfigurer implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware {
-	private final String CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME = "asdfasdafdssfasfd";
+public abstract class CustomPropertySourcePostProcessor implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware {
+	private final String CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME = "CustomPropertySource";
 	private ConfigurableEnvironment environment;
 
 	@Override
@@ -61,6 +61,9 @@ public abstract class PropertyConfigurer implements BeanFactoryPostProcessor, Pr
 		return new PropertiesPropertySource(CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME, properties);
 	}
 
+	/**
+	 * @param props An empty or previously set {@link Properties} object
+	 */
 	protected abstract void convertProperties(Properties props);
 
 	@Override

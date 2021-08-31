@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.lifecycle.PropertyConfigurer;
+import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 
@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.Misc;
  *
  * @author Jaco de Groot
  */
-public class HostnamePropertyPlaceholderConfigurer extends PropertyConfigurer {
+public class HostnamePropertyPlaceholderConfigurer extends CustomPropertySourcePostProcessor {
 	private static String HOSTNAME_PROPERTY = "hostname";
 
 	@Override
