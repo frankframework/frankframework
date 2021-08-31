@@ -120,7 +120,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.storage.list', {
-		url: "store/:processState",
+		url: "stores/:processState",
 		templateUrl: "views/txstorage/adapter_storage_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
@@ -129,7 +129,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.storage.view', {
-		url: "store/:processState/message/:messageId",
+		url: "stores/:processState/messages/:messageId",
 		templateUrl: "views/txstorage/adapter_storage_view.html",
 		params: {
 			messageId: { value: '', squash: true},
@@ -141,7 +141,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	
 	.state('pages.pipemessagelog', {
 		abstract: true,
-		url: "/adapter/:adapter/pipes/:pipe",
+		url: "/adapters/:adapter/pipes/:pipe",
 		template: "<div ui-view></div>",
 		controller: 'PipeMessageLogBaseCtrl',
 		data: {
@@ -154,7 +154,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.pipemessagelog.list', {
-		url: "/messagelog",
+		url: "/messages",
 		templateUrl: "views/txstorage/pipe_messagelog_list.html",
 		resolve: {
 			loadPlugin: function($ocLazyLoad) {
@@ -163,7 +163,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		},
 	})
 	.state('pages.pipemessagelog.view', {
-		url: "/messagelog/:messageId",
+		url: "/messages/:messageId",
 		templateUrl: "views/txstorage/pipe_messagelog_view.html",
 		params: {
 			messageId: { value: '', squash: true},

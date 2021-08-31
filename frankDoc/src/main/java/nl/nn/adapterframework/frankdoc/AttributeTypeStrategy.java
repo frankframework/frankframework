@@ -20,9 +20,13 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNew.ATTRIBUTE_VALUES_TYPE
 import static nl.nn.adapterframework.frankdoc.DocWriterNew.VARIABLE_REFERENCE;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.XML_SCHEMA_URI;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addAttributeWithType;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addDocumentation;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addPattern;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addSimpleType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addUnion;
+import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createSimpleType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,13 +38,14 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.FrankAttribute;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public enum AttributeTypeStrategy {
-	ALLOW_PROPERTY_REF(new DelegateAllowPropertyRef()),
-	VALUES_ONLY(new DelegateValuesOnly());
+	ALLOW_PROPERTY_REF(new DelegateAllowPropertyRefEnumDocumentedCaseSensitive()),
+	ALLOW_PROPERTY_REF_ENUM_VALUES_IGNORE_CASE(new DelegateAllowPropertyRefEnumIgnoreCase());
 
 	private static Logger log = LogUtil.getLogger(AttributeTypeStrategy.class);
 
@@ -77,13 +82,20 @@ public enum AttributeTypeStrategy {
 		return delegate.createHelperTypes();
 	}
 
-	private static abstract class Delegate {
-		abstract XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType);
-		abstract XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute);
-		abstract void addAttributeActive(XmlBuilder context);
-		abstract List<XmlBuilder> createHelperTypes();
+	XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
+		return delegate.createAttributeEnumType(attributeEnum);
+	}
 
-		final XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType, String boolType, String intType) {
+	private static abstract class Delegate {
+		// This method ensures that references are still allowed for integer and boolean attributes.
+		// For example, an integer attribute can still be set like "${someIdentifier}".
+		// This method expects that methods DocWriterNewXmlUtils.createTypeFrankBoolean() and
+		// DocWriterNewXmlUtils.createTypeFrankInteger() are used to define the referenced XSD types.
+		XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType) {
+			return addAttribute(context, name, modelAttributeType, FRANK_BOOLEAN, FRANK_INT);
+		}
+
+		private final XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType, String boolType, String intType) {
 			XmlBuilder attribute = new XmlBuilder("attribute", "xs", XML_SCHEMA_URI);
 			attribute.addAttribute("name", name);
 			String typeName = null;
@@ -102,33 +114,28 @@ public enum AttributeTypeStrategy {
 			context.addSubElement(attribute);
 			return attribute;						
 		}
-	}
 
-	private static class DelegateAllowPropertyRef extends Delegate {
-		// This method ensures that references are still allowed for integer and boolean attributes.
-		// For example, an integer attribute can still be set like "${someIdentifier}".
-		// This method expects that methods DocWriterNewXmlUtils.createTypeFrankBoolean() and
-		// DocWriterNewXmlUtils.createTypeFrankInteger() are used to define the referenced XSD types.
-		@Override
-		XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType) {
-			return addAttribute(context, name, modelAttributeType, FRANK_BOOLEAN, FRANK_INT);
-		}
-
-		@Override
-		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
+		final XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
 			AttributeEnum attributeEnum = attribute.getAttributeEnum();
 			XmlBuilder attributeBuilder = addAttributeWithType(context, attribute.getName());
 			XmlBuilder simpleType = addSimpleType(attributeBuilder);
 			return addUnion(simpleType, attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE), VARIABLE_REFERENCE);
 		}
 
-		@Override
-		void addAttributeActive(XmlBuilder context) {
+		final void addAttributeActive(XmlBuilder context) {
 			DocWriterNewXmlUtils.addAttributeRef(context, ATTRIBUTE_ACTIVE_NAME);
 		}
 
-		@Override
-		List<XmlBuilder> createHelperTypes() {
+		final XmlBuilder createAttributeEnumType(AttributeEnum attributeEnum) {
+			XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
+			final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
+			attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
+			return simpleType;
+		}
+
+		abstract void addEnumValue(XmlBuilder restriction, AttributeEnumValue v);
+
+		final List<XmlBuilder> createHelperTypes() {
 			log.trace("Adding helper types for boolean and integer attributes, allowing ${...} references");
 			List<XmlBuilder> result = new ArrayList<>();
 			result.add(createTypeFrankBoolean());
@@ -183,31 +190,27 @@ public enum AttributeTypeStrategy {
 					.collect(Collectors.joining("|"));
 		}
 
-		private String getCaseInsensitivePattern(final String word) {
+		final String getCaseInsensitivePattern(final String word) {
 			return IntStream.range(0, word.length()).mapToObj(i -> Character.valueOf(word.charAt(i)))
 				.map(c -> "[" + Character.toLowerCase(c) + Character.toUpperCase(c) + "]")
 				.collect(Collectors.joining(""));
 		}
 	}
 
-	private static class DelegateValuesOnly extends Delegate {
+	private static class DelegateAllowPropertyRefEnumDocumentedCaseSensitive extends Delegate {
 		@Override
-		XmlBuilder addAttribute(XmlBuilder context, String name, AttributeType modelAttributeType) {
-			return addAttribute(context, name, modelAttributeType, "xs:boolean", "xs:integer");
+		void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
+			if(v.getDescription() != null) {
+				addDocumentation(valueBuilder, v.getDescription());
+			}
 		}
+	}
 
+	private static class DelegateAllowPropertyRefEnumIgnoreCase extends Delegate {
 		@Override
-		XmlBuilder addRestrictedAttribute(XmlBuilder context, FrankAttribute attribute) {
-			return DocWriterNewXmlUtils.addAttribute(context, attribute.getName(), attribute.getAttributeEnum().getUniqueName(ATTRIBUTE_VALUES_TYPE));
-		}
-
-		@Override
-		void addAttributeActive(XmlBuilder context) {
-		}
-
-		@Override
-		List<XmlBuilder> createHelperTypes() {
-			return new ArrayList<>();
+		void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
+			addPattern(restriction, getCaseInsensitivePattern(v.getLabel()));
 		}
 	}
 }

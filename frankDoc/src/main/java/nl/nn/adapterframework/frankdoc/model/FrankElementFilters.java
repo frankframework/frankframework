@@ -69,6 +69,6 @@ public final class FrankElementFilters {
 	}
 
 	public static Set<String> getExcludeFiltersForSuperclass() {
-		return new HashSet<>(Arrays.asList("org.springframework"));
+		return new HashSet<>(Arrays.asList("org.springframework", "java.lang"));
 	}
 }
