@@ -48,7 +48,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
-					paramsInUrl="false" multipart="true">
+					postType="FORMDATA">
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
 					<param name="file" sessionKey="fileContent" type="inputstream" />
@@ -191,14 +191,9 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" base64="true">
+					urlParam="url_param">
 					<param name="url_param" sessionKey="url" />
 				</sender>
-				<forward name="success" path="decodeFile" />
-			</pipe>
-
-			<pipe name="decodeFile" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode" outputType="bytes">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
@@ -270,4 +265,3 @@
 		</pipeline>
 	</adapter>
 </module>
-	
