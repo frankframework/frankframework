@@ -37,7 +37,7 @@
     {
       "name": "Master",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-      "descriptionHeader": "We test here that the sequence of groups, config children and attributes is right.",
+      "description": "We test here that the sequence of groups, config children and attributes is right.\n It is important that the sequences in @IbisDoc annotations, in the alphabetic order\n and in the order of appearance are all different.",
       "elementNames": ["Master"],
       "attributes": [
         {

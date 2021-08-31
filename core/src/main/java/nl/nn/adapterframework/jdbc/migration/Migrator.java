@@ -33,7 +33,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -58,7 +57,6 @@ public class Migrator implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private IbisContext ibisContext;
 	private LiquibaseImpl instance;
 
 	@Override
@@ -101,7 +99,7 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		else {
 			try {
 				JdbcConnection connection = new JdbcConnection(datasource.getConnection());
-				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
+				instance = new LiquibaseImpl(connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
 				ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -113,10 +111,6 @@ public class Migrator implements IConfigurable, AutoCloseable {
 				ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
 			}
 		}
-	}
-
-	public void setIbisContext(IbisContext ibisContext) {
-		this.ibisContext = ibisContext;
 	}
 
 	public void update() {

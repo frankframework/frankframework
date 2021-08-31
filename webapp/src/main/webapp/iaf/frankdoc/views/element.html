@@ -7,7 +7,7 @@
 	</h4>
 	Elements: <span ng-repeat="tag in element.elementNames"><code>{{tag}}</code><span ng-if="!$last">, </span></span>
 	<br />
-	<p ng-bind-html="::element.descriptionHeader | javadoc:this"></p>
+	<p ng-bind-html="::element.description | javadoc:this"></p>
 	<br />
 	<div ng-if="element.children" element-children></div>
 	<br />

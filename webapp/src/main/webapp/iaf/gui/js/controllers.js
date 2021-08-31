@@ -1262,7 +1262,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/store/"+$scope.processState;
+	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/stores/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1273,7 +1273,7 @@ angular.module('iaf.beheerconsole')
 	$scope.doDeleteMessage = function(message, callback) {
 		message.deleting = true;
 
-		Api.Delete($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
+		Api.Delete($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(message.id)), function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully deleted message with ID: "+message.id);
@@ -1285,13 +1285,13 @@ angular.module('iaf.beheerconsole')
 		}, false);
 	};
 	$scope.downloadMessage = function(messageId) {
-		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
+		window.open(Misc.getServerPath() + "iaf/api/"+$scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
 
 	$scope.doResendMessage = function(message, callback) {
 		message.resending = true;
 
-		Api.Put($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
+		Api.Put($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent(message.id)), false, function() {
 			if(callback != undefined && typeof callback == 'function')
 				callback(message.id);
 			$scope.addNote("success", "Successfully resent message with ID: "+message.id);
@@ -1514,7 +1514,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	Api.Get($scope.base_url+"/message/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
+	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
@@ -1550,7 +1550,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.pipeName)
 		return SweetAlert.Warning("Invalid URL", "No pipe name provided!");
 
-	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
+	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
 	$scope.downloadMessage = function(messageId) {
 		window.open(Misc.getServerPath() + "iaf/api/"+base_url+"/"+encodeURIComponent(encodeURIComponent(messageId))+"/download");
 	};
@@ -1563,7 +1563,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('PipeMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
-	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog";
+	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
 
 	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
@@ -1646,7 +1646,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.message.id)
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
-	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messagelog/"+encodeURIComponent(encodeURIComponent($scope.message.id));
+	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id));
 	Api.Get(url, function(data) {
 		$scope.message.data = data;
 	}, function(_, statusCode, statusText) {
@@ -2223,15 +2223,17 @@ angular.module('iaf.beheerconsole')
 	$scope.form = {};
 
 	var executeQueryCookie = Cookies.get("executeQuery");
-	if(executeQueryCookie) {
-		$scope.form.query = executeQueryCookie.query;
-		//Maybe also prefill datasource and result type?
-	}
 
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
 		$scope.form.datasource = data.datasources[0];
 		$scope.form.resultType = data.resultTypes[0];
+		if(executeQueryCookie) {
+			$scope.form.query = executeQueryCookie.query;
+			$scope.form.datasource = executeQueryCookie.datasource;
+			$scope.form.resultType = executeQueryCookie.resultType;
+		}
+		
 	});
 
 	$scope.submit = function(formData) {
@@ -2264,6 +2266,11 @@ angular.module('iaf.beheerconsole')
 	$scope.reset = function() {
 		$scope.form.query = "";
 		$scope.result = "";
+		$scope.form.datasource = $scope.datasources[0];
+		$scope.form.resultType = $scope.resultTypes[0];
+		$scope.form.avoidLocking=false;
+		$scope.form.trimSpaces=false;
+		Cookies.remove("executeQuery");
 	};
 }])
 

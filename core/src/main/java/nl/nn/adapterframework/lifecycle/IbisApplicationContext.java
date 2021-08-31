@@ -169,8 +169,9 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource(APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		classPathapplicationContext.setId("IbisApplicationContext");
-		classPathapplicationContext.setDisplayName("IbisApplicationContext");
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathapplicationContext.setId(instanceName);
+		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
 		return classPathapplicationContext;
 	}

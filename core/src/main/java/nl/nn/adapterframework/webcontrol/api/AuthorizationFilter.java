@@ -42,6 +42,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Manages authorization per resource/collection.
+ * A more fine-grained version of the CXF SecureAnnotationsInterceptor.
+ * 
+ * Default JAX-RS provider and is automatically picked-up by the FF!API Spring context because of the package (component) scanner.
  * 
  * @since   7.0-B1
  * @author  Niels Meijer
