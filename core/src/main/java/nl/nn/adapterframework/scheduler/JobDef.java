@@ -703,7 +703,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				String resultString = result.asString();
 				int numberOfRowsAffected = Integer.valueOf(resultString);
 				if(numberOfRowsAffected > 0) {
-					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there had been some process(es) finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
+					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
