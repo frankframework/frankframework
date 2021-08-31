@@ -170,6 +170,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.getSpecificParameters().size() >= 1) {
 			JsonArrayBuilder b = bf.createArrayBuilder();
 			frankElement.getSpecificParameters().forEach(sp -> b.add(getParameter(sp)));
+			result.add("specificParameters", b.build());
 		}
 		return result.build();
 	}

@@ -141,7 +141,7 @@ public class FrankElement implements Comparable<FrankElement> {
 
 	private void handlePossibleParameters(FrankClass clazz) {
 		this.meaningOfParameters = clazz.getJavaDocTag(JAVADOC_PARAMETERS);
-		for(String specificParameterStr: clazz.getAllJavaDocTagsOf(JAVADOC_PARAMETERS)) {
+		for(String specificParameterStr: clazz.getAllJavaDocTagsOf(JAVADOC_PARAMETER)) {
 			if(StringUtils.isBlank(specificParameterStr)) {
 				log.warn("FrankElement [{}] has specific parameters without a name or description", fullName);
 			}

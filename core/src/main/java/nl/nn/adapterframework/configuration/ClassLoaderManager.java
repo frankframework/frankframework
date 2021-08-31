@@ -114,7 +114,7 @@ public class ClassLoaderManager {
 						LOG.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(configurationName, null, msg, MessageKeeperLevel.INFO, ce);
+						ibisContext.log(msg, MessageKeeperLevel.INFO, ce);
 						break;
 					case WARN:
 						ApplicationWarnings.add(LOG, msg, ce);
