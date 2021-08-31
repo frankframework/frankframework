@@ -2,9 +2,9 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="LiquibaseScriptCtrl">
-    <div class="alert alert-warning" role="alert" type="warning" ng-if="error">
-        <span class="ng-binding ng-scope" ng-bind-html="error"></span>
-    </div>
+	<div class="alert alert-warning" role="alert" type="warning" ng-if="error">
+		<span class="ng-binding ng-scope" ng-bind-html="error"></span>
+	</div>
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
@@ -13,14 +13,6 @@
 				</div>
 				<div class="ibox-content">
 					<form role="form">
-						<div class="row form-group">
-							<label class="col-sm-3 control-label label-height-30">Datasource</label>
-							<div class="col-sm-9">
-								<select class="form-control" name="datasource" ng-model="form.datasource">
-									<option ng-repeat="datasource in datasources">{{datasource}}</option>
-								</select>
-							</div>
-						</div>
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Configuration</label>
 							<div class="col-sm-9">

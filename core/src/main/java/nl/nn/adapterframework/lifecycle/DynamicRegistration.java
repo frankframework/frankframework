@@ -19,16 +19,42 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServlet;
 
+/**
+ * Interface to use in combination with the {@link IbisInitializer} annotation.
+ * Classes that implement the annotation are automatically picked up by Spring, and allow you to use:
+ * <code>
+ * public void setServletManager(ServletManager servletManager) {
+ *  ServletManager.register(this);
+ * }
+ * </code>
+ * 
+ * @author Niels Meijer
+ *
+ */
 public interface DynamicRegistration {
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
-		public static final String[] ALL_IBIS_ROLES = "IbisObserver,IbisAdmin,IbisDataAdmin,IbisTester,IbisWebService".split(",");
-		public static final String[] ALL_IBIS_USER_ROLES = "IbisObserver,IbisAdmin,IbisDataAdmin,IbisTester".split(",");
+
+		public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
+		public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+
+		/** @return The {@link javax.servlet.http.HttpServlet Servlet} to register using the {@link ServletManager} */
 		public HttpServlet getServlet();
+
+		/** @return The URL the {@link javax.servlet.http.HttpServlet Servlet} should be mapped to. */
 		public String getUrlMapping();
+
+		/**
+		 * Not used when dtap.stage == LOC. See {@link ServletManager} for more information.
+		 * @return The default roles the {@link javax.servlet.http.HttpServlet Servlet} has, or <code>null</code> to disable.
+		 */
 		public String[] getRoles();
 	}
+
 	public interface ServletWithParameters extends Servlet {
+		/**
+		 * @return {@link javax.servlet.http.HttpServlet Servlet} specific init parameters
+		 */
 		public Map<String, String> getParameters();
 	}
 

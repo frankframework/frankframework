@@ -1298,7 +1298,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return retryNamespaceDefs;
 	}
 
-	@IbisDoc({"23", "when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10 s"})
+	@IbisDoc({"23", "when the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10"})
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
 	}

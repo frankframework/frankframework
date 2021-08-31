@@ -794,7 +794,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
+	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "queue"})
 	public void setDestinationType(String destinationType) {
 		this.destinationType = EnumUtils.parse(DestinationType.class, "destinationType", destinationType);
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
@@ -936,7 +936,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 
-	@IbisDoc({"11", "The time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Mmake sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
+	@IbisDoc({"11", "The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout ", "0"})
 	public void setMessageTimeToLive(long ttl){
 		this.messageTimeToLive=ttl;
 	}

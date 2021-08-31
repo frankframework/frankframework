@@ -358,7 +358,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				return null;
 			}
 			Multipart multiPart = (Multipart) f.getContent();
-			Iterator<MimeBodyPart> result = new Iterator<MimeBodyPart>() {
+			return new Iterator<MimeBodyPart>() {
 
 				MimeBodyPart part = null;
 				int i = 0;
@@ -373,7 +373,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 							part = null;
 						}
 					} catch (MessagingException e) {
-						log.warn(e);
+						log.warn("unable to find part", e);
 					}
 				}
 
@@ -392,7 +392,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				}
 
 			};
-			return result;
 		} catch (MessagingException | IOException e) {
 			throw new FileSystemException(e);
 		}
