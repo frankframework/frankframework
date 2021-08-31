@@ -13,6 +13,7 @@
 		scope="singleton"
 	/>
 
+	<!-- Replace this with a <context:property-placeholder /> !! -->
 	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
 
 	<bean

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
@@ -55,8 +57,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setConfigLocations(getSpringConfigurationFiles(applicationContext.getClassLoader()));
-
+		applicationContext.setConfigLocations(getSpringConfigurationFiles());
 		applicationContext.setDisplayName("IbisApplicationInitializer");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
@@ -67,18 +68,24 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		return applicationContext;
 	}
 
-	/**
-	 * Loads webApplicationContext and files specified by the SPRING.WAC.CONFIG.LOCATIONS
-	 * property in AppConstants.properties
-	 * 
-	 * @param classLoader to use in order to find and validate the Spring Configuration files
-	 * @return A String array containing all files to use.
-	 */
-	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
-		List<String> baseConfigLocations = new ArrayList<>();
-		baseConfigLocations.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
-		return IbisApplicationContext.getSpringConfigurationFiles(classLoader, baseConfigLocations,
-				"SPRING.WAC.CONFIG.LOCATIONS", log);
+	private String[] getSpringConfigurationFiles() {
+		List<String> springConfigurationFiles = new ArrayList<>();
+		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+
+		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
+		URL fileURL = IbisApplicationInitializer.class.getResource(file);
+		if(fileURL == null) {
+			log.warn("unable to locate TestTool configuration ["+file+"]");
+		} else {
+			if(file.indexOf(":") == -1) {
+				file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
+			}
+
+			log.info("loading TestTool configuration ["+file+"]");
+			springConfigurationFiles.add(file);
+		}
+
+		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
 	@Override
