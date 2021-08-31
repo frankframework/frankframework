@@ -188,7 +188,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setTier(tier);
 	}
 
-	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires", "" }) 
+	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires. Use <code>-1</code> never expire", "-1" }) 
 	public void setExpirationInDays(int expirationInDays) {
 		getFileSystem().setExpirationInDays(expirationInDays);
 	}
