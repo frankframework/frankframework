@@ -17,7 +17,7 @@
   </xs:element>
   <xs:element name="RoleNameTChild">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild", with package name nl.nn.something.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:attribute ref="active" />

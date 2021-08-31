@@ -284,6 +284,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (getMessageType().equalsIgnoreCase("contents")) {
 				return getFileSystem().readFile(rawMessage, getCharset());
 			}
+			if (getMessageType().equalsIgnoreCase("info")) {
+				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), rawMessage).toXML());
+			}
+
 			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
 			if (attributes!=null) {
 				Object result=attributes.get(getMessageType());
@@ -496,7 +500,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		this.overwrite = overwrite;
 	}
 
-	@IbisDoc({"11", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file. For any other value, the attributes of the file are searched and used", "path"})
+	@IbisDoc({"11", "Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used", "path"})
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}

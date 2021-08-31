@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -31,17 +34,17 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.testutil.TestAppender;
+import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
-	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
-	private final String ERROR_SUFFIX = "]";
+	private static final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
+	private static final String ERROR_SUFFIX = "]";
 
 	@Override
 	public DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
@@ -184,8 +187,9 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		List<LogEvent> log = appender.getLogEvents();
 		LogEvent firstLogEntry = log.get(log.size()-1);
-		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
+		assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
+
 		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
