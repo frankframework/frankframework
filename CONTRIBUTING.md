@@ -236,9 +236,9 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 # Frank!Doc - Documentation for Frank developers
 
-The Frank!Framework is used by Frank developers. They write XML files (Frank configurations) that each define collection of nested Java objects. This is a collection of Java objects that is nested in such a way that the software integration problem of the Frank!Developer is solved. The Java objects have the types that are available in this repository. For example, when a Frank configuration contains a tag `<XsltPipe>`, an object of type `XsltPipe` is instantiated.
+The Frank!Framework is used by Frank developers. They write XML files (Frank configurations) to solve software integration problems. These XML files are translated to Java objects that will collaborate to do the intended job. The Java objects have the types that are available in this repository. For example, when a Frank configuration contains a tag `<XsltPipe>`, an object of type `XsltPipe` is instantiated.
 
-Frank developers need to know which XML elements they can use and what attributes they have. This information is available in an XML schema file and in a JSON file, which are collectively referred to as the Frank!Doc. The Frank!Doc is generated from the source code using a doclet, which is implemented in sub-project `frankDoc`. When you update the sources, please take care that the Frank!Doc remains correct. Please see [FRANKDOC.md](./FRANKDOC.md) for more information.
+Frank developers need to know which XML elements they can use and what attributes they have. This information is available in an XML schema file and in a JSON file, which are collectively referred to as the Frank!Doc. The Frank!Doc is generated from the source code using a doclet, which is implemented in sub-project `frankDoc`. The Frank!Doc also creates a second XML schema file that is used by the Frank!Framework to parse Frank configs. When you update the sources, please take care that the Frank!Doc remains correct. Please see [FRANKDOC.md](./FRANKDOC.md) for more information.
 
 Thanks,
 The Frank!Framework Team
