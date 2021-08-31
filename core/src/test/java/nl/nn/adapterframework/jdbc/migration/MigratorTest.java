@@ -41,7 +41,7 @@ public class MigratorTest extends JdbcTestBase {
 		}
 
 		migrator = getConfiguration().createBean(Migrator.class);
-		migrator.setDatasourceName(getDataSourceName());
+		AppConstants.getInstance().setProperty("jdbc.migrator.dataSource", getDataSourceName());
 	}
 
 	@Test
