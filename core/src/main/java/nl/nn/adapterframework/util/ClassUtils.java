@@ -400,7 +400,7 @@ public class ClassUtils {
 			f.setAccessible(true);
 			return f.get(o);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("unable to retrieve field [{}] from object [{}]", name, o, e);
 			return e.getMessage();
 		}
 	}

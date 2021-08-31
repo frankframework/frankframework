@@ -6,10 +6,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
@@ -19,7 +17,6 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MigratorTest extends JdbcTestBase {
 	private static TestConfiguration configuration; //Static to sync over all DMBS' tests
 	private Migrator migrator = null;
-	private IbisContext ibisContext = Mockito.spy(new IbisContext());
 
 	private TestConfiguration getConfiguration() {
 		if(configuration == null) {
@@ -45,11 +42,6 @@ public class MigratorTest extends JdbcTestBase {
 
 		migrator = getConfiguration().createBean(Migrator.class);
 		migrator.setDatasourceName(getDataSourceName());
-		migrator.setIbisContext(ibisContext);
-	}
-
-	private MessageKeeper getMessageKeeper() {
-		return ibisContext.getMessageKeeper(TestConfiguration.TEST_CONFIGURATION_NAME);
 	}
 
 	@Test
@@ -58,10 +50,10 @@ public class MigratorTest extends JdbcTestBase {
 		migrator.configure();
 		migrator.update();
 
-		MessageKeeper messageKeeper = getMessageKeeper();
+		MessageKeeper messageKeeper = configuration.getMessageKeeper();
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
-		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		assertEquals(2, messageKeeper.size()); //Configuration startup message + liquibase update
+		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
 	}
 
 	@Test

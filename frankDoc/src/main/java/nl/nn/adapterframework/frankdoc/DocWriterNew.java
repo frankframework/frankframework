@@ -25,15 +25,12 @@ import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addDocumentat
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElement;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementRef;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addElementWithType;
-import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addEnumeration;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addExtension;
-import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addRestriction;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.addSequence;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createAttributeGroup;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createComplexType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createElementWithType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createGroup;
-import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.createSimpleType;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.getXmlSchema;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse.OPTIONAL;
 import static nl.nn.adapterframework.frankdoc.DocWriterNewXmlUtils.AttributeUse.REQUIRED;
@@ -822,9 +819,9 @@ public class DocWriterNew {
 	private void addGenericElementOptionAttributes(XmlBuilder complexType, ConfigChildSet configChildSet) {
 		attributeTypeStrategy.addAttributeActive(complexType);
 		addAttribute(complexType, ELEMENT_ROLE, FIXED, configChildSet.getRoleName(), version.getRoleNameAttributeUse());
-		Optional<FrankElement> defaultFrankElement = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
-		if(defaultFrankElement.isPresent()) {
-			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElement.get().getFullName(), OPTIONAL);
+		Optional<String> defaultFrankElementName = configChildSet.getGenericElementOptionDefault(version.getElementFilter());
+		if(defaultFrankElementName.isPresent()) {
+			addAttribute(complexType, CLASS_NAME, DEFAULT, defaultFrankElementName.get(), OPTIONAL);
 		} else {
 			addAttribute(complexType, CLASS_NAME, DEFAULT, null, REQUIRED);
 		}
@@ -1073,7 +1070,7 @@ public class DocWriterNew {
 		AttributeEnum attributeEnum = attribute.getAttributeEnum();
 		if(! definedAttributeEnumInstances.contains(attributeEnum.getFullName())) {
 			definedAttributeEnumInstances.add(attributeEnum.getFullName());
-			addAttributeEnumType(attributeEnum);
+			xsdComplexItems.add(attributeTypeStrategy.createAttributeEnumType(attributeEnum));
 		}
 		return result;
 	}
@@ -1095,20 +1092,6 @@ public class DocWriterNew {
 			result.append(elementChild.getDefaultValue());
 		}
 		return result.toString();
-	}
-
-	private void addAttributeEnumType(AttributeEnum attributeEnum) {
-		XmlBuilder simpleType = createSimpleType(attributeEnum.getUniqueName(ATTRIBUTE_VALUES_TYPE));
-		xsdComplexItems.add(simpleType);
-		final XmlBuilder restriction = addRestriction(simpleType, "xs:string");
-		attributeEnum.getValues().forEach(v -> addEnumValue(restriction, v));
-	}
-
-	private void addEnumValue(XmlBuilder restriction, AttributeEnumValue v) {
-		XmlBuilder valueBuilder = addEnumeration(restriction, v.getLabel());
-		if(v.getDescription() != null) {
-			addDocumentation(valueBuilder, v.getDescription());
-		}
 	}
 
 	private String xsdElementType(FrankElement frankElement) {

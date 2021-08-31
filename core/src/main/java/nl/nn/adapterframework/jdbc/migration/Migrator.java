@@ -26,7 +26,6 @@ import liquibase.exception.ValidationFailedException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -41,7 +40,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class Migrator extends JdbcFacade implements AutoCloseable {
 
-	private IbisContext ibisContext;
 	private LiquibaseImpl instance;
 
 	public Migrator() {
@@ -76,7 +74,7 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		else {
 			try {
 				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
+				instance = new LiquibaseImpl(connection, configuration, changeLogFile);
 			}
 			catch (ValidationFailedException e) {
 				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -88,10 +86,6 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 			}
 		}
-	}
-
-	public void setIbisContext(IbisContext ibisContext) {
-		this.ibisContext = ibisContext;
 	}
 
 	public void update() {

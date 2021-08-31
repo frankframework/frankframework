@@ -528,7 +528,7 @@ public class FrankDocModel {
 			return allTypes.get(clazz.getName());
 		}
 		FrankDocGroup group = groupFactory.getGroup(clazz);
-		final ElementType result = new ElementType(clazz, group);
+		final ElementType result = new ElementType(clazz, group, classRepository);
 		// If a containing FrankElement contains the type being created, we do not
 		// want recursion.
 		allTypes.put(result.getFullName(), result);

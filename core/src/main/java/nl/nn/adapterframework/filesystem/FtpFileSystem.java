@@ -282,7 +282,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getCanonicalName(FTPFile f) throws FileSystemException {
+	public String getCanonicalName(FTPFile f) {
 		return f.getName(); //Should include folder structure if known
 	}
 
@@ -354,10 +354,11 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 		@Override
 		public void remove() {
+			FTPFile file = files.get(i++);
 			try {
-				deleteFile(files.get(i++));
+				deleteFile(file);
 			} catch (FileSystemException e) {
-				log.warn(e);
+				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
 			}
 		}
 	}

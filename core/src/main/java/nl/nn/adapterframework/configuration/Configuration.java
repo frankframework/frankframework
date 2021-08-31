@@ -27,9 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -50,6 +53,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -62,6 +66,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
+	private static final Logger secLog = LogUtil.getLogger("SEC");
 
 	private Boolean autoStart = null;
 	private boolean enabledAutowiredPostProcessing = false;
@@ -189,6 +194,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		setId(getId()); // Update the setIdCalled flag in AbstractRefreshableConfigApplicationContext. When wired through spring it calls the setBeanName method.
+
 		super.refresh();
 
 		if(adapterManager == null) { //Manually set the AdapterManager bean
@@ -222,6 +229,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
+
 		super.start();
 		state = BootState.STARTED;
 	}
@@ -233,6 +241,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
 		state = BootState.STARTING;
+		long start = System.currentTimeMillis();
 
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
@@ -255,6 +264,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		setConfigured(true);
+
+		String msg;
+		if (isAutoStart()) {
+			getIbisManager().startConfiguration(this);
+			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
+		}
+		else {
+			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
+		}
+		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
+		publishEvent(new ConfigurationMessageEvent(this, msg));
 	}
 
 	@Override
@@ -265,6 +285,38 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		} finally {
 			state = BootState.STOPPED;
 		}
+	}
+
+	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
+	@Override
+	public void publishEvent(ApplicationEvent event) {
+		if(event instanceof ContextClosedEvent) {
+			secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] closed");
+			publishEvent(new ConfigurationMessageEvent(this, "closed"));
+		}
+
+		super.publishEvent(event);
+	}
+
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message) {
+		log(message, (MessageKeeperLevel) null);
+	}
+
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message, MessageKeeperLevel level) {
+		this.publishEvent(new ConfigurationMessageEvent(this, message, level));
+	}
+
+	/**
+	 * Log a message to the MessageKeeper that corresponds to this configuration
+	 */
+	public void log(String message, Exception e) {
+		this.publishEvent(new ConfigurationMessageEvent(this, message, e));
 	}
 
 	public boolean isUnloadInProgressOrDone() {
@@ -367,13 +419,28 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
+	/**
+	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
+	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
+	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
+	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
+	 * 
+	 * The DisplayName will always be updated, which is purely used for logging purposes.
+	 */
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
-			setId(name); //ID should never be NULL
+			if(state == BootState.STARTING && !getName().equals(name)) {
+				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+			}
+
+			setBeanName(name);
 		}
 	}
 
+	/**
+	 * Returns the original configured name of this configuration
+	 */
 	@Override
 	public String getName() {
 		return getId();
@@ -387,6 +454,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
+			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
+				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+			}
+
 			this.version = version;
 		}
 	}
