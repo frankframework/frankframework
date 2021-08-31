@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity;
@@ -33,13 +34,23 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Enables the use of programmatically adding servlets to the given ServletContext<br/>
- * <br/>
- * The following properties can be set to change the DynamicRegistration.Servlet registration behaviour<br/>
- * <code>servlet.<name>.transportGuarantee</code> - forces https when set to CONFIDENTIAL<br/>
- * <code>servlet.<name>.securityRoles</code> - use the default IBIS roles or create your own<br/>
- * <code>servlet.<name>.urlMapping</code> - path the servlet listens to<br/>
- * <code>servlet.<name>.loadOnStartup</code> - automatically load or use lazyloading<br/>
+ * <p>
+ * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
+ * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
+ * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
+ * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} init phase.
+ * </p>
+ * <p>
+ * When <code>dtap.stage</code> is set to LOC, the default behaviour of each servlet is not-secured (no authentication) on HTTP.<br/>
+ * When <code>dtap.stage</code> is NOT set to LOC, the default behaviour of each servlet is secured (authentication enforced) on HTTPS.
+ * </p>
+ * <p>
+ * To change this behaviour the following properties can be used;
+ * <code>servlet.servlet-name.transportGuarantee</code> - forces HTTPS when set to CONFIDENTIAL, or HTTP when set to NONE<br/>
+ * <code>servlet.servlet-name.securityRoles</code> - use the default IBIS roles or create your own<br/>
+ * <code>servlet.servlet-name.urlMapping</code> - path the servlet listens to<br/>
+ * <code>servlet.servlet-name.loadOnStartup</code> - automatically load or use lazy-loading (affects application startup time)<br/>
+ * </p>
  * 
  * @author Niels Meijer
  *
@@ -47,7 +58,7 @@ import org.apache.logging.log4j.Logger;
 public class ServletManager {
 
 	private ServletContext servletContext = null;
-	private List<String> registeredRoles = new ArrayList<String>();
+	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
 
 	private ServletContext getServletContext() {

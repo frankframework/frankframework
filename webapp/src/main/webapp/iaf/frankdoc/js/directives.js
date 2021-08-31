@@ -49,6 +49,12 @@ angular.module('iaf.frankdoc')
 		replace: true,
 		templateUrl: 'views/element-attributes.html'
 	};
+}]).directive("suppressAttributeInheritance", [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: "views/suppress-attribute-inheritance.html"
+	}
 }]).directive("attributeDescription", [function() {
 	return {
 		restrict: 'A',

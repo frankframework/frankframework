@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of
@@ -165,9 +166,9 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapHeaderNamespace;
 	}
 
-	@IbisDoc({"5", "SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
+	@IbisDoc({"5", "SOAP envelope XSD version to use", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
+		this.soapVersion = EnumUtils.parse(SoapVersion.class, soapVersion);
 	}
 	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;
