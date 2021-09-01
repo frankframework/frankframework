@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +31,6 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.JndiContextPrefixFactory;
-import nl.nn.adapterframework.jdbc.ObjectLocator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -45,6 +45,8 @@ public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Class<L> lookupClass;
+	private @Setter String initialContextFactory = null;
+	private @Setter String providerURL = null;
 	private @Setter String jndiContextPrefix = null;
 
 	protected Map<String,O> objects = new ConcurrentHashMap<>();
@@ -71,6 +73,18 @@ public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 	 */
 	private L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
 		L object = null;
+		if (StringUtils.isNotEmpty(initialContextFactory)) {
+			if (jndiEnvironment==null) {
+				jndiEnvironment = new Properties();
+			}
+			jndiEnvironment.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactory);
+		}
+		if (StringUtils.isNotEmpty(providerURL)) {
+			if (jndiEnvironment==null) {
+				jndiEnvironment = new Properties();
+			}
+			jndiEnvironment.put(Context.PROVIDER_URL, providerURL);
+		}
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		try {
 			object = ObjectLocator.lookup(prefixedJndiName, jndiEnvironment, lookupClass);

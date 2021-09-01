@@ -3,9 +3,9 @@
 <configuration name="Ibis4Test">
 	<jmsRealms>
 		<jmsRealm realmName="jdbc" datasourceName="${jdbc.datasource.default}"/>
-		<jmsRealm realmName="qcf" queueConnectionFactoryName="${jms.connectionfactory.qcf}" active="${active.jms}"/>
-		<jmsRealm realmName="fxf" queueConnectionFactoryName="${jms.connectionfactory.fxf}" active="${active.fxf}"/>
-		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="jms/qcf_tibco_esb_rr" active="${active.tibco}"/>
-		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="jms/qcf_tibco_esb_ff" active="${active.tibco}"/>
+		<jmsRealm realmName="qcf" queueConnectionFactoryName="${jms.connectionfactory.qcf}" initialContextFactoryName="${jms.initialContextFactory.qcf}" providerURL="${jms.providerurl.qcf}" active="${active.jms}"/>
+		<jmsRealm realmName="fxf" queueConnectionFactoryName="${jms.connectionfactory.fxf}" initialContextFactoryName="${jms.initialContextFactory.fxf}" providerURL="${jms.providerurl.fxf}" active="${active.fxf}"/>
+		<jmsRealm realmName="qcf_tibco_esb_rr" queueConnectionFactoryName="${tibco.connectionfactory.rr}" username="p" password="q" initialContextFactoryName="${jms.initialContextFactory.tibco}" providerURL="${jms.providerurl.tibco_esb_rr}" active="${active.tibco}"/>
+		<jmsRealm realmName="qcf_tibco_esb_ff" queueConnectionFactoryName="${tibco.connectionfactory.ff}" username="x" password="y" initialContextFactoryName="${jms.initialContextFactory.tibco}" providerURL="${jms.providerurl.tibco_esb_ff}" active="${active.tibco}"/>
 	</jmsRealms>
 </configuration>
