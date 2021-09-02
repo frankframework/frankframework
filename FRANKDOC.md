@@ -9,7 +9,7 @@ The Maven build of this project includes the execution of a doclet, which is imp
 
 These files define the syntax of Frank configurations written by Frank developers. They also provide documentation about the semantics, the meaning, of the XML elements and attributes in a Frank config.
 
-The frankDoc doclet generates these files based on the Java source code of this repository, including the JavaDoc comments. The remainder of this document explains how the Java source code is used to define the syntax of Frank configurations. This file does not explain the exact XML schema code produced, but focuses on the rules that have to be followed by Frank developers when they write their configurations.
+The frankDoc doclet generates these files based on the Java source code of this repository, including the JavaDoc comments. The remainder of this document explains how the Java source code is used to define the syntax of Frank configurations, and explains what information is provided as documentation. It does not explain the exact XML schema code produced, but focuses on the rules that have to be followed by Frank developers when they write their configurations.
 
 ## Config children
 
@@ -19,7 +19,7 @@ An XML document read by the F!F, a Frank configuration, consists of nested eleme
 	public void registerAdapter(Adapter adapter)
 ```
 
-The frankDoc uses this method to introduce a sub-element of `<Configuration>` that matches with Java type of the method argument, [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). From the import statements of class Configuration you can see that this is `nl.nn.adapterframework.core.Adapter`.
+The frankDoc uses this method to introduce a sub-element of `<Configuration>` that matches with the Java type of the method argument, [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). From the import statements of class Configuration you can see that this is `nl.nn.adapterframework.core.Adapter`.
 
 What XML tag will be introduced to reference Java class Adapter? This tag name is based on a file [digester-rules.xml](./core/src/main/resources/digester-rules.xml). This file has the following line:
 
@@ -29,9 +29,22 @@ What XML tag will be introduced to reference Java class Adapter? This tag name i
 
 This line mentions method `registerAdapter` as attribute "registerMethod" and links it to "pattern" `*/adapter`. The string after the last `/` is called the *role name*. The argument type [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java) is not a Java interface. In this case, the introduced XML element is the role-name transformed to camel case, which is `<Adapter>`.
 
-When a configuration is parsed, the F!F creates an object of of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). When the tag `<Adapter>` is encountered, an [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java) object is created. The Configuration's method `registerAdapter()` is called with the Adapter object as the argument. This way, the Configuration object gets access to the Adapter object. The same is done recursively for the other config child setters of class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) and class [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). The parse process produces an object of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) that has a member variable pointing to objects of type [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). There are also member variables pointing to other objects that correspond to the the other child XML elements. The child objects of the Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) in turn have child objects that correspond to the child XML elements nested in the children of `<Configuration>`.
+When a configuration is parsed, the F!F creates an object of of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). When the tag `<Adapter>` is encountered, an [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java) object is created. The Configuration's method `registerAdapter()` is called with the Adapter object as the argument. This way, the Configuration object gets access to the Adapter object. The same is done recursively for the other config child setters of class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) and class [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). The parse process produces an object of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) that has a member variable pointing to objects of type [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). There are also member variables pointing to other objects that correspond to the the other child XML elements. The child objects of the [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) in turn have child objects that correspond to the child XML elements nested in the children of `<Configuration>`.
 
-The config child setter `registerAdapter()` has a non-interface argument. Config child setters that have a Java interface as argument have a different rule for the corresponding XML element. As an example, consider the following config child setter of class [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver):
+The algorithm that calculates the XML tag name seems overly-complicated; we just get the tag `<Adapter>` for the Java class Adapter. This can be explained by another example. Frank developers use a tag `<Forward>` to connect the pipes in a `<Pipeline>`. This tag exists because class [PipeLine](./core/src/main/java/nl/nn/adapterframework/core/PipeLine.java) has the following config child setter:
+
+```
+	public void registerForward(PipeForward forward)
+```
+
+File [digester-rules.xml](./core/src/main/resources/digester-rules.xml) has the following rule:
+```
+	<rule pattern="*/forward" registerMethod="registerForward"/>
+```
+
+This links Java class [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java) to XML tag `<Forward>`. Frank developers should be glad that they don't have to type `<PipeForward>`.
+
+The config child setters `registerAdapter()` and `registerForward()` have non-interface arguments. Config child setters that have a Java interface as argument have a different rule for the corresponding XML element. As an example, consider the following config child setter of class [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver):
 
 ```
 	public void setErrorSender(ISender errorSender)
