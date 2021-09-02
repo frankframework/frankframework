@@ -68,7 +68,7 @@ Configuration children are inherited. A `<LogSender>` can have a `<Param>` tag b
 Not every Java method introduces a config child. Here are the rules for config child setters:
 * A config child setter is public, returns void and takes one argument.
 * The argument is a non-primitive Java type and it is also not a boxed primitive type. The argument can be of type String, which is a special case that will be explained later. Normally, the argument type is a Java class that can be used as a building block of a configuration.
-* Only classes that are used as config children themselves can have config child setters. Consider a hypothetic class Xyz on the classpath. It is not the argument of a config child setter. It also does not implement any interface that is the argument of a config child setter. Then no method of Xyz is a config child setter.
+* Only classes that are used as config children themselves can have config child setters. Consider a hypothetic class `Xyz` on the classpath. It is not the argument of a config child setter. It also does not implement any interface that is the argument of a config child setter. Then no method of `Xyz` is a config child setter.
 * Only methods that have a role name in [digester-rules.xml](./core/src/main/resources/digester-rules.xml) can be config child setters.
 * A config child setter starting with the string `set` results in an XML element that can be added only once within its direct parent element.
 * A confic child setter starting with the string `add` or the string `register` results in an XML element that is allowed to occur multiple times.
