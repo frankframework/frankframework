@@ -9,11 +9,11 @@ The Maven build of this project includes the execution of a doclet, which is imp
 
 These files define the syntax of Frank configurations written by Frank developers. They also provide documentation about the semantics, the meaning, of the XML elements and attributes in a Frank config.
 
-The frankDoc doclet generates these files based on the Java source code of this repository. The remainder of this document explains how the Java source code is used to define the syntax of Frank configurations. This file does not explain the exact XML schema code produced, but focuses on the rules that have to be followed by Frank developers when they write their configurations.
+The frankDoc doclet generates these files based on the Java source code of this repository, including the JavaDoc comments. The remainder of this document explains how the Java source code is used to define the syntax of Frank configurations. This file does not explain the exact XML schema code produced, but focuses on the rules that have to be followed by Frank developers when they write their configurations.
 
 ## Config children
 
-An XML document read by the F!F, a Frank configuration, consists of nested elements that each can have attributes. Each element that is allowed in the XML has a corresponding Java class. The top-level XML element of a configuration is `<Configuration>`, which corresponds to Java class [Configuration](./core/src/main/java/nl.nn.adapterframework/configuration/Configuration.java). For each allowed sub-element of an element, the element's Java class has a method (config child setter). As an example, Java class `Configuration` has the following config child setter:
+An XML document read by the F!F, a Frank configuration, consists of nested elements that each can have attributes. Each element that is allowed in the XML has a corresponding Java class. The top-level XML element of a configuration is `<Configuration>`, which corresponds to Java class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). For each allowed sub-element of an element, the element's Java class has a method (config child setter). As an example, Java class `Configuration` has the following config child setter:
 
 ```
 	public void registerAdapter(Adapter adapter)
