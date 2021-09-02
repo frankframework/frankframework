@@ -112,17 +112,17 @@ The Frank!Doc provides descriptions for XML elements, attributes and config chil
 
 ![FrankDoc website example](./frankDocWebsiteDescriptions.jpg)
 
-In the diagram, number 1 is the JavaDoc comment above a Java class. Number 2 is the JavaDoc of a config child setter. Number 3 is the documented default value, which you can set using JavaDoc tag `@ff.default`.
+In the diagram, number 1 is the JavaDoc comment above a Java class. Number 2 is the JavaDoc of an attribute setter. Number 3 is the documented default value, which you can set using JavaDoc tag `@ff.default`.
 
 Config children appear in a table that is similar to the attributes table. Descriptions of config children appear in a similar way, but note that the `@ff.default` tag has no meaning for them.
 
-Config child descriptions do not appear in the XSDs, but attribute descriptions and element descriptions are. For element descriptions, only the first sentence is included in the XSDs, keeping tooltips for Frank developers small.
+Config child descriptions do not appear in the XSDs, but attribute descriptions and element descriptions do. For element descriptions, only the first sentence is included in the XSDs, keeping tooltips for Frank developers small.
 
 Enum values for restricted attributes can also have descriptions. Provide them by adding JavaDoc comments to the enum constants. Be careful to put these JavaDocs before `@EnumLabel` annotations, not after.
 
 In the Java code you can find Java annotations `@IbisDoc` and `@IbisDocRef`. Using these is deprecated.
 
-Finally, some Java classes have an `addParameter` config child setter which means that they allow a `<Param>` tag. The meaning of these parameters depends on the XML element, or Java class, that contains them. When pull request https://github.com/ibissource/iaf/pull/2169 will have been merged, you will be able to document the meaning these parameters. In the JavaDoc about a Java class declaration, use the JavaDoc tag `@ff.parameters` to tell what parameters mean for the annotated class. Use the JavaDoc tag `@ff.parameter` to explain the specific meaning of a named parameter.
+Finally, some Java classes have an `addParameter` config child setter which means that they allow a `<Param>` tag. The meaning of these parameters depends on the XML element, or Java class, that contains them. When pull request https://github.com/ibissource/iaf/pull/2169 will have been merged, you will be able to document the meaning of these parameters. In the JavaDoc about a Java class declaration, use the JavaDoc tag `@ff.parameters` to tell what parameters mean for the annotated class. Use the JavaDoc tag `@ff.parameter` to explain the specific meaning of a named parameter.
 
 ## Fine-tuning
 
