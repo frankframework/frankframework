@@ -54,7 +54,7 @@ This config child setter introduces many different XML elements. For every imple
 
 This config child setter also introduces an XML tag `<ErrorSender>`, derived from the role name. It has a mandatory attribute `className` that should be the full name of a Java class that implements interface `ISender`. This way, we support that the Frank!Framework uses custom code. Any class on the Java classpath can be referenced this way, also if it is not part of this repository.
 
-Please note that [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver) also has a config child setter
+Please note that [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver.java) also has a config child setter
 
 ```
 	public void setSender(ISender sender)
