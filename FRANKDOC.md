@@ -44,7 +44,7 @@ File [digester-rules.xml](./core/src/main/resources/digester-rules.xml) has the 
 
 This links Java class [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java) to XML tag `<Forward>`. Frank developers should be glad that they don't have to type `<PipeForward>`.
 
-The config child setters `registerAdapter()` and `registerForward()` have non-interface arguments. Config child setters that have a Java interface as argument have a different rule for the corresponding XML element. As an example, consider the following config child setter of class [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver):
+The config child setters `registerAdapter()` and `registerForward()` have non-interface arguments. Config child setters that have a Java interface as argument have a different rule for the corresponding XML element. As an example, consider the following config child setter of class [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver.java):
 
 ```
 	public void setErrorSender(ISender errorSender)
