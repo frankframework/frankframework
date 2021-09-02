@@ -73,6 +73,8 @@ Not every Java method introduces a config child. Here are the rules for config c
 * A config child setter starting with the string `set` results in an XML element that can be added only once within its direct parent element.
 * A config child setter starting with the string `add` or the string `register` results in an XML element that is allowed to occur multiple times.
 
+Finally, the sequence of config child setters is important. We want that Frank developers include config children in a fixed sequence. This sequence is enforced in `FrankConfig-strict.xsd`. Frank developers thus see it if they violate the sequence during development. The sequence is not enforced in `FrankConfig-compatibility.xsd`, so configs with sequence violations can still be parsed. The prescribed sequence follows the sequence of the config child setters, putting inherited config child setters after declared config child setters. The sequence of the inherited config children is like the config child sequence for the parent class.
+
 ## Attributes
 
 The XML elements allowed in a Frank configuration can have attributes. An XML element is allowed to have an attribute if the Java class corresponding to the XML element has a setter method for the attribute, an attribute setter. A Java method is an attribute setter if it satisfies the following:
@@ -106,4 +108,28 @@ This will restrict the allowed values according to enum type `PostType`, a neste
 
 ## Default values and descriptions
 
+The Frank!Doc provides descriptions for XML elements, attributes and config children. Element descriptions and attribute descriptions appear in the Frank!Doc webapplication as shown below:
+
+![FrankDoc website example](./frankDocWebsiteDescriptions.jpg)
+
+In the diagram, number 1 is the JavaDoc comment above a Java class. Number 2 is the JavaDoc of a config child setter. Number 3 is the documented default value, which you can set using JavaDoc tag `@ff.default`.
+
+Config children appear in a table that is similar to the attributes table. Descriptions of config children appear in a similar way, but note that the `@ff.default` tag has no meaning for them.
+
+Config child descriptions do not appear in the XSDs, but attribute descriptions and element descriptions are. For element descriptions, only the first sentence is included in the XSDs, keeping tooltips for Frank developers small.
+
+Enum values for restricted attributes can also have descriptions. Provide them by adding JavaDoc comments to the enum constants. Be careful to put these JavaDocs before `@EnumLabel` annotations, not after.
+
+In the Java code you can find Java annotations `@IbisDoc` and `@IbisDocRef`. Using these is deprecated.
+
+Finally, some Java classes have an `addParameter` config child setter which means that they allow a `<Param>` tag. The meaning of these parameters depends on the XML element, or Java class, that contains them. When pull request https://github.com/ibissource/iaf/pull/2169 will have been merged, you will be able to document the meaning these parameters. In the JavaDoc about a Java class declaration, use the JavaDoc tag `@ff.parameters` to tell what parameters mean for the annotated class. Use the JavaDoc tag `@ff.parameter` to explain the specific meaning of a named parameter.
+
 ## Fine-tuning
+
+#### Groups in the webapplication
+
+#### Deprecated Java code
+
+#### Attribute exclusion
+
+#### Resolving ownership of multiple groups
