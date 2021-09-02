@@ -71,9 +71,38 @@ Not every Java method introduces a config child. Here are the rules for config c
 * Only classes that are used as config children themselves can have config child setters. Consider a hypothetic class `Xyz` on the classpath. It is not the argument of a config child setter. It also does not implement any interface that is the argument of a config child setter. Then no method of `Xyz` is a config child setter.
 * Only methods that have a role name in [digester-rules.xml](./core/src/main/resources/digester-rules.xml) can be config child setters.
 * A config child setter starting with the string `set` results in an XML element that can be added only once within its direct parent element.
-* A confic child setter starting with the string `add` or the string `register` results in an XML element that is allowed to occur multiple times.
+* A config child setter starting with the string `add` or the string `register` results in an XML element that is allowed to occur multiple times.
 
 ## Attributes
+
+The XML elements allowed in a Frank configuration can have attributes. An XML element is allowed to have an attribute if the Java class corresponding to the XML element has a setter method for the attribute, an attribute setter. A Java method is an attribute setter if it satisfies the following:
+
+* The method name starts with the string `set`, returns void and takes one argument.
+* The argument is of a primitive type or of type String.
+* The method is public.
+
+The name of the attribute is derived from the setter method name by removing the initial string `set` and by making the first character of the remaining string loser-case. Class [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java) has attribute setter
+
+    public void setPath(String path)
+
+and hence `<Forward>` has attribute `path`.
+
+The Frank!Doc includes type-checking. The Frank!Doc webapplication documents whether the value of an attribute in a configuration is a Boolean, an integer or a string. This information is also available in `FrankConfig-strict.xsd`, warning Frank developers during development when they cause a type mismatch. The attribute type follows from the argument type of the attribute setter. If the attribute setter takes a boolean, the attribute is boolean. If the argument type is any integral type (int, short, byte, ...) then the attribute is integer. If the attribute setter takes a String, then you have a String attribute.
+
+The Frank!Doc also recognizes String attributes for which a limited number of values is allowed. If the owning Java class has an enum getter, then the value of the attribute is restricted. A method is an enum getter for an attribute if the following are true:
+
+* The method is public, returns some enum type and takes no arguments.
+* The method name starts with `get`, which is followed by the camel-cased attribute name. The method name ends with the word `Enum`.
+
+Class [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has a config child setter
+
+	public void setPostType(String type) {
+
+which gives XML element `<HttpSender>` (and also `<HttpErrorSender>`) the attribute `postType`. In pull request https://github.com/ibissource/iaf/pull/2103, we add the following method:
+
+	public PostType getPostTypeEnum()
+
+This will restrict the allowed values according to enum type `PostType`, a nested type in [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java). The allowed values do not have to equal the enum labels. Our code includes a Java annotation [@EnumLabel](./core/src/main/java/nl/nn/adapterframework/doc/EnumLabel.java). If you annotate an enum constant with this annotation, you can change the value in Frank configs that is mapped to the enum constant. This feature is useful because enum constants in Java are usually upper-case while Frank developers do not want to use upper-case strings.
 
 ## Default values and descriptions
 
