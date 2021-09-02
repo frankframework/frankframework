@@ -81,11 +81,11 @@ The XML elements allowed in a Frank configuration can have attributes. An XML el
 * The argument is of a primitive type or of type String.
 * The method is public.
 
-The name of the attribute is derived from the setter method name by removing the initial string `set` and by making the first character of the remaining string loser-case. Class [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java) has attribute setter
+The name of the attribute is derived from the setter method name by removing the initial string `set` and by making the first character of the remaining string lower-case. Class [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java) has attribute setter
 
     public void setPath(String path)
 
-and hence `<Forward>` has attribute `path`.
+and hence `<Forward>` has attribute `path`. When a configuration including `<Forward path="..." ...` is parsed, a `PipeForward` object is created. The value of the `path` attribute read and then the `setPath()` of the `PipeForward` object is called with the read value as the argument.
 
 The Frank!Doc includes type-checking. The Frank!Doc webapplication documents whether the value of an attribute in a configuration is a Boolean, an integer or a string. This information is also available in `FrankConfig-strict.xsd`, warning Frank developers during development when they cause a type mismatch. The attribute type follows from the argument type of the attribute setter. If the attribute setter takes a boolean, the attribute is boolean. If the argument type is any integral type (int, short, byte, ...) then the attribute is integer. If the attribute setter takes a String, then you have a String attribute.
 
