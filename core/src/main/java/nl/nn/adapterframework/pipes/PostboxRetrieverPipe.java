@@ -53,6 +53,7 @@ import nl.nn.adapterframework.stream.Message;
   * 
  * @author  John Dekker
  */
+@Deprecated
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;

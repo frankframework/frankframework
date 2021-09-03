@@ -282,7 +282,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return throwException;
 	}
 	
-	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "<code>false</code>"})
+	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

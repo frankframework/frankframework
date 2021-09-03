@@ -256,7 +256,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					}
 				} else {
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+					if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
 						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}

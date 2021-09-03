@@ -66,7 +66,7 @@ public interface HasTransactionAttribute {
 	public void setTransactionAttributeNum(int i);
 	public int getTransactionAttributeNum();
 
-	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
+	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"}) //TODO use Integer and set to NULL by default
 	public void setTransactionTimeout(int i);
 	public int getTransactionTimeout();
 

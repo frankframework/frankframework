@@ -141,10 +141,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String convertedResultQuery;
 
 	public enum QueryType {
+		/** For queries that return data */
 		SELECT,
+		/** For queries that update a BLOB */
 		UPDATEBLOB,
+		/** For queries that update a CLOB */
 		UPDATECLOB,
+		/** To execute Oracle PL/SQL package */
 		PACKAGE,
+		/** For queries that return no data */
 		OTHER
 	}
 
@@ -943,27 +948,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-		 * Controls wheter the returned package content is db2 format or xml format. 
-		 * Possible values: 
-		 * <ul>
-		 * <li>select:</li> xml content s expected
-		 * <li><i>anything else</i>:</li> db2 content is expected
-		 * </ul>
-		 */
-		public void setPackageContent(String packageContent) {
-			this.packageContent = packageContent;
-		}
-		public String getPackageContent() {
-			return packageContent;
-		}
+	 * Controls wheter the returned package content is db2 format or xml format. 
+	 * Possible values: 
+	 * <ul>
+	 * <li>select:</li> xml content s expected
+	 * <li><i>anything else</i>:</li> db2 content is expected
+	 * </ul>
+	 */
+	public void setPackageContent(String packageContent) {
+		this.packageContent = packageContent;
+	}
+	public String getPackageContent() {
+		return packageContent;
+	}
 
-	@IbisDoc({"1", "One of: <ul>" 
-				+ "<li><code>select</code> for queries that return data</li>" 
-				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
-				+ "<li><code>updateClob</code> for queries that update a CLOB</li>" 
-				+ "<li><code>package</code> to execute Oracle PL/SQL package</li>" 
-				+ "<li><code>other</code> for queries that return no data.</li>" 
-				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
@@ -995,7 +993,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return scalarExtended;
 	}
 
-	@IbisDoc({"4", "The maximum number of rows to be returned from the output of <code>select</code> queries", "-1 (unlimited)"})
+	@IbisDoc({"4", "The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows", "-1"})
 	public void setMaxRows(int i) {
 		maxRows = i;
 	}
@@ -1043,7 +1041,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		useNamedParams = b;
 	}
 
-	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields", "application default (true)"})
+	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields", "application default (true)"})
 	public void setIncludeFieldDefinition(boolean b) {
 		includeFieldDefinition = b;
 	}
