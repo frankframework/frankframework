@@ -37,6 +37,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -299,7 +300,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	protected String determineSoapNamespace(PipeLineSession session) throws IOException {
+	private String determineSoapNamespace(PipeLineSession session) throws IOException {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
 			String savedSoapNamespace = session.getMessage(getSoapNamespaceSessionKey()).asString();
@@ -316,11 +317,11 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return soapNamespace;
 	}
 	
-	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException, SOAPException {
+	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
 
-	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws DomBuilderException, TransformerException, IOException, SenderException {
+	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
 		String soapNamespace = determineSoapNamespace(session);
 		if (soapNamespace==null) {
 			return message;
@@ -336,9 +337,9 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return direction;
 	}
 
-	@IbisDoc({"2", "Soap version to use: one of <code>soap1.1</code>, <code>soap1.2</code>, <code>none</code> or <code>auto</code>. <code>none</code> means that no wrapping or unwrapping will be done, <code>auto</code> means auto-detect", "auto"})
+	@IbisDoc({"2", "Soap version to use", "auto"})
 	public void setSoapVersion(String string) {
-		soapVersion = SoapVersion.getSoapVersion(string);
+		soapVersion = EnumUtils.parse(SoapVersion.class, string);
 	}
 	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;

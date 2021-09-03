@@ -163,7 +163,7 @@ public class WebServiceSender extends HttpSender {
 		}
 	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "true"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

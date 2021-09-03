@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package nl.nn.adapterframework.configuration;
 
 import java.util.Properties;
 
+import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
-
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
  /**
  * Overwrite a property available to the Ibis configuration and the Spring
@@ -27,14 +26,9 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  *
  * @author Jaco de Groot
  */
-public class OverwritePropertyPlaceholderConfigurer
-		extends PropertyPlaceholderConfigurer {
+public class OverwritePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
 	private String propertyName;
 	private String propertyValue;
-
-	public OverwritePropertyPlaceholderConfigurer() {
-		setIgnoreUnresolvablePlaceholders(true);
-	}
 
 	@Override
 	protected void convertProperties(Properties props) {

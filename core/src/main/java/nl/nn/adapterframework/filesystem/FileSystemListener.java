@@ -510,7 +510,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		fileTimeSensitive = b;
 	}
 
-	@IbisDoc({"13", "Minimal age of file in milliseconds, to avoid receiving a file while it is still being written", "1000 [ms]"})
+	@IbisDoc({"13", "Minimal age of file <i>in milliseconds</i>, to avoid receiving a file while it is still being written", "1000"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
