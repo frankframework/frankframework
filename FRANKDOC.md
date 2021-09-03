@@ -162,7 +162,7 @@ Class [ApiPrincipalPipe](./core/src/main/java/nl/nn/adapterframework/http/rest/A
 
 What if you override an attribute setter or config child setter for technical reasons only, which means that the new implementation does not change the meaning of the attribute or config child for Frank developers? In this case, do not provide a description and do not provide a default value for the overridden method. The Frank!Doc will disregard the overriden method as a technical override. Frank developers only see the attribute or config child from the overridden method.
 
-Technical overrides also do not reintroduce excluded or deprecated attributes or config children. Assume that an attribute or a config child is excluded in a parent class because of a `@Deprecated` annotation or one of the JavaDoc tags `@ff.ignoreTypeMembership` or `@ff.noAttribute`. Then an override of the method in a derived class without a description or default value does not add the attribute or config child to the derived class. But if the method override does include a description or a default value, then the attribute or config child is added to the derived class.
+Technical overrides also do not reintroduce excluded or deprecated attributes or config children. Assume that an attribute or a config child is excluded in a parent class because of a `@Deprecated` annotation or one of the JavaDoc tags `@ff.ignoreTypeMembership` or `@ff.noAttribute`. Then an override of the method in a derived class without a description and without a default value does not add the attribute or config child to the derived class. But if the method override does include a description or a default value, then the attribute or config child is added to the derived class.
 
 #### XML elements with text
 
