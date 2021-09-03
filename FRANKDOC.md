@@ -102,11 +102,13 @@ Class [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.jav
 
 	public void setPostType(String type) {
 
-which gives XML element `<HttpSender>` (and also `<HttpErrorSender>`) the attribute `postType`. In pull request https://github.com/ibissource/iaf/pull/2103, we add the following method:
+which gives XML element `<HttpSender>` (and also `<HttpErrorSender>`) the attribute `postType`. [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has the following method:
 
 	public PostType getPostTypeEnum()
 
-This will restrict the allowed values according to enum type `PostType`, a nested type in [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java). The allowed values do not have to equal the enum labels. Our code includes a Java annotation [@EnumLabel](./core/src/main/java/nl/nn/adapterframework/doc/EnumLabel.java). If you annotate an enum constant with this annotation, you can change the value in Frank configs that is mapped to the enum constant. This feature is useful because enum constants in Java are usually upper-case while Frank developers do not want to use upper-case strings.
+This restricts the allowed values according to enum type `PostType`, a nested type in [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java).
+
+If you restrict attribute values with an enum, the allowed values do not have to equal the enum labels. Our code includes a Java annotation [@EnumLabel](./core/src/main/java/nl/nn/adapterframework/doc/EnumLabel.java). If you annotate an enum constant with this annotation, you can change the value in Frank configs that is mapped to the enum constant. This feature is useful because enum constants in Java are usually upper-case while Frank developers do not want to use upper-case strings.
 
 ## Default values and descriptions
 
