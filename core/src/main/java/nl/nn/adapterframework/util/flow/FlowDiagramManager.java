@@ -62,10 +62,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private ApplicationContext applicationContext;
 
 	private static final String ADAPTER2DOT_XSLT = "/xml/xsl/adapter2dot.xsl";
+	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2DOT_XSLT = "/xml/xsl/configuration2dot.xsl";
 	private static final String NO_IMAGE_AVAILABLE = "/no_image_available.svg";
 
-	private TransformerPool transformerPoolAdapter;
+	private TransformerPool transformerPoolAdapterDot;
+	private TransformerPool transformerPoolAdapterMermaid;
 	private TransformerPool transformerPoolConfig;
 	private Resource noImageAvailable;
 	private String fileExtension = null;
@@ -78,8 +80,11 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
-		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
+//		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
+		Resource xsltSourceConfigDot = Resource.getResource(ADAPTER2DOT_XSLT);
+		transformerPoolAdapterDot = TransformerPool.getInstance(xsltSourceConfigDot, 2);
+		Resource xsltSourceConfigMermaid = Resource.getResource(ADAPTER2MERMAID_XSLT);
+		transformerPoolAdapterMermaid = TransformerPool.getInstance(xsltSourceConfigMermaid, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
@@ -229,8 +234,12 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		generateFlowDiagram(name, dotOutput, destFile);
 	}
 
+	public String generateMermaid(IAdapter adapter) throws TransformerException, IOException, SAXException {
+		return transformerPoolAdapterMermaid.transform(adapter.getAdapterConfigurationAsString(), null);
+	}
+
 	public String generateDot(IAdapter adapter) throws TransformerException, IOException, SAXException {
-		return transformerPoolAdapter.transform(adapter.getAdapterConfigurationAsString(), null);
+		return transformerPoolAdapterDot.transform(adapter.getAdapterConfigurationAsString(), null);
 	}
 
 	public String generateDot(Configuration config) throws TransformerException, IOException, SAXException {
@@ -300,8 +309,11 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void destroy() throws Exception {
-		if(transformerPoolAdapter != null)
-			transformerPoolAdapter.close();
+		if(transformerPoolAdapterDot != null)
+			transformerPoolAdapterDot.close();
+
+		if(transformerPoolAdapterMermaid != null)
+			transformerPoolAdapterMermaid.close();
 
 		if(transformerPoolConfig != null)
 			transformerPoolConfig.close();
