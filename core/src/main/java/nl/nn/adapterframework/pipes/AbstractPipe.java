@@ -352,7 +352,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
 	 *  A value of 0 indicates an unlimited number of threads.
 	 */
-	@IbisDoc({"maximum number of threads that may call {@link #doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously", "0 (unlimited)"})
+	@IbisDoc({"Maximum number of threads that may call {@link #doPipe(Message message, PipeLineSession session)} simultaneously, use 0 to disable limit", "0"})
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
 	}

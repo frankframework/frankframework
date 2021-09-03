@@ -763,7 +763,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return firstPipe;
 	}
 
-	@IbisDoc({"2", "Maximum number of threads that may execute this Pipeline simultaneously", "0 (unlimited)"})
+	@IbisDoc({"2", "Maximum number of threads that may execute this Pipeline simultaneously, use 0 to disable limit", "0"})
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
 	}
@@ -774,7 +774,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * the exit state of the pipeline on which the receiver will commit the transaction.
 	 */
-	@IbisDoc({"5", "If the pipelineresult.getstate() equals this value, the transaction is committed, otherwise it is rolled back.", "<code>success</code>"})
+	@IbisDoc({"5", "If the pipelineresult.getstate() equals this value, the transaction is committed, otherwise it is rolled back.", "success"})
 	public void setCommitOnState(String string) {
 		commitOnState = string;
 	}

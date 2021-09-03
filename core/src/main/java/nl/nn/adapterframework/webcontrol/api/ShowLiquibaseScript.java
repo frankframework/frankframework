@@ -46,26 +46,22 @@ public final class ShowLiquibaseScript extends Base {
 
 		Response.ResponseBuilder response = Response.noContent();
 
-		String datasource = null;
 		String configuration = null;
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
-			if("datasource".equalsIgnoreCase(key)) {
-				datasource = entry.getValue().toString();
-			}
 			if("configuration".equalsIgnoreCase(key)) {
 				configuration = entry.getValue().toString();
 			}
 		}
 
-		if(datasource == null || configuration == null)
+		if(configuration == null) {
 			return response.status(Response.Status.BAD_REQUEST).build();
+		}
 
 		String result = null;
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
 		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-			databaseMigrator.setDatasourceName(datasource);
 			databaseMigrator.configure();
 			result = databaseMigrator.getUpdateSql(writer).toString();
 		} catch (Exception e) {
@@ -76,7 +72,7 @@ public final class ShowLiquibaseScript extends Base {
 			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
 		}
 
-		HashMap<String, Object> resultMap = new HashMap<String, Object>();
+		HashMap<String, Object> resultMap = new HashMap<>();
 		resultMap.put("result", result);
 
 		return Response.status(Response.Status.CREATED).entity(resultMap).build();
