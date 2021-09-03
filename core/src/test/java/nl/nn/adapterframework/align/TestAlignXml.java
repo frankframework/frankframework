@@ -98,8 +98,6 @@ public class TestAlignXml {
 	public void test_abc_extra_elements_not_allowed() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
 		String schemaFile="Abc/abc.xsd"; 
-		String namespace="urn:test";
-		String rootElement="a"; 
 		String inputFile="Abc/abc-x";
 		String expectedFailureReason="Cannot find the declaration of element [x]";
 		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
@@ -111,8 +109,6 @@ public class TestAlignXml {
 	public void test_abc_extra_elements_ignored() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
 		String schemaFile="Abc/abc.xsd"; 
-		String namespace="urn:test";
-		String rootElement="a"; 
 		String inputFile="Abc/abc-x";
 		String expectedFailureReason=null;
 		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
