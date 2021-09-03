@@ -150,7 +150,7 @@ There is a special case about groups in the Frank!Doc web application and about 
 
 This annotation does the following:
 * [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) is excluded from group "TransactionalStorages", even though [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) belongs to that group.
-* Attribute setters in [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) are excluded as attributes of [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) is excluded from group "TransactionalStorages", even though [ITransactionalStorage] unless these attribute setters are in some other implemented interface, in this case [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java).
+* Attribute setters in [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) are excluded as declared or inherited attributes of [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) unless these attribute setters are in some other implemented interface, in this case [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java).
 
 #### Technical overrides and re-introductions
 
