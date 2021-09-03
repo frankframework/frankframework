@@ -131,12 +131,13 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		return result;
 	}
 
-	public static String translate(Document xmlIn, URL schemaURL) throws SAXException, IOException {
+	public static String translate(Document xmlIn, URL schemaURL, boolean ignoreUndeclaredElements) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 		
 		// create the validator, setup the chain
 		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
+		dta.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 		
 		return dta.translate(xmlIn);
  	}
