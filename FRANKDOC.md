@@ -100,7 +100,7 @@ The Frank!Doc also recognizes String attributes for which a limited number of va
 
 Class [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has a config child setter
 
-	public void setPostType(String type) {
+	public void setPostType(String type)
 
 which gives XML element `<HttpSender>` (and also `<HttpErrorSender>`) the attribute `postType`. [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has the following method:
 
