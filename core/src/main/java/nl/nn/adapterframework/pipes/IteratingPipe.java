@@ -396,8 +396,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
 				} catch (TransformerException e) {
 					throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
-				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 				}
 			} finally {
 				if (!isParallel() && childThreadSemaphore!=null) {
@@ -631,7 +629,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return parallel;
 	}
 
-	@IbisDoc({"14", "maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe)", "0 (unlimited)"})
+	@IbisDoc({"14", "Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use <code>0</code> for unlimited threads", "0"})
 	public void setMaxChildThreads(int maxChildThreads) {
 		this.maxChildThreads = maxChildThreads;
 	}
@@ -640,7 +638,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 
-	@IbisDoc({"15", "Controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
+	@IbisDoc({"15", "Controls multiline behaviour. When set to a value greater than 0, it specifies the number of rows send, in a one block, to the sender.", "0"})
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}

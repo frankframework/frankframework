@@ -645,7 +645,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return mode.toString();
 	}
 
-	@IbisDoc({"(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)", "1 when <code>mode=reg</code>, 0 otherwise"})
+	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
 	public void setCmhVersion(int i) {
 		cmhVersion = i;
 	}
@@ -683,7 +683,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "<code>true</code>"})
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "true"})
 	public void setRetrievePhysicalDestination(boolean b) {
 		retrievePhysicalDestination = b;
 	}
@@ -760,7 +760,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
-	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "<code>false</code>"})
+	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "false"})
 	public void setUseFixedValues(boolean b) {
 		useFixedValues = b;
 	}
@@ -769,7 +769,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return useFixedValues;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "<code>false</code>"})
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "false"})
 	public void setFixResultNamespace(boolean b) {
 		fixResultNamespace = b;
 	}
@@ -778,12 +778,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return fixResultNamespace;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", "<code></code>"})
+	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", ""})
 	public void setP2pAlias(String p2pAlias) {
 		this.p2pAlias = p2pAlias;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", "<code></code>"})
+	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", ""})
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
 	}
