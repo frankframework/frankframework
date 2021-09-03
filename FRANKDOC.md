@@ -138,8 +138,36 @@ When you place the [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/
 
 Finally, the Frank!Doc automatically creates a group "Other" for the Java classes that don't have or inherit a [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotation.
 
-#### Deprecated Java code
+#### Deprecated Java code and attribute exclusion
 
-#### Attribute exclusion
+The Frank!Doc discourages Frank developers from using deprecated Java classes or Java methods. Deprecated Java classes do not produce XML elements in `FrankConfig-strict.xsd`, the XSD used by Frank developers. Deprecated config child setters or attribute setters do not result in config children or attributes. In Java code, it is possible to override non-deprecated methods by deprecated methods. The Frank!Doc takes care to also omit such attributes and config children. In `FrankConfig-compatibility`, deprecated Java classes and methods are not skipped. The Frank!Framework can thus parse Frank configurations that use deprecated items.
+
+Occasionally, the Java code has methods that should not produce attributes even though they have the syntax of attribute setters. Please annotate such methods with JavaDoc tag `@ff.noAttribute`. You can also use this annotation to suppress inheritance of attributes. To do this, override the attribute setter with a call to the superclass' attribute setter and annotate it.
 
 #### Resolving ownership of multiple groups
+
+There is a special case about groups in the Frank!Doc web application and about attribute exclusion. Class [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) implements interfaces [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) and [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java). [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) should behave like an [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java), not an [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java). This is documented with an `@ff.ignoreTypeMembership` JavaDoc tag. The argument of the JavaDoc tag is the interface to omit, `nl.nn.adapterframework.core.ITransactionalStorage`.
+
+This annotation does the following:
+* [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) is excluded from group "TransactionalStorages", even though [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) belongs to that group.
+* Attribute setters in [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) are excluded as attributes of [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) is excluded from group "TransactionalStorages", even though [ITransactionalStorage] unless these attribute setters are in some other implemented interface, in this case [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java).
+
+#### Technical overrides and re-introductions
+
+Both declared and inherited Java methods can result in config children and attributes. The Frank!Doc website groups attributes and config children by the parent class they are in, as shown below:
+
+![frankDocInheritance](./frankDocInheritance.jpg)
+
+Class [ApiPrincipalPipe](./core/src/main/java/nl/nn/adapterframework/http/rest/ApiPrincipalPipe.java) has parent class [FixedForwardPipe](./core/src/main/java/nl/nn/adapterframework/pipes/FixedForwardPipe.java). You can for example see that attribute `skipOnEmptyInput` of [ApiPrincipalPipe](./core/src/main/java/nl/nn/adapterframework/http/rest/ApiPrincipalPipe.java) is inherited from [FixedForwardPipe](./core/src/main/java/nl/nn/adapterframework/pipes/FixedForwardPipe.java). Config children look similarly: you can also see the class from which a config child is inherited.
+
+What if you override an attribute setter or config child setter for technical reasons only, which means that the new implementation does not change the meaning of the attribute or config child for Frank developers? In this case, do not provide a description and do not provide a default value for the overridden method. The Frank!Doc will disregard the overriden method as a technical override. Frank developers only see the attribute or config child from the overridden method.
+
+Technical overrides also do not reintroduce excluded or deprecated attributes or config children. Assume that an attribute or a config child is excluded in a parent class because of a `@Deprecated` annotation or one of the JavaDoc tags `@ff.ignoreTypeMembership` or `@ff.noAttribute`. Then an override of the method in a derived class without a description or default value does not add the attribute or config child to the derived class. But if the method override does include a description or a default value, then the attribute or config child is added to the derived class.
+
+#### XML elements with text
+
+Frank configurations mostly consist of nested elements with attributes, but it is possible to have XML elements with text in the Frank!Doc. You can do this with a special config child setter that has an argument of type String. Such a text config child setter is not allowed to start with `set`; otherwise it would be an attribute setter. A text config child also differs from ordinary config children in [digester-rules.xml](./core/src/main/resources/digester-rules.xml). That file needs to contain a `<rule>` like:
+
+	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
+
+The rule should have XML attribute `registerTextMethod` instead of `registerMethod`. Then the method is linked to the role name as before. With the rule and the method in place, Frank configs would have an XML tag `<Event>` that has text as its contents. When the F!F parses an `<Event>`, the contents is passed as a string to the corresponding `addEventCode()` method.
