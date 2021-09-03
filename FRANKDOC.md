@@ -98,7 +98,7 @@ The Frank!Doc also recognizes String attributes for which a limited number of va
 * The method is public, returns some enum type and takes no arguments.
 * The method name starts with `get`, which is followed by the camel-cased attribute name. The method name ends with the word `Enum`.
 
-Class [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has a config child setter
+Class [HttpSender](core/src/main/java/nl/nn/adapterframework/http/HttpSender.java) has an attribute setter
 
 	public void setPostType(String type)
 
