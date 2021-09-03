@@ -45,7 +45,6 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	public void basicXpath1() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.setXpathExpression("name(/node()[position()=last()])");
-//		pipe.setXslt2(true);
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		testSwitch(input,"Envelope");
 	}
