@@ -669,6 +669,10 @@ public class HttpSender extends HttpSenderBase {
 		this.postType = EnumUtils.parse(PostType.class, type);
 	}
 
+	public PostType getPostTypeEnum() {
+		return this.postType;
+	}
+
 	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
