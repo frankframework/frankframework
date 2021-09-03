@@ -89,7 +89,9 @@ The name of the attribute is derived from the setter method name by removing the
 
 and hence `<Forward>` has attribute `path`. When a configuration including `<Forward path="..." ...` is parsed, a `PipeForward` object is created. Its `setPath()` method is called with the XML attribute's value as the argument. This way, the Frank developer can configure the behavior of the `PipeForward` object.
 
-The Frank!Doc includes type-checking. The Frank!Doc webapplication documents whether the value of an attribute in a configuration is a Boolean, an integer or a string. This information is also available in `FrankConfig-strict.xsd`, warning Frank developers during development when they cause a type mismatch. The attribute type follows from the argument type of the attribute setter. If the attribute setter takes a `boolean`, the attribute is Boolean. If the argument type is any integral type (`int`, `short`, `byte`, ...) then the attribute is integer. If the attribute setter takes a String, then you have a String attribute.
+Like config children, attributes are inherited.
+
+The Frank!Doc includes type-checking for attributes. The Frank!Doc webapplication documents whether the value of an attribute in a configuration is a Boolean, an integer or a string. This information is also available in `FrankConfig-strict.xsd`, warning Frank developers during development when they cause a type mismatch. The attribute type follows from the argument type of the attribute setter. If the attribute setter takes a `boolean`, the attribute is Boolean. If the argument type is any integral type (`int`, `short`, `byte`, ...) then the attribute is integer. If the attribute setter takes a String, then you have a String attribute.
 
 The Frank!Doc also recognizes String attributes for which a limited number of values is allowed. If the owning Java class has an enum getter, then the value of the attribute is restricted. A method is an enum getter for an attribute if the following are true:
 
