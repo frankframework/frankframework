@@ -119,12 +119,22 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private int correlationIdMaxLength = -1;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
-		@EnumLabel("") NOT_SET(0),
+		@EnumLabel("none") NOT_SET(0),
+		
+		/** auto or auto_acknowledge: Specifies that the session is to automatically acknowledge consumer receipt of
+		  * messages when message processing is complete. */
 		@EnumLabel("auto") AUTO_ACKNOWLEDGE(Session.AUTO_ACKNOWLEDGE),
-		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
-		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 
+		/** client or client_acknowledge: Specifies that the consumer is to acknowledge all messages delivered in this session. */
+		@EnumLabel("client") CLIENT_ACKNOWLEDGE(Session.CLIENT_ACKNOWLEDGE),
+
+		/** dups or dups_ok_acknowledge: Specifies that the session is to "lazily" acknowledge the 
+		  * delivery of messages to the consumer. "Lazy" means that the consumer can delay the acknowledgment
+		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
+		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
+		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
 		private @Getter int acknowledgeMode;
+
 		private AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
 		}
@@ -222,7 +232,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAckModeEnum().getAcknowledgeMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -794,7 +804,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
-	@IbisDoc({"2", "Either <code>queue</code> or <code>topic</code>", "<code>queue</code>"})
+
+	@IbisDoc({"2", "Type of the messageing destination", "queue"})
 	public void setDestinationType(String destinationType) {
 		this.destinationType = EnumUtils.parse(DestinationType.class, "destinationType", destinationType);
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
@@ -820,12 +831,12 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.ackMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
 	}
 
-	public AcknowledgeMode getAckModeEnum() {
+	public AcknowledgeMode getAcknowledgeModeEnum() {
 		return ackMode;
 	}
 
 
-	@IbisDoc({"3", "Acknowledge mode, can be one of ('auto' or 'auto_acknowledge'), ('dups' or 'dups_ok_acknowledge') or ('client' or 'client_acknowledge')", "auto_acknowledge",})
+	@IbisDoc({"3", "If not transacted, the way the application informs the JMS provider that it has successfully received a message.", "auto"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		try {
 			ackMode = EnumUtils.parseDocumented(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
@@ -936,7 +947,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 
-	@IbisDoc({"11", "The time (in milliseconds) it takes for the message to expire. If the message is not consumed before, it will be lost. Mmake sure to set it to a positive value for request/repy type of messages.", "0 (unlimited)"})
+	@IbisDoc({"11", "The time <i>in milliseconds</i> it takes for the message to expire. If the message is not consumed before, it will be lost. Must be a positive value for request/reply type of messages, 0 disables the expiry timeout ", "0"})
 	public void setMessageTimeToLive(long ttl){
 		this.messageTimeToLive=ttl;
 	}

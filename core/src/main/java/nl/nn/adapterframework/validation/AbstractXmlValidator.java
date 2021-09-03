@@ -276,7 +276,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * </p>
 	 * Defaults to <code>false</code>;
 	 */
-	@IbisDoc({"Perform addional memory intensive checks", "<code>false</code>"})
+	@IbisDoc({"Perform addional memory intensive checks", "false"})
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
@@ -284,7 +284,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return fullSchemaChecking;
 	}
 
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "<code>false</code>"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "false"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -308,7 +308,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "false"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -324,12 +324,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return charset;
 	}
 
-	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
+	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -345,7 +345,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return importedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -361,7 +361,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return importedNamespacesToIgnore;
 	}
 
-	@IbisDoc({"Ignore namespaces in the input message which are unknown", "<code>true</code> when schema or nonamespaceschemalocation is used, <code>false</code> otherwise"})
+	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
@@ -369,7 +369,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "false"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}

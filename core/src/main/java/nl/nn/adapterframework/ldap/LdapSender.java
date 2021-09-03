@@ -1287,7 +1287,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return usePooling;
 	}
 
-	@IbisDoc({"specifies the time (in ms) that is spent searching for results for operation search", "20000 ms"})
+	@IbisDoc({"specifies the time (in ms) that is spent searching for results for operation search", "20000"})
 	public void setSearchTimeout(int i) {
 		searchTimeout = i;
 	}
@@ -1304,7 +1304,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return errorSessionKey;
 	}
 
-	@IbisDoc({"the maximum number of entries to be returned by a search query, or 0 for unlimited", "<i>0 (unlimited)</i>"})
+	@IbisDoc({"the maximum number of entries to be returned by a search query, or <code>0</code> for unlimited", "0"})
 	public void setMaxEntriesReturned(int i) {
 		maxEntriesReturned = i;
 	}
