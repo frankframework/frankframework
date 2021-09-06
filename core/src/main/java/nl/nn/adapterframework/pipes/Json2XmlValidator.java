@@ -17,12 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -40,14 +37,15 @@ import nl.nn.adapterframework.align.XmlAligner;
 import nl.nn.adapterframework.align.XmlTypeToJsonSchemaConverter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.ValidationContext;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
@@ -186,17 +184,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 	
-	protected Set<List<String>> getJsonRootValidations(boolean responseMode) {
+	protected RootValidations getJsonRootValidations(boolean responseMode) {
 		if (isValidateJsonToRootElementOnly()) {
 			String root=getMessageRoot(responseMode);
 			if (StringUtils.isEmpty(root)) {
 				return null;
 			}
-			List<String> resultList = new LinkedList<>();
-			resultList.add(root);
-			Set<List<String>> resultSet = new HashSet<>();
-			resultSet.add(resultList);
-			return resultSet;
+			return new RootValidations(root);
 		} 
 		return getRootValidations(responseMode);
 	}
