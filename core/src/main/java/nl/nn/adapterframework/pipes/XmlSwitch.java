@@ -149,33 +149,28 @@ public class XmlSwitch extends AbstractPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward="";
 		PipeForward pipeForward = null;
-		Message localMessage = message;
 		if(StringUtils.isNotEmpty(getForwardNameSessionKey())) {
-			localMessage = session.getMessage(getForwardNameSessionKey());
-		} 
-		if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getForwardNameSessionKey())) {
-			ParameterList parameterList = null;
-			try {
-				Map<String,Object> parametervalues = null;
-				parameterList =  getParameterList();
-				if (parameterList!=null) {
-					parametervalues = parameterList.getValues(localMessage, session, isNamespaceAware()).getValueMap();
-				}
-				forward = transformerPool.transform(localMessage, parametervalues);
-			} catch (Throwable e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
-			}
-		} else if(StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			try {
 				forward = session.getMessage(getForwardNameSessionKey()).asString();
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
+		} else {
+			ParameterList parameterList = null;
+			try {
+				Map<String,Object> parametervalues = null;
+				parameterList =  getParameterList();
+				message.preserve();
+				if (parameterList!=null) {
+					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
+				}
+				forward = transformerPool.transform(message, parametervalues);
+			} catch (Throwable e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
+			}
 		}
-		localMessage = null;
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
-		
 		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
 			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 			pipeForward=findForward(getEmptyForwardName());
@@ -225,7 +220,7 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please use 'getInputFromSessionKey' attribute instead")
+	@ConfigurationWarning("Please use 'getInputFromSessionKey' or 'forwardNameSessionKey' attribute instead.")
 	@IbisDoc({"4", "Name of the key in the <code>PipeLineSession</code> to retrieve the input message from, if a styleSheetName or a xpathExpression is specified. " + 
 					"If no styleSheetName or xpathExpression is specified, the value of the session variable is used as the name of the forward. " + 
 					"If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.", ""})
