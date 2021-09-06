@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -95,7 +94,7 @@ public class TestAlignXml {
 	}
 
 	@Test
-	public void test_abc_extra_elements_not_allowed() throws Exception {
+	public void testAbcExtraElementsNotAllowed() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
 		String schemaFile="Abc/abc.xsd"; 
 		String inputFile="Abc/abc-x";
@@ -106,7 +105,7 @@ public class TestAlignXml {
 	}
 
 	@Test
-	public void test_abc_extra_elements_ignored() throws Exception {
+	public void testAbcExtraElementsIgnored() throws Exception {
 		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
 		String schemaFile="Abc/abc.xsd"; 
 		String inputFile="Abc/abc-x";
