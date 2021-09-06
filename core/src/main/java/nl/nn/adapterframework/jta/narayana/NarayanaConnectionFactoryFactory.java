@@ -33,9 +33,12 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
-		XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
-		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-		return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
+		if (connectionFactory instanceof XAConnectionFactory) {
+			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
+			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
+		}
+		return connectionFactory;
 	}
 
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {

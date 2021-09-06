@@ -28,10 +28,12 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
-		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-
-		return new NarayanaDataSource((DataSource) dataSource);
+		if (dataSource instanceof XADataSource) {
+			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
+			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			return new NarayanaDataSource((DataSource) dataSource);
+		}
+		return (DataSource) dataSource;
 	}
 
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
