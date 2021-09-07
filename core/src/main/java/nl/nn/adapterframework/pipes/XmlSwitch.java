@@ -158,18 +158,19 @@ public class XmlSwitch extends AbstractPipe {
 				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
 		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
-			if(StringUtils.isNotEmpty(getSessionKey())) {
-				message = session.getMessage(getSessionKey());
-			}
 			ParameterList parameterList = null;
 			try {
 				Map<String,Object> parametervalues = null;
 				parameterList =  getParameterList();
-				message.preserve();
 				if (parameterList!=null) {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
-				forward = transformerPool.transform(message, parametervalues);
+				if(StringUtils.isNotEmpty(getSessionKey())) {
+					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues);
+				} else {
+					message.preserve();
+					forward = transformerPool.transform(message, parametervalues);
+				}
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
 			}
