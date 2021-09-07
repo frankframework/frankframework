@@ -5,15 +5,37 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:group ref="AElementGroup" minOccurs="0" maxOccurs="unbounded" />
-        <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
-        <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      </xs:sequence>
-      <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master" use="prohibited" />
+      <xs:complexContent>
+        <xs:extension base="MasterType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="MasterType">
+          <xs:attribute ref="active" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="MasterType">
+    <xs:group ref="MasterDeclaredChildGroup" />
+  </xs:complexType>
+  <xs:group name="MasterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="AElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="BElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
   <xs:group name="AElementGroup">
     <xs:choice>
       <xs:element name="A">

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="Configuration">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Configuration - The Configuration is placeholder of all configuration objects.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="ConfigurationType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Configuration" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="ConfigurationType">
+          <xs:attribute ref="active" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Adapter">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Adapter - The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
+ and uses Receiver and a PipeLine.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="adapter" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Adapter" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ConfigurationType">
+    <xs:group ref="ConfigurationDeclaredChildGroup" />
+  </xs:complexType>
+  <xs:group name="ConfigurationDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="Adapter" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:simpleType name="frankBoolean">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="frankInt">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:simpleType name="variableRef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="$\{[^\}]+\}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

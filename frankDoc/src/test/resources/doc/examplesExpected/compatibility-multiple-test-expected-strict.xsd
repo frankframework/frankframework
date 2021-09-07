@@ -5,16 +5,24 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:group ref="AElementGroup" />
-          <xs:element ref="C" />
-        </xs:choice>
-      </xs:sequence>
-      <xs:attribute name="myFirstAttribute" type="xs:string" />
-      <xs:attribute name="mySecondAttribute" type="xs:string" />
-      <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start" use="prohibited" />
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="D">
@@ -37,6 +45,19 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Child3" use="prohibited" />
     </xs:complexType>
   </xs:element>
+  <xs:complexType name="StartType">
+    <xs:group ref="StartPluralConfigChildGroup" />
+    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="StartPluralConfigChildGroup">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+        <xs:group ref="AElementGroup" />
+        <xs:element ref="C" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
   <xs:group name="AElementGroup">
     <xs:choice>
       <xs:element name="A">
@@ -180,6 +201,10 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="Child2ImplType" />
+  <xs:attributeGroup name="StartDeclaredAttributeGroup">
+    <xs:attribute name="myFirstAttribute" type="xs:string" />
+    <xs:attribute name="mySecondAttribute" type="xs:string" />
+  </xs:attributeGroup>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
       <xs:pattern value="(true|false)|($\{[^\}]+\})" />

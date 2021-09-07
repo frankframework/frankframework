@@ -5,14 +5,24 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
-        <xs:element ref="RoleNameTChild" minOccurs="0" maxOccurs="unbounded" />
-      </xs:sequence>
-      <xs:attribute name="attribute" type="xs:string" />
-      <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
-      <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start" use="prohibited" />
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="RoleNameTChild">
@@ -25,6 +35,17 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
+  <xs:complexType name="StartType">
+    <xs:group ref="StartDeclaredChildGroup" />
+    <xs:attributeGroup ref="StartCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="StartDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="RoleNameIChildElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:element ref="RoleNameTChild" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
   <xs:group name="RoleNameIChildElementGroup">
     <xs:choice>
       <xs:element name="RoleNameIChild">
@@ -109,6 +130,16 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+  <xs:attributeGroup name="StartDeclaredAttributeGroup">
+    <xs:attribute name="attribute" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StartCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StartDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractParentOfStartDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractParentOfStartDeclaredAttributeGroup">
+    <xs:attribute name="abstractParentOfStartAttribute" type="xs:string" />
+  </xs:attributeGroup>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
       <xs:pattern value="(true|false)|($\{[^\}]+\})" />

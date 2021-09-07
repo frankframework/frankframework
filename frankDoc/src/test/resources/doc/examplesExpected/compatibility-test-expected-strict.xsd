@@ -5,12 +5,24 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
-        <xs:group ref="DElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      </xs:sequence>
-      <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start" use="prohibited" />
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="A">
@@ -33,6 +45,16 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.SecondGrandChild" use="prohibited" />
     </xs:complexType>
   </xs:element>
+  <xs:complexType name="StartType">
+    <xs:group ref="StartDeclaredChildGroup" />
+  </xs:complexType>
+  <xs:group name="StartDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="CElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="DElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
   <xs:group name="CElementGroup">
     <xs:choice>
       <xs:element name="C">
