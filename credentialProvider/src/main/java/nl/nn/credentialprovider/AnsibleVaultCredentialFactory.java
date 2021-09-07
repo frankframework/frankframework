@@ -65,7 +65,7 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, vaultFile, "Ansible Vault")) {
 			try (InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, vaultKeyFile, "Ansible Vault Key")) {
 	
-				String vaultKey = StreamUtil.readerToString(new InputStreamReader(keyStream), null);
+				String vaultKey = StreamUtil.readerToString(new InputStreamReader(keyStream), null).trim();
 				String encrypted = StreamUtil.readerToString(new InputStreamReader(vaultStream), null);
 				
 				VaultInfo vaultInfo = Util.getVaultInfo(encrypted);
