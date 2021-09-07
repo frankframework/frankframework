@@ -2,7 +2,10 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -12,6 +15,9 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Override
 	public XmlSwitch createPipe() {
@@ -147,5 +153,50 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		testSwitch(input,"SetRequest");
 	}
 
+	@Test
+	public void testForwardNameFromSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("forwardName","Envelope-Path"));
+		pipe.setForwardNameSessionKey("forwardNameSessionKey");
+		session=new PipeLineSession();
+		session.put("forwardNameSessionKey", "forwardName");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		testSwitch(input,"forwardName");
+	}
+
+	@Test
+	public void basicXpathSessionKeyUsedAsInput() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.setSessionKey("sessionKey");
+		pipe.setXpathExpression("name(/node()[position()=last()])");
+		session=new PipeLineSession();
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		session.put("sessionKey", input);
+		testSwitch("dummy","Envelope");
+	}
+
+	@Test
+	public void emptyParameterList() throws Exception {
+		thrown.expectMessage("cannot find forward or pipe named");
+		pipe.setSessionKey("sessionKey");
+		testSwitch("dummy","Envelope");
+	}
+
+	@Test
+	public void emptyForward() throws Exception {
+		pipe.setEmptyForwardName("emptyForward");
+		pipe.setSessionKey("sessionKey");
+		pipe.registerForward(new PipeForward("emptyForward", "test"));
+		testSwitch("dummy","emptyForward");
+	}
+
+	@Test
+	public void notFoundForward() throws Exception {
+		pipe.setNotFoundForwardName("notFound");
+		pipe.setSessionKey("sessionKey");
+		session=new PipeLineSession();
+		session.put("sessionKey", "someForward");
+		pipe.registerForward(new PipeForward("notFound", "test"));
+		testSwitch("dummy","notFound");
+	}
 
 }

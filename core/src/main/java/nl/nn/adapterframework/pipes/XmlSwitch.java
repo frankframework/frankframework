@@ -61,7 +61,7 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String styleSheetName = null;
 	private @Getter String xpathExpression = null;
 	private @Getter String namespaceDefs = null; 
-	private @Getter String sessionKey = null;
+	private String sessionKey = null;
 	private @Getter String storeForwardInSessionKey = null;
 	private @Getter String notFoundForwardName = null;
 	private @Getter String emptyForwardName = null;
@@ -87,7 +87,9 @@ public class XmlSwitch extends AbstractPipe {
 				ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.");
 			}
 		}
-
+		if(StringUtils.isNotEmpty(getGetInputFromSessionKey()) && StringUtils.isNotEmpty(getSessionKey())) {
+			throw new ConfigurationException("cannot have both getInputFromSessionKey and a sessionKey specified");
+		}
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
 			if (StringUtils.isNotEmpty(getStyleSheetName())) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
@@ -155,7 +157,10 @@ public class XmlSwitch extends AbstractPipe {
 			} catch (IOException e) {
 				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
-		} else {
+		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
+			if(StringUtils.isNotEmpty(getSessionKey())) {
+				message = session.getMessage(getSessionKey());
+			}
 			ParameterList parameterList = null;
 			try {
 				Map<String,Object> parametervalues = null;
@@ -167,6 +172,12 @@ public class XmlSwitch extends AbstractPipe {
 				forward = transformerPool.transform(message, parametervalues);
 			} catch (Throwable e) {
 				throw new PipeRunException(this, getLogPrefix(session) + "got exception on transformation", e);
+			}
+		} else if(StringUtils.isNotEmpty(getSessionKey())) {
+			try {
+				forward = session.getMessage(getSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
 		}
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
@@ -226,7 +237,10 @@ public class XmlSwitch extends AbstractPipe {
 					"If none of sessionKey, styleSheetName or xpathExpression are specified, the element name of the root node of the input message is taken as the name of forward.", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
-		this.forwardNameSessionKey = sessionKey;
+	}
+	@Deprecated
+	public String getSessionKey() {
+		return this.sessionKey;
 	}
 
 	@IbisDoc({"5", "Forward returned when the pipename derived from the stylesheet could not be found.", ""})
