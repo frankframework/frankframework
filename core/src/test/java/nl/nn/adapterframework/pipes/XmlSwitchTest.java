@@ -171,7 +171,18 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		session=new PipeLineSession();
 		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
 		session.put("sessionKey", input);
-		testSwitch("dummy","Envelope");
+		configureAdapter();
+		PipeRunResult prr = doPipe(pipe,"dummy",session);
+
+		String result = Message.asString(prr.getResult());
+		
+		assertEquals(input,result.trim());
+		
+		PipeForward forward=prr.getPipeForward();
+		assertNotNull(forward);
+		
+		String actualForwardName=forward.getName();
+		assertEquals("Envelope",actualForwardName);
 	}
 
 	@Test
