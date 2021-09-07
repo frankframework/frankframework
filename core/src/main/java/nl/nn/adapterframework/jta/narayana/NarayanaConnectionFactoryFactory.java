@@ -38,6 +38,7 @@ public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFacto
 			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
 			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
 		}
+		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
 		return connectionFactory;
 	}
 

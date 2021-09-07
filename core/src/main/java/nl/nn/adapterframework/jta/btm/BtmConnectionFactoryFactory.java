@@ -37,6 +37,7 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 			result.init();
 			return result;
 		}
+		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
 		return connectionFactory;
 	}
 

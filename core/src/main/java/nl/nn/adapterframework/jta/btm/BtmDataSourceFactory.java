@@ -37,6 +37,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 			result.init();
 			return result;
 		}
+		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource)dataSource;
 	}
 
