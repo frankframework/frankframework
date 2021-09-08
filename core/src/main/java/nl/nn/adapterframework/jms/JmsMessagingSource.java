@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -83,13 +83,8 @@ public class JmsMessagingSource extends MessagingSource {
 	}
 
 	@Override
-	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException {
-		try {
-			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
-		} catch (NoSuchFieldException e) {
-			log.debug("cannot get connection factory delegate ("+e.getClass().getTypeName()+"): "+e.getMessage());
-			return super.getConnectionFactoryDelegate();
-		}
+	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}
 
 	private String getJndiContextPrefix() {

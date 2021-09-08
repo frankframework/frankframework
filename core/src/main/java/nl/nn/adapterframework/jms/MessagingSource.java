@@ -145,7 +145,7 @@ public class MessagingSource  {
 		return connectionFactory;
 	}
 
-	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException {
+	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		return getConnectionFactory();
 	}
 
