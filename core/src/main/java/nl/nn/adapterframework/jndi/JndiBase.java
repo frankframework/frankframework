@@ -1,5 +1,4 @@
 /*
-
    Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
