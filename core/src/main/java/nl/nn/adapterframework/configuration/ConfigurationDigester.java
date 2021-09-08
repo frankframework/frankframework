@@ -97,9 +97,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	public static final String MODULE_ELEMENT_NAME = "Module";
-	public static final String MODULE_ELEMENT_DESCRIPTION = "Root element for file you include as entity reference. Does not influence the behavior of your Frank config.";
-
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	String lastResolvedEntity = null;

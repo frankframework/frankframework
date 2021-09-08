@@ -52,7 +52,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 
-import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.doc.DocWriter;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
@@ -396,10 +395,10 @@ public class DocWriterNew {
 	}
 
 	private void addReferencedEntityRoot(FrankElement startElement) {
-		log.trace("Adding element [{}] using type [{}]", () -> ConfigurationDigester.MODULE_ELEMENT_NAME, () -> xsdElementType(startElement));
-		XmlBuilder startElementBuilder = createElementWithType(ConfigurationDigester.MODULE_ELEMENT_NAME);
+		log.trace("Adding element [{}] using type [{}]", () -> Constants.MODULE_ELEMENT_NAME, () -> xsdElementType(startElement));
+		XmlBuilder startElementBuilder = createElementWithType(Constants.MODULE_ELEMENT_NAME);
 		xsdElements.add(startElementBuilder);
-		addDocumentation(startElementBuilder, ConfigurationDigester.MODULE_ELEMENT_DESCRIPTION);
+		addDocumentation(startElementBuilder, Constants.MODULE_ELEMENT_DESCRIPTION);
 		XmlBuilder complexType = addComplexType(startElementBuilder);
 		DocWriterNewXmlUtils.addGroupRef(complexType, getConfigChildGroupOf(startElement));
 		attributeTypeStrategy.addAttributeActive(complexType);		
@@ -418,8 +417,8 @@ public class DocWriterNew {
 	}
 
 	private void addReferencedEntityRoot(XmlBuilder context) {
-		log.trace("Adding referenced entity file root [{}] as config child", ConfigurationDigester.MODULE_ELEMENT_NAME);
-		addElementRef(context, ConfigurationDigester.MODULE_ELEMENT_NAME, "0", "unbounded");
+		log.trace("Adding referenced entity file root [{}] as config child", Constants.MODULE_ELEMENT_NAME);
+		addElementRef(context, Constants.MODULE_ELEMENT_NAME, "0", "unbounded");
 	}
 
 	private void recursivelyDefineXsdElementOfRoot(FrankElement frankElement) {
@@ -641,7 +640,7 @@ public class DocWriterNew {
 				xsdComplexItems.add(group);
 				XmlBuilder sequence = addSequence(group);
 				// This comes down to adding config child <Module> to the root element <Configuration>.
-				// The name Module comes from a constant declaration in ConfigurationDigester.
+				// The name Module comes from a constant declaration in Constants.
 				referencedEntityRootAdder.accept(sequence);
 				frankElement.getConfigChildren(version.getChildSelector()).forEach(c -> addConfigChild(sequence, c));
 				log.trace("Done creating XSD group [{}] on behalf of FrankElement [{}]", () -> groupName, () -> frankElement.getFullName());
@@ -1014,7 +1013,7 @@ public class DocWriterNew {
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
 		// This comes down to adding <Module> as a child of <Configuration>. Or
 		// the start element from which the model is generated and the
-		// value of ConfigurationDigester.MODULE_ELEMENT_NAME constant respectively.
+		// value of Constants.MODULE_ELEMENT_NAME constant respectively.
 		referencedEntityRootAdder.accept(choice);
 		List<ConfigChildSet> configChildSets = frankElement.getCumulativeConfigChildSets();
 		for(ConfigChildSet configChildSet: configChildSets) {
