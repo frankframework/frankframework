@@ -36,6 +36,9 @@ class FrankDocGroupFactory {
 
 	private final Map<String, FrankDocGroup> allGroups = new HashMap<>();
 
+	// This constructor ensures that group Other is always created, also if there
+	// is no ElementType without a FrankDocGroup annotation. We always need group
+	// Other because it will contain Configuration and Module.
 	FrankDocGroupFactory() {
 		FrankDocGroup groupOther = new FrankDocGroup(FrankDocGroup.GROUP_NAME_OTHER);
 		allGroups.put(groupOther.getName(), groupOther);
