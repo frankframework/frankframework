@@ -36,6 +36,11 @@ class FrankDocGroupFactory {
 
 	private final Map<String, FrankDocGroup> allGroups = new HashMap<>();
 
+	FrankDocGroupFactory() {
+		FrankDocGroup groupOther = new FrankDocGroup(FrankDocGroup.GROUP_NAME_OTHER);
+		allGroups.put(groupOther.getName(), groupOther);
+	}
+
 	FrankDocGroup getGroup(FrankClass clazz) {
 		FrankDocGroup result = null;
 		try {

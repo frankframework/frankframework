@@ -748,7 +748,13 @@ public class FrankDocModel {
 				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
 		groups = groupFactory.getAllGroups();
 		for(FrankDocGroup group: groups) {
-			List<ElementType> elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			// The default applies to group Other in case it has no ElementType objects.
+			// In this case we still need group Other for all items in elementsOutsideConfigChildren.
+			// This is typically one element that plays the role of Configuration in some tests.
+			List<ElementType> elementTypes = new ArrayList<>();
+			if(groupsElementTypes.containsKey(group.getName())) {
+				elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			}
 			Collections.sort(elementTypes);
 			group.setElementTypes(elementTypes);
 		}

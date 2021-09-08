@@ -27,6 +27,10 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 
 public class SkipContainersFilter extends FullXmlFilter {
 
+	// The Frank!Doc trusts that this class is used to remove <Module> element.
+	// If you ever want to remove Module from this list, please update the Frank!Doc.
+	// To search for the relevant Frank!Doc code, you can start at
+	// nl.nn.adapterframework.frankdoc.Constants.MODULE_ELEMENT_NAME.
 	private static final String SKIPABLE_CONTAINERS[] = { "Exits", "Forwards", "JmsRealms", "Module", "Root", "Global-Forwards", "Scheduler" };
 	private Set<String> skipableContainers = new LinkedHashSet<>(Arrays.asList(SKIPABLE_CONTAINERS));
 
