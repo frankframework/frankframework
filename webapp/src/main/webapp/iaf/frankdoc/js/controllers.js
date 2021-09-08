@@ -100,7 +100,6 @@ function javaDocUrlOf(element) {
 	} else {
 		// We only have a JavaDoc URL if we have an element with a Java class. The
 		// exception we handle here is <Module>.
-		console.log("element name contains no dot: " + element.fullName);
 		return null;
 	}
 }
