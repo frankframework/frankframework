@@ -401,9 +401,20 @@ public class DocWriterNew {
 		xsdElements.add(startElementBuilder);
 		addDocumentation(startElementBuilder, ConfigurationDigester.MODULE_ELEMENT_DESCRIPTION);
 		XmlBuilder complexType = addComplexType(startElementBuilder);
-		XmlBuilder complexContent = addComplexContent(complexType);
-		XmlBuilder extension = addExtension(complexContent, xsdElementType(startElement));
-		attributeTypeStrategy.addAttributeActive(extension);		
+		DocWriterNewXmlUtils.addGroupRef(complexType, getConfigChildGroupOf(startElement));
+		attributeTypeStrategy.addAttributeActive(complexType);		
+	}
+
+	private String getConfigChildGroupOf(FrankElement frankElement) {
+		// TODO: Add cumulative group if the start element (typically <Configuration>) has
+		// ancestors with config children. Or even take a declared/cumulative group of an ancestor
+		// if <Configuration> itself has no config children. These do not apply in practice, so
+		// implementing this has not a high priority.
+		if(frankElement.hasOrInheritsPluralConfigChildren(version.getChildSelector(), version.getChildRejector())) {
+			return xsdPluralGroupNameForChildren(frankElement);
+		} else {
+			return xsdDeclaredGroupNameForChildren(frankElement);			
+		}
 	}
 
 	private void addReferencedEntityRoot(XmlBuilder context) {
@@ -614,7 +625,7 @@ public class DocWriterNew {
 			
 			@Override
 			public void addDeclaredGroupRef(FrankElement referee) {
-				elementBuildingStrategy.addGroupRef(xsdDeclaredGroupNameForChildren(referee));
+				elementBuildingStrategy.addGroupRef(getConfigChildGroupOf(referee));
 			}
 			
 			@Override
@@ -624,7 +635,7 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				String groupName = xsdDeclaredGroupNameForChildren(frankElement);
+				String groupName = getConfigChildGroupOf(frankElement);
 				log.trace("Creating XSD group [{}]", groupName);
 				XmlBuilder group = createGroup(groupName);
 				xsdComplexItems.add(group);
@@ -653,7 +664,7 @@ public class DocWriterNew {
 			
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				String referencedGroupName = xsdDeclaredGroupNameForChildren(elem);
+				String referencedGroupName = getConfigChildGroupOf(elem);
 				log.trace("Appending XSD group [{}] with reference to [{}]", () -> cumulativeGroupName, () -> referencedGroupName);
 				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, referencedGroupName);
 			}

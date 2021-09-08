@@ -18,11 +18,8 @@
       <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="ConfigurationType">
-          <xs:attribute ref="active" />
-        </xs:extension>
-      </xs:complexContent>
+      <xs:group ref="ConfigurationDeclaredChildGroup" />
+      <xs:attribute ref="active" />
     </xs:complexType>
   </xs:element>
   <xs:element name="Adapter">
@@ -38,6 +35,7 @@
   </xs:element>
   <xs:complexType name="ConfigurationType">
     <xs:group ref="ConfigurationDeclaredChildGroup" />
+    <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:group name="ConfigurationDeclaredChildGroup">
     <xs:sequence>
@@ -45,6 +43,13 @@
       <xs:element ref="Adapter" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="ConfigurationDeclaredAttributeGroup">
+    <xs:attribute name="myAttribute" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This attribute should be allowed in &amp;lt;Configuration&amp;gt;, but not &amp;lt;Module&amp;gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
   <xs:simpleType name="frankBoolean">
     <xs:restriction base="xs:string">
       <xs:pattern value="(true|false)|($\{[^\}]+\})" />

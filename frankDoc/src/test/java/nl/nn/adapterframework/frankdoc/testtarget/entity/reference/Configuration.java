@@ -7,6 +7,13 @@ package nl.nn.adapterframework.frankdoc.testtarget.entity.reference;
  */
 public class Configuration {
 	/**
+	 * This attribute should be allowed in &lt;Configuration&gt;, but not &lt;Module&gt;
+	 * @param value
+	 */
+	public void setMyAttribute(String value) {
+	}
+
+	/**
 	 * Register an adapter with the configuration.
 	 */
 	public void registerAdapter(Adapter adapter) {

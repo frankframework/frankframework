@@ -18,11 +18,8 @@
       <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="StartType">
-          <xs:attribute ref="active" />
-        </xs:extension>
-      </xs:complexContent>
+      <xs:group ref="StartPluralConfigChildGroup" />
+      <xs:attribute ref="active" />
     </xs:complexType>
   </xs:element>
   <xs:complexType name="StartType">
