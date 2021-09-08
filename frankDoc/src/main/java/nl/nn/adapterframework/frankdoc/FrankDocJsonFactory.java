@@ -123,8 +123,7 @@ public class FrankDocJsonFactory {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", elementType.getFullName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		List<FrankElement> memberElements = elementType.getSyntax2Members();
-		memberElements.forEach(f -> members.add(f.getFullName()));
+		elementType.getSyntax2Members().forEach(f -> members.add(f.getFullName()));
 		result.add("members", members);
 		return result.build();
 	}
