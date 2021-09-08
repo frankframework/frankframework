@@ -624,7 +624,7 @@ public class DocWriterNew {
 			
 			@Override
 			public void addDeclaredGroupRef(FrankElement referee) {
-				elementBuildingStrategy.addGroupRef(getConfigChildGroupOf(referee));
+				elementBuildingStrategy.addGroupRef(xsdDeclaredGroupNameForChildren(referee));
 			}
 			
 			@Override
@@ -634,7 +634,7 @@ public class DocWriterNew {
 
 			@Override
 			public void addDeclaredGroup() {
-				String groupName = getConfigChildGroupOf(frankElement);
+				String groupName = xsdDeclaredGroupNameForChildren(frankElement);
 				log.trace("Creating XSD group [{}]", groupName);
 				XmlBuilder group = createGroup(groupName);
 				xsdComplexItems.add(group);
