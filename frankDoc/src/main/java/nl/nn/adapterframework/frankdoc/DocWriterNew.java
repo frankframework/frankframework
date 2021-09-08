@@ -663,7 +663,7 @@ public class DocWriterNew {
 			
 			@Override
 			public void handleChildrenOf(FrankElement elem) {
-				String referencedGroupName = getConfigChildGroupOf(elem);
+				String referencedGroupName = xsdDeclaredGroupNameForChildren(elem);
 				log.trace("Appending XSD group [{}] with reference to [{}]", () -> cumulativeGroupName, () -> referencedGroupName);
 				DocWriterNewXmlUtils.addGroupRef(cumulativeBuilder, referencedGroupName);
 			}
