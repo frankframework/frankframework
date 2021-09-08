@@ -19,6 +19,8 @@ package nl.nn.adapterframework.frankdoc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -90,6 +92,7 @@ public class FrankDocJsonFactory {
 				.forEach(types::add);
 		if(group.getName().equals(FrankDocGroup.GROUP_NAME_OTHER)) {
 			elementsOutsideChildren.forEach(f -> types.add(f.getFullName()));
+			types.add(Constants.MODULE_ELEMENT_NAME);
 		}
 		result.add("types", types);
 		return result.build();
@@ -103,14 +106,25 @@ public class FrankDocJsonFactory {
 			result.add(getType(elementType));
 		}
 		elementsOutsideChildren.forEach(f -> result.add(getNonChildType(f)));
+		result.add(getTypeReferencedEntityRoot());
 		return result.build();
+	}
+
+	private JsonObject getTypeReferencedEntityRoot() {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", Constants.MODULE_ELEMENT_NAME);
+		JsonArrayBuilder members = bf.createArrayBuilder();
+		members.add(Constants.MODULE_ELEMENT_NAME);
+		result.add("members", members);
+		return result.build();		
 	}
 
 	private JsonObject getType(ElementType elementType) {
 		JsonObjectBuilder result = bf.createObjectBuilder();
 		result.add("name", elementType.getFullName());
 		final JsonArrayBuilder members = bf.createArrayBuilder();
-		elementType.getSyntax2Members().forEach(f -> members.add(f.getFullName()));
+		List<FrankElement> memberElements = elementType.getSyntax2Members();
+		memberElements.forEach(f -> members.add(f.getFullName()));
 		result.add("members", members);
 		return result.build();
 	}
@@ -125,12 +139,32 @@ public class FrankDocJsonFactory {
 	}
 
 	private JsonArray getElements() throws JsonException {
-		List<FrankElement> allElements = new ArrayList<>(model.getAllElements().values());
-		Collections.sort(allElements);
+		Map<String, List<FrankElement>> elementsBySimpleName = model.getAllElements().values().stream()
+				.collect(Collectors.groupingBy(FrankElement::getSimpleName));
+		List<String> sortKeys = new ArrayList<>(elementsBySimpleName.keySet());
+		sortKeys.add(Constants.MODULE_ELEMENT_NAME);
+		Collections.sort(sortKeys);
 		JsonArrayBuilder result = bf.createArrayBuilder();
-		for(FrankElement frankElement: allElements) {
-			result.add(getElement(frankElement));
+		for(String sortKey: sortKeys) {
+			if(sortKey.equals(Constants.MODULE_ELEMENT_NAME)) {
+				result.add(getElementReferencedEntityRoot());
+			} else {
+				elementsBySimpleName.get(sortKey).stream()
+						.map(f -> getElement(f))
+						.forEach(result::add);
+			}
 		}
+		return result.build();
+	}
+
+	private JsonObject getElementReferencedEntityRoot() {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("name", Constants.MODULE_ELEMENT_NAME);
+		result.add("fullName", Constants.MODULE_ELEMENT_NAME);
+		addDescription(result, Constants.MODULE_ELEMENT_DESCRIPTION);
+		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
+		xmlElementNames.add(Constants.MODULE_ELEMENT_NAME);
+		result.add("elementNames", xmlElementNames.build());
 		return result.build();
 	}
 
@@ -227,9 +261,21 @@ public class FrankDocJsonFactory {
 
 	private JsonArray getConfigChildren(FrankElement frankElement) throws JsonException {
 		JsonArrayBuilder result = bf.createArrayBuilder();
+		if(frankElement.getFullName().equals(model.getRootClassName())) {
+			result.add(getConfigChildReferencedEntityRoot());
+		}
 		for(ConfigChild child: frankElement.getConfigChildren(ElementChild.IN_COMPATIBILITY_XSD)) {
 			result.add(getConfigChild(child));
 		}
+		return result.build();
+	}
+
+	private JsonObject getConfigChildReferencedEntityRoot() {
+		JsonObjectBuilder result = bf.createObjectBuilder();
+		result.add("multiple", true);
+		result.add("roleName", Constants.MODULE_ELEMENT_NAME.toLowerCase());
+		result.add("description", Constants.MODULE_ELEMENT_DESCRIPTION);
+		result.add("type", Constants.MODULE_ELEMENT_NAME);
 		return result.build();
 	}
 

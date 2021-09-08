@@ -77,9 +77,11 @@ public class FrankDocModel {
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
 	private AttributeEnumFactory attributeEnumFactory = new AttributeEnumFactory();
+	private @Getter String rootClassName;
 
-	FrankDocModel(FrankClassRepository classRepository) {
+	FrankDocModel(FrankClassRepository classRepository, String rootClassName) {
 		this.classRepository = classRepository;
+		this.rootClassName = rootClassName;
 	}
 
 	/**
@@ -92,7 +94,7 @@ public class FrankDocModel {
 	}
 
 	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
-		FrankDocModel result = new FrankDocModel(classRepository);
+		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
