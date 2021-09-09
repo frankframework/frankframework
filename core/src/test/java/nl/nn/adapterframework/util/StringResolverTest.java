@@ -64,4 +64,41 @@ public class StringResolverTest {
 		assertEquals("prefix ${cyclic} suffix", result);
 	}
 
+	
+	@Test
+	public void resolveUsername1() {
+		String result = StringResolver.substVars("${credential:username:alias1}", properties);
+		assertEquals("username1", result);
+	}
+
+	@Test
+	public void resolveUsername2() {
+		String result = StringResolver.substVars("${credential:alias1/username}", properties); 
+		assertEquals("username1", result);
+	}
+
+	@Test
+	public void resolvePassword1() {
+		String result = StringResolver.substVars("${credential:password:alias1}", properties);
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void resolvePassword2() {
+		String result = StringResolver.substVars("${credential:alias1/password}", properties);
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void resolvePassword3() {
+		String result = StringResolver.substVars("${credential:alias1}", properties);
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void resolvePasswordOnlyAlias() {
+		String result = StringResolver.substVars("${credential:alias2}", properties);
+		assertEquals("passwordOnly", result);
+	}
+
 }

@@ -32,6 +32,10 @@ public class StringResolver {
 
 	public static final String DELIM_START = "${";
 	public static final String DELIM_STOP = "}";
+	
+	public static final String CREDENTIAL_PREFIX="credential:";
+	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
+	public static final String PASSWORD_PREFIX="password:";
 
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
@@ -113,6 +117,20 @@ public class StringResolver {
 			}
 			// first try in System properties
 			String replacement = getSystemProperty(key, null);
+
+			// then check if we search for a credential
+			if (replacement == null && key.startsWith(CREDENTIAL_PREFIX)) {
+				key = key.substring(CREDENTIAL_PREFIX.length());
+				boolean username = key.startsWith(USERNAME_PREFIX);
+				boolean password = key.startsWith(PASSWORD_PREFIX);
+				if (username||password) {
+					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
+				}
+				String defaultValue = delimStart + key+ delimStop;
+				CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
+				replacement = username ? cf.getUsername() : cf.getPassword();
+			}
+			
 			// then try props parameter
 			if (replacement == null && props1 != null) {
 				if (props1 instanceof Properties) {
