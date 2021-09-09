@@ -118,8 +118,10 @@ public class StringResolver {
 			// first try in System properties
 			String replacement = getSystemProperty(key, null);
 
+			boolean mustHideCredential=false;
 			// then check if we search for a credential
 			if (replacement == null && key.startsWith(CREDENTIAL_PREFIX)) {
+				mustHideCredential=true;
 				key = key.substring(CREDENTIAL_PREFIX.length());
 				boolean username = key.startsWith(USERNAME_PREFIX);
 				boolean password = key.startsWith(PASSWORD_PREFIX);
@@ -154,7 +156,7 @@ public class StringResolver {
 			}
 
 			if (replacement != null) {
-				if (propsToHide != null && propsToHide.contains(key)) {
+				if (propsToHide != null && (propsToHide.contains(key) || mustHideCredential)) {
 					replacement = Misc.hide(replacement);
 				}
 				// Do variable substitution on the replacement string
