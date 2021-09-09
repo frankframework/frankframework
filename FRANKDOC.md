@@ -79,7 +79,7 @@ If the config child setter has a Java interface as its argument type, then any J
 
 #### XML element names
 
-The role name of a config child and its referenced Java class determine the XML element that is used in a Frank configuration. The rules depend on whether the config child setter's argument is a Java interface or not.
+The role name of a config child and the Java class you want to reference (as allowed by the config child) determine the XML element. This is the XML element that is used in a Frank configuration. The rules depend on whether the config child setter's argument is a Java interface or not.
 
 For a non-interface config child setter, the XML element name is the role name transformed to camel case (first letter is capitalized). In the example of `registerAdapter()`, the role name is `adapter`. Therefore the XML element name is `<Adapter>`. A more interesting example is config child setter `registerForward()` with pattern `*/forward`. This method typically has argument [PipeForward](./core/src/main/java/nl/nn/adapterframework/core/PipeForward.java), which is not a Java interface. Therefore this config child has XML element name `<Forward>`, even though the Java class name is `PipeForward`.
 
