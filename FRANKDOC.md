@@ -12,7 +12,7 @@ The Frank!Doc documents the following:
 * Groups shown in the Frank!Doc webapplication.
 * Parameters.
 
-The Frank!Framework parses a Frank configuration into a Java object of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). This object recursively contains child objects. These objects have JavaBean properties that are configured with setter methods (property `xyz` has setter `setXyz()`. The Frank!Framework accesses these objects to do the job that the Frank developer intends.
+The Frank!Framework parses a Frank configuration into a Java object of type [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). This object recursively contains child objects. These objects have JavaBean properties that are configured with setter methods (property `xyz` has setter `setXyz()`). The Frank!Framework accesses these objects to do the job that the Frank developer intends.
 
 This document helps you to write the right Java code, including JavaDocs and Java annotations, in such a way that the Frank!Doc remains correct and useful. It explains how to define the object relations that can exist within a configuration. It also shows how to define properties that are usually configured by Frank developers through XML attributes. And there is additional information about groups in the Frank!Doc web application and parameters.
 
