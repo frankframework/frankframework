@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -150,6 +151,49 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testMaxItemsWithSpecialForward() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setBlockSize(4);
+		pipe.setMaxItems(7);
+		pipe.setLinePrefix("{");
+		pipe.setLineSuffix("}");
+		pipe.setCombineBlocks(true);
+		pipe.registerForward(new PipeForward("maxItemsReached","dummy"));
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+		
+		assertEquals("maxItemsReached", prr.getPipeForward().getName());
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testMaxItemsReachedWithoutSpecialForwardRegistered() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setBlockSize(4);
+		pipe.setMaxItems(7);
+		pipe.setLinePrefix("{");
+		pipe.setLineSuffix("}");
+		pipe.setCombineBlocks(true);
+		configurePipe();
+		pipe.start();
+
+		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
+		
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+		
+		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(expected, actual);
 	}
 
