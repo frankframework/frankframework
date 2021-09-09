@@ -199,4 +199,32 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		testSwitch("dummy","notFound");
 	}
 
+	@Test
+	public void withSessionKeyOverridesGetInputFromSessionKey() throws Exception {
+		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.registerForward(new PipeForward("dummy","dummy-Path"));
+		pipe.setGetInputFromSessionKey("input");
+		pipe.setSessionKey("selectKey");
+		pipe.setXpathExpression("name(/node()[position()=last()])");
+		session=new PipeLineSession();
+		session.put("selectKey", "<dummy/>");
+		String input=TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		session.put("input", input);
+		testSwitch(input,"dummy");
+	}
+	
+	@Test
+	public void configureNotFoundForwardNotRegistered() throws Exception {
+		thrown.expectMessage("cannot have both an xpathExpression and a styleSheetName specified");
+		pipe.setXpathExpression("name(/node()[position()=last()])");
+		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
+		pipe.configure();
+	}
+
+	@Test
+	public void styleSheetNotExists() throws Exception {
+		thrown.expectMessage("cannot find stylesheet");
+		pipe.setStyleSheetName("/XmlSwitch/dummy.xsl");
+		pipe.configure();
+	}
 }

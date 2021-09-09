@@ -87,9 +87,6 @@ public class XmlSwitch extends AbstractPipe {
 				ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward ["+getEmptyForwardName()+"] is not configured.");
 			}
 		}
-		if(StringUtils.isNotEmpty(getGetInputFromSessionKey()) && StringUtils.isNotEmpty(getSessionKey())) {
-			throw new ConfigurationException("cannot have both getInputFromSessionKey and a sessionKey specified");
-		}
 		if (StringUtils.isNotEmpty(getXpathExpression())) {
 			if (StringUtils.isNotEmpty(getStyleSheetName())) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
@@ -158,11 +155,10 @@ public class XmlSwitch extends AbstractPipe {
 				throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 			}
 		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {
-			ParameterList parameterList = null;
 			try {
 				Map<String,Object> parametervalues = null;
-				parameterList =  getParameterList();
-				if (parameterList!=null) {
+				ParameterList parameterList = getParameterList();
+				if (!parameterList.isEmpty()) {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {
