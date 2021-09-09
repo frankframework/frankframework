@@ -94,7 +94,7 @@ For an interface config child setter, the rules are as follows:
 * The name `ApiListener` is reduced by removing the suffix, resulting in `Api`.
 * The name is appended by adding the camel-cased role name, `Listener`. The result is `ApiListener`. This equals the simple name of the Java class, which is no coincidence. If the camel-cased role name equals the simple name of the config child setter's argument (except for the letter `I`), then the XML element name equals the class name.
 
-Another implementation of [IListener](./core/src/main/java/nl/nn/adapterframework/core/IListener.java) is [RestListener](./core/src/main/java/nl/nn/adapterframework/http/RestListener.java). A Frank config uses XML element <RestListener> to reference a [RestListener](./core/src/main/java/nl/nn/adapterframework/http/RestListener.java) object that is used as a `listener`. Question: Is the following snippet allowed in a Frank config:
+Another implementation of [IListener](./core/src/main/java/nl/nn/adapterframework/core/IListener.java) is [RestListener](./core/src/main/java/nl/nn/adapterframework/http/RestListener.java). A Frank config uses XML element `<RestListener>` to reference a [RestListener](./core/src/main/java/nl/nn/adapterframework/http/RestListener.java) object that is used as a `listener`. Question: Is the following snippet allowed in a Frank config:
 
 ```
 <Receiver>
