@@ -13,11 +13,11 @@ import nl.nn.credentialprovider.util.AppConstants;
 
 public class MockCredentialFactory extends MapCredentialFactory {
 
+	public final String CREDENTIALS_PROPERTIES = "mockCredentials.properties";
+
 	public MockCredentialFactory() throws IOException {
 		super();
 	}
-
-	public final String CREDENTIALS_PROPERTIES = "mockCredentials.properties";
 	
 	@Override
 	public String getPropertyBase() {
