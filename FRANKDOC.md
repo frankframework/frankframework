@@ -59,7 +59,7 @@ When you want some parent object within a configuration to contain child objects
 
 #### Child role
 
-Roles of children are managed to resource file [digester-rules.xml](./core/src/main/resources/digester-rules.xml). This file has lines that look as follows:
+Roles of children are managed in resource file [digester-rules.xml](./core/src/main/resources/digester-rules.xml). This file has lines that look as follows:
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" />
 
@@ -73,7 +73,7 @@ In the example of parent [Configuration](./core/src/main/java/nl/nn/adapterframe
 
 #### Child Java class
 
-What Java classes can be referenced by a child element? A config child setter always has one argument. The argument's type determines the Java classes that can be referenced. If the argument is not a Java interface, then only that Java class can be referenced. Class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) has config child setter `registerAdapter()` that has argument type [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java) is not a Java interface, so the only Java class that can be referenced by the child element is [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java).
+What Java classes can be referenced by a config child? A config child setter always has one argument. The argument's type determines the Java classes that can be referenced. If the argument is not a Java interface, then only that Java class can be referenced. Class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java) has config child setter `registerAdapter()` that has argument type [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java) is not a Java interface, so the only Java class that can be referenced by the child element is [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java).
 
 If the config child setter has a Java interface as its argument type, then any Java class that implements the interface can be referenced. As an example, consider config child setter `setListener` in class [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver.java) that has argument type [IListener](./core/src/main/java/nl/nn/adapterframework/core/IListener.java). [IListener](./core/src/main/java/nl/nn/adapterframework/core/IListener.java) is a Java interface, so the config child can reference any Java class that implements [IListener](./core/src/main/java/nl/nn/adapterframework/core/IListener.java).
 
@@ -146,7 +146,6 @@ Consider a Java class or Java interface `C` in combination with a role name `r`.
 * The argument type of the config child setter should be a superclass of `C`.
 * Deprecated Java classes or config child setters are treated specially as is explained later.
 * Please mind overridden methods. The consequences of overriding config child setters are explained in a later subsection.
-* The pattern of a `<rule>` element in [digester-rules.xml](./core/src/main/resources/digester-rules.xml) might exclude a child element that would otherwise be allowed. Such restrictions are only enforced when a configuration is parsed. They are not expressed in the Frank!Doc and are beyond the scope of this page. If the pattern starts with a `*` and has only one `/`, then the pattern does not enforce any undocumented restrictions.
 
 These rules are expressed by the Frank!Doc. If some parent XML element references a Java class that defines or inherits a config child setter that has role name `r` and has argument type `C`, then the parent XML element can have any of the child XML elements that correspond to `C` and `r`.
 
