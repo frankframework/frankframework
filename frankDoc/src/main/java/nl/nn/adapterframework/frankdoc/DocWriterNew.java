@@ -367,6 +367,15 @@ public class DocWriterNew {
 		return xsdRoot.toXML(true);
 	}
 
+	// Starts the recursion to generate all XML element definitions.
+	// We decide here whether the root element is introduced as an
+	// XML type declaration (strict XSD) or as an XML element declaration
+	// (compatibility XSD). We need a type for the strict XSD because we
+	// reuse XSD code to define <Configuration> and to define <Module>.
+	//
+	// In strict XSD, the <Module> element has to appear as a child of
+	// <Configuration>. This is done elsewhere by method
+	// addReferencedEntityRootChildIfApplicable().
 	private void defineElements(FrankElement startElement) {
 		switch(version) {
 		case STRICT:
@@ -382,6 +391,7 @@ public class DocWriterNew {
 		}
 	}
 
+	// Defines XML element <Configuration>
 	private void addStartElementAsTypeReference(FrankElement startElement) {
 		log.trace("Adding element [{}] as type reference", () -> startElement.getSimpleName());
 		XmlBuilder startElementBuilder = createElementWithType(startElement.getSimpleName());
@@ -394,6 +404,7 @@ public class DocWriterNew {
 		addClassNameAttribute(extension, startElement);
 	}
 
+	// Defines XML element <Module>
 	private void addReferencedEntityRoot(FrankElement startElement) {
 		log.trace("Adding element [{}] using type [{}]", () -> Constants.MODULE_ELEMENT_NAME, () -> xsdElementType(startElement));
 		XmlBuilder startElementBuilder = createElementWithType(Constants.MODULE_ELEMENT_NAME);
@@ -633,7 +644,8 @@ public class DocWriterNew {
 				XmlBuilder group = createGroup(groupName);
 				xsdComplexItems.add(group);
 				XmlBuilder sequence = addSequence(group);
-				addReferencedEntityRootIfApplicable(sequence, frankElement);
+				// Adds <Module> as a child of <Configuration>
+				addReferencedEntityRootChildIfApplicable(sequence, frankElement);
 				frankElement.getConfigChildren(version.getChildSelector()).forEach(c -> addConfigChild(sequence, c));
 				log.trace("Done creating XSD group [{}] on behalf of FrankElement [{}]", () -> groupName, () -> frankElement.getFullName());
 			}
@@ -981,15 +993,11 @@ public class DocWriterNew {
 		addElement(context, Utils.toUpperCamelCase(roleName), "xs:string", "0", "unbounded");
 	}
 
-	private void addReferencedEntityRootIfApplicable(XmlBuilder context, FrankElement declaredGroupOwner) {
+	private void addReferencedEntityRootChildIfApplicable(XmlBuilder context, FrankElement declaredGroupOwner) {
 		if((version == XsdVersion.STRICT) && declaredGroupOwner.getFullName().equals(model.getRootClassName())) {
-			addReferencedEntityRoot(context);
+			log.trace("Adding referenced entity file root [{}] as config child", Constants.MODULE_ELEMENT_NAME);
+			addElementRef(context, Constants.MODULE_ELEMENT_NAME, "0", "unbounded");
 		}
-	}
-
-	private void addReferencedEntityRoot(XmlBuilder context) {
-		log.trace("Adding referenced entity file root [{}] as config child", Constants.MODULE_ELEMENT_NAME);
-		addElementRef(context, Constants.MODULE_ELEMENT_NAME, "0", "unbounded");
 	}
 
 	void addConfigChildrenWithPluralConfigChildSets(ElementBuildingStrategy elementBuildingStrategy, FrankElement frankElement) {
@@ -1012,7 +1020,7 @@ public class DocWriterNew {
 		xsdComplexItems.add(builder);
 		XmlBuilder sequence = addSequence(builder);
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
-		addReferencedEntityRootIfApplicable(choice, frankElement);
+		addReferencedEntityRootChildIfApplicable(choice, frankElement);
 		List<ConfigChildSet> configChildSets = frankElement.getCumulativeConfigChildSets();
 		for(ConfigChildSet configChildSet: configChildSets) {
 			addPluralConfigChild(choice, configChildSet, frankElement);
