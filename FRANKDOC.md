@@ -203,7 +203,7 @@ Element descriptions come from JavaDoc comments. You can include them in [@IbisD
 
 In the text editor, a Frank developer only sees the Java doc above a class declaration. Only the first sentence is shown (sentence end is dot-space or dot-newline). This has been explained already for the root XML element, see section "Expressing the root object", subsection "Description". That subsection also shows how the JavaDoc above a class declaration appears in the website: It appears at the top of the page of the Java class. Please note that the meaning of the role name of a child XML element is not documented this way. Only the behavior of the referenced Java class is shown.
 
-The web application shows the JavaDoc above a config child setter. In this JavaDoc you can express the meaning of the element role. This description is shown along with the table of config children. See the example below:
+The web application shows the JavaDoc above a config child setter. In this JavaDoc you can express the meaning of the role name. This description is shown along with the table of config children. See the example below:
 
 ![webapp-config-child-description](./webapp-config-child-description.jpg)
 
