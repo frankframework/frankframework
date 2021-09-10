@@ -193,7 +193,23 @@ This example is about Java class [SenderPipe](./core/src/main/java/nl/nn/adapter
 
 The order of child elements can be changed by overriding or deprecating config child setters. These effects are explained in later subsections.
 
-#### Description
+With the old ibisdoc way of documenting Frank configs, which is no longer maintained, the order was determined by [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) Java annotations. The Frank!Doc still uses these annotations to get descriptions, but using these Java annotations is deprecated.
+
+#### Descriptions
+
+Element descriptions come from JavaDoc comments. You can include them in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java), but doing so is deprecated. Descriptions of Java classes (or XML elements in a Frank config) appear in two places:
+* Above the Java class declaration.
+* Above the config child setter in the Java class of the parent XML element.
+
+In the text editor, a Frank developer only sees the Java doc above a class declaration. Only the first sentence is shown (sentence end is dot-space or dot-newline). This has been explained already for the root XML element, see section "Expressing the root object", subsection "Description". That subsection also shows how the JavaDoc above a class declaration appears in the website: It appears at the top of the page of the Java class. Please note that the meaning of the role name of a child XML element is not documented this way. Only the behavior of the referenced Java class is shown.
+
+The web application shows the JavaDoc above a config child setter. In this JavaDoc you can express the meaning of the element role. This description is shown along with the table of config children. See the example below:
+
+
+
+
+
+
 
 #### Deprecating
 
