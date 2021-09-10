@@ -1020,6 +1020,7 @@ public class DocWriterNew {
 		xsdComplexItems.add(builder);
 		XmlBuilder sequence = addSequence(builder);
 		XmlBuilder choice = addChoice(sequence, "0", "unbounded");
+		// Adds <Module> as a child of <Configuration>
 		addReferencedEntityRootChildIfApplicable(choice, frankElement);
 		List<ConfigChildSet> configChildSets = frankElement.getCumulativeConfigChildSets();
 		for(ConfigChildSet configChildSet: configChildSets) {
