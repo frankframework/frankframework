@@ -28,7 +28,6 @@ import nl.nn.adapterframework.xml.FullXmlFilter;
 /**
  * This class omits XML elements from Frank configs that are meaningless containers.
  * The children of the omitted elements are kept. This class does its job by filtering SAX events.
- * @author martijn
  *
  */
 public class SkipContainersFilter extends FullXmlFilter {
