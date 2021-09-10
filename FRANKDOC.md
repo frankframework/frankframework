@@ -205,11 +205,7 @@ In the text editor, a Frank developer only sees the Java doc above a class decla
 
 The web application shows the JavaDoc above a config child setter. In this JavaDoc you can express the meaning of the element role. This description is shown along with the table of config children. See the example below:
 
-
-
-
-
-
+![webapp-config-child-description](./webapp-config-child-description.jpg)
 
 #### Deprecating
 
