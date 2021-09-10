@@ -159,6 +159,40 @@ Neither `<ZipIteratorPipe>` nor `<SenderPipe>` can have child element `<LogError
 
 #### Child order
 
+The Frank!Doc documents the preferred order of the child XML elements within a parent. Here is an example in Visual Studio Code of a Frank config that violates the preferred order:
+
+![editor-order-violation](./editor-order-violation.jpg)
+
+The editor marks the spot where `FrankConfig-strict.xsd` is violated. When you hoover over the error mark, the following text appears:
+
+```
+Invalid element name:
+ - Adapter
+
+One of the following is expected:
+ - Job
+ - StatisticsHandler
+ - StatisticsKeeperIterationHandlerCollectionStatisticsHandler
+ - StatisticsKeeperLoggerStatisticsHandler
+ - StatisticsKeeperStoreStatisticsHandler
+ - StatisticsKeeperXmlBuilderStatisticsHandler
+ - JmsRealm
+
+Error indicated by:
+```
+
+This error can be fixed by interchanging `<Adapter>` and `<Job>`, putting `<Adapter>` before `<Job>`.
+
+The Frank!Framework can parse configurations in which the preferred child order is violated. This is the case because `FrankConfig-compatibility.xsd` does not enforce any order of child elements.
+
+The preferred order is also documented in the web application as shown below:
+
+![webapp-config-child-order-inheritance](./webapp-config-child-order-inheritance.jpg]
+
+This example is about Java class [SenderPipe](./core/src/main/java/nl/nn/adapterframework/pipes/SenderPipe.java). You see here that inherited config children go after declared children. The order of the declared config children follows the order of the config child setters in the Java source file.
+
+The order of child elements can be changed by overriding or deprecating config child setters. These effects are explained in later subsections.
+
 #### Description
 
 #### Deprecating
