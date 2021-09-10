@@ -187,7 +187,7 @@ The Frank!Framework can parse configurations in which the preferred child order 
 
 The preferred order is also documented in the web application as shown below:
 
-![webapp-config-child-order-inheritance](./webapp-config-child-order-inheritance.jpg]
+![webapp-config-child-order-inheritance](./webapp-config-child-order-inheritance.jpg)
 
 This example is about Java class [SenderPipe](./core/src/main/java/nl/nn/adapterframework/pipes/SenderPipe.java). You see here that inherited config children go after declared children. The order of the declared config children follows the order of the config child setters in the Java source file.
 
