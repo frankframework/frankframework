@@ -42,6 +42,8 @@ public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
 	private IScopeProvider scopeProvider;
 	private List<String> allowedProtocols = ClassUtils.getAllowedProtocols();
+	
+	public final String PROTOCOL_CLASSPATH="classpath";
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
@@ -62,7 +64,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			if (href.contains(":")) {
 				protocol=href.substring(0,href.indexOf(":"));
 			}
-			if (StringUtils.isNotEmpty(protocol)) { //if href contains a protocol, verify that it's allowed to look it up
+			if (StringUtils.isNotEmpty(protocol) && !protocol.equals(PROTOCOL_CLASSPATH)) { //if href contains a protocol, verify that it's allowed to look it up
 				if(allowedProtocols.isEmpty()) {
 					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
 				} else if(!allowedProtocols.contains(protocol)) {
