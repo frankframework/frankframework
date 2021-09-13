@@ -66,38 +66,34 @@ public class StringResolverTest {
 
 	
 	@Test
-	public void resolveUsername1() {
+	public void resolveUsername() {
+		// N.B. the notation ${credential:alias1/username} will work too, for some implementations of CredentialProvider, but not for all!
 		String result = StringResolver.substVars("${credential:username:alias1}", properties);
 		assertEquals("username1", result);
 	}
 
 	@Test
-	public void resolveUsername2() {
-		String result = StringResolver.substVars("${credential:alias1/username}", properties); 
-		assertEquals("username1", result);
-	}
-
-	@Test
 	public void resolvePassword1() {
+		// N.B. the notation ${credential:alias1/password} will work too, for some implementations of CredentialProvider, but not for all!
 		String result = StringResolver.substVars("${credential:password:alias1}", properties);
 		assertEquals("password1", result);
 	}
 
 	@Test
 	public void resolvePassword2() {
-		String result = StringResolver.substVars("${credential:alias1/password}", properties);
-		assertEquals("password1", result);
-	}
-
-	@Test
-	public void resolvePassword3() {
-		String result = StringResolver.substVars("${credential:alias1}", properties);
+		String result = StringResolver.substVars("${credential:alias1}", properties); // the 'credential:' prefix defaults to return the password
 		assertEquals("password1", result);
 	}
 
 	@Test
 	public void resolvePasswordOnlyAlias() {
 		String result = StringResolver.substVars("${credential:alias2}", properties);
+		assertEquals("passwordOnly", result);
+	}
+
+	@Test
+	public void resolvePasswordOnlyAlias2() {
+		String result = StringResolver.substVars("${credential:password:alias2}", properties);
 		assertEquals("passwordOnly", result);
 	}
 
