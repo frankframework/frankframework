@@ -56,7 +56,21 @@ There is a `<rule>` XML element that links the name `adapter` to the name of the
 
 ## How Java inheritance is shown
 
-## Preferred order of attributes and child elements
+In Java, config child setters and attribute setters are inherited like any Java method. As a consequence, attributes and config children are inherited. In `FrankConfig-strict.xsd` and in the JSON, inheritance is used to avoid unnecessary repetition and reduce file sizes. Frank developers do not see this in their text editor. Attributes look the same whether they are declared or inherited, and the same is true for child elements. In the web application however, inheritance is clearly visible as shown below:
+
+![webappInheritance](./picturesForContributors/webappInheritance.jpg)
+
+Declared config children and declared attributes go first. If config children or attributes are inherited, there is a heading with the closest ancestor from which we have inheritance. The config children and the attributes inherited from that ancestor follow. Next comes a header for the next ancestor from which config children or attributes are inherited. The recursion ends when all declared and all inherited config children and attributes are present.
+
+## Preferred order of child elements
+
+Attributes can appear in any order, but there is a preferred order for config children (child elements). The previous section showed config children in their preferred order. The preferred order of config children follows from the following rules:
+* Declared config children go first. The preferred order of the declared config children is the sequence of the config child setters in the Java source code.
+* Inherited config children go after declared config children. Config children from a closer ancestor go before config children from a further ancestor.
+
+Frank configs that violate the preferred order can still be parsed by the Frank!Framework, which is desirable for backward compatibility. The strict XSD does enforce the order as shown below:
+
+![vscodeOrderChecked](./picturesForContributors/vscodeOrderChecked.jpg)
 
 ## Groups in the web application
 
