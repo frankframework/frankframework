@@ -34,7 +34,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -101,6 +100,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
@@ -1677,12 +1677,9 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(Message input, String root) {
-		Set<List<String>> rootValidations = null;
+		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
-			List<String> path = new ArrayList<String>();
-			path.add(root);
-			rootValidations = new HashSet<List<String>>();
-			rootValidations.add(path);
+			rootValidations = new RootValidations(root);
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
