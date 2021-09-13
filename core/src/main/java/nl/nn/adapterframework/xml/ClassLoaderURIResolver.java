@@ -55,16 +55,16 @@ public class ClassLoaderURIResolver implements URIResolver {
 	}
 
 	public Resource resolveToResource(String href, String base) throws TransformerException {
-		String ref1;
-		String ref2=null;
+		String absoluteOrRelativeRef;
+		String globalClasspathRef=null;
 		String protocol=null;
 		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
-			ref1=href;
+			absoluteOrRelativeRef=href;
 			if (href.contains(":")) {
 				protocol=href.substring(0,href.indexOf(":"));
 			}
-			if (StringUtils.isNotEmpty(protocol) && !protocol.equals(PROTOCOL_CLASSPATH)) { //if href contains a protocol, verify that it's allowed to look it up
+			if (StringUtils.isNotEmpty(protocol)) { //if href contains a protocol, verify that it's allowed to look it up
 				if(allowedProtocols.isEmpty()) {
 					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
 				} else if(!allowedProtocols.contains(protocol)) {
@@ -75,27 +75,27 @@ public class ClassLoaderURIResolver implements URIResolver {
 			// href does not start with scheme/protocol, and does not start with a slash.
 			// It must be relative to the base, or if that not exists, on the root of the classpath
 			if (base != null && base.contains("/")) {
-				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
-				ref2 = href; // if ref1 fails, try href on the global classpath
+				absoluteOrRelativeRef = base.substring(0, base.lastIndexOf("/") + 1) + href;
+				globalClasspathRef = href; // if ref1 fails, try href on the global classpath
 				if (base.contains(":")) {
 					protocol=base.substring(0,base.indexOf(":"));
 				}
 			} else {
 				// cannot use base to prefix href
-				ref1=href;
+				absoluteOrRelativeRef=href;
 			}
 		}
 
-		String ref=ref1;
+		String ref=absoluteOrRelativeRef;
 		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
-		if (resource==null && ref2!=null) {
-			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
-			ref=ref2;
-			resource = Resource.getResource(scopeProvider, ref, protocol);
+		if (resource==null && globalClasspathRef!=null) {
+			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+globalClasspathRef+"] protocol ["+protocol+"]");
+			ref=globalClasspathRef;
+			resource = Resource.getResource(scopeProvider, ref, null);
 		}
 
 		if (resource==null) {
-			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(globalClasspathRef==null?"":" nor as ref ["+absoluteOrRelativeRef+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
