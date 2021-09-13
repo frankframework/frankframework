@@ -30,7 +30,7 @@ The XML schema helps Frank developers when they are writing their configs, but t
 
 To the top-left, you see a list of groups (number 1). These groups are controlled by Java annotation [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java). To the bottom-left, you see the Java class names that are members of the chosen group (number 2). When you select a class name, you get information about it (number 3). More explanation of this text follows later.
 
-## Descriptions of classes, nested elements and attributes
+## Descriptions of classes, child elements and attributes
 
 Most descriptions you see in the Frank!Doc come from JavaDoc comments. This section shows where your JavaDoc comments appear in the Frank!Doc. Below you see some snippets of Java class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java).
 
