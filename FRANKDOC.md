@@ -50,7 +50,7 @@ The JavaDoc of a config child setter is available in the web application as show
 
 The JavaDoc of the class appears at the top of the page. The JavaDoc of the config child setter appears in the table of config children. And the JavaDoc of the attribute setter appears with the attributes. The name of the config child (number 4) does not come from file [Configuration.java](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). It comes from file [digester-rules.xml](./core/src/main/resources/digester-rules.xml), which contains the following line:
 
-![digesterRulesRoleAdapter][./picturesForContributors/digesterRulesRoleAdapter.jpg)
+![digesterRulesRoleAdapter](./picturesForContributors/digesterRulesRoleAdapter.jpg)
 
 There is a `<rule>` XML element that links the name `adapter` to the name of the config child setter, `registerAdapter`.
 
