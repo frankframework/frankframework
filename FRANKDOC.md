@@ -24,7 +24,7 @@ The Frank developer has used an XML element `<xxx>` that does not exist. VSCode 
 
 #### Web app with reference information for Frank developers
 
-The XML schema helps Frank developers when they are writing their configs, but they also need help while designing them. They can use de Frank!Doc web application as the reference manual. It looks like shown below:
+The XML schema helps Frank developers when they are writing their configs, but they also need help while designing them. They can use the Frank!Doc web application as the reference manual. It looks like shown below:
 
 ![webapp-intro](./picturesForContributors/webapp-intro.jpg)
 
