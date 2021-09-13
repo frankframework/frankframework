@@ -32,6 +32,28 @@ To the top-left, you see a list of groups (number 1). These groups are controlle
 
 ## Descriptions of classes, nested elements and attributes
 
+Most descriptions you see in the Frank!Doc come from JavaDoc comments. This section shows where your JavaDoc comments appear in the Frank!Doc. Below you see some snippets of Java class [Configuration](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java).
+
+![eclipseConfigurationJava](./eclipseConfigurationJava.jpg)
+
+You see the JavaDoc comment of the class (number 1), the JavaDoc of a config child setter (number 2) and the JavaDoc of an attribute (number 3).
+
+These JavaDoc comments appear in VSCode as shown below:
+
+![vscodeConfigurationDescriptions](./vscodeConfigurationDescriptions.jpg)
+
+The JavaDoc comment of the class appears as help about XML element `<Configuration>` (number 1). The JavaDoc of the attribute setter appears as help about the attribute (number 3). The JavaDoc of the config child setter is not in the XML schema file (number 2 is not present).
+
+The JavaDoc of a config child setter is available in the web application as shown below.
+
+![webappConfigurationDescriptions](./webappConfigurationDescriptions.jpg)
+
+The JavaDoc of the class appears as the top of the page. The JavaDoc of the config child setter appears in the table of config children. And the JavaDoc of the attribute setter appears with the attributes. The name of the config child (number 4) does not come from file [Configuration.java](./core/src/main/java/nl/nn/adapterframework/configuration/Configuration.java). It comes from file [digester-rules.xml](./core/src/main/resources/digester-rules.xml), which contains the following line:
+
+![digesterRulesRoleAdapter][./digesterRulesRoleAdapter.jpg)
+
+There is a `<rule>` XML element that links the name `adapter` to the name of the config child setter, `registerAdapter`.
+
 ## How Java inheritance is shown
 
 ## Preferred order of attributes and child elements
