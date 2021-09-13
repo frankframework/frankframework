@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.apache.xerces.xs.XSModel;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
 import nl.nn.adapterframework.align.XmlAligner;
@@ -72,19 +73,20 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public final String FORMAT_XML="xml";
 	public final String FORMAT_JSON="json";
 	
-	private boolean compactJsonArrays=true;
-	private boolean strictJsonArraySyntax=false;
-	private boolean jsonWithRootElements=false;
-	private boolean deepSearch=false;
-	private String targetNamespace;
-	private String outputFormat=FORMAT_XML;
-	private boolean autoFormat=true;
-	private String inputFormatSessionKey=null;
-	private String outputFormatSessionKey="outputFormat";
-	private boolean failOnWildcards=true;
-	private boolean acceptNamespaceLessXml=false;
-	private boolean produceNamespaceLessXml=false;
-	private boolean validateJsonToRootElementOnly=true;
+	private @Getter boolean compactJsonArrays=true;
+	private @Getter boolean strictJsonArraySyntax=false;
+	private @Getter boolean jsonWithRootElements=false;
+	private @Getter boolean deepSearch=false;
+	private @Getter boolean ignoreUndeclaredElements=false;
+	private @Getter String targetNamespace;
+	private @Getter String outputFormat=FORMAT_XML;
+	private @Getter boolean autoFormat=true;
+	private @Getter String inputFormatSessionKey=null;
+	private @Getter String outputFormatSessionKey="outputFormat";
+	private @Getter boolean failOnWildcards=true;
+	private @Getter boolean acceptNamespaceLessXml=false;
+	private @Getter boolean produceNamespaceLessXml=false;
+	private @Getter boolean validateJsonToRootElementOnly=true;
 
 	{
 		setSoapNamespace("");
@@ -240,6 +242,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setDeepSearch(isDeepSearch());
 			aligner.setErrorHandler(context.getErrorHandler());
 			aligner.setFailOnWildcards(isFailOnWildcards());
+			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
 				Map<String,Object> parametervalues = null;
@@ -366,104 +369,70 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public void setTargetNamespace(String targetNamespace) {
 		this.targetNamespace = targetNamespace;
 	}
-	public String getTargetNamespace() {
-		return targetNamespace;
-	}
 
 	@IbisDoc({"2", "Default format of the result. Either 'xml' or 'json'", "xml"})
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
-	}
-	public String getOutputFormat() {
-		return outputFormat;
 	}
 
 	@IbisDoc({"3", "Session key to retrieve outputformat from.", "outputformat"})
 	public void setOutputFormatSessionKey(String outputFormatSessionKey) {
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
-	public String getOutputFormatSessionKey() {
-		return outputFormatSessionKey;
-	}
 
 	@IbisDoc({"4", "Session key to store the inputformat in, to be able to set the outputformat when autoForamat=true.", "Json2XmlValidator.inputformat +<name of the pipe>"})
 	public void setInputFormatSessionKey(String inputFormatSessionKey) {
 		this.inputFormatSessionKey = inputFormatSessionKey;
-	}
-	public String getInputFormatSessionKey() {
-		return inputFormatSessionKey;
 	}
 
 	@IbisDoc({"5", "If true, the format on 'output' is set to the same as the format of the input message on 'input'. The format of the input message is stored in and retrieved from the session variable specified by outputFormatSessionKey", "true"})
 	public void setAutoFormat(boolean autoFormat) {
 		this.autoFormat = autoFormat;
 	}
-	public boolean isAutoFormat() {
-		return autoFormat;
-	}
 
 	@IbisDoc({"6", "If true assume arrays in json do not have the element containers like in xml", "true"})
 	public void setCompactJsonArrays(boolean compactJsonArrays) {
 		this.compactJsonArrays = compactJsonArrays;
-	}
-	public boolean isCompactJsonArrays() {
-		return compactJsonArrays;
 	}
 
 	@IbisDoc({"7", "If true check that incoming json adheres to the specified syntax (compact or full), otherwise both types are accepted for conversion from json to xml", "false"})
 	public void setStrictJsonArraySyntax(boolean strictJsonArraySyntax) {
 		this.strictJsonArraySyntax = strictJsonArraySyntax;
 	}
-	public boolean isStrictJsonArraySyntax() {
-		return strictJsonArraySyntax;
-	}
 
 	@IbisDoc({"8", "If true, assume that json contains/must contain a root element", "false"})
 	public void setJsonWithRootElements(boolean jsonWithRootElements) {
 		this.jsonWithRootElements = jsonWithRootElements;
-	}
-	public boolean isJsonWithRootElements() {
-		return jsonWithRootElements;
 	}
 
 	@IbisDoc({"9", "If true, and converting from json to xml, parameter substitutions are searched for optional sub elements too. By default, only mandatory elements are searched for parameter substitutions. N.B. Currenlty this option might cause problems. Please try using more qualified parameters names (using '/') first", "false"})
 	public void setDeepSearch(boolean deepSearch) {
 		this.deepSearch = deepSearch;
 	}
-	public boolean isDeepSearch() {
-		return deepSearch;
+
+	@IbisDoc({"9", "If true, and converting from json to xml, elements in json that are not found in the XML-Schema are ignored", "false"})
+	public void setIgnoreUndeclaredElements(boolean ignoreUndeclaredElements) {
+		this.ignoreUndeclaredElements = ignoreUndeclaredElements;
 	}
 
 	@IbisDoc({"10", "If true, an exception is thrown when a wildcard is found in the xml schema when parsing an object. This often indicates that an element is not properly typed in the xml schema, and could lead to ambuigities.", "true"})
 	public void setFailOnWildcards(boolean failOnWildcards) {
 		this.failOnWildcards = failOnWildcards;
 	}
-	public boolean isFailOnWildcards() {
-		return failOnWildcards;
-	}
 
 	@IbisDoc({"11", "If true, all xml is allowed to be without namespaces. If no namespaces are detected (by the presence of the string 'xmlns') in the xml string, the root namespace is added to the xml", "false"})
 	public void setAcceptNamespaceLessXml(boolean acceptNamespaceLessXml) {
 		this.acceptNamespaceLessXml = acceptNamespaceLessXml;
-	}
-	public boolean isAcceptNamespaceLessXml() {
-		return acceptNamespaceLessXml;
 	}
 
 	@IbisDoc({"12", "If true, all xml that is generated is without a namespace set", "false"})
 	public void setProduceNamespaceLessXml(boolean produceNamespaceLessXml) {
 		this.produceNamespaceLessXml = produceNamespaceLessXml;
 	}
-	public boolean isProduceNamespaceLessXml() {
-		return produceNamespaceLessXml;
-	}
 
 	@IbisDoc({"13", "If true, and converting to or from json, then the message root is the only rootValidation, ignoring root validations like for SOAP envelope and header set by descender classes like SoapValidator", "true"})
 	public void setValidateJsonToRootElementOnly(boolean validateJsonToRootElementOnly) {
 		this.validateJsonToRootElementOnly = validateJsonToRootElementOnly;
-	}
-	public boolean isValidateJsonToRootElementOnly() {
-		return validateJsonToRootElementOnly;
 	}
 
 }
