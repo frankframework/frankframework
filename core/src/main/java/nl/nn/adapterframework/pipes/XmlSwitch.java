@@ -165,6 +165,7 @@ public class XmlSwitch extends AbstractPipe {
 				if(StringUtils.isNotEmpty(getSessionKey())) {
 					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues);
 				} else {
+					message.preserve();
 					forward = transformerPool.transform(message, parametervalues);
 				}
 			} catch (Throwable e) {

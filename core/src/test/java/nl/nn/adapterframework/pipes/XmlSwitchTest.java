@@ -3,12 +3,13 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Rule;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -16,8 +17,6 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	@Override
 	public XmlSwitch createPipe() {
@@ -30,10 +29,10 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		PipeRunResult prr = doPipe(pipe,input,session);
 
 		assertEquals(input,prr.getResult());
-		
+
 		PipeForward forward=prr.getPipeForward();
 		assertNotNull(forward);
-		
+
 		String actualForwardName=forward.getName();
 		assertEquals(expectedForwardName,actualForwardName);
 	}
@@ -192,9 +191,8 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 	@Test
 	public void emptyParameterList() throws Exception {
-		thrown.expectMessage("cannot find forward or pipe named");
 		pipe.setSessionKey("sessionKey");
-		testSwitch(new Message("dummy"),"Envelope");
+		Assert.assertThrows("cannot find forward or pipe named", PipeRunException.class, () -> testSwitch(new Message("dummy"),"Envelope"));
 	}
 
 	@Test
@@ -231,16 +229,14 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	
 	@Test
 	public void configureNotFoundForwardNotRegistered() throws Exception {
-		thrown.expectMessage("cannot have both an xpathExpression and a styleSheetName specified");
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
-		pipe.configure();
+		Assert.assertThrows("cannot have both an xpathExpression and a styleSheetName specified", ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
 	public void styleSheetNotExists() throws Exception {
-		thrown.expectMessage("cannot find stylesheet");
 		pipe.setStyleSheetName("/XmlSwitch/dummy.xsl");
-		pipe.configure();
+		Assert.assertThrows("cannot find stylesheet", ConfigurationException.class, () -> pipe.configure());
 	}
 }
