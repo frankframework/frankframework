@@ -9,7 +9,7 @@
 	<br />
 
 	<div ng-if="element.children" element-children></div>
-	<table ng-if="element.showAttributes" element-attributes></table>
+	<table ng-if="element.attributes || element.nonInheritedAttributes" element-attributes></table>
 
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>
