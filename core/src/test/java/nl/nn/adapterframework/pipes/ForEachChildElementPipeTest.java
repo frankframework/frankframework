@@ -673,7 +673,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setStopConditionXPathExpression("*[@name='p & Q']");
-		pipe.registerForward(new PipeForward("stopConditionHeld", "dummy"));
+		pipe.registerForward(new PipeForward(pipe.STOP_CONDITION_HOLDS_FORWARD, "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -684,7 +684,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
-		assertEquals("stopConditionHeld", prr.getPipeForward().getName());
+		assertEquals(pipe.STOP_CONDITION_HOLDS_FORWARD, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -727,7 +727,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(1);
-		pipe.registerForward(new PipeForward("maxItemsReached", "dummy"));
+		pipe.registerForward(new PipeForward(pipe.MAX_ITEMS_REACHED_FORWARD, "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -738,7 +738,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
-		assertEquals("maxItemsReached", prr.getPipeForward().getName());
+		assertEquals(pipe.MAX_ITEMS_REACHED_FORWARD, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -763,7 +763,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(2);
-		pipe.registerForward(new PipeForward("maxItemsReached", "dummy"));
+		pipe.registerForward(new PipeForward(pipe.MAX_ITEMS_REACHED_FORWARD, "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -774,7 +774,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
-		assertEquals("maxItemsReached", prr.getPipeForward().getName());
+		assertEquals(pipe.MAX_ITEMS_REACHED_FORWARD, prr.getPipeForward().getName());
 	}
 
 	@Test

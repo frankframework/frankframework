@@ -162,7 +162,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		pipe.registerForward(new PipeForward("maxItemsReached","dummy"));
+		pipe.registerForward(new PipeForward(pipe.MAX_ITEMS_REACHED_FORWARD,"dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -172,7 +172,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 		
-		assertEquals("maxItemsReached", prr.getPipeForward().getName());
+		assertEquals(pipe.MAX_ITEMS_REACHED_FORWARD, prr.getPipeForward().getName());
 		assertEquals(expected, actual);
 	}
 	

@@ -147,7 +147,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private @Getter int blockSize=0;
 
 	protected final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
-	protected final String STOP_CONDITION_HELD_FORWARD = "stopConditionHeld";
+	protected final String STOP_CONDITION_HOLDS_FORWARD = "stopConditionHolds";
 
 	private TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
@@ -395,7 +395,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
-							return STOP_CONDITION_HELD_FORWARD;
+							return STOP_CONDITION_HOLDS_FORWARD;
 						} else {
 							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
 						}
@@ -461,7 +461,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	@Override
 	protected boolean canStreamToNextPipe() {
-		if(getForwards()!=null && (getForwards().get(MAX_ITEMS_REACHED_FORWARD)!=null || getForwards().get(STOP_CONDITION_HELD_FORWARD)!=null)) { // streaming is not possible since the forward is not known before hand
+		if(getForwards()!=null && (getForwards().get(MAX_ITEMS_REACHED_FORWARD)!=null || getForwards().get(STOP_CONDITION_HOLDS_FORWARD)!=null)) { // streaming is not possible since the forward is not known before hand
 			return false;
 		}
 		return !isCollectResults() && super.canStreamToNextPipe(); // when collectResults is false, streaming is not necessary or useful
@@ -559,7 +559,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		this.maxItems = maxItems;
 	}
 
-	@IbisDoc({"8", "Expression evaluated on each result and forwards to ["+STOP_CONDITION_HELD_FORWARD+"] forward if configured. "
+	@IbisDoc({"8", "Expression evaluated on each result and forwards to ["+STOP_CONDITION_HOLDS_FORWARD+"] forward if configured. "
 	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
 	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
 	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead", ""})
