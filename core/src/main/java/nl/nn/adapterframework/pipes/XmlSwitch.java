@@ -159,12 +159,12 @@ public class XmlSwitch extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
+					message.preserve();
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {
 					forward = transformerPool.transform(session.getMessage(getSessionKey()), parametervalues);
 				} else {
-					message.preserve();
 					forward = transformerPool.transform(message, parametervalues);
 				}
 			} catch (Throwable e) {
