@@ -165,12 +165,12 @@ public class FrankDocJsonFactory {
 			result.add("children", configChildren);
 		}
 		if(frankElement.getMeaningOfParameters() != null) {
-			result.add("parametersMeaning", frankElement.getMeaningOfParameters());
+			result.add("parametersDescription", frankElement.getMeaningOfParameters());
 		}
 		if(frankElement.getSpecificParameters().size() >= 1) {
 			JsonArrayBuilder b = bf.createArrayBuilder();
 			frankElement.getSpecificParameters().forEach(sp -> b.add(getParameter(sp)));
-			result.add("specificParameters", b.build());
+			result.add("parameters", b.build());
 		}
 		return result.build();
 	}

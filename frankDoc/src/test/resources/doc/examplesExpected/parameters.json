@@ -42,7 +42,7 @@
                     "description":"If defined and empty or false, then this element and all its children are ignored"
                 }
             ],
-            "specificParameters":[
+            "parameters":[
                 {
                     "name":"first",
                     "description":"This is the first parameter."
@@ -68,8 +68,8 @@
                     "description":"If defined and empty or false, then this element and all its children are ignored"
                 }
             ],
-            "parametersMeaning":"This is the meaning of Child2-s parameters.",
-            "specificParameters":[
+            "parametersDescription":"This is the meaning of Child2-s parameters.",
+            "parameters":[
                 {
                     "name":"first",
                     "description":"This is the first parameter."
@@ -100,7 +100,7 @@
                     "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.parameters.Child2"
                 }
             ],
-            "parametersMeaning":"This is the meaning of the parameters of Master"
+            "parametersDescription":"This is the meaning of the parameters of Master"
         },
         {
             "name":"Object",

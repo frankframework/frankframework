@@ -37,12 +37,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			}
 			for(let i in elements) {
 				let element = elements[i];
-				if(element.parametersMeaning) {
-					element.showParameters = true;
-				}
-				if(element.specificParameters) {
-					element.showParameters = true;
-				}
 				$scope.elements[element.fullName] = element;
 			}
 			for(let i in enums) {
