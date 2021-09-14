@@ -11,5 +11,8 @@
 	<div ng-if="element.children" element-children></div>
 	<table ng-if="element.attributes" element-attributes></table>
 
+	<br />
+	<div ng-if="element.parameters || element.parametersDescription" parameters></div>
+
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>
