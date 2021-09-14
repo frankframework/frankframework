@@ -43,8 +43,6 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private IScopeProvider scopeProvider;
 	private List<String> allowedProtocols = ClassUtils.getAllowedProtocols();
 	
-	public final String PROTOCOL_CLASSPATH="classpath";
-
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
 		this.scopeProvider = scopeProvider;
