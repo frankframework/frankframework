@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -41,6 +43,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.testutil.TestAppender;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
@@ -89,6 +92,24 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+
+		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
+		Answer answer = new Answer() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				String message = invocation.getArgument(0);
+				MessageKeeperLevel level = invocation.getArgument(1);
+				Exception exception = invocation.getArgument(2);
+				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
+				return null;
+			}
+		};
+		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a 
+		//new ApplicationContext if non exists. This functionality should be removed sometime in the future.
+		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The 
+		//creation of the ApplicationContext during the test phase causes IllegalStateExceptions
+		//In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
+		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
@@ -166,7 +187,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 * This test makes sure that when the config can't be found, it only throws an INFO error in the log4j logger
 	 * @throws Exception
 	 */
-	@Ignore("Jenkins has problems with this") // TODO fix this
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
 		TestAppender appender = TestAppender.newBuilder().build();

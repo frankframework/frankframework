@@ -197,10 +197,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result=getFileSystem().getPhysicalDestinationName()+
-				" inputFolder [" + (getInputFolder() == null ? "" : getInputFolder()) + "] inProcessFolder [" + (getInProcessFolder() == null ? "" : getInProcessFolder()) +
-				"] processedFolder [" + (getProcessedFolder() == null ? "" : getProcessedFolder()) + "] errorFolder [" + (getErrorFolder() == null ? "" : getErrorFolder()) + "] logFolder [" + (getLogFolder() == null ? "" : getLogFolder()) + "]";
-		return result;
+		StringBuilder destination = new StringBuilder(getFileSystem().getPhysicalDestinationName());
+		if(getInputFolder() != null) destination.append(" inputFolder ["+getInputFolder()+"]");
+		if(getInProcessFolder() != null) destination.append(" inProcessFolder ["+getInProcessFolder()+"]");
+		if(getProcessedFolder() != null) destination.append(" processedFolder ["+getProcessedFolder()+"]");
+		if(getErrorFolder() != null) destination.append(" errorFolder ["+getErrorFolder()+"]");
+		if(getLogFolder() != null) destination.append(" logFolder ["+getLogFolder()+"]");
+
+		return destination.toString();
 	}
 
 	public FS getFileSystem() {
