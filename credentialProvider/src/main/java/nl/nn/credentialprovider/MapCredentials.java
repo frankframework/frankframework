@@ -52,7 +52,7 @@ public class MapCredentials extends Credentials {
 				foundOne = true;
 				setPassword(aliases.get(passwordKey));
 			}
-			if (!foundOne) {
+			if (!foundOne && aliases.containsKey(getAlias())) {
 				setPassword(aliases.get(getAlias()));
 			}
 		}
