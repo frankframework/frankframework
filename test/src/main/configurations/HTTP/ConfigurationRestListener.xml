@@ -88,7 +88,7 @@
 			</pipe>
 
 			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetId.xsl" sessionKey="docId"
+				styleSheetName="RestListener/xsl/GetId.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
 				<forward name="success" path="getDocFileName" />
@@ -107,7 +107,7 @@
 
 			<pipe name="setContentDisposition" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetContentDisposition.xsl"
-				sessionKey="contentDisposition" getInputFromFixedValue="&lt;dummy/&gt;">
+				storeResultInSessionKey="contentDisposition" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="fileName" sessionKey="docFileName" />
 				<forward name="success" path="getDocAndWriteToFile" />
 			</pipe>
@@ -135,14 +135,14 @@
 			</exits>
 
 			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetId2.xsl" sessionKey="docId"
+				styleSheetName="RestListener/xsl/GetId2.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
 				<forward name="success" path="getUrl" />
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc" />
@@ -181,7 +181,7 @@
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url">
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url" preserveInput="true">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc2" />
 				<param name="docId" xpathExpression="id" />
@@ -241,7 +241,7 @@
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc3" />
