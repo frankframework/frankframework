@@ -31,6 +31,9 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -40,6 +43,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.testutil.TestAppender;
+import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
@@ -88,6 +92,19 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
+
+		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
+		Answer answer = new Answer() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				String message = invocation.getArgument(0);
+				MessageKeeperLevel level = invocation.getArgument(1);
+				Exception exception = invocation.getArgument(2);
+				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
+				return null;
+			}
+		};
+		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class)); //Mock the ibiscontext's log method, bypass event publishing
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
