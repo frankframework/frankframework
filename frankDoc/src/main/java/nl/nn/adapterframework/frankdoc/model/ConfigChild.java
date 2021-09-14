@@ -50,6 +50,7 @@ public abstract class ConfigChild extends ElementChild {
 	private @Getter @Setter boolean allowMultiple;
 	private @Getter(AccessLevel.PACKAGE) String methodName;
 	private boolean isOverrideMeaningfulLogged = false;
+	private @Getter(onMethod = @__({@Override})) boolean violatesDigesterRules;
 
 	ConfigChild(FrankElement owningElement, FrankMethod method) {
 		super(owningElement);

@@ -1,9 +1,10 @@
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -50,26 +51,22 @@ class DigesterRules {
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
 			String pattern = rule.getPattern();
-			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
-			String roleName = null;
-			while(tokenizer.hasMoreElements()) {
-				String token = tokenizer.nextToken();
-				if(!"*".equals(token)) {
-					roleName = token;
-				}
-			}
+			List<String> patternComponents = Arrays.asList(pattern.split("/"));
+			String roleName = checkPatternComponents(patternComponents, pattern);
+			ConfigChildrenThatViolateDigesterRulesOmitter omitter = ConfigChildrenThatViolateDigesterRulesOmitter.getInstance(patternComponents.subList(
+					0, patternComponents.size() - 1));
 			String registerTextMethod = rule.getRegisterTextMethod();
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
 				if(StringUtils.isNotEmpty(registerTextMethod)) {
 					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", roleName);
 				}
-				addTypeObject(rule.getRegisterMethod(), roleName);
+				addTypeObject(rule.getRegisterMethod(), roleName, omitter);
 			} else {
 				if(StringUtils.isNotEmpty(registerTextMethod)) {
 					if(registerTextMethod.startsWith("set")) {
 						log.warn("digester-rules.xml: Ignoring registerTextMethod {} because it starts with \"set\" to avoid confusion with attributes", registerTextMethod);
 					} else {
-						addTypeText(registerTextMethod, roleName);
+						addTypeText(registerTextMethod, roleName, omitter);
 					}
 				} else {
 					// roleName is not final, so a lambda wont work in the trace statement.
@@ -81,23 +78,46 @@ class DigesterRules {
 			}
 		}
 
-		private void addTypeObject(String registerMethod, String roleName) throws SAXException {
+		private static String checkPatternComponents(List<String> patternComponents, String original) throws SAXException {
+			if(patternComponents.isEmpty()) {
+				throw new SAXException(String.format(
+						"digester-rules.xml should not contain an empty pattern. The literal value was [%s]", original));
+			}
+			List<String> componentsThatShouldNotBeWildcard = patternComponents;
+			if(patternComponents.get(0).equals("*")) {
+				componentsThatShouldNotBeWildcard = patternComponents.subList(1, patternComponents.size());
+			}
+			if(componentsThatShouldNotBeWildcard.stream().anyMatch(s -> s.equals("*"))) {
+				throw new SAXException(String.format("digester-rules.xml: Only the first pattern component can be a wildcard. Encountered [%s]", original));
+			}
+			if(componentsThatShouldNotBeWildcard.isEmpty()) {
+				throw new SAXException(String.format("digester-rules.xml: A pattern that is only a wildcard is invalid. Encountered [%s]", original));
+			}
+			return componentsThatShouldNotBeWildcard.get(componentsThatShouldNotBeWildcard.size() - 1);
+		}
+
+		private void addTypeObject(String registerMethod, String roleName, ConfigChildrenThatViolateDigesterRulesOmitter omitter)
+				throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, roleName);
-			checkDuplicate(descriptor);
+			checkDuplicateAndRegister(descriptor, omitter);
 		}
 
-		private void addTypeText(String registerMethod, String roleName) throws SAXException {
+		private void addTypeText(String registerMethod, String roleName, ConfigChildrenThatViolateDigesterRulesOmitter omitter)
+				throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, roleName);
-			checkDuplicate(descriptor);
+			checkDuplicateAndRegister(descriptor, omitter);
 		}
 
-		private void checkDuplicate(ConfigChildSetterDescriptor descriptor) {
+		private void checkDuplicateAndRegister(ConfigChildSetterDescriptor descriptor, ConfigChildrenThatViolateDigesterRulesOmitter omitter) {
 			if(digesterRules.configChildDescriptors.containsKey(descriptor.getMethodName())) {
 				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
 			} else {
 				digesterRules.configChildDescriptors.put(descriptor.getMethodName(), descriptor);
+				if(omitter != null) {
+					digesterRules.omittersByConfigChildRoleName.put(descriptor.getRoleName(), omitter);
+				}
 			}
 		}
 	}
@@ -107,6 +127,7 @@ class DigesterRules {
 	}
 
 	private Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	private Map<String, ConfigChildrenThatViolateDigesterRulesOmitter> omittersByConfigChildRoleName;
 
 	ConfigChildSetterDescriptor getConfigChildSetterDescriptor(String methodName) {
 		return configChildDescriptors.get(methodName);

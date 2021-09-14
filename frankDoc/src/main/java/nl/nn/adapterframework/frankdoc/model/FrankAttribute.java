@@ -62,6 +62,14 @@ public class FrankAttribute extends ElementChild {
 		this.describingElement = attributeOwner;
 	}
 
+	/**
+	 * Only applies to ConfigChild.
+	 */
+	@Override
+	boolean isViolatesDigesterRules() {
+		return false;
+	}
+
 	@Override
 	public Key getKey() {
 		return new Key(name);

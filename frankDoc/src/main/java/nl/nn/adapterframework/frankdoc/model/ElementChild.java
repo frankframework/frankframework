@@ -101,6 +101,7 @@ public abstract class ElementChild {
 	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
 	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
 	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
+	static Predicate<ElementChild> DIGESTER_RULES_ACCEPTED = c -> ! c.isViolatesDigesterRules();
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or
@@ -137,6 +138,8 @@ public abstract class ElementChild {
 
 	abstract boolean isExcluded();
 
+	abstract boolean isViolatesDigesterRules();
+	
 	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {
 			String value = method.getJavaDocIncludingInherited();

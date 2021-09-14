@@ -104,6 +104,9 @@ public class FrankElement implements Comparable<FrankElement> {
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
+	// Used by DigesterRules.java.
+	private @Getter List<ConfigChild> configParents = new ArrayList<>();
+
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
