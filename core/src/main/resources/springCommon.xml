@@ -2,9 +2,14 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	default-autowire="byName"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
-	>
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	">
+
+<!-- 	<context:property-placeholder /> -->
 
 	<bean
 		name="metrics"
@@ -17,8 +22,8 @@
 	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
 
 	<bean
-		name="lowerCasePropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer"
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
@@ -37,14 +42,14 @@
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
 	<bean
-		name="hostnamePropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.configuration.HostnamePropertyPlaceholderConfigurer"
+		name="hostnamePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.HostnamePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
 	<bean
-		name="fxfPropertyPlaceholderConfigurer"
-		class="nl.nn.adapterframework.extensions.fxf.FxfPropertyPlaceholderConfigurer"
+		name="fxfPropertySourcePostProcessor"
+		class="nl.nn.adapterframework.extensions.fxf.FxfPropertySourcePostProcessor"
 		autowire="byName"
 	/>
 

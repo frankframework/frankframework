@@ -1019,9 +1019,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		if(isForceRetryFlag()) {
-			threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
-		}
 		processRawMessage(rawMessage, threadContext, waitingDuration, false, duplicatesAlreadyChecked);
 	}
 
@@ -1039,6 +1036,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		long startExtractingMessage = System.currentTimeMillis();
 		if (threadContext==null) {
 			threadContext = new HashMap<>();
+		}
+		if(isForceRetryFlag()) {
+			threadContext.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 		}
 
 		Message message = null;
