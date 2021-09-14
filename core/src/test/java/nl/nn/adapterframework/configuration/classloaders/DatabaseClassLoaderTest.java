@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -104,7 +104,12 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 				return null;
 			}
 		};
-		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class)); //Mock the ibiscontext's log method, bypass event publishing
+		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a 
+		//new ApplicationContext if non exists. This functionality should be removed sometime in the future.
+		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The 
+		//creation of the ApplicationContext during the test phase causes IllegalStateExceptions
+		//In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
+		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
