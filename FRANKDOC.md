@@ -10,17 +10,17 @@ The second part is a [web application](https://ibis4example.ibissource.org/iaf/f
 
 #### XML schema for Frank developers
 
-A Frank developer uses the XML schema when she writes a Frank config. She may start writing a config in Visual Studio Code as shown below:
+A Frank developer uses the XML schema when he writes a Frank config. He may start writing a config in Visual Studio Code as shown below:
 
 ![vscodeStartConfig](./picturesForContributors/vscodeStartConfig.jpg)
 
-She types the text needed to reference the XML schema of the Frank!Doc (number 1). Then she writes the text `<A` (number 2). VSCode shows a red flag because this is invalid XML. VSCode can provide autocomplete help as shown (number 3). One of the options is the XML element `<Adapter>`. There is a button to get the tooltip help text of that element (number 4). This text is derived from the JavaDoc comment above the class declaration of [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java).
+He types the text needed to reference the XML schema of the Frank!Doc (number 1). Then he writes the text `<A` (number 2). VSCode shows a red flag because this is invalid XML. VSCode can provide autocomplete help as shown (number 3). One of the options is the XML element `<Adapter>`. There is a button to get the tooltip help text of that element (number 4). This text is derived from the JavaDoc comment above the class declaration of [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java).
 
 Frank developers not only see errors about invalid XML, but also about violations of the XML schema.
 
 ![vscodeXsdViolation](./picturesForContributors/vscodeXsdViolation.jpg)
 
-The Frank developer has used an XML element `<xxx>` that does not exist. VSCode produces a red flag. The tooltip help she can get is also shown. She sees which XML elements she can use instead of `<xxx>`.
+The Frank developer has used an XML element `<xxx>` that does not exist. VSCode produces a red flag. The tooltip help he can get is also shown. He sees which XML elements he can use instead of `<xxx>`.
 
 #### Web app with reference information for Frank developers
 
@@ -64,7 +64,11 @@ Declared config children and declared attributes go first. If config children or
 
 ## Preferred order of child elements
 
-Attributes can appear in any order, but there is a preferred order for config children (child elements). The previous section showed config children in their preferred order. The preferred order of config children follows from the following rules:
+The order of config child setters and attribute setters in the Java code is important for the Frank!Doc. With the old IbisDoc documentation, this is not the case because the order field in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.Java) annotations is applied then. In the Frank!Doc, the order field in the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.Java) annotations is ignored and the method order is used.
+
+In the Frank!Doc web application, the order of the attributes follows the order of the methods. This order is not enforced in any way in Frank configurations, because XML schemas in general do not prescribe the order of XML attributes.
+
+The order of the config child setters defines a *preferred* order for config children (child elements). The previous section showed config children in their preferred order. The preferred order of config children follows from the following rules:
 * Declared config children go first. The preferred order of the declared config children is the sequence of the config child setters in the Java source code.
 * Inherited config children go after declared config children. Config children from a closer ancestor go before config children from a further ancestor.
 
