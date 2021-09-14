@@ -49,7 +49,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				preserveInput="true"
 				notFoundForwardName="CreateMail"
-				sessionKey="method"
+				forwardNameSessionKey="method"
 				>
 				<forward name="GET" path="SetContentType" />
 			</pipe>
