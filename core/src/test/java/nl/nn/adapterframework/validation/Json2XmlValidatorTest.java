@@ -122,15 +122,10 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	}
         	evaluateResult(event, session, null, expectedFailureReasons);
             try {
-    	        Set<List<String>> rootvalidations=null;
-    	        if (rootelement!=null) {
-    	        	List<String> rootvalidation=new ArrayList<String>();
-    	        	rootvalidation.add("Envelope");
-    	        	rootvalidation.add("Body");
-    	        	rootvalidation.add(rootelement);
-    	        	rootvalidations=new HashSet<List<String>>();
-    	        	rootvalidations.add(rootvalidation);
-    	        }
+    			RootValidations rootvalidations = null;
+    			if(rootelement != null) {
+    				rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+    			}
     	        String validationResult=validator.validate(result, session, "check result", rootvalidations, null);
     	        evaluateResult(validationResult, session, null, expectedFailureReasons);
     	        return result;

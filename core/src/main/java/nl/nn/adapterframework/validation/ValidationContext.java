@@ -30,7 +30,7 @@ public abstract class ValidationContext {
 	public abstract Set<String> getNamespaceSet();
 	public abstract List<XSModel> getXsModels();
 	
-	public void init(SchemasProvider schemasProvider, String schemasId, Set<String> validNamespaces, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
+	public void init(SchemasProvider schemasProvider, String schemasId, Set<String> validNamespaces, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces, Boolean ignoreUnknownNamespaces) {
 		String mainFailureMessage = "Validation using " + schemasProvider.getClass().getSimpleName() + " with '" + schemasId + "' failed";
 		contentHandler = new XmlValidatorContentHandler(validNamespaces,rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		errorHandler = new XmlValidatorErrorHandler(contentHandler, mainFailureMessage);

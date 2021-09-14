@@ -1370,9 +1370,9 @@ public class Misc {
 	
 	public static String urlDecode(String input) {
 		try {
-			return URLDecoder.decode(input,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.warn(e);
+			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
 			return null;
 		}
 	}

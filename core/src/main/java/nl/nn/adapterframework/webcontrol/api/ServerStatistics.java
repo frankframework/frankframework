@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
+import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -168,6 +169,7 @@ public class ServerStatistics extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		ApplicationWarnings globalConfigWarnings = getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
+		MessageEventListener eventListener = getIbisContext().getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -210,7 +212,7 @@ public class ServerStatistics extends Base {
 			}
 
 			//Configuration specific messages
-			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
+			MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
 			if(messageKeeper != null) {
 				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 				if(!messages.isEmpty()) {
@@ -234,7 +236,7 @@ public class ServerStatistics extends Base {
 		}
 
 		//Global messages
-		MessageKeeper messageKeeper = getIbisContext().getMessageKeeper();
+		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 		if(messages.size() > 0)
 			returnMap.put("messages", messages);

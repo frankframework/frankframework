@@ -16,7 +16,7 @@ public class JmsFacadeDocumentedEnumTest {
 	@Test
 	public void testDefaults() {
 		JMSFacade jms = new JMSFacade();
-		assertEquals(AcknowledgeMode.AUTO_ACKNOWLEDGE, jms.getAckModeEnum());
+		assertEquals(AcknowledgeMode.AUTO_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
 		assertEquals(DestinationType.QUEUE, jms.getDestinationTypeEnum());
 		assertEquals(SubscriberType.DURABLE, jms.getSubscriberTypeEnum());
 	}
@@ -25,13 +25,13 @@ public class JmsFacadeDocumentedEnumTest {
 	public void testAckMode() {
 		JMSFacade jms = new JMSFacade();
 		jms.setAckMode(0);
-		assertEquals(AcknowledgeMode.NOT_SET, jms.getAckModeEnum());
+		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());
 		jms.setAcknowledgeMode("dups");
-		assertEquals(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE, jms.getAckModeEnum());
+		assertEquals(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
 		jms.setAcknowledgeMode("client_acknowledge");
-		assertEquals(AcknowledgeMode.CLIENT_ACKNOWLEDGE, jms.getAckModeEnum());
+		assertEquals(AcknowledgeMode.CLIENT_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
 		jms.setAcknowledgeMode("");
-		assertEquals(AcknowledgeMode.NOT_SET, jms.getAckModeEnum());
+		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());
 	}
 
 	@Test
