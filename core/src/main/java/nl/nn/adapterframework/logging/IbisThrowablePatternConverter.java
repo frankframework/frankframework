@@ -1,19 +1,34 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URL;
-import java.security.CodeSource;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
+import org.apache.logging.log4j.core.impl.ThrowableProxy;
 import org.apache.logging.log4j.core.pattern.ConverterKeys;
 import org.apache.logging.log4j.core.pattern.PatternConverter;
 import org.apache.logging.log4j.core.pattern.ThrowablePatternConverter;
 import org.apache.logging.log4j.util.Strings;
 
-@Plugin(name = "IbisPatternConverter", category = PatternConverter.CATEGORY)
+@Plugin(name = "IbisThrowablePatternConverter", category = PatternConverter.CATEGORY)
 @ConverterKeys({ "iEx", "iThrowable" })
 public final class IbisThrowablePatternConverter extends ThrowablePatternConverter {
 
@@ -31,87 +46,35 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 	public void format(final LogEvent event, final StringBuilder buffer) {
 		final Throwable throwable = event.getThrown();
 		if (throwable != null) {
-			final int len = buffer.length();
-			if (len > 0 && !Character.isWhitespace(buffer.charAt(len - 1))) {
-				buffer.append(' ');
-			}
-			throwablePrinter(null, throwable, buffer);
+			throwablePrinter(throwable, buffer, 0);
 		}
 	}
 
 	/** Recursively prints the trace */
-	private void throwablePrinter(Throwable parent, Throwable throwable, final StringBuilder buffer) {
+	private void throwablePrinter(final Throwable throwable, final StringBuilder buffer, final int commonElementCount) {
 		final StringWriter writer = new StringWriter();
 		throwable.printStackTrace(new PrintWriter(writer));
 
-		StackTraceElement[] elements = throwable.getStackTrace();
+		final ThrowableProxy proxy = new ThrowableProxy(throwable);
+
+		final ExtendedStackTraceElement[] elements = proxy.getExtendedStackTrace();
 		final String[] linesToBePrinted = writer.toString().split(Strings.LINE_SEPARATOR);
 
-		int stackIndex = elements.length - 1;
-		int enclosingStackIndex = 0;
-		if (parent != null) {
-			StackTraceElement[] wrapping = parent.getStackTrace();
-			enclosingStackIndex = parent.getStackTrace().length - 1;
-			while (stackIndex >= 0 && enclosingStackIndex >= 0
-					&& elements[stackIndex].equals(wrapping[enclosingStackIndex])) {
-				stackIndex--;
-				enclosingStackIndex--;
-			}
-		}
-
-		Class<?> clazz = null;
-		for (int i = 0; i <= stackIndex + 1; ++i) {
+		for (int i = 0; i <= elements.length-commonElementCount; ++i) {
 			buffer.append(linesToBePrinted[i]);
 			if (i != 0 && i <= elements.length) {
-				try {
-					clazz = null;
-					clazz = Class.forName(elements[i - 1].getClassName());
-				} catch (ClassNotFoundException e) {
-				}
-				buffer.append(getPackageInfo(clazz));
+				buffer.append(" ");
+				buffer.append(elements[i-1].getExtraClassInfo().toString());
 			}
 			buffer.append(Strings.LINE_SEPARATOR);
 		}
-		if (parent != null) {
-			int numberOfCommonLines = elements.length - 1 - stackIndex;
-			// append common lines
-			buffer.append("\t ... " + (numberOfCommonLines) + " more" + Strings.LINE_SEPARATOR);
+		if (commonElementCount != 0) {
+			buffer.append("\t ... " + (commonElementCount) + " more" + Strings.LINE_SEPARATOR);
 		}
 		if (throwable.getCause() != null) {
 			buffer.append(CAUSED_BY);
-			throwablePrinter(throwable, throwable.getCause(), buffer);
+			throwablePrinter(throwable.getCause(), buffer, proxy.getCauseProxy().getCommonElementCount());
 		}
-	}
-
-	private String getPackageInfo(final Class<?> callerClass) {
-		String location = "?";
-		String version = "?";
-		if (callerClass != null) {
-			try {
-				final CodeSource source = callerClass.getProtectionDomain().getCodeSource();
-				if (source != null) {
-					final URL locationURL = source.getLocation();
-					if (locationURL != null) {
-						final String str = locationURL.toString().replace('\\', '/');
-						int index = str.lastIndexOf("/");
-						if (index >= 0 && index == str.length() - 1) {
-							index = str.lastIndexOf("/", index - 1);
-						}
-						location = str.substring(index + 1);
-					}
-				}
-			} catch (final Exception ex) {
-				// Ignore the exception.
-			}
-			final Package pkg = callerClass.getPackage();
-			if (pkg != null) {
-				final String ver = pkg.getImplementationVersion();
-				if (ver != null) {
-					version = ver;
-				}
-			}
-		}
-		return " [" + location + ":" + version + "]";
 	}
 
 }
