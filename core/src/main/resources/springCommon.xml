@@ -9,7 +9,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
-<!-- 	<context:property-placeholder /> -->
+	<context:property-placeholder />
 
 	<bean
 		name="metrics"
@@ -17,9 +17,6 @@
 		autowire="byName"
 		scope="singleton"
 	/>
-
-	<!-- Replace this with a <context:property-placeholder /> !! -->
-	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"/>
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"

@@ -62,6 +62,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		this.testTool = testTool;
 	}
 
+	@Override
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
@@ -376,8 +377,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
-	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
+	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in AppConstants testtool.enabled for use by GUI
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
