@@ -64,7 +64,7 @@ Declared config children and declared attributes go first. If config children or
 
 ## Preferred order of child elements
 
-The order of config child setters and attribute setters in the Java code is important for the Frank!Doc. With the old IbisDoc documentation, this is not the case because the value fields in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) annotations can hold the order. In the Frank!Doc, the order kept in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.Java) annotations is ignored and the method order is used.
+The order of config child setters and attribute setters in the Java code is important for the Frank!Doc. With the old IbisDoc documentation, this is not the case because the value fields in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) annotations can hold the order. In the Frank!Doc, the order kept in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) annotations is ignored and the method order is used.
 
 In the Frank!Doc web application, the order of the attributes follows the order of the methods. This order is not enforced in any way in Frank configurations, because XML schemas in general do not prescribe the order of XML attributes.
 
