@@ -8,7 +8,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
 <!-- unwrap -->
 			<pipe name="unwrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />
