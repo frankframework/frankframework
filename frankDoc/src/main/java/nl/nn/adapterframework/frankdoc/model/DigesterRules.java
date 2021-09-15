@@ -78,24 +78,6 @@ class DigesterRules {
 			}
 		}
 
-		private static String checkPatternComponents(List<String> patternComponents, String original) throws SAXException {
-			if(patternComponents.isEmpty()) {
-				throw new SAXException(String.format(
-						"digester-rules.xml should not contain an empty pattern. The literal value was [%s]", original));
-			}
-			List<String> componentsThatShouldNotBeWildcard = patternComponents;
-			if(patternComponents.get(0).equals("*")) {
-				componentsThatShouldNotBeWildcard = patternComponents.subList(1, patternComponents.size());
-			}
-			if(componentsThatShouldNotBeWildcard.stream().anyMatch(s -> s.equals("*"))) {
-				throw new SAXException(String.format("digester-rules.xml: Only the first pattern component can be a wildcard. Encountered [%s]", original));
-			}
-			if(componentsThatShouldNotBeWildcard.isEmpty()) {
-				throw new SAXException(String.format("digester-rules.xml: A pattern that is only a wildcard is invalid. Encountered [%s]", original));
-			}
-			return componentsThatShouldNotBeWildcard.get(componentsThatShouldNotBeWildcard.size() - 1);
-		}
-
 		private void addTypeObject(String registerMethod, String roleName, ConfigChildrenThatViolateDigesterRulesOmitter omitter)
 				throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);

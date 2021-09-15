@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author martijn
  *
  */
-public class FrankElement implements Comparable<FrankElement> {
+public class FrankElement implements Comparable<FrankElement>, DigesterRulesFrankElement {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
 
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
@@ -105,7 +105,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	private @Getter FrankElement parent;
 
 	// Used by DigesterRules.java.
-	private @Getter List<ConfigChild> configParents = new ArrayList<>();
+	private List<ConfigChild> configParents = new ArrayList<>();
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<String> xmlElementNames;
@@ -158,6 +158,17 @@ public class FrankElement implements Comparable<FrankElement> {
 			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
 		}
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	void addConfigParent(ConfigChild parent) {
+		configParents.add(parent);
+	}
+
+	@Override
+	public List<DigesterRulesConfigChild> getConfigParents() {
+		List<DigesterRulesConfigChild> result = new ArrayList<>();
+		result.addAll(configParents);
+		return result;
 	}
 
 	public void addXmlElementName(String elementName) {

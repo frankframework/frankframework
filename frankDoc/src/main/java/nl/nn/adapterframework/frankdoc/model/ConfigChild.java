@@ -37,7 +37,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class ConfigChild extends ElementChild {
+public abstract class ConfigChild extends ElementChild implements DigesterRulesConfigChild {
 	private static Logger log = LogUtil.getLogger(ConfigChild.class);
 
 	private static final Comparator<ConfigChild> SINGLE_ELEMENT_ONLY =
@@ -77,8 +77,6 @@ public abstract class ConfigChild extends ElementChild {
 	public final boolean isExcluded() {
 		return false;
 	}
-
-	public abstract String getRoleName();
 
 	private static boolean isDocumented(FrankMethod m) {
 		return (m.getAnnotation(FrankDocletConstants.IBISDOC) != null) || (m.getJavaDoc() != null);
