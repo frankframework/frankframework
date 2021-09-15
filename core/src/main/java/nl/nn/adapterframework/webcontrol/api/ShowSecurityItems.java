@@ -94,16 +94,24 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
-			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-			appDDString = XmlUtils.removeNamespaces(appDDString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appDDString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (appDDString !=null) {
+				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+				appDDString = XmlUtils.removeNamespaces(appDDString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appDDString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
 		}
 		catch (Exception e) {
+			log.debug("cannot get deployment descriptor", e);
+			return null;
+		}
+		
+		if (xmlDoc==null) {
+			log.debug("could get deployment descriptor");
 			return null;
 		}
 
@@ -147,14 +155,21 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appBndString = Misc.getDeployedApplicationBindings();
-			appBndString = XmlUtils.removeNamespaces(appBndString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appBndString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (StringUtils.isNotEmpty(appBndString)) {
+				appBndString = XmlUtils.removeNamespaces(appBndString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appBndString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
+		} catch (Exception e) {
+			log.debug("cannot get security role bindings", e);
+			return null;
 		}
-		catch (Exception e) {
+		
+		if (xmlDoc==null) {
+			log.debug("could get security role bindings");
 			return null;
 		}
 
