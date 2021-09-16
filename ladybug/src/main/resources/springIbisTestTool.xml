@@ -14,6 +14,12 @@
 		</property>
 	</bean>
 
+	<bean
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		autowire="byName"
+	/>
+
 	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
 
 	<bean name="configName" class="java.lang.String">

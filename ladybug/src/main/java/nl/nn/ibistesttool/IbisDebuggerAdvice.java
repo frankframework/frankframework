@@ -91,6 +91,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		if(ibisDebugger == null) {
+			return;
+		}
 		// As ibisDebugger lives in the WebApplicationContext it cannot get wired with ibisManager by Spring
 		ibisDebugger.setIbisManager(ibisManager);
 	}
@@ -504,7 +507,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
-		return enabled;
+		return ibisDebugger != null && enabled;
 	}
 
 	@Override

@@ -73,12 +73,12 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
 
 		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
-		URL fileURL = IbisApplicationInitializer.class.getResource(file);
+		URL fileURL = this.getClass().getClassLoader().getResource(file);
 		if(fileURL == null) {
 			log.warn("unable to locate TestTool configuration ["+file+"]");
 		} else {
 			if(file.indexOf(":") == -1) {
-				file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
+				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
 			}
 
 			log.info("loading TestTool configuration ["+file+"]");

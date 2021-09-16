@@ -45,7 +45,7 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEGY_NEVER = "Never";
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
@@ -56,7 +56,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private List<String> rerunRoles;
 
 	protected Set<String> inRerun = new HashSet<String>();
-	private ApplicationEventPublisher applicationEventPublisher;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
@@ -382,9 +381,9 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		if (applicationEventPublisher != null) {
+		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
-			applicationEventPublisher.publishEvent(event);
+			ibisManager.getApplicationEventPublisher().publishEvent(event);
 		}
 	}
 
@@ -393,10 +392,5 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		if (event.getSource()!=this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
-	}
-	
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }
