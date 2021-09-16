@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.align;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +34,7 @@ import org.xml.sax.SAXException;
 
 public class DomTreeAligner extends Tree2Xml<Document,Node> {
 
-	public DomTreeAligner() throws SAXException {
+	public DomTreeAligner() {
 		super();
 	}
 	public DomTreeAligner(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
@@ -131,12 +130,13 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		return result;
 	}
 
-	public static String translate(Document xmlIn, URL schemaURL) throws SAXException, IOException {
+	public static String translate(Document xmlIn, URL schemaURL, boolean ignoreUndeclaredElements) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 		
 		// create the validator, setup the chain
 		DomTreeAligner dta = new DomTreeAligner(validatorHandler,schemaInformation);
+		dta.setIgnoreUndeclaredElements(ignoreUndeclaredElements);
 		
 		return dta.translate(xmlIn);
  	}

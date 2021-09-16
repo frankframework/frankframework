@@ -19,7 +19,7 @@
   </xs:element>
   <xs:element name="RoleNameTChild">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild".</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild - This is the header of the JavaDoc of "TChild", with package name nl.nn.something.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:attribute ref="active" />
@@ -103,12 +103,8 @@ This is the header of the JavaDoc of "DescribedPossibleIChild".</xs:documentatio
   </xs:attributeGroup>
   <xs:simpleType name="MyEnumAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="ONE" />
-      <xs:enumeration value="customLabelTwo">
-        <xs:annotation>
-          <xs:documentation>Description of TWO</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+      <xs:pattern value="[oO][nN][eE]" />
+      <xs:pattern value="[cC][uU][sS][tT][oO][mM][lL][aA][bB][eE][lL][tT][wW][oO]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="frankBoolean">

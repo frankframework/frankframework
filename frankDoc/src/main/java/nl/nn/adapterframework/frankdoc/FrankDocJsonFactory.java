@@ -31,9 +31,9 @@ import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.frankdoc.model.AttributeType;
-import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
+import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
+import nl.nn.adapterframework.frankdoc.model.AttributeType;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
 import nl.nn.adapterframework.frankdoc.model.ElementType;
@@ -42,12 +42,13 @@ import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 import nl.nn.adapterframework.frankdoc.model.ObjectConfigChild;
+import nl.nn.adapterframework.frankdoc.model.SpecificParameter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocJsonFactory {
 	private static Logger log = LogUtil.getLogger(FrankDocJsonFactory.class);
 
-	private static final String DESCRIPTION_HEADER = "descriptionHeader";
+	private static final String DESCRIPTION = "description";
 
 	private FrankDocModel model;
 	private JsonBuilderFactory bf;
@@ -144,7 +145,7 @@ public class FrankDocJsonFactory {
 		if(frankElement.isDeprecated()) {
 			result.add("deprecated", frankElement.isDeprecated());
 		}
-		addDescriptionHeader(result, frankElement.getDescriptionHeader());
+		addDescription(result, frankElement.getDescription());
 		addIfNotNull(result, "parent", getParentOrNull(frankElement));
 		JsonArrayBuilder xmlElementNames = bf.createArrayBuilder();
 		frankElement.getXmlElementNames().forEach(xmlElementNames::add);
@@ -153,17 +154,40 @@ public class FrankDocJsonFactory {
 		if(! attributes.isEmpty()) {
 			result.add("attributes", attributes);
 		}
+		List<FrankAttribute> nonInheritedAttributes = frankElement.getChildrenOfKind(ElementChild.JSON_NOT_INHERITED, FrankAttribute.class);
+		if(! nonInheritedAttributes.isEmpty()) {
+			JsonArrayBuilder b = bf.createArrayBuilder();
+			nonInheritedAttributes.forEach(nia -> b.add(nia.getName()));
+			result.add("nonInheritedAttributes", b.build());
+		}
 		JsonArray configChildren = getConfigChildren(frankElement);
 		if(! configChildren.isEmpty()) {
 			result.add("children", configChildren);
 		}
+		if(frankElement.getMeaningOfParameters() != null) {
+			result.add("parametersDescription", frankElement.getMeaningOfParameters());
+		}
+		if(frankElement.getSpecificParameters().size() >= 1) {
+			JsonArrayBuilder b = bf.createArrayBuilder();
+			frankElement.getSpecificParameters().forEach(sp -> b.add(getParameter(sp)));
+			result.add("parameters", b.build());
+		}
 		return result.build();
+	}
+
+	private JsonObject getParameter(SpecificParameter sp) {
+		JsonObjectBuilder b = bf.createObjectBuilder();
+		b.add("name", sp.getName());
+		if(sp.getDescription() != null) {
+			b.add("description", sp.getDescription());
+		}
+		return b.build();
 	}
 
 	private static String getParentOrNull(FrankElement frankElement) {
 		if(frankElement != null) {
 			FrankElement parent = frankElement.getNextAncestorThatHasChildren(
-					elem -> elem.getAttributes(ElementChild.ALL).isEmpty() && elem.getConfigChildren(ElementChild.ALL).isEmpty());
+					elem -> elem.getAttributes(ElementChild.JSON_RELEVANT).isEmpty() && elem.getConfigChildren(ElementChild.JSON_RELEVANT).isEmpty());
 			if(parent != null) {
 				return parent.getFullName();
 			}
@@ -213,9 +237,9 @@ public class FrankDocJsonFactory {
 		}
 	}
 
-	private void addDescriptionHeader(JsonObjectBuilder builder, String value) {
+	private void addDescription(JsonObjectBuilder builder, String value) {
 		if(! StringUtils.isBlank(value)) {
-			builder.add(DESCRIPTION_HEADER, value.replaceAll("\"", "\\\\\\\""));
+			builder.add(DESCRIPTION, value.replaceAll("\"", "\\\\\\\""));
 		}
 	}
 

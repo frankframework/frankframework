@@ -16,8 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc;
 
-import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import nl.nn.adapterframework.frankdoc.model.CumulativeChildHandler;
 import nl.nn.adapterframework.frankdoc.model.ElementChild;
@@ -32,8 +32,6 @@ import nl.nn.adapterframework.frankdoc.model.FrankElement;
  */
 class GroupCreator<T extends ElementChild> {
 	static interface Callback<T extends ElementChild> extends CumulativeChildHandler<T> {
-		List<T> getChildrenOf(FrankElement elem);
-		FrankElement getAncestorOf(FrankElement elem);
 		void addDeclaredGroup();
 		void addCumulativeGroup();
 		void addDeclaredGroupRef(FrankElement referee);
@@ -41,24 +39,26 @@ class GroupCreator<T extends ElementChild> {
 	}
 
 	private FrankElement frankElement;
+	private Predicate<FrankElement> hasRelevantChildren;
 	private Callback<T> callback;
 	private Consumer<Callback<T>> cumulativeGroupTrigger;
 
-	GroupCreator(FrankElement frankElement, Consumer<Callback<T>> cumulativeGroupTrigger, Callback<T> callback) {
+	GroupCreator(FrankElement frankElement, Predicate<FrankElement> hasRelevantChildren, Consumer<Callback<T>> cumulativeGroupTrigger, Callback<T> callback) {
 		this.frankElement = frankElement;
+		this.hasRelevantChildren = hasRelevantChildren;
 		this.cumulativeGroupTrigger = cumulativeGroupTrigger;
 		this.callback = callback;
 	}
 
 	void run() {
-		boolean hasNoElementChildrenOfKind = callback.getChildrenOf(frankElement).isEmpty();
-		FrankElement ancestor = callback.getAncestorOf(frankElement);
-		if(hasNoElementChildrenOfKind) {
+		boolean hasNoRelevantChildren = ! hasRelevantChildren.test(frankElement);
+		FrankElement ancestor = nextAncestor(frankElement);
+		if(hasNoRelevantChildren) {
 			if(ancestor == null) {
 				return;
 			}
 			else {
-				FrankElement superAncestor = callback.getAncestorOf(ancestor);
+				FrankElement superAncestor = nextAncestor(ancestor);
 				if(superAncestor == null) {
 					callback.addDeclaredGroupRef(ancestor);
 				}
@@ -77,6 +77,10 @@ class GroupCreator<T extends ElementChild> {
 				addCumulativeChildGroup();
 			}
 		}
+	}
+
+	private FrankElement nextAncestor(FrankElement e) {
+		return e.getNextAncestorThatHasChildren(hasRelevantChildren.negate());
 	}
 
 	private void addCumulativeChildGroup() {

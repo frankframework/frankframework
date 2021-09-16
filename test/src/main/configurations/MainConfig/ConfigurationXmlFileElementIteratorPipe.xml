@@ -10,7 +10,7 @@
 			</exits>
 
 			<pipe name="getRequest" className="nl.nn.adapterframework.pipes.XsltPipe"
-				xpathExpression="request" sessionKey="originalRequest">
+				xpathExpression="request" storeResultInSessionKey="originalRequest" preserveInput="true">
 				<forward name="success" path="switchMode" />
 			</pipe>
 

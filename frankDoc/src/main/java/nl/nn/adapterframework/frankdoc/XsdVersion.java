@@ -32,8 +32,8 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public enum XsdVersion {
-	STRICT(ElementChild.IN_XSD, ElementChild.DEPRECATED, f -> ! f.isDeprecated(), new DelegateStrict()),
-	COMPATIBILITY(ElementChild.IN_COMPATIBILITY_XSD, ElementChild.NONE, f -> true, new DelegateCompatibility());
+	STRICT(ElementChild.IN_XSD, ElementChild.REJECT_DEPRECATED, f -> ! f.isDeprecated(), new DelegateStrict()),
+	COMPATIBILITY(ElementChild.IN_COMPATIBILITY_XSD, ElementChild.EXCLUDED, f -> true, new DelegateCompatibility());
 
 	private static Logger log = LogUtil.getLogger(XsdVersion.class);
 
@@ -47,6 +47,10 @@ public enum XsdVersion {
 		this.childRejector = childRejector;
 		this.elementFilter = elementFilter;
 		this.delegate = delegate;
+	}
+
+	Predicate<FrankElement> getHasRelevantChildrenPredicate(Class<? extends ElementChild> kind) {
+		return f -> ! f.getChildrenOfKind(childSelector.or(childRejector), kind).isEmpty();
 	}
 
 	void checkForMissingDescription(FrankAttribute attribute) {
