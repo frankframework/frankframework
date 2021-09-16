@@ -47,7 +47,7 @@
 			<pipe name="Insert" transactionAttribute="RequiresNew">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="insert" />
 			</pipe>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="originalMessage">
+			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="originalMessage">
 				<forward name="success" path="do_success" />
 				<forward name="error" path="do_error" />
 			</pipe>

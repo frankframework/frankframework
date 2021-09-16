@@ -9,7 +9,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				sessionKey="switch" />
+				forwardNameSessionKey="switch" />
 			<!-- gpbdb -->
 			<pipe name="gpbdb" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
 				soapBody="GetPartyBasicDataBanking_Request" soapHeader="MessageHeader"

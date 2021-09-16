@@ -302,4 +302,13 @@ class FrankClassDoclet implements FrankClass {
 		// The Doclet API trims the value.
 		return tags[0].text();
 	}
+
+	@Override
+	public List<String> getAllJavaDocTagsOf(String tagName) {
+		Tag[] tags = clazz.tags(tagName);
+		if(tags == null) {
+			return new ArrayList<>();
+		}
+		return Arrays.asList(tags).stream().map(Tag::text).collect(Collectors.toList());		
+	}
 }

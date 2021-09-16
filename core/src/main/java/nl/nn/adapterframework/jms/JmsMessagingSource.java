@@ -51,26 +51,37 @@ public class JmsMessagingSource extends MessagingSource {
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
 		if (createDestination()) {
-			log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
-			if (proxiedDestinationNames != null) {
-				String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
-				if (proxiedDestinationName != null) {
-					log.debug(getLogPrefix() + "replacing destination name with proxied destination name [" + proxiedDestinationName + "]");
-					destinationName = proxiedDestinationName;
+			try {
+				dest = lookupDestinationInJndi(destinationName);
+			} catch (Exception e) {
+				log.warn("could not lookup destination in jndi, will try to create it ("+e.getClass()+"): "+ e.getMessage());
+			}
+			if (dest==null) {
+				log.debug(getLogPrefix() + "looking up destination by creating it [" + destinationName + "]");
+				if (proxiedDestinationNames != null) {
+					String proxiedDestinationName = proxiedDestinationNames.get(destinationName);
+					if (proxiedDestinationName != null) {
+						log.debug(getLogPrefix() + "replacing destination name with proxied destination name [" + proxiedDestinationName + "]");
+						destinationName = proxiedDestinationName;
+					}
 				}
+				dest = createDestination(destinationName);
 			}
-			dest = createDestination(destinationName);
 		} else {
-			String prefixedDestinationName = getJndiContextPrefix() + destinationName;
-			log.debug(getLogPrefix() + "looking up destination [" + prefixedDestinationName + "]");
-			if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
-				log.debug(getLogPrefix() + "using JNDI context prefix [" + getJndiContextPrefix() + "]");
-			}
-			dest = (Destination)getContext().lookup(prefixedDestinationName);
+			dest = lookupDestinationInJndi(destinationName);
 		}
 		return dest;
 	}
 
+	private Destination lookupDestinationInJndi(String destinationName) throws NamingException {
+		String prefixedDestinationName = getJndiContextPrefix() + destinationName;
+		log.debug(getLogPrefix() + "looking up destination [" + prefixedDestinationName + "]");
+		if (StringUtils.isNotEmpty(getJndiContextPrefix())) {
+			log.debug(getLogPrefix() + "using JNDI context prefix [" + getJndiContextPrefix() + "]");
+		}
+		return (Destination)getContext().lookup(prefixedDestinationName);
+	}
+	
 	public Destination createDestination(String destinationName) throws JmsException {
 		Destination dest = null;
 		Session session = null;

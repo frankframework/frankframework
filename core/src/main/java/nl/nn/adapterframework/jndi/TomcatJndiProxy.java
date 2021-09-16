@@ -53,6 +53,24 @@ import nl.nn.adapterframework.util.LogUtil;
 		SSLDebugTrace="false"
 	/&gt;
    </pre>
+ * All attributes starting with the prefix 'delegate_' are used to configure the TomcatJndiProxy by 
+ * calling setters with corresponding names (without the prefix).
+ * <br/>
+ * The remaining attributes (except 'name' and 'factory') are used to configure the resulting object by 
+ * calling corresponding setters. 
+ * <br/>
+ * In the exampe the username and password are set, to be used when the application uses the resulting
+ * connectionFactory to create a connection.
+ * <br/>
+ * <br/>
+ * TibcoJndi.properties is a classpath resource, containing for instance:
+ * <pre>
+ * java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory
+ * com.tibco.tibjms.naming.security_protocol=ssl
+ * com.tibco.tibjms.naming.ssl_enable_verify_host=false
+ * </pre>
+ * Setting 'java.naming.factory.initial' here causes the TomcatJndiProxy to query the Tibco JNDI at (delegate_)providerURL.
+ * <br/>
  * 
  * @see "https://tomcat.apache.org/tomcat-8.0-doc/jndi-resources-howto.html#Adding_Custom_Resource_Factories"
  * 
