@@ -88,20 +88,33 @@ public abstract class ElementChild {
 	private @Getter String defaultValue;
 
 	public static Predicate<ElementChild> IN_XSD = c ->
-		(! c.isExcluded())
+		(! c.isViolatesDigesterRules())
+		&& (! c.isExcluded())
 		&& (! c.isDeprecated())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		(! c.isExcluded())
+		(! c.isViolatesDigesterRules())
+		&& (! c.isExcluded())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
-	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isExcluded() || c.isDeprecated();
+	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> 
+		(! c.isViolatesDigesterRules())
+		&& (c.isExcluded() || c.isDeprecated());
+
 	static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
-	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
-	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
-	static Predicate<ElementChild> DIGESTER_RULES_ACCEPTED = c -> ! c.isViolatesDigesterRules();
+	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c ->
+		(! c.isViolatesDigesterRules())
+		&& (! c.isExcluded());
+
+	public static Predicate<ElementChild> EXCLUDED = c ->
+			(! c.isViolatesDigesterRules())
+			&& (c.isExcluded());
+
+public static Predicate<ElementChild> JSON_NOT_INHERITED = c ->
+	(! c.isViolatesDigesterRules())
+	&& c.isExcluded()
+	&& (c.getOverriddenFrom() != null);
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or

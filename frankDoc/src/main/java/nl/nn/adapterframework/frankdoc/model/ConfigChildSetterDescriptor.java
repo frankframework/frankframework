@@ -56,6 +56,11 @@ abstract class ConfigChildSetterDescriptor {
 		}
 	}
 
+	void fillConfigChild(ConfigChild configChild) {
+		configChild.setAllowMultiple(isAllowMultiple());
+		configChild.setMandatory(isMandatory());
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b)", getClass().getSimpleName(), methodName, roleName, mandatory, allowMultiple);
@@ -71,7 +76,9 @@ abstract class ConfigChildSetterDescriptor {
 
 		@Override
 		ConfigChild createConfigChild(FrankElement parent, FrankMethod method) {
-			return new ObjectConfigChild(parent, method);
+			ConfigChild result = new ObjectConfigChild(parent, method);
+			fillConfigChild(result);
+			return result;
 		}
 
 		@Override
@@ -87,7 +94,9 @@ abstract class ConfigChildSetterDescriptor {
 
 		@Override
 		ConfigChild createConfigChild(FrankElement parent, FrankMethod method) {
-			return new TextConfigChild(parent, method, getRoleName());
+			ConfigChild result = new TextConfigChild(parent, method, getRoleName());
+			fillConfigChild(result);
+			return result;
 		}
 
 		@Override

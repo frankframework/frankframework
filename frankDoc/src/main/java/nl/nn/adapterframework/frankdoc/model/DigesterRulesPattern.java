@@ -34,6 +34,10 @@ class DigesterRulesPattern {
 		return componentsThatShouldNotBeWildcard.get(componentsThatShouldNotBeWildcard.size() - 1);
 	}
 
+	String getRoleName() {
+		return components.get(components.size() - 1);
+	}
+
 	ViolationChecker getViolationChecker() {
 		if(! components.get(0).equals("*")) {
 			return null;
@@ -68,6 +72,11 @@ class DigesterRulesPattern {
 				}
 			}
 			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "ViolationChecker backtracking (" + backtrackRoleNames.stream().collect(Collectors.joining(",")) + ")";
 		}
 	}
 }
