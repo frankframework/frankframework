@@ -58,6 +58,14 @@ class DigesterRulesPattern {
 			this.backtrackRoleNames = backtrackRoleNames;
 		}
 
+		// TODO: If digester-rules.xml has a pattern */configuration/adapter,
+		// should it accept a config Configuration.registerAdapter()?. Indeed,
+		// class Adapter has config parent Configuration, but Configuration itself
+		// does not have parents. At the moment this point has not been considered,
+		// because we do not need patterns that include the role name of the root
+		// XML element in Frank configurations. We only have a pattern "configuration"
+		// without a start and without other words, but that pattern can be ignored by
+		// the Frank!Doc.
 		boolean check(DigesterRulesConfigChild configChild) {
 			List<DigesterRulesConfigChild> current = Arrays.asList(configChild);
 			for(String backtrackRoleName: backtrackRoleNames) {

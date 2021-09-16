@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-public class DigesterRulesTestTest {
+public class ConfigChildSetterDescriptorTest {
 	private DigesterRules instance;
 
 	@Before
