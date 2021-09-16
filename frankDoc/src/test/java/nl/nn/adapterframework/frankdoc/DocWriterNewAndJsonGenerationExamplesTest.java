@@ -67,7 +67,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildren():177[] Pass [3]
 			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildren():186[] Leave
 			//
-			// It does not suffice to check that E does not appear in the actual XSD, because that does not happen.
+			// It does not suffice to check that E does not appear in the actual XSD, because that does not happen anyway.
 			// D does not appear as XML element because C.registerD violates digester-rules already, stopping the recursion in DocWriterNew.java.
 			// The traces check that DigesterRules.java properly finds all config children that violate digester-rules.xml.
 			//
