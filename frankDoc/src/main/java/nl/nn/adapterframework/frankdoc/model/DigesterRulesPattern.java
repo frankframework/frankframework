@@ -31,7 +31,7 @@ class DigesterRulesPattern {
 		if(componentsThatShouldNotBeWildcard.stream().anyMatch(s -> s.equals("*"))) {
 			return String.format("digester-rules.xml: Only the first pattern component can be a wildcard. Encountered [%s]", originalPattern);
 		}
-		return componentsThatShouldNotBeWildcard.get(componentsThatShouldNotBeWildcard.size() - 1);
+		return null;
 	}
 
 	String getRoleName() {

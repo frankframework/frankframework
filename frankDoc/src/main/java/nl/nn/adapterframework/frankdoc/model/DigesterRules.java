@@ -112,7 +112,7 @@ class DigesterRules {
 	}
 
 	private Map<String, ConfigChildSetterDescriptor> configChildSetterDescriptors = new HashMap<>();
-	private Map<String, DigesterRulesPattern.ViolationChecker> violationCheckers;
+	private Map<String, DigesterRulesPattern.ViolationChecker> violationCheckers = new HashMap<>();
 	private Map<String, List<ConfigChild>> violationCheckerSubjects;
 
 	// Only used in unit tests
