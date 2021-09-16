@@ -95,6 +95,16 @@ public class FrankDocModel {
 			result.createDigesterRules(digesterRulesFileName);
 			result.findOrCreateFrankElement(rootClassName);
 			result.setConfigParents();
+			// When config children are omitted because they appear to violate digester-rules.xml,
+			// dangling ElementRole-s, ElementType-s may be produced that are not referenced by
+			// any valid ConfigChild. Members of these dangling ElementType-s and Element-Roles
+			// probaby are not member of some other ElementType.
+			//
+			// TODO: Remove the dangling ElementType, ElementRole and FrankElement-s before
+			// continuing. This step has low priority, because most digester-rules.xml patterns
+			// are like "*/myRole". Config children created from such roles are never omitted
+			// afterwards.
+			result.digesterRules.omitViolatingConfigChildren();
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
 			result.setHighestCommonInterface();

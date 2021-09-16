@@ -3,8 +3,10 @@ package nl.nn.adapterframework.frankdoc.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +31,15 @@ class DigesterRules {
 		}
 		try {
 			DigesterRules result = new DigesterRules();
-			XmlUtils.parseXml(resource.asInputSource(), new Handler(path, result));
+			Handler handler = new Handler(path, result);
+			XmlUtils.parseXml(resource.asInputSource(), handler);
 			log.trace("Successfully created config child descriptors");
+			for(DigesterRulesPattern.ViolationChecker v: result.violationCheckers.values()) {
+				if(! v.checkImplemented(handler.rootRoleNames)) {
+					throw new SAXException(String.format("Checking against [%s] has not been implemented, pattern is [%s]",
+							v.toString(), v.getOriginalPattern()));
+				}
+			}
 			return result;
 		}
 		catch(IOException e) {
@@ -44,6 +53,7 @@ class DigesterRules {
 	private static class Handler extends DigesterRulesHandler {
 		private final String path;
 		private final DigesterRules digesterRules;
+		private final Set<String> rootRoleNames = new HashSet<>();
 
 		Handler(String path, DigesterRules digesterRules) {
 			this.path = path;
@@ -53,9 +63,11 @@ class DigesterRules {
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
 			DigesterRulesPattern pattern = new DigesterRulesPattern(rule.getPattern());
-			String error = pattern.getError();
-			if(error != null) {
-				throw new SAXException(error);
+			if(pattern.getError() != null) {
+				throw new SAXException(pattern.getError());
+			}
+			if(pattern.isRoot()) {
+				rootRoleNames.add(pattern.getRoleName());
 			}
 			String registerTextMethod = rule.getRegisterTextMethod();
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
@@ -113,7 +125,7 @@ class DigesterRules {
 
 	private Map<String, ConfigChildSetterDescriptor> configChildSetterDescriptors = new HashMap<>();
 	private Map<String, DigesterRulesPattern.ViolationChecker> violationCheckers = new HashMap<>();
-	private Map<String, List<ConfigChild>> violationCheckerSubjects;
+	private Map<String, List<ConfigChild>> violationCheckerSubjects = new HashMap<>();
 
 	// Only used in unit tests
 	ConfigChildSetterDescriptor getConfigChildSetterDescriptor(String methodName) {
@@ -137,8 +149,10 @@ class DigesterRules {
 		log.trace("Have ConfigChildSetterDescriptor [{}]", () -> descriptor.toString());
 		ConfigChild configChild = descriptor.createConfigChild(parent, method);
 		if(violationCheckers.containsKey(descriptor.getRoleName())) {
-			log.trace("Role name [{}] has ViolationChecker [{}], assigning config child [{}]",
-					() -> descriptor.getRoleName(), () -> violationCheckers.get(descriptor.getRoleName()).toString(), () -> configChild.toString());
+			// The toString() method of the ConfigChild does not work yet because the ElementRole has not been set.
+			log.trace("Role name [{}] has ViolationChecker [{}], assigning config child for owner [{}]",
+					() -> descriptor.getRoleName(),
+					() -> violationCheckers.get(descriptor.getRoleName()).toString(), () -> configChild.getOwningElement().toString());
 			violationCheckerSubjects.get(descriptor.getRoleName()).add(configChild);
 		}
 		return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
@@ -157,18 +171,23 @@ class DigesterRules {
 	void omitViolatingConfigChildren() {
 		log.trace("Enter");
 		int pass = 1;
-		boolean foundViolations;
+		List<ConfigChild> newViolators = new ArrayList<>();
 		do {
 			if(log.isTraceEnabled()) {
 				log.trace("Pass [{}]", pass++);
 			}
-			foundViolations = omitViolatingConfigChildrenOnce();
-		} while(foundViolations);
+			newViolators = omitViolatingConfigChildrenOnce();
+			// If we would do setViolatesDigesterRules() immediately in omitViolatingConfigChildrenOnce(),
+			// we would miss an opportunity to test iterating until no more violators are found.
+			// The order in which the violators would be found would determine how many
+			// iterations we would need.
+			newViolators.forEach(c -> c.setViolatesDigesterRules(true));
+		} while(! newViolators.isEmpty());
 		log.trace("Leave");
 	}
 
-	private boolean omitViolatingConfigChildrenOnce() {
-		boolean foundViolations = false;
+	private List<ConfigChild> omitViolatingConfigChildrenOnce() {
+		List<ConfigChild> result = new ArrayList<>();
 		for(String roleName: violationCheckers.keySet()) {
 			DigesterRulesPattern.ViolationChecker checker = violationCheckers.get(roleName);
 			List<ConfigChild> remainingSubjects = violationCheckerSubjects.get(roleName).stream()
@@ -177,11 +196,10 @@ class DigesterRules {
 			for(ConfigChild subject: remainingSubjects) {
 				if(! checker.check(subject)) {
 					log.trace("ConfigChild [{}] violates [{}]", () -> subject.toString(), () -> checker.toString());
-					subject.setViolatesDigesterRules(true);
-					foundViolations = true;
+					result.add(subject);
 				}
 			}
 		}
-		return foundViolations;
+		return result;
 	}
 }

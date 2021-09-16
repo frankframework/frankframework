@@ -401,4 +401,9 @@ public class FrankElement implements Comparable<FrankElement>, DigesterRulesFran
 		result.addAll(s2);
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return fullName;
+	}
 }
