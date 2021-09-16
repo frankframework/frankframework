@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.FileSystemResourceAccessor;
@@ -28,8 +29,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	private JdbcTransactionalStorage<Message> storage;
 	private Liquibase liquibase;
-	private boolean tableCreated = false;
-	private final String tableName = "IBISSTORE";
+	private final String tableName = "IBISSTORE_4_JdbcTransactionalStorageTest";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
 
@@ -43,24 +43,20 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setCheckTable(false);
 		storage.setDatasourceName(getDataSourceName());
 		storage.setDataSourceFactory(dataSourceFactory);
-		if (!dbmsSupport.isTablePresent(connection, tableName)) {
-			createDbTable();
-			tableCreated = true;
-		}
+		storage.setSequenceName("SEQ_IBISSTORE_4_JdbcTransactionalStorageTest");
+		createDbTable();
 	}
 
 	private void createDbTable() throws Exception {
 		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
-		String changesetFilePath = TestFileUtils.getTestFileURL("/Migrator/Ibisstore_changeset.xml").getPath();
-		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(connection));
-		liquibase.update(2, null);
+		String changesetFilePath = TestFileUtils.getTestFileURL("/Migrator/Ibisstore_4_JdbcTransactionalStorageTest_changeset.xml").getPath();
+		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
+		liquibase.update(new Contexts());
 	}
 
 	@After
 	public void teardown() throws Exception {
-		if (tableCreated) {
-			liquibase.rollback(2, null);
-		}
+		liquibase.dropAll();
 	}
 
 	@Test
@@ -93,9 +89,6 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		}
 		stmt.setBytes(1, baos.toByteArray());
 		stmt.execute();
-		if(!connection.getAutoCommit()) {
-			connection.commit();
-		}
 
 		ResultSet rs = stmt.getGeneratedKeys();
 		if(rs.next()) {
@@ -136,12 +129,9 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		}
 		stmt.setBytes(1, baos.toByteArray());
 		stmt.execute();
-		if(!connection.getAutoCommit()) {
-			connection.commit();
-		}
 
 		String selectQuery = "SELECT * FROM "+tableName;
-		ResultSet rs = connection.prepareStatement(selectQuery).executeQuery();
+		ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery();
 		if(rs.next()) {
 			Message result = storage.retrieveObject(rs, 9);
 			assertEquals(message.asString(),result.asString());
@@ -166,7 +156,7 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 				+ storage.getExpiryDateField()  +","
 				+ storage.getLabelField() + ")"
 				+ " VALUES("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? 1+"," : "")+"'E','test','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(new Date())+",'comments', ? ,"+dbmsSupport.getDatetimeLiteral(new Date())+",'label')";
-		return !dbmsSupport.autoIncrementKeyMustBeInserted() ? connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(query);
+		return !dbmsSupport.autoIncrementKeyMustBeInserted() ? getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS) : getConnection().prepareStatement(query, new String[]{storage.getKeyField()});
 	}
 
 	private Message createMessage() {
@@ -196,13 +186,11 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		Message message = createMessage();
 
-		String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
-		if(!connection.getAutoCommit()) {
-			connection.commit();
-		}
+		String storeMessageOutput = storage.storeMessage(getConnection(),"1", "correlationId", new Date(), "comment", "label", message);
+
 		String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		String selectQuery = "SELECT * FROM "+tableName+" where "+storage.getKeyField()+"="+key;
-		ResultSet rs = connection.prepareStatement(selectQuery).executeQuery();
+		ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery();
 
 		if(rs.next()) {
 			Message result = storage.retrieveObject(rs, 1);
@@ -218,10 +206,8 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.configure();
 
 		Message message = createMessage();
-		String storeMessageOutput = storage.storeMessage(connection,"1", "correlationId", new Date(), "comment", "label", message);
-		if(!connection.getAutoCommit()) {
-			connection.commit();
-		}
+		String storeMessageOutput = storage.storeMessage(getConnection(),"1", "correlationId", new Date(), "comment", "label", message);
+
 		String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 
 		Message result = storage.getMessage(key);
