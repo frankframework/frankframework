@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
@@ -673,7 +674,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setStopConditionXPathExpression("*[@name='p & Q']");
-		pipe.registerForward(new PipeForward(IteratingPipe.STOP_CONDITION_MET_FORWARD, "dummy"));
+		pipe.registerForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -684,7 +685,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(17));
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
-		assertEquals(IteratingPipe.STOP_CONDITION_MET_FORWARD, prr.getPipeForward().getName());
+		assertEquals(StopReason.STOP_CONDITION_MET.getForwardName(), prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -727,7 +728,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(1);
-		pipe.registerForward(new PipeForward(IteratingPipe.MAX_ITEMS_REACHED_FORWARD, "dummy"));
+		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -738,7 +739,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(10));
-		assertEquals(IteratingPipe.MAX_ITEMS_REACHED_FORWARD, prr.getPipeForward().getName());
+		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -763,7 +764,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setSender(getElementRenderer());
 		pipe.setMaxItems(2);
-		pipe.registerForward(new PipeForward(IteratingPipe.MAX_ITEMS_REACHED_FORWARD, "dummy"));
+		pipe.registerForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
 		configurePipe();
 		pipe.start();
 
@@ -774,7 +775,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
 		assertThat(sc.hitCount.get("in"), Matchers.lessThan(15));
-		assertEquals(IteratingPipe.MAX_ITEMS_REACHED_FORWARD, prr.getPipeForward().getName());
+		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
 	@Test

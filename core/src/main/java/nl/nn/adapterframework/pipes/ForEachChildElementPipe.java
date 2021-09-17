@@ -154,7 +154,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
 		private boolean stopRequested;
-		private String stopReason=null;
+		private StopReason stopReason=null;
 
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
@@ -380,7 +380,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	
 	
 	@Override
-	protected String iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputSource src;
 		if (isProcessFile()) {
 			try {

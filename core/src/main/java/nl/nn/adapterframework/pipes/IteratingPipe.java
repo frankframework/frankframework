@@ -133,6 +133,8 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private @Getter String stopConditionXPathExpression=null;
 	private @Getter int maxItems;
+	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
+	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";
 	private @Getter boolean ignoreExceptions=false;
 
 	private @Getter boolean collectResults=true;
@@ -146,9 +148,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private @Getter int blockSize=0;
 
-	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
-	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";
-
 	private TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
@@ -157,6 +156,21 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private StatisticsKeeper stopConditionStatisticsKeeper;
 
 	private Semaphore childThreadSemaphore=null;
+
+	protected enum StopReason {
+		MAX_ITEMS_REACHED,
+		STOP_CONDITION_MET;
+		
+		protected String getForwardName() {
+			switch(this) {
+				case MAX_ITEMS_REACHED:
+					return IteratingPipe.MAX_ITEMS_REACHED_FORWARD;
+				case STOP_CONDITION_MET:
+					return IteratingPipe.STOP_CONDITION_MET_FORWARD;
+			}
+			return null;
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -190,9 +204,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return Message.asMessage(item);
 	}
 
-	protected String iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
 		IDataIterator<I> it=null;
-		String stopReason = null;
+		StopReason stopReason = null;
 		it = getIterator(input,session, threadContext);
 		try {
 			callback.startIterating(); // perform startIterating even when it=null, to avoid empty result
@@ -286,7 +300,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return null when looping should continue, forward name when stop is required. 
 		 */
-		public String handleItem(I item) throws SenderException, TimeOutException, IOException {
+		public StopReason handleItem(I item) throws SenderException, TimeOutException, IOException {
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
 					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
@@ -385,7 +399,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					if (getMaxItems()>0 && totalItems>=getMaxItems()) {
 						log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
-						return MAX_ITEMS_REACHED_FORWARD;
+						return StopReason.MAX_ITEMS_REACHED;
 					}
 					if (getStopConditionTp()!=null) {
 						long stopConditionStartTime = System.currentTimeMillis();
@@ -395,7 +409,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						stopConditionStatisticsKeeper.addValue(stopConditionDuration);
 						if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], stopping loop");
-							return STOP_CONDITION_MET_FORWARD;
+							return StopReason.STOP_CONDITION_MET;
 						} else {
 							log.debug(getLogPrefix(session)+"itemResult ["+itemResult+"] stopcondition result ["+stopConditionResult+"], continueing loop");
 						}
@@ -461,7 +475,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	@Override
 	protected boolean canStreamToNextPipe() {
-		if(getForwards()!=null && (getForwards().get(MAX_ITEMS_REACHED_FORWARD)!=null || getForwards().get(STOP_CONDITION_MET_FORWARD)!=null)) { // streaming is not possible since the forward is not known before hand
+		if(getForwards()!=null && (getForwards().get(StopReason.MAX_ITEMS_REACHED.getForwardName())!=null || getForwards().get(StopReason.STOP_CONDITION_MET.getForwardName())!=null)) { // streaming is not possible since the forward is not known before hand
 			return false;
 		}
 		return !isCollectResults() && super.canStreamToNextPipe(); // when collectResults is false, streaming is not necessary or useful
@@ -470,15 +484,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		String forwardName = null;
+		StopReason stopReason = null;
 		try (MessageOutputStream target=getTargetStream(session)) { 
 			try (Writer resultWriter = target.asWriter()) {
 				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
-				forwardName = iterateOverInput(input,session,threadContext, callback);
+				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
 			PipeRunResult prr = target.getPipeRunResult();
-			if(forwardName != null) {
-				PipeForward forward = getForwards().get(forwardName);
+			if(stopReason != null) {
+				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {
 					prr.setPipeForward(forward);
 				}
@@ -554,12 +568,12 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		itemNoSessionKey = string;
 	}
 
-	@IbisDoc({"7", "The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward ["+MAX_ITEMS_REACHED_FORWARD+"] can be configured to follow","0"})
+	@IbisDoc({"7", "The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward "+IteratingPipe.MAX_ITEMS_REACHED_FORWARD+" can be configured to follow","0"})
 	public void setMaxItems(int maxItems) {
 		this.maxItems = maxItems;
 	}
 
-	@IbisDoc({"8", "Expression evaluated on each result and forwards to ["+STOP_CONDITION_MET_FORWARD+"] forward if configured. "
+	@IbisDoc({"8", "Expression evaluated on each result and forwards to ["+IteratingPipe.STOP_CONDITION_MET_FORWARD+"] forward if configured. "
 	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
 	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
 	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead", ""})

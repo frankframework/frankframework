@@ -76,7 +76,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		private Exception rootException = null;
 		private int startLength;
 		private boolean stopRequested;
-		private String stopReason;
+		private StopReason stopReason;
 		private TimeOutException timeOutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
@@ -194,7 +194,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	protected String iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
 			xmlInput = new FileInputStream(input.asString());

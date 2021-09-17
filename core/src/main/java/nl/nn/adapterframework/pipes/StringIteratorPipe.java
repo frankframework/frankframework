@@ -23,7 +23,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -74,6 +73,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private StringBuffer items = new StringBuffer();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
+			private StopReason stopReason;
 
 			@Override
 			public void endIterating() throws SenderException, TimeOutException, IOException {
@@ -89,34 +89,34 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 			}
 			
-			private boolean finalizeBlock() throws SenderException, TimeOutException, IOException {
+			private StopReason finalizeBlock() throws SenderException, TimeOutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());
-					boolean result = super.handleItem(items.toString()) == null;
+					stopReason = super.handleItem(items.toString());
 					items.setLength(0);
-					return result;
+					return stopReason;
 				}
-				return false;
+				return null;
 			}
 			
 			@Override
-			public String handleItem(String item) throws SenderException, TimeOutException, IOException {
+			public StopReason handleItem(String item) throws SenderException, TimeOutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
 				} 
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						if (previousKey!=null && !finalizeBlock()) {
-							return PipeForward.SUCCESS_FORWARD_NAME;
+						if(finalizeBlock() != null) {
+							return stopReason;
 						}
 						startBlock();
 						previousKey=key;
 					}
 				}
 				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
-				String result = null;
+				StopReason result = null;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
 					++itemCounter;
@@ -128,7 +128,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
 					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
-					return MAX_ITEMS_REACHED_FORWARD;
+					return StopReason.MAX_ITEMS_REACHED;
 				}
 				return result;
 			}
