@@ -94,7 +94,7 @@ When [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGr
 
 The Java classes that implement [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java) are highlighted. They are annotated in the first figure of this section as number 3.
 
-The annotation on [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java) only adds two classes to group `Batch`. The other elements are added by other [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotations. These do not have their `order` field set, see for example [RecordHandlerFlow](./core/src/main/java/nl/nn/adapterframework/batch/RecordHandlerFlow.java)
+The annotation on [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java) only adds three classes to group `Batch`. The other elements are added by other [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotations. These do not have their `order` field set, see for example [RecordHandlerFlow](./core/src/main/java/nl/nn/adapterframework/batch/RecordHandlerFlow.java)
 
 ![eclipseRecordHandlerFlow](./picturesForContributors/eclipseRecordHandlerFlow.jpg)
 
