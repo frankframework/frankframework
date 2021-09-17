@@ -62,7 +62,7 @@ In Java, config child setters and attribute setters are inherited like any Java 
 
 Declared config children and declared attributes go first. If config children or attributes are inherited, there is a heading with the closest ancestor from which we have inheritance. The config children and the attributes inherited from that ancestor follow. Next comes a header for the next ancestor from which config children or attributes are inherited. The recursion ends when all declared and all inherited config children and attributes are present.
 
-## Preferred order of child elements
+## Preferred order of attributes and child elements
 
 The order of config child setters and attribute setters in the Java code is important for the Frank!Doc. With the old IbisDoc documentation, this is not the case because the value fields in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) annotations can hold the order. In the Frank!Doc, the order kept in [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) and [@IbisDocRef](./core/src/main/java/nl/nn/adapterframework/doc/IbisDocRef.java) annotations is ignored and the method order is used.
 
@@ -77,6 +77,28 @@ Frank configs that violate the preferred order can still be parsed by the Frank!
 ![vscodeOrderChecked](./picturesForContributors/vscodeOrderChecked.jpg)
 
 ## Groups in the web application
+
+This section is about the groups shown in the top-left of the Frank!Doc web application:
+
+![webapp-groups-batch](./picturesForContributors/webapp-groups-batch.jpg)
+
+The overview of all groups is shown as number 1. We have selected group batch (number 2). How does the Frank!Doc know the order of the groups and the elements they contain? First, see the following snippet of [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java)
+
+![eclipseIRecordHandlerManager](./picturesForContributors/eclipseIRecordHandlerManager.jpg)
+
+The interface has a Java annotation [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java). The annotation has fields `name` and `order`. The `order` is an integer that is used to sort the groups in the shown order.
+
+When [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) is placed on a Java interface, then all Java classes that implement the interface are added to the group. Here is the type hierarchy of [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java):
+
+![eclipseTypeHierarchyIRecordHandlerManager](./picturesForContributors/eclipseTypeHierarchyIRecordHandlerManager.jpg)
+
+The Java classes that implement [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java) are highlighted. They are annotated in the first figure of this section as number 3.
+
+The annotation on [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java) only adds two classes to group `Batch`. The other elements are added by other [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotations. These do not have their `order` field set, see for example [RecordHandlerFlow](./core/src/main/java/nl/nn/adapterframework/batch/RecordHandlerFlow.java)
+
+![eclipseRecordHandlerFlow](./picturesForContributors/eclipseRecordHandlerFlow.jpg)
+
+The annotation is placed on a class here. Then only that class is added to the group in the Frank!Doc web application.
 
 ## Attribute types
 
