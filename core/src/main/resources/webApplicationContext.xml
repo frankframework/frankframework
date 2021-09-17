@@ -33,11 +33,5 @@
 		class="nl.nn.adapterframework.lifecycle.ServletManager"
 	/>
 
-<!-- 	<bean -->
-<!-- 		name="lowerCasePropertyPlaceholderConfigurer" -->
-<!-- 		class="nl.nn.adapterframework.configuration.LowerCasePropertyPlaceholderConfigurer" -->
-<!-- 		autowire="byName" -->
-<!-- 	/> -->
-
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 </beans>
