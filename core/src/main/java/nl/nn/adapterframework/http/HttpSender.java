@@ -664,7 +664,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodType=POST</code>, the type of post request", "RAW"})
+	/**
+	 * When <code>methodType=POST</code>, the type of post request
+	 * @ff.default RAW
+	 */
 	public void setPostType(String type) {
 		this.postType = EnumUtils.parse(PostType.class, type);
 	}

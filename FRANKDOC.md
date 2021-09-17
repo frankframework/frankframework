@@ -140,7 +140,9 @@ You see the description in the JavaDoc comment (or [@IbisDoc](./core/src/main/ja
 
 ## Attribute default value
 
-You can document a default value for attributes. The preferred way to do this is using JavaDoc tag `@ff.default`. Using the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation is deprecated (but [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) is still used in the example that follows). 
+You can document a default value for attributes. The preferred way to do this is using JavaDoc tag `@ff.default`. Using the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation is deprecated. Here is how it looks like in the Java source code:
+
+![postTypeSetterDefaultValue](./picturesForContributors/postTypeSetterDefaultValue.jpg)
 
 Here is an example of editing a Frank config in VSCode:
 
