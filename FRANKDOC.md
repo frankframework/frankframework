@@ -100,6 +100,8 @@ The annotation on [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterfram
 
 The annotation is placed on a class here. Then only that class is added to the group in the Frank!Doc web application.
 
+Finally, Java classes that do not have or inherit a [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotation are put in group `Other`.
+
 ## Attribute types
 
 ## Attribute default value
