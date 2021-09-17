@@ -82,7 +82,7 @@ This section is about the groups shown in the top-left of the Frank!Doc web appl
 
 ![webapp-groups-batch](./picturesForContributors/webapp-groups-batch.jpg)
 
-The overview of all groups is shown as number 1. We have selected group batch (number 2). How does the Frank!Doc know the order of the groups and the elements they contain? First, see the following snippet of [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java)
+The overview of all groups is shown as number 1. We have selected group `Batch` (number 2). How does the Frank!Doc know the order of the groups and the elements they contain? First, see the following snippet of [IRecordHandlerManager](./core/src/main/java/nl/nn/adapterframework/batch/IRecordHandlerManager.java)
 
 ![eclipseIRecordHandlerManager](./picturesForContributors/eclipseIRecordHandlerManager.jpg)
 
