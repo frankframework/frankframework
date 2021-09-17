@@ -49,6 +49,10 @@ public enum XsdVersion {
 		this.delegate = delegate;
 	}
 
+	Predicate<FrankElement> getHasRelevantChildrenPredicate(Class<? extends ElementChild> kind) {
+		return f -> ! f.getChildrenOfKind(childSelector.or(childRejector), kind).isEmpty();
+	}
+
 	void checkForMissingDescription(FrankAttribute attribute) {
 		delegate.checkForMissingDescription(attribute);
 	}

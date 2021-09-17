@@ -183,7 +183,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testLockWaitTimeout() throws Exception {
 		cleanupLocks();
@@ -192,7 +192,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setLockWaitTimeout(1);
 		locker.configure();
 		
-		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
 		try {
 			Semaphore otherInsertReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
