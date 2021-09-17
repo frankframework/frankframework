@@ -152,7 +152,7 @@ In VScode, the default value appears as tool-tip help as shown:
 
 The default value is also shown in the Frank!Doc web application:
 
-[webappPostTypeDefault](./picturesForContributors/webappPostTypeDefault.jpg)
+![webappPostTypeDefault](./picturesForContributors/webappPostTypeDefault.jpg)
 
 ## Parameters
 
