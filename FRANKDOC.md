@@ -140,6 +140,22 @@ You see the description in the JavaDoc comment (or [@IbisDoc](./core/src/main/ja
 
 ## Attribute default value
 
+You document a default value for attributes. The preferred way to do this is using JavaDoc tag `@ff.default`. Using the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation is deprecated (but [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) is still used in the example that follows). 
+
+Here is an example of editing a Frank config in VSCode:
+
+![vscodeHttpSenderPostTypeBeforeReturn](./picturesForContributors/vscodeHttpSenderPostTypeBeforeReturn.jpg)
+
+You see a hint to add attribute `postType`. When you press enter, the default value is already added for you as shown below:
+
+![vscodeHttpSenderPostTypeAfterReturn](./picturesForContributors/vscodeHttpSenderPostTypeAfterReturn.jpg)
+
+The default value is also shown in the Frank!Doc web application:
+
+[webappPostTypeDefault](./picturesForContributors/webappPostTypeDefault.jpg)
+
+The default value is not applied when parsing Frank configurations. When you do not set an attribute in your XML, no value is assigned implicitly during parsing.
+
 ## Parameters
 
 ## Deprecated child elements and attributes
