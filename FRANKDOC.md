@@ -104,6 +104,40 @@ Finally, Java classes that do not have or inherit a [@FrankDocGroup](./core/src/
 
 ## Attribute types
 
+The Frank!Doc supports type-checking for attributes. Attributes can be Boolean, integer or string. In addition, string attributes can have their values restricted by a Java enum.
+
+The Frank!Doc type of an attribute depends on the argument type of the setter in the Java code. Here is an example from [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java):
+
+![eclipseAdapterAttributeAutoStart](./picturesForContributors/eclipseAdapterAttributeAutoStart.jpg)
+
+Attribute `autoStart` has a setter with argument type `boolean`. The Frank!Doc type is Boolean. Below, you see a type violation of this attribute in VSCode:
+
+![vscodeAttributeAutostartTypeViolation](./picturesForContributors/vscodeAttributeAutostartTypeViolation.jpg)
+
+Value `xyz` is not a Boolean value and hence you see a red flag. You may be surprised by the complicated regular expression in this screenshot. It is there to allow references to properties like `${myProperty}`. Type checking is also done by `FrankConfig-compatibility.xsd`. If a configuration has type-violating attributes, the errors are detected when the configuration is loaded.
+
+An example of a restricted string attribute is present in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java]:
+
+![eclipseLdapSenderAttributeOperation](./picturesForContributors/eclipseLdapSenderAttributeOperation.jpg)
+
+You give the attribute setter argument type String. You add a getter that appends the attribute name with the word `Enum`. The return type of the enum getter is an enum that determines what values are allowed. Part of enum `Operation` is shown below:
+
+![eclipseEnumOperation](./picturesForContributors/eclipseEnumOperation.jpg)
+
+With Java annotation [@EnumLabel](./core/src/main/java/nl/nn/adapterframework/doc/EnumLabel.java), you can alter the representation of the enum value in Frank configs (number 1). In the example, the string "read" in a Frank configuration is parsed as enum value `OPERATION_READ` (number 2). JavaDoc comments of enum values are used to provide descriptions (number 3). Please note that a JavaDoc comment must come before the [@EnumLabel](./core/src/main/java/nl/nn/adapterframework/doc/EnumLabel.java). It would not work if you interchanged the two. Below you see type checking for attribute `operation` in action:
+
+![vscodeEnumOperation](./picturesForContributors/vscodeEnumOperation.jpg)
+
+You see a list of the allowed values. Enum value `OPERATION_READ` shows up as "read" (number 1). You see the description (number 3) below the list.
+
+In `FrankConfig-strict.xsd`, type checking against enums is case sensitive. In the example, the value "READ" for attribute `operation` would be flagged as an error. In `FrankConfig-compatibility.xsd`, type checking is case insensitive. This means that value "READ" is accepted when your configuration is parsed. This is the case to support backward compatibility.
+
+Here is how attributes are shown in the Frank!Doc web application:
+
+![webappAttributeOperation](./picturesForContributors/webappAttributeOperation.jpg)
+
+You see the description available at the attribute setter (number 1). Enum-restricted string attributes do not show a type (number 2), but it is shown for Boolean and integer attributes. Each enum value (number 3) is shown with its description (number 4) that comes from the JavaDoc comment of the enum value.
+
 ## Attribute default value
 
 ## Parameters
