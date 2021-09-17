@@ -30,6 +30,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -123,6 +124,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
+	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
+	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";
+
 	private @Getter String styleSheetName;
 	private @Getter String xpathExpression=null;
 	private @Getter String namespaceDefs = null; 
@@ -133,8 +137,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private @Getter String stopConditionXPathExpression=null;
 	private @Getter int maxItems;
-	protected static final String MAX_ITEMS_REACHED_FORWARD = "maxItemsReached";
-	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";
 	private @Getter boolean ignoreExceptions=false;
 
 	private @Getter boolean collectResults=true;
@@ -157,19 +159,18 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private Semaphore childThreadSemaphore=null;
 
+	private boolean stopForwardConfigured = false;
+
 	protected enum StopReason {
-		MAX_ITEMS_REACHED,
-		STOP_CONDITION_MET;
-		
-		protected String getForwardName() {
-			switch(this) {
-				case MAX_ITEMS_REACHED:
-					return IteratingPipe.MAX_ITEMS_REACHED_FORWARD;
-				case STOP_CONDITION_MET:
-					return IteratingPipe.STOP_CONDITION_MET_FORWARD;
-			}
-			return null;
+		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
+		STOP_CONDITION_MET(STOP_CONDITION_MET_FORWARD);
+
+		private @Getter String forwardName;
+
+		private StopReason(String forwardName) {
+			this.forwardName=forwardName;
 		}
+
 	}
 
 	@Override
@@ -190,6 +191,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		if (getMaxChildThreads()>0) {
 			childThreadSemaphore=new Semaphore(getMaxChildThreads());
 		}
+		stopForwardConfigured = getForwards()!=null && (getForwards().get(StopReason.MAX_ITEMS_REACHED.getForwardName())!=null || getForwards().get(StopReason.STOP_CONDITION_MET.getForwardName())!=null);
 	}
 
 	protected IDataIterator<I> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -298,7 +300,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		
 		/**
-		 * @return null when looping should continue, forward name when stop is required. 
+		 * @return a non null StopReason when stop is required
 		 */
 		public StopReason handleItem(I item) throws SenderException, TimeOutException, IOException {
 			if (isRemoveDuplicates()) {
@@ -475,7 +477,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	@Override
 	protected boolean canStreamToNextPipe() {
-		if(getForwards()!=null && (getForwards().get(StopReason.MAX_ITEMS_REACHED.getForwardName())!=null || getForwards().get(StopReason.STOP_CONDITION_MET.getForwardName())!=null)) { // streaming is not possible since the forward is not known before hand
+		if(stopForwardConfigured) { // streaming is not possible since the forward is not known before hand
 			return false;
 		}
 		return !isCollectResults() && super.canStreamToNextPipe(); // when collectResults is false, streaming is not necessary or useful

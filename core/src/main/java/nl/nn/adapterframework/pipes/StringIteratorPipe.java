@@ -73,7 +73,6 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private StringBuffer items = new StringBuffer();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
-			private StopReason stopReason;
 
 			@Override
 			public void endIterating() throws SenderException, TimeOutException, IOException {
@@ -93,7 +92,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());
-					stopReason = super.handleItem(items.toString());
+					StopReason stopReason = super.handleItem(items.toString());
 					items.setLength(0);
 					return stopReason;
 				}
@@ -108,7 +107,8 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						if(finalizeBlock() != null) {
+						StopReason stopReason = finalizeBlock();
+						if(stopReason != null) {
 							return stopReason;
 						}
 						startBlock();

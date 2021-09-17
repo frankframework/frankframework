@@ -75,7 +75,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		private boolean sElem = false;
 		private Exception rootException = null;
 		private int startLength;
-		private boolean stopRequested;
 		private StopReason stopReason;
 		private TimeOutException timeOutException;
 
@@ -136,7 +135,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				try {
 					stopReason = callback.handleItem(elementBuffer.toString());
-					stopRequested = stopReason != null;
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
@@ -153,7 +151,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					throw se;
 
 				}
-				if (stopRequested) {
+				if (isStopRequested()) {
 					throw new SAXException("stop maar");
 				}
 			}
@@ -185,7 +183,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 
 		public boolean isStopRequested() {
-			return stopRequested;
+			return stopReason != null;
 		}
 
 		public TimeOutException getTimeOutException() {

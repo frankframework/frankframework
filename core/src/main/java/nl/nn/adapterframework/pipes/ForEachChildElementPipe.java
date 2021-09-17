@@ -153,7 +153,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
-		private boolean stopRequested;
 		private StopReason stopReason=null;
 
 
@@ -201,7 +200,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			xmlWriter.endDocument();
 			try {
 				stopReason = callback.handleItem(xmlWriter.toString());
-				stopRequested = stopReason != null;
 			} catch (Exception e) {
 				if (e instanceof TimeOutException) {
 					throw new SaxTimeoutException(e);
@@ -267,7 +265,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 		
 		public boolean isStopRequested() {
-			return stopRequested;
+			return stopReason != null;
 		}
 
 	}
