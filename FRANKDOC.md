@@ -140,23 +140,19 @@ You see the description in the JavaDoc comment (or [@IbisDoc](./core/src/main/ja
 
 ## Attribute default value
 
-You can document a default value for attributes. The preferred way to do this is using JavaDoc tag `@ff.default`. Using the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation is deprecated. Here is how it looks like in the Java source code:
+You can document a default value for attributes. The preferred way to do this is using JavaDoc tag `@ff.default`. Using the [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation is deprecated. You document here what value is assumed if the attribute is not set. Only document this value if this default is applied already by the F!F source code. The `@ff.default` JavaDoc annotation does not alter the behavior of the Frank!Framework.
+
+Here is how it looks like in the Java source code:
 
 ![postTypeSetterDefaultValue](./picturesForContributors/postTypeSetterDefaultValue.jpg)
 
-Here is an example of editing a Frank config in VSCode:
+In VScode, the default value appears as tool-tip help as shown:
 
-![vscodeHttpSenderPostTypeBeforeReturn](./picturesForContributors/vscodeHttpSenderPostTypeBeforeReturn.jpg)
-
-You see a hint to add attribute `postType`. When you press enter, the default value is already added for you as shown below:
-
-![vscodeHttpSenderPostTypeAfterReturn](./picturesForContributors/vscodeHttpSenderPostTypeAfterReturn.jpg)
+![vscodeHttpSenderPostTypeDefault](./picturesForContributors/vscodeHttpSenderPostTypeDefault.jpg)
 
 The default value is also shown in the Frank!Doc web application:
 
 [webappPostTypeDefault](./picturesForContributors/webappPostTypeDefault.jpg)
-
-The default value is not applied when parsing Frank configurations. When you do not set an attribute in your XML, no value is assigned implicitly during parsing.
 
 ## Parameters
 
