@@ -63,7 +63,7 @@
 
 	<!--
 		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
-		After loading the ROOT context with all HTTP/CXF servlets (endpoints), the all servlets will be initialized.
+		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
 		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
 	-->
 	<listener>
@@ -179,7 +179,7 @@
 	</login-config>
 
 	<!--
-	When a security-constraint element is present Tomcat will autenticate the
+	When a security-constraint element is present Tomcat will authenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
