@@ -84,11 +84,6 @@ public class FrankDocModel {
 		this.rootClassName = rootClassName;
 	}
 
-	/**
-	 * Get the FrankDocModel needed in production. This is just a first draft. The
-	 * present version does not have groups yet. It will be improved in future
-	 * pull requests. 
-	 */
 	public static FrankDocModel populate(FrankClassRepository classRepository) {
 		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
 	}
