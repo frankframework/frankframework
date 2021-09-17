@@ -136,7 +136,7 @@ Here is how attributes are shown in the Frank!Doc web application:
 
 ![webappAttributeOperation](./picturesForContributors/webappAttributeOperation.jpg)
 
-You see the description available at the attribute setter (number 1). Enum-restricted string attributes do not show a type (number 2), but it is shown for Boolean and integer attributes. Each enum value (number 3) is shown with its description (number 4) that comes from the JavaDoc comment (or [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation) of the enum value.
+You see the description of the JavaDoc comment (or [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation) of attribute setter (number 1). Enum-restricted string attributes do not show a type (number 2), but it is shown for Boolean and integer attributes. Each enum value (number 3) is shown with its description (number 4) that comes from the JavaDoc comment of the enum value.
 
 ## Attribute default value
 
