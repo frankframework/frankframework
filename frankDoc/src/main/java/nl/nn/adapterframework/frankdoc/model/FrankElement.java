@@ -83,6 +83,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class FrankElement implements Comparable<FrankElement> {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
+	static final String JAVADOC_PARAMETERS = "@ff.parameters";
+	static final String JAVADOC_PARAMETER = "@ff.parameter";
 
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
 
@@ -110,6 +112,8 @@ public class FrankElement implements Comparable<FrankElement> {
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
+	private @Getter String meaningOfParameters;
+	private @Getter List<SpecificParameter> specificParameters = new ArrayList<>();
 
 	private Set<String> syntax2ExcludedFromTypes = new HashSet<>();
 
@@ -119,8 +123,15 @@ public class FrankElement implements Comparable<FrankElement> {
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
 		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
+		handlePossibleParameters(clazz);
 	}
 
+	// TODO: Unit test this.
+	// TODO: This logic wont reintroduce a FrankElement to a type in the JSON.
+	// Suppose a class C has @ff.ignoreTypeMembership pointing to implemented interface I.
+	// Then a class D that is derived from C is also excluded from I, which is fine.
+	// But if another class E is derived from C but also explicitly implements I, then
+	// the present algorithm does not add E to type I.
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
 		String excludedFromType = clazz.getJavaDocTag(FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 		if(excludedFromType != null) {
@@ -129,8 +140,19 @@ public class FrankElement implements Comparable<FrankElement> {
 			} else {
 				log.trace("FrankElement [{}] has JavaDoc tag {}, excluding from type [{}]",
 						() -> fullName, () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> excludedFromType);
+				// AttributeExcludedSetter checks already whether excludedFromType exists as a Java class.
 				syntax2ExcludedFromTypes.add(excludedFromType);
 			}
+		}
+	}
+
+	private void handlePossibleParameters(FrankClass clazz) {
+		this.meaningOfParameters = clazz.getJavaDocTag(JAVADOC_PARAMETERS);
+		for(String specificParameterStr: clazz.getAllJavaDocTagsOf(JAVADOC_PARAMETER)) {
+			if(StringUtils.isBlank(specificParameterStr)) {
+				log.warn("FrankElement [{}] has specific parameters without a name or description", fullName);
+			}
+			this.specificParameters.add(SpecificParameter.getInstance(specificParameterStr));
 		}
 	}
 

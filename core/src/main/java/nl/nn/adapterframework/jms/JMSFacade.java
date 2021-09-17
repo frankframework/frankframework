@@ -366,10 +366,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @return a MessageConsumer with the right filter (messageSelector)
 	 */
 	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
-		if (correlationId==null)
+		if (correlationId==null) {
 			return getMessageConsumer(session, destination, null);
-		else
-			return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
+		}
+		return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
 	}
 
 	/**
@@ -387,16 +387,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (useTopicFunctions) {
 			if (useJms102()) {
 				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
-			} else {
-				return getTopicSubscriber(session, (Topic)destination, selector);
 			}
-		} else {
-			if (useJms102()) {
-				return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
-			} else {
-				return session.createConsumer(destination, selector);
-			}
+			return getTopicSubscriber(session, (Topic)destination, selector);
 		}
+		if (useJms102()) {
+			return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
+		}
+		return session.createConsumer(destination, selector);
 	}
 	/**
 	 * Create a MessageConsumer, on a specific session and for a specific destination.
@@ -448,9 +445,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		} catch (Exception e) {
 			if (throwException) {
 				throw new JmsException(e);
-			} else {
-				log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
-			}
+			} 
+			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
 		}
 		return result;
 	}
@@ -465,9 +461,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (getJmsRealmName()!=null) {
 			jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(getJmsRealmName());
 		}
-	    if (jmsRealm==null) {
-	    	log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
-	    } else {
+		if (jmsRealm==null) {
+			log.warn("Could not find jmsRealm ["+getJmsRealmName()+"]");
+		} else {
 			result+=" on ("+jmsRealm.retrieveConnectionFactoryName()+")";
 		}
 		return result;
@@ -559,9 +555,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+dest+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
-			}
+			} 
+			throw e;
 		}
 		if (messageType!=null) {
 			msg.setJMSType(messageType);
@@ -619,17 +614,15 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					((QueueSender) messageProducer).send(message);
 				}
 				return message.getJMSMessageID();
-			} else {
-				messageProducer.send(message);
-				return message.getJMSMessageID();
 			}
+			messageProducer.send(message);
+			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+messageProducer.getDestination()+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
 			}
+			throw e;
 		}
 	}
 
@@ -649,22 +642,19 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (useJms102()) {
 				if (dest instanceof Topic) {
 					return sendByTopic((TopicSession)session, (Topic)dest, message);
-				} else {
-					return sendByQueue((QueueSession)session, (Queue)dest, message);
-				}
-			} else {
-				MessageProducer mp = session.createProducer(dest);
-				mp.send(message);
-				mp.close();
-				return message.getJMSMessageID();
-			}
+				} 
+				return sendByQueue((QueueSession)session, (Queue)dest, message);
+			} 
+			MessageProducer mp = session.createProducer(dest);
+			mp.send(message);
+			mp.close();
+			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue ["+dest+"] doesn't exist");
 				return null;
-			} else {
-				throw e;
 			}
+			throw e;
 		}
 	}
 

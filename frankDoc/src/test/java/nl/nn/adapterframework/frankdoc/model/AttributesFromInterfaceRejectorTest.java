@@ -1,13 +1,11 @@
 package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -22,12 +20,14 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 @RunWith(Parameterized.class)
-public class AbstractInterfaceRejectorTest {
+public class AttributesFromInterfaceRejectorTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 			{"nl.nn.adapterframework.frankdoc.testtarget.reject.simple.", "ISuperseeded", new String[] {"rejectedAttribute"}},
-			{"nl.nn.adapterframework.frankdoc.testtarget.reject.simple2.", "IIgnored", new String[] {"attributeIIgnored"}}
+			{"nl.nn.adapterframework.frankdoc.testtarget.reject.simple2.", "IIgnored", new String[] {"attributeIIgnored"}},
+			{"nl.nn.adapterframework.frankdoc.testtarget.reject.complex.", "ISuperseded", new String[] {"superseded3"}},
+			{"nl.nn.adapterframework.frankdoc.testtarget.reject.complex2.", "ISuperseded", new String[] {"superseded3"}}
 		});
 	}
 
@@ -56,29 +56,10 @@ public class AbstractInterfaceRejectorTest {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
 		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
 		String excludedInterfaceFullName = thePackage + excludedInterface;
-		AttributesFromInterfaceRejector instance = new AttributesFromInterfaceRejector(excludedInterfaceFullName);
+		FrankClass excludedInterface = classRepository.findClass(excludedInterfaceFullName);
+		AttributesFromInterfaceRejector instance = new AttributesFromInterfaceRejector(excludedInterface);
 		List<String> actualAttributes = new ArrayList<>(instance.getRejects(clazz));
 		Collections.sort(actualAttributes);
 		assertArrayEquals(expectedAttributes, actualAttributes.toArray(new String[] {}));
-	}
-
-	@Test
-	public void testTypeIgnoreOnChild() throws Exception {
-		doTypeIngoreTest("Child");
-	}
-
-	@Test
-	public void testTypeIgnoreOnGrandChild() throws Exception {
-		doTypeIngoreTest("GrandChild");
-	}
-
-	private void doTypeIngoreTest(String inputClass) throws FrankDocException {
-		classRepository = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		FrankClass clazz = classRepository.findClass(thePackage + inputClass);
-		String excludedInterfaceFullName = thePackage + excludedInterface;
-		GroupFromInterfaceRejector instance = new GroupFromInterfaceRejector(new HashSet<>(Arrays.asList(excludedInterfaceFullName)));
-		List<String> actualGroupRejections = new ArrayList<>(instance.getRejects(clazz));
-		assertEquals(1, actualGroupRejections.size());
-		assertEquals(excludedInterfaceFullName, actualGroupRejections.get(0));
 	}
 }

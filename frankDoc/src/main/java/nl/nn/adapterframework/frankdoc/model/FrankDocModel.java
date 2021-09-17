@@ -223,7 +223,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
-		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz);
+		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz, classRepository);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
 		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");

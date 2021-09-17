@@ -44,6 +44,7 @@ import nl.nn.adapterframework.frankdoc.model.FrankDocGroup;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 import nl.nn.adapterframework.frankdoc.model.ObjectConfigChild;
+import nl.nn.adapterframework.frankdoc.model.SpecificParameter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FrankDocJsonFactory {
@@ -196,13 +197,30 @@ public class FrankDocJsonFactory {
 		if(! configChildren.isEmpty()) {
 			result.add("children", configChildren);
 		}
+		if(frankElement.getMeaningOfParameters() != null) {
+			result.add("parametersDescription", frankElement.getMeaningOfParameters());
+		}
+		if(frankElement.getSpecificParameters().size() >= 1) {
+			JsonArrayBuilder b = bf.createArrayBuilder();
+			frankElement.getSpecificParameters().forEach(sp -> b.add(getParameter(sp)));
+			result.add("parameters", b.build());
+		}
 		return result.build();
+	}
+
+	private JsonObject getParameter(SpecificParameter sp) {
+		JsonObjectBuilder b = bf.createObjectBuilder();
+		b.add("name", sp.getName());
+		if(sp.getDescription() != null) {
+			b.add("description", sp.getDescription());
+		}
+		return b.build();
 	}
 
 	private static String getParentOrNull(FrankElement frankElement) {
 		if(frankElement != null) {
 			FrankElement parent = frankElement.getNextAncestorThatHasChildren(
-					elem -> elem.getAttributes(ElementChild.ALL_NOT_EXCLUDED).isEmpty() && elem.getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).isEmpty());
+					elem -> elem.getAttributes(ElementChild.JSON_RELEVANT).isEmpty() && elem.getConfigChildren(ElementChild.JSON_RELEVANT).isEmpty());
 			if(parent != null) {
 				return parent.getFullName();
 			}
