@@ -116,7 +116,7 @@ Attribute `autoStart` has a setter with argument type `boolean`. The Frank!Doc t
 
 Value `xyz` is not a Boolean value and hence you see a red flag. You may be surprised by the complicated regular expression in this screenshot. It is there to allow references to properties like `${myProperty}`. Type checking is also done by `FrankConfig-compatibility.xsd`. If a configuration has type-violating attributes, the errors are detected when the configuration is loaded.
 
-An example of a restricted string attribute is present in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java]:
+An example of a restricted string attribute is present in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java):
 
 ![eclipseLdapSenderAttributeOperation](./picturesForContributors/eclipseLdapSenderAttributeOperation.jpg)
 
