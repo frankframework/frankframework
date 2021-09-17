@@ -30,7 +30,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.IDataIterator;
