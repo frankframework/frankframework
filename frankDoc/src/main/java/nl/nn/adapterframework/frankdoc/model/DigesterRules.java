@@ -17,13 +17,10 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -123,7 +120,6 @@ class DigesterRules {
 				if(violationChecker != null) {
 					log.trace("Role name [{}] has ViolationChecker [{}]", () -> descriptor.getRoleName(), () -> violationChecker.toString());
 					digesterRules.violationCheckers.put(descriptor.getRoleName(), violationChecker);
-					digesterRules.violationCheckerSubjects.put(descriptor.getRoleName(), new ArrayList<>());
 				}
 			}
 		}
@@ -135,7 +131,6 @@ class DigesterRules {
 
 	private Map<String, ConfigChildSetterDescriptor> configChildSetterDescriptors = new HashMap<>();
 	private Map<String, DigesterRulesPattern.ViolationChecker> violationCheckers = new HashMap<>();
-	private Map<String, List<ConfigChild>> violationCheckerSubjects = new HashMap<>();
 
 	// Only used in unit tests
 	ConfigChildSetterDescriptor getConfigChildSetterDescriptor(String methodName) {
@@ -159,13 +154,14 @@ class DigesterRules {
 		log.trace("Have ConfigChildSetterDescriptor [{}]", () -> descriptor.toString());
 		ConfigChild configChild = descriptor.createConfigChild(parent, method);
 		if(violationCheckers.containsKey(descriptor.getRoleName())) {
-			// The toString() method of the ConfigChild does not work yet because the ElementRole has not been set.
-			log.trace("Role name [{}] has ViolationChecker [{}], assigning config child for owner [{}]",
-					() -> descriptor.getRoleName(),
-					() -> violationCheckers.get(descriptor.getRoleName()).toString(), () -> configChild.getOwningElement().toString());
-			violationCheckerSubjects.get(descriptor.getRoleName()).add(configChild);
+			if(violationCheckers.get(descriptor.getRoleName()).check(configChild)) {
+				return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
+			} else {
+				return null;
+			}
+		} else {
+			return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
 		}
-		return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
 	}
 
 	class ConfigChildAndRoleName {
@@ -176,40 +172,5 @@ class DigesterRules {
 			this.configChild = configChild;
 			this.roleName = roleName;
 		}
-	}
-
-	void omitViolatingConfigChildren() {
-		log.trace("Enter");
-		int pass = 1;
-		List<ConfigChild> newViolators = new ArrayList<>();
-		do {
-			if(log.isTraceEnabled()) {
-				log.trace("Pass [{}]", pass++);
-			}
-			newViolators = omitViolatingConfigChildrenOnce();
-			// If we would do setViolatesDigesterRules() immediately in omitViolatingConfigChildrenOnce(),
-			// we would miss an opportunity to test iterating until no more violators are found.
-			// The order in which the violators would be found would determine how many
-			// iterations we would need.
-			newViolators.forEach(c -> c.setViolatesDigesterRules(true));
-		} while(! newViolators.isEmpty());
-		log.trace("Leave");
-	}
-
-	private List<ConfigChild> omitViolatingConfigChildrenOnce() {
-		List<ConfigChild> result = new ArrayList<>();
-		for(String roleName: violationCheckers.keySet()) {
-			DigesterRulesPattern.ViolationChecker checker = violationCheckers.get(roleName);
-			List<ConfigChild> remainingSubjects = violationCheckerSubjects.get(roleName).stream()
-					.filter(c -> ! c.isViolatesDigesterRules())
-					.collect(Collectors.toList());
-			for(ConfigChild subject: remainingSubjects) {
-				if(! checker.check(subject)) {
-					log.trace("ConfigChild [{}] violates [{}]", () -> subject.toString(), () -> checker.toString());
-					result.add(subject);
-				}
-			}
-		}
-		return result;
 	}
 }

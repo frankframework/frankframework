@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -93,18 +94,7 @@ public class FrankDocModel {
 		try {
 			log.trace("Populating FrankDocModel");
 			result.createDigesterRules(digesterRulesFileName);
-			result.findOrCreateFrankElement(rootClassName);
-			result.setConfigParents();
-			// When config children are omitted because they appear to violate digester-rules.xml,
-			// dangling ElementRole-s, ElementType-s may be produced that are not referenced by
-			// any valid ConfigChild. Members of these dangling ElementType-s and Element-Roles
-			// probaby are not member of some other ElementType.
-			//
-			// TODO: Remove the dangling ElementType, ElementRole and FrankElement-s before
-			// continuing. This step has low priority, because most digester-rules.xml patterns
-			// are like "*/myRole". Config children created from such roles are never omitted
-			// afterwards.
-			result.digesterRules.omitViolatingConfigChildren();
+			result.findOrCreateRootFrankElement(rootClassName);
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
 			result.setHighestCommonInterface();
@@ -134,7 +124,33 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
+	void buildDescendants() throws Exception {
+		log.trace("Enter");
+		boolean addedDescendants = false;
+		int pass = 1;
+		do {
+			if(log.isTraceEnabled()) {
+				log.trace("Pass [{}]", pass++);				
+			}
+			// We update allElements during the iteration, so we have to copy
+			for(FrankElement existing: new ArrayList<>(allElements.values())) {
+				if(createConfigChildren(existing)) {
+					addedDescendants = true;
+				}
+			}
+		} while(addedDescendants);
+		log.trace("Leave");
+	}
+
+	FrankElement findOrCreateRootFrankElement(String fullClassName) throws FrankDocException {
+		return findOrCreateFrankElement(fullClassName, clazz -> new RootFrankElement(clazz));		
+	}
+
 	FrankElement findOrCreateFrankElement(String fullClassName) throws FrankDocException {
+		return findOrCreateFrankElement(fullClassName, clazz -> new FrankElement(clazz));
+	}
+
+	FrankElement findOrCreateFrankElement(String fullClassName, Function<FrankClass, FrankElement> creator) throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(fullClassName);
 		log.trace("FrankElement requested for class name [{}]", () -> clazz.getName());
 		if(allElements.containsKey(clazz.getName())) {
@@ -142,13 +158,12 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = new FrankElement(clazz);
+		FrankElement current = creator.apply(clazz);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
+		FrankElement parent = superClass == null ? null : creator.apply(superClass);
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz, current));
-		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());
 		return current;
 	}
@@ -395,37 +410,51 @@ public class FrankDocModel {
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
+	private boolean createConfigChildren(FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
-		List<ConfigChild> result = new ArrayList<>();
-		List<FrankMethod> frankMethods = Arrays.asList(methods).stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isConfigChildSetter)
+		boolean createdNewConfigChildren = false;
+		List<FrankMethod> frankMethods = parent.getUnusedConfigChildSetterCandidates().keySet().stream()
 				.filter(digesterRules::methodHasDigesterRule)
 				.collect(Collectors.toList());
-		for(int order = 0; order < frankMethods.size(); ++order) {
-			FrankMethod frankMethod = frankMethods.get(order);
+		for(FrankMethod frankMethod: frankMethods) {
 			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
 			DigesterRules.ConfigChildAndRoleName created = digesterRules.createConfigChild(parent, frankMethod);
+			if(created == null) {
+				log.trace("Not a config child, next");
+				continue;
+			}
 			if(created.configChild instanceof ObjectConfigChild) {
 				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
 				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
 				// configChild.getRoleName() does not work yet because the ElementRole is not yet set.
+				// TODO: This is ugly. Have to write this more elegantly.
 				((ObjectConfigChild) created.configChild).setElementRole(findOrCreateElementRole(elementTypeClass, created.roleName));
+				((ObjectConfigChild) created.configChild).getElementRole().getElementType().getMembers().forEach(f -> f.addConfigParent(created.configChild));
 				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
 			}
-			created.configChild.setOrder(order);
-			result.add(created.configChild);
+			created.configChild.setOrder(parent.getUnusedConfigChildSetterCandidates().get(frankMethod));
+			createdNewConfigChildren = true;
+			parent.getConfigChildrenUnderConstruction().add(created.configChild);
+			parent.getUnusedConfigChildSetterCandidates().remove(frankMethod);
 			log.trace("Done creating config child {}, the order is {}", () -> created.configChild.toString(), () -> created.configChild.getOrder());
 		}
+		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
+		return createdNewConfigChildren;
+	}
+
+	void finishConfigChildrenFor(FrankElement parent) {
+		// We are only removing config children here to ensure that there is only one ConfigChild per role name.
+		// We will not remove config children that are the only one with their role name. Therefore, we will not
+		// lose paths that were used to match digester rules.
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
-		result = ConfigChild.removeDuplicates(result);
+		List<ConfigChild> result = ConfigChild.removeDuplicates(parent.getConfigChildrenUnderConstruction());
+		// We have to sort the config children because they are not created in the same order as the order of the config child setters.
+		Collections.sort(result, Comparator.comparingInt(ConfigChild::getOrder));
+		parent.setConfigChildren(result);
 		log.trace("The config children are (sequence follows sequence of Java methods):");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
-		}
-		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
-		return result;
+		}		
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
@@ -486,21 +515,6 @@ public class FrankDocModel {
 
 	public ElementType findElementType(String fullName) {
 		return allTypes.get(fullName);
-	}
-
-	// This cannot be done during the recursion of creating the config children.
-	// During that recursion, we may encounter ElementType objects that do not yet
-	// have their members created.
-	void setConfigParents() {
-		allElements.values().stream()
-			.flatMap(f -> f.getConfigChildren(ElementChild.ALL).stream())
-			.filter(c -> c instanceof ObjectConfigChild)
-			.map(c -> (ObjectConfigChild) c)
-			.forEach(c -> registerAsParent(c));
-	}
-
-	private void registerAsParent(ObjectConfigChild parent) {
-		parent.getElementRole().getElementType().getMembers().stream().forEach(f -> f.addConfigParent(parent));
 	}
 
 	void calculateHighestCommonInterfaces() {

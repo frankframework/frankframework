@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.frankdoc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
@@ -91,6 +93,9 @@ public class FrankElement implements Comparable<FrankElement>, DigesterRulesFran
 	private static final Comparator<FrankElement> COMPARATOR =
 			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
+	private @Getter LinkedHashMap<FrankMethod, Integer> unusedConfigChildSetterCandidates = new LinkedHashMap<>();
+	private @Getter List<ConfigChild> configChildrenUnderConstruction = new ArrayList<>();
+	
 	private static JavadocStrategy javadocStrategy = JavadocStrategy.USE_JAVADOC;
 
 	private final @Getter String fullName;
@@ -125,8 +130,19 @@ public class FrankElement implements Comparable<FrankElement>, DigesterRulesFran
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		handleConfigChildSetterCandidates(clazz);
 		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
 		handlePossibleParameters(clazz);
+	}
+
+	private void handleConfigChildSetterCandidates(FrankClass clazz) {
+		List<FrankMethod> methods = Arrays.asList(clazz.getDeclaredMethods()).stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isConfigChildSetter)
+				.collect(Collectors.toList());
+		for(int i = 0; i < methods.size(); ++i) {
+			unusedConfigChildSetterCandidates.put(methods.get(i), i);
+		}
 	}
 
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
