@@ -57,6 +57,7 @@ import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.SourceFiltering;
 import nl.nn.adapterframework.monitoring.Trigger;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
@@ -163,7 +164,7 @@ public final class ShowMonitors extends Base {
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
-		triggerMap.put("type", trigger.getTypeDisplayString());
+		triggerMap.put("type", Misc.initialCaps(trigger.getTriggerType().name()));
 		triggerMap.put("events", trigger.getEventCodes());
 		triggerMap.put("severity", trigger.getSeverity());
 		triggerMap.put("threshold", trigger.getThreshold());
