@@ -54,7 +54,6 @@ import org.apache.logging.log4j.ThreadContext;
 
 import nl.nn.adapterframework.doc.DocWriter;
 import nl.nn.adapterframework.frankdoc.model.AttributeEnum;
-import nl.nn.adapterframework.frankdoc.model.AttributeEnumValue;
 import nl.nn.adapterframework.frankdoc.model.ConfigChild;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildGroupKind;
 import nl.nn.adapterframework.frankdoc.model.ConfigChildSet;

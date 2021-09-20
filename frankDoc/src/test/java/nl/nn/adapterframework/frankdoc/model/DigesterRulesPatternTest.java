@@ -75,7 +75,7 @@ public class DigesterRulesPatternTest {
 	@Test
 	public void whenViolaterMatchesPatternThenCheckSucceeds() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/adapter/receiver/listener");
-		TestDigesterRulesConfigChild c = new TestDigesterRulesConfigChild("listener");
+		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		c.addParent("notRelevant");
 		c.addParent("receiver").addParent("adapter");
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
@@ -86,7 +86,7 @@ public class DigesterRulesPatternTest {
 	@Test
 	public void whenViolaterDoesNotMatchThenCheckFails() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/receiver/listener");
-		TestDigesterRulesConfigChild c = new TestDigesterRulesConfigChild("listener");
+		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		c.addParent("somethingElse");
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
 		assertEquals("ViolationChecker backtracking(receiver)", v.toString());
@@ -96,7 +96,7 @@ public class DigesterRulesPatternTest {
 	@Test
 	public void whenViolaterDoesNotMatchBecauseParentOmittedThenCheckFails() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/adapter/receiver/listener");
-		TestDigesterRulesConfigChild c = new TestDigesterRulesConfigChild("listener");
+		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		c.addParent("receiver");
 		// reveiver has no parents, so no match.
 		assertFalse(p.getViolationChecker().check(c));		
@@ -105,7 +105,7 @@ public class DigesterRulesPatternTest {
 	@Test
 	public void whenViolatorMatchesPatternButParentViolatesThenChildViolates() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/violated/listener");
-		TestDigesterRulesConfigChild c = new TestDigesterRulesConfigChild("listener");
+		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		TestDigesterRulesConfigChild parent = c.addParent("violated");
 		parent.setViolatesDigesterRules(true);
 		assertFalse(p.getViolationChecker().check(c));

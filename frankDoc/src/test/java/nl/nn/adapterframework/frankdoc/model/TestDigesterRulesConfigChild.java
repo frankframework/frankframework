@@ -1,29 +1,39 @@
 package nl.nn.adapterframework.frankdoc.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
-public class TestDigesterRulesConfigChild implements DigesterRulesConfigChild, DigesterRulesFrankElement {
+public class TestDigesterRulesConfigChild implements DigesterRulesConfigChild {
+	private final TestDigesterRulesFrankElement owner;
 	private @Getter(onMethod = @__({@Override})) final String roleName;
-	private @Getter(onMethod = @__({@Override})) List<DigesterRulesConfigChild> configParents = new ArrayList<>();
 	private @Getter(onMethod = @__({@Override})) @Setter boolean violatesDigesterRules = false;
 
-	TestDigesterRulesConfigChild(String roleName) {
+	static TestDigesterRulesConfigChild getInstance(String roleName) {
+		TestDigesterRulesFrankElement owner = new TestDigesterRulesFrankElement();
+		return new TestDigesterRulesConfigChild(owner, roleName);
+	}
+
+	static TestDigesterRulesConfigChild getRootOwnedInstance(String roleName, String rootRoleName) {
+		TestDigesterRulesFrankElement owner = new TestDigesterRulesRootFrankElement(rootRoleName);
+		return new TestDigesterRulesConfigChild(owner, roleName);
+	}
+
+	private TestDigesterRulesConfigChild(TestDigesterRulesFrankElement owner, String roleName) {
+		this.owner = owner;
 		this.roleName = roleName;
 	}
 
 	@Override
 	public DigesterRulesFrankElement getOwningElement() {
-		return this;
+		return owner;
 	}
 
 	TestDigesterRulesConfigChild addParent(String roleName) {
-		TestDigesterRulesConfigChild parent = new TestDigesterRulesConfigChild(roleName);
-		configParents.add(parent);
-		return parent;
+		return owner.addParent(roleName);
+	}
+
+	TestDigesterRulesConfigChild addRootOwnedParent(String roleName, String rootRoleName) {
+		return owner.addRootOwnedParent(roleName, rootRoleName);
 	}
 
 	@Override

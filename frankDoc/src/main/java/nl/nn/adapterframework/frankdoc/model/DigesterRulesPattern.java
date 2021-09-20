@@ -91,6 +91,8 @@ class DigesterRulesPattern {
 	}
 
 	static class ViolationChecker {
+		// TODO: Initialize
+		private boolean patternOnlyMatchesRoot = false;
 		private final List<String> backtrackRoleNames;
 		private @Getter final String originalPattern;
 
@@ -114,21 +116,40 @@ class DigesterRulesPattern {
 				return true;
 			}
 		}
-		
+
 		boolean check(DigesterRulesConfigChild configChild) {
-			List<DigesterRulesConfigChild> current = Arrays.asList(configChild);
-			for(String backtrackRoleName: backtrackRoleNames) {
-				current = current.stream()
-						.map(DigesterRulesConfigChild::getOwningElement)
-						.flatMap(f -> f.getConfigParents().stream())
-						.filter(c -> ! c.isViolatesDigesterRules())
-						.filter(c -> c.getRoleName().equals(backtrackRoleName))
-						.collect(Collectors.toList());
-				if(current.isEmpty()) {
+			return checkChildren(Arrays.asList(configChild), backtrackRoleNames);
+		}
+
+		boolean checkChildren(List<DigesterRulesConfigChild> configChildren, List<String> remainingBacktrackRoleNames) {
+			List<DigesterRulesFrankElement> owners = configChildren.stream().map(DigesterRulesConfigChild::getOwningElement).collect(Collectors.toList());
+			return checkOwners(owners, remainingBacktrackRoleNames);
+		}
+
+		boolean checkOwners(List<DigesterRulesFrankElement> owners, List<String> remainingBacktrackRoleNames) {
+			boolean haveMatchForRoot = owners.stream()
+					.filter(f -> f instanceof DigesterRulesRootFrankElement)
+					.map(f -> (DigesterRulesRootFrankElement) f)
+					.anyMatch(f -> f.getRoleName().equals(remainingBacktrackRoleNames.get(0)));
+			if(remainingBacktrackRoleNames.size() == 1) {
+				if(haveMatchForRoot) {
+					return true;
+				} else if(patternOnlyMatchesRoot) {
 					return false;
 				}
 			}
-			return true;
+			List<DigesterRulesConfigChild> parents = owners.stream()
+					.flatMap(f -> f.getConfigParents().stream())
+					.filter(c -> ! c.isViolatesDigesterRules())
+					.filter(c -> c.getRoleName().equals(remainingBacktrackRoleNames.get(0)))
+					.collect(Collectors.toList());
+			if(parents.isEmpty()) {
+				return false;
+			} else if(remainingBacktrackRoleNames.size() == 1) {
+				return true;
+			} else {
+				return checkChildren(parents, remainingBacktrackRoleNames.subList(1, remainingBacktrackRoleNames.size()));
+			}
 		}
 
 		@Override
