@@ -50,12 +50,6 @@ class DigesterRules {
 			Handler handler = new Handler(path, result);
 			XmlUtils.parseXml(resource.asInputSource(), handler);
 			log.trace("Successfully created config child descriptors");
-			for(DigesterRulesPattern.ViolationChecker v: result.violationCheckers.values()) {
-				if(! v.checkImplemented(handler.rootRoleNames)) {
-					throw new SAXException(String.format("Checking against [%s] has not been implemented, pattern is [%s]",
-							v.toString(), v.getOriginalPattern()));
-				}
-			}
 			return result;
 		}
 		catch(IOException e) {

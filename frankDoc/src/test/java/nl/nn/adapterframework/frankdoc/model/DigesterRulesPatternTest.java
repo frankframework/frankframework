@@ -6,10 +6,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import org.junit.Test;
+
+import nl.nn.adapterframework.frankdoc.model.DigesterRulesPattern.ViolationChecker;
 
 public class DigesterRulesPatternTest {
 	@Test
@@ -23,8 +22,13 @@ public class DigesterRulesPatternTest {
 	}
 
 	@Test
-	public void whenPatternHasMultipleWordsWithoutWildcardThenNotSupported() {
-		assertNotNull(new DigesterRulesPattern("first/second").getError());
+	public void whenPatternHasMultipleWordsWithoutWildcardThenViolationChecker() {
+		DigesterRulesPattern p = new DigesterRulesPattern("first/second");
+		assertNull(p.getError());
+		assertFalse(p.isRoot());
+		ViolationChecker v = p.getViolationChecker();
+		assertNotNull(v);
+		assertTrue(v.isPatternOnlyMatchesRoot());
 	}
 
 	@Test
@@ -54,26 +58,17 @@ public class DigesterRulesPatternTest {
 	}
 
 	@Test
-	public void whenPatternIsStarThenMultipleWordsWithoutRootThenNonRootHaveViolationChecker() {
+	public void whenPatternIsStarThenMultipleWordsThenNonRootHaveViolationChecker() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/receiver/listener");
 		assertNull(p.getError());
 		assertFalse(p.isRoot());
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
 		assertEquals("*/receiver/listener", v.getOriginalPattern());
-		assertTrue(v.checkImplemented(new HashSet<String>(Arrays.asList("configuration"))));
+		assertFalse(v.isPatternOnlyMatchesRoot());
 	}
 
 	@Test
-	public void whenPatternIsStartThenMultipleWordsIncludingRootThenNotImplemented() {
-		DigesterRulesPattern p = new DigesterRulesPattern("*/configuration/adapter");
-		assertNull(p.getError());
-		assertFalse(p.isRoot());
-		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
-		assertFalse(v.checkImplemented(new HashSet<>(Arrays.asList("configuration"))));
-	}
-
-	@Test
-	public void whenViolaterMatchesPatternThenCheckSucceeds() {
+	public void whenViolatorMatchesPatternThenCheckSucceeds() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/adapter/receiver/listener");
 		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		c.addParent("notRelevant");
@@ -84,7 +79,7 @@ public class DigesterRulesPatternTest {
 	}
 
 	@Test
-	public void whenViolaterDoesNotMatchThenCheckFails() {
+	public void whenViolatorDoesNotMatchThenCheckFails() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/receiver/listener");
 		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		c.addParent("somethingElse");
@@ -94,20 +89,31 @@ public class DigesterRulesPatternTest {
 	}
 
 	@Test
-	public void whenViolaterDoesNotMatchBecauseParentOmittedThenCheckFails() {
-		DigesterRulesPattern p = new DigesterRulesPattern("*/adapter/receiver/listener");
-		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
-		c.addParent("receiver");
-		// reveiver has no parents, so no match.
-		assertFalse(p.getViolationChecker().check(c));		
-	}
-
-	@Test
 	public void whenViolatorMatchesPatternButParentViolatesThenChildViolates() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/violated/listener");
 		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
 		TestDigesterRulesConfigChild parent = c.addParent("violated");
 		parent.setViolatesDigesterRules(true);
 		assertFalse(p.getViolationChecker().check(c));
+	}
+
+	@Test
+	public void whenRootViolatorMatchesAtRootThenChildAccepted() {
+		DigesterRulesPattern p = new DigesterRulesPattern("root/child");
+		assertNull(p.getError());
+		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
+		assertEquals("ViolationChecker backtracking(root) at root", v.toString());
+		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getRootOwnedInstance("child", "root");
+		assertTrue(v.check(c));
+	}
+
+	@Test
+	public void whenRootViolatorMatchesButNotAtRootThenChildViolates() {
+		DigesterRulesPattern p = new DigesterRulesPattern("child/grandChild");
+		assertNull(p.getError());
+		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
+		TestDigesterRulesConfigChild gc = TestDigesterRulesConfigChild.getInstance("grandChild");
+		gc.addRootOwnedParent("child", "root");
+		assertFalse(v.check(gc));
 	}
 }
