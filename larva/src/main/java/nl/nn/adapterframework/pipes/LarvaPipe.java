@@ -124,7 +124,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		TestTool.setTimeout(getTimeout());
 		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
 								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, realPath,
+								paramWaitBeforeCleanUp, getTimeout()+"", realPath,
 								paramScenariosRootDirectory,
 								out, silent);
 		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;
