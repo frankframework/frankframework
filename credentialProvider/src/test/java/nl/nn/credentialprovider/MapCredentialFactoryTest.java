@@ -46,17 +46,32 @@ public class MapCredentialFactoryTest {
 	public void testPlainAlias() {
 		
 		String alias = "straight";
-		String username = "fakeUsername";
-		String password = "fakePassword";
+		String defaultUsername = "fakeDefaultUsername";
+		String defaultPassword = "fakeDefaultPassword";
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 		
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
+		ICredentials mc = credentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
 		
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
 
+	@Test
+	public void testUnknownAlias() {
+		
+		String alias = "unknown";
+		String defaultUsername = "fakeDefaultUsername";
+		String defaultPassword = "fakeDefaultPassword";
+		String expectedUsername = defaultUsername;
+		String expectedPassword = defaultPassword;
+		
+		ICredentials mc = credentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
+		
+		assertEquals(expectedUsername, mc.getUsername());
+		assertEquals(expectedPassword, mc.getPassword());
+	}
+	
 	@Test
 	public void testAliasWithoutUsername() {
 		

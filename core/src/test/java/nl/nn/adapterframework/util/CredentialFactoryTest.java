@@ -24,12 +24,19 @@ public class CredentialFactoryTest {
 	}
 
 	@Test
-	public void testCredentialFactoryUnknownAlias() {
+	public void testCredentialFactoryUnknownAliasNoDefaults() {
 		assertThrows(NoSuchElementException.class, () -> {
-			CredentialFactory cf = new CredentialFactory("unknown", "fakeDefaultUsername", "fakeDefaultPassword");
+			CredentialFactory cf = new CredentialFactory("unknown", null, null);
 			assertEquals("fakeDefaultUsername", cf.getUsername());
 			assertEquals("fakeDefaultPassword", cf.getPassword());
 		});
+	}
+	
+	@Test
+	public void testCredentialFactoryUnknownAlias() {
+		CredentialFactory cf = new CredentialFactory("unknown", "fakeDefaultUsername", "fakeDefaultPassword");
+		assertEquals("fakeDefaultUsername", cf.getUsername());
+		assertEquals("fakeDefaultPassword", cf.getPassword());
 	}
 	
 

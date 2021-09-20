@@ -39,17 +39,29 @@ public class MapCredentialsTest {
 	}
 
 	@Test
-	public void testUnknownAlias() {
+	public void testUnknownAliasNoDefaults() {
 		
 		String alias = "fakeAlias";
-		String username = "fakeUsername";
-		String password = "fakePassword";
+		String username = null;
+		String password = null;
 
 		assertThrows(NoSuchElementException.class, () -> {
 			MapCredentials mc = new MapCredentials(alias, username, password, null);
 			assertEquals(username, mc.getUsername());
 			assertEquals(password, mc.getPassword());
 		});
+	}
+
+	@Test
+	public void testUnknownAlias() {
+		
+		String alias = "fakeAlias";
+		String username = "fakeUsername";
+		String password = "fakePassword";
+
+		MapCredentials mc = new MapCredentials(alias, username, password, null);
+		assertEquals(username, mc.getUsername());
+		assertEquals(password, mc.getPassword());
 	}
 
 	@Test
