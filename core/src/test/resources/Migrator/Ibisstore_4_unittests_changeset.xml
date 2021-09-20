@@ -5,10 +5,10 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 	<changeSet id="IAF_Util:1" author="Niels Meijer">
 		<validCheckSum>7:4a9c70190e4678c16c7d392b8ecff571</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
-		<comment>Add IBISSTORE_4_JdbcTransactionalStorageTest Table</comment>
-		<createTable tableName="IBISSTORE_4_JdbcTransactionalStorageTest">
+		<comment>Add ${tableName} Table</comment>
+		<createTable tableName="${tableName}">
 			<column name="MESSAGEKEY" type="BIGINT" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISSTORE_4_JdbcTransactionalStorageTest"/>
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_${tableName}"/>
 			</column>
 			<column name="TYPE" type="java.sql.Types.CHAR(1)"/>
 			<column name="SLOTID" type="java.sql.Types.VARCHAR(100)"/>
@@ -21,18 +21,18 @@
 			<column name="EXPIRYDATE" type="DATETIME"/>
 			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
 		</createTable>
-		<createIndex tableName="IBISSTORE_4_JdbcTransactionalStorageTest" indexName="IX_IBISSTORE_4_JdbcTransactionalStorageTest">
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}">
 			<column name="TYPE"/>
 			<column name="SLOTID"/>
 			<column name="MESSAGEDATE"/>
 		</createIndex>
-		<createIndex tableName="IBISSTORE_4_JdbcTransactionalStorageTest" indexName="IX_IBISSTORE_4_JdbcTransactionalStorageTest_02">
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}_02">
 			<column name="EXPIRYDATE"/>
 		</createIndex>
 	</changeSet>
 	<changeSet id="IAF_Util:2" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<validCheckSum>7:f2e6c27a19d68a25b1944853432979c4</validCheckSum>
-		<comment>Set sequence for IBISSTORE_4_JdbcTransactionalStorageTest Table</comment>
-		<createSequence sequenceName="SEQ_IBISSTORE_4_JdbcTransactionalStorageTest" startValue="161332"/>
+		<comment>Set sequence for ${tableName} Table</comment>
+		<createSequence sequenceName="SEQ_${tableName}" startValue="161332"/>
 	</changeSet>
 </databaseChangeLog>

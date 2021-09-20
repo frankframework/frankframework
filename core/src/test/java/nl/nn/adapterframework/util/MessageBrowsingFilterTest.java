@@ -10,10 +10,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.FileSystemResourceAccessor;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
@@ -22,15 +18,13 @@ import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 
-	private Liquibase liquibase;
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
-	private String tableName="Ibisstore_4_MessageBrowsingFilterTest";
+	private String tableName="MessageBrowsingFilterTest";
 	
 	
 	@Override
@@ -41,12 +35,12 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		storage = new JdbcTransactionalStorage();
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_Ibisstore_4_MessageBrowsingFilterTest");
+		storage.setSequenceName("SEQ_"+tableName);
 		storage.setDatasourceName(getDataSourceName());
 		storage.setDataSourceFactory(dataSourceFactory);
-		
+		System.setProperty("tableName", tableName);
 		createDbTable();
-		
+
 		listener = new JavaListener();
 	}
 
@@ -54,14 +48,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	public void teardown() throws Exception {
 		liquibase.dropAll();
 	}
-	
-	private void createDbTable() throws Exception {
-		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
-		String changesetFilePath = TestFileUtils.getTestFileURL("/Migrator/Ibisstore_4_MessageBrowsingFilterTest_changeset.xml").getPath();
-		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
-		liquibase.update(new Contexts());
-	}
-	
+
 	@Test
 	public void testMessageFilter() throws Exception {
 		String messageRoot = "message";

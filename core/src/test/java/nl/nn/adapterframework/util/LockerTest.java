@@ -332,7 +332,8 @@ public class LockerTest extends TransactionManagerTestBase {
 		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
-	private void createDbTable() throws JdbcException {
+	@Override
+	protected void createDbTable() throws JdbcException {
 		JdbcUtil.executeStatement(connection,
 				"CREATE TABLE IBISLOCK(" + 
 				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 

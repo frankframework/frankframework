@@ -18,18 +18,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.FileSystemResourceAccessor;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	private JdbcTransactionalStorage<Message> storage;
-	private Liquibase liquibase;
-	private final String tableName = "IBISSTORE_4_JdbcTransactionalStorageTest";
+	private final String tableName = "JdbcTransactionalStorageTest";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
 
@@ -43,16 +37,11 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setCheckTable(false);
 		storage.setDatasourceName(getDataSourceName());
 		storage.setDataSourceFactory(dataSourceFactory);
-		storage.setSequenceName("SEQ_IBISSTORE_4_JdbcTransactionalStorageTest");
+		storage.setSequenceName("SEQ_"+tableName);
+		System.setProperty("tableName", tableName);
 		createDbTable();
 	}
 
-	private void createDbTable() throws Exception {
-		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
-		String changesetFilePath = TestFileUtils.getTestFileURL("/Migrator/Ibisstore_4_JdbcTransactionalStorageTest_changeset.xml").getPath();
-		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
-		liquibase.update(new Contexts());
-	}
 
 	@After
 	public void teardown() throws Exception {

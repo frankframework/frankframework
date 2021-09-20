@@ -19,17 +19,24 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.FileSystemResourceAccessor;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
+	private final static String IBISSTORE_CHANGESET_PATH = "/Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
+	protected Liquibase liquibase;
 	protected static URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
@@ -66,6 +73,13 @@ public abstract class JdbcTestBase {
 		}
 	}
 
+	protected void createDbTable() throws Exception {
+		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
+		String changesetFilePath = TestFileUtils.getTestFileURL(IBISSTORE_CHANGESET_PATH).getPath();
+		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
+		liquibase.update(new Contexts());
+	}
+	
 	protected void prepareDatabase() throws Exception {
 		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");

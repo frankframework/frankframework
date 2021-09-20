@@ -10,10 +10,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.FileSystemResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
@@ -23,24 +19,23 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class JobDefTest extends JdbcTestBase {
 
-	private Liquibase liquibase;
 	private JobDef jobDef;
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String cleanupJobTableName="Ibisstore_4_JobDefTest";
+	private final String tableName="JobDefTest";
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		createJobDefTestTable();
+		System.setProperty("tableName", tableName);
+		createDbTable();
 
 		configuration = new TestConfiguration();
 		Adapter adapter = setupAdapter(); 
@@ -67,7 +62,7 @@ public class JobDefTest extends JdbcTestBase {
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
-		storage.setTableName(cleanupJobTableName);
+		storage.setTableName(tableName);
 		storage.setSequenceName("SEQ_Ibisstore_4_JobDefTest");
 		storage.setDatasourceName(getDataSourceName());
 
@@ -78,13 +73,6 @@ public class JobDefTest extends JdbcTestBase {
 
 		adapter.setPipeLine(pipeline);
 		return adapter;
-	}
-
-	private void createJobDefTestTable() throws Exception {
-		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
-		String changesetFilePath = TestFileUtils.getTestFileURL("/Migrator/Ibisstore_4_JobDefTest_changeset.xml").getPath();
-		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
-		liquibase.update(new Contexts());
 	}
 
 	@After
@@ -104,7 +92,7 @@ public class JobDefTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 		jobDef.runJob(configuration.getIbisManager());
 		
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
 	
@@ -117,12 +105,12 @@ public class JobDefTest extends JdbcTestBase {
 
 		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		// check insertion
 		assertEquals(5, rowCount);
 
 		jobDef.runJob(configuration.getIbisManager());
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
 
@@ -152,7 +140,7 @@ public class JobDefTest extends JdbcTestBase {
 			sb.append(") SELECT * FROM valuesTable");
 		}
 		
-		String query ="INSERT INTO "+cleanupJobTableName+" (" +
+		String query ="INSERT INTO "+tableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
@@ -178,7 +166,7 @@ public class JobDefTest extends JdbcTestBase {
 
 		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		
 		// check insertion
 		assertEquals(5, rowCount);
@@ -187,7 +175,7 @@ public class JobDefTest extends JdbcTestBase {
 		jobDef.runJob(configuration.getIbisManager());
 		
 
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		
 		assertEquals(0, numRows);
 	}
