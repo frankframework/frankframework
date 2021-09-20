@@ -72,15 +72,13 @@ public class ClassUtils {
 		URL url = classLoader.getResource(resourceToUse);
 
 		// then try to get it as a URL
-		if (url == null) {
-			if (resourceToUse.contains(":")) {
-				try {
-					url = new URL(Misc.replace(resourceToUse, " ", "%20"));
-				} catch (MalformedURLException e) {
-					FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
-					fnfe.initCause(e);
-					throw fnfe;
-				}
+		if (url == null && resourceToUse.contains(":")) {
+			try {
+				url = new URL(Misc.replace(resourceToUse, " ", "%20"));
+			} catch (MalformedURLException e) {
+				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
+				fnfe.initCause(e);
+				throw fnfe;
 			}
 		}
 
