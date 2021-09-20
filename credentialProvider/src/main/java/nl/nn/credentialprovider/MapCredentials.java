@@ -16,6 +16,7 @@
 package nl.nn.credentialprovider;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import nl.nn.credentialprovider.util.Misc;
 
@@ -34,13 +35,13 @@ public class MapCredentials extends Credentials {
 	public MapCredentials(String alias, String defaultUsername, String defaultPassword, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
 		super(alias, defaultUsername, defaultPassword);
 		this.aliases = aliases;
-		this.usernameSuffix = Misc.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
-		this.passwordSuffix = Misc.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
+		this.usernameSuffix = Misc.isNotEmpty(usernameSuffix) ? usernameSuffix : MapCredentialFactoryBase.USERNAME_SUFFIX_DEFAULT;
+		this.passwordSuffix = Misc.isNotEmpty(passwordSuffix) ? passwordSuffix : MapCredentialFactoryBase.PASSWORD_SUFFIX_DEFAULT;
 	}
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (Misc.isNotEmpty(getAlias()) && aliases!=null) {
+		if (aliases!=null) {
 			String usernameKey = getAlias()+usernameSuffix;
 			String passwordKey = getAlias()+passwordSuffix;
 			boolean foundOne = false;
@@ -54,8 +55,14 @@ public class MapCredentials extends Credentials {
 			}
 			if (!foundOne && aliases.containsKey(getAlias())) {
 				setPassword(aliases.get(getAlias()));
+				return;
 			}
+			if (foundOne) {
+				return;
+			}
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 		}
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: no aliases");
 	}
 
 }

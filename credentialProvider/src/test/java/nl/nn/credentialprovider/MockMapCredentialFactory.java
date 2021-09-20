@@ -7,11 +7,7 @@ import java.util.Map;
 
 import nl.nn.credentialprovider.util.AppConstants;
 
-public class MockMapCredentialFactory extends MapCredentialFactory {
-
-	public MockMapCredentialFactory() throws IOException {
-		super();
-	}
+public class MockMapCredentialFactory extends MapCredentialFactoryBase {
 
 	@Override
 	public String getPropertyBase() {

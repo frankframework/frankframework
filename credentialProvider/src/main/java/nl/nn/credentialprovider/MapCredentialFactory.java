@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,48 +16,47 @@
 package nl.nn.credentialprovider;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import nl.nn.credentialprovider.util.AppConstants;
 
-public abstract class MapCredentialFactory implements ICredentialFactory {
+/**
+ * CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.
+ * For adequate privacy in production environments, the source file should not be readable by unauthorised users.
+ * 
+ * @author Gerrit van Brakel
+ *
+ */
+public class MapCredentialFactory extends MapCredentialFactoryBase {
 
-	public final String USERNAME_SUFFIX_PROPERTY=getPropertyBase()+".usernameSuffix";
-	public final String PASSWORD_SUFFIX_PROPERTY=getPropertyBase()+".passwordSuffix";
+	public final String PROPERTY_BASE="credentialFactory.map";
 
-	public static final String USERNAME_SUFFIX_DEFAULT="/username";
-	public static final String PASSWORD_SUFFIX_DEFAULT="/password";
+	public final String FILE_PROPERTY=PROPERTY_BASE+".properties";
 
-	private String usernameSuffix;
-	private String passwordSuffix;
-
-	private Map<String,String> aliases;
+	private final String propertiesFile = "credentials.properties";
 
 	public MapCredentialFactory() throws IOException {
-		AppConstants appConstants = AppConstants.getInstance();
+		super();
+	}
+	
+	@Override
+	public String getPropertyBase() {
+		return PROPERTY_BASE;
+	}
 
-		aliases = getCredentialMap(appConstants);
-		if (aliases == null) {
-			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
+	@Override
+	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException {
+		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, propertiesFile, "Credentials")) {
+			Properties properties = new Properties();
+			properties.load(propertyStream);
+			Map<String,String> map = new LinkedHashMap<>();
+			properties.forEach((k,v) -> map.put((String)k, (String)v));
+			return map;
 		}
-
-		usernameSuffix = appConstants.getProperty(USERNAME_SUFFIX_PROPERTY, USERNAME_SUFFIX_DEFAULT);
-		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
-	}
-
-	public abstract String getPropertyBase();
-
-	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
-
-	@Override
-	public boolean hasCredentials(String alias) {
-		return aliases.containsKey(alias) || aliases.containsKey(alias+usernameSuffix) || aliases.containsKey(alias+passwordSuffix);
-	}
-
-	@Override
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
-		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
 	}
 
 }

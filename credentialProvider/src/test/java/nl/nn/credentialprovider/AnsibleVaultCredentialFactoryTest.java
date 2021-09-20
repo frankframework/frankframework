@@ -40,6 +40,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		System.setProperty("credentialFactory.ansibleVault.keyFile", keyFile);
 		
 		credentialFactory = new AnsibleVaultCredentialFactory();
+		credentialFactory.initialize();
 	}
 	
 	public void setupVault(Properties aliases, String title) throws IOException {

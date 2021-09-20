@@ -1,30 +1,34 @@
 package nl.nn.credentialprovider;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeTrue;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.junit.Before;
 import org.junit.Test;
 
+public class MapCredentialFactoryTest {
 
-public class MapCredentialsTest {
-
-	private Map<String,String> aliases;
+	public String PROPERTIES_FILE="/credentials-unencrypted.txt";
+	
+	private MapCredentialFactory credentialFactory;
 	
 	@Before
-	public void setup() {
-		aliases = new HashMap<>();
-		aliases.put("noUsername/password","password from alias");
-		aliases.put("straight/username","username from alias");
-		aliases.put("straight/password","password from alias");
-		aliases.put("singleValue","Plain Credential");
+	public void setup() throws IOException {
+		String propertiesUrl = this.getClass().getResource(PROPERTIES_FILE).toExternalForm();
+		String propertiesFile =  Paths.get(propertiesUrl.substring(propertiesUrl.indexOf(":/")+2)).toString();
+		assumeTrue(Files.exists(Paths.get(propertiesFile)));
+
+		System.setProperty("credentialFactory.map.properties", propertiesFile);
+		
+		credentialFactory = new MapCredentialFactory();
+		credentialFactory.initialize();
 	}
 	
-	
+
 	@Test
 	public void testNoAlias() {
 		
@@ -32,24 +36,10 @@ public class MapCredentialsTest {
 		String username = "fakeUsername";
 		String password = "fakePassword";
 		
-		MapCredentials mc = new MapCredentials(alias, username, password, null);
+		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
 		
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
-	}
-
-	@Test
-	public void testUnknownAlias() {
-		
-		String alias = "fakeAlias";
-		String username = "fakeUsername";
-		String password = "fakePassword";
-
-		assertThrows(NoSuchElementException.class, () -> {
-			MapCredentials mc = new MapCredentials(alias, username, password, null);
-			assertEquals(username, mc.getUsername());
-			assertEquals(password, mc.getPassword());
-		});
 	}
 
 	@Test
@@ -61,7 +51,7 @@ public class MapCredentialsTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 		
-		MapCredentials mc = new MapCredentials(alias, username, password, aliases);
+		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
 		
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -76,7 +66,7 @@ public class MapCredentialsTest {
 		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 		
-		MapCredentials mc = new MapCredentials(alias, username, password, aliases);
+		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
 		
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -91,9 +81,11 @@ public class MapCredentialsTest {
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 		
-		MapCredentials mc = new MapCredentials(alias, username, password, aliases);
+		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
 		
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
+	
+	
 }
