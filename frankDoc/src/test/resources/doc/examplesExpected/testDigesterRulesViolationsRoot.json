@@ -4,6 +4,7 @@
             "name":"Other",
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.B",
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.D",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.A"
             ]
         }
@@ -13,6 +14,12 @@
             "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.B",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.B"
+            ]
+        },
+        {
+            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.D",
+            "members":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.D"
             ]
         },
         {
@@ -40,6 +47,11 @@
                     "multiple":true,
                     "roleName":"b",
                     "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.B"
+                },
+                {
+                    "multiple":true,
+                    "roleName":"d",
+                    "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.D"
                 }
             ]
         },
@@ -48,6 +60,19 @@
             "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.B",
             "elementNames":[
                 "B"
+            ],
+            "attributes":[
+                {
+                    "name":"active",
+                    "description":"If defined and empty or false, then this element and all its children are ignored"
+                }
+            ]
+        },
+        {
+            "name":"D",
+            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.D",
+            "elementNames":[
+                "D"
             ],
             "attributes":[
                 {

@@ -16,10 +16,15 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Class {@link nl.nn.adapterframework.frankdoc.model.ConfigChild} specifies what Frank elements
@@ -37,6 +42,8 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
  * That field is obtained from an {@code IbisDoc} annotation.
  */
 abstract class ConfigChildSetterDescriptor {
+	private static Logger log = LogUtil.getLogger(ConfigChildSetterDescriptor.class);
+
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
@@ -66,7 +73,7 @@ abstract class ConfigChildSetterDescriptor {
 
 	@Override
 	public String toString() {
-		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b)", getClass().getSimpleName(), methodName, getRoleName(), mandatory, allowMultiple);
+		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b, pattern = %s)", getClass().getSimpleName(), methodName, getRoleName(), mandatory, allowMultiple, pattern.toString());
 	}
 
 	abstract ConfigChild createConfigChild(FrankElement parent, FrankMethod method);
@@ -102,5 +109,17 @@ abstract class ConfigChildSetterDescriptor {
 		boolean isForObject() {
 			return false;
 		}
+	}
+
+	static ConfigChildSetterDescriptor find(FrankElement parent, List<ConfigChildSetterDescriptor> descriptors) {
+		List<ConfigChildSetterDescriptor> matches = descriptors.stream().filter(d -> d.matches(parent)).collect(Collectors.toList());
+		if(matches.isEmpty()) {
+			return null;
+		}
+		if(log.isTraceEnabled()) {
+			log.trace("The following config child setter descriptors match the element role");
+			matches.forEach(d -> log.trace("  {}", d.toString()));
+		}
+		return matches.get(0);
 	}
 }

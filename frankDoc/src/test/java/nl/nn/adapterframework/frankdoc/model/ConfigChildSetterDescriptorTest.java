@@ -42,7 +42,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenSingularRuleThenSingularInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("setItemSingular");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("setItemSingular").get(0);
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("setItemSingular", configChildDescriptor.getMethodName());
@@ -53,7 +53,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenPluralAddRuleThenPluralInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("addItemPlural");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("addItemPlural").get(0);
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("addItemPlural", configChildDescriptor.getMethodName());
@@ -64,7 +64,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenPluralRegisterThenPluralInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerItemPlural");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerItemPlural").get(0);
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("registerItemPlural", configChildDescriptor.getMethodName());
@@ -80,7 +80,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenHasRegisterTextMethodThenTextConfigChild() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerText");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerText").get(0);
 		assertNotNull(configChildDescriptor);
 		assertFalse(configChildDescriptor.isForObject());
 		assertEquals("registerText", configChildDescriptor.getMethodName());

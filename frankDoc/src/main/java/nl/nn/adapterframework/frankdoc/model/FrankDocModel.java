@@ -58,7 +58,7 @@ public class FrankDocModel {
 
 	private FrankClassRepository classRepository;
 
-	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	private @Getter Map<String, List<ConfigChildSetterDescriptor>> configChildDescriptors = new HashMap<>();
 	
 	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
 	private @Getter List<FrankDocGroup> groups;
@@ -122,7 +122,7 @@ public class FrankDocModel {
 			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
 		}
 		try {
-			Handler handler = new Handler(path);
+			Handler handler = new Handler();
 			XmlUtils.parseXml(resource.asInputSource(), handler);
 			log.trace("Successfully created config child descriptors");
 			return handler.rootRoleNames;
@@ -136,12 +136,7 @@ public class FrankDocModel {
 	}
 
 	private class Handler extends DigesterRulesHandler {
-		private final String path;
 		private final Set<String> rootRoleNames = new HashSet<>();
-
-		Handler(String path) {
-			this.path = path;
-		}
 
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
@@ -178,24 +173,23 @@ public class FrankDocModel {
 		private void addTypeObject(String registerMethod, DigesterRulesPattern pattern)	throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, pattern);
-			checkDuplicateAndRegister(descriptor, pattern);
+			register(descriptor, pattern);
 		}
 
 		private void addTypeText(String registerMethod, DigesterRulesPattern pattern) throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
 			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, pattern);
-			checkDuplicateAndRegister(descriptor, pattern);
+			register(descriptor, pattern);
 		}
 
-		private void checkDuplicateAndRegister(ConfigChildSetterDescriptor descriptor, DigesterRulesPattern pattern) {
-			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
-				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
-			} else {
-				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
-				DigesterRulesPattern.ViolationChecker violationChecker = pattern.getViolationChecker();
-				if(violationChecker != null) {
-					log.trace("Role name [{}] has ViolationChecker [{}]", () -> descriptor.getRoleName(), () -> violationChecker.toString());
-				}
+		private void register(ConfigChildSetterDescriptor descriptor, DigesterRulesPattern pattern) {
+			if(! configChildDescriptors.containsKey(descriptor.getMethodName())) {
+				configChildDescriptors.put(descriptor.getMethodName(), new ArrayList<>());
+			}
+			configChildDescriptors.get(descriptor.getMethodName()).add(descriptor);
+			DigesterRulesPattern.ViolationChecker violationChecker = pattern.getViolationChecker();
+			if(violationChecker != null) {
+				log.trace("Role name [{}] has ViolationChecker [{}]", () -> descriptor.getRoleName(), () -> violationChecker.toString());
 			}
 		}
 	}
@@ -539,13 +533,14 @@ public class FrankDocModel {
 				.filter(m -> configChildDescriptors.containsKey(m.getName()))
 				.collect(Collectors.toList());
 		for(FrankMethod frankMethod: frankMethods) {
-			log.trace("Have config child setter candidate [{}]", () -> frankMethod.getName());
-			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
-			log.trace("Have ConfigChildSetterDescriptor [{}]", () -> configChildDescriptor.toString());
-			if(! configChildDescriptor.matches(parent)) {
+			log.trace("Have config child setter candidate [{}]", () -> frankMethod.getName());	
+			List<ConfigChildSetterDescriptor> descriptorCandidates = configChildDescriptors.get(frankMethod.getName());
+			ConfigChildSetterDescriptor configChildDescriptor = ConfigChildSetterDescriptor.find(parent, descriptorCandidates);
+			if(configChildDescriptor == null) {
 				log.trace("Not a config child, next");
-				continue;
+				continue;				
 			}
+			log.trace("Have ConfigChildSetterDescriptor [{}]", () -> configChildDescriptor.toString());
 			ConfigChild configChild = configChildDescriptor.createConfigChild(parent, frankMethod);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
 			configChild.setMandatory(configChildDescriptor.isMandatory());
