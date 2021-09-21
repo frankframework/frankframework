@@ -63,8 +63,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link Receiver Receivers} and a {@link PipeLine}.
- *
- * <b>responsibility</b><br/>
+ * <br/>
+ * <b>Responsibilities</b><br/>
  * <ul>
  *   <li>keeping and gathering statistics</li>
  *   <li>processing messages, retrieved from IReceivers</li>
@@ -736,10 +736,18 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Register a receiver for this Adapter
 	 * @see Receiver
 	 */
-	@IbisDoc("100")
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
 		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+	}
+
+	/**
+	 * Register a <code>ErrorMessageFormatter</code> as the formatter
+	 * for this <code>adapter</code>
+	 * @see IErrorMessageFormatter
+	 */
+	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
+		this.errorMessageFormatter = errorMessageFormatter;
 	}
 
 	/**
@@ -764,14 +772,6 @@ public class Adapter implements IAdapter, NamedBean {
 	@Override
 	public String getDescription() {
 		return this.description;
-	}
-	/**
-	 * Register a <code>ErrorMessageFormatter</code> as the formatter
-	 * for this <code>adapter</code>
-	 * @see IErrorMessageFormatter
-	 */
-	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
-		this.errorMessageFormatter = errorMessageFormatter;
 	}
 	/**
 	 * state to put in PipeLineResult when a PipeRunException occurs

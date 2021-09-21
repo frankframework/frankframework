@@ -37,7 +37,7 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 		PipeRunResult prr = null;
 		try {
 			prr = chain.apply(message);
-		} catch (PipeRunException e) {
+		} catch (Exception e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 				Object tsReceivedObj = pipeLineSession.get(PipeLineSession.tsReceivedKey);

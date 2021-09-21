@@ -16,6 +16,7 @@
 package nl.nn.credentialprovider;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import nl.nn.credentialprovider.util.Misc;
 
@@ -40,7 +41,7 @@ public class MapCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (Misc.isNotEmpty(getAlias()) && aliases!=null) {
+		if (aliases!=null) {
 			String usernameKey = getAlias()+usernameSuffix;
 			String passwordKey = getAlias()+passwordSuffix;
 			boolean foundOne = false;
@@ -54,8 +55,14 @@ public class MapCredentials extends Credentials {
 			}
 			if (!foundOne && aliases.containsKey(getAlias())) {
 				setPassword(aliases.get(getAlias()));
+				return;
 			}
+			if (foundOne) {
+				return;
+			}
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 		}
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: no aliases");
 	}
 
 }
