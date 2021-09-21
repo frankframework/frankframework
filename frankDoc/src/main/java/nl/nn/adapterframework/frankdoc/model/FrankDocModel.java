@@ -275,6 +275,7 @@ public class FrankDocModel {
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
 		FrankElement current = creator.createFromClass(clazz);
+		log.trace("Created [{}] [{}]", current.getClass().getSimpleName(), current.getFullName());
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
 		FrankElement parent = superClass == null ? null : creator.recursiveFindOrCreate(superClass.getName());

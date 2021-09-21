@@ -195,6 +195,7 @@ public class FrankElement implements Comparable<FrankElement> {
 	}
 
 	void addConfigParent(ConfigChild parent) {
+		log.trace("To [{}] [{}] added config parent [{}]", this.getClass().getSimpleName(), fullName, parent.toString());
 		configParents.add(parent);
 	}
 
