@@ -62,7 +62,7 @@ public class FrankDocModelGroupsTest {
 		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(thePackage);
 		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", thePackage + "Container", r);
 		List<FrankDocGroup> groups = instance.getGroups();
-		assertEquals(2, groups.size());
+		assertEquals(3, groups.size());
 		FrankDocGroup group = groups.get(0);
 		assertEquals("Listeners", group.getName());
 		assertEquals(1, group.getElementTypes().size());
@@ -81,5 +81,10 @@ public class FrankDocModelGroupsTest {
 		assertEquals("ChildSender", members.get(0).getSimpleName());
 		assertEquals("ChildSenderChild", members.get(1).getSimpleName());
 		assertEquals("ChildSenderSender", members.get(2).getSimpleName());
+		group = groups.get(2);
+		assertEquals(FrankDocGroup.GROUP_NAME_OTHER, group.getName());
+		assertEquals(0, group.getElementTypes().size());
+		// FrankDocJsonFactory would use FrankDocModel.getElementsOutsideConfigChildren()
+		// to build the group for the web application.
 	}
 }
