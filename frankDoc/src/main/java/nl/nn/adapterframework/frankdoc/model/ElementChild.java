@@ -88,42 +88,23 @@ public abstract class ElementChild {
 	private @Getter String defaultValue;
 
 	public static Predicate<ElementChild> IN_XSD = c ->
-		(! c.isViolatesDigesterRules())
-		&& (! c.isExcluded())
+		(! c.isExcluded())
 		&& (! c.isDeprecated())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		(! c.isViolatesDigesterRules())
-		&& (! c.isExcluded())
+		(! c.isExcluded())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
-	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> 
-		(! c.isViolatesDigesterRules())
-		&& (c.isExcluded() || c.isDeprecated());
-
+	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isExcluded() || c.isDeprecated();
 	static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c ->
-		(! c.isViolatesDigesterRules())
-		&& (! c.isExcluded());
-
-	public static Predicate<ElementChild> EXCLUDED = c ->
-		(! c.isViolatesDigesterRules())
-		&& (c.isExcluded());
-
-	public static Predicate<ElementChild> JSON_NOT_INHERITED = c ->
-		(! c.isViolatesDigesterRules())
-		&& c.isExcluded()
-		&& (c.getOverriddenFrom() != null);
-
+	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
+	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
+	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
 	// A config child is also relevant for the JSON if it is excluded. The frontend has to mention it as not inherited.
 	// Technical overrides are not relevant. But isTechnicalOverride() is also true for undocumented
 	// excluded children. Of course we have to include those.
-	public static Predicate<ElementChild> JSON_RELEVANT = c -> (! c.isViolatesDigesterRules())
-		&& (! 
-				(c.isTechnicalOverride() && (! c.isExcluded())
-			)
-		);
+	public static Predicate<ElementChild> JSON_RELEVANT = c -> ! (c.isTechnicalOverride() && (! c.isExcluded()));
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or
@@ -160,8 +141,6 @@ public abstract class ElementChild {
 
 	abstract boolean isExcluded();
 
-	abstract boolean isViolatesDigesterRules();
-	
 	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {
 			String value = method.getJavaDocIncludingInherited();

@@ -89,15 +89,6 @@ public class DigesterRulesPatternTest {
 	}
 
 	@Test
-	public void whenViolatorMatchesPatternButParentViolatesThenChildViolates() {
-		DigesterRulesPattern p = new DigesterRulesPattern("*/violated/listener");
-		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
-		TestDigesterRulesConfigChild parent = c.addParent("violated");
-		parent.setViolatesDigesterRules(true);
-		assertFalse(p.getViolationChecker().check(c));
-	}
-
-	@Test
 	public void whenRootViolatorMatchesAtRootThenChildAccepted() {
 		DigesterRulesPattern p = new DigesterRulesPattern("root/child");
 		assertNull(p.getError());

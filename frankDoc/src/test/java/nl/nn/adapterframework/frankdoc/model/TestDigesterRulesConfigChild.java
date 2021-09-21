@@ -1,12 +1,10 @@
 package nl.nn.adapterframework.frankdoc.model;
 
 import lombok.Getter;
-import lombok.Setter;
 
 public class TestDigesterRulesConfigChild implements DigesterRulesConfigChild {
 	private final TestDigesterRulesFrankElement owner;
 	private @Getter(onMethod = @__({@Override})) final String roleName;
-	private @Getter(onMethod = @__({@Override})) @Setter boolean violatesDigesterRules = false;
 
 	static TestDigesterRulesConfigChild getInstance(String roleName) {
 		TestDigesterRulesFrankElement owner = new TestDigesterRulesFrankElement();

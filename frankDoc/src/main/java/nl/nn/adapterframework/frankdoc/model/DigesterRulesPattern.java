@@ -117,7 +117,6 @@ class DigesterRulesPattern {
 			}
 			List<DigesterRulesConfigChild> parents = owners.stream()
 					.flatMap(f -> f.getConfigParents().stream())
-					.filter(c -> ! c.isViolatesDigesterRules())
 					.filter(c -> c.getRoleName().equals(remainingBacktrackRoleNames.get(0)))
 					.collect(Collectors.toList());
 			if(parents.isEmpty()) {
