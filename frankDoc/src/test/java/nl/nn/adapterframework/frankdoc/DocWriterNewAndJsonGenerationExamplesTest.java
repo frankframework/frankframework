@@ -61,23 +61,6 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.parameters.Master", null, "parameters.json"},
 			// When a plural config child has multiple candidates for the default option, a warning must be written and no default should be put in the XSDs
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.plural.config.defaultClassname.Master", "testPluralConflictDefaultOption.xsd", null},
-			//
-			// Tests that config children are omitted that violate digester-rules patterns with multiple non-wildcard role names.
-			//
-			// This test does not cover all functionality. If you are really concerned, you might look for the following trace lines:
-			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildren():177[] Pass [2]
-			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildrenOnce():198[] ConfigChild [ObjectConfigChild(D.registerE(E))] violates [ViolationChecker backtracking(d)]
-			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildren():177[] Pass [3]
-			// 18:58:58,591 TRACE DigesterRules.omitViolatingConfigChildren():186[] Leave
-			//
-			// It does not suffice to check that E does not appear in the actual XSD, because that does not happen anyway.
-			// D does not appear as XML element because C.registerD violates digester-rules already, stopping the recursion in DocWriterNew.java.
-			// The traces check that DigesterRules.java properly finds all config children that violate digester-rules.xml.
-			//
-			// Compared to all of the F!F source code, only few config children are omitted. Therefore,
-			// we do not implement omitting FrankElement-s and ElementType-s that have all their config
-			// children omitted. We accept therefore that D and E appear in the JSON as elements.
-			//
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A", "testDigesterRulesViolations-strict.xsd", "testDigesterRulesViolations.json"},
 			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A", "testDigesterRulesViolations-compatibility.xsd", null}
 		});

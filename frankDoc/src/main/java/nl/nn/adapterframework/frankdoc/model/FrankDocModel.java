@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -95,6 +94,8 @@ public class FrankDocModel {
 			log.trace("Populating FrankDocModel");
 			result.createDigesterRules(digesterRulesFileName);
 			result.findOrCreateRootFrankElement(rootClassName);
+			result.buildDescendants();
+			result.allElements.values().forEach(f -> result.finishConfigChildrenFor(f));
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
 			result.setHighestCommonInterface();
@@ -126,9 +127,10 @@ public class FrankDocModel {
 
 	void buildDescendants() throws Exception {
 		log.trace("Enter");
-		boolean addedDescendants = false;
+		boolean addedDescendants;
 		int pass = 1;
 		do {
+			addedDescendants = false;
 			if(log.isTraceEnabled()) {
 				log.trace("Pass [{}]", pass++);				
 			}
@@ -143,14 +145,43 @@ public class FrankDocModel {
 	}
 
 	FrankElement findOrCreateRootFrankElement(String fullClassName) throws FrankDocException {
-		return findOrCreateFrankElement(fullClassName, clazz -> new RootFrankElement(clazz));		
+		return findOrCreateFrankElement(fullClassName, new FrankElementCreationStrategyRoot());		
 	}
 
 	FrankElement findOrCreateFrankElement(String fullClassName) throws FrankDocException {
-		return findOrCreateFrankElement(fullClassName, clazz -> new FrankElement(clazz));
+		return findOrCreateFrankElement(fullClassName, new FrankElementCreationStrategyNonRoot());
 	}
 
-	FrankElement findOrCreateFrankElement(String fullClassName, Function<FrankClass, FrankElement> creator) throws FrankDocException {
+	private abstract class FrankElementCreationStrategy {
+		abstract FrankElement createFromClass(FrankClass clazz);
+		abstract FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException;
+	}
+
+	private class FrankElementCreationStrategyRoot extends FrankElementCreationStrategy{
+		@Override
+		FrankElement createFromClass(FrankClass clazz) {
+			return new RootFrankElement(clazz);
+		}
+
+		@Override
+		FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException {
+			return findOrCreateRootFrankElement(fullClassName);
+		}
+	}
+
+	private class FrankElementCreationStrategyNonRoot extends FrankElementCreationStrategy {
+		@Override
+		FrankElement createFromClass(FrankClass clazz) {
+			return new FrankElement(clazz);
+		}
+
+		@Override
+		FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException {
+			return findOrCreateFrankElement(fullClassName);
+		}
+	}
+
+	FrankElement findOrCreateFrankElement(String fullClassName, FrankElementCreationStrategy creator) throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(fullClassName);
 		log.trace("FrankElement requested for class name [{}]", () -> clazz.getName());
 		if(allElements.containsKey(clazz.getName())) {
@@ -158,10 +189,10 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = creator.apply(clazz);
+		FrankElement current = creator.createFromClass(clazz);
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : creator.apply(superClass);
+		FrankElement parent = superClass == null ? null : creator.recursiveFindOrCreate(superClass.getName());
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz, current));
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());

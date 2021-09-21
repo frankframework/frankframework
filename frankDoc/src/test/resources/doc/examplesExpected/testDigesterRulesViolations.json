@@ -5,8 +5,6 @@
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.B",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C",
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.D",
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.E",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A"
             ]
         }
@@ -22,18 +20,6 @@
             "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C"
-            ]
-        },
-        {
-            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.D",
-            "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.D"
-            ]
-        },
-        {
-            "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.E",
-            "members":[
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.E"
             ]
         },
         {
@@ -93,32 +79,6 @@
             "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C",
             "elementNames":[
                 "C"
-            ],
-            "attributes":[
-                {
-                    "name":"active",
-                    "description":"If defined and empty or false, then this element and all its children are ignored"
-                }
-            ]
-        },
-        {
-            "name":"D",
-            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.D",
-            "elementNames":[
-                "D"
-            ],
-            "attributes":[
-                {
-                    "name":"active",
-                    "description":"If defined and empty or false, then this element and all its children are ignored"
-                }
-            ]
-        },
-        {
-            "name":"E",
-            "fullName":"nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.E",
-            "elementNames":[
-                "E"
             ],
             "attributes":[
                 {
