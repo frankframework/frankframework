@@ -93,16 +93,16 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 	}
 
 	@Test
-	public void testRetriveObject() throws Exception {
-		testRetriveObjectHelper(true);
+	public void testRetrieveObject() throws Exception {
+		testRetrieveObjectHelper(true);
 	}
 
 	@Test
 	public void testRetrieveObjectNotCompressed() throws Exception {
-		testRetriveObjectHelper(false);
+		testRetrieveObjectHelper(false);
 	}
 
-	public void testRetriveObjectHelper(boolean blobsCompressed) throws Exception {
+	public void testRetrieveObjectHelper(boolean blobsCompressed) throws Exception {
 		storage.setBlobsCompressed(blobsCompressed);
 		storage.configure();
 
