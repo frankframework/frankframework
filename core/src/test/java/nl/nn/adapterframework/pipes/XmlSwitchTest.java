@@ -90,7 +90,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setValue(input);
 		inputParameter.setType("domdoc");
 		pipe.addParameter(inputParameter);
-		pipe.setXsltVersion(1);
+
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
 		pipe.setNamespaceAware(false);
 		testSwitch("<dummy name=\"input\"/>","2");
