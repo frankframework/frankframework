@@ -33,7 +33,6 @@ setJVMSystemProperty( 'jdbc.dbms.default', 'oracle')
 setJVMSystemProperty( 'active.jms', 'false')
 setJVMSystemProperty( 'active.tibco', 'false')
 setJVMSystemProperty( 'active.ifsa', 'false')
-setJVMSystemProperty( 'log.dir.match', '(?i)(([cd]:[\\\\/]temp)|(${SERVER_LOG_ROOT}))')
 setJVMSystemProperty( 'test.alias', 'testAuthAlias')
 setJVMSystemProperty( 'APPSERVER_ROOT_DIR', '${USER_INSTALL_ROOT}') # APPSERVER_ROOT_DIR is a NN standard custom property for WAS
 setJVMSystemProperty( 'com.ibm.websphere.java2secman.norethrow', 'true')

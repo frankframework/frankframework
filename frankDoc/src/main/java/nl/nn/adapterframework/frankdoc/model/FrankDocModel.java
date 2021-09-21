@@ -77,22 +77,19 @@ public class FrankDocModel {
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
 	private AttributeEnumFactory attributeEnumFactory = new AttributeEnumFactory();
+	private @Getter String rootClassName;
 
-	FrankDocModel(FrankClassRepository classRepository) {
+	FrankDocModel(FrankClassRepository classRepository, String rootClassName) {
 		this.classRepository = classRepository;
+		this.rootClassName = rootClassName;
 	}
 
-	/**
-	 * Get the FrankDocModel needed in production. This is just a first draft. The
-	 * present version does not have groups yet. It will be improved in future
-	 * pull requests. 
-	 */
 	public static FrankDocModel populate(FrankClassRepository classRepository) {
 		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
 	}
 
 	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
-		FrankDocModel result = new FrankDocModel(classRepository);
+		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
 			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesFileName);
@@ -291,7 +288,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
-		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz);
+		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz, classRepository);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
 		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
@@ -830,7 +827,13 @@ public class FrankDocModel {
 				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
 		groups = groupFactory.getAllGroups();
 		for(FrankDocGroup group: groups) {
-			List<ElementType> elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			// The default applies to group Other in case it has no ElementType objects.
+			// In this case we still need group Other for all items in elementsOutsideConfigChildren.
+			// This is typically one element that plays the role of Configuration in some tests.
+			List<ElementType> elementTypes = new ArrayList<>();
+			if(groupsElementTypes.containsKey(group.getName())) {
+				elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			}
 			Collections.sort(elementTypes);
 			group.setElementTypes(elementTypes);
 		}

@@ -37,7 +37,7 @@ public class FrankDocModelConfigChildrenDetailTest {
 	public void setUp() throws SAXException, IOException {
 		// No need to set include and exclude filters of the FrankClassRepository, because
 		// we are not asking for the implementations of an interface.
-		instance = new FrankDocModel(TestUtil.getFrankClassRepositoryDoclet());
+		instance = new FrankDocModel(TestUtil.getFrankClassRepositoryDoclet(), null);
 		instance.createConfigChildDescriptorsFrom("doc/fake-digester-rules.xml");
 	}
 

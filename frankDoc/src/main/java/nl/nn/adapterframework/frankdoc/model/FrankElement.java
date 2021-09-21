@@ -156,6 +156,7 @@ public class FrankElement implements Comparable<FrankElement> {
 			} else {
 				log.trace("FrankElement [{}] has JavaDoc tag {}, excluding from type [{}]",
 						() -> fullName, () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> excludedFromType);
+				// AttributeExcludedSetter checks already whether excludedFromType exists as a Java class.
 				syntax2ExcludedFromTypes.add(excludedFromType);
 			}
 		}

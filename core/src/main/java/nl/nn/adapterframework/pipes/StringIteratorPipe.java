@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private StringBuffer items = new StringBuffer();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
-			
+
 			@Override
 			public void endIterating() throws SenderException, TimeOutException, IOException {
 				finalizeBlock();
@@ -88,34 +88,35 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 			}
 			
-			private boolean finalizeBlock() throws SenderException, TimeOutException, IOException {
+			private StopReason finalizeBlock() throws SenderException, TimeOutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());
-					boolean result = super.handleItem(items.toString());
+					StopReason stopReason = super.handleItem(items.toString());
 					items.setLength(0);
-					return result;
+					return stopReason;
 				}
-				return false;
+				return null;
 			}
 			
 			@Override
-			public boolean handleItem(String item) throws SenderException, TimeOutException, IOException {
+			public StopReason handleItem(String item) throws SenderException, TimeOutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
 				} 
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						if (previousKey!=null && !finalizeBlock()) {
-							return false;
+						StopReason stopReason = finalizeBlock();
+						if(stopReason != null) {
+							return stopReason;
 						}
 						startBlock();
 						previousKey=key;
 					}
 				}
 				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
-				boolean result = true;
+				StopReason result = null;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
 					++itemCounter;
@@ -127,7 +128,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
 					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
-					return false;
+					return StopReason.MAX_ITEMS_REACHED;
 				}
 				return result;
 			}
