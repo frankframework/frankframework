@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,48 +15,72 @@
 */
 package nl.nn.credentialprovider;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.util.LinkedHashMap;
+import java.net.URL;
 import java.util.Map;
-import java.util.Properties;
 
 import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.ClassUtils;
+import nl.nn.credentialprovider.util.Misc;
 
-/**
- * CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.
- * For adequate privacy in production environments, the source file should not be readable by unauthorised users.
- * 
- * @author Gerrit van Brakel
- *
- */
-public class MapCredentialFactory extends MapCredentialFactoryBase {
+public abstract class MapCredentialFactory implements ICredentialFactory {
 
-	public final String PROPERTY_BASE="credentialFactory.map";
+	public final String USERNAME_SUFFIX_PROPERTY=getPropertyBase()+".usernameSuffix";
+	public final String PASSWORD_SUFFIX_PROPERTY=getPropertyBase()+".passwordSuffix";
 
-	public final String FILE_PROPERTY=PROPERTY_BASE+".properties";
+	public static final String USERNAME_SUFFIX_DEFAULT="/username";
+	public static final String PASSWORD_SUFFIX_DEFAULT="/password";
 
-	private final String propertiesFile = "credentials.properties";
+	private String usernameSuffix;
+	private String passwordSuffix;
 
-	public MapCredentialFactory() throws IOException {
-		super();
+	private Map<String,String> aliases;
+
+	@Override
+	public void initialize() throws IOException {
+		AppConstants appConstants = AppConstants.getInstance();
+
+		aliases = getCredentialMap(appConstants);
+		if (aliases == null) {
+			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
+		}
+
+		usernameSuffix = appConstants.getProperty(USERNAME_SUFFIX_PROPERTY, USERNAME_SUFFIX_DEFAULT);
+		passwordSuffix = appConstants.getProperty(PASSWORD_SUFFIX_PROPERTY, PASSWORD_SUFFIX_DEFAULT);
 	}
 	
-	@Override
-	public String getPropertyBase() {
-		return PROPERTY_BASE;
+	protected abstract String getPropertyBase();
+
+	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
+
+	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+		String filename = appConstants.getProperty(key, defaultValue);
+		if (Misc.isEmpty(filename)) {
+			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
+		}
+		try {
+			return new FileInputStream(filename);
+		} catch (Exception e) {
+			URL url = ClassUtils.getResourceURL(filename);
+			if (url == null) {
+				throw new FileNotFoundException("Cannot find resource ["+filename+"]");
+			}
+			return url.openStream();
+		}
 	}
 
 	@Override
-	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, propertiesFile, "Credentials")) {
-			Properties properties = new Properties();
-			properties.load(propertyStream);
-			Map<String,String> map = new LinkedHashMap<>();
-			properties.forEach((k,v) -> map.put((String)k, (String)v));
-			return map;
-		}
+	public boolean hasCredentials(String alias) {
+		return aliases.containsKey(alias) || aliases.containsKey(alias+usernameSuffix) || aliases.containsKey(alias+passwordSuffix);
+	}
+
+	@Override
+	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
+		return new MapCredentials(alias, defaultUsername, defaultPassword, usernameSuffix, passwordSuffix, aliases);
 	}
 
 }

@@ -10,11 +10,11 @@ import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MapCredentialFactoryTest {
+public class PropertyFileCredentialFactoryTest {
 
 	public String PROPERTIES_FILE="/credentials-unencrypted.txt";
 	
-	private MapCredentialFactory credentialFactory;
+	private PropertyFileCredentialFactory credentialFactory;
 	
 	@Before
 	public void setup() throws IOException {
@@ -24,7 +24,7 @@ public class MapCredentialFactoryTest {
 
 		System.setProperty("credentialFactory.map.properties", propertiesFile);
 		
-		credentialFactory = new MapCredentialFactory();
+		credentialFactory = new PropertyFileCredentialFactory();
 		credentialFactory.initialize();
 	}
 	

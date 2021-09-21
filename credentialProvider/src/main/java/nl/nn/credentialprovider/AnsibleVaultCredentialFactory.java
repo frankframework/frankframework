@@ -29,7 +29,7 @@ import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import nl.nn.credentialprovider.util.AppConstants;
 import nl.nn.credentialprovider.util.StreamUtil;
 
-public class AnsibleVaultCredentialFactory extends MapCredentialFactoryBase {
+public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	
 	public final String PROPERTY_BASE="credentialFactory.ansibleVault";
 	
