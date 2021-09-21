@@ -65,7 +65,6 @@ public class FrankDocModelTest {
 		String[] allPackages = new String[] {SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect"};
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(allPackages);
 		instance = new FrankDocModel(classRepository);
-		instance.createEmptyDigesterRules();
 		attributeOwner = null;
 	}
 

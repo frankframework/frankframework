@@ -60,6 +60,10 @@ abstract class ConfigChildSetterDescriptor {
 		return pattern.getRoleName();
 	}
 
+	boolean matches(FrankElement frankElement) {
+		return (pattern.getViolationChecker() == null) || (pattern.getViolationChecker().matches(frankElement));
+	}
+
 	void fillConfigChild(ConfigChild configChild) {
 		configChild.setAllowMultiple(isAllowMultiple());
 		configChild.setMandatory(isMandatory());

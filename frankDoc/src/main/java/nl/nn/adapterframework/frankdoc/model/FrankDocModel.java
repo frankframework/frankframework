@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.digester.DigesterRule;
+import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
@@ -44,6 +49,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
@@ -52,7 +58,8 @@ public class FrankDocModel {
 
 	private FrankClassRepository classRepository;
 
-	private DigesterRules digesterRules;
+	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	
 	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
 	private @Getter List<FrankDocGroup> groups;
 	
@@ -75,10 +82,6 @@ public class FrankDocModel {
 		this.classRepository = classRepository;
 	}
 
-	ConfigChildSetterDescriptor getConfigChildSetterDescriptor(String methodName) {
-		return digesterRules.getConfigChildSetterDescriptor(methodName);
-	}
-
 	/**
 	 * Get the FrankDocModel needed in production. This is just a first draft. The
 	 * present version does not have groups yet. It will be improved in future
@@ -92,7 +95,7 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel(classRepository);
 		try {
 			log.trace("Populating FrankDocModel");
-			result.createDigesterRules(digesterRulesFileName);
+			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateRootFrankElement(rootClassName);
 			result.buildDescendants();
 			result.allElements.values().forEach(f -> result.finishConfigChildrenFor(f));
@@ -111,14 +114,88 @@ public class FrankDocModel {
 		return result;
 	}
 
-	// Used by unit tests
-	void createDigesterRules(final String digesterRulesFileName) throws IOException, SAXException {
-		digesterRules = DigesterRules.getInstance(digesterRulesFileName);
+	void createConfigChildDescriptorsFrom(final String digesterRulesFileName) throws IOException, SAXException {
+		log.trace("Creating config child descriptors from file [{}]", () -> digesterRulesFileName);
+		Resource resource = Resource.getResource(digesterRulesFileName);
+		if(resource == null) {
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", digesterRulesFileName));
+		}
+		try {
+			Handler handler = new Handler(digesterRulesFileName);
+			XmlUtils.parseXml(resource.asInputSource(), handler);
+			log.trace("Successfully created config child descriptors");
+		}
+		catch(IOException e) {
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", digesterRulesFileName), e);
+		}
+		catch(SAXException e) {
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", digesterRulesFileName), e);
+		}
 	}
 
-	// Used by unit tests
-	void createEmptyDigesterRules() {
-		digesterRules = new DigesterRules();
+	private class Handler extends DigesterRulesHandler {
+		private final String path;
+		private final Set<String> rootRoleNames = new HashSet<>();
+
+		Handler(String path) {
+			this.path = path;
+		}
+
+		@Override
+		protected void handle(DigesterRule rule) throws SAXException {
+			DigesterRulesPattern pattern = new DigesterRulesPattern(rule.getPattern());
+			if(pattern.getError() != null) {
+				throw new SAXException(pattern.getError());
+			}
+			if(pattern.isRoot()) {
+				rootRoleNames.add(pattern.getRoleName());
+			}
+			String registerTextMethod = rule.getRegisterTextMethod();
+			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
+				if(StringUtils.isNotEmpty(registerTextMethod)) {
+					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", pattern.getRoleName());
+				}
+				addTypeObject(rule.getRegisterMethod(), pattern);
+			} else {
+				if(StringUtils.isNotEmpty(registerTextMethod)) {
+					if(registerTextMethod.startsWith("set")) {
+						log.warn("digester-rules.xml: Ignoring registerTextMethod {} because it starts with \"set\" to avoid confusion with attributes", registerTextMethod);
+					} else {
+						addTypeText(registerTextMethod, pattern);
+					}
+				} else {
+					// roleName is not final, so a lambda wont work in the trace statement.
+					// We use isTraceEnabled() instead.
+					if(log.isTraceEnabled()) {
+						log.trace("digester-rules.xml, ignoring role name {} because there is no registerMethod and no registerTextMethod attribute", pattern.getRoleName());
+					}
+				}
+			}
+		}
+
+		private void addTypeObject(String registerMethod, DigesterRulesPattern pattern)	throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, pattern);
+			checkDuplicateAndRegister(descriptor, pattern);
+		}
+
+		private void addTypeText(String registerMethod, DigesterRulesPattern pattern) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, pattern);
+			checkDuplicateAndRegister(descriptor, pattern);
+		}
+
+		private void checkDuplicateAndRegister(ConfigChildSetterDescriptor descriptor, DigesterRulesPattern pattern) {
+			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
+				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
+			} else {
+				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
+				DigesterRulesPattern.ViolationChecker violationChecker = pattern.getViolationChecker();
+				if(violationChecker != null) {
+					log.trace("Role name [{}] has ViolationChecker [{}]", () -> descriptor.getRoleName(), () -> violationChecker.toString());
+				}
+			}
+		}
 	}
 
 	public boolean hasType(String typeName) {
@@ -445,29 +522,31 @@ public class FrankDocModel {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
 		boolean createdNewConfigChildren = false;
 		List<FrankMethod> frankMethods = parent.getUnusedConfigChildSetterCandidates().keySet().stream()
-				.filter(digesterRules::methodHasDigesterRule)
+				.filter(m -> configChildDescriptors.containsKey(m.getName()))
 				.collect(Collectors.toList());
 		for(FrankMethod frankMethod: frankMethods) {
 			log.trace("Have config child setter candidate [{}]", () -> frankMethod.getName());
-			if(! digesterRules.configChildExists(parent, frankMethod)) {
+			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
+			log.trace("Have ConfigChildSetterDescriptor [{}]", () -> configChildDescriptor.toString());
+			if(! configChildDescriptor.matches(parent)) {
 				log.trace("Not a config child, next");
 				continue;
 			}
-			DigesterRules.ConfigChildAndRoleName created = digesterRules.createConfigChild(parent, frankMethod);
-			if(created.configChild instanceof ObjectConfigChild) {
+			ConfigChild configChild = configChildDescriptor.createConfigChild(parent, frankMethod);
+			if(configChild instanceof ObjectConfigChild) {
 				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
 				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
 				// configChild.getRoleName() does not work yet because the ElementRole is not yet set.
 				// TODO: This is ugly. Have to write this more elegantly.
-				((ObjectConfigChild) created.configChild).setElementRole(findOrCreateElementRole(elementTypeClass, created.roleName));
-				((ObjectConfigChild) created.configChild).getElementRole().getElementType().getMembers().forEach(f -> f.addConfigParent(created.configChild));
+				((ObjectConfigChild) configChild).setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+				((ObjectConfigChild) configChild).getElementRole().getElementType().getMembers().forEach(f -> f.addConfigParent(configChild));
 				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
 			}
-			created.configChild.setOrder(parent.getUnusedConfigChildSetterCandidates().get(frankMethod));
+			configChild.setOrder(parent.getUnusedConfigChildSetterCandidates().get(frankMethod));
 			createdNewConfigChildren = true;
-			parent.getConfigChildrenUnderConstruction().add(created.configChild);
+			parent.getConfigChildrenUnderConstruction().add(configChild);
 			parent.getUnusedConfigChildSetterCandidates().remove(frankMethod);
-			log.trace("Done creating config child {}, the order is {}", () -> created.configChild.toString(), () -> created.configChild.getOrder());
+			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
 		}
 		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
 		return createdNewConfigChildren;

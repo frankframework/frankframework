@@ -27,17 +27,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
+
 public class ConfigChildSetterDescriptorTest {
-	private DigesterRules instance;
+	private FrankDocModel instance;
 
 	@Before
 	public void setUp() throws SAXException, IOException {
-		instance = DigesterRules.getInstance("doc/fake-digester-rules.xml");
+		// No need to set include and exclude filters of the FrankClassRepository, because
+		// we are not asking for the implementations of an interface.
+		instance = new FrankDocModel(TestUtil.getFrankClassRepositoryDoclet());
+		instance.createConfigChildDescriptorsFrom("doc/fake-digester-rules.xml");
 	}
 
 	@Test
 	public void whenSingularRuleThenSingularInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildSetterDescriptor("setItemSingular");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("setItemSingular");
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("setItemSingular", configChildDescriptor.getMethodName());
@@ -48,7 +53,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenPluralAddRuleThenPluralInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildSetterDescriptor("addItemPlural");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("addItemPlural");
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("addItemPlural", configChildDescriptor.getMethodName());
@@ -59,7 +64,7 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenPluralRegisterThenPluralInDictionary() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildSetterDescriptor("registerItemPlural");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerItemPlural");
 		assertNotNull(configChildDescriptor);
 		assertTrue(configChildDescriptor.isForObject());
 		assertEquals("registerItemPlural", configChildDescriptor.getMethodName());
@@ -70,12 +75,12 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void onlyRulesWithRegisterMethodsGoInDictionary() {
-		assertEquals(4, instance.getNumConfigChildSetterDescriptors());
+		assertEquals(4, instance.getConfigChildDescriptors().size());
 	}
 
 	@Test
 	public void whenHasRegisterTextMethodThenTextConfigChild() {
-		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildSetterDescriptor("registerText");
+		ConfigChildSetterDescriptor configChildDescriptor = instance.getConfigChildDescriptors().get("registerText");
 		assertNotNull(configChildDescriptor);
 		assertFalse(configChildDescriptor.isForObject());
 		assertEquals("registerText", configChildDescriptor.getMethodName());
@@ -86,6 +91,6 @@ public class ConfigChildSetterDescriptorTest {
 
 	@Test
 	public void whenNoRuleThenNotInDictionary() {
-		assertNull(instance.getConfigChildSetterDescriptor("xyz"));
+		assertNull(instance.getConfigChildDescriptors().get("xyz"));
 	}
 }
