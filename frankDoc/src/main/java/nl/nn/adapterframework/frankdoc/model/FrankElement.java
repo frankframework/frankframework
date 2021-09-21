@@ -83,7 +83,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author martijn
  *
  */
-public class FrankElement implements Comparable<FrankElement>, DigesterRulesFrankElement {
+public class FrankElement implements Comparable<FrankElement> {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
 	static final String JAVADOC_PARAMETERS = "@ff.parameters";
 	static final String JAVADOC_PARAMETER = "@ff.parameter";
@@ -198,9 +198,8 @@ public class FrankElement implements Comparable<FrankElement>, DigesterRulesFran
 		configParents.add(parent);
 	}
 
-	@Override
-	public List<DigesterRulesConfigChild> getConfigParents() {
-		List<DigesterRulesConfigChild> result = new ArrayList<>();
+	public List<ConfigChild> getConfigParents() {
+		List<ConfigChild> result = new ArrayList<>();
 		result.addAll(configParents);
 		return result;
 	}

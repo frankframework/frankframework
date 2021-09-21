@@ -90,19 +90,19 @@ class DigesterRulesPattern {
 			this.originalPattern = originalPattern;
 		}
 
-		boolean matches(DigesterRulesFrankElement frankElement) {
+		boolean matches(FrankElement frankElement) {
 			return checkOwners(Arrays.asList(frankElement), backtrackRoleNames);
 		}
 
-		boolean checkChildren(List<DigesterRulesConfigChild> configChildren, List<String> remainingBacktrackRoleNames) {
-			List<DigesterRulesFrankElement> owners = configChildren.stream().map(DigesterRulesConfigChild::getOwningElement).collect(Collectors.toList());
+		boolean checkChildren(List<ConfigChild> configChildren, List<String> remainingBacktrackRoleNames) {
+			List<FrankElement> owners = configChildren.stream().map(ConfigChild::getOwningElement).collect(Collectors.toList());
 			return checkOwners(owners, remainingBacktrackRoleNames);
 		}
 
-		boolean checkOwners(List<DigesterRulesFrankElement> owners, List<String> remainingBacktrackRoleNames) {
+		boolean checkOwners(List<FrankElement> owners, List<String> remainingBacktrackRoleNames) {
 			boolean haveMatchForRoot = owners.stream()
-					.filter(f -> f instanceof DigesterRulesRootFrankElement)
-					.map(f -> (DigesterRulesRootFrankElement) f)
+					.filter(f -> f instanceof RootFrankElement)
+					.map(f -> (RootFrankElement) f)
 					.anyMatch(f -> f.getRoleName().equals(remainingBacktrackRoleNames.get(0)));
 			if(remainingBacktrackRoleNames.size() == 1) {
 				if(haveMatchForRoot) {
@@ -111,7 +111,7 @@ class DigesterRulesPattern {
 					return false;
 				}
 			}
-			List<DigesterRulesConfigChild> parents = owners.stream()
+			List<ConfigChild> parents = owners.stream()
 					.flatMap(f -> f.getConfigParents().stream())
 					.filter(c -> c.getRoleName().equals(remainingBacktrackRoleNames.get(0)))
 					.collect(Collectors.toList());
