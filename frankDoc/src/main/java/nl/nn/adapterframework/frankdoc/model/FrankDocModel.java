@@ -95,8 +95,9 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel(classRepository);
 		try {
 			log.trace("Populating FrankDocModel");
-			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
+			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateRootFrankElement(rootClassName);
+			result.checkRootElementsMatchDigesterRules(rootRoleNames);
 			result.buildDescendants();
 			result.allElements.values().forEach(f -> result.finishConfigChildrenFor(f));
 			result.calculateInterfaceBased();
@@ -114,22 +115,23 @@ public class FrankDocModel {
 		return result;
 	}
 
-	void createConfigChildDescriptorsFrom(final String digesterRulesFileName) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", () -> digesterRulesFileName);
-		Resource resource = Resource.getResource(digesterRulesFileName);
+	Set<String> createConfigChildDescriptorsFrom(final String path) throws IOException, SAXException {
+		log.trace("Creating config child descriptors from file [{}]", () -> path);
+		Resource resource = Resource.getResource(path);
 		if(resource == null) {
-			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", digesterRulesFileName));
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
 		}
 		try {
-			Handler handler = new Handler(digesterRulesFileName);
+			Handler handler = new Handler(path);
 			XmlUtils.parseXml(resource.asInputSource(), handler);
 			log.trace("Successfully created config child descriptors");
+			return handler.rootRoleNames;
 		}
 		catch(IOException e) {
-			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", digesterRulesFileName), e);
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
 		}
 		catch(SAXException e) {
-			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", digesterRulesFileName), e);
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
 		}
 	}
 
@@ -200,6 +202,18 @@ public class FrankDocModel {
 
 	public boolean hasType(String typeName) {
 		return allTypes.containsKey(typeName);
+	}
+
+	void checkRootElementsMatchDigesterRules(Set<String> rootRoleNames) {
+		List<RootFrankElement> roots = allElements.values().stream()
+				.filter(f -> f instanceof RootFrankElement)
+				.map(f -> (RootFrankElement) f)
+				.collect(Collectors.toList());
+		for(RootFrankElement root: roots) {
+			if(! rootRoleNames.contains(root.getRoleName())) {
+				log.warn("Root FrankElement [{}] does not have a matching pattern in digester-rules.xml", root.toString());
+			}
+		}
 	}
 
 	void buildDescendants() throws Exception {
@@ -533,11 +547,11 @@ public class FrankDocModel {
 				continue;
 			}
 			ConfigChild configChild = configChildDescriptor.createConfigChild(parent, frankMethod);
-			if(configChild instanceof ObjectConfigChild) {
+			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
+			configChild.setMandatory(configChildDescriptor.isMandatory());
+			if(configChildDescriptor.isForObject()) {
 				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
 				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
-				// configChild.getRoleName() does not work yet because the ElementRole is not yet set.
-				// TODO: This is ugly. Have to write this more elegantly.
 				((ObjectConfigChild) configChild).setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
 				((ObjectConfigChild) configChild).getElementRole().getElementType().getMembers().forEach(f -> f.addConfigParent(configChild));
 				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
@@ -564,7 +578,7 @@ public class FrankDocModel {
 		log.trace("The config children are (sequence follows sequence of Java methods):");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
-		}		
+		}
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {

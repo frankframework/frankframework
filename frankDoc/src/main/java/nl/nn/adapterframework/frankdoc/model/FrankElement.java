@@ -111,7 +111,10 @@ public class FrankElement implements Comparable<FrankElement>, DigesterRulesFran
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
-	// Used by DigesterRules.java.
+	// Used when config children are constructed. A config child is only
+	// created when there is a matching rule in digester-rules. These
+	// rules have to match config children for which this FrankElement
+	// is member of the config child's ElementType.
 	private List<ConfigChild> configParents = new ArrayList<>();
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
