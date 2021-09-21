@@ -5,7 +5,8 @@
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.B",
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C",
-                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A"
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A",
+                "Module"
             ]
         }
     ],
@@ -27,6 +28,12 @@
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A"
             ]
+        },
+        {
+            "name":"Module",
+            "members":[
+                "Module"
+            ]
         }
     ],
     "elements":[
@@ -43,6 +50,12 @@
                 }
             ],
             "children":[
+                {
+                    "multiple":true,
+                    "roleName":"module",
+                    "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+                    "type":"Module"
+                },
                 {
                     "multiple":true,
                     "roleName":"b",
@@ -85,6 +98,14 @@
                     "name":"active",
                     "description":"If defined and empty or false, then this element and all its children are ignored"
                 }
+            ]
+        },
+        {
+            "name":"Module",
+            "fullName":"Module",
+            "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+            "elementNames":[
+                "Module"
             ]
         },
         {
