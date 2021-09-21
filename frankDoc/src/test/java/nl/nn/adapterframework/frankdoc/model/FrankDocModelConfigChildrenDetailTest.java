@@ -29,7 +29,8 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
-public class ConfigChildSetterDescriptorTest {
+// TODO: Rename to ConfigChildSetterDescriptorTest
+public class FrankDocModelConfigChildrenDetailTest {
 	private FrankDocModel instance;
 
 	@Before
