@@ -70,22 +70,24 @@ public class DigesterRulesPatternTest {
 	@Test
 	public void whenViolatorMatchesPatternThenCheckSucceeds() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/adapter/receiver/listener");
-		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
-		c.addParent("notRelevant");
-		c.addParent("receiver").addParent("adapter");
+		TestDigesterRulesFrankElement f = new TestDigesterRulesFrankElement();
+		f.addParent("notRelevant");
+		f.addParent("receiver").addParent("adapter");
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
 		assertEquals("ViolationChecker backtracking(receiver, adapter)", v.toString());
-		assertTrue(v.check(c));
+		// When f has a method to register a child with role "listener", then pattern p will allow it.
+		assertTrue(v.matches(f));
 	}
 
 	@Test
 	public void whenViolatorDoesNotMatchThenCheckFails() {
 		DigesterRulesPattern p = new DigesterRulesPattern("*/receiver/listener");
-		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getInstance("listener");
-		c.addParent("somethingElse");
+		TestDigesterRulesFrankElement f = new TestDigesterRulesFrankElement();
+		f.addParent("somethingElse");
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
 		assertEquals("ViolationChecker backtracking(receiver)", v.toString());
-		assertFalse(v.check(c));		
+		// f does not match pattern component "receiver", so it cannot create a child with role "listener".
+		assertFalse(v.matches(f));		
 	}
 
 	@Test
@@ -94,8 +96,8 @@ public class DigesterRulesPatternTest {
 		assertNull(p.getError());
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
 		assertEquals("ViolationChecker backtracking(root) at root", v.toString());
-		TestDigesterRulesConfigChild c = TestDigesterRulesConfigChild.getRootOwnedInstance("child", "root");
-		assertTrue(v.check(c));
+		TestDigesterRulesFrankElement f = new TestDigesterRulesRootFrankElement("root");
+		assertTrue(v.matches(f));
 	}
 
 	@Test
@@ -103,8 +105,8 @@ public class DigesterRulesPatternTest {
 		DigesterRulesPattern p = new DigesterRulesPattern("child/grandChild");
 		assertNull(p.getError());
 		DigesterRulesPattern.ViolationChecker v = p.getViolationChecker();
-		TestDigesterRulesConfigChild gc = TestDigesterRulesConfigChild.getInstance("grandChild");
-		gc.addRootOwnedParent("child", "root");
-		assertFalse(v.check(gc));
+		TestDigesterRulesFrankElement f = new TestDigesterRulesFrankElement();
+		f.addRootOwnedParent("child", "root");
+		assertFalse(v.matches(f));
 	}
 }

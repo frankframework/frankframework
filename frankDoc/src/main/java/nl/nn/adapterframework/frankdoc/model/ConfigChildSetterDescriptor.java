@@ -40,11 +40,11 @@ abstract class ConfigChildSetterDescriptor {
 	private @Getter String methodName;
 	private @Getter boolean mandatory;
 	private @Getter boolean allowMultiple;
-	private @Getter String roleName;
+	private @Getter DigesterRulesPattern pattern;
 
-	ConfigChildSetterDescriptor(String methodName, String roleName) throws SAXException {
+	ConfigChildSetterDescriptor(String methodName, DigesterRulesPattern pattern) throws SAXException {
 		this.methodName = methodName;
-		this.roleName = roleName;
+		this.pattern = pattern;
 		mandatory = false;
 		if(methodName.startsWith("set")) {
 			allowMultiple = false;
@@ -56,6 +56,10 @@ abstract class ConfigChildSetterDescriptor {
 		}
 	}
 
+	String getRoleName() {
+		return pattern.getRoleName();
+	}
+
 	void fillConfigChild(ConfigChild configChild) {
 		configChild.setAllowMultiple(isAllowMultiple());
 		configChild.setMandatory(isMandatory());
@@ -63,15 +67,15 @@ abstract class ConfigChildSetterDescriptor {
 
 	@Override
 	public String toString() {
-		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b)", getClass().getSimpleName(), methodName, roleName, mandatory, allowMultiple);
+		return String.format("%s(method = %s, roleName = %s, mandatory = %b, allowMultiple = %b)", getClass().getSimpleName(), methodName, getRoleName(), mandatory, allowMultiple);
 	}
 
 	abstract ConfigChild createConfigChild(FrankElement parent, FrankMethod method);
 	abstract boolean isForObject();
 
 	static class ForObject extends ConfigChildSetterDescriptor {
-		ForObject(String methodName, String roleName) throws SAXException {
-			super(methodName, roleName);
+		ForObject(String methodName, DigesterRulesPattern pattern) throws SAXException {
+			super(methodName, pattern);
 		}
 
 		@Override
@@ -88,8 +92,8 @@ abstract class ConfigChildSetterDescriptor {
 	}
 
 	static class ForText extends ConfigChildSetterDescriptor {
-		ForText(String methodName, String roleName) throws SAXException {
-			super(methodName, roleName);
+		ForText(String methodName, DigesterRulesPattern pattern) throws SAXException {
+			super(methodName, pattern);
 		}
 
 		@Override

@@ -75,10 +75,6 @@ class DigesterRulesPattern {
 		return components.get(components.size() - 1);
 	}
 
-	boolean contains(String word) {
-		return components.stream().anyMatch(w -> w.equals(word));
-	}
-
 	@Override
 	public String toString() {
 		return originalPattern;
@@ -94,8 +90,8 @@ class DigesterRulesPattern {
 			this.originalPattern = originalPattern;
 		}
 
-		boolean check(DigesterRulesConfigChild configChild) {
-			return checkChildren(Arrays.asList(configChild), backtrackRoleNames);
+		boolean matches(DigesterRulesFrankElement frankElement) {
+			return checkOwners(Arrays.asList(frankElement), backtrackRoleNames);
 		}
 
 		boolean checkChildren(List<DigesterRulesConfigChild> configChildren, List<String> remainingBacktrackRoleNames) {

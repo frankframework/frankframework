@@ -448,12 +448,12 @@ public class FrankDocModel {
 				.filter(digesterRules::methodHasDigesterRule)
 				.collect(Collectors.toList());
 		for(FrankMethod frankMethod: frankMethods) {
-			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
-			DigesterRules.ConfigChildAndRoleName created = digesterRules.createConfigChild(parent, frankMethod);
-			if(created == null) {
+			log.trace("Have config child setter candidate [{}]", () -> frankMethod.getName());
+			if(! digesterRules.configChildExists(parent, frankMethod)) {
 				log.trace("Not a config child, next");
 				continue;
 			}
+			DigesterRules.ConfigChildAndRoleName created = digesterRules.createConfigChild(parent, frankMethod);
 			if(created.configChild instanceof ObjectConfigChild) {
 				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
 				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];

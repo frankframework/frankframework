@@ -101,13 +101,13 @@ class DigesterRules {
 
 		private void addTypeObject(String registerMethod, DigesterRulesPattern pattern)	throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
-			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, pattern.getRoleName());
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, pattern);
 			checkDuplicateAndRegister(descriptor, pattern);
 		}
 
 		private void addTypeText(String registerMethod, DigesterRulesPattern pattern) throws SAXException {
 			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
-			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, pattern.getRoleName());
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, pattern);
 			checkDuplicateAndRegister(descriptor, pattern);
 		}
 
@@ -146,22 +146,20 @@ class DigesterRules {
 		return configChildSetterDescriptors.containsKey(m.getName());
 	}
 
-	ConfigChildAndRoleName createConfigChild(FrankElement parent, FrankMethod method) {
-		if(! methodHasDigesterRule(method)) {
-			throw new IllegalArgumentException("Cannot happen because it is checked elsewhere that the method name appears in digester-rules.xml");
+	boolean configChildExists(FrankElement parent, FrankMethod method) {
+		if(! configChildSetterDescriptors.containsKey(method.getName())) {
+			return false;
 		}
+		ConfigChildSetterDescriptor descriptor = configChildSetterDescriptors.get(method.getName());
+		DigesterRulesPattern.ViolationChecker v = descriptor.getPattern().getViolationChecker();
+		return (v == null) || v.matches(parent);
+	}
+
+	ConfigChildAndRoleName createConfigChild(FrankElement parent, FrankMethod method) {
 		ConfigChildSetterDescriptor descriptor = configChildSetterDescriptors.get(method.getName());
 		log.trace("Have ConfigChildSetterDescriptor [{}]", () -> descriptor.toString());
 		ConfigChild configChild = descriptor.createConfigChild(parent, method);
-		if(violationCheckers.containsKey(descriptor.getRoleName())) {
-			if(violationCheckers.get(descriptor.getRoleName()).check(configChild)) {
-				return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
-			} else {
-				return null;
-			}
-		} else {
-			return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
-		}
+		return new ConfigChildAndRoleName(configChild, descriptor.getRoleName());
 	}
 
 	class ConfigChildAndRoleName {
