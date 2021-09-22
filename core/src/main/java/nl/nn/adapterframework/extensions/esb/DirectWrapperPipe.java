@@ -19,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -40,8 +39,6 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message message, IPipeLineSession session) throws PipeRunException {
-		Message result;
-
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -72,9 +69,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 				eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
 			}
 		}
-		PipeForward pf = new PipeForward();
-		pf.setName("success");
-		eswPipe.registerForward(pf);
+		eswPipe.registerForward(getForward());
 		try {
 			eswPipe.configure();
 			return eswPipe.doPipe(message, session);
