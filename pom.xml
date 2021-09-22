@@ -370,7 +370,6 @@
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
 						<templateFile>${copyright.directory}/copyrightTemplateFile.txt</templateFile>
-						<alternateTemplateFile>${copyright.directory}/copyrightTemplateFile2.txt</alternateTemplateFile>
 					</configuration>
 				</plugin>
 			</plugins>
