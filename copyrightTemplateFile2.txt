@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright YYYY Nationale-Nederlanden, YYYY WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,24 +13,3 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.align;
-
-import org.apache.xerces.impl.dv.XSSimpleType;
-import org.apache.xerces.xs.XSConstants;
-
-public enum ScalarType {
-	UNKNOWN,NUMERIC,BOOLEAN,STRING;
-	
-	public static ScalarType findType(XSSimpleType simpleType) {
-		if (simpleType==null) {
-			return UNKNOWN;
-		}
-		if (simpleType.getNumeric()) {
-			return NUMERIC;
-		}
-		if (simpleType.getBuiltInKind()==XSConstants.BOOLEAN_DT) {
-			return BOOLEAN;
-		}
-		return STRING;
-	}
-}
