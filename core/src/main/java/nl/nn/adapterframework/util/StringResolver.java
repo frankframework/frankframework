@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,6 +40,10 @@ public class StringResolver {
 	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
 	public static final String PASSWORD_PREFIX="password:";
 
+	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
+			
+	private static Set<String> authAliasesAllowedToExpand=null;
+	
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
 	 * {@link SecurityException} is hidden.
@@ -128,9 +135,13 @@ public class StringResolver {
 				if (username||password) {
 					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
 				}
-				String defaultValue = delimStart + key+ delimStop;
-				CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
-				replacement = username ? cf.getUsername() : cf.getPassword();
+				if (username || mayExpandAuthAlias(key)) {
+					String defaultValue = delimStart + key+ delimStop;
+					CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
+					replacement = username ? cf.getUsername() : cf.getPassword();
+				} else {
+					replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
+				}
 			}
 			
 			// then try props parameter
@@ -203,5 +214,15 @@ public class StringResolver {
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;
+	}
+	
+	private static boolean mayExpandAuthAlias(String aliasName) {
+		if (authAliasesAllowedToExpand==null) {
+			Set<String> aliases = new HashSet<>();
+			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
+			aliases.addAll(Arrays.asList(property.split(",")));
+			authAliasesAllowedToExpand = aliases;
+		}
+		return authAliasesAllowedToExpand.contains(aliasName);
 	}
 }
