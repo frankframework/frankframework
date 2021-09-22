@@ -26,8 +26,10 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -91,7 +93,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 		String formattedDate = formatter.format(date);
 		return "CONVERT(datetime, '" + formattedDate + "', 120)";
 	}
@@ -258,6 +260,15 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 			return false;
 		}
 	}
+	@Override
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
+		String query = "DELETE "+(maxRows>0?"TOP("+maxRows+") ":"")
+					+ "FROM " + tableName 
+					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+					+ "') AND " + expiryDateField + " < ?";
+		return query;
+	}
+	
 	
 	@Override
 	public String getBooleanFieldType() {
