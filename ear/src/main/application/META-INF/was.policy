@@ -99,6 +99,7 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
 // required for CXF jaxrs spring bean parser
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
