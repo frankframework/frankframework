@@ -189,6 +189,8 @@ permission java.security.SecurityPermission "printIdentity";
 
 // required for Log4J stacktrace rendering and JavaAssist PipeLineSessionDebugger proxying
 permission java.lang.RuntimePermission "createSecurityManager";
+// required for Log4J stacktrace rendering 
+permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.CORBA.iiop";
 // required for Log4J
 permission java.lang.RuntimePermission "accessClassInPackage.sun.nio.fs";
 
