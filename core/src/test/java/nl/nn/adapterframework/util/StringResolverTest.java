@@ -26,6 +26,8 @@ public class StringResolverTest {
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
 		assertTrue("did not find any properties!", properties.size() > 0);
+		
+		System.setProperty("authAliases.expansion.allowed", "alias1,alias2");
 	}
 
 	@Test
@@ -97,4 +99,9 @@ public class StringResolverTest {
 		assertEquals("passwordOnly", result);
 	}
 
+	@Test
+	public void resolvePasswordNotAllowed() {
+		String result = StringResolver.substVars("${credential:password:alias3}", properties);
+		assertEquals("!!not allowed to expand credential of authAlias [alias3]!!", result);
+	}
 }
