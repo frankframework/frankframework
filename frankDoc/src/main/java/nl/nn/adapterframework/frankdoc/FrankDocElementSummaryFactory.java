@@ -53,7 +53,7 @@ public class FrankDocElementSummaryFactory {
 			int numComponents = numComponentsMap.get(simpleName);
 			String label = getAbbreviation(frankElement.getFullName(), numComponents);
 			String xmlElements = frankElement.getXmlElementNames().stream().collect(Collectors.joining(", "));
-			summaryElements.add(new SummaryElement(label, xmlElements));
+			summaryElements.add(new SummaryElement(label, xmlElements, frankElement.isAbstract()));
 		}
 		int maxLabelWidth = summaryElements.stream().map(se -> se.label).map(String::length).collect(Collectors.maxBy(Comparator.naturalOrder())).get();
 		Map<String, SummaryElement> summaryElementsByLabel = summaryElements.stream().collect(Collectors.toMap(se -> se.label, se -> se));
@@ -62,7 +62,11 @@ public class FrankDocElementSummaryFactory {
 		StringBuilder b = new StringBuilder();
 		for(String label: sortedLabels) {
 			SummaryElement e = summaryElementsByLabel.get(label);
-			b.append(String.format("%s: %s\n", StringUtils.leftPad(label, maxLabelWidth), e.xmlElements));
+			if(e.isAbstract) {
+				b.append(String.format("%s: (abstract)\n", StringUtils.leftPad(label, maxLabelWidth)));
+			} else {
+				b.append(String.format("%s: %s\n", StringUtils.leftPad(label, maxLabelWidth), e.xmlElements));
+			}
 		}
 		return b.toString();
 	}
@@ -102,10 +106,12 @@ public class FrankDocElementSummaryFactory {
 	static class SummaryElement {
 		String label;
 		String xmlElements;
+		boolean isAbstract;
 
-		SummaryElement(String label, String xmlElements) {
+		SummaryElement(String label, String xmlElements, boolean isAbstract) {
 			this.label = label;
 			this.xmlElements = xmlElements;
+			this.isAbstract = isAbstract;
 		}
 	}
 

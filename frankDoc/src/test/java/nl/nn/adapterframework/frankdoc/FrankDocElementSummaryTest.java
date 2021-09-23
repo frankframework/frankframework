@@ -15,10 +15,10 @@ public class FrankDocElementSummaryTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.element.summary.";
 	private static final String DIGESTER_RULES_FILE_NAME = "general-test-digester-rules.xml";
 	private static final String EXPECTED = Arrays.asList(
-"              Master: Master",
-"              Object: ", 
-"    Other (from sub): ", 
-"Other (from summary): ").stream().map(s -> s + "\n").collect(Collectors.joining());
+		"              Master: Master",
+		"              Object: ", 
+		"    Other (from sub): ", 
+		"Other (from summary): ").stream().map(s -> s + "\n").collect(Collectors.joining());
 	
 	@Test
 	public void testElementSummary() {
