@@ -99,7 +99,7 @@ public class FrankDocElementSummaryFactory {
 		if(remainder.isEmpty()) {
 			return head;
 		} else {
-			return head + String.format(" (from %s)", remainder.stream().collect(Collectors.joining(", ")));
+			return head + String.format(" (from %s)", remainder.stream().collect(Collectors.joining(".")));
 		}
 	}
 
