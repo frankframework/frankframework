@@ -72,7 +72,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getView()==null) {
+		if (view==null) {
 			if (StringUtils.isEmpty(getMethod()) || "GET".equalsIgnoreCase(getMethod())) {
 				setView(true);
 			} else {
@@ -113,7 +113,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			try {
 				message = transformToXml(message);
 			} catch (PipeRunException e) {
-				throw new ListenerException("Failed to transform JSON to XML");
+				throw new ListenerException("Failed to transform JSON to XML", e);
 			}
 		}
 		int eTag = 0;
@@ -139,7 +139,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				try {
 					response = transformToJson(response);
 				} catch (PipeRunException e) {
-					throw new ListenerException("Failed to transform XML to JSON");
+					throw new ListenerException("Failed to transform XML to JSON", e);
 				}
 			}
 		}
@@ -186,9 +186,8 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		if ("view".equals(attributeName)) { // if attribute view is present
 			if (attributes.get("method") == null || "GET".equalsIgnoreCase(attributes.get("method"))) {// if view="true" AND no method has been supplied, or it's set to GET
 				return true; //Then the default is TRUE
-			} else {
-				return false;
 			}
+			return false;
 		}
 		return defaultValue;
 	}
@@ -243,14 +242,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
-	public void setView(Boolean b) {
+	public void setView(boolean b) {
 		view = b;
 	}
-	private Boolean getView() {
-		return view;
-	}
 	public boolean isView() {
-		Boolean view = getView();
 		if (view==null ) {
 			log.warn("RestListener ["+getName()+"] appears to be not configured");
 			return false;
