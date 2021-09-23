@@ -246,7 +246,15 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void setView(Boolean b) {
 		view = b;
 	}
-	public Boolean getView() {
+	private Boolean getView() {
+		return view;
+	}
+	public boolean isView() {
+		Boolean view = getView();
+		if (view==null ) {
+			log.warn("RestListener ["+getName()+"] appears to be not configured");
+			return false;
+		}
 		return view;
 	}
 
