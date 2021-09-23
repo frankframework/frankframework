@@ -164,7 +164,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		if (pipeForwards.isEmpty()) {
 			//TODO pipe will follow the next forward no need to show warning
 			ConfigurationWarnings.add(this, log, "has no pipe forwards defined");
-		} else {
+		} else if (pipeline != null){
 			for (Iterator<String> it = pipeForwards.keySet().iterator(); it.hasNext();) {
 				String forwardName = it.next();
 				PipeForward forward= pipeForwards.get(forwardName);
