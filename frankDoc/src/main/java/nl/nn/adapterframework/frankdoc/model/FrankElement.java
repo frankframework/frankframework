@@ -319,10 +319,13 @@ public class FrankElement implements Comparable<FrankElement> {
 		// here so there is no need to promote (IWrapperPipe, outputWrapper). This way, the outputWrapper config child
 		// only allows elements that implement IWrapperPipe, not all implementations of IPipe.
 		//
-		String postfixToRemove = elementType.getHighestCommonInterface().getGroupName();
+		List<String> removablePostfixes = elementType.getCommonInterfaceHierarchy().stream().map(ElementType::getGroupName).collect(Collectors.toList());
 		String result = simpleName;
-		if(result.endsWith(postfixToRemove)) {
-			result = result.substring(0, result.lastIndexOf(postfixToRemove));
+		for(String removablePostfix: removablePostfixes) {
+			if(result.endsWith(removablePostfix)) {
+				result = result.substring(0, result.lastIndexOf(removablePostfix));
+				break;
+			}			
 		}
 		result = result + Utils.toUpperCamelCase(roleName);
 		return result;
