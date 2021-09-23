@@ -577,10 +577,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				String key = it.next();
 				Object value = properties.get(key);
 				if (value instanceof Message) {
-					Message valueMessage = (Message)value;
-					value = valueMessage.isBinary() ? valueMessage.asByteArray() : valueMessage.asString();
+					value = ((Message)value).asString();
 				}
-				log.debug("setting property [{}] to value [{}]", getName(), value);
 				msg.setObjectProperty(key, value);
 			}
 		}
