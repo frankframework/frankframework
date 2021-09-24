@@ -30,6 +30,18 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
 import nl.nn.adapterframework.frankdoc.model.FrankElement;
 
+/**
+ * Create text file, typically <code>elementSummary.txt</code>, with overview of Java classes with their Frank config XML elements.
+ * Each line of the text file starts with a Java class name that is a {@link FrankElement} in the model. The FrankElement is shown
+ * as the simple name of the Java class if this representation is unique. Otherwise, the last component(s) of the package name are
+ * shown to make the label unique. The remainder of the line lists all XML elements that can be used in Frank configurations to reference
+ * the Java class.
+ *
+ * This file produces the text to be written. Writing the text to a file is done elsewhere.
+ *
+ * @author martijn
+ *
+ */
 public class FrankDocElementSummaryFactory {
 	private static final int MAX_NUM_PACKAGE_COMPONENTS_EXPECTED = 100;
 
