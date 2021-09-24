@@ -86,7 +86,7 @@ public class ElementType implements Comparable<ElementType> {
 	}
 
 	private final InterfaceHierarchyItem interfaceHierarchy;
-	private @Getter ElementType highestCommonInterface;
+	private @Getter List<ElementType> commonInterfaceHierarchy;
 	private final @Getter FrankDocGroup group;
 	private final @Getter String defaultElement;
 
@@ -142,15 +142,22 @@ public class ElementType implements Comparable<ElementType> {
 		return members.iterator().next();
 	}
 
-	void calculateHighestCommonInterface(FrankDocModel model) {
-		highestCommonInterface = this;
-		ElementType nextCandidate = highestCommonInterface.getNextCommonInterface(model);
+	void calculateCommonInterfaceHierarchy(FrankDocModel model) {
+		commonInterfaceHierarchy = new ArrayList<>();
+		commonInterfaceHierarchy.add(this);
+		ElementType nextCandidate = commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1).getNextCommonInterface(model);
 		while(nextCandidate != null) {
-			highestCommonInterface = nextCandidate;
-			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
+			commonInterfaceHierarchy.add(nextCandidate);
+			nextCandidate = commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1).getNextCommonInterface(model);
 		}
-		log.trace("ElementType [{}] has highest common interface [{}]",
-				() -> this.getFullName(), () -> highestCommonInterface.getFullName());
+		if(log.isTraceEnabled()) {
+			String commonInterfaceHierarchyStr = commonInterfaceHierarchy.stream().map(ElementType::getFullName).collect(Collectors.joining(", "));
+			log.trace("ElementType [{}] has common interface hierarchy [{}]", this.getFullName(), commonInterfaceHierarchyStr);
+		}
+	}
+
+	public ElementType getHighestCommonInterface() {
+		return commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1);
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {

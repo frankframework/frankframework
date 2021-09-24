@@ -95,7 +95,7 @@ public class FrankDocModel {
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(rootClassName);
 			result.calculateInterfaceBased();
-			result.calculateHighestCommonInterfaces();
+			result.calculateCommonInterfacesHierarchies();
 			result.setHighestCommonInterface();
 			result.setOverriddenFrom();
 			result.createConfigChildSets();
@@ -550,9 +550,9 @@ public class FrankDocModel {
 		return allTypes.get(fullName);
 	}
 
-	void calculateHighestCommonInterfaces() {
+	void calculateCommonInterfacesHierarchies() {
 		log.trace("Going to calculate highest common interface for every ElementType");
-		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
+		allTypes.values().forEach(et -> et.calculateCommonInterfaceHierarchy(this));
 		log.trace("Done calculating highest common interface for every ElementType");
 	}
 
@@ -595,7 +595,7 @@ public class FrankDocModel {
 			ElementType et = role.getElementType().getHighestCommonInterface();
 			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), roleName));
 			if(result == null) {
-				log.warn("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
+				log.trace("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
 						() -> role.toString(), () -> et.getFullName(), () -> roleName);
 				role.setHighestCommonInterface(role);
 			} else {
