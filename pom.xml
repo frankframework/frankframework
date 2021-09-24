@@ -10,7 +10,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.14.1</log4j2.version>
 		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
-		<copyright.directory>${project.parent.basedir}</copyright.directory>
+		<iaf.rootdir>${project.parent.basedir}</iaf.rootdir>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -363,13 +363,13 @@
 						</execution>
 					</executions>
 					<configuration>
-						<excludeFile>${copyright.directory}/copyrightExcludeFile.txt</excludeFile>
+						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
 						<exclude>
 							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
 						</exclude>
 						<ignoreYear>true</ignoreYear>
 						<useDash>true</useDash>
-						<templateFile>${copyright.directory}/copyrightTemplateFile.txt</templateFile>
+						<templateFile>${iaf.rootdir}/copyrightTemplateFile.txt</templateFile>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -714,7 +714,7 @@
 			</activation>
 			<properties>
 				<!-- For parent use ${project.basedir} instead of ${project.parent.basedir} -->
-				<copyright.directory>${project.basedir}</copyright.directory>
+				<iaf.rootdir>${project.basedir}</iaf.rootdir>
 			</properties>
 		</profile>
 	</profiles>
