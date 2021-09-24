@@ -123,7 +123,7 @@ public class IbisApplicationContext {
 	}
 
 	/**
-	 * Loads springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, SpringApplicationContext and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
@@ -131,7 +131,6 @@ public class IbisApplicationContext {
 	 */
 	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
