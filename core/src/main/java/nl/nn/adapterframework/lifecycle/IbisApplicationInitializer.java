@@ -63,14 +63,14 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource(IbisApplicationContext.APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, AppConstants.getInstance()));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;
 	}
 
 	private String[] getSpringConfigurationFiles() {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		springConfigurationFiles.add(SpringContextScope.ENVIRONMENT.getContextFile());
 
 		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
 		URL fileURL = this.getClass().getClassLoader().getResource(file);
