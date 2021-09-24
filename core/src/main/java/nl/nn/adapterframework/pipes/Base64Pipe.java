@@ -45,17 +45,17 @@ import nl.nn.adapterframework.util.StreamUtil;
 /**
  * Pipe that performs base64 encoding and decoding.
  *
- *
  * @since   4.4
  * @author  Niels Meijer
  * @version 2.0
  */
 public class Base64Pipe extends StreamingPipe {
 
-	private Direction direction = Direction.ENCODE;
-	private @Getter int lineLength = 76;
-	private @Getter String lineSeparator = "auto";
+	private @Getter Direction direction = Direction.ENCODE;
 	private @Getter String charset = null;
+	private @Getter String lineSeparator = "auto";
+	private @Getter int lineLength = 76;
+	
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
@@ -73,7 +73,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Direction dir=getDirectionEnum();
+		Direction dir=getDirection();
 		if (dir==Direction.ENCODE) {
 			if (StringUtils.isEmpty(getLineSeparator())) {
 				setLineSeparatorArray("");
@@ -104,7 +104,7 @@ public class Base64Pipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 
 		InputStream binaryInputStream;
 		try {
@@ -130,7 +130,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
 		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
@@ -151,11 +151,8 @@ public class Base64Pipe extends StreamingPipe {
 
 	
 	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
-	public void setDirection(String direction) {
-		this.direction = EnumUtils.parse(Direction.class, direction);
-	}
-	public Direction getDirectionEnum() {
-		return direction;
+	public void setDirection(Direction direction) {
+		this.direction = direction;
 	}
 
 	@Deprecated
