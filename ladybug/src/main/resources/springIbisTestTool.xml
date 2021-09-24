@@ -14,6 +14,12 @@
 		</property>
 	</bean>
 
+	<bean
+		name="lowerCasePropertySourcePostProcessor"
+		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		autowire="byName"
+	/>
+
 	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
 
 	<bean name="configName" class="java.lang.String">
@@ -177,14 +183,18 @@
 
 	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
 
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles">
+	<bean name="changeReportGeneratorEnabledRoles" class="java.util.ArrayList">
+		<constructor-arg>
 			<list>
 				<value>IbisTester</value>
 				<value>IbisAdmin</value>
 				<value>IbisDataAdmin</value>
 			</list>
-		</property>
+		</constructor-arg>
+	</bean>
+
+	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="changeReportGeneratorEnabledRoles" ref="changeReportGeneratorEnabledRoles"/>
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
@@ -323,7 +333,5 @@
 	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
-
-	<import resource="springIbisDebuggerAdvice.xml"/>
 
 </beans>

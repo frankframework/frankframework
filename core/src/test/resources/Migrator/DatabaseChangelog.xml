@@ -8,7 +8,7 @@
 		<comment>Create DummyTable</comment>
 		<createTable tableName="DummyTable">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISSTORE"/>
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
@@ -17,6 +17,6 @@
 
 	<changeSet id="two" author="Niels Meijer">
 		<comment>Drop DummyTable</comment>
-		<dropTable tableName="DummyTable"/>
+		<dropTable tableName="DummyTable" cascadeConstraints="true"/>
 	</changeSet>
 </databaseChangeLog>

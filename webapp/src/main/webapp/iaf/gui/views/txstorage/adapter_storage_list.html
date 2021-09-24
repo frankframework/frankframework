@@ -13,7 +13,7 @@
 					</div>
 					<div class="row full-width">
 						<div class="col-lg-6 col-md-12 clear">
-							<h4>Display Filters</h4>
+							<h4>Display and Search Filters</h4>
 						</div>
 					</div>
 				</div>
@@ -67,6 +67,11 @@
 									<th>Label</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('label')" ng-model="displayColumn.label"/></td>
 									<td><input type="text" class="full-width" ng-model="search.label" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+								</tr>
+								<tr>
+									<th>Message</th>
+									<td>&nbsp;</td>
+									<td><input type="text" class="full-width" ng-model="search.message" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
 								</tr>
 							</tbody>
 						</table>

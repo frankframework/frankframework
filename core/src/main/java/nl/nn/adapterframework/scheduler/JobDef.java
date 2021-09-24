@@ -52,6 +52,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -74,6 +75,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -686,6 +688,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
 				Parameter param = new Parameter();
@@ -697,7 +700,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.open();
 
 				Message result = qs.sendMessage(Message.nullMessage(), null);
-				log.info("result [" + result + "]");
+				String resultString = result.asString();
+				int numberOfRowsAffected = Integer.valueOf(resultString);
+				if(numberOfRowsAffected > 0) {
+					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
+				}
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -727,19 +734,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 
-				String query;
-				if (qs.getDatabaseType() == Dbms.MSSQL) {
-					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
-							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
-					qs.setSqlDialect(Dbms.MSSQL.getKey());
-				}
-				else {
-					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
-					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
-					qs.setSqlDialect(Dbms.ORACLE.getKey());
-				}
+				String query = qs.getDbmsSupport().getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();
@@ -1021,7 +1016,9 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			try {
 				//sendMessage message cannot be NULL
 				Message message = new Message((getMessage()==null) ? "" : getMessage());
-				localSender.sendMessage(message, null);
+				PipeLineSession session = new PipeLineSession();
+				session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
+				localSender.sendMessage(message, session);
 			}
 			finally {
 				localSender.close();

@@ -125,7 +125,7 @@ public class IbisApplicationContext {
 	}
 
 	/**
-	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
@@ -169,8 +169,9 @@ public class IbisApplicationContext {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		propertySources.addFirst(new PropertiesPropertySource(APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		classPathapplicationContext.setId("IbisApplicationContext");
-		classPathapplicationContext.setDisplayName("IbisApplicationContext");
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathapplicationContext.setId(instanceName);
+		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
 		return classPathapplicationContext;
 	}

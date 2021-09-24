@@ -48,4 +48,6 @@ public interface FrankClass extends FrankType {
 	FrankEnumConstant[] getEnumConstants();
 	String getJavaDoc();
 	FrankAnnotation getAnnotationIncludingInherited(String annotationFullName) throws FrankDocException;
+	String getJavaDocTag(String tagName);
+	List<String> getAllJavaDocTagsOf(String tagName);
 }

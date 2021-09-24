@@ -77,30 +77,27 @@ public class FrankDocModel {
 	private final ElementRole.Factory elementRoleFactory = new ElementRole.Factory();
 	private Map<Set<ElementRole.Key>, ElementRoleSet> allElementRoleSets = new HashMap<>();
 	private AttributeEnumFactory attributeEnumFactory = new AttributeEnumFactory();
+	private @Getter String rootClassName;
 
-	FrankDocModel(FrankClassRepository classRepository) {
+	FrankDocModel(FrankClassRepository classRepository, String rootClassName) {
 		this.classRepository = classRepository;
+		this.rootClassName = rootClassName;
 	}
 
-	/**
-	 * Get the FrankDocModel needed in production. This is just a first draft. The
-	 * present version does not have groups yet. It will be improved in future
-	 * pull requests. 
-	 */
 	public static FrankDocModel populate(FrankClassRepository classRepository) {
 		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
 	}
 
 	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
-		FrankDocModel result = new FrankDocModel(classRepository);
+		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
 			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
 			result.findOrCreateFrankElement(rootClassName);
 			result.calculateInterfaceBased();
 			result.calculateHighestCommonInterfaces();
-			result.setOverriddenFrom();
 			result.setHighestCommonInterface();
+			result.setOverriddenFrom();
 			result.createConfigChildSets();
 			result.setElementNamesOfFrankElements(rootClassName);
 			result.buildGroups();
@@ -221,6 +218,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
+		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz, classRepository);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
 		LinkedHashMap<String, FrankMethod> setterAttributes = getAttributeToMethodMap(methods, "set");
@@ -250,9 +248,14 @@ public class FrankDocModel {
 			} catch(FrankDocException e) {
 				log.warn("Attribute [{}] has an invalid default value, [{}, detail {}]", attribute.toString(), attribute.getDefaultValue(), e.getMessage());
 			}
+			attributeExcludedSetter.updateAttribute(attribute, method);
 			result.add(attribute);
 			log.trace("Attribute [{}] done", () -> attributeName);
 		}
+		// We may inherit attribute setters from an interface from which we have to reject the attributes.
+		// We must have FrankAttribute instances for these, because otherwise AncestorChildNavigation does not know
+		// how to omit them.
+		result.addAll(attributeExcludedSetter.getExcludedAttributesForRemainingNames(attributeOwner));
 		log.trace("Done creating attributes for {}", attributeOwner.getFullName());
 		return result;
 	}
@@ -522,7 +525,7 @@ public class FrankDocModel {
 			return allTypes.get(clazz.getName());
 		}
 		FrankDocGroup group = groupFactory.getGroup(clazz);
-		final ElementType result = new ElementType(clazz, group);
+		final ElementType result = new ElementType(clazz, group, classRepository);
 		// If a containing FrankElement contains the type being created, we do not
 		// want recursion.
 		allTypes.put(result.getFullName(), result);
@@ -593,7 +596,7 @@ public class FrankDocModel {
 			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), roleName));
 			if(result == null) {
 				log.warn("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
-						() -> toString(), () -> et.getFullName(), () -> roleName);
+						() -> role.toString(), () -> et.getFullName(), () -> roleName);
 				role.setHighestCommonInterface(role);
 			} else {
 				role.setHighestCommonInterface(result);
@@ -620,7 +623,7 @@ public class FrankDocModel {
 
 	private void createConfigChildSets(FrankElement frankElement) {
 		log.trace("Handling FrankElement [{}]", () -> frankElement.getFullName());
-		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL, ElementChild.NONE).stream()
+		Map<String, List<ConfigChild>> cumChildrenByRoleName = frankElement.getCumulativeConfigChildren(ElementChild.ALL_NOT_EXCLUDED, ElementChild.EXCLUDED).stream()
 				.collect(Collectors.groupingBy(c -> c.getRoleName()));
 		for(String roleName: cumChildrenByRoleName.keySet()) {
 			List<ConfigChild> configChildren = cumChildrenByRoleName.get(roleName);
@@ -676,7 +679,7 @@ public class FrankDocModel {
 				.distinct()
 				.collect(Collectors.toList());
 		Map<String, List<ConfigChild>> configChildrenByRoleName = rawMembers.stream()
-				.flatMap(element -> element.getConfigChildren(ElementChild.ALL).stream())
+				.flatMap(element -> element.getConfigChildren(ElementChild.ALL_NOT_EXCLUDED).stream())
 				.collect(Collectors.groupingBy(ConfigChild::getRoleName));
 		List<String> names = new ArrayList<>(configChildrenByRoleName.keySet());
 		Collections.sort(names);
@@ -740,7 +743,13 @@ public class FrankDocModel {
 				.collect(Collectors.groupingBy(f -> f.getGroup().getName()));
 		groups = groupFactory.getAllGroups();
 		for(FrankDocGroup group: groups) {
-			List<ElementType> elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			// The default applies to group Other in case it has no ElementType objects.
+			// In this case we still need group Other for all items in elementsOutsideConfigChildren.
+			// This is typically one element that plays the role of Configuration in some tests.
+			List<ElementType> elementTypes = new ArrayList<>();
+			if(groupsElementTypes.containsKey(group.getName())) {
+				elementTypes = new ArrayList<>(groupsElementTypes.get(group.getName()));
+			}
 			Collections.sort(elementTypes);
 			group.setElementTypes(elementTypes);
 		}

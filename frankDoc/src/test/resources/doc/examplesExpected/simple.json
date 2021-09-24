@@ -8,7 +8,8 @@
       "name": "Other",
       "types": [
         "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+        "Module"
       ]
     }
   ],
@@ -27,6 +28,12 @@
     {
       "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"]
+    },
+    {
+      "name":"Module",
+      "members":[
+        "Module"
+      ]
     }
   ],
   "elements": [
@@ -49,7 +56,7 @@
     {
       "name": "DescribedPossibleIChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
-      "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
+      "description": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".\n \n And this is remaining documentation of \\\"DescribedPossibleIChild\\\".",
       "elementNames": ["DescribedPossibleIRoleNameIChild"],
       "attributes": [
         {
@@ -67,6 +74,14 @@
           "name":"active",
           "description":"If defined and empty or false, then this element and all its children are ignored"
         }
+      ]
+    },
+    {
+      "name":"Module",
+      "fullName":"Module",
+      "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+      "elementNames":[
+        "Module"
       ]
     },
     {
@@ -114,6 +129,12 @@
       }],
       "children": [
         {
+          "multiple":true,
+          "roleName":"module",
+          "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+          "type":"Module"
+        },
+        {
           "multiple": false,
           "roleName": "roleNameIChild",
           "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"
@@ -128,7 +149,7 @@
     {
       "name": "TChild",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
-      "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
+      "description": "This is the header of the JavaDoc of \\\"TChild\\\", with package name nl.nn.something.\n \n And this is remaining documentation of \\\"TChild\\\".",
       "elementNames": ["RoleNameTChild"],
       "attributes": [{
         "name":"active",
@@ -149,4 +170,3 @@
     ]
   }]
 }
-        

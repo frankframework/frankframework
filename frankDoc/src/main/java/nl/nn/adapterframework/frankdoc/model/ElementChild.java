@@ -53,7 +53,7 @@ public abstract class ElementChild {
 	/**
 	 * The value is inherited from ElementChild corresponding to superclass.
 	 */
-	private @Getter @Setter boolean deprecated;
+	private @Getter @Setter boolean deprecated = false;
 	
 	/**
 	 * Only set to true if there is an IbisDoc or IbisDocRef annotation for
@@ -88,15 +88,23 @@ public abstract class ElementChild {
 	private @Getter String defaultValue;
 
 	public static Predicate<ElementChild> IN_XSD = c ->
-		(! c.isDeprecated())
+		(! c.isExcluded())
+		&& (! c.isDeprecated())
 		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
 	public static Predicate<ElementChild> IN_COMPATIBILITY_XSD = c ->
-		c.isDocumented() || (! c.isTechnicalOverride());
+		(! c.isExcluded())
+		&& (c.isDocumented() || (! c.isTechnicalOverride()));
 
-	public static Predicate<ElementChild> DEPRECATED = c -> c.isDeprecated();
-	public static Predicate<ElementChild> ALL = c -> true;
-	public static Predicate<ElementChild> NONE = c -> false;
+	public static Predicate<ElementChild> REJECT_DEPRECATED = c -> c.isExcluded() || c.isDeprecated();
+	static Predicate<ElementChild> ALL = c -> true;
+	public static Predicate<ElementChild> ALL_NOT_EXCLUDED = c -> ! c.isExcluded();
+	public static Predicate<ElementChild> EXCLUDED = c -> c.isExcluded();
+	public static Predicate<ElementChild> JSON_NOT_INHERITED = c -> c.isExcluded() && (c.getOverriddenFrom() != null);
+	// A config child is also relevant for the JSON if it is excluded. The frontend has to mention it as not inherited.
+	// Technical overrides are not relevant. But isTechnicalOverride() is also true for undocumented
+	// excluded children. Of course we have to include those.
+	public static Predicate<ElementChild> JSON_RELEVANT = c -> ! (c.isTechnicalOverride() && (! c.isExcluded()));
 
 	/**
 	 * Base class for keys used to look up {@link FrankAttribute} objects or
@@ -130,6 +138,8 @@ public abstract class ElementChild {
 	}
 
 	abstract boolean overrideIsMeaningful(ElementChild overriddenFrom);
+
+	abstract boolean isExcluded();
 
 	void setJavaDocBasedDescriptionAndDefault(FrankMethod method) {
 		try {

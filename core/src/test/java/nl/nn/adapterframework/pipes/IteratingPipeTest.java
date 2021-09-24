@@ -54,7 +54,7 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		return getElementRenderer(null);
 	}
 
-	private class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
+	protected class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
 
 		@Override
 		public String openBlock(PipeLineSession session) throws SenderException, TimeOutException {

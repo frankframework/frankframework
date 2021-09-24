@@ -18,29 +18,21 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 
 public class FrankDocModelGroupsTest {
-	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.groups.";
-
 	private FrankDocModel instance;
 	
-	@Before
-	public void setUp() throws SAXException, IOException, ReflectiveOperationException {
-		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", PACKAGE + "Container", r);
-	}
-
 	@Test
 	public void testGroups() {
+		String thePackage = "nl.nn.adapterframework.frankdoc.testtarget.groups.";
+		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(thePackage);
+		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", thePackage + "Container", r);
 		List<FrankDocGroup> groups = instance.getGroups();
 		assertEquals(2, groups.size());
 		FrankDocGroup current = groups.get(0);
@@ -62,5 +54,37 @@ public class FrankDocModelGroupsTest {
 		List<FrankElement> leftOvers = instance.getElementsOutsideConfigChildren();
 		assertEquals(1, leftOvers.size());
 		assertEquals("Container", leftOvers.get(0).getSimpleName());
+	}
+
+	@Test
+	public void testFrankDocIgnoreTypeMembership() {
+		String thePackage = "nl.nn.adapterframework.frankdoc.testtarget.groups.ignore.membership.";
+		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(thePackage);
+		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", thePackage + "Container", r);
+		List<FrankDocGroup> groups = instance.getGroups();
+		assertEquals(3, groups.size());
+		FrankDocGroup group = groups.get(0);
+		assertEquals("Listeners", group.getName());
+		assertEquals(1, group.getElementTypes().size());
+		ElementType elementType = group.getElementTypes().get(0);
+		List<FrankElement> members = elementType.getSyntax2Members();
+		assertEquals(2, members.size());
+		assertEquals("ChildListener", members.get(0).getSimpleName());
+		assertEquals("Parent", members.get(1).getSimpleName());
+		// Because of the FrankDocIgnoreGroupMembership annotation, ChildSender and ChildSenderChild are not in.
+		group = groups.get(1);
+		assertEquals("Senders", group.getName());
+		assertEquals(1, group.getElementTypes().size());
+		elementType = group.getElementTypes().get(0);
+		members = elementType.getMembers();
+		assertEquals(3, members.size());
+		assertEquals("ChildSender", members.get(0).getSimpleName());
+		assertEquals("ChildSenderChild", members.get(1).getSimpleName());
+		assertEquals("ChildSenderSender", members.get(2).getSimpleName());
+		group = groups.get(2);
+		assertEquals(FrankDocGroup.GROUP_NAME_OTHER, group.getName());
+		assertEquals(0, group.getElementTypes().size());
+		// FrankDocJsonFactory would use FrankDocModel.getElementsOutsideConfigChildren()
+		// to build the group for the web application.
 	}
 }

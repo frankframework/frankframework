@@ -33,6 +33,7 @@ import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.Tag;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -290,5 +291,24 @@ class FrankClassDoclet implements FrankClass {
 			result = ((FrankClassDoclet) getSuperclass()).getAnnotationFromImplementedInterfaces(annotationFullName);
 		}
 		return result;
+	}
+
+	@Override
+	public String getJavaDocTag(String tagName) {
+		Tag[] tags = clazz.tags(tagName);
+		if((tags == null) || (tags.length == 0)) {
+			return null;
+		}
+		// The Doclet API trims the value.
+		return tags[0].text();
+	}
+
+	@Override
+	public List<String> getAllJavaDocTagsOf(String tagName) {
+		Tag[] tags = clazz.tags(tagName);
+		if(tags == null) {
+			return new ArrayList<>();
+		}
+		return Arrays.asList(tags).stream().map(Tag::text).collect(Collectors.toList());		
 	}
 }

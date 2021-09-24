@@ -7,7 +7,8 @@
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton",
         "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Opaque",
-        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
+        "Module"
       ]
     }
   ],
@@ -31,13 +32,19 @@
     {
       "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
       "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master"]
+    },
+    {
+      "name":"Module",
+      "members":[
+        "Module"
+      ]
     }
   ],
   "elements": [
     {
       "name": "Master",
       "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master",
-      "descriptionHeader": "We test here that the sequence of groups, config children and attributes is right.",
+      "description": "We test here that the sequence of groups, config children and attributes is right.\n It is important that the sequences in @IbisDoc annotations, in the alphabetic order\n and in the order of appearance are all different.",
       "elementNames": ["Master"],
       "attributes": [
         {
@@ -63,6 +70,12 @@
       ],
       "children": [
         {
+          "multiple":true,
+          "roleName":"module",
+          "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+          "type":"Module"
+        },
+        {
           "multiple": false,
           "roleName": "roleAlpha",
           "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.IProton"
@@ -82,6 +95,14 @@
           "roleName": "roleDelta",
           "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.INemesis"
         }
+      ]
+    },
+    {
+      "name":"Module",
+      "fullName":"Module",
+      "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+      "elementNames":[
+        "Module"
       ]
     },
     {

@@ -14,7 +14,7 @@
 				<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
 					<forward name="success" path="SwitchThrowException" />
 				</pipe>
-				<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
+				<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
 					<forward name="true" path="ThrowExceptionTrue" />
 				</pipe>
 				<pipe name="ThrowExceptionTrue" className="nl.nn.adapterframework.pipes.ExceptionPipe">

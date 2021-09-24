@@ -1,7 +1,8 @@
 <div>
 	<h4>Attributes</h4>
-	<p>The following attributes can be configured:</p>
-	<table class="table table-sm table-striped">
+	<p ng-if="element.nonInheritedAttributes"><span suppress-attribute-inheritance></span></p>
+	<p ng-if="element.attributes">The following attributes can be configured:</p>
+	<table ng-if="element.attributes" class="table table-sm table-striped">
 		<thead>
 			<tr>
 				<th class="tbl-15">Name</th>

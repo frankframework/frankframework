@@ -9,7 +9,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
 	>
 
-	<context:component-scan base-package="nl.nn.adapterframework">
+	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool.web">
 		<context:include-filter type="annotation" expression="nl.nn.adapterframework.lifecycle.IbisInitializer"/>
 
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
@@ -32,4 +32,6 @@
 		autowire="byName"
 		class="nl.nn.adapterframework.lifecycle.ServletManager"
 	/>
+
+	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 </beans>

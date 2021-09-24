@@ -106,7 +106,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="switch" />
+			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="switch" />
 			<!-- request -->
 			<pipe name="request"
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"

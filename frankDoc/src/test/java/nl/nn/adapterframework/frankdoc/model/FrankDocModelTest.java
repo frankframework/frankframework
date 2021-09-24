@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.frankdoc.model;
 
-import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
+import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL_NOT_EXCLUDED;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.IN_XSD;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -64,7 +64,7 @@ public class FrankDocModelTest {
 	public void setUp() {
 		String[] allPackages = new String[] {SIMPLE, IBISDOCREF, "nl.nn.adapterframework.frankdoc.testtarget.reflect"};
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(allPackages);
-		instance = new FrankDocModel(classRepository);
+		instance = new FrankDocModel(classRepository, null);
 		attributeOwner = null;
 	}
 
@@ -160,7 +160,7 @@ public class FrankDocModelTest {
 		assertFalse(actualParent.isAbstract());
 		// We check here that protected method getChildAttribute does not produce
 		// an attribute
-		assertEquals(3, actualParent.getAttributes(ALL).size());
+		assertEquals(3, actualParent.getAttributes(ALL_NOT_EXCLUDED).size());
 		FrankAttribute actualParentAttribute = findAttribute(actualParent, "parentAttribute");
 		assertEquals("parentAttribute", actualParentAttribute.getName());
 		assertSame(actualParent, actualParentAttribute.getDescribingElement());
@@ -173,7 +173,7 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualChild.getParent());
 		assertEquals(SIMPLE_CHILD, actualChild.getFullName());
 		assertEquals("ListenerChild", actualChild.getSimpleName());
-		assertEquals(4, actualChild.getAttributes(ALL).size());
+		assertEquals(4, actualChild.getAttributes(ALL_NOT_EXCLUDED).size());
 		FrankAttribute actualChildAttribute = findAttribute(actualChild, "notTextConfigChildButAttribute");
 		assertEquals("notTextConfigChildButAttribute", actualChildAttribute.getName());
 		actualChildAttribute = findAttribute(actualChild, "childAttribute");
@@ -186,8 +186,8 @@ public class FrankDocModelTest {
 		assertSame(actualParent, actualInheritedAttribute.getOverriddenFrom());
 		FrankElement actualGrandChild = actualAllElements.get(SIMPLE_GRNAD_CHILD);
 		assertEquals(SIMPLE_GRNAD_CHILD, actualGrandChild.getFullName());
-		assertEquals(1, actualGrandChild.getAttributes(ALL).size());
-		actualInheritedAttribute = actualGrandChild.getAttributes(ALL).get(0);
+		assertEquals(1, actualGrandChild.getAttributes(ALL_NOT_EXCLUDED).size());
+		actualInheritedAttribute = actualGrandChild.getAttributes(ALL_NOT_EXCLUDED).get(0);
 		assertEquals("inheritedAttribute", actualInheritedAttribute.getName());
 		assertSame(actualChild, actualInheritedAttribute.getOverriddenFrom());
 		// Deprecated
@@ -200,7 +200,7 @@ public class FrankDocModelTest {
 	}
 
 	private FrankAttribute findAttribute(final FrankElement elem, String name) {
-		for(FrankAttribute attribute: elem.getAttributes(ALL)) {
+		for(FrankAttribute attribute: elem.getAttributes(ALL_NOT_EXCLUDED)) {
 			if(attribute.getName().contentEquals(name)) {
 				return attribute;
 			}

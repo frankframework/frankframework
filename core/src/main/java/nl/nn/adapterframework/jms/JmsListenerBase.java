@@ -235,7 +235,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		threadContext.put("timestamp",tsSent);
 		threadContext.put("replyTo",replyTo);
 		try {
-			if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+			if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				message.acknowledge();
 				log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
 			}
@@ -378,7 +378,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return commitOnState;
 	}
 
-	@IbisDoc({"receive timeout in milliseconds as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000 [ms]"})
+	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -395,8 +395,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return useReplyTo;
 	}
 
-	
-	@IbisDoc({"value of the jmstype field of the reply message", "not set by application"})
+	@IbisDoc({"Value of the jmstype field of the reply message", "not set by application"})
 	public void setReplyMessageType(String string) {
 		replyMessageType = string;
 	}
@@ -405,7 +404,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"Controls mode that reply messages are sent with", "not set by application"})
+	@IbisDoc({"Controls mode that reply messages are sent with", "NON_PERSISTENT"})
 	public void setReplyDeliveryMode(String replyDeliveryMode) {
 		this.replyDeliveryMode = EnumUtils.parse(DeliveryMode.class, "replyDeliveryMode", replyDeliveryMode);
 	}
@@ -414,7 +413,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"sets the priority that is used to deliver the reply message. ranges from 0 to 9. defaults to -1, meaning not set. effectively the default priority is set by jms to 4", ""})
+	@IbisDoc({"Sets the priority that is used to deliver the reply message. Ranges from 0 to 9. Effectively the default priority is set by JMS to 4, <code>-1</code> means not set and thus uses the JMS default", "-1"})
 	public void setReplyPriority(int i) {
 		replyPriority = i;
 	}
@@ -423,7 +422,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 
-	@IbisDoc({"time that replymessage will live", "0 [ms]"})
+	@IbisDoc({"Time <i>in milliseconds</i> after which the reply-message will expire", "0"})
 	public void setReplyMessageTimeToLive(long l) {
 		replyMessageTimeToLive = l;
 	}
@@ -431,7 +430,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return replyMessageTimeToLive;
 	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope", "false"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

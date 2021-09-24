@@ -24,9 +24,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
 
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -34,6 +37,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -70,20 +74,28 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
+public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private @Setter IbisDebugger ibisDebugger;
+	private @Setter IbisManager ibisManager;
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
-	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
+
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(ibisDebugger == null) {
+			return;
+		}
+		// As ibisDebugger lives in the WebApplicationContext it cannot get wired with ibisManager by Spring
+		ibisDebugger.setIbisManager(ibisManager);
 	}
 
 	/**
@@ -159,6 +171,29 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[2] = message;
 		return (PipeRunResult)proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
+	}
+
+	public PipeRunResult debugValidatorInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws Throwable {
+		if (!isEnabled()) {
+			return (PipeRunResult)proceedingJoinPoint.proceed();
+		}
+		String messageId = pipeLineSession.getMessageId();
+		message = ibisDebugger.pipeInput(pipeLine, validator, messageId, message);
+		PipeRunResult pipeRunResult = null;
+
+		if(StringUtils.isNotEmpty(messageRoot)) {
+			ibisDebugger.showValue(messageId, "MessageRoot to be asserted", messageRoot);
+		}
+
+		try {
+			Object[] args = proceedingJoinPoint.getArgs();
+			args[2] = message;
+			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
+		} catch(Throwable throwable) {
+			throw ibisDebugger.pipeAbort(pipeLine, validator, messageId, throwable);
+		}
+		pipeRunResult.setResult(ibisDebugger.pipeOutput(pipeLine, validator, messageId, pipeRunResult.getResult()));
+		return pipeRunResult;
 	}
 
 	private <M> M debugSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, int messageParamIndex, boolean expectPipeRunResult) throws Throwable {
@@ -270,13 +305,12 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 			if (resultStream!=null) {
 				resultStream.captureCharacterStream(writerPlaceHolder.getWriter(), writerPlaceHolder.getSizeLimit());
 			} else {
-				try (Writer writer = writerPlaceHolder.getWriter()){ 
-					writer.write("<--> request to provide outputstream could not be honored");
-					writer.close();
+				try (Writer writer = writerPlaceHolder.getWriter()) {
+					writer.write("--> Requesting OutputStream from next pipe"); //We already know it failed, but it's a more user-friendly message..
 				}
 			}
 		} 
-		return resultStream!=null ? "<-- outputstream provided" : "<-- no outputstream could be provided";
+		return resultStream!=null ? "<-- OutputStream provided" : "<-- Request to provide OutputStream could not be honored, no outputstream provided";
 	}
 	
 	@Override
@@ -472,7 +506,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
-		return enabled;
+		return ibisDebugger != null && enabled;
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.validation.RootValidation;
+import nl.nn.adapterframework.validation.RootValidations;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of
@@ -59,7 +62,7 @@ public class SoapValidator extends Json2XmlValidator {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
 			//super.setRoot("Envelope,"+soapBody);
-			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE+","+soapBody));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE+","+soapBody));
 		} else {
 			super.setRoot(getRoot());
 		}
@@ -70,11 +73,11 @@ public class SoapValidator extends Json2XmlValidator {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
 		if (!isAllowPlainXml()) {
-			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, soapBody));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
-				addResponseRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
+				addResponseRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
 			}
-			addRequestRootValidation(Arrays.asList(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
 			List<String> invalidRootNamespaces = new ArrayList<String>();
 			for (String namespace:soapVersion.getNamespaces()) {
 				invalidRootNamespaces.add(namespace);
@@ -86,14 +89,11 @@ public class SoapValidator extends Json2XmlValidator {
 	}
 
 	@Override
-	protected Set<List<String>> createRootValidation(String messageRoot) {
-		Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
+	protected RootValidations createRootValidation(String messageRoot) {
 		if (isAllowPlainXml()) {
-			messageRootValidations.add(Arrays.asList(SOAP_ENVELOPE+","+messageRoot)); // cannot test for messageRoot in SOAP message with current rootvalidation structure
-		} else {
-			messageRootValidations.add(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, messageRoot));
-		}
-		return messageRootValidations;
+			return new RootValidations(SOAP_ENVELOPE+","+messageRoot); // cannot test for messageRoot in SOAP message with current rootvalidation structure
+		} 
+		return new RootValidations(SOAP_ENVELOPE, SOAP_BODY, messageRoot);
 	}
 
 	@Override
@@ -165,9 +165,9 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapHeaderNamespace;
 	}
 
-	@IbisDoc({"5", "SOAP envelope XSD version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
+	@IbisDoc({"5", "SOAP envelope XSD version to use", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
+		this.soapVersion = EnumUtils.parse(SoapVersion.class, soapVersion);
 	}
 	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;

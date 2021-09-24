@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.stream.xml;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 import javax.json.Json;
 import javax.json.stream.JsonParser;
@@ -31,6 +33,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
+
+import nl.nn.adapterframework.util.StreamUtil;
 
 
 public class JsonXslt3XmlReader implements XMLReader {
@@ -139,15 +143,24 @@ public class JsonXslt3XmlReader implements XMLReader {
 		if (value!=null) getContentHandler().characters(value.toCharArray(), 0, value.length());
 		endElement(typename);
 	}
-	
-	
+
 
 	@Override
 	public void parse(InputSource input) throws IOException, SAXException {
 		ContentHandler ch=getContentHandler();
 		ch.startDocument();
 		ch.startPrefixMapping("", TARGETNAMESPACE);
-		parse(null, Json.createParser(input.getCharacterStream()));
+		Reader reader = input.getCharacterStream();
+		if(reader == null) {
+			InputStream stream = input.getByteStream();
+			if(stream != null) {
+				reader = StreamUtil.getCharsetDetectingInputStreamReader(stream);
+			}
+		}
+		if(reader == null) {
+			throw new IOException("unable to read data from InputSource");
+		}
+		parse(null, Json.createParser(reader));
 		ch.endPrefixMapping("");
 		ch.endDocument();
 	}
