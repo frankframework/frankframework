@@ -9,8 +9,8 @@ docker\
 /apt_generated
 \apt_generated
 MANIFEST.MF
-/README
-/LICENSE
+README
+LICENSE
 .md
 .class
 .travis
