@@ -21,9 +21,9 @@ import org.springframework.util.ResourceUtils;
 import lombok.Getter;
 
 public enum SpringContextScope {
-	ENVIRONMENT("webApplicationContext.xml"), // IbisInitializer
-	APPLICATION("springCommon.xml"), //IbisContext
-	CONFIGURATION("FrankFrameworkConfigurationContext.xml"); //Configurations
+	ENVIRONMENT("SpringEnvironmentContext.xml"), // IbisInitializer
+	APPLICATION("SpringApplicationContext.xml"), //IbisContext
+	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
 
 	private @Getter String contextFile;
 	private SpringContextScope(String contextFile) {
