@@ -68,7 +68,7 @@ abstract class ConfigChildSetterDescriptor {
 	}
 
 	boolean matches(FrankElement frankElement) {
-		return (pattern.getViolationChecker() == null) || (pattern.getViolationChecker().matches(frankElement));
+		return (pattern.getMatcher() == null) || (pattern.getMatcher().matches(frankElement));
 	}
 
 	@Override

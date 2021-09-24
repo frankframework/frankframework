@@ -138,9 +138,6 @@ public class FrankDocModel {
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
 			DigesterRulesPattern pattern = new DigesterRulesPattern(rule.getPattern());
-			if(pattern.getError() != null) {
-				throw new SAXException(pattern.getError());
-			}
 			if(pattern.isRoot()) {
 				rootRoleNames.add(pattern.getRoleName());
 			}
@@ -184,9 +181,9 @@ public class FrankDocModel {
 				configChildDescriptors.put(descriptor.getMethodName(), new ArrayList<>());
 			}
 			configChildDescriptors.get(descriptor.getMethodName()).add(descriptor);
-			DigesterRulesPattern.ViolationChecker violationChecker = pattern.getViolationChecker();
-			if(violationChecker != null) {
-				log.trace("Role name [{}] has ViolationChecker [{}]", () -> descriptor.getRoleName(), () -> violationChecker.toString());
+			DigesterRulesPattern.Matcher matcher = pattern.getMatcher();
+			if(matcher != null) {
+				log.trace("Role name [{}] has Matcher [{}]", () -> descriptor.getRoleName(), () -> matcher.toString());
 			}
 		}
 	}

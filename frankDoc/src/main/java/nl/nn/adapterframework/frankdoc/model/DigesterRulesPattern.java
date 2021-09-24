@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -30,22 +31,18 @@ import lombok.Setter;
 class DigesterRulesPattern {
 	private final String originalPattern;
 	private List<String> components;
-	private @Getter String error;
 	private @Getter boolean root = false;
-	private @Getter ViolationChecker violationChecker;
+	private @Getter Matcher matcher;
 
-	DigesterRulesPattern(String pattern) {
+	DigesterRulesPattern(String pattern) throws SAXException {
 		this.originalPattern = pattern;
 		boolean matchesOnlyRoot = false;
 		if(StringUtils.isBlank(pattern)) {
-			components = new ArrayList<>();
-			error = String.format("digester-rules.xml: Pattern cannot be null and cannot be blank");
-			return;
+			throw new SAXException(String.format("digester-rules.xml: Pattern cannot be null and cannot be blank"));
 		}
 		components = Arrays.asList(pattern.split("/"));
 		if(components.isEmpty()) {
-			error = String.format("digester-rules.xml should not contain an empty pattern. The literal value was [%s]", originalPattern);
-			return;
+			throw new SAXException(String.format("digester-rules.xml should not contain an empty pattern. The literal value was [%s]", originalPattern));
 		}
 		List<String> componentsThatShouldNotBeWildcard = components;
 		if(components.get(0).equals("*")) {
@@ -57,17 +54,16 @@ class DigesterRulesPattern {
 			}
 		}
 		if(componentsThatShouldNotBeWildcard.isEmpty()) {
-			error = String.format("digester-rules.xml: A pattern that is only a wildcard is invalid. Encountered [%s]", originalPattern);
-			return;
+			throw new SAXException(String.format("digester-rules.xml: A pattern that is only a wildcard is invalid. Encountered [%s]", originalPattern));
 		}
 		if(componentsThatShouldNotBeWildcard.stream().anyMatch(s -> s.equals("*"))) {
-			error = String.format("digester-rules.xml: Only the first pattern component can be a wildcard. Encountered [%s]", originalPattern);
+			throw new SAXException(String.format("digester-rules.xml: Only the first pattern component can be a wildcard. Encountered [%s]", originalPattern));
 		}
 		if(componentsThatShouldNotBeWildcard.size() >= 2) {
 			List<String> violationCheckWords = new ArrayList<>(componentsThatShouldNotBeWildcard.subList(0, componentsThatShouldNotBeWildcard.size() - 1));
 			Collections.reverse(violationCheckWords);
-			violationChecker = new ViolationChecker(violationCheckWords, pattern);
-			violationChecker.setPatternOnlyMatchesRoot(matchesOnlyRoot);
+			matcher = new Matcher(violationCheckWords, pattern);
+			matcher.setPatternOnlyMatchesRoot(matchesOnlyRoot);
 		}
 	}
 
@@ -80,12 +76,12 @@ class DigesterRulesPattern {
 		return originalPattern;
 	}
 
-	static class ViolationChecker {
+	static class Matcher {
 		private @Getter @Setter boolean patternOnlyMatchesRoot = false;
 		private final List<String> backtrackRoleNames;
 		private @Getter final String originalPattern;
 
-		ViolationChecker(List<String> backtrackRoleNames, String originalPattern) {
+		Matcher(List<String> backtrackRoleNames, String originalPattern) {
 			this.backtrackRoleNames = backtrackRoleNames;
 			this.originalPattern = originalPattern;
 		}
@@ -126,7 +122,7 @@ class DigesterRulesPattern {
 
 		@Override
 		public String toString() {
-			String result = "ViolationChecker backtracking(" + backtrackRoleNames.stream().collect(Collectors.joining(", ")) + ")";
+			String result = "Matcher backtracking(" + backtrackRoleNames.stream().collect(Collectors.joining(", ")) + ")";
 			if(patternOnlyMatchesRoot) {
 				result += " at root";
 			}
