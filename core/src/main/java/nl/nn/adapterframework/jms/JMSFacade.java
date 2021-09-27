@@ -568,6 +568,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
 				String key = it.next();
 				Object value = properties.get(key);
+				if (value instanceof Message) {
+					value = ((Message)value).asString();
+				}
 				log.debug("setting property ["+getName()+"] to value ["+value+"]");
 				msg.setObjectProperty(key, value);
 			}
