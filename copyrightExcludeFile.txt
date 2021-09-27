@@ -11,6 +11,7 @@ docker\
 MANIFEST.MF
 README
 LICENSE
+log.txt
 .factorypath
 .md
 .class

@@ -391,14 +391,28 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
+				<inherited>false</inherited>
 				<configuration>
 					<doclint>none</doclint>
+					<tags>
+						<tag>
+							<name>ff.parameters</name>
+							<placement>a</placement>
+							<head>Parameters</head>
+						</tag>
+						<tag>
+							<name>ff.parameter</name>
+							<placement>a</placement>
+							<head>Parameter</head>
+						</tag>
+					</tags>
+					<useStandardDocletOptions>true</useStandardDocletOptions>
 				</configuration>
 				<reportSets>
 					<reportSet>
 						<id>javadoc</id>
 						<reports>
-							<report>javadoc</report>
+							<report>aggregate</report>
 						</reports>
 					</reportSet>
 				</reportSets>
@@ -583,17 +597,14 @@
 							<doclint>none</doclint>
 							<tags>
 								<tag>
-									<name>IbisDoc.required</name>
-									<!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
-									<placement>X</placement>
+									<name>ff.parameters</name>
+									<placement>a</placement>
+									<head>Parameters</head>
 								</tag>
 								<tag>
-									<name>IbisDoc.default</name>
-									<placement>X</placement>
-								</tag>
-								<tag>
-									<name>IbisDoc.optional</name>
-									<placement>X</placement>
+									<name>ff.parameter</name>
+									<placement>a</placement>
+									<head>Parameter</head>
 								</tag>
 							</tags>
 						</configuration>
