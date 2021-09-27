@@ -310,6 +310,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
+								globalTimeout = Integer.valueOf(properties.getProperty("scenario.timeout", globalTimeout+""));
 								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
@@ -569,7 +570,7 @@ public class TestTool {
 			writeHtml("</tr>", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + scenarioTimeout + "\" title=\"timeout\">", writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + scenarioTimeout + "\" title=\"Global timeout for larva scenarios. This can be overriden by setting scenario.timeout property for a specific scenario.\">", writers, false);
 			writeHtml("</td>", writers, false);
 			writeHtml("</tr>", writers, false);
 			writeHtml("</table>", writers, false);
