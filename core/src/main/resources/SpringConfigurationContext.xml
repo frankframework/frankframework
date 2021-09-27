@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 	Beans defined in this file are unique for every configuration. If you want 
-	to reuse a bean over multiple configurations, add it to the SpringCommon.xml
+	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"

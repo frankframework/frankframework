@@ -30,6 +30,7 @@ import com.sun.javadoc.ClassDoc;
 
 import nl.nn.adapterframework.frankdoc.AttributeTypeStrategy;
 import nl.nn.adapterframework.frankdoc.DocWriterNew;
+import nl.nn.adapterframework.frankdoc.FrankDocElementSummaryFactory;
 import nl.nn.adapterframework.frankdoc.FrankDocJsonFactory;
 import nl.nn.adapterframework.frankdoc.XsdVersion;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
@@ -46,6 +47,7 @@ class Doclet {
 	private final File xsdStrictFile;
 	private final File xsdCompatibilityFile;
 	private final File jsonFile;
+	private final File elementSummaryFile;
 
 	Doclet(ClassDoc[] classes, FrankDocletOptions options) throws FrankDocException {
 		log.info("Output base directory is: [{}]", options.getOutputBaseDir());
@@ -61,6 +63,8 @@ class Doclet {
 			xsdCompatibilityFile.getParentFile().mkdirs();
 			jsonFile = new File(outputBaseDir, options.getJsonOutputPath());
 			jsonFile.getParentFile().mkdirs();
+			elementSummaryFile = new File(outputBaseDir, options.getElementSummaryPath());
+			elementSummaryFile.getParentFile().mkdirs();
 		} catch(SecurityException e) {
 			throw new FrankDocException("SecurityException occurred initializing the output directory", e);
 		}
@@ -70,6 +74,7 @@ class Doclet {
 		writeStrictXsd();
 		writeCompatibilityXsd();
 		writeJson();
+		writeElementSummary();
 	}
 
 	void writeStrictXsd() throws FrankDocException {
@@ -118,6 +123,15 @@ class Doclet {
 		String jsonText = Misc.jsonPretty(jsonObject.toString());
 		log.info("Done calculating JSON file with documentation of the F!F, writing the text to file {}", jsonFile.getAbsolutePath());
 		writeStringToFile(jsonText, jsonFile);
+		log.info("Writing output file done");
+	}
+
+	void writeElementSummary() throws FrankDocException {
+		log.info("Calculating element summary");
+		FrankDocElementSummaryFactory elementSummaryFactory = new FrankDocElementSummaryFactory(model);
+		String text = elementSummaryFactory.getText();
+		log.info("Done calculating element summary");
+		writeStringToFile(text, elementSummaryFile);
 		log.info("Writing output file done");
 	}
 }

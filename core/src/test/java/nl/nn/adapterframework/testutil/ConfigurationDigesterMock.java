@@ -6,6 +6,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class ConfigurationDigesterMock extends ConfigurationDigester {
 	@Override
 	public void digest() throws ConfigurationException {
-		// Ignore digest
+		// Ignore digest to speed up jUnit-tests
 	}
 }
