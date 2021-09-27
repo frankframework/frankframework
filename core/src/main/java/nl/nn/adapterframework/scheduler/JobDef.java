@@ -734,19 +734,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 
-				String query;
-				if (qs.getDatabaseType() == Dbms.MSSQL) {
-					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
-							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
-					qs.setSqlDialect(Dbms.MSSQL.getKey());
-				}
-				else {
-					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
-					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
-					qs.setSqlDialect(Dbms.ORACLE.getKey());
-				}
+				String query = qs.getDbmsSupport().getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();

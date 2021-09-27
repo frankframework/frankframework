@@ -34,6 +34,10 @@ import javax.servlet.http.HttpServlet;
 public interface DynamicRegistration {
 
 	public interface Servlet extends DynamicRegistration, javax.servlet.Servlet {
+
+		public static final String[] ALL_IBIS_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"};
+		public static final String[] ALL_IBIS_USER_ROLES = {"IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester"};
+
 		/** @return The {@link javax.servlet.http.HttpServlet Servlet} to register using the {@link ServletManager} */
 		public HttpServlet getServlet();
 

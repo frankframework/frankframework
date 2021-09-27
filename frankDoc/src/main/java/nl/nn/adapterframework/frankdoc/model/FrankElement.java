@@ -126,6 +126,12 @@ public class FrankElement implements Comparable<FrankElement> {
 		handlePossibleParameters(clazz);
 	}
 
+	// TODO: Unit test this.
+	// TODO: This logic wont reintroduce a FrankElement to a type in the JSON.
+	// Suppose a class C has @ff.ignoreTypeMembership pointing to implemented interface I.
+	// Then a class D that is derived from C is also excluded from I, which is fine.
+	// But if another class E is derived from C but also explicitly implements I, then
+	// the present algorithm does not add E to type I.
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
 		String excludedFromType = clazz.getJavaDocTag(FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 		if(excludedFromType != null) {
@@ -134,6 +140,7 @@ public class FrankElement implements Comparable<FrankElement> {
 			} else {
 				log.trace("FrankElement [{}] has JavaDoc tag {}, excluding from type [{}]",
 						() -> fullName, () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> excludedFromType);
+				// AttributeExcludedSetter checks already whether excludedFromType exists as a Java class.
 				syntax2ExcludedFromTypes.add(excludedFromType);
 			}
 		}
@@ -297,13 +304,12 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		// Depends on the fact that FrankDocModel.calculateHighestCommonInterfaces()
-		// and FrankDocModel.setHighestCommonInterface() have been executed.
+		// Depends on the fact that FrankDocModel.calculateCommonInterfacesHierarchies() has been executed.
 		//
 		// There is a subtle point here: the difference between ElementType.getHighestCommonInterface()
 		// and ElementRole.getHighestCommonInterface(). Consider for example the ElementRole
 		// (IWrapperPipe, outputWrapper). The highest common interface of ElementType IWrapperPipe is
-		// IPipe. For this reason, Java class ApiSoapWrapper will produce ApiSoapWrapperOutputWrapper
+		// IPipe. For this reason, Java class ApiSoapWrapperPipe will produce ApiSoapWrapperOutputWrapper
 		// as we want, not the erroneous name ApiSoapWrapperPipeOutputWrapper.
 		//
 		// On the other hand, the highest common interface of the mentioned ElementRole is just the same ElementRole.
@@ -313,10 +319,13 @@ public class FrankElement implements Comparable<FrankElement> {
 		// here so there is no need to promote (IWrapperPipe, outputWrapper). This way, the outputWrapper config child
 		// only allows elements that implement IWrapperPipe, not all implementations of IPipe.
 		//
-		String postfixToRemove = elementType.getHighestCommonInterface().getGroupName();
+		List<String> removablePostfixes = elementType.getCommonInterfaceHierarchy().stream().map(ElementType::getGroupName).collect(Collectors.toList());
 		String result = simpleName;
-		if(result.endsWith(postfixToRemove)) {
-			result = result.substring(0, result.lastIndexOf(postfixToRemove));
+		for(String removablePostfix: removablePostfixes) {
+			if(result.endsWith(removablePostfix)) {
+				result = result.substring(0, result.lastIndexOf(removablePostfix));
+				break;
+			}			
 		}
 		result = result + Utils.toUpperCamelCase(roleName);
 		return result;

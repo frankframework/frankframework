@@ -26,6 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
+import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -34,15 +36,25 @@ class AttributeExcludedSetter {
 
 	private Set<String> namesExcludedDueToIgnoredInterface = new HashSet<>();
 
-	AttributeExcludedSetter(FrankClass clazz) {
+	AttributeExcludedSetter(FrankClass clazz, FrankClassRepository repository) {
 		String ignoredInterface = clazz.getJavaDocTag(FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 		if(ignoredInterface != null) {
 			if(StringUtils.isBlank(ignoredInterface)) {
 				log.warn("Javadoc tag {} requires an argument that refers a Java interface", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 			} else {
 				log.trace("FrankElement has Javadoc tag {} that refers to interface [{}]", () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> ignoredInterface);
-				AttributesFromInterfaceRejector rejector = new AttributesFromInterfaceRejector(ignoredInterface);
-				namesExcludedDueToIgnoredInterface = rejector.getRejects(clazz);
+				FrankClass ignoredInterfaceClass = null;
+				try {
+					ignoredInterfaceClass = repository.findClass(ignoredInterface);					
+				} catch(FrankDocException e) {
+					log.warn("Exception when parsing Javadoc tag {} that references Java interface [{}]", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, ignoredInterface, e);
+				}
+				if(ignoredInterfaceClass == null) {
+					log.warn("Javadoc tag {} refers to a non-existing Java interface [{}]", FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, ignoredInterface);
+				} else {
+					AttributesFromInterfaceRejector rejector = new AttributesFromInterfaceRejector(ignoredInterfaceClass);
+					namesExcludedDueToIgnoredInterface = rejector.getRejects(clazz);					
+				}
 			}
 			if(log.isTraceEnabled()) {
 				String namesNonAttributesStr = namesExcludedDueToIgnoredInterface.stream().collect(Collectors.joining(", "));

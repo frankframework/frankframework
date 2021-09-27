@@ -91,7 +91,7 @@ public class XmlSwitch extends AbstractPipe {
 			if (StringUtils.isNotEmpty(getStyleSheetName())) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), 0);
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), getXsltVersion());
 		} else if(StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
 				Resource stylesheet = Resource.getResource(this, getStyleSheetName());

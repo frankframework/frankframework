@@ -5,16 +5,35 @@
       <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:group ref="AElementGroup" />
-          <xs:element name="P" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
-        </xs:choice>
-      </xs:sequence>
-      <xs:attribute ref="active" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start" use="prohibited" />
+      <xs:complexContent>
+        <xs:extension base="StartType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:group ref="StartPluralConfigChildGroup" />
+      <xs:attribute ref="active" />
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="StartType">
+    <xs:group ref="StartPluralConfigChildGroup" />
+  </xs:complexType>
+  <xs:group name="StartPluralConfigChildGroup">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+        <xs:group ref="AElementGroup" />
+        <xs:element name="P" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
   <xs:group name="AElementGroup">
     <xs:choice>
       <xs:element name="A">

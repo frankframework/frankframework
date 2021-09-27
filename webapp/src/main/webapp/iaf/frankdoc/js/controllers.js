@@ -57,7 +57,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		$scope.element = element;
 
 		if(element != null) {
-			$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
+			$scope.javaDocURL = javaDocUrlOf(element);
 		}
 	});
 }]).controller('parent-element', ['$scope', function($scope) {
@@ -65,7 +65,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
-	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
+	$scope.javaDocURL = javaDocUrlOf($scope.element);
 }]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
 		let title = '';
@@ -79,7 +79,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				} else {
 					title = title + ", " + childElements[i];
 				}
-			}			
+			}
 		} else{
 			title = 'No child elements, only text';
 		}
@@ -93,3 +93,13 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		return simpleNames;
 	}
 }]);
+
+function javaDocUrlOf(element) {
+	if(element.fullName.includes(".")) {
+		return 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html'	
+	} else {
+		// We only have a JavaDoc URL if we have an element with a Java class. The
+		// exception we handle here is <Module>.
+		return null;
+	}
+}

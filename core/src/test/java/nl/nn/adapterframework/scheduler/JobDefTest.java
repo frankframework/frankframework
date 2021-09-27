@@ -2,8 +2,8 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
 
-import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
@@ -14,9 +14,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
@@ -24,20 +24,18 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 public class JobDefTest extends JdbcTestBase {
 
-	private boolean tableCreated = false;
 	private JobDef jobDef;
+	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String cleanupJobTableName="JOBDEFTEST";
+	private final String tableName="JobDefTest";
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		if (!dbmsSupport.isTablePresent(connection, cleanupJobTableName)) {
-			createJobDefTestTable();
-			tableCreated = true;
-		}
+		System.setProperty("tableName", tableName);
+		createDbTable();
 
 		configuration = new TestConfiguration();
 		Adapter adapter = setupAdapter(); 
@@ -60,11 +58,12 @@ public class JobDefTest extends JdbcTestBase {
 		adapter.setName("fakeAdapter");
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 
-		JdbcTransactionalStorage storage = configuration.createBean(JdbcTransactionalStorage.class);
+		storage = configuration.createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
-		storage.setTableName(cleanupJobTableName);
+		storage.setTableName(tableName);
+		storage.setSequenceName("SEQ_Ibisstore_4_JobDefTest");
 		storage.setDatasourceName(getDataSourceName());
 
 		MessageSendingPipe pipe = new MessageSendingPipe();
@@ -76,88 +75,108 @@ public class JobDefTest extends JdbcTestBase {
 		return adapter;
 	}
 
-	private void createJobDefTestTable() throws JdbcException {
-		JdbcUtil.executeStatement(connection,
-				"CREATE TABLE JOBDEFTEST("
-				+ "MESSAGEKEY INT PRIMARY KEY , " 
-				+ "TYPE " + dbmsSupport.getTextFieldType() + "(1) NULL, "
-				+ "HOST " + dbmsSupport.getTextFieldType() + "(100) NULL, "
-				+ "CREATIONDATE " + dbmsSupport.getTimestampFieldType() + " NULL, "
-				+ "EXPIRYDATE " + dbmsSupport.getTimestampFieldType() + " NULL)");
-	}
-
 	@After
-	public void teardown() throws JdbcException {
-		if (tableCreated) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+cleanupJobTableName);
-		}
+	public void teardown() throws Exception {
+		liquibase.dropAll();
 	}
 
 	@Test
-	public void testCleanupDatabaseJobMaxRowsZero() throws ConfigurationException, JdbcException, SQLException {
+	public void testCleanupDatabaseJobMaxRowsZero() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
-
-		JdbcUtil.executeStatement(connection, "INSERT INTO "+cleanupJobTableName+" (MESSAGEKEY, type, host, creationDate, expiryDate) VALUES (1, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860')");
+		prepareInsertQuery(1);
+		
 		// set max rows to 0 
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 		jobDef.runJob(configuration.getIbisManager());
-
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
-
+		
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
 	
 	@Test
-	public void testCleanupDatabaseJob() throws ConfigurationException, JdbcException, SQLException {
+	public void testCleanupDatabaseJob() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
 
-		insert5Rows();
+		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		// check insertion
 		assertEquals(5, rowCount);
 
 		jobDef.runJob(configuration.getIbisManager());
-
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
-
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
-	
-	private void insert5Rows() throws JdbcException {
-		JdbcUtil.executeStatement(connection, "INSERT INTO "+cleanupJobTableName+" (MESSAGEKEY, type, host, creationDate, expiryDate) VALUES "
-				+ "(1, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860'),"
-				+ "(2, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860'),"
-				+ "(3, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860'),"
-				+ "(4, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860'),"
-				+ "(5, 'A', 'localhost', '2021-07-13 11:04:19.860', '2021-07-13 11:04:19.860')");
+
+	private void prepareInsertQuery(int numRows) throws Exception {
+		Date date = new Date();
+		Date expiryDate = new Date(date.getTime() - 3600 * 1000 * 24);
+		StringBuilder sb = new StringBuilder("");
+		for(int i = 1; i <= numRows; i++) {
+			if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+				sb.append("SELECT "+i+", 'A', 'test', 'localhost', 'messageId', 'correlationId', "+dbmsSupport.getDatetimeLiteral(date)+", 'comments', "+dbmsSupport.getDatetimeLiteral(expiryDate)+", 'label' FROM DUAL");
+			} else {
+				sb.append("(");
+				if(dbmsSupport.autoIncrementKeyMustBeInserted()) {
+					sb.append(i+",");
+				}
+				sb.append("'A', 'test', 'localhost', 'messageId', 'correlationId', "+dbmsSupport.getDatetimeLiteral(date)+", 'comments', "+dbmsSupport.getDatetimeLiteral(expiryDate)+", 'label')");
+			}
+			if(i != numRows) {
+				if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+					 sb.append(" UNION ALL \n");
+				} else {
+					sb.append(",");
+				}
+			}
+		}
+		if(dbmsSupport.getDbms() == Dbms.ORACLE) {
+			sb.append(") SELECT * FROM valuesTable");
+		}
+		
+		String query ="INSERT INTO "+tableName+" (" +
+				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
+				+ storage.getTypeField() + ","
+				+ storage.getSlotIdField() + ","
+				+ storage.getHostField() + ","
+				+ storage.getIdField() + ","
+				+ storage.getCorrelationIdField() + ","
+				+ storage.getDateField() + ","
+				+ storage.getCommentField() + ","
+				+ storage.getExpiryDateField()  +","
+				+ storage.getLabelField() + ")" + (dbmsSupport.getDbms() == Dbms.ORACLE ? " WITH valuesTable AS (" : " VALUES ")
+				+ sb.toString();
+
+		JdbcUtil.executeStatement(getConnection(), query);
 		
 	}
 
 	@Test
-	public void testCleanupDatabaseJobMaxRowsOne() throws ConfigurationException, JdbcException, SQLException {
+	public void testCleanupDatabaseJobMaxRowsOne() throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
 
-		insert5Rows();
+		prepareInsertQuery(5);
 
-		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
+		int rowCount = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
+		
 		// check insertion
 		assertEquals(5, rowCount);
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
 		jobDef.runJob(configuration.getIbisManager());
+		
 
-		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+cleanupJobTableName);
-
+		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
+		
 		assertEquals(0, numRows);
 	}
 }

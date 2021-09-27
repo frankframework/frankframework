@@ -2,6 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -92,7 +93,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setType("domdoc");
 		pipe.addParameter(inputParameter);
 		session.put("sessionKey", input);
-		pipe.setXsltVersion(1);
+
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
 		pipe.setNamespaceAware(false);
 		testSwitch(input,"2");
@@ -114,6 +115,52 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
 
 		testSwitch(input,"2");
+	}
+
+	@Test
+	public void testSettingXsltVersion1() throws Exception {
+		String message = "<root>2</root>";
+
+		pipe.setXpathExpression("$param1 = 2");
+		pipe.setGetInputFromFixedValue("<dummy/>");
+
+		Parameter param1 = new Parameter();
+		param1.setName("param1");
+		param1.setXpathExpression("/root");
+		param1.setSessionKey("originalMessage");
+		pipe.addParameter(param1);
+
+		pipe.setXsltVersion(1);
+		pipe.registerForward(new PipeForward("true","Envelope-Path"));
+		pipe.registerForward(new PipeForward("false","dummy-Path"));
+
+		session=new PipeLineSession();
+		session.put("originalMessage", message);
+
+		testSwitch(new Message("<dummy/>"),"true");
+	}
+	
+	@Test
+	public void testXsltVersionAutoDetect() throws Exception {
+		String message = "<root>2</root>";
+
+		pipe.setXpathExpression("$param1 = 2");
+		pipe.setGetInputFromFixedValue("<dummy/>");
+
+		Parameter param1 = new Parameter();
+		param1.setName("param1");
+		param1.setXpathExpression("/root");
+		param1.setSessionKey("originalMessage");
+		pipe.addParameter(param1);
+
+		pipe.setXsltVersion(0);
+		pipe.registerForward(new PipeForward("true","Envelope-Path"));
+		pipe.registerForward(new PipeForward("false","dummy-Path"));
+
+		session=new PipeLineSession();
+		session.put("originalMessage", message);
+
+		assertThrows("Cannot compare xs:string to xs:integer", PipeRunException.class, () -> testSwitch(new Message("<dummy/>"),"true"));
 	}
 
 	@Test
