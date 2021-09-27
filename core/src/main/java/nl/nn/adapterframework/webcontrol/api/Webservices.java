@@ -83,7 +83,7 @@ public final class Webservices extends Base {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;
-					if (rl.getView()) {
+					if (rl.isView()) {
 						Map<String, Object> service = new HashMap<String, Object>(2);
 						service.put("name", adapter.getName() + " "+  receiver.getName());
 						service.put("uriPattern", rl.getUriPattern());

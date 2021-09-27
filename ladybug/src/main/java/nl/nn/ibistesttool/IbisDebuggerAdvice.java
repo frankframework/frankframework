@@ -305,13 +305,12 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			if (resultStream!=null) {
 				resultStream.captureCharacterStream(writerPlaceHolder.getWriter(), writerPlaceHolder.getSizeLimit());
 			} else {
-				try (Writer writer = writerPlaceHolder.getWriter()){ 
-					writer.write("<--> request to provide outputstream could not be honored");
-					writer.close();
+				try (Writer writer = writerPlaceHolder.getWriter()) {
+					writer.write("--> Requesting OutputStream from next pipe"); //We already know it failed, but it's a more user-friendly message..
 				}
 			}
 		} 
-		return resultStream!=null ? "<-- outputstream provided" : "<-- no outputstream could be provided";
+		return resultStream!=null ? "<-- OutputStream provided" : "<-- Request to provide OutputStream could not be honored, no outputstream provided";
 	}
 	
 	@Override

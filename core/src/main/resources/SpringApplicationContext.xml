@@ -11,6 +11,8 @@
 
 	<context:property-placeholder />
 
+	<import resource="springUnmanagedDeployment.xml"/>
+
 	<bean
 		name="metrics"
 		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
