@@ -176,7 +176,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	public void digestConfiguration(Configuration configuration) throws ConfigurationException {
+	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
 		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
 		Digester digester = null;
 		try {

@@ -654,7 +654,7 @@ public final class ShowConfigurationStatus extends Base {
 			if (isRestListener) {
 				RestListener rl = (RestListener) listener;
 				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-				listenerInfo.put("isView", (rl.getView()==null?false:rl.getView()));
+				listenerInfo.put("isView", rl.isView());
 			}
 			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 				JmsListenerBase jlb = (JmsListenerBase) listener;

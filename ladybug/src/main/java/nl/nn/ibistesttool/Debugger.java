@@ -15,12 +15,14 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
@@ -35,6 +37,8 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -46,6 +50,8 @@ import nl.nn.testtool.run.ReportRunner;
  * @author Jaco de Groot
  */
 public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
+	private Logger log = LogUtil.getLogger(this);
+
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEGY_NEVER = "Never";
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
@@ -202,6 +208,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
+		if (parameter.isHidden()) {
+			try {
+				value = Misc.hide(Message.asString(value));
+			} catch (IOException e) {
+				value = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
+				log.warn(value, e);
+			}
+		}
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
 	@Override

@@ -69,7 +69,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}
-	
+
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
