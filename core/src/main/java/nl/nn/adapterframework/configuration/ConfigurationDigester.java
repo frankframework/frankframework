@@ -184,7 +184,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 			Resource configurationResource = Resource.getResource(configuration, configurationFile);
 			if (configurationResource == null) {
-				throw new ConfigurationException("Configuration file not found: " + configurationFile);
+				throw new ConfigurationException("Configuration file not found: [" + configurationFile + "]");
 			}
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
