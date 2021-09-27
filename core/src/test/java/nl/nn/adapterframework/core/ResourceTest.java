@@ -17,6 +17,7 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 public class ResourceTest {
 
@@ -76,6 +77,21 @@ public class ResourceTest {
 		testUri(getBytesClassLoaderProvider(), ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
 	}
 
+	@Test
+	public void testResolveOutsideParentsFolder() throws TransformerException {
+
+		String baseResource = "/org/apache/xerces/impl/Constants.class";
+		String relativeResource = "../dom/CommentImpl.class";
+
+		URL url = this.getClass().getResource(baseResource);
+		//System.out.println("url ["+url.toExternalForm()+"]");
+		Resource resource = Resource.getResource(baseResource);
+		//System.out.println("resource ["+resource.getSystemId()+"]");
+
+		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(resource);
+
+		assertNotNull(resolver.resolve(relativeResource, url.toExternalForm()));
+	}
 
 //	private ClassLoader getClassLoader(BaseType baseType) throws ConfigurationException, IOException {
 //		if (baseType==BaseType.BYTES) {
