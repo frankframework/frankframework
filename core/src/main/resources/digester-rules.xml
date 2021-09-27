@@ -15,7 +15,7 @@
 	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" />
-	<rule pattern="*/pipeline" registerMethod="setPipeLine"/>
+	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter"/>
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
