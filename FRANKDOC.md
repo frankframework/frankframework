@@ -156,6 +156,13 @@ The default value is also shown in the Frank!Doc web application:
 
 ## Parameters
 
+Some XML elements in a Frank config can have nested element `<Param>`. The meaning of this element depends on the context: parameters can be query parameters of a database query, HTTP request parameters or something else. You can document the meaning of parameters in the JavaDoc comment above a Java class declaration. You can use the following two JavaDoc tags:
+
+* `@ff.parameters`: Documents how `<Param>` sub-elements are used by this Java class.
+* `@ff.parameter`: Documents the meaning of specific parameters. The first word after this tag is the name of the parameter.
+
+
+
 ## Deprecated child elements and attributes
 
 ## Other JavaDoc tags
