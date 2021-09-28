@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="A">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="AType">
+          <xs:attribute ref="active" />
+          <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A" use="prohibited" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Module">
+    <xs:annotation>
+      <xs:documentation>Root element for file you include as entity reference. Does not influence the behavior of your Frank config.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:group ref="ADeclaredChildGroup" />
+      <xs:attribute ref="active" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="B">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.B</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="C" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="I" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="b" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.B" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="C">
+    <xs:annotation>
+      <xs:documentation>nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="active" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="c" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.C" use="prohibited" />
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="AType">
+    <xs:group ref="ADeclaredChildGroup" />
+  </xs:complexType>
+  <xs:group name="ADeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="B" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:simpleType name="frankBoolean">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="frankInt">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="((\+|-)?[0-9]+)|($\{[^\}]+\})" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="active">
+    <xs:annotation>
+      <xs:documentation>If defined and empty or false, then this element and all its children are ignored</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="\!?(($\{[^\}]+\})|([tT][rR][uU][eE])|([fF][aA][lL][sS][eE]))" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:simpleType name="variableRef">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="$\{[^\}]+\}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
