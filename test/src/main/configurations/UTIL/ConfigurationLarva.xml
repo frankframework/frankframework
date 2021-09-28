@@ -101,7 +101,7 @@
 		<job
 			name="Larva"
 			adapterName="Larva"
-			receiverName="Larva"
+			javaListener="Larva"
 			interval="86400000"
 			function="sendMessage"
 			active="${larva.adapter.scheduler.active}"
