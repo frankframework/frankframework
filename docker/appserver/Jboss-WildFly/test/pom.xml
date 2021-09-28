@@ -23,7 +23,7 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${iaf.version}</version>
-			<classifier>configurations</classifier>
+			<classifier>full-configuration</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -76,7 +76,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>full-configuration,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -90,7 +90,7 @@
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>configurations</classifier>
+									<classifier>full-configuration</classifier>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>

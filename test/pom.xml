@@ -77,6 +77,29 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>zip-configurations</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>configurations</classifier>
+							<classesDirectory>src/main</classesDirectory>
+							<includes>configurations/</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>zip-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>resources</classifier>
+							<classesDirectory>src/main/resources</classesDirectory>
+						</configuration>
+					</execution>
+					<execution>
 						<id>zip-scenarios</id>
 						<phase>package</phase>
 						<goals>
@@ -105,7 +128,7 @@
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<attachClasses>true</attachClasses>
-					<classesClassifier>configuration</classesClassifier>
+					<classesClassifier>full-configuration</classesClassifier>
 					<archive>
 						<manifestEntries>
 							<Ibis-Project>${project.name}</Ibis-Project>
