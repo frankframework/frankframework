@@ -24,12 +24,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +58,7 @@ public class FrankDocModel {
 
 	private FrankClassRepository classRepository;
 
-	private @Getter Map<String, ConfigChildSetterDescriptor> configChildDescriptors = new HashMap<>();
+	private @Getter Map<String, List<ConfigChildSetterDescriptor>> configChildDescriptors = new HashMap<>();
 	
 	private FrankDocGroupFactory groupFactory = new FrankDocGroupFactory();
 	private @Getter List<FrankDocGroup> groups;
@@ -92,10 +92,13 @@ public class FrankDocModel {
 		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
-			result.createConfigChildDescriptorsFrom(digesterRulesFileName);
-			result.findOrCreateFrankElement(rootClassName);
+			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesFileName);
+			result.findOrCreateRootFrankElement(rootClassName);
+			result.checkRootElementsMatchDigesterRules(rootRoleNames);
+			result.buildDescendants();
+			result.allElements.values().forEach(f -> result.finishConfigChildrenFor(f));
 			result.calculateInterfaceBased();
-			result.calculateHighestCommonInterfaces();
+			result.calculateCommonInterfacesHierarchies();
 			result.setHighestCommonInterface();
 			result.setOverriddenFrom();
 			result.createConfigChildSets();
@@ -109,14 +112,17 @@ public class FrankDocModel {
 		return result;
 	}
 
-	void createConfigChildDescriptorsFrom(String path) throws IOException, SAXException {
+	Set<String> createConfigChildDescriptorsFrom(final String path) throws IOException, SAXException {
 		log.trace("Creating config child descriptors from file [{}]", () -> path);
 		Resource resource = Resource.getResource(path);
 		if(resource == null) {
 			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
 		}
 		try {
-			XmlUtils.parseXml(resource.asInputSource(), new Handler(path));
+			Handler handler = new Handler();
+			XmlUtils.parseXml(resource.asInputSource(), handler);
+			log.trace("Successfully created config child descriptors");
+			return handler.rootRoleNames;
 		}
 		catch(IOException e) {
 			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
@@ -124,67 +130,60 @@ public class FrankDocModel {
 		catch(SAXException e) {
 			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
 		}
-		log.trace("Successfully created config child descriptors");
 	}
 
 	private class Handler extends DigesterRulesHandler {
-		private final String path;
-
-		Handler(String path) {
-			this.path = path;
-		}
+		private final Set<String> rootRoleNames = new HashSet<>();
 
 		@Override
 		protected void handle(DigesterRule rule) throws SAXException {
-			String pattern = rule.getPattern();
-			StringTokenizer tokenizer = new StringTokenizer(pattern, "/");
-			String roleName = null;
-			while(tokenizer.hasMoreElements()) {
-				String token = tokenizer.nextToken();
-				if(!"*".equals(token)) {
-					roleName = token;
-				}
+			DigesterRulesPattern pattern = new DigesterRulesPattern(rule.getPattern());
+			if(pattern.isRoot()) {
+				rootRoleNames.add(pattern.getRoleName());
 			}
 			String registerTextMethod = rule.getRegisterTextMethod();
 			if(StringUtils.isNotEmpty(rule.getRegisterMethod())) {
 				if(StringUtils.isNotEmpty(registerTextMethod)) {
-					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", roleName);
+					log.warn("digester-rules.xml, role name {}: Have both registerMethod and registerTextMethod, ignoring the latter", pattern.getRoleName());
 				}
-				addTypeObject(rule.getRegisterMethod(), roleName);
+				addTypeObject(rule.getRegisterMethod(), pattern);
 			} else {
 				if(StringUtils.isNotEmpty(registerTextMethod)) {
 					if(registerTextMethod.startsWith("set")) {
 						log.warn("digester-rules.xml: Ignoring registerTextMethod {} because it starts with \"set\" to avoid confusion with attributes", registerTextMethod);
 					} else {
-						addTypeText(registerTextMethod, roleName);
+						addTypeText(registerTextMethod, pattern);
 					}
 				} else {
 					// roleName is not final, so a lambda wont work in the trace statement.
 					// We use isTraceEnabled() instead.
 					if(log.isTraceEnabled()) {
-						log.trace("digester-rules.xml, ignoring role name {} because there is no registerMethod and no registerTextMethod attribute", roleName);
+						log.trace("digester-rules.xml, ignoring role name {} because there is no registerMethod and no registerTextMethod attribute", pattern.getRoleName());
 					}
 				}
 			}
 		}
 
-		private void addTypeObject(String registerMethod, String roleName) throws SAXException {
-			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
-			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, roleName);
-			checkDuplicate(descriptor);
+		private void addTypeObject(String registerMethod, DigesterRulesPattern pattern)	throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for ObjectConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForObject(registerMethod, pattern);
+			register(descriptor, pattern);
 		}
 
-		private void addTypeText(String registerMethod, String roleName) throws SAXException {
-			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> roleName, () -> registerMethod);
-			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, roleName);
-			checkDuplicate(descriptor);
+		private void addTypeText(String registerMethod, DigesterRulesPattern pattern) throws SAXException {
+			log.trace("Have ConfigChildSetterDescriptor for TextConfigChild: roleName = {}, registerMethod = {}", () -> pattern.getRoleName(), () -> registerMethod);
+			ConfigChildSetterDescriptor descriptor = new ConfigChildSetterDescriptor.ForText(registerMethod, pattern);
+			register(descriptor, pattern);
 		}
 
-		private void checkDuplicate(ConfigChildSetterDescriptor descriptor) {
-			if(configChildDescriptors.containsKey(descriptor.getMethodName())) {
-				log.warn("In digester rules [{}], duplicate method name [{}], ignoring", path, descriptor.getMethodName());
-			} else {
-				configChildDescriptors.put(descriptor.getMethodName(), descriptor);
+		private void register(ConfigChildSetterDescriptor descriptor, DigesterRulesPattern pattern) {
+			if(! configChildDescriptors.containsKey(descriptor.getMethodName())) {
+				configChildDescriptors.put(descriptor.getMethodName(), new ArrayList<>());
+			}
+			configChildDescriptors.get(descriptor.getMethodName()).add(descriptor);
+			DigesterRulesPattern.Matcher matcher = pattern.getMatcher();
+			if(matcher != null) {
+				log.trace("Role name [{}] has Matcher [{}]", () -> descriptor.getRoleName(), () -> matcher.toString());
 			}
 		}
 	}
@@ -193,7 +192,75 @@ public class FrankDocModel {
 		return allTypes.containsKey(typeName);
 	}
 
+	void checkRootElementsMatchDigesterRules(Set<String> rootRoleNames) {
+		List<RootFrankElement> roots = allElements.values().stream()
+				.filter(f -> f instanceof RootFrankElement)
+				.map(f -> (RootFrankElement) f)
+				.collect(Collectors.toList());
+		for(RootFrankElement root: roots) {
+			if(! rootRoleNames.contains(root.getRoleName())) {
+				log.warn("Root FrankElement [{}] does not have a matching pattern in digester-rules.xml", root.toString());
+			}
+		}
+	}
+
+	void buildDescendants() throws Exception {
+		log.trace("Enter");
+		boolean addedDescendants;
+		int pass = 1;
+		do {
+			addedDescendants = false;
+			if(log.isTraceEnabled()) {
+				log.trace("Pass [{}]", pass++);				
+			}
+			// We update allElements during the iteration, so we have to copy
+			for(FrankElement existing: new ArrayList<>(allElements.values())) {
+				if(createConfigChildren(existing)) {
+					addedDescendants = true;
+				}
+			}
+		} while(addedDescendants);
+		log.trace("Leave");
+	}
+
+	FrankElement findOrCreateRootFrankElement(String fullClassName) throws FrankDocException {
+		return findOrCreateFrankElement(fullClassName, new FrankElementCreationStrategyRoot());		
+	}
+
 	FrankElement findOrCreateFrankElement(String fullClassName) throws FrankDocException {
+		return findOrCreateFrankElement(fullClassName, new FrankElementCreationStrategyNonRoot());
+	}
+
+	private abstract class FrankElementCreationStrategy {
+		abstract FrankElement createFromClass(FrankClass clazz);
+		abstract FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException;
+	}
+
+	private class FrankElementCreationStrategyRoot extends FrankElementCreationStrategy{
+		@Override
+		FrankElement createFromClass(FrankClass clazz) {
+			return new RootFrankElement(clazz);
+		}
+
+		@Override
+		FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException {
+			return findOrCreateRootFrankElement(fullClassName);
+		}
+	}
+
+	private class FrankElementCreationStrategyNonRoot extends FrankElementCreationStrategy {
+		@Override
+		FrankElement createFromClass(FrankClass clazz) {
+			return new FrankElement(clazz);
+		}
+
+		@Override
+		FrankElement recursiveFindOrCreate(String fullClassName) throws FrankDocException {
+			return findOrCreateFrankElement(fullClassName);
+		}
+	}
+
+	FrankElement findOrCreateFrankElement(String fullClassName, FrankElementCreationStrategy creator) throws FrankDocException {
 		FrankClass clazz = classRepository.findClass(fullClassName);
 		log.trace("FrankElement requested for class name [{}]", () -> clazz.getName());
 		if(allElements.containsKey(clazz.getName())) {
@@ -201,13 +268,13 @@ public class FrankDocModel {
 			return allElements.get(clazz.getName());
 		}
 		log.trace("Creating FrankElement for class name [{}]", () -> clazz.getName());
-		FrankElement current = new FrankElement(clazz);
+		FrankElement current = creator.createFromClass(clazz);
+		log.trace("Created [{}] [{}]", current.getClass().getSimpleName(), current.getFullName());
 		allElements.put(clazz.getName(), current);
 		FrankClass superClass = clazz.getSuperclass();
-		FrankElement parent = superClass == null ? null : findOrCreateFrankElement(superClass.getName());
+		FrankElement parent = superClass == null ? null : creator.recursiveFindOrCreate(superClass.getName());
 		current.setParent(parent);
 		current.setAttributes(createAttributes(clazz, current));
-		current.setConfigChildren(createConfigChildren(clazz.getDeclaredMethods(), current));
 		log.trace("Done creating FrankElement for class name [{}]", () -> clazz.getName());
 		return current;
 	}
@@ -454,18 +521,20 @@ public class FrankDocModel {
 		}
 	}
 
-	private List<ConfigChild> createConfigChildren(FrankMethod[] methods, FrankElement parent) throws FrankDocException {
+	private boolean createConfigChildren(FrankElement parent) throws FrankDocException {
 		log.trace("Creating config children of FrankElement [{}]", () -> parent.getFullName());
-		List<ConfigChild> result = new ArrayList<>();
-		List<FrankMethod> frankMethods = Arrays.asList(methods).stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isConfigChildSetter)
-				.filter(m -> configChildDescriptors.get(m.getName()) != null)
+		boolean createdNewConfigChildren = false;
+		List<FrankMethod> frankMethods = parent.getUnusedConfigChildSetterCandidates().keySet().stream()
+				.filter(m -> configChildDescriptors.containsKey(m.getName()))
 				.collect(Collectors.toList());
-		for(int order = 0; order < frankMethods.size(); ++order) {
-			FrankMethod frankMethod = frankMethods.get(order);
-			log.trace("Have config child setter [{}]", () -> frankMethod.getName());
-			ConfigChildSetterDescriptor configChildDescriptor = configChildDescriptors.get(frankMethod.getName());
+		for(FrankMethod frankMethod: frankMethods) {
+			log.trace("Have config child setter candidate [{}]", () -> frankMethod.getName());	
+			List<ConfigChildSetterDescriptor> descriptorCandidates = configChildDescriptors.get(frankMethod.getName());
+			ConfigChildSetterDescriptor configChildDescriptor = ConfigChildSetterDescriptor.find(parent, descriptorCandidates);
+			if(configChildDescriptor == null) {
+				log.trace("Not a config child, next");
+				continue;				
+			}
 			log.trace("Have ConfigChildSetterDescriptor [{}]", () -> configChildDescriptor.toString());
 			ConfigChild configChild = configChildDescriptor.createConfigChild(parent, frankMethod);
 			configChild.setAllowMultiple(configChildDescriptor.isAllowMultiple());
@@ -474,20 +543,32 @@ public class FrankDocModel {
 				log.trace("For FrankElement [{}] method [{}], going to search element role", () -> parent.getFullName(), () -> frankMethod.getName());
 				FrankClass elementTypeClass = (FrankClass) frankMethod.getParameterTypes()[0];
 				((ObjectConfigChild) configChild).setElementRole(findOrCreateElementRole(elementTypeClass, configChildDescriptor.getRoleName()));
+				((ObjectConfigChild) configChild).getElementRole().getElementType().getMembers().forEach(f -> f.addConfigParent(configChild));
 				log.trace("For FrankElement [{}] method [{}], have the element role", () -> parent.getFullName(), () -> frankMethod.getName());
 			}
-			configChild.setOrder(order);
-			result.add(configChild);
+			configChild.setOrder(parent.getUnusedConfigChildSetterCandidates().get(frankMethod));
+			createdNewConfigChildren = true;
+			parent.getConfigChildrenUnderConstruction().add(configChild);
+			parent.getUnusedConfigChildSetterCandidates().remove(frankMethod);
 			log.trace("Done creating config child {}, the order is {}", () -> configChild.toString(), () -> configChild.getOrder());
 		}
+		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
+		return createdNewConfigChildren;
+	}
+
+	void finishConfigChildrenFor(FrankElement parent) {
+		// We are only removing config children here to ensure that there is only one ConfigChild per role name.
+		// We will not remove config children that are the only one with their role name. Therefore, we will not
+		// lose paths that were used to match digester rules.
 		log.trace("Removing duplicate config children of FrankElement [{}]", () -> parent.getFullName());
-		result = ConfigChild.removeDuplicates(result);
+		List<ConfigChild> result = ConfigChild.removeDuplicates(parent.getConfigChildrenUnderConstruction());
+		// We have to sort the config children because they are not created in the same order as the order of the config child setters.
+		Collections.sort(result, Comparator.comparingInt(ConfigChild::getOrder));
+		parent.setConfigChildren(result);
 		log.trace("The config children are (sequence follows sequence of Java methods):");
 		if(log.isTraceEnabled()) {
 			result.forEach(c -> log.trace("{}", c.toString()));
 		}
-		log.trace("Done creating config children of FrankElement [{}]", () -> parent.getFullName());
-		return result;
 	}
 
 	ElementRole findOrCreateElementRole(FrankClass elementTypeClass, String roleName) throws FrankDocException {
@@ -550,9 +631,9 @@ public class FrankDocModel {
 		return allTypes.get(fullName);
 	}
 
-	void calculateHighestCommonInterfaces() {
+	void calculateCommonInterfacesHierarchies() {
 		log.trace("Going to calculate highest common interface for every ElementType");
-		allTypes.values().forEach(et -> et.calculateHighestCommonInterface(this));
+		allTypes.values().forEach(et -> et.calculateCommonInterfaceHierarchy(this));
 		log.trace("Done calculating highest common interface for every ElementType");
 	}
 
@@ -595,7 +676,7 @@ public class FrankDocModel {
 			ElementType et = role.getElementType().getHighestCommonInterface();
 			ElementRole result = findElementRole(new ElementRole.Key(et.getFullName(), roleName));
 			if(result == null) {
-				log.warn("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
+				log.trace("Promoting ElementRole [{}] results in ElementType [{}] and role name {}], but there is no corresponding ElementRole",
 						() -> role.toString(), () -> et.getFullName(), () -> roleName);
 				role.setHighestCommonInterface(role);
 			} else {

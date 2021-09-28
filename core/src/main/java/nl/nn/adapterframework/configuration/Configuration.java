@@ -46,6 +46,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
+import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -141,7 +142,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public Configuration() {
-		setConfigLocation("FrankFrameworkConfigurationContext.xml"); //Don't call the super(..), it will trigger a refresh.
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
 	}
 
 	@Override

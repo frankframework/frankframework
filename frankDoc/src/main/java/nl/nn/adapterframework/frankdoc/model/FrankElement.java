@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.frankdoc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
@@ -91,6 +93,9 @@ public class FrankElement implements Comparable<FrankElement> {
 	private static final Comparator<FrankElement> COMPARATOR =
 			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
+	private @Getter LinkedHashMap<FrankMethod, Integer> unusedConfigChildSetterCandidates = new LinkedHashMap<>();
+	private @Getter List<ConfigChild> configChildrenUnderConstruction = new ArrayList<>();
+	
 	private static JavadocStrategy javadocStrategy = JavadocStrategy.USE_JAVADOC;
 
 	private final @Getter String fullName;
@@ -105,6 +110,12 @@ public class FrankElement implements Comparable<FrankElement> {
 
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
+
+	// Used when config children are constructed. A config child is only
+	// created when there is a matching rule in digester-rules. These
+	// rules have to match config children for which this FrankElement
+	// is member of the config child's ElementType.
+	private List<ConfigChild> configParents = new ArrayList<>();
 
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<String> xmlElementNames;
@@ -122,16 +133,21 @@ public class FrankElement implements Comparable<FrankElement> {
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		handleConfigChildSetterCandidates(clazz);
 		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
 		handlePossibleParameters(clazz);
 	}
 
-	// TODO: Unit test this.
-	// TODO: This logic wont reintroduce a FrankElement to a type in the JSON.
-	// Suppose a class C has @ff.ignoreTypeMembership pointing to implemented interface I.
-	// Then a class D that is derived from C is also excluded from I, which is fine.
-	// But if another class E is derived from C but also explicitly implements I, then
-	// the present algorithm does not add E to type I.
+	private void handleConfigChildSetterCandidates(FrankClass clazz) {
+		List<FrankMethod> methods = Arrays.asList(clazz.getDeclaredMethods()).stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isConfigChildSetter)
+				.collect(Collectors.toList());
+		for(int i = 0; i < methods.size(); ++i) {
+			unusedConfigChildSetterCandidates.put(methods.get(i), i);
+		}
+	}
+
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
 		String excludedFromType = clazz.getJavaDocTag(FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP);
 		if(excludedFromType != null) {
@@ -177,6 +193,17 @@ public class FrankElement implements Comparable<FrankElement> {
 			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
 		}
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	void addConfigParent(ConfigChild parent) {
+		log.trace("To [{}] [{}] added config parent [{}]", this.getClass().getSimpleName(), fullName, parent.toString());
+		configParents.add(parent);
+	}
+
+	public List<ConfigChild> getConfigParents() {
+		List<ConfigChild> result = new ArrayList<>();
+		result.addAll(configParents);
+		return result;
 	}
 
 	public void addXmlElementName(String elementName) {
@@ -304,13 +331,12 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		// Depends on the fact that FrankDocModel.calculateHighestCommonInterfaces()
-		// and FrankDocModel.setHighestCommonInterface() have been executed.
+		// Depends on the fact that FrankDocModel.calculateCommonInterfacesHierarchies() has been executed.
 		//
 		// There is a subtle point here: the difference between ElementType.getHighestCommonInterface()
 		// and ElementRole.getHighestCommonInterface(). Consider for example the ElementRole
 		// (IWrapperPipe, outputWrapper). The highest common interface of ElementType IWrapperPipe is
-		// IPipe. For this reason, Java class ApiSoapWrapper will produce ApiSoapWrapperOutputWrapper
+		// IPipe. For this reason, Java class ApiSoapWrapperPipe will produce ApiSoapWrapperOutputWrapper
 		// as we want, not the erroneous name ApiSoapWrapperPipeOutputWrapper.
 		//
 		// On the other hand, the highest common interface of the mentioned ElementRole is just the same ElementRole.
@@ -320,10 +346,13 @@ public class FrankElement implements Comparable<FrankElement> {
 		// here so there is no need to promote (IWrapperPipe, outputWrapper). This way, the outputWrapper config child
 		// only allows elements that implement IWrapperPipe, not all implementations of IPipe.
 		//
-		String postfixToRemove = elementType.getHighestCommonInterface().getGroupName();
+		List<String> removablePostfixes = elementType.getCommonInterfaceHierarchy().stream().map(ElementType::getGroupName).collect(Collectors.toList());
 		String result = simpleName;
-		if(result.endsWith(postfixToRemove)) {
-			result = result.substring(0, result.lastIndexOf(postfixToRemove));
+		for(String removablePostfix: removablePostfixes) {
+			if(result.endsWith(removablePostfix)) {
+				result = result.substring(0, result.lastIndexOf(removablePostfix));
+				break;
+			}			
 		}
 		result = result + Utils.toUpperCamelCase(roleName);
 		return result;
@@ -408,5 +437,10 @@ public class FrankElement implements Comparable<FrankElement> {
 		result.addAll(s1);
 		result.addAll(s2);
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return fullName;
 	}
 }
