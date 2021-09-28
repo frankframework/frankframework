@@ -23,18 +23,6 @@ package nl.nn.adapterframework.monitoring;
  */
 public class Clearing extends Trigger {
 	public Clearing() {
-		setAlarm(false);
-	}
-
-	/** @ff.noAttribute */
-	@Override
-	public void setAlarm(boolean b) {
-		super.setAlarm(b);
-	}
-
-	/** @ff.noAttribute */
-	@Override
-	public void setType(String type) {
-		super.setType(type);
+		setTriggerType(TriggerType.CLEARING);
 	}
 }

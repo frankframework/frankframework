@@ -23,18 +23,6 @@ package nl.nn.adapterframework.monitoring;
  */
 public class Alarm extends Trigger {
 	public Alarm() {
-		setAlarm(true);
-	}
-
-	/** @ff.noAttribute */
-	@Override
-	public void setAlarm(boolean b) {
-		super.setAlarm(b);
-	}
-
-	/** @ff.noAttribute */
-	@Override
-	public void setType(String type) {
-		super.setType(type);
+		setTriggerType(TriggerType.ALARM);
 	}
 }

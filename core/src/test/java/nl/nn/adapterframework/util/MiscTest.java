@@ -602,9 +602,4 @@ public class MiscTest {
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-
-	@Test
-	public void testInitialCaps() {
-		assertEquals("Abc", Misc.initialCaps("ABC"));
-	}
 }

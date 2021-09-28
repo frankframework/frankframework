@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
@@ -53,13 +54,13 @@ public class Trigger implements ITrigger {
 	private Monitor monitor;
 	private SeverityEnum severity;
 	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
-	private @Getter(onMethod = @__(@Override)) TriggerType triggerType = TriggerType.ALARM;
+	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
-	private int threshold=0;
-	private int period=0;
+	private @Getter int threshold = 0;
+	private @Getter int period = 0;
 
 	private LinkedList<Date> eventDates = null;
 	private boolean configured = false;
@@ -110,7 +111,7 @@ public class Trigger implements ITrigger {
 	}
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
-		boolean alarm = (triggerType == TriggerType.ALARM);
+		boolean alarm = isAlarm();
 		if (log.isDebugEnabled()) log.debug("evaluating MonitorEvent ["+source.getEventSourceName()+"]");
 
 		Date now = new Date();
@@ -194,26 +195,9 @@ public class Trigger implements ITrigger {
 		return monitor;
 	}
 
-	public void setAlarm(boolean b) {
-		if(b) {
-			triggerType = TriggerType.ALARM;
-		} else {
-			triggerType = TriggerType.CLEARING;
-		}
-	}
-
 	@Override
 	public boolean isAlarm() {
 		return triggerType == TriggerType.ALARM;
-	}
-
-	public TriggerType getTypeEnum() {
-		return triggerType;
-	}
-
-	@Override
-	public void setType(String type) {
-		triggerType = EnumUtils.parse(TriggerType.class, type);
 	}
 
 	private void clearEventCodes() {
@@ -270,18 +254,8 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public int getThreshold() {
-		return threshold;
-	}
-
-	@Override
 	public void setPeriod(int i) {
 		period = i;
-	}
-
-	@Override
-	public int getPeriod() {
-		return period;
 	}
 
 	@Override

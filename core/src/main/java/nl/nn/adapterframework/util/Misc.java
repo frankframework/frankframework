@@ -1413,13 +1413,4 @@ public class Misc {
 
 		return sw.toString().trim();
 	}
-
-	public static String toUpperCamelCase(String arg) {
-		return arg.substring(0,  1).toUpperCase() + arg.substring(1);
-	}
-
-	public static String initialCaps(String arg) {
-		String argLC = arg.toLowerCase();
-		return toUpperCamelCase(argLC);
-	}
 }
