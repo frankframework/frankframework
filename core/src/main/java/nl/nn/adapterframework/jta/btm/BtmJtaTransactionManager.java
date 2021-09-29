@@ -78,19 +78,11 @@ public class BtmJtaTransactionManager extends JtaTransactionManager implements D
 
 	private void writeStatus(Status status) throws TransactionSystemException {
 		String statusFile = getStatusFile(); 
-//		if (StringUtils.isEmpty(statusFile)) {
-//			Configuration configuration = TransactionManagerServices.getConfiguration();
-//			String logFile = configuration.getLogPart1Filename();
-//			if (StringUtils.isNotEmpty(logFile)) {
-//				statusFile = FilenameUtils.getPath(logFile)+"/"+DEFAULT_STATUS_FILENAME;
-//				setStatusFile(statusFile);
-//			}
-//		}
 		if (StringUtils.isNotEmpty(statusFile)) {
 			try (FileOutputStream fos = new FileOutputStream(statusFile)) {
 				fos.write(status.toString().getBytes());
 			} catch (Exception e) {
-				throw new TransactionSystemException("Cannot write status ["+status+"] to file ["+getStatusFile()+"]", e);
+				throw new TransactionSystemException("Cannot write status ["+status+"] to file ["+statusFile+"]", e);
 			}
 		}
 	}
