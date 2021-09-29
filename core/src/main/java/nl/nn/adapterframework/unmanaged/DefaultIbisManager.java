@@ -268,50 +268,50 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			}
 			break;
 
-		case SENDMESSAGE:
-			try {
-				// send job
-				IbisLocalSender localSender = new IbisLocalSender();
-				localSender.setJavaListener(receiverName);
-				localSender.setIsolated(false);
-				localSender.setName("AdapterJob");
-				localSender.configure();
-				localSender.open();
-				try {
-					localSender.sendMessage(new Message(""), null);
-				} finally {
-					localSender.close();
-				}
-			} catch(Exception e) {
-				log.error("Error while sending message (as part of scheduled job execution)", e);
-			}
-			break;
-
-		case MOVEMESSAGE:
-			for (Configuration configuration : configurations) {
-				if (configuration.getRegisteredAdapter(adapterName) != null) {
-					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver receiver = adapter.getReceiverByName(receiverName);
-					ITransactionalStorage errorStorage = receiver.getErrorStorage();
-					if (errorStorage == null) {
-						log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
-					} else {
-						if (errorStorage instanceof JdbcTransactionalStorage) {
-							JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) receiver.getErrorStorage();
-							IListener listener = receiver.getListener();
-							if (listener instanceof EsbJmsListener) {
-								EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
-								EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
-							} else {
-								log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
-							}
-						} else {
-							log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
-						}
-					}
-				}
-			}
-			break;
+//		case SENDMESSAGE:
+//			try {
+//				// send job
+//				IbisLocalSender localSender = new IbisLocalSender();
+//				localSender.setJavaListener(receiverName);
+//				localSender.setIsolated(false);
+//				localSender.setName("AdapterJob");
+//				localSender.configure();
+//				localSender.open();
+//				try {
+//					localSender.sendMessage(new Message(""), null);
+//				} finally {
+//					localSender.close();
+//				}
+//			} catch(Exception e) {
+//				log.error("Error while sending message (as part of scheduled job execution)", e);
+//			}
+//			break;
+//
+//		case MOVEMESSAGE:
+//			for (Configuration configuration : configurations) {
+//				if (configuration.getRegisteredAdapter(adapterName) != null) {
+//					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+//					Receiver receiver = adapter.getReceiverByName(receiverName);
+//					ITransactionalStorage errorStorage = receiver.getErrorStorage();
+//					if (errorStorage == null) {
+//						log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
+//					} else {
+//						if (errorStorage instanceof JdbcTransactionalStorage) {
+//							JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) receiver.getErrorStorage();
+//							IListener listener = receiver.getListener();
+//							if (listener instanceof EsbJmsListener) {
+//								EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
+//								EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
+//							} else {
+//								log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
+//							}
+//						} else {
+//							log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
+//						}
+//					}
+//				}
+//			}
+//			break;
 
 		default:
 			throw new NotImplementedException("action ["+action.name()+"] not implemented");
