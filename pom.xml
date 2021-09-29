@@ -382,6 +382,7 @@
 					<version>1.0</version>
 					<executions>
 						<execution>
+							<?m2e ignore?>
 							<id>find-project-root-directory</id>
 							<goals>
 								<goal>directory-of</goal>
