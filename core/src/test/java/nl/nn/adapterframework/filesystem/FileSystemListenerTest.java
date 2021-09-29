@@ -191,6 +191,34 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileListenerTestGetRawMessage(null,folderName);
 	}
 
+	@Test
+	public void fileListenerTestGetRawMessageWithInProcessTimeSensitive() throws Exception {
+		String folderName = "inProcessFolder";
+
+		String filename="rawMessageFile";
+		String contents="Test Message Contents";
+
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+folderName);
+		_createFolder(folderName);
+
+		waitForActionToFinish();
+
+		fileSystemListener.configure();
+		fileSystemListener.open();
+		
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull("raw message must be null when not available",rawMessage);
+		
+		createFile(null, filename, contents);
+
+		rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull("raw message must be not null when a file is available",rawMessage);
+
+		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+	}
 
 	@Test
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {

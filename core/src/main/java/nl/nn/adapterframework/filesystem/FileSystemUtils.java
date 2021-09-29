@@ -314,7 +314,7 @@ public class FileSystemUtils {
 			Date modificationDate = fileSystem.getModificationTime(f);
 			//add date
 			if (modificationDate != null) {
-				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
+				String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
 				fileXml.addAttribute("modificationDate", date);
 
 				// add the time
