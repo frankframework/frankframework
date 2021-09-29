@@ -26,11 +26,9 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import bitronix.tm.BitronixTransactionManager;
-import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.credentialprovider.util.FilenameUtils;
 
 public class BtmJtaTransactionManager extends JtaTransactionManager implements DisposableBean {
 	
