@@ -53,7 +53,11 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	}
 
 	public void configure(boolean ignoreSQLInjectionWarning) throws ConfigurationException {
-		super.configure();
+		if(ignoreSQLInjectionWarning) {
+			super.configure();
+		} else {
+			configure(null);
+		}
 	}
 
 	public void configure(IAdapter adapter) throws ConfigurationException {

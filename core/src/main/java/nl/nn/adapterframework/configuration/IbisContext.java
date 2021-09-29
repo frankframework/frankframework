@@ -293,7 +293,7 @@ public class IbisContext extends IbisApplicationContext {
 					loadingConfigs.add(currentConfigurationName);
 					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
 				} catch (Exception e) {
-					log("an unhandled exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
+					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
