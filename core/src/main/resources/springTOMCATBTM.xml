@@ -16,7 +16,7 @@
 		class="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager"
 		depends-on="btmTransactionManager"
 		>
-		<property name="statusFile" value="${transactionlog.dir}/status.txt" />
+		<property name="statusFile" value="${transactionmanager.log}/status.txt" />
 	</bean>
 
 	<bean
@@ -33,8 +33,8 @@
 		factory-method="getConfiguration"
 		>
 			<property name="serverId" value="${transactionmanager.uid}"/>
-			<property name="logPart1Filename" value="${transactionlog.dir}/1.tlog" />
-			<property name="logPart2Filename" value="${transactionlog.dir}/2.tlog" />
+			<property name="logPart1Filename" value="${transactionmanager.log}/1.tlog" />
+			<property name="logPart2Filename" value="${transactionmanager.log}/2.tlog" />
 	</bean>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />

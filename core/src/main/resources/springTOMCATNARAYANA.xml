@@ -38,9 +38,9 @@
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
 				<prop key="CoreEnvironmentBean.nodeIdentifier">${transactionmanager.uid}</prop>
-				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionlog.dir}</prop>
-				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionlog.dir}</prop>
-				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionlog.dir}</prop>
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log}</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log}</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log}</prop>
 			</props>
 		</property>
 	</bean>
