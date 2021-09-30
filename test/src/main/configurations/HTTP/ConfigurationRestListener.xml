@@ -252,13 +252,18 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" streamResultToFileNameSessionKey="fileName">
+					urlParam="url_param">
 					<param name="url_param" sessionKey="url" />
 				</sender>
+				<forward name="success" path="safePdfFile" />
+			</pipe>
+
+			<pipe name="safePdfFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="write">
+				<param name="filename" sessionKey="fileName" />
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
 				xmlTag="filename3" includeXmlDeclaration="false" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>

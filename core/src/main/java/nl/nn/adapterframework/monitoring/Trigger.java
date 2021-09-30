@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
@@ -33,12 +35,17 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
+ * A Trigger that has its type configured at startup. Either use type = ALARM or type = CLEARING.
+ *  
  * @author  Gerrit van Brakel
  * @since   4.9
  * 
  */
 public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private static final String CLASS_NAME_ALARM = Alarm.class.getName();
+	private static final String CLASS_NAME_CLEARING = Clearing.class.getName();
 
 	public static final int SOURCE_FILTERING_NONE=0;
 	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
@@ -47,13 +54,13 @@ public class Trigger implements ITrigger {
 	private Monitor monitor;
 	private SeverityEnum severity;
 	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
-	private boolean alarm;
+	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
 	private List<String> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
-	private int threshold=0;
-	private int period=0;
+	private @Getter int threshold = 0;
+	private @Getter int period = 0;
 
 	private LinkedList<Date> eventDates = null;
 	private boolean configured = false;
@@ -104,6 +111,7 @@ public class Trigger implements ITrigger {
 	}
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
+		boolean alarm = isAlarm();
 		if (log.isDebugEnabled()) log.debug("evaluating MonitorEvent ["+source.getEventSourceName()+"]");
 
 		Date now = new Date();
@@ -139,7 +147,8 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void toXml(XmlBuilder monitor) {
-		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
+		XmlBuilder trigger=new XmlBuilder("trigger");
+		trigger.addAttribute("className", isAlarm() ? CLASS_NAME_ALARM : CLASS_NAME_CLEARING);
 		monitor.addSubElement(trigger);
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity",getSeverity());
@@ -150,31 +159,25 @@ public class Trigger implements ITrigger {
 		if (getPeriod()>0) {
 			trigger.addAttribute("period",getPeriod());
 		}
-		XmlBuilder events=new XmlBuilder("events");
-		trigger.addSubElement(events);
 		for (int i=0; i<eventCodes.size(); i++) {
 			XmlBuilder event=new XmlBuilder("event");
-			events.addSubElement(event);
+			trigger.addSubElement(event);
 			event.setValue(eventCodes.get(i));
 		}
 		if (getAdapterFilters()!=null) {
-			XmlBuilder filtersXml=new XmlBuilder("filters");
-			trigger.addSubElement(filtersXml);
 			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
 				for (Iterator<String> it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
 					String adapterName = it.next();
 					AdapterFilter af = getAdapterFilters().get(adapterName);
 					XmlBuilder adapter = new XmlBuilder("adapterfilter");
-					filtersXml.addSubElement(adapter);
+					trigger.addSubElement(adapter);
 					adapter.addAttribute("adapter",adapterName);
 					if (isFilterOnLowerLevelObjects()) {
-						XmlBuilder sourcesXml=new XmlBuilder("sources");
-						adapter.addSubElement(sourcesXml);
 						List<String> subobjectList=af.getSubObjectList();
 						if (subobjectList!=null) {
 							for(String subObjectName : subobjectList) {
 								XmlBuilder sourceXml=new XmlBuilder("source");
-								sourcesXml.addSubElement(sourceXml);
+								adapter.addSubElement(sourceXml);
 								sourceXml.setValue(subObjectName);
 							}
 						}
@@ -193,31 +196,8 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public void setAlarm(boolean b) {
-		alarm = b;
-	}
-	@Override
 	public boolean isAlarm() {
-		return alarm;
-	}
-
-	@Override
-	public String getType() {
-		if (isAlarm()) {
-			return "Alarm";
-		} else {
-			return "Clearing";
-		}
-	}
-
-	@Override
-	public void setType(String type) {
-		if (type.equalsIgnoreCase("Alarm")) {
-			setAlarm(true);
-		}
-		if (type.equalsIgnoreCase("Clearing")) {
-			setAlarm(false);
-		}
+		return triggerType == TriggerType.ALARM;
 	}
 
 	private void clearEventCodes() {
@@ -274,18 +254,8 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public int getThreshold() {
-		return threshold;
-	}
-
-	@Override
 	public void setPeriod(int i) {
 		period = i;
-	}
-
-	@Override
-	public int getPeriod() {
-		return period;
 	}
 
 	@Override
