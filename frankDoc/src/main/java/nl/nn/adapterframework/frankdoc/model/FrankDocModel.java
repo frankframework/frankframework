@@ -299,14 +299,20 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
-			log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+			if(method.getParameterTypes()[0].isEnum()) {
+				log.trace("Attribute [{}] has setter that takes enum: [{}]", () -> attribute.getName(), () -> method.getParameterTypes()[0].toString());
+				attribute.setAttributeType(AttributeType.STRING);
+				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) method.getParameterTypes()[0]));
+			} else {
+				attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
+				log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+				if(enumGettersByAttributeName.containsKey(attributeName)) {
+					log.trace("Attribute {} has enum values", () -> attributeName);
+					attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
+				}
+			}
 			documentAttribute(attribute, method, attributeOwner);
 			log.trace("Default [{}]", () -> attribute.getDefaultValue());
-			if(enumGettersByAttributeName.containsKey(attributeName)) {
-				log.trace("Attribute {} has enum values", () -> attributeName);
-				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
-			}
 			try {
 				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
 				// but only throws an exception. This allows us to test that method

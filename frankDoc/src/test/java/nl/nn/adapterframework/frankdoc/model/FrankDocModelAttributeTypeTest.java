@@ -4,8 +4,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -63,5 +65,24 @@ public class FrankDocModelAttributeTypeTest {
 		// Test the int attribute
 		childAttribute = child.getAttributes(ElementChild.ALL_NOT_EXCLUDED).get(1);
 		assertEquals(AttributeType.INT, childAttribute.getAttributeType());
+	}
+
+	@Test
+	public void whenAttributeSetterTakesEnumThenEnumTypedAttribute() {
+		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", CHILD, classRepository);
+		FrankElement child = model.findFrankElement(CHILD);
+		assertNotNull(child);
+		// By taking a fixed element index we test that the attributes appear in the right order.
+		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL_NOT_EXCLUDED).get(2);
+		assertEquals("enumSetterAttribute", childAttribute.getName());
+		AttributeType attributeType = childAttribute.getAttributeType();
+		assertEquals(AttributeType.STRING, attributeType);
+		AttributeEnum attributeEnum = childAttribute.getAttributeEnum();
+		assertEquals(PACKAGE + "MyOtherEnum", attributeEnum.getFullName());
+		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.enumattr.MyOtherEnum", attributeEnum.getFullName());
+		List<AttributeEnumValue> values = attributeEnum.getValues();
+		assertEquals("OTHER_ENUM_FIRST", values.get(0).getLabel());
+		assertEquals("OTHER_ENUM_SECOND", values.get(1).getLabel());
+		assertSame(attributeEnum, model.findAttributeEnum(PACKAGE + "MyOtherEnum"));
 	}
 }

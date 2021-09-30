@@ -66,11 +66,13 @@ public final class Utils {
 				&& (method.getParameterTypes().length == 1)
 				&& (! method.isVarargs())
 				&& (method.getParameterTypes()[0].isPrimitive()
-						|| JAVA_BOXED.contains(method.getParameterTypes()[0].getName()));
+						|| JAVA_BOXED.contains(method.getParameterTypes()[0].getName())
+						|| method.getParameterTypes()[0].isEnum());
 		boolean isGetter = (
 					(method.getReturnType().isPrimitive()
 							&& !method.getReturnType().getName().equals("void"))
 					|| JAVA_BOXED.contains(method.getReturnType().getName())
+					|| method.getReturnType().isEnum()
 				) && (method.getParameterTypes().length == 0);
 		return isSetter || isGetter;
 	}
