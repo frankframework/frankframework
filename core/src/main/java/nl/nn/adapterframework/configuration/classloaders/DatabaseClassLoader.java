@@ -70,6 +70,9 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		return (String) configuration.get("CREATED");
 	}
 
+	/**
+	 * @param datasourceName the Datasource to retrieve the configuration jar from
+	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
 	}

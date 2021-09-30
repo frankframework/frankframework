@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class JarBytesClassLoader extends BytesClassLoader {
 
-	public JarBytesClassLoader(ClassLoader classLoader) {
+	protected JarBytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
