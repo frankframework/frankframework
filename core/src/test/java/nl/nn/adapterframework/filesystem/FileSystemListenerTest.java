@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -218,6 +219,87 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+	}
+
+	@Test
+	public void changeProcessStateForTwoFilesWithTheSameName() throws Exception {
+		String folderName = "inProcessFolder";
+
+		String filename="rawMessageFile";
+		String contents="Test Message Contents";
+
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+folderName);
+		_createFolder(folderName);
+
+		waitForActionToFinish();
+
+		fileSystemListener.configure();
+		fileSystemListener.open();
+		
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull("raw message must be null when not available",rawMessage);
+		
+		createFile(null, filename, contents);
+
+		rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull("raw message must be not null when a file is available",rawMessage);
+
+		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+
+		createFile(null, filename, contents);
+		F rawMessage2 = fileSystemListener.getRawMessage(threadContext);
+		F movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile2).startsWith(filename+"-"));
+
+		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile), fileSystemListener.getFileSystem().getName(movedFile2));
+	}
+
+	@Test
+	public void changeProcessStateForTwoFilesWithTheSameNameAndTimestamp() throws Exception {
+		String folderName = "inProcessFolder";
+		String copiedFileFolderName="copiedFile";
+
+		String filename="rawMessageFile";
+		String contents="Test Message Contents";
+
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+folderName);
+		_createFolder(folderName);
+
+		waitForActionToFinish();
+
+		fileSystemListener.configure();
+		fileSystemListener.open();
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull("raw message must be null when not available",rawMessage);
+
+		createFile(null, filename, contents);
+		F f = fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+filename);
+		F copiedFile = fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName, true);
+
+		rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull("raw message must be not null when a file is available",rawMessage);
+
+		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+
+		F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(copiedFile, fileAndFolderPrefix, true);
+
+		Date modificationDateFile = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
+		Date modificationDateSecondFile = fileSystemListener.getFileSystem().getModificationTime(f);
+		assertEquals(modificationDateFile, modificationDateSecondFile);
+
+		F movedFile2 = fileSystemListener.changeProcessState(movedCopiedFile, ProcessState.INPROCESS, null);
+
+		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
+		String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2);
+
+		assertEquals(nameOfFirstFile, nameOfSecondFile.substring(0, nameOfSecondFile.lastIndexOf("-")));
 	}
 
 	@Test

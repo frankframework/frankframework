@@ -379,7 +379,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				F movedFile = getFileSystem().moveFile(message, getStateFolder(toState), false);
 				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
-				return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, overwrite, getNumberOfBackups());
+				int i=1;
+				while(getFileSystem().exists(renamedFile)) {
+					renamedFile=getFileSystem().toFile(newName+"-"+i);
+					if(i>=10) {
+						log.warn("Cannot rename file ["+message+"] with the timestamp suffix. File moved to ["+getStateFolder(toState)+"] folder with the original name");
+					}
+				}
+				return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
 			}
 			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {
