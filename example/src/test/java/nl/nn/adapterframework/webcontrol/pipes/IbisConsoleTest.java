@@ -34,6 +34,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
+@org.junit.Ignore
 public class IbisConsoleTest {
 	private static String SHOW_CONFIGURATION_STATUS_XSLT = "webcontrol/pipes/xsl/ShowConfigurationStatus.xsl";
 	private static String SHOW_ENVIRONMENT_VARIABLES_XSLT = "webcontrol/pipes/xsl/ShowEnvironmentVariables.xsl";
