@@ -166,13 +166,6 @@
 	/>
 
 	<bean
-		name="proto-job"
-		class="nl.nn.adapterframework.scheduler.JobDef"
-		autowire="byName"
-		scope="prototype"
-	/>
-
-	<bean
 		name="proto-directoryCleaner"
 		class="nl.nn.adapterframework.util.DirectoryCleaner"
 		autowire="byName"

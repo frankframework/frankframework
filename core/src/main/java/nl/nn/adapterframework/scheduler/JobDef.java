@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +64,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -569,39 +571,48 @@ public class JobDef extends TransactionAttributes implements IConfigurationAware
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
 
-		switch(function) {
-		case DUMPSTATS:
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
-			break;
-		case DUMPSTATSFULL:
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-			break;
-		case CLEANUPDB:
-			cleanupDatabase(ibisManager);
-			break;
-		case CLEANUPFS:
-			cleanupFileSystem(ibisManager);
-			break;
-		case RECOVER_ADAPTERS:
-			recoverAdapters(ibisManager);
-			break;
-		case CHECK_RELOAD:
-			checkReload(ibisManager);
-			break;
-		case QUERY:
-			executeQueryJob(ibisManager);
-			break;
-		case SEND_MESSAGE:
-			executeSendMessageJob(ibisManager);
-			break;
-		case LOAD_DATABASE_SCHEDULES:
-			loadDatabaseSchedules(ibisManager);
-			break;
+		if(this instanceof IJob) {
+			try {
+				((IJob) this).execute(ibisManager);
+			} catch (Exception e) {
+				String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg);
+			}
+		}
+		else {
 
-		default:
-			IbisAction action = EnumUtils.parse(IbisAction.class, "function", getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
-			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
-			break;
+			switch(function) {
+			case DUMPSTATS:
+				ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
+				break;
+			case DUMPSTATSFULL:
+				ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+				break;
+			case CLEANUPDB:
+				cleanupDatabase(ibisManager);
+				break;
+			case CLEANUPFS:
+				cleanupFileSystem(ibisManager);
+				break;
+			case RECOVER_ADAPTERS:
+				recoverAdapters(ibisManager);
+				break;
+			case CHECK_RELOAD:
+				checkReload(ibisManager);
+				break;
+			case QUERY:
+			case SEND_MESSAGE:
+				throw new NotImplementedException();
+			case LOAD_DATABASE_SCHEDULES:
+				loadDatabaseSchedules(ibisManager);
+				break;
+	
+			default:
+				IbisAction action = EnumUtils.parse(IbisAction.class, "function", getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
+				ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+				break;
+			}
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -980,68 +991,6 @@ public class JobDef extends TransactionAttributes implements IConfigurationAware
 			} catch (SchedulerException e) {
 				getMessageKeeper().add("unable to remove schedule ["+key+"]", e);
 			}
-		}
-	}
-
-	private void executeQueryJob(IbisManager ibisManager) {
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		try {
-			qs.setQuery(getQuery());
-			qs.setName("executeQueryJob");
-			if(StringUtils.isNotEmpty(getJmsRealm())) {
-				qs.setJmsRealm(getJmsRealm());
-			} else {
-				qs.setDatasourceName(getDatasourceName());
-			}
-			qs.setQueryType("other");
-			qs.setTimeout(getQueryTimeout());
-			qs.configure();
-			qs.open();
-			Message result = qs.sendMessage(Message.nullMessage(), null);
-			log.info("result [" + result + "]");
-		} catch (Exception e) {
-			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg);
-		} finally {
-			qs.close();
-		}
-	}
-
-	private void executeSendMessageJob(IbisManager ibisManager) {
-		try {
-			// send job
-			IbisLocalSender localSender = SpringUtils.createBean(applicationContext, IbisLocalSender.class);
-			localSender.setJavaListener(getJavaListener());
-			localSender.setIsolated(false);
-			localSender.setName("AdapterJob");
-			if (getInterval() == 0) {
-				localSender.setDependencyTimeOut(-1);
-			}
-			if (StringUtils.isNotEmpty(getAdapterName())) {
-				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
-				if (iAdapter == null) {
-					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
-					return;
-				}
-			}
-			localSender.configure();
-			localSender.open();
-			try {
-				//sendMessage message cannot be NULL
-				Message message = new Message((getMessage()==null) ? "" : getMessage());
-				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
-				localSender.sendMessage(message, session);
-			}
-			finally {
-				localSender.close();
-			}
-		}
-		catch(Exception e) {
-			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg, e);
 		}
 	}
 

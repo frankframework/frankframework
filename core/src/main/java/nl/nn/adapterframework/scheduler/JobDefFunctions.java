@@ -17,14 +17,17 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
+import nl.nn.adapterframework.scheduler.job.ExecuteQueryJob;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 
 public enum JobDefFunctions implements DocumentedEnum {
 	@EnumLabel("StopAdapter") STOP_ADAPTER(),
 	@EnumLabel("StartAdapter") START_ADAPTER(),
 	@EnumLabel("StopReceiver") STOP_RECEIVER(),
 	@EnumLabel("StartReceiver") START_RECEIVER(),
-	@EnumLabel("SendMessage") SEND_MESSAGE(),
-	@EnumLabel("ExecuteQuery") QUERY(),
+	@EnumLabel("SendMessage") SEND_MESSAGE(SendMessageJob.class),
+	@EnumLabel("ExecuteQuery") QUERY(ExecuteQueryJob.class),
 	@EnumLabel("dumpStatistics") DUMPSTATS(true),
 	@EnumLabel("dumpStatisticsFull") DUMPSTATSFULL(true),
 	@EnumLabel("cleanupDatabase") CLEANUPDB(true),
@@ -34,9 +37,14 @@ public enum JobDefFunctions implements DocumentedEnum {
 	@EnumLabel("loadDatabaseSchedules") LOAD_DATABASE_SCHEDULES(true);
 
 	private boolean servicejob = false;
+	private Class<? extends IJob> jobClass = null;
 
 	private JobDefFunctions() {
 		this(false);
+	}
+	private JobDefFunctions(Class<? extends IJob> jobClass) {
+		this(false);
+		this.jobClass = jobClass;
 	}
 
 	private JobDefFunctions(boolean servicejob) {
@@ -61,5 +69,12 @@ public enum JobDefFunctions implements DocumentedEnum {
 	 */
 	public boolean isServiceJob() {
 		return servicejob;
+	}
+
+	/**
+	 * @return null if it's a normal JobDef
+	 */
+	public Class<?> getJobClass() {
+		return jobClass != null ? jobClass : JobDef.class;
 	}
 }
