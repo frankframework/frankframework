@@ -34,7 +34,7 @@
 		<receiver >
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
 		</receiver>
-		<receiver maxRetries="-1">
+		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
 		</receiver>
 		<receiver>
