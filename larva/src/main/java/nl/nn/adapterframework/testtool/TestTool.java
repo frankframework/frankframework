@@ -128,7 +128,7 @@ public class TestTool {
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false; 
-	private static int globalTimeout=DEFAULT_TIMEOUT;
+	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
@@ -158,7 +158,13 @@ public class TestTool {
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
-		String paramScenarioTimeout = request.getParameter("timeout");
+		String paramGlobalTimeout = request.getParameter("timeout");
+		if(paramGlobalTimeout != null) {
+			try {
+				globalTimeout = Integer.parseInt(paramGlobalTimeout);
+			} catch(NumberFormatException e) {
+			}
+		}
 		String servletPath = request.getServletPath();
 		int i = servletPath.lastIndexOf('/');
 		String realPath = application.getRealPath(servletPath.substring(0, i));
@@ -166,20 +172,19 @@ public class TestTool {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, paramScenarioTimeout,
+				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
 	public static final int ERROR_NO_SCENARIO_DIRECTORIES_FOUND=-1;
 	/**
 	 * 
-	 * @param paramScenarioTimeout 
 	 * @return negative: error condition
 	 * 		   0: all scenarios passed
 	 * 		   positive: number of scenarios that failed
 	 */
 	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
-			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp, String paramScenarioTimeout,
+			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
 			String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
@@ -237,14 +242,8 @@ public class TestTool {
 			}
 		}
 
-		if(paramScenarioTimeout != null) {
-			try {
-				globalTimeout = Integer.parseInt(paramScenarioTimeout);
-			} catch(NumberFormatException e) {
-			}
-		}
 		debugMessage("Write html form", writers);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, globalTimeout, paramExecute, autoScroll, writers);
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 		debugMessage("Stop logging to logbuffer", writers);
 		if (writers!=null) {
 			writers.put("uselogbuffer", "stop");
@@ -310,7 +309,6 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								globalTimeout = Integer.valueOf(properties.getProperty("scenario.timeout", globalTimeout+""));
 								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
@@ -450,7 +448,7 @@ public class TestTool {
 				}
 				writeHtml("<br/>", writers, false);
 				writeHtml("<br/>", writers, false);
-				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, globalTimeout, paramExecute, autoScroll, writers);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
 				debugMessage("Stop logging to htmlbuffer", writers);
 				if (writers!=null) {
 					writers.put("usehtmlbuffer", "stop");
@@ -461,7 +459,7 @@ public class TestTool {
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int scenarioTimeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
+	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map<String, Object> writers) {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
@@ -570,7 +568,7 @@ public class TestTool {
 			writeHtml("</tr>", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + scenarioTimeout + "\" title=\"Global timeout for larva scenarios. This can be overriden by setting scenario.timeout property for a specific scenario.\">", writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + globalTimeout + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
 			writeHtml("</td>", writers, false);
 			writeHtml("</tr>", writers, false);
 			writeHtml("</table>", writers, false);
@@ -2730,7 +2728,7 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(globalTimeout);
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);
