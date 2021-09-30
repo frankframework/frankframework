@@ -35,6 +35,11 @@
                     "name":"overloadedEnum",
                     "describer":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master",
                     "enum":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.MyEnum"
+                },
+                {
+                    "name":"myAttribute",
+                    "describer":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master",
+                    "enum":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.MyEnum"
                 }
             ],
             "children":[

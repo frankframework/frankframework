@@ -10,4 +10,12 @@ public class Master extends Parent {
 
 	public void setOverloadedEnum(MyEnum arg) {
 	}
+
+	public void setMyAttribute(MyEnum arg) {
+	}
+
+	// Should produce a warning, return type differs from argument type of setter.
+	public String getMyAttribute() {
+		return null;
+	}
 }

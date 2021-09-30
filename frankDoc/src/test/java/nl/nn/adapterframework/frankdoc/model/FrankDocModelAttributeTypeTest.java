@@ -78,8 +78,8 @@ public class FrankDocModelAttributeTypeTest {
 		AttributeType attributeType = childAttribute.getAttributeType();
 		assertEquals(AttributeType.STRING, attributeType);
 		AttributeEnum attributeEnum = childAttribute.getAttributeEnum();
+		assertEquals("MyOtherEnum", attributeEnum.getUniqueName(""));
 		assertEquals(PACKAGE + "MyOtherEnum", attributeEnum.getFullName());
-		assertEquals("nl.nn.adapterframework.frankdoc.testtarget.enumattr.MyOtherEnum", attributeEnum.getFullName());
 		List<AttributeEnumValue> values = attributeEnum.getValues();
 		assertEquals("OTHER_ENUM_FIRST", values.get(0).getLabel());
 		assertEquals("OTHER_ENUM_SECOND", values.get(1).getLabel());
