@@ -18,4 +18,13 @@ public class Master extends Parent {
 	public String getMyAttribute() {
 		return null;
 	}
+
+	public void setMyAttribute2(String arg) {
+	}
+
+	// Also should produce a warning. We need this one to cover that a method returning enum
+	// counts as a getter.
+	public MyEnum getMyAttribute2() {
+		return null;
+	}
 }

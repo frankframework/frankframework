@@ -40,6 +40,10 @@
                     "name":"myAttribute",
                     "describer":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master",
                     "enum":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.MyEnum"
+                },
+                {
+                    "name":"myAttribute2",
+                    "describer":"nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master"
                 }
             ],
             "children":[
