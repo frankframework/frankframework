@@ -9,8 +9,6 @@ public class AttributeOwner implements IChild, IIgnored {
 	// Ignored because of @ff.ignoreTypeMembership JavaDoc tag.
 	@Override
 	public void setIgnored(MyEnum arg) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/**
