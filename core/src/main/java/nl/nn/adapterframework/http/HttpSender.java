@@ -693,7 +693,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Use the <code>firstBodyPartName</code> attribute instead")
+	@ConfigurationWarning("Use the firstBodyPartName attribute instead")
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}

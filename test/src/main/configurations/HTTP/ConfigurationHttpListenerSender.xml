@@ -59,7 +59,7 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
-					timeout="1000" inputMessageParam="request" />
+					timeout="1000" firstBodyPartName="request" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>

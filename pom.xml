@@ -10,7 +10,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.14.1</log4j2.version>
 		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
-		<iaf.rootdir>${project.parent.basedir}</iaf.rootdir>
+		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -289,6 +289,10 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.commonjava.maven.plugins</groupId>
+				<artifactId>directory-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.glassfish.copyright</groupId>
 				<artifactId>glassfish-copyright-maven-plugin</artifactId>
 			</plugin>
@@ -371,6 +375,28 @@
 						<useDash>true</useDash>
 						<templateFile>${iaf.rootdir}/copyrightTemplateFile.txt</templateFile>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.commonjava.maven.plugins</groupId>
+					<artifactId>directory-maven-plugin</artifactId>
+					<version>1.0</version>
+					<executions>
+						<execution>
+							<?m2e ignore?>
+							<id>find-project-root-directory</id>
+							<goals>
+								<goal>directory-of</goal>
+							</goals>
+							<phase>initialize</phase>
+							<configuration>
+								<property>iaf.rootdir</property>
+								<project>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-parent</artifactId>
+								</project>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -716,17 +742,6 @@
 					</plugin>
 				</plugins>
 			</reporting>
-		</profile>
-		<profile>
-			<activation>
-				<file>
-					<exists>copyrightTemplateFile.txt</exists>
-				</file>
-			</activation>
-			<properties>
-				<!-- For parent use ${project.basedir} instead of ${project.parent.basedir} -->
-				<iaf.rootdir>${project.basedir}</iaf.rootdir>
-			</properties>
 		</profile>
 	</profiles>
 </project>

@@ -26,9 +26,9 @@ import nl.nn.adapterframework.configuration.IbisContext;
 
 public abstract class BytesClassLoader extends ClassLoaderBase {
 
-	private Map<String, byte[]> resources = new HashMap<String, byte[]>();
+	private Map<String, byte[]> resources = new HashMap<>();
 
-	public BytesClassLoader(ClassLoader classLoader) {
+	protected BytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 

@@ -2227,10 +2227,13 @@ angular.module('iaf.beheerconsole')
 	Api.Get("jdbc", function(data) {
 		$.extend($scope, data);
 		$scope.form.datasource = data.datasources[0];
+		$scope.form.queryType = data.queryTypes[0];
 		$scope.form.resultType = data.resultTypes[0];
 		if(executeQueryCookie) {
 			$scope.form.query = executeQueryCookie.query;
-			$scope.form.datasource = executeQueryCookie.datasource;
+			if(data.datasources.indexOf(executeQueryCookie.datasource) !== -1){
+				$scope.form.datasource = executeQueryCookie.datasource;
+			}
 			$scope.form.resultType = executeQueryCookie.resultType;
 		}
 		
