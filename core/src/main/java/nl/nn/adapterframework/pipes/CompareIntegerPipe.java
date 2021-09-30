@@ -23,6 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -31,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Pipe that compares the two integer values.
+ * Pipe that compares the two integer values read from {@link Parameter the parameters} <code>operand1</code> and <code>operand2</code>.
  * If one of the parameters is missing then the input message will be used as the missing operand.
  * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
@@ -43,11 +44,6 @@ import org.apache.commons.lang3.StringUtils;
  * <tr><td>equals</td><td>when v1 = v2</td></tr>
  * </table>
  * </p>
- *
- * @ff.parameter operand1 The first operand, holds v1.
- * 
- * @ff.parameter operand2 The second operand, holds v2.
- *  
  * @author     Richard Punt / Gerrit van Brakel
  */
 public class CompareIntegerPipe extends AbstractPipe {
