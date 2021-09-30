@@ -22,4 +22,7 @@ public class Child extends Parent {
 	public MyEnum getNotForAttributeBecauseHasArgumentEnum(int value) {
 		return MyEnum.TWO;
 	}
+
+	public void setEnumSetterAttribute(MyOtherEnum arg) {
+	}
 }

@@ -296,6 +296,11 @@ public class FrankDocModelTest {
 		checkReflectAttributeCreated("attributeOnlySetterShortBoxed");
 	}
 
+	@Test
+	public void whenSetterHasEnumTypeThenAttribute() throws FrankDocException {
+		checkReflectAttributeCreated("attributeSetterTakingEnum");
+	}
+
 	private void checkReflectAttributeOmitted(String attributeName) throws FrankDocException {
 		Map<String, FrankAttribute> actual = getReflectInvestigatedFrankAttributes();
 		assertFalse(actual.containsKey(attributeName));
@@ -351,7 +356,7 @@ public class FrankDocModelTest {
 				"attributeWithIbisDocLackingDescription", "attributeWithJavaDocDefault",
 				"attributeWithInheritedJavaDocDefault", "attributeWithIbisDocThatOverrulesJavadocDefault",
 				"intAttributeWithStringDefault", "boolAttributeWithStringDefault",
-				"enumAttributeWithInvalidDefault"};
+				"enumAttributeWithInvalidDefault", "attributeSetterTakingEnum"};
 		assertArrayEquals(expectedAttributeNames, actualAttributeNames.toArray(new String[] {}));
 	}
 

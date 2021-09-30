@@ -285,6 +285,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
+		checkForAttributeSetterOverloads(clazz);
 		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz, classRepository);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
@@ -299,14 +300,20 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
-			log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+			if(method.getParameterTypes()[0].isEnum()) {
+				log.trace("Attribute [{}] has setter that takes enum: [{}]", () -> attribute.getName(), () -> method.getParameterTypes()[0].toString());
+				attribute.setAttributeType(AttributeType.STRING);
+				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) method.getParameterTypes()[0]));
+			} else {
+				attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
+				log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+				if(enumGettersByAttributeName.containsKey(attributeName)) {
+					log.trace("Attribute {} has enum values", () -> attributeName);
+					attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
+				}
+			}
 			documentAttribute(attribute, method, attributeOwner);
 			log.trace("Default [{}]", () -> attribute.getDefaultValue());
-			if(enumGettersByAttributeName.containsKey(attributeName)) {
-				log.trace("Attribute {} has enum values", () -> attributeName);
-				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
-			}
 			try {
 				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
 				// but only throws an exception. This allows us to test that method
@@ -327,6 +334,23 @@ public class FrankDocModel {
 		return result;
 	}
 
+	private void checkForAttributeSetterOverloads(FrankClass clazz) {
+		List<FrankMethod> cumulativeAttributeSetters = getAttributeMethodList(clazz.getDeclaredAndInheritedMethods(), "set");
+		Map<String, List<FrankMethod>> attributeSettersByAttributeName = cumulativeAttributeSetters.stream()
+				.collect(Collectors.groupingBy(m -> attributeOf(m.getName(), "set")));
+		for(String attributeName: attributeSettersByAttributeName.keySet()) {
+			List<FrankMethod> attributeSetterCandidates = attributeSettersByAttributeName.get(attributeName);
+			List<String> candidateTypes = attributeSetterCandidates.stream()
+					.map(m -> m.getParameterTypes()[0].getName())
+					.distinct()
+					.collect(Collectors.toList());
+			if(candidateTypes.size() >= 2) {
+				log.warn("Class [{}] has overloaded declared or inherited attribute setters. Type of attribute [{}] can be any of [{}]",
+						clazz.getName(), attributeName, candidateTypes.stream().collect(Collectors.joining(", ")));
+			}
+		}
+	}
+
 	private Map<String, FrankMethod> getGetterAndIsserAttributes(FrankMethod[] methods, FrankElement attributeOwner) {
 		Map<String, FrankMethod> getterAttributes = getAttributeToMethodMap(methods, "get");
 		Map<String, FrankMethod> isserAttributes = getAttributeToMethodMap(methods, "is");
@@ -345,18 +369,21 @@ public class FrankDocModel {
      * over the entrySet() of the returned Map.
 	 */
 	static LinkedHashMap<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
-		List<FrankMethod> methodList = Arrays.asList(methods);
-		methodList = methodList.stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isAttributeGetterOrSetter)
-				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
-				.collect(Collectors.toList());
 		LinkedHashMap<String, FrankMethod> result = new LinkedHashMap<>();
-		for(FrankMethod method: methodList) {
+		for(FrankMethod method: getAttributeMethodList(methods, prefix)) {
 			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
 		}
 		return result;
+	}
+
+	private static List<FrankMethod> getAttributeMethodList(FrankMethod[] methods, String prefix) {
+		List<FrankMethod> methodList = Arrays.asList(methods);
+		return methodList.stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isAttributeGetterOrSetter)
+				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
+				.collect(Collectors.toList());
 	}
 
 	private static String attributeOf(String methodName, String prefix) {
