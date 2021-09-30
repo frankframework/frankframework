@@ -301,6 +301,62 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		assertEquals(nameOfFirstFile, nameOfSecondFile.substring(0, nameOfSecondFile.lastIndexOf("-")));
 	}
+	
+	@Test
+	public void changeProcessStateFor6FilesWithTheSameNameAndTimestamp() throws Exception {
+		String folderName = "inProcessFolder";
+		String copiedFileFolderName="copiedFile";
+
+		String filename="rawMessageFile";
+		String contents="Test Message Contents";
+
+		fileSystemListener.setFileTimeSensitive(true);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+folderName);
+		_createFolder(folderName);
+
+		waitForActionToFinish();
+
+		fileSystemListener.configure();
+		fileSystemListener.open();
+
+		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull("raw message must be null when not available",rawMessage);
+
+		createFile(null, filename, contents);
+		F f = fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+filename);
+
+		// copy file 
+		for(int i=1;i<=6;i++) {
+			fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName+i, true);
+		}
+
+		rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull("raw message must be not null when a file is available",rawMessage);
+
+		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+		
+		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
+		Date modificationDateFirstFile = fileSystemListener.getFileSystem().getModificationTime(movedFile);
+		
+		for(int i=1;i<=6;i++) {
+			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true);
+
+			Date modificationDate = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
+			assertEquals(modificationDateFirstFile, modificationDate);
+
+			F movedFile2 = fileSystemListener.changeProcessState(movedCopiedFile, ProcessState.INPROCESS, null);
+
+			String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2);
+
+			if(i==6) {
+				assertEquals(filename, nameOfSecondFile);
+			} else {
+				assertEquals(nameOfFirstFile+"-"+i, nameOfSecondFile);
+			}
+		}
+	}
 
 	@Test
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {

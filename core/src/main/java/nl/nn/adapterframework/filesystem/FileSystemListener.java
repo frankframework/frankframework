@@ -384,7 +384,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					renamedFile=getFileSystem().toFile(newName+"-"+i);
 					if(i>5) {
 						log.warn("Cannot rename file ["+message+"] with the timestamp suffix. File moved to ["+getStateFolder(toState)+"] folder with the original name");
-						break;
+						return movedFile;
 					}
 					i++;
 				}
