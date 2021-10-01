@@ -72,21 +72,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * <p>Since 4.1 this class also has parameters, so that descendants of this class automatically are parameter-enabled.
  * However, your documentation should say if and how parameters are used!<p>
- * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself<p>
- * <tr><td>{@link #setWriteToSecLog (boolean) writeToSecLog}</td><td>when set to <code>true</code> a record is written to the security log when the pipe has finished successfully</td><td>false</td></tr>
- * <tr><td>{@link #setSecLogSessionKeys(String) secLogSessionKeys}</td><td>(only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLogIntermediaryResults (String) logIntermediaryResults}</td><td>when set, the value in AppConstants is overwritten (for this pipe only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>Note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
- * <p>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
- * </table>
- * </p>
- *
+ * @ff.parameters Parameters are enabled, but the use of parameters is defined by the subclass
+ * 
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see PipeLineSession
@@ -95,30 +84,30 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
-	private String name;
-	private String getInputFromSessionKey=null;
-	private String getInputFromFixedValue=null;
-	private String storeResultInSessionKey=null;
-	private boolean preserveInput=false;
+	private @Getter String name;
+	private @Getter String getInputFromSessionKey=null;
+	private @Getter String getInputFromFixedValue=null;
+	private @Getter String storeResultInSessionKey=null;
+	private @Getter boolean preserveInput=false;
 
-	private int maxThreads = 0;
-	private long durationThreshold = -1;
+	private @Getter int maxThreads = 0;
+	private @Getter long durationThreshold = -1;
 
-	private String chompCharSize = null;
-	private String elementToMove = null;
-	private String elementToMoveSessionKey = null;
-	private String elementToMoveChain = null;
-	private boolean removeCompactMsgNamespaces = true;
-	private boolean restoreMovedElements=false;
-	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private @Getter String chompCharSize = null;
+	private @Getter String elementToMove = null;
+	private @Getter String elementToMoveSessionKey = null;
+	private @Getter String elementToMoveChain = null;
+	private @Getter boolean removeCompactMsgNamespaces = true;
+	private @Getter boolean restoreMovedElements=false;
+	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
-	private Locker locker;
-	private String emptyInputReplacement=null;
-	private boolean writeToSecLog = false;
-	private String secLogSessionKeys = null;
-	private String logIntermediaryResults = null;
-	private String hideRegex = null;
+	private @Getter Locker locker;
+	private @Getter String emptyInputReplacement=null;
+	private @Getter boolean writeToSecLog = false;
+	private @Getter String secLogSessionKeys = null;
+	private @Getter String logIntermediaryResults = null;
+	private @Getter String hideRegex = null;
 
 	private Map<String, PipeForward> pipeForwards = new Hashtable<String, PipeForward>();
 	private ParameterList parameterList = new ParameterList();
@@ -206,48 +195,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	}
 
 	@Override
-	public void start() throws PipeStartException {
-//		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
-//			try {
-//				// getUserTransaction, to make sure its available
-//				JtaUtil.getUserTransaction();
-//			} catch (NamingException e) {
-//				throw new PipeStartException(getLogPrefix(null)+"cannot obtain UserTransaction",e);
-//			}
-//		}
-	}
+	public void start() throws PipeStartException {}
 
 	@Override
 	public void stop() {}
 
-//	/**
-//	 * The <code>toString()</code> method retrieves its value
-//	 * by reflection, so overriding this method is mostly not
-//	 * useful.
-//	 * @see ToStringBuilder#reflectionToString
-//	 *
-//	 **/
-//	@Override
-//	public String toString() {
-//		try {
-//			return (new ReflectionToStringBuilder(this) {
-//				@Override
-//				protected boolean accept(Field f) {
-//					//TODO create a blacklist or whitelist
-//					return super.accept(f) && !f.getName().contains("appConstants");
-//				}
-//			}).toString();
-//		} catch (Throwable t) {
-//			log.warn("exception getting string representation of pipe ["+getName()+"]", t);
-//		}
-//		return null;
-//	}
 
 	/**
 	 * Add a parameter to the list of parameters
-	 * @param param the PipeParameter.
 	 */
-	@IbisDoc({"10"})
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
 		parameterList.add(param);
@@ -260,8 +216,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return parameterList;
 	}
 
+	/** optional: the Pipe will only be executed if a lock could be set successfully */
 	@Override
-	@IbisDoc({"30"})
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+	}
+
+	@Override
+	/** Forwards are used to determine the next Pipe to execute in the Pipeline */ 
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
 		if(forwardName != null) {
@@ -348,18 +310,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return null;
 	}
 
-	/**
-	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
-	 *  A value of 0 indicates an unlimited number of threads.
-	 */
-	@IbisDoc({"Maximum number of threads that may call {@link #doPipe(Message message, PipeLineSession session)} simultaneously, use 0 to disable limit", "0"})
-	public void setMaxThreads(int newMaxThreads) {
-		maxThreads = newMaxThreads;
-	}
-	@Override
-	public int getMaxThreads() {
-		return maxThreads;
-	}
 
 	/**
 	 * The functional name of this pipe
@@ -371,117 +321,74 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		inSizeStatDummyObject.setName(getName() + " (in)");
 		outSizeStatDummyObject.setName(getName() + " (out)");
 	}
-	@Override
-	public String getName() {
-		return this.name;
-	}
 
 	@Override
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
-	}
-	@Override
-	public String getGetInputFromSessionKey() {
-		return getInputFromSessionKey;
 	}
 
 	@Override
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
-	@Override
-	public String getGetInputFromFixedValue() {
-		return getInputFromFixedValue;
-	}
 
 	@Override
 	public void setEmptyInputReplacement(String string) {
 		emptyInputReplacement = string;
-	}
-	@Override
-	public String getEmptyInputReplacement() {
-		return emptyInputReplacement;
 	}
 
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
-	@Override
-	public boolean isPreserveInput() {
-		return preserveInput;
-	}
 
 	@Override
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
-	@Override
-	public String getStoreResultInSessionKey() {
-		return storeResultInSessionKey;
+
+	/**
+	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Message, PipeLineSession)} simultaneously in case
+	 *  A value of 0 indicates an unlimited number of threads.
+	 */
+	@IbisDoc({"Maximum number of threads that may call {@link #doPipe(Message message, PipeLineSession session)} simultaneously, use 0 to disable limit", "0"})
+	public void setMaxThreads(int newMaxThreads) {
+		maxThreads = newMaxThreads;
 	}
 
 	@Override
 	public void setChompCharSize(String string) {
 		chompCharSize = string;
 	}
-	@Override
-	public String getChompCharSize() {
-		return chompCharSize;
-	}
 
 	@Override
 	public void setElementToMove(String string) {
 		elementToMove = string;
-	}
-	@Override
-	public String getElementToMove() {
-		return elementToMove;
 	}
 
 	@Override
 	public void setElementToMoveSessionKey(String string) {
 		elementToMoveSessionKey = string;
 	}
-	@Override
-	public String getElementToMoveSessionKey() {
-		return elementToMoveSessionKey;
-	}
 	
 	@Override
 	public void setElementToMoveChain(String string) {
 		elementToMoveChain = string;
-	}
-	@Override
-	public String getElementToMoveChain() {
-		return elementToMoveChain;
 	}
 
 	@Override
 	public void setDurationThreshold(long maxDuration) {
 		this.durationThreshold = maxDuration;
 	}
-	@Override
-	public long getDurationThreshold() {
-		return durationThreshold;
-	}
 
 	@Override
 	public void setRemoveCompactMsgNamespaces(boolean b) {
 		removeCompactMsgNamespaces = b;
 	}
-	@Override
-	public boolean isRemoveCompactMsgNamespaces() {
-		return removeCompactMsgNamespaces;
-	}
 
 	@Override
 	public void setRestoreMovedElements(boolean restoreMovedElements) {
 		this.restoreMovedElements = restoreMovedElements;
-	}
-	@Override
-	public boolean isRestoreMovedElements() {
-		return restoreMovedElements;
 	}
 
 	
@@ -489,27 +396,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}
-	public boolean isNamespaceAware() {
-		return namespaceAware;
-	}
 
 
-	@Override
-	public boolean hasSizeStatistics() {
-		return sizeStatistics;
-	}
 	public void setSizeStatistics(boolean sizeStatistics) {
 		this.sizeStatistics = sizeStatistics;
 	}
-
 	@Override
-	@IbisDoc({"20"})
-	public void setLocker(Locker locker) {
-		this.locker = locker;
-	}
-	@Override
-	public Locker getLocker() {
-		return locker;
+	public boolean hasSizeStatistics() {
+		return sizeStatistics;
 	}
 
 	public DummyNamedObject getInSizeStatDummyObject() {
@@ -520,36 +414,29 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return outSizeStatDummyObject;
 	}
 
+	/** when set to <code>true</code> a record is written to the security log when the pipe has finished successfully */
 	@Override
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
 	}
-	@Override
-	public boolean isWriteToSecLog() {
-		return writeToSecLog;
-	}
 
+	/** (only used when <code>writeToSecLog=true</code>) comma separated list of keys of session variables that is appended to the security log record */
 	@Override
 	public void setSecLogSessionKeys(String string) {
 		secLogSessionKeys = string;
 	}
-	@Override
-	public String getSecLogSessionKeys() {
-		return secLogSessionKeys;
-	}
 
+	/** when set, the value in AppConstants is overwritten (for this pipe only) */
 	public void setLogIntermediaryResults(String string) {
 		logIntermediaryResults = string;
 	}
-	public String getLogIntermediaryResults() {
-		return logIntermediaryResults;
-	}
 
-	@IbisDoc({"Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged)", ""})
+	/** 
+	 * Regular expression to mask strings in the log. For example, the regular expression <code>(?&lt;=&lt;password&gt;).*?(?=&lt;/password&gt;)</code> 
+	 * will replace every character between keys '&lt;password&gt;' and '&lt;/password&gt;'. <b>note:</b> this feature is used at adapter level, 
+	 * so one pipe affects all pipes in the pipeline (and multiple values in different pipes are merged) 
+	 */
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
-	}
-	public String getHideRegex() {
-		return hideRegex;
 	}
 }
