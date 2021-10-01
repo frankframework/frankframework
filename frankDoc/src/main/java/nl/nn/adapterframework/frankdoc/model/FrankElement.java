@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.Misc;
 public class FrankElement implements Comparable<FrankElement> {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
 	static final String JAVADOC_PARAMETERS = "@ff.parameters";
-	static final String JAVADOC_PARAMETER = "@ff.parameter";
+	public static final String JAVADOC_PARAMETER = "@ff.parameter";
 
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
 

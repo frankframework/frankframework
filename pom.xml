@@ -404,16 +404,17 @@
 					<version>3.2.0</version>
 					<configuration>
 						<doclint>none</doclint>
+						<taglet>nl.nn.adapterframework.frankdoc.front.TagletFfParameter</taglet>
+						<tagletArtifact>
+							<groupId>org.ibissource</groupId>
+							<artifactId>ibis-adapterframework-frankDoc</artifactId>
+							<version>${project.version}</version>
+						</tagletArtifact>
 						<tags>
 							<tag>
 								<name>ff.parameters</name>
 								<placement>a</placement>
 								<head>Parameters</head>
-							</tag>
-							<tag>
-								<name>ff.parameter</name>
-								<placement>a</placement>
-								<head>Parameter</head>
 							</tag>
 							<tag>
 								<name>ff.default</name>
