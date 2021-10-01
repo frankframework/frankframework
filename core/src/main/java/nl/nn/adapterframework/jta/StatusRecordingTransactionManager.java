@@ -52,8 +52,6 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 	private @Getter @Setter String uidFile;
 	private @Getter @Setter String uid;
 
-	private volatile TransactionManager transactionManager;
-
 	protected enum Status {
 		INITIALIZING,
 		ACTIVE,
@@ -68,22 +66,17 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 	protected abstract TransactionManager createTransactionManager() throws TransactionSystemException;
 	protected abstract boolean shutdownTransactionManager() throws TransactionSystemException;
 
+	/*
+	 * N.B. retrieveTransactionManager() is called once from JtaTransactionManager.initUserTransactionAndTransactionManager(),
+	 * but only if no transactionManager or transactionManagerName are specified.
+	 */
 	@Override
 	protected TransactionManager retrieveTransactionManager() throws TransactionSystemException {
-		TransactionManager localRef = transactionManager;
-		if (localRef == null) {
-			synchronized (this) {
-				localRef = transactionManager;
-				if (localRef == null) {
-					determineTmUid();
-					writeStatus(Status.INITIALIZING);
-					transactionManager = createTransactionManager();
-					writeStatus(Status.ACTIVE);
-					log.info("created transaction manager ["+transactionManager.getClass().getTypeName()+"] with tmuid ["+getUid()+"]");
-				}
-			}
-		}
-		return localRef;
+		determineTmUid();
+		writeStatus(Status.INITIALIZING);
+		TransactionManager result = createTransactionManager();
+		writeStatus(Status.ACTIVE);
+		return result;
 	}
 
 	protected String determineTmUid() {
