@@ -83,4 +83,11 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder(super.toString());
+		if(getDirectory() != null) builder.append(" directory ["+getDirectory()+"]");
+		return builder.toString();
+	}
 }
