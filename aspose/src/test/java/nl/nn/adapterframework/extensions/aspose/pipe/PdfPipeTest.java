@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
@@ -202,27 +203,19 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test(expected = ConfigurationException.class)
-	public void emptyPdfOutputLocation() throws Exception {
-		pipe.setPdfOutputLocation("");
-		pipe.configure();
-	}
-
-	@Test(expected = ConfigurationException.class)
 	public void wrongPdfOutputLocation() throws Exception {
 		pipe.setPdfOutputLocation("not a valid location");
 		pipe.configure();
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void emptyAction() throws Exception {
-		pipe.setAction("");
-		pipe.configure();
+		assertThrows("unknown documentAction value", IllegalArgumentException.class, () -> pipe.setAction(""));
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void wrongAction() throws Exception {
-		pipe.setAction("test123");
-		pipe.configure();
+		assertThrows("unknown documentAction value", IllegalArgumentException.class, () -> pipe.setAction("test123"));
 	}
 
 	@Test
