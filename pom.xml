@@ -398,6 +398,37 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<doclint>none</doclint>
+						<tags>
+							<tag>
+								<name>ff.parameters</name>
+								<placement>a</placement>
+								<head>Parameters</head>
+							</tag>
+							<tag>
+								<name>ff.parameter</name>
+								<placement>a</placement>
+								<head>Parameter</head>
+							</tag>
+							<tag>
+								<name>ff.default</name>
+								<placement>a</placement>
+								<head>Default value</head>
+							</tag>
+							<tag>
+								<name>ff.defaultElement</name>
+								<placement>a</placement>
+								<head>Default element</head>
+							</tag>
+						</tags>
+						<useStandardDocletOptions>true</useStandardDocletOptions>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -418,22 +449,6 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
 				<inherited>false</inherited>
-				<configuration>
-					<doclint>none</doclint>
-					<tags>
-						<tag>
-							<name>ff.parameters</name>
-							<placement>a</placement>
-							<head>Parameters</head>
-						</tag>
-						<tag>
-							<name>ff.parameter</name>
-							<placement>a</placement>
-							<head>Parameter</head>
-						</tag>
-					</tags>
-					<useStandardDocletOptions>true</useStandardDocletOptions>
-				</configuration>
 				<reportSets>
 					<reportSet>
 						<id>javadoc</id>
@@ -620,19 +635,6 @@
 						<version>3.2.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
-							<doclint>none</doclint>
-							<tags>
-								<tag>
-									<name>ff.parameters</name>
-									<placement>a</placement>
-									<head>Parameters</head>
-								</tag>
-								<tag>
-									<name>ff.parameter</name>
-									<placement>a</placement>
-									<head>Parameter</head>
-								</tag>
-							</tags>
 						</configuration>
 						<executions>
 							<execution>
