@@ -13,15 +13,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler;
+package nl.nn.adapterframework.scheduler.job;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
-public class DatabaseJobDef extends JobDef {
+public class DatabaseJob extends SendMessageJob {
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setFunction(JobDefFunctions.SEND_MESSAGE.getLabel());
 		super.configure();
+	}
+
+	public void setAdapterName(String adapterName) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void setReceiverName(String receiverName) {
+		setJavaListener(receiverName);
 	}
 }

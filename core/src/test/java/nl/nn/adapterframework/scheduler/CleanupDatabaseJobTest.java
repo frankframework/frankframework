@@ -18,13 +18,14 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-public class JobDefTest extends JdbcTestBase {
+public class CleanupDatabaseJobTest extends JdbcTestBase {
 
-	private JobDef jobDef;
+	private CleanupDatabaseJob jobDef;
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
@@ -41,7 +42,7 @@ public class JobDefTest extends JdbcTestBase {
 		Adapter adapter = setupAdapter(); 
 		configuration.registerAdapter(adapter);
 
-		jobDef = new JobDef() {
+		jobDef = new CleanupDatabaseJob() {
 
 			@Override
 			protected List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
@@ -90,12 +91,12 @@ public class JobDefTest extends JdbcTestBase {
 		
 		// set max rows to 0 
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
-		jobDef.runJob(configuration.getIbisManager());
+		jobDef.execute(configuration.getIbisManager());
 		
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
-	
+
 	@Test
 	public void testCleanupDatabaseJob() throws Exception {
 		jobDef.setName(cleanupJobName);
@@ -109,7 +110,7 @@ public class JobDefTest extends JdbcTestBase {
 		// check insertion
 		assertEquals(5, rowCount);
 
-		jobDef.runJob(configuration.getIbisManager());
+		jobDef.execute(configuration.getIbisManager());
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
 	}
@@ -154,7 +155,6 @@ public class JobDefTest extends JdbcTestBase {
 				+ sb.toString();
 
 		JdbcUtil.executeStatement(getConnection(), query);
-		
 	}
 
 	@Test
@@ -172,8 +172,7 @@ public class JobDefTest extends JdbcTestBase {
 		assertEquals(5, rowCount);
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
-		jobDef.runJob(configuration.getIbisManager());
-		
+		jobDef.execute(configuration.getIbisManager());
 
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		

@@ -58,7 +58,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		FixedQuerySenderMock mock = new FixedQuerySenderMock(builder.build());
 		configuration.mockCreateBean(FixedQuerySender.class, mock);
 
-		job.runJob(configuration.getIbisManager());
+		job.execute(configuration.getIbisManager());
 
 		MessageKeeper messageKeeper = job.getMessageKeeper();
 		for (int i = 0; i < messageKeeper.size(); i++) {

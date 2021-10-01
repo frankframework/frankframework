@@ -15,9 +15,14 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
@@ -26,9 +31,16 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class SendMessageJob extends JobDef implements IJob {
 	private IbisLocalSender localSender = null;
+	private @Getter String javaListener;
+	private @Getter String message = null;
+
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getJavaListener())) {
+			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a javaListener must be specified");
+		}
+
 		super.configure();
 
 		localSender = SpringUtils.createBean(getApplicationContext(), IbisLocalSender.class);
@@ -53,6 +65,26 @@ public class SendMessageJob extends JobDef implements IJob {
 		}
 		finally {
 			localSender.close();
+		}
+	}
+
+	/**
+	 * JavaListener to send the message to
+	 */
+	public void setJavaListener(String javaListener) {
+		this.javaListener = javaListener;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Please use attribute javaListener instead")
+	public void setReceiverName(String receiverName) {
+		setJavaListener(receiverName); //For backwards compatibility
+	}
+
+	@IbisDoc({"message to be send into the pipeline", ""})
+	public void setMessage(String message) {
+		if(StringUtils.isNotEmpty(message)) {
+			this.message = message;
 		}
 	}
 }

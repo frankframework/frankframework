@@ -17,20 +17,32 @@ package nl.nn.adapterframework.scheduler.job;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class ExecuteQueryJob extends JobDef implements IJob {
 	private FixedQuerySender qs = null;
+	private @Getter String query;
+	private @Getter String jmsRealm;
+	private @Getter String datasourceName;
+	private @Getter int queryTimeout;
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getJmsRealm()) && StringUtils.isEmpty(getDatasourceName())) {
+			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a datasourceName must be specified");
+		}
+
 		super.configure();
 
 		qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
@@ -55,5 +67,28 @@ public class ExecuteQueryJob extends JobDef implements IJob {
 		} finally {
 			qs.close();
 		}
+	}
+
+	/**
+	 * The SQL query text to be executed
+	 */
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Please configure a datasourceName instead")
+	public void setJmsRealm(String jmsRealm) {
+		this.jmsRealm = jmsRealm;
+	}
+
+	@IbisDoc({"JNDI name of datasource to be used", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
+
+	@IbisDoc({"The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout", "0"})
+	public void setQueryTimeout(int i) {
+		queryTimeout = i;
 	}
 }
