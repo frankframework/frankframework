@@ -224,9 +224,12 @@ public final class ShowScheduler extends Base {
 
 		if(expanded) {
 			JobDef jobDef = (JobDef) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-//			jobData.put("adapter", jobDef.getAdapterName());
-//			jobData.put("receiver", jobDef.getReceiverName());
-//			jobData.put("message", jobDef.getMessage());
+			if(jobDef instanceof DatabaseJob) {
+				DatabaseJob dbJob = (DatabaseJob) jobDef;
+				jobData.put("adapter", dbJob.getAdapterName());
+				jobData.put("listener", dbJob.getJavaListener());
+				jobData.put("message", dbJob.getMessage());
+			}
 
 			Locker locker = jobDef.getLocker();
 			if(locker != null) {
@@ -551,7 +554,7 @@ public final class ShowScheduler extends Base {
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
-		jobdef.setReceiverName(listenerName);
+		jobdef.setJavaListener(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
 		jobdef.setDescription(description);

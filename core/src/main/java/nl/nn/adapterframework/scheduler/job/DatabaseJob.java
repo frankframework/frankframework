@@ -15,23 +15,17 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
 public class DatabaseJob extends SendMessageJob {
+	private @Getter @Setter String adapterName; //Allow for easily selecting a JavaListener in the console
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setFunction(JobDefFunctions.SEND_MESSAGE.getLabel());
 		super.configure();
-	}
-
-	public void setAdapterName(String adapterName) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void setReceiverName(String receiverName) {
-		setJavaListener(receiverName);
 	}
 }

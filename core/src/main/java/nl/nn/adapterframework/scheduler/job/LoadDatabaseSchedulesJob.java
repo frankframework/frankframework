@@ -85,7 +85,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
 							String adapterName = rs.getString("ADAPTER");
-							String receiverName = rs.getString("RECEIVER");
+							String javaListener = rs.getString("RECEIVER");
 							String cronExpression = rs.getString("CRON");
 							int interval = rs.getInt("EXECUTIONINTERVAL");
 							String message = rs.getString("MESSAGE");
@@ -107,7 +107,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							jobdef.setInterval(interval);
 							jobdef.setJobGroup(jobGroup);
 							jobdef.setAdapterName(adapterName);
-							jobdef.setReceiverName(receiverName);
+							jobdef.setJavaListener(javaListener);
 							jobdef.setMessage(message);
 			
 							if(hasLocker) {
