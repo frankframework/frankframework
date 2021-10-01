@@ -39,10 +39,6 @@ public class ExecuteQueryJob extends JobDef {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getJmsRealm()) && StringUtils.isEmpty(getDatasourceName())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a datasourceName must be specified");
-		}
-
 		super.configure();
 
 		qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
