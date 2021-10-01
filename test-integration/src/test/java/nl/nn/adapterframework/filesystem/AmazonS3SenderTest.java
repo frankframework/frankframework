@@ -1,11 +1,5 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -13,20 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 
@@ -54,7 +40,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	private boolean forceGlobalBucketAccessEnabled = false;
 
 	private String bucketName = UUID.randomUUID().toString();//"iaf.s3sender.ali.test";
-	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
+//	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
 	private Regions clientRegion = Regions.EU_WEST_1;
 	
 	private int waitMilis = 1000;
