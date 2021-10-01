@@ -24,11 +24,13 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.sap.mw.idoc.IDoc.Document;
 import com.sap.mw.jco.JCO;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapListener;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.stream.Message;
@@ -38,20 +40,7 @@ import nl.nn.adapterframework.stream.Message;
  * that enables a GenericReceiver to receive messages from SAP-systems. 
  * 
  * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setProgid(String) progid}</td><td>Name of the RFC-destination to be registered in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
- * </table>
+ * 
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
  * </p>
@@ -61,8 +50,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class SapListener extends SapFunctionFacade implements ISapListener<JCO.Function>, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
 
-	private String progid;	 // progid of the RFC-destination
-        	
+	private @Getter String progid;	 // progid of the RFC-destination
+
 	private SapServer sapServer;
 	private IMessageHandler<JCO.Function> handler;
 	private IbisExceptionListener exceptionListener;
@@ -182,10 +171,7 @@ public class SapListener extends SapFunctionFacade implements ISapListener<JCO.F
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	public String getProgid() {
-		return progid;
-	}
-
+	@IbisDoc({"1", "Name of the RFC-destination to be registered in the SAP system", ""})
 	@Override
 	public void setProgid(String string) {
 		progid = string;
