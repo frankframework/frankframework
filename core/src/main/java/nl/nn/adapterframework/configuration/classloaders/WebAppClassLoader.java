@@ -38,4 +38,20 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	public URL getLocalResource(String name) {
 		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
+	
+	@Override
+	public String reduceReference(String baseRef) {
+		if (baseRef.startsWith("jar:")) {
+			int prefixEndMarkerPos = baseRef.indexOf("!");
+			if (prefixEndMarkerPos>0) {
+				baseRef = baseRef.substring(prefixEndMarkerPos+2);
+				if (baseRef.startsWith(getBasePath())) {
+					return baseRef.substring(getBasePath().length());
+				}
+
+			}
+		}
+		return super.reduceReference(baseRef);
+	}
+
 }
