@@ -30,8 +30,6 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
@@ -99,7 +97,7 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException {
+	public void execute(IbisManager ibisManager) {
 		Date date = new Date();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);

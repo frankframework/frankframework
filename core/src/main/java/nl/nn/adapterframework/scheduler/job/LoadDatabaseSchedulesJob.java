@@ -30,8 +30,6 @@ import org.quartz.impl.matchers.GroupMatcher;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
@@ -53,7 +51,7 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 	 *    Since they have been removed from the database, remove them from the Quartz Scheduler
 	 */
 	@Override
-	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException {
+	public void execute(IbisManager ibisManager) {
 		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
 		Scheduler scheduler = null;
 		SchedulerHelper sh = getApplicationContext().getBean(SchedulerHelper.class);

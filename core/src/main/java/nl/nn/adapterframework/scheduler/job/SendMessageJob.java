@@ -22,6 +22,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -54,7 +56,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws Exception {
+	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException {
 		try {
 			localSender.open();
 			//sendMessage message cannot be NULL

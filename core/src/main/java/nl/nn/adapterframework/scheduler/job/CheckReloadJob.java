@@ -38,7 +38,7 @@ public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 
 	@Override
-	public void execute(IbisManager ibisManager) throws Exception {
+	public void execute(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
 			String msg = "skipping checkReload because one or more configurations are currently loading";
 			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
