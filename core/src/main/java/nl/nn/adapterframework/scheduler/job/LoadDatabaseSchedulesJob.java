@@ -41,7 +41,7 @@ import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class LoadDatabaseSchedulesJob extends JobDef implements IJob {
+public class LoadDatabaseSchedulesJob extends JobDef {
 
 	/**
 	 * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.

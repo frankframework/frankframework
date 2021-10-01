@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.DirectoryCleaner;
 
-public class CleanupFileSystemJob extends JobDef implements IJob {
+public class CleanupFileSystemJob extends JobDef {
 
 	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
 

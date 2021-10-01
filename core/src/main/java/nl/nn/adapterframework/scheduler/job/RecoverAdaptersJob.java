@@ -25,7 +25,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
-public class RecoverAdaptersJob extends JobDef implements IJob {
+public class RecoverAdaptersJob extends JobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
 	@Override

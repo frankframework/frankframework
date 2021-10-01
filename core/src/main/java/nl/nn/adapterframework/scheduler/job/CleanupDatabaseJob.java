@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class CleanupDatabaseJob extends JobDef implements IJob {
+public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
 	private class MessageLogObject {

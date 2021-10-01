@@ -29,7 +29,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class SendMessageJob extends JobDef implements IJob {
+public class SendMessageJob extends JobDef {
 	private IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;

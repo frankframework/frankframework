@@ -20,7 +20,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.statistics.HasStatistics;
 
-public class DumpStatisticsJob extends JobDef implements IJob {
+public class DumpStatisticsJob extends JobDef {
 
 	@Override
 	public void execute(IbisManager ibisManager) {

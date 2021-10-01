@@ -30,7 +30,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
 
-public class ExecuteQueryJob extends JobDef implements IJob {
+public class ExecuteQueryJob extends JobDef {
 	private FixedQuerySender qs = null;
 	private @Getter String query;
 	private @Getter String jmsRealm;

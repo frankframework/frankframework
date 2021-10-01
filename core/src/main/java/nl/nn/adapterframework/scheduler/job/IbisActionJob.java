@@ -29,7 +29,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.util.EnumUtils;
 
-public class IbisActionJob extends JobDef implements IJob {
+public class IbisActionJob extends JobDef {
 	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter String configurationName;
 	private @Getter String adapterName;
