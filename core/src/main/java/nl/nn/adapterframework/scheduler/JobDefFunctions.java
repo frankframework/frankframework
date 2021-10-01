@@ -29,6 +29,9 @@ import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
 import nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob;
 import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 
+/**
+ * @author Niels Meijer
+ */
 public enum JobDefFunctions implements DocumentedEnum {
 	@EnumLabel("StopAdapter") STOP_ADAPTER(IbisActionJob.class),
 	@EnumLabel("StartAdapter") START_ADAPTER(IbisActionJob.class),

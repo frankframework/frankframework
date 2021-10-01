@@ -39,17 +39,20 @@ import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
 
+/**
+ * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
+ * 2. It then loops through all records found in the database.
+ * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
+ *    Only if they differ, it overwrites the current job.
+ *    If it is not present it add the job to the scheduler.
+ * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
+ *    Since they have been removed from the database, remove them from the Quartz Scheduler
+ * 
+ * @author Niels Meijer
+ */
 public class LoadDatabaseSchedulesJob extends JobDef {
 
-	/**
-	 * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
-	 * 2. It then loops through all records found in the database.
-	 * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
-	 *    Only if they differ, it overwrites the current job.
-	 *    If it is not present it add the job to the scheduler.
-	 * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
-	 *    Since they have been removed from the database, remove them from the Quartz Scheduler
-	 */
+	
 	@Override
 	public void execute(IbisManager ibisManager) {
 		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();

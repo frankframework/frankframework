@@ -23,11 +23,10 @@ import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.util.EnumUtils;
 
 /**
- * Factory for instantiating listeners from the Digester framework.
- * Instantiates correlated listener in the context of a MessageSendingPipe.
+ * Factory for instantiating Schedules Jobs from the Digester framework.
+ * Instantiates the job based on the function specified.
  *
- * @author  Tim van der Leeuw
- * @since   4.8
+ * @author Niels Meijer
  */
 public class JobFactory extends GenericFactory {
 

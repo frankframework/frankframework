@@ -40,44 +40,25 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * 
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
- * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute concurrently</td><td>1</td></tr>
- * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * </table>
- * </p>
+ * <br/>
+ * All registered jobs are displayed in the IbisConsole under 'Scheduler'.
  * <p>
- * <table border="1">
- * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
- * </table>
- * </p>
- * <p> 
  * <br>
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
  *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
- *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
+ *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
  * </ul>
- * 
- * Operation the job is triggered:
- * <ul>
- *   <li>AdapterJob.execute is called</li>
- *   <li>AdapterJob.execute calls config.handleAdapter()</li>
- *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent</li>
- *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!</li>
- * </ul>
- *
- * All registered jobs are displayed in the IbisConsole under 'Show Scheduler Status'.
- * <p>
- * N.B.: Jobs can only be specified in the Configuration.xml <i>BELOW</i> the adapter called. It must be already defined!
+ * </p>
  *
  * <b>CronExpressions</b>
- *  * <p>A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
- * white space. The 6 mandatory and 1 optional fields are as follows:<br>
- *
+ * <p>
+ * A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ * white space. The 6 mandatory and 1 optional fields are as follows:<br/>
+ *</p>
  * <table cellspacing="8">
  *   <tr>
  *     <th align="left">Field Name</th>
@@ -305,7 +286,6 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * </ul>
  * </p>
  * 
- * @author  Johan  Verrips
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
@@ -331,22 +311,23 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public void configure() throws ConfigurationException {
-		MessageKeeper messageKeeper = getMessageKeeper();
-		statsKeeper = new StatisticsKeeper(getName());
-
 		if (StringUtils.isEmpty(getName())) {
-			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
+			throw new ConfigurationException("a name must be specified");
 		}
 		if (StringUtils.isEmpty(getFunction())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
+			throw new ConfigurationException("a function must be specified");
 		}
 
-		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
 			setJobGroup(applicationContext.getId());
+		}
 
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
+
+		MessageKeeper messageKeeper = getMessageKeeper();
+		statsKeeper = new StatisticsKeeper(getName());
 
 		super.configure();
 		messageKeeper.add("job successfully configured");
@@ -377,6 +358,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		countThreads--;
 	}
 
+	/**
+	 * Called from {@link ConfiguredJob} which should trigger this job definition
+	 */
 	protected final void executeJob(IbisManager ibisManager) {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
@@ -421,6 +405,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		}
 	}
 
+	/**
+	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
+	 */
 	private void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
