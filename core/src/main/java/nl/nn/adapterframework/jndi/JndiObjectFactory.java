@@ -30,7 +30,6 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.JndiContextPrefixFactory;
-import nl.nn.adapterframework.jdbc.ObjectLocator;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 

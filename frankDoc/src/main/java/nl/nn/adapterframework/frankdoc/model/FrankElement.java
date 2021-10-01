@@ -17,6 +17,7 @@ limitations under the License.
 package nl.nn.adapterframework.frankdoc.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
+import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.frankdoc.model.ElementChild.AbstractKey;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
@@ -83,12 +85,17 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class FrankElement implements Comparable<FrankElement> {
 	static final String JAVADOC_IGNORE_TYPE_MEMBERSHIP = "@ff.ignoreTypeMembership";
+	static final String JAVADOC_PARAMETERS = "@ff.parameters";
+	static final String JAVADOC_PARAMETER = "@ff.parameter";
 
 	private static Logger log = LogUtil.getLogger(FrankElement.class);
 
 	private static final Comparator<FrankElement> COMPARATOR =
 			Comparator.comparing(FrankElement::getSimpleName).thenComparing(FrankElement::getFullName);
 
+	private @Getter LinkedHashMap<FrankMethod, Integer> unusedConfigChildSetterCandidates = new LinkedHashMap<>();
+	private @Getter List<ConfigChild> configChildrenUnderConstruction = new ArrayList<>();
+	
 	private static JavadocStrategy javadocStrategy = JavadocStrategy.USE_JAVADOC;
 
 	private final @Getter String fullName;
@@ -104,12 +111,20 @@ public class FrankElement implements Comparable<FrankElement> {
 	// Represents the Java superclass.
 	private @Getter FrankElement parent;
 
+	// Used when config children are constructed. A config child is only
+	// created when there is a matching rule in digester-rules. These
+	// rules have to match config children for which this FrankElement
+	// is member of the config child's ElementType.
+	private List<ConfigChild> configParents = new ArrayList<>();
+
 	private Map<Class<? extends ElementChild>, LinkedHashMap<? extends AbstractKey, ? extends ElementChild>> allChildren;
 	private @Getter List<String> xmlElementNames;
 	private @Getter FrankElementStatistics statistics;
 	private LinkedHashMap<String, ConfigChildSet> configChildSets;
 	private @Getter @Setter String description;
 	private @Getter @Setter String descriptionHeader;
+	private @Getter String meaningOfParameters;
+	private @Getter List<SpecificParameter> specificParameters = new ArrayList<>();
 
 	private Set<String> syntax2ExcludedFromTypes = new HashSet<>();
 
@@ -118,7 +133,19 @@ public class FrankElement implements Comparable<FrankElement> {
 		isDeprecated = clazz.getAnnotation(FrankDocletConstants.DEPRECATED) != null;
 		configChildSets = new LinkedHashMap<>();
 		javadocStrategy.completeFrankElement(this, clazz);
+		handleConfigChildSetterCandidates(clazz);
 		handlePossibleFrankDocIgnoreTypeMembershipAnnotation(clazz);
+		handlePossibleParameters(clazz);
+	}
+
+	private void handleConfigChildSetterCandidates(FrankClass clazz) {
+		List<FrankMethod> methods = Arrays.asList(clazz.getDeclaredMethods()).stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isConfigChildSetter)
+				.collect(Collectors.toList());
+		for(int i = 0; i < methods.size(); ++i) {
+			unusedConfigChildSetterCandidates.put(methods.get(i), i);
+		}
 	}
 
 	private void handlePossibleFrankDocIgnoreTypeMembershipAnnotation(FrankClass clazz) {
@@ -129,8 +156,19 @@ public class FrankElement implements Comparable<FrankElement> {
 			} else {
 				log.trace("FrankElement [{}] has JavaDoc tag {}, excluding from type [{}]",
 						() -> fullName, () -> FrankElement.JAVADOC_IGNORE_TYPE_MEMBERSHIP, () -> excludedFromType);
+				// AttributeExcludedSetter checks already whether excludedFromType exists as a Java class.
 				syntax2ExcludedFromTypes.add(excludedFromType);
 			}
+		}
+	}
+
+	private void handlePossibleParameters(FrankClass clazz) {
+		this.meaningOfParameters = clazz.getJavaDocTag(JAVADOC_PARAMETERS);
+		for(String specificParameterStr: clazz.getAllJavaDocTagsOf(JAVADOC_PARAMETER)) {
+			if(StringUtils.isBlank(specificParameterStr)) {
+				log.warn("FrankElement [{}] has specific parameters without a name or description", fullName);
+			}
+			this.specificParameters.add(SpecificParameter.getInstance(specificParameterStr));
 		}
 	}
 
@@ -155,6 +193,17 @@ public class FrankElement implements Comparable<FrankElement> {
 			syntax2ExcludedFromTypes.addAll(parent.syntax2ExcludedFromTypes);
 		}
 		this.statistics = new FrankElementStatistics(this);
+	}
+
+	void addConfigParent(ConfigChild parent) {
+		log.trace("To [{}] [{}] added config parent [{}]", this.getClass().getSimpleName(), fullName, parent.toString());
+		configParents.add(parent);
+	}
+
+	public List<ConfigChild> getConfigParents() {
+		List<ConfigChild> result = new ArrayList<>();
+		result.addAll(configParents);
+		return result;
 	}
 
 	public void addXmlElementName(String elementName) {
@@ -282,10 +331,28 @@ public class FrankElement implements Comparable<FrankElement> {
 		if(! elementType.isFromJavaInterface()) {
 			return Utils.toUpperCamelCase(roleName);
 		}
-		String postfixToRemove = elementType.getGroupName();
+		// Depends on the fact that FrankDocModel.calculateCommonInterfacesHierarchies() has been executed.
+		//
+		// There is a subtle point here: the difference between ElementType.getHighestCommonInterface()
+		// and ElementRole.getHighestCommonInterface(). Consider for example the ElementRole
+		// (IWrapperPipe, outputWrapper). The highest common interface of ElementType IWrapperPipe is
+		// IPipe. For this reason, Java class ApiSoapWrapperPipe will produce ApiSoapWrapperOutputWrapper
+		// as we want, not the erroneous name ApiSoapWrapperPipeOutputWrapper.
+		//
+		// On the other hand, the highest common interface of the mentioned ElementRole is just the same ElementRole.
+		// The reason is that there is no config child setter for ElementType IPipe and role name outputWrapper.
+		// This is also what we want. When the config children of Pipeline are calculated, all ElementRole-s of the
+		// config children are promoted to their highest common interface to avoid conflicts. We don't have a conflict
+		// here so there is no need to promote (IWrapperPipe, outputWrapper). This way, the outputWrapper config child
+		// only allows elements that implement IWrapperPipe, not all implementations of IPipe.
+		//
+		List<String> removablePostfixes = elementType.getCommonInterfaceHierarchy().stream().map(ElementType::getGroupName).collect(Collectors.toList());
 		String result = simpleName;
-		if(result.endsWith(postfixToRemove)) {
-			result = result.substring(0, result.lastIndexOf(postfixToRemove));
+		for(String removablePostfix: removablePostfixes) {
+			if(result.endsWith(removablePostfix)) {
+				result = result.substring(0, result.lastIndexOf(removablePostfix));
+				break;
+			}			
 		}
 		result = result + Utils.toUpperCamelCase(roleName);
 		return result;
@@ -370,5 +437,10 @@ public class FrankElement implements Comparable<FrankElement> {
 		result.addAll(s1);
 		result.addAll(s2);
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return fullName;
 	}
 }

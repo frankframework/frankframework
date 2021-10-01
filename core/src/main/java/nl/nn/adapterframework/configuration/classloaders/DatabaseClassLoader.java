@@ -23,7 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	private Map<String, Object> configuration;
-	private String dataSourceName = null;
+	private String datasourceName = null;
 
 	public DatabaseClassLoader(ClassLoader parent) {
 		super(parent);
@@ -37,7 +37,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	protected Map<String, byte[]> loadResources() throws ConfigurationException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), dataSourceName);
+			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
@@ -70,7 +70,18 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		return (String) configuration.get("CREATED");
 	}
 
-	public void setDataSourceName(String dataSourceName) {
-		this.dataSourceName = dataSourceName;
+	/**
+	 * @param datasourceName the Datasource to retrieve the configuration jar from
+	 */
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder(super.toString());
+		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
+		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
+		return builder.toString();
 	}
 }

@@ -320,7 +320,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. a value of -1 indicates to wait indefinitely", "60 s"})
+	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}

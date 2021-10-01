@@ -21,11 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -154,17 +152,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		@EnumLabel("rename") RENAME,
 		@EnumLabel("forward") FORWARD,
 
-		/** Specific to AmazonS3Sender */
-		@EnumLabel("createBucket") CREATEBUCKET,
-
-		/** Specific to AmazonS3Sender */
-		@EnumLabel("deleteBucket") DELETEBUCKET,
-
-		/** Specific to AmazonS3Sender */
-		@EnumLabel("restore") RESTORE,
-
-		/** Specific to AmazonS3Sender */
-		@EnumLabel("copyS3Object") COPYS3OBJECT,
+//		/** Specific to AmazonS3Sender */
+//		@EnumLabel("createBucket") CREATEBUCKET,
+//
+//		/** Specific to AmazonS3Sender */
+//		@EnumLabel("deleteBucket") DELETEBUCKET,
+//
+//		/** Specific to AmazonS3Sender */
+//		@EnumLabel("restore") RESTORE,
+//
+//		/** Specific to AmazonS3Sender */
+//		@EnumLabel("copyS3Object") COPYS3OBJECT,
 
 		/** Specific to FileSystemSenderWithAttachments */
 		@EnumLabel("listAttachments") LISTATTACHMENTS;
@@ -350,7 +348,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case INFO: {
 					F file=getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, "inspect");
-					return getFileAsXmlBuilder(file, "file").toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
 				}
 				case READ: {
 					F file=getFile(input, pvl);
@@ -398,7 +396,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						Iterator<F> it = stream.iterator();
 						while(it.hasNext()) {
 							F file = it.next();
-							dirXml.addSubElement(getFileAsXmlBuilder(file, "file"));
+							dirXml.addSubElement(FileSystemUtils.getFileInfo(fileSystem, file));
 							count++;
 						}
 						dirXml.addAttribute("count", count);
@@ -414,7 +412,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).createFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return getFileAsXmlBuilder(file, "file").toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
 				}
 				case APPEND: {
 					F file=getFile(input, pvl);
@@ -429,7 +427,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					try (OutputStream out = ((IWritableFileSystem<F>)fileSystem).appendFile(file)) {
 						writeContentsToFile(out, input, pvl);
 					}
-					return getFileAsXmlBuilder(file, "file").toXML();
+					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
 				}
 				case MKDIR: {
 					String folder = determineInputFoldername(input, pvl);
@@ -498,7 +496,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				Iterator<F> it = stream.iterator();
 				while(it.hasNext()) {
 					F file = it.next();
-					XmlBuilder item = getFileAsXmlBuilder(file, "file");
+					XmlBuilder item = FileSystemUtils.getFileInfo(fileSystem, file);
 					if(action.execute(file) != null) {
 						dirXml.addSubElement(item);
 					}
@@ -587,50 +585,11 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				out = ((IWritableFileSystem<F>)fileSystem).createFile(file);
 			}
 			MessageOutputStream stream = new MessageOutputStream(owner, out, next);
-			stream.setResponse(new Message(getFileAsXmlBuilder(file, "file").toXML()));
+			stream.setResponse(new Message(FileSystemUtils.getFileInfo(fileSystem, file).toXML()));
 			return stream;
 		} catch (FileSystemException | IOException e) {
 			throw new StreamingException("cannot obtain OutputStream", e);
 		}
-	}
-
-
-	public XmlBuilder getFileAsXmlBuilder(F f, String rootElementName) throws FileSystemException {
-		XmlBuilder fileXml = new XmlBuilder(rootElementName);
-
-		String name = fileSystem.getName(f);
-		fileXml.addAttribute("name", name);
-		if (!".".equals(name) && !"..".equals(name)) {
-			long fileSize = fileSystem.getFileSize(f);
-			fileXml.addAttribute("size", "" + fileSize);
-			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
-			try {
-				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
-			} catch (Exception e) {
-				log.warn("cannot get canonicalName for file [" + name + "]", e);
-				fileXml.addAttribute("canonicalName", name);
-			}
-			// Get the modification date of the file
-			Date modificationDate = fileSystem.getModificationTime(f);
-			//add date
-			if (modificationDate != null) {
-				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
-				fileXml.addAttribute("modificationDate", date);
-
-				// add the time
-				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
-				fileXml.addAttribute("modificationTime", time);
-			}
-		}
-		
-		Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
-		if(additionalParameters != null) {
-			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
-				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
-			}
-		}
-
-		return fileXml;
 	}
 
 

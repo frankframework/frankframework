@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,25 +58,28 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends FileSystemListener<M,S> {
 
+	public final String EMAIL_MESSAGE_TYPE="email";
+	public final String MIME_MESSAGE_TYPE="mime";
+	
 	private String storeEmailAsStreamInSessionKey;
 	private boolean simple = false;
 	
 	{
-		setMessageType(MessageType.EMAIL.getLabel());
+		setMessageType(EMAIL_MESSAGE_TYPE);
 		setMessageIdPropertyKey(IMailFileSystem.MAIL_MESSAGE_ID);
 	}
 	
 
 	@Override
 	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		if (MessageType.MIME == getMessageTypeEnum()) {
+		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
 			try {
 				return getFileSystem().getMimeContent(rawMessage);
 			} catch (FileSystemException e) {
 				throw new ListenerException("cannot get MimeContents",e);
 			}
 		}
-		if (MessageType.EMAIL != getMessageTypeEnum()) {
+		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
 			return super.extractMessage(rawMessage, threadContext);
 		}
 		XmlWriter writer = new XmlWriter();
@@ -96,7 +99,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		return new Message(writer.toString());
 	}
 
-	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
+	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", "false"})
 	public void setSimple(boolean b) {
 		simple = b;
 	}

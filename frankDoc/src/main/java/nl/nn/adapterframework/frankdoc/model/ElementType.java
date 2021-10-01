@@ -24,11 +24,14 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
+import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -44,6 +47,8 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class ElementType implements Comparable<ElementType> {
 	private static Logger log = LogUtil.getLogger(ElementType.class);
+
+	private static final String JAVADOC_DEFAULT_CLASSNAME = "@ff.defaultElement";
 
 	private static final Comparator<ElementType> COMPARATOR =
 			Comparator.comparing(ElementType::getSimpleName).thenComparing(ElementType::getFullName);
@@ -81,14 +86,32 @@ public class ElementType implements Comparable<ElementType> {
 	}
 
 	private final InterfaceHierarchyItem interfaceHierarchy;
-	private @Getter ElementType highestCommonInterface;
+	private @Getter List<ElementType> commonInterfaceHierarchy;
 	private final @Getter FrankDocGroup group;
+	private final @Getter String defaultElement;
 
-	ElementType(FrankClass clazz, FrankDocGroup group) {
+	ElementType(FrankClass clazz, FrankDocGroup group, FrankClassRepository repository) {
 		interfaceHierarchy = new InterfaceHierarchyItem(clazz);
 		members = new ArrayList<>();
 		this.fromJavaInterface = clazz.isInterface();
 		this.group = group;
+		this.defaultElement = parseDefaultElementTag(clazz, repository);
+	}
+
+	private static String parseDefaultElementTag(FrankClass clazz, FrankClassRepository repository) {
+		String result = null;
+		String value = clazz.getJavaDocTag(JAVADOC_DEFAULT_CLASSNAME);
+		if(StringUtils.isBlank(value)) {
+			log.warn("JavaDoc tag {} of interface [{}] should have a parameter", JAVADOC_DEFAULT_CLASSNAME, clazz.getName());
+		} else {
+			try {
+				FrankClass defaultClass = repository.findClass(value);
+				result = defaultClass.getName();
+			} catch(FrankDocException e) {
+				log.warn("JavaDoc tag {} on interface [{}] does not point to a valid class: [{}]", JAVADOC_DEFAULT_CLASSNAME, clazz.getName(), value);
+			}
+		}
+		return result;
 	}
 
 	public String getFullName() {
@@ -119,15 +142,22 @@ public class ElementType implements Comparable<ElementType> {
 		return members.iterator().next();
 	}
 
-	void calculateHighestCommonInterface(FrankDocModel model) {
-		highestCommonInterface = this;
-		ElementType nextCandidate = highestCommonInterface.getNextCommonInterface(model);
+	void calculateCommonInterfaceHierarchy(FrankDocModel model) {
+		commonInterfaceHierarchy = new ArrayList<>();
+		commonInterfaceHierarchy.add(this);
+		ElementType nextCandidate = commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1).getNextCommonInterface(model);
 		while(nextCandidate != null) {
-			highestCommonInterface = nextCandidate;
-			nextCandidate = highestCommonInterface.getNextCommonInterface(model);
+			commonInterfaceHierarchy.add(nextCandidate);
+			nextCandidate = commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1).getNextCommonInterface(model);
 		}
-		log.trace("ElementType [{}] has highest common interface [{}]",
-				() -> this.getFullName(), () -> highestCommonInterface.getFullName());
+		if(log.isTraceEnabled()) {
+			String commonInterfaceHierarchyStr = commonInterfaceHierarchy.stream().map(ElementType::getFullName).collect(Collectors.joining(", "));
+			log.trace("ElementType [{}] has common interface hierarchy [{}]", this.getFullName(), commonInterfaceHierarchyStr);
+		}
+	}
+
+	public ElementType getHighestCommonInterface() {
+		return commonInterfaceHierarchy.get(commonInterfaceHierarchy.size() - 1);
 	}
 
 	private ElementType getNextCommonInterface(FrankDocModel model) {

@@ -183,7 +183,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testLockWaitTimeout() throws Exception {
 		cleanupLocks();
@@ -192,7 +192,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setLockWaitTimeout(1);
 		locker.configure();
 		
-		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
+		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
 		try {
 			Semaphore otherInsertReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
@@ -332,7 +332,8 @@ public class LockerTest extends TransactionManagerTestBase {
 		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
-	private void createDbTable() throws JdbcException {
+	@Override
+	protected void createDbTable() throws JdbcException {
 		JdbcUtil.executeStatement(connection,
 				"CREATE TABLE IBISLOCK(" + 
 				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 

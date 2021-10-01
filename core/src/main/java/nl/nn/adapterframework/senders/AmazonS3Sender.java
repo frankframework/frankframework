@@ -51,23 +51,23 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
-	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
+//	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
 	
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
-		addActions(specificActions);
+//		addActions(specificActions);
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
-				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
-						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
-			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
-					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
-		}
-		else if (getActionEnum()==FileSystemAction.COPYS3OBJECT) {
+//		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
+//				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
+//						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
+//			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
+//					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
+//		}
+		if (getActionEnum()==FileSystemAction.COPY) {
 			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
 					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
 				throw new ConfigurationException(
@@ -81,12 +81,13 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
 						+ "] please use following supported storage classes "
 						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
-		} else if (getActionEnum()==FileSystemAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
-				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
-			throw new ConfigurationException(
-					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
-							+ AmazonS3FileSystem.TIERS.toString());
-		}
+		} 
+//		else if (getActionEnum()==FileSystemAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
+//				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
+//			throw new ConfigurationException(
+//					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
+//							+ AmazonS3FileSystem.TIERS.toString());
+//		}
 	}
 
 	@Override
@@ -110,13 +111,13 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		}
 
 		switch(getActionEnum()) {
-			case CREATEBUCKET: 
-				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
-				break;
-			case DELETEBUCKET:
-				result = getFileSystem().deleteBucket();
-				break;
-			case COPYS3OBJECT:
+//			case CREATEBUCKET: 
+//				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
+//				break;
+//			case DELETEBUCKET:
+//				result = getFileSystem().deleteBucket();
+//				break;
+			case COPY:
 				if (pvl.getParameterValue("destinationFileName") != null) {
 					if (pvl.getParameterValue("destinationFileName").getValue() != null) {
 						String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
@@ -128,9 +129,9 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 					throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
 				}
 				break;
-			case RESTORE:
-				result = getFileSystem().restoreObject(fileName);
-				break;
+//			case RESTORE:
+//				result = getFileSystem().restoreObject(fileName);
+//				break;
 			default:
 				return super.sendMessage(message, session, next);
 		}
@@ -193,7 +194,7 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setTier(tier);
 	}
 
-	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires", "" }) 
+	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires. Use <code>-1</code> never expire", "-1" }) 
 	public void setExpirationInDays(int expirationInDays) {
 		getFileSystem().setExpirationInDays(expirationInDays);
 	}

@@ -5,7 +5,8 @@
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.textconfig.GrandChild",
                 "nl.nn.adapterframework.frankdoc.testtarget.textconfig.IChild",
-                "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start"
+                "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start",
+                "Module"
             ]
         }
     ],
@@ -26,6 +27,12 @@
             "name":"nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start"
+            ]
+        },
+        {
+            "name":"Module",
+            "members":[
+                "Module"
             ]
         }
     ],
@@ -69,6 +76,14 @@
             ]
         },
         {
+            "name":"Module",
+            "fullName":"Module",
+            "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+            "elementNames":[
+                "Module"
+            ]
+        },
+        {
             "name":"Object",
             "fullName":"java.lang.Object",
             "elementNames":[
@@ -97,6 +112,12 @@
                 }
             ],
             "children":[
+                {
+                    "multiple":true,
+                    "roleName":"module",
+                    "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+                    "type":"Module"
+                },
                 {
                     "multiple":true,
                     "roleName":"p"

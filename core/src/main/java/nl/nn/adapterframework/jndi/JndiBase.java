@@ -1,5 +1,4 @@
 /*
-
    Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,19 +53,19 @@ public class JndiBase implements IConfigurable{
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private String name;
-    // JNDI
-    private String providerURL = null;
-    private String initialContextFactoryName = null;
-    private String authentication = null;
-	private String principal = null;
-    private String credentials = null;
-	private String jndiAuthAlias = null;
-    private String jmsRealmName = null;
-    private String urlPkgPrefixes = null;
-    private String securityProtocol = null;
-	private String jndiContextPrefix = "";
-	private String jndiProperties = null;
+	private @Getter String name;
+	// JNDI
+	private @Getter String providerURL = null;
+	private @Getter String initialContextFactoryName = null;
+	private @Getter String authentication = null;
+	private @Getter String principal = null;
+	private @Getter String credentials = null;
+	private @Getter String jndiAuthAlias = null;
+	private @Getter String jmsRealmName = null;
+	private @Getter String urlPkgPrefixes = null;
+	private @Getter String securityProtocol = null;
+	private @Getter String jndiContextPrefix = "";
+	private @Getter String jndiProperties = null;
 
 	private Context context = null;
 
@@ -106,23 +105,28 @@ public class JndiBase implements IConfigurable{
 				throw new NamingException("cannot load jndiProperties ["+getJndiProperties()+"] from url ["+url.toString()+"]");
 			}
 		}
-		if (getInitialContextFactoryName() != null)
+		if (StringUtils.isNotEmpty(getInitialContextFactoryName())) {
 			jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, getInitialContextFactoryName());
-		if (getProviderURL() != null)
+		}
+		if (StringUtils.isNotEmpty(getProviderURL())) {
 			jndiEnv.put(Context.PROVIDER_URL, getProviderURL());
-		if (getAuthentication() != null)
+		}
+		if (StringUtils.isNotEmpty(getAuthentication())) {
 			jndiEnv.put(Context.SECURITY_AUTHENTICATION, getAuthentication());
-		if (getPrincipal() != null || getCredentials() != null || getJndiAuthAlias()!=null) {
+		}
+		if (StringUtils.isNotEmpty(getPrincipal()) || StringUtils.isNotEmpty(getCredentials()) || StringUtils.isNotEmpty(getJndiAuthAlias())) {
 			CredentialFactory jndiCf = new CredentialFactory(getJndiAuthAlias(), getPrincipal(), getCredentials());
 			if (StringUtils.isNotEmpty(jndiCf.getUsername()))
 				jndiEnv.put(Context.SECURITY_PRINCIPAL, jndiCf.getUsername());
 			if (StringUtils.isNotEmpty(jndiCf.getPassword()))
 				jndiEnv.put(Context.SECURITY_CREDENTIALS, jndiCf.getPassword());
 		}
-		if (getUrlPkgPrefixes() != null)
+		if (StringUtils.isNotEmpty(getUrlPkgPrefixes())) {
 			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
-		if (getSecurityProtocol() != null)
+		}
+		if (StringUtils.isNotEmpty(getSecurityProtocol())) {
 			jndiEnv.put(Context.SECURITY_PROTOCOL, getSecurityProtocol());
+		}
 		
 		if (log.isDebugEnabled()) {
 			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
@@ -158,28 +162,6 @@ public class JndiBase implements IConfigurable{
         return context;
     }
     
-    public String getCredentials() {
-        return credentials;
-    }
-    /**
-     *  Gets the value of initialContextFactoryName
-     */
-    public String getInitialContextFactoryName() {
-        return initialContextFactoryName;
-    }
-    /**
-     *  Gets the value of providerURL
-     */
-    public String getProviderURL() {
-        return providerURL;
-    }
-    public String getSecurityProtocol() {
-        return securityProtocol;
-    }
-    public String getUrlPkgPrefixes() {
-        return urlPkgPrefixes;
-    }
-
 	@IbisDoc({"maps to the field context.security_authentication", ""})
     public void setAuthentication(String newAuthentication) {
         authentication = newAuthentication;
@@ -243,17 +225,6 @@ public class JndiBase implements IConfigurable{
 		}
 	}
 
-	public String getJmsRealmName() {
-		return this.jmsRealmName;
-	}
-
-	public String getAuthentication() {
-		return authentication;
-	}
-
-	public String getPrincipal() {
-		return principal;
-	}
 
 	@IbisDoc({"username to connect to context, maps to context.security_principal", ""})
 	public void setPrincipal(String string) {
@@ -264,20 +235,11 @@ public class JndiBase implements IConfigurable{
 	public void setJndiAuthAlias(String string) {
 		jndiAuthAlias = string;
 	}
-	public String getJndiAuthAlias() {
-		return jndiAuthAlias;
-	}
 
 	public void setJndiContextPrefix(String string) {
 		jndiContextPrefix = string;
 	}
-	public String getJndiContextPrefix() {
-		return jndiContextPrefix;
-	}
 
-	public String getJndiProperties() {
-		return jndiProperties;
-	}
 	public void setJndiProperties(String jndiProperties) {
 		this.jndiProperties = jndiProperties;
 	}
@@ -287,9 +249,4 @@ public class JndiBase implements IConfigurable{
 	public void setName(String name) {
 		this.name = name;
 	}
-	@Override
-	public String getName() {
-		return name;
-	}
-
 }

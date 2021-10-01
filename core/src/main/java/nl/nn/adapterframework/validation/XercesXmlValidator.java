@@ -267,7 +267,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public XercesValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public XercesValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 

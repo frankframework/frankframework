@@ -31,7 +31,6 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.binder.DigesterLoader;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -99,7 +98,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
-	String lastResolvedEntity = null;
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
@@ -176,16 +174,19 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	public void digestConfiguration(Configuration configuration) throws ConfigurationException {
+	private void digestConfiguration(Configuration configuration) throws ConfigurationException {
 		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
 		Digester digester = null;
+
+		Resource configurationResource = Resource.getResource(configuration, configurationFile);
+		if (configurationResource == null) {
+			throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+		}
+
 		try {
 			digester = getDigester(configuration);
 
-			Resource configurationResource = Resource.getResource(configuration, configurationFile);
-			if (configurationResource == null) {
-				throw new ConfigurationException("Configuration file not found: " + configurationFile);
-			}
+			
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
@@ -213,8 +214,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				currentElementName = digester.getCurrentElementName();
 			}
 
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile +
-				"] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
+			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationFile + "] with digester-rules-file ["+getDigesterRules()+"] in element ["+currentElementName+"]", t);
 		}
 	}
 

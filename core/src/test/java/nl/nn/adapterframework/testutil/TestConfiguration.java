@@ -11,7 +11,9 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.migration.JunitTestClassLoaderWrapper;
+import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
 
@@ -40,7 +42,6 @@ public class TestConfiguration extends Configuration {
 		setName(TEST_CONFIGURATION_NAME);
 		refresh();
 		configure();
-		start();
 
 		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
 			fail("instance.name has been altered");
@@ -103,5 +104,15 @@ public class TestConfiguration extends Configuration {
 			assertTrue("bean IbisManager not found", containsBean("ibisManager"));
 		}
 		return super.getIbisManager();
+	}
+
+	public MessageKeeper getMessageKeeper() {
+		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
+		return mel.getMessageKeeper(TestConfiguration.TEST_CONFIGURATION_NAME);
+	}
+
+	public MessageKeeper getGlobalMessageKeeper() {
+		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
+		return mel.getMessageKeeper();
 	}
 }

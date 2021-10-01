@@ -15,10 +15,11 @@
 	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" />
-	<rule pattern="*/pipeline" registerMethod="setPipeLine"/>
+	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter"/>
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver"/>
+	<!-- Also applied for monitors -->
 	<rule pattern="*/sender" registerMethod="setSender"/>
 	<rule pattern="*/sender" registerMethod="registerSender"/> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
@@ -40,7 +41,7 @@
 	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
 	<rule pattern="*/exit" registerMethod="registerPipeLineExit"/>
 
-	<rule pattern="*/scheduler/job" registerMethod="registerScheduledJob"/>
+	<rule pattern="*/job" registerMethod="registerScheduledJob"/>
 	<rule pattern="*/locker" registerMethod="setLocker"/>
 	<rule pattern="*/param" registerMethod="addParameter" />
 	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" />
@@ -56,22 +57,15 @@
 	<rule pattern="*/cache" registerMethod="setCache"/>
 
 	<!-- Digester rules for monitoring -->
-	<rule pattern="*/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+	<rule pattern="*/monitoring" registerMethod="registerMonitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
 	<rule pattern="*/destination" registerMethod="registerDestination"/>
-	<rule pattern="*/destination/sender" registerMethod="setSender"/>
 
-	<rule pattern="*/monitors/monitor" registerMethod="addMonitor"/>
-
-	<rule pattern="*/monitor/alarm" registerMethod="registerAlarm"/>
-	<rule pattern="*/monitor/alarm/events/event" registerTextMethod="addEventCode"/>
-
-	<rule pattern="*/monitor/clearing" registerMethod="registerClearing"/>
-	<rule pattern="*/monitor/clearing/events/event" registerTextMethod="addEventCode"/>
+	<rule pattern="*/monitoring/monitor" registerMethod="addMonitor"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger"/>
-	<rule pattern="*/monitor/trigger/events/event" registerTextMethod="addEventCode"/>
+	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
 
 	<rule pattern="*/adapterfilter" registerMethod="registerAdapterFilter"/>
-	<rule pattern="*/adapterfilter/sources/source" registerTextMethod="registerSubObject"/>
+	<rule pattern="*/adapterfilter/source" registerTextMethod="registerSubObject"/>
 </digester-rules>

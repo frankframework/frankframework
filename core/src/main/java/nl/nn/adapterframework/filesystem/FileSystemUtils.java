@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Spliterators;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.WildCardFilter;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
@@ -292,6 +294,44 @@ public class FileSystemUtils {
 						throw Lombok.sneakyThrow(e);
 					}
 				});
+	}
+
+	public static <F, FS extends IBasicFileSystem<F>> XmlBuilder getFileInfo(FS fileSystem, F f) throws FileSystemException {
+		XmlBuilder fileXml = new XmlBuilder("file");
+
+		String name = fileSystem.getName(f);
+		fileXml.addAttribute("name", name);
+		if (!".".equals(name) && !"..".equals(name)) {
+			long fileSize = fileSystem.getFileSize(f);
+			fileXml.addAttribute("size", "" + fileSize);
+			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+			try {
+				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
+			} catch (Exception e) {
+				log.warn("cannot get canonicalName for file [" + name + "]", e);
+				fileXml.addAttribute("canonicalName", name);
+			}
+			// Get the modification date of the file
+			Date modificationDate = fileSystem.getModificationTime(f);
+			//add date
+			if (modificationDate != null) {
+				String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
+				fileXml.addAttribute("modificationDate", date);
+
+				// add the time
+				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+				fileXml.addAttribute("modificationTime", time);
+			}
+		}
+
+		Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
+		if(additionalParameters != null) {
+			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
+			}
+		}
+
+		return fileXml;
 	}
 
 }

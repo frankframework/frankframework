@@ -1,0 +1,38 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+	<changeSet id="IAF_Util:1" author="Niels Meijer">
+		<validCheckSum>7:4a9c70190e4678c16c7d392b8ecff571</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
+		<comment>Add ${tableName} Table</comment>
+		<createTable tableName="${tableName}">
+			<column name="MESSAGEKEY" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_${tableName}"/>
+			</column>
+			<column name="TYPE" type="java.sql.Types.CHAR(1)"/>
+			<column name="SLOTID" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="HOST" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="MESSAGEID" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="CORRELATIONID" type="java.sql.Types.VARCHAR(256)"/>
+			<column name="MESSAGEDATE" type="DATETIME"/>
+			<column name="COMMENTS" type="java.sql.Types.VARCHAR(1000)"/>
+			<column name="MESSAGE" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="EXPIRYDATE" type="DATETIME"/>
+			<column name="LABEL" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}">
+			<column name="TYPE"/>
+			<column name="SLOTID"/>
+			<column name="MESSAGEDATE"/>
+		</createIndex>
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}_02">
+			<column name="EXPIRYDATE"/>
+		</createIndex>
+	</changeSet>
+	<changeSet id="IAF_Util:2" author="Niels Meijer" onValidationFail="MARK_RAN">
+		<validCheckSum>7:f2e6c27a19d68a25b1944853432979c4</validCheckSum>
+		<comment>Set sequence for ${tableName} Table</comment>
+		<createSequence sequenceName="SEQ_${tableName}" startValue="161332"/>
+	</changeSet>
+</databaseChangeLog>

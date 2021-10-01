@@ -35,7 +35,6 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,12 +42,14 @@ import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
@@ -57,7 +58,6 @@ import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -75,8 +75,8 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -352,9 +352,10 @@ import nl.nn.adapterframework.util.SpringUtils;
  * 
  * @author  Johan  Verrips
  */
-public class JobDef extends TransactionAttributes implements ApplicationContextAware {
+public class JobDef extends TransactionAttributes implements IConfigurationAware {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
 
+	public @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter AdapterManager adapterManager;
@@ -368,9 +369,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	private String adapterName;
 	private String description;
 	private String receiverName;
+	private String javaListener;
 	private String query;
 	private int queryTimeout = 0;
 	private String jmsRealm;
+	private String datasourceName;
 	private Locker locker = null;
 	private int numThreads = 1;
 	private int countThreads = 0;
@@ -456,8 +459,8 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 			setJobGroup(applicationContext.getId());
 
 		if (function.equals(JobDefFunctions.QUERY)) {
-			if (StringUtils.isEmpty(getJmsRealm())) {
-				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a jmsRealm must be specified");
+			if (StringUtils.isEmpty(getJmsRealm()) && StringUtils.isEmpty(getDatasourceName())) {
+				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a datasourceName must be specified");
 			}
 		} else if(!function.isServiceJob()) {
 			if (StringUtils.isEmpty(getAdapterName())) {
@@ -468,13 +471,20 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
-			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER, JobDefFunctions.SEND_MESSAGE)) {
+			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER)) {
 				if (StringUtils.isEmpty(getReceiverName())) {
 					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
 				}
 				if (adapter.getReceiverByName(getReceiverName()) == null) {
 					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
 					throw new ConfigurationException(msg);
+				}
+			} else if(function.isEqualToAtLeastOneOf(JobDefFunctions.SEND_MESSAGE)) {
+				if (StringUtils.isNotEmpty(getReceiverName())) {
+					ConfigurationWarnings.add(this, log, "please use attribute [javaListener] instead");
+				}
+				if (StringUtils.isEmpty(getJavaListener())) {
+					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a javaListener must be specified");
 				}
 			}
 		}
@@ -688,6 +698,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
+				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
 				Parameter param = new Parameter();
@@ -699,7 +710,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				qs.open();
 
 				Message result = qs.sendMessage(Message.nullMessage(), null);
-				log.info("result [" + result + "]");
+				String resultString = result.asString();
+				int numberOfRowsAffected = Integer.valueOf(resultString);
+				if(numberOfRowsAffected > 0) {
+					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
+				}
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -729,19 +744,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 
-				String query;
-				if (qs.getDatabaseType() == Dbms.MSSQL) {
-					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
-							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
-					qs.setSqlDialect(Dbms.MSSQL.getKey());
-				}
-				else {
-					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
-					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
-					qs.setSqlDialect(Dbms.ORACLE.getKey());
-				}
+				String query = qs.getDbmsSupport().getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();
@@ -985,7 +988,11 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		try {
 			qs.setQuery(getQuery());
 			qs.setName("executeQueryJob");
-			qs.setJmsRealm(getJmsRealm());
+			if(StringUtils.isNotEmpty(getJmsRealm())) {
+				qs.setJmsRealm(getJmsRealm());
+			} else {
+				qs.setDatasourceName(getDatasourceName());
+			}
 			qs.setQueryType("other");
 			qs.setTimeout(getQueryTimeout());
 			qs.configure();
@@ -1005,7 +1012,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		try {
 			// send job
 			IbisLocalSender localSender = SpringUtils.createBean(applicationContext, IbisLocalSender.class);
-			localSender.setJavaListener(getReceiverName());
+			localSender.setJavaListener(getJavaListener());
 			localSender.setIsolated(false);
 			localSender.setName("AdapterJob");
 			if (getInterval() == 0) {
@@ -1122,6 +1129,7 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -1181,9 +1189,17 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 	@IbisDoc({"receiver on which job operates. If function is 'sendmessage' this should be the name of the javalistener you wish to call", ""})
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
+		setJavaListener(receiverName); //For backwards compatibility
 	}
 	public String getReceiverName() {
 		return receiverName;
+	}
+
+	public void setJavaListener(String javaListener) {
+		this.javaListener = javaListener;
+	}
+	public String getJavaListener() {
+		return javaListener;
 	}
 
 	@IbisDoc({"the sql query text to be executed", ""})
@@ -1203,12 +1219,20 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		queryTimeout = i;
 	}
 
-	@IbisDoc({"", " "})
+	@Deprecated
+	@ConfigurationWarning("Please configure a datasourceName instead")
 	public void setJmsRealm(String jmsRealm) {
 		this.jmsRealm = jmsRealm;
 	}
 	public String getJmsRealm() {
 		return jmsRealm;
+	}
+	@IbisDoc({"JNDI name of datasource to be used", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
+	public String getDatasourceName() {
+		return datasourceName;
 	}
 
 	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained, " +

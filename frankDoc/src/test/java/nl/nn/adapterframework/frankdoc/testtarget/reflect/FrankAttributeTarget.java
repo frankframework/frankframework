@@ -152,4 +152,6 @@ public class FrankAttributeTarget extends FrankAttributeTargetParent {
 		return null;
 	}
 
+	public void setAttributeSetterTakingEnum(AttributeSetterArgumentEnum arg) {
+	}
 }

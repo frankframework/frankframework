@@ -127,7 +127,8 @@
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-
+					<attachClasses>true</attachClasses>
+					<classesClassifier>full-configuration</classesClassifier>
 					<archive>
 						<manifestEntries>
 							<Ibis-Project>${project.name}</Ibis-Project>

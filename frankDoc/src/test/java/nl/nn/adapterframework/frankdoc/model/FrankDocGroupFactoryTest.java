@@ -90,6 +90,9 @@ public class FrankDocGroupFactoryTest {
 		instance.getGroup("D", 10);
 		List<FrankDocGroup> allGroups = instance.getAllGroups();
 		List<String> actualGroupNames = allGroups.stream().map(FrankDocGroup::getName).collect(Collectors.toList());
-		assertArrayEquals(new String[] {"D", "B", "A", "C"}, actualGroupNames.toArray(new String[] {}));
+		// Group Other is always added to support a corner case. It may be that Configuration is the
+		// only element in group Other. Configuration is not the argument of a config child setter, so
+		// it is not created along with creating the ElementType objects.
+		assertArrayEquals(new String[] {"D", "B", "A", "C", FrankDocGroup.GROUP_NAME_OTHER}, actualGroupNames.toArray(new String[] {}));
 	}
 }

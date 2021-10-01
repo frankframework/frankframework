@@ -16,6 +16,8 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.model;
 
+import java.util.regex.Pattern;
+
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
 
 /**
@@ -29,6 +31,8 @@ enum JavadocStrategy {
 	IGNORE_JAVADOC(new DelegateIgnoreJavadoc()),
 	USE_JAVADOC(new DelegateUseJavadoc());
 
+	private static final Pattern DESCRIPTION_HEADER_SPLIT = Pattern.compile("(\\. )|(\\.\\n)|(\\.\\r\\n)");
+
 	private final Delegate delegate;
 
 	private JavadocStrategy(Delegate delegate) {
@@ -37,6 +41,15 @@ enum JavadocStrategy {
 
 	void completeFrankElement(FrankElement frankElement, FrankClass frankClass) {
 		delegate.completeFrankElement(frankElement, frankClass);
+	}
+
+	static String calculateDescriptionHeader(String description) {
+		String descriptionHeader = DESCRIPTION_HEADER_SPLIT.split(description)[0];
+		String remainder = description.substring(descriptionHeader.length());
+		if(remainder.startsWith(".")) {
+			descriptionHeader = descriptionHeader + ".";
+		}
+		return descriptionHeader;
 	}
 
 	private static abstract class Delegate {
@@ -48,12 +61,7 @@ enum JavadocStrategy {
 		void completeFrankElement(FrankElement frankElement, FrankClass clazz) {
 			frankElement.setDescription(clazz.getJavaDoc());
 			if(frankElement.getDescription() != null) {
-				String descriptionHeader = frankElement.getDescription();
-				int idx = frankElement.getDescription().indexOf('.');
-				if(idx >= 0) {
-					descriptionHeader = frankElement.getDescription().substring(0, idx + 1);
-				}
-				frankElement.setDescriptionHeader(descriptionHeader);
+				frankElement.setDescriptionHeader(calculateDescriptionHeader(frankElement.getDescription()));
 			}
 		}
 	}

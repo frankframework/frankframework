@@ -39,21 +39,39 @@ import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
 public class DocWriterNewAndJsonGenerationExamplesTest {
-	@Parameters(name = "{0}-{3}-{4}")
+	@Parameters(name = "{0}-{1}-{4}-{5}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
-			{XsdVersion.COMPATIBILITY, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simpleForCompatibility.xsd", "simple.json"},
-			{XsdVersion.STRICT, "examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
-			{XsdVersion.STRICT, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-strict.xsd", null},
-			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-compatibility.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-strict.xsd", null},
-			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-compatibility.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected.xsd", "textconfig-expected.json"},
-			{XsdVersion.COMPATIBILITY, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected-compatibility.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start", "textconfig-expected-strict-plural.xsd", null},
-			{XsdVersion.STRICT, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master", "ignoreattr.xsd", "ignoreattr.json"}
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simple.xsd", "simple.json"},
+			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF_ENUM_VALUES_IGNORE_CASE, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start", "simpleForCompatibility.xsd", "simple.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "examples-sequence-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.sequence.Master", "sequence.xsd", "sequence.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "examples-simple-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.deprecated.Master", null, "deprecated.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-strict.xsd", null},
+			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.fortype.Start", "compatibility-test-expected-compatibility.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-strict.xsd", null},
+			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.compatibility.multiple.Start", "compatibility-multiple-test-expected-compatibility.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected.xsd", "textconfig-expected.json"},
+			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.Start", "textconfig-expected-compatibility.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start", "textconfig-expected-strict-plural.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master", "ignoreattr.xsd", "ignoreattr.json"},
+			// Tests that GroupCreator considers parent elements that only reject attributes, not introduce them.
+			// Also tests that the getter is correctly compared with the setter when enums are used. There should be
+			// a type mismatch warning for attribute setter setMyAttribute.
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.exclude.Master", "exclude.xsd", "exclude.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master", "withDefault.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master", "highestCommonInterface.xsd", "highestCommonInterface.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.parameters.Master", null, "parameters.json"},
+			// When a plural config child has multiple candidates for the default option, a warning must be written and no default should be put in the XSDs
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.plural.config.defaultClassname.Master", "testPluralConflictDefaultOption.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A", "testDigesterRulesViolations-strict.xsd", "testDigesterRulesViolations.json"},
+			{XsdVersion.COMPATIBILITY, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.A", "testDigesterRulesViolations-compatibility.xsd", null},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules-root.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.A", null, "testDigesterRulesViolationsRoot.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules-long.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.longPattern.A", null, "testDigesterRulesViolationsLong.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "reduced-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Configuration", "entityReference.xsd", "entityReference.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.element.name.Master", null, "elementNames.json"},
+			// The resulting JSON file is not relevant. Please run this test separately and check that you have warnings about overloaded attributes.
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master", null, "overloadedAttributes.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.attribute.enumExclude.Master", "enumExcludedAttributes.xsd", "enumExcludedAttributes.json"}
 		});
 	}
 
@@ -61,15 +79,18 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	public XsdVersion xsdVersion;
 
 	@Parameter(1)
-	public String digesterRulesFileName;
+	public AttributeTypeStrategy attributeTypeStrategy;
 
 	@Parameter(2)
-	public String startClassName;
+	public String digesterRulesFileName;
 
 	@Parameter(3)
-	public String expectedXsdFileName;
+	public String startClassName;
 
 	@Parameter(4)
+	public String expectedXsdFileName;
+
+	@Parameter(5)
 	public String expectedJsonFileName;
 
 	private String packageOfClasses;
@@ -84,7 +105,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	public void testXsd() throws Exception {
 		assumeNotNull(expectedXsdFileName);
 		FrankDocModel model = createModel();
-		DocWriterNew docWriter = new DocWriterNew(model, AttributeTypeStrategy.ALLOW_PROPERTY_REF);
+		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(startClassName, xsdVersion);
 		String actualXsd = docWriter.getSchema();
 		System.out.println(actualXsd);

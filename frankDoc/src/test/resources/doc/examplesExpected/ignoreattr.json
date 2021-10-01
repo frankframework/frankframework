@@ -11,6 +11,13 @@
             "types":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.IChild2"
             ]
+        },
+        {
+            "name":"Other",
+            "types":[
+                "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master",
+                "Module"
+            ]
         }
     ],
     "types":[
@@ -32,6 +39,12 @@
             "name":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master",
             "members":[
                 "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master"
+            ]
+        },
+        {
+            "name":"Module",
+            "members":[
+                "Module"
             ]
         }
     ],
@@ -67,6 +80,12 @@
             "children":[
                 {
                     "multiple":true,
+                    "roleName":"module",
+                    "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+                    "type":"Module"
+                },
+                {
+                    "multiple":true,
                     "roleName":"a",
                     "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.IChild1"
                 },
@@ -75,6 +94,14 @@
                     "roleName":"b",
                     "type":"nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.IChild2"
                 }
+            ]
+        },
+        {
+            "name":"Module",
+            "fullName":"Module",
+            "description":"Root element for file you include as entity reference. Does not influence the behavior of your Frank config.",
+            "elementNames":[
+                "Module"
             ]
         },
         {
