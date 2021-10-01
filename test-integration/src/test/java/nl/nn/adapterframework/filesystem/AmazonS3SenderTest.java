@@ -140,40 +140,40 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 //
 //	}
 
-	@Test
-	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
-
-		fileSystemSender.setBucketName(bucketName);
-		fileSystemSender.setDestinationBucketName(bucketName);
-
-		fileSystemSender.setAction(FileSystemAction.COPY.toString());
-		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
-		PipeLineSession session = new PipeLineSession();
-		String dest = "copiedObject.txt";
-		session.put("destinationFileName", dest);
-
-//		Parameter p = new Parameter();
-//		p.setName("destinationFileName");
-//		p.setSessionKey("destinationFileName");
-
-		if (_fileExists(dest)) {
-			_deleteFile(null, dest);
-		}
-		String fileName = "testcopy/testCopy.txt";
-
-		Parameter param = new Parameter();
-		param.setName("destinationFileName");
-		param.setValue(dest);
-		fileSystemSender.addParameter(param);
-		
-		fileSystemSender.configure();
-		fileSystemSender.getFileSystem().open();
-		S3Object objectTobeCopied = new S3Object();
-		objectTobeCopied.setKey(fileName);
-		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
-		out.close();
-		String result = fileSystemSender.sendMessage(new Message(fileName), session).asString();
-		assertEquals(dest, result);
-	}
+//	@Test
+//	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
+//
+//		fileSystemSender.setBucketName(bucketName);
+//		fileSystemSender.setDestinationBucketName(bucketName);
+//
+//		fileSystemSender.setAction(FileSystemAction.COPY.toString());
+//		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
+//		PipeLineSession session = new PipeLineSession();
+//		String dest = "copiedObject.txt";
+//		session.put("destinationFileName", dest);
+//
+////		Parameter p = new Parameter();
+////		p.setName("destinationFileName");
+////		p.setSessionKey("destinationFileName");
+//
+//		if (_fileExists(dest)) {
+//			_deleteFile(null, dest);
+//		}
+//		String fileName = "testcopy/testCopy.txt";
+//
+//		Parameter param = new Parameter();
+//		param.setName("destinationFileName");
+//		param.setValue(dest);
+//		fileSystemSender.addParameter(param);
+//		
+//		fileSystemSender.configure();
+//		fileSystemSender.getFileSystem().open();
+//		S3Object objectTobeCopied = new S3Object();
+//		objectTobeCopied.setKey(fileName);
+//		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
+//		out.close();
+//		String result = fileSystemSender.sendMessage(new Message(fileName), session).asString();
+//		assertEquals(dest, result);
+//	}
 
 }

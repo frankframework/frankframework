@@ -338,7 +338,8 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
 
 		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
-
+		
+		
 		for(int i=1;i<=6;i++) {
 			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true);
 
