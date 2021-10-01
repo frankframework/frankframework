@@ -18,12 +18,15 @@ package nl.nn.adapterframework.monitoring;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
+
 /**
  * Filter on Adapters, used by Triggers.
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
+@FrankDocGroup(name = "Monitoring")
 public class AdapterFilter {
 
 	private String adapter;
