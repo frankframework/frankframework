@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.scheduler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
 
@@ -310,7 +309,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
-	public @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter boolean configured;
 
@@ -364,7 +363,21 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return jobDetail;
 	}
 
-	protected void executeJob(IbisManager ibisManager) {
+	public synchronized boolean incrementCountThreads() {
+		if (countThreads < getNumThreads()) {
+			countThreads++;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	public synchronized void decrementCountThreads() {
+		countThreads--;
+	}
+
+	protected final void executeJob(IbisManager ibisManager) {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -408,20 +421,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		}
 	}
 
-	public synchronized boolean incrementCountThreads() {
-		if (countThreads < getNumThreads()) {
-			countThreads++;
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	public synchronized void decrementCountThreads() {
-		countThreads--;
-	}
-
 	private void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
@@ -446,7 +445,13 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
+		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+		if(name != null) builder.append(" name ["+name+"]");
+		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
+		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
+		if(interval > -1) builder.append(" interval ["+interval+"]");
+		if(function != null) builder.append(" function ["+function+"]");
+		return builder.toString();
 	}
 
 	public void setJobGroup(String jobGroup) {
