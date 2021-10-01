@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -299,6 +300,18 @@ public class ServerStatistics extends Base {
 
 		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
+
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			BootState state = config.getState();
+			if(state != BootState.STARTED) {
+				if(config.getConfigurationException() != null) {
+					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
+				} else {
+					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
+				}
+				stateCount.put(RunStateEnum.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
+			}
+		}
 
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
