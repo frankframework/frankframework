@@ -36,7 +36,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	@Override
 	protected BitronixTransactionManager createTransactionManager() {
 		Configuration configuration = TransactionManagerServices.getConfiguration();
-		configuration.setServerId(getTmuid());
+		configuration.setServerId(getUid());
 		return TransactionManagerServices.getTransactionManager();
 	}
 

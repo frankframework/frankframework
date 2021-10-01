@@ -49,8 +49,8 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 	private static final int TMUID_MAX_LENGTH=51;
 	
 	private @Getter @Setter String statusFile;
-	private @Getter @Setter String tmuidFile;
-	private @Getter @Setter String tmuid;
+	private @Getter @Setter String uidFile;
+	private @Getter @Setter String uid;
 
 	private volatile TransactionManager transactionManager;
 
@@ -79,7 +79,7 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 					writeStatus(Status.INITIALIZING);
 					transactionManager = createTransactionManager();
 					writeStatus(Status.ACTIVE);
-					log.info("created transaction manager ["+transactionManager.getClass().getTypeName()+"] with tmuid ["+getTmuid()+"]");
+					log.info("created transaction manager ["+transactionManager.getClass().getTypeName()+"] with tmuid ["+getUid()+"]");
 				}
 			}
 		}
@@ -87,19 +87,19 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 	}
 
 	protected String determineTmUid() {
-		String recorded_tmuid = read(getTmuidFile());
+		String recorded_tmuid = read(getUidFile());
 		if (StringUtils.isNotEmpty(recorded_tmuid)) {
-			log.info("retrieved tmuid ["+recorded_tmuid+"] from ["+getTmuidFile()+"]");
-			setTmuid(recorded_tmuid);
+			log.info("retrieved tmuid ["+recorded_tmuid+"] from ["+getUidFile()+"]");
+			setUid(recorded_tmuid);
 		}
-		if (StringUtils.isEmpty(getTmuid())) {
-			setTmuid((Misc.getHostname()+"-"+Misc.createSimpleUUID()).substring(0, TMUID_MAX_LENGTH));
-			log.info("created tmuid ["+getTmuid()+"]");
+		if (StringUtils.isEmpty(getUid())) {
+			setUid((Misc.getHostname()+"-"+Misc.createSimpleUUID()).substring(0, TMUID_MAX_LENGTH));
+			log.info("created tmuid ["+getUid()+"]");
 		}
-		if (!getTmuid().equals(recorded_tmuid)) {
-			write(getTmuidFile(),getTmuid());
+		if (!getUid().equals(recorded_tmuid)) {
+			write(getUidFile(),getUid());
 		}
-		return getTmuid();
+		return getUid();
 	}
 
 	@Override

@@ -17,8 +17,8 @@
 		depends-on="btmConfig"
 		>
 		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
-		<property name="tmuidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
-		<property name="tmuid" value="${transactionmanager.uid}" />
+		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
+		<property name="uid" value="${transactionmanager.uid}" />
 	</bean>
 
 	<bean
