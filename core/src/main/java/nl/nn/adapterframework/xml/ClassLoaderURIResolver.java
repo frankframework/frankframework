@@ -58,10 +58,6 @@ public class ClassLoaderURIResolver implements URIResolver {
 		String globalClasspathRef=null;
 		String protocol=null;
 
-		ClassLoader classLoader = scopeProvider.getConfigurationClassLoader();
-		if (classLoader instanceof ClassLoaderBase) {
-			base = ((ClassLoaderBase)classLoader).reduceReference(base);
-		}
 		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
 			absoluteOrRelativeRef=href;

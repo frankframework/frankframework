@@ -36,22 +36,14 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	 */
 	@Override
 	public URL getLocalResource(String name) {
+		if (name.startsWith("jar:")) {
+			int prefixEndMarkerPos = name.indexOf("!");
+			if (prefixEndMarkerPos>0) {
+				name = name.substring(prefixEndMarkerPos+2);
+				return getParent().getResource(name);
+			}
+		}
 		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
 	
-	@Override
-	public String reduceReference(String baseRef) {
-		if (baseRef.startsWith("jar:")) {
-			int prefixEndMarkerPos = baseRef.indexOf("!");
-			if (prefixEndMarkerPos>0) {
-				baseRef = baseRef.substring(prefixEndMarkerPos+2);
-				if (baseRef.startsWith(getBasePath())) {
-					return baseRef.substring(getBasePath().length());
-				}
-
-			}
-		}
-		return super.reduceReference(baseRef);
-	}
-
 }

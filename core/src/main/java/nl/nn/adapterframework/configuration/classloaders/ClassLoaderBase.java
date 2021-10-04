@@ -112,11 +112,6 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 		return basePath;
 	}
 
-	public String reduceReference(String baseRef) {
-		return baseRef;
-	}
-	
-	
 	@Override
 	public String getConfigurationName() {
 		return configurationName;
