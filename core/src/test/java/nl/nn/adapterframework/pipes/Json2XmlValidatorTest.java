@@ -106,7 +106,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		
 		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
 
-		PipeRunResult prr_request = doPipe(pipe, input,session);
+		doPipe(pipe, input,session); // first run the request validation ...
 		
 		IValidator validator = pipe.getResponseValidator();
 		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
