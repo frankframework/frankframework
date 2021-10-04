@@ -11,6 +11,8 @@ Either use our public `ibissource` or private `proprietary` profile when running
 
 ## Running the Frank!Framework
 
+If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/ibissource/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
+
 Initial:
 
 - git clone https://github.com/ibissource/iaf
@@ -18,7 +20,7 @@ Initial:
 - mvn
 - cd example
 - mvn jetty:run
-- [http://localhost:8080/](http://localhost:8080/)
+- [http://localhost:8080/iaf](http://localhost:8080/iaf)
 
 
 After modifying a project file:
@@ -26,7 +28,7 @@ After modifying a project file:
 - ctrl-c
 - cd .. ; mvn clean install ; cd example ; mvn jetty:run
 
-The jetty-maven-plugin requires Maven 3 and Java 1.8.
+The jetty-maven-plugin requires Maven 3.6 and Java 1.8.
 
 ## Submitting changes
 
@@ -106,7 +108,7 @@ WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this 
 
 ## Testing
 
-Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Ibis developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
+Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Frank developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
 
 We have yet to test the compatibility of the iaf-test module with Jetty. Until then, the only verified way to run the module is on a Tomcat server in Eclipse. However, feel free to try and run it on Jetty yourself! If it works for you, we'd love to hear about it. :)
 
@@ -132,9 +134,11 @@ If you are developing under Windows, you can do the following to set this up:
 
 ## Developing with Eclipse
 
+You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/ibissource/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
+
 ### Install Eclipse with Lombok
 
-- Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
+- Download Eclipse from [Eclipse 2021-09](https://www.eclipse.org/downloads/packages/release/2021-09/r). This is an installer, run it. Choose "Eclipse IDE for Enterprise Java and Web Developers ". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message).
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
 - Download version 1.18.12. You may need the link "older versions".
 - Run the .jar you downloaded. Under Windows you can double-click it.
@@ -142,11 +146,17 @@ If you are developing under Windows, you can do the following to set this up:
 eclipse.exe file.
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
+- The Frank!Framework can only run on Java 8. Please install Java 8 in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html). In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore. You must start Eclipse from a Java 11 or later JRE, and then configure a Java 8 JRE or JDK in the settings. This will be explained later.
 
 ### Configure Eclipse
 
-- Start Eclipse with Java 8. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
-- Close Welcome.
+- If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not change a duplicate -vm.
+- You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
+
+    --illegal-access=warn
+    --add-opens java.base/java.lang=ALL-UNNAMED
+
+- Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - There are a few unit tests that only run when a JDK is available; a JRE is not sufficient for them. Let Eclipse run unit tests using a JDK, as follows. Go to Window | Preferences. Go to Java | Installed JREs. Press Add... and browse to an installation directory of a JDK. Finally, make it the default by clicking the checkbox.
 
