@@ -52,13 +52,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 /**
  * This class sends messages with JMS.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
- * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
- * </table>
- * </p>
+ * @ff.parameters All parameters present are set as message-properties.
  * 
  * @author Gerrit van Brakel
  */
