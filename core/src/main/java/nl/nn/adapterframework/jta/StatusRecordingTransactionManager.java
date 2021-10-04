@@ -76,6 +76,7 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 		writeStatus(Status.INITIALIZING);
 		TransactionManager result = createTransactionManager();
 		writeStatus(Status.ACTIVE);
+		setTransactionManager(result);
 		return result;
 	}
 
