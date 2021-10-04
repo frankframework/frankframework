@@ -2,7 +2,7 @@
 
 To ensure that your contribution doesn't break any logic, we would like you to run the test scenario's within the iaf-test module before committing your changes. To do this, you'll have to download a handful of JARs and adjust your Tomcat server configuration.
 
-This guide was written with the assertion that you are A) using Eclipse, and B) have successfully run the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
+This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page.
 
 ## 1. Proprietary modules and JAR dependencies
 
@@ -52,7 +52,4 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 ### Troubleshooting
 
-* If the ant builds don't work due to a missing class error, try running it with another version of Java (can be set by pressing "Ant Build..." instead of "Ant Build").
-* If the JdbcQueryListener has trouble starting due to a "table [ibisstore] does not exist" error, you may have started the server too quickly after stopping its last instance (<5s).
-* If running Tomcat results in an error related to invalid Oracle credentials, try rerunning the _create___user.xml_ script.
 * Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [ibissource nexus repository](https://nexus.ibissource.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
