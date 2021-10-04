@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,5 +45,4 @@ public class WebAppClassLoader extends ClassLoaderBase {
 		}
 		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
-	
 }
