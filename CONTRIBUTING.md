@@ -150,11 +150,11 @@ eclipse.exe file.
 
 ### Configure Eclipse
 
-- If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not change a duplicate -vm.
+- If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
 
-    --illegal-access=warn
-    --add-opens java.base/java.lang=ALL-UNNAMED
+      --illegal-access=warn
+      --add-opens java.base/java.lang=ALL-UNNAMED
 
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
