@@ -44,14 +44,6 @@ import nl.nn.adapterframework.util.FileUtils;
 /**
  * Pipe to zip or unzip a message or file.  
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>When no problems encountered</td></tr>
- * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
- * </table>
- * </p>
- * 
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */

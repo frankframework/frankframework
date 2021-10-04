@@ -38,35 +38,35 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * The steam is closed after reading.
  * 
  * Example configuration:
- * <code><pre>
-		<pipe
-			name="Read issuer"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/issuer.cer"
-			preserveInput="true"
-			outputType="stream"
-			storeResultInSessionKey="issuer"
-			>
-			<forward name="success" path="Read CRL" />
-		</pipe>
-		<pipe
-			name="Read CRL"
-			className="nl.nn.adapterframework.pipes.FilePipe"
-			actions="read"
-			fileName="dir/CRL.crl"
-			outputType="stream"
-			>
-			<forward name="success" path="Transform CRL" />
-		</pipe>
-		<pipe
-			name="Transform CRL"
-			className="nl.nn.adapterframework.pipes.CrlPipe"
-			issuerSessionKey="issuer"
-			>
-			<forward name="success" path="EXIT" />
-		</pipe>
- * </pre></code>
+ * <pre>
+	<pipe
+		name="Read issuer"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/issuer.cer"
+		preserveInput="true"
+		outputType="stream"
+		storeResultInSessionKey="issuer"
+		>
+		<forward name="success" path="Read CRL" />
+	</pipe>
+	<pipe
+		name="Read CRL"
+		className="nl.nn.adapterframework.pipes.FilePipe"
+		actions="read"
+		fileName="dir/CRL.crl"
+		outputType="stream"
+		>
+		<forward name="success" path="Transform CRL" />
+	</pipe>
+	<pipe
+		name="Transform CRL"
+		className="nl.nn.adapterframework.pipes.CrlPipe"
+		issuerSessionKey="issuer"
+		>
+		<forward name="success" path="EXIT" />
+	</pipe>
+ * </pre>
  * 
  * 
  * @author Miel Hoppenbrouwers

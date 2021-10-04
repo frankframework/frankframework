@@ -352,10 +352,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	}
 
 	/**
-	 * By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
-	 * correlation id of the reply. When you set ForceMessageIdAsCorrelationId to <code>true</code>,
-	 * the messageID set in the correlationID of the reply.
-	 * @param force
+	 * By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply. 
+	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
 	 */
 	public void setForceMessageIdAsCorrelationId(boolean force){
 	   forceMessageIdAsCorrelationId=force;

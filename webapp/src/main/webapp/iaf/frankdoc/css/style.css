@@ -109,6 +109,11 @@ table.table thead th.tbl-65 {
 	margin-bottom: 0.5rem;
 }
 
+.element__tags {
+	margin-top: -1.5rem;
+	margin-bottom: 2rem;
+}
+
 .element__name .label{
 	font-size: 1.25rem;
 	vertical-align: middle;
@@ -117,6 +122,43 @@ table.table thead th.tbl-65 {
 	margin-top: 0;
 	margin-bottom: 2rem;
 }
+
+.block {
+	position: relative;
+	padding: 10px 15px 0px;
+	margin: 35px -15px 15px;
+	border-color: #e5e5e5 #eee #eee;
+	border-style: solid;
+	border-width: 1px 0;
+	box-shadow: inset -3px 3px 6px rgb(0 0 0 / 5%);
+}
+
+.block h4 {
+	position: absolute;
+	margin: 0;
+	top: -20px;
+	left: 5px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #676a6c;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.block table.table {
+	margin: -8px 0 14px 0;
+}
+
+@media ( min-width : 768px) {
+	.block  {
+		margin-right: 0;
+		margin-left: 0;
+		background-color: #fff;
+		border-color: #ddd;
+		border-width: 1px;
+		border-radius: 0 4px 0 0;
+	}
+}
+
 .loadError {
 	display: none;
 	position: absolute;
