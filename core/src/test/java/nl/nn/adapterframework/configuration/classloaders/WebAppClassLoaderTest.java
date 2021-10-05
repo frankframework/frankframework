@@ -1,0 +1,74 @@
+/*
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.configuration.classloaders;
+
+import static org.junit.Assert.assertNotNull;
+
+import java.net.URL;
+
+import org.junit.Test;
+
+public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebAppClassLoader> {
+
+	@Override
+	public WebAppClassLoader createClassLoader(ClassLoader parent) throws Exception {
+		return new WebAppClassLoader(parent);
+	}
+
+	@Override
+	public void configurationFileDefaultLocation() {
+		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+	}
+
+	@Override
+	public void configurationFileCustomLocation() throws Exception {
+		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+	}
+
+	@Override
+	public void configurationFileCustomLocationAndBasePath() throws Exception {
+		//Stub this method as the WebAppClassloader always asks it's parent for resources, which it does not have.
+	}
+
+	private String getAbsoluteFilePath(String name) { //For testing purposes the JAR_FILE archive isn't used, we're just using the path
+		URL file = this.getClass().getResource(JAR_FILE);
+		assertNotNull("jar url ["+JAR_FILE+"] not found", file);
+		return "jar:file:" + file.getFile() + "!/" + name;
+	}
+
+	/* test classpath resource retrieval */
+	@Test
+	public void absoluteUrl() throws Exception {
+		URL resource = getResource(getAbsoluteFilePath("ClassLoaderTestFile.xml"));
+		assertNotNull("unable to retrieve resource from zip file", resource);
+	}
+
+	@Test
+	public void absoluteUrlWithoutBasePath() throws Exception {
+		createAndConfigure("WebAppClassLoader"); //re-create the classload with basepath
+
+		URL resource = getResource(getAbsoluteFilePath("ClassLoaderTestFile.xml"));
+		assertNotNull("unable to retrieve resource from zip file", resource);
+	}
+
+	@Test
+	public void absoluteUrlWithBasePath() throws Exception {
+		createAndConfigure("WebAppClassLoader"); //re-create the classload with basepath
+
+		URL resource = getResource(getAbsoluteFilePath("WebAppClassLoader/ClassLoaderTestFile.xml")); //basepath in url!
+		assertNotNull("unable to retrieve resource from zip file", resource);
+	}
+}

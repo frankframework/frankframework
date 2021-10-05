@@ -17,10 +17,6 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 
-import org.apache.commons.lang3.StringUtils;
-
-import nl.nn.adapterframework.util.FilenameUtils;
-
 
 /**
  * Default IBIS Configuration ClassLoader.
@@ -41,30 +37,18 @@ public class WebAppClassLoader extends ClassLoaderBase {
 	 */
 	@Override
 	public URL getLocalResource(String name) {
-		if (name.startsWith("jar:")) { // when referencing a resource in a jar
-			String normalizedName = FilenameUtils.normalize(name);
-			URL result = getParent().getResource(normalizedName); 
-			if (result!=null) {
-				log.debug("returning url for ["+normalizedName+"]");
-				return result;
-			}
-			log.debug("cannot open url for ["+normalizedName+"]");
-			int prefixEndMarkerPos = name.indexOf("!");
-			if (prefixEndMarkerPos>0) {
-				name = name.substring(prefixEndMarkerPos+2); // if not found in the jar, then remove the jar prefix
-				log.debug("--> reduced name to ["+name+"]");
-				result = getParent().getResource(name);
-				if (result != null) {
-					log.debug("returning url for ["+name+"]");
-					return result;
-				}
-				if (StringUtils.isNotEmpty(getBasePath()) && name.startsWith(getBasePath())) {
-					name = name.substring(getBasePath().length());
-					log.debug("returning url for basepath-less name ["+name+"]");
-					return result;
-				}
+		int bangslash = name.indexOf("!/");
+		if (name.startsWith("jar:") && bangslash > -1) { // when referencing a resource in a jar
+			String localname = name.substring(bangslash+2); // remove the jar protocol + path prefix
+
+			// if no basepath is present, or the localname already starts with the basepath
+			if (getBasePath() == null || localname.startsWith(getBasePath())) {
+				return getParent().getResource(localname);
+			} else { // force the basepath!
+				return getParent().getResource(getBasePath()+localname);
 			}
 		}
+
 		return getParent().getResource((getBasePath()==null)?name:getBasePath()+name);
 	}
 }
