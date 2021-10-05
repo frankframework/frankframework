@@ -41,6 +41,7 @@ angular.module('iaf.frankdoc')
 	return {
 		restrict: 'A',
 		replace: true,
+		controller: 'element-children',
 		templateUrl: 'views/element-children.html'
 	}
 }]).directive('elementAttributes', [function() {
@@ -65,6 +66,6 @@ angular.module('iaf.frankdoc')
 	return {
 		restrict: 'A',
 		replace: true,
-		templateUrl: "views/parameters.html"
+		templateUrl: "views/element-parameters.html"
 	}
 }]);

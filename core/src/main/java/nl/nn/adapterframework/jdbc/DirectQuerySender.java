@@ -35,12 +35,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * QuerySender that interprets the input message as a query, possibly with attributes.
  * Messages are expected to contain sql-text.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * </p>
+ * @ff.parameters All parameters present are applied to the query to be executed.
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1

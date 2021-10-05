@@ -1062,8 +1062,11 @@ angular.module('iaf.beheerconsole')
 											body: "Connection to the server was lost! Click to refresh the page.",
 											timeout: 0,
 											showCloseButton: true,
-											onHideCallback: function() {
-												window.location.reload();
+											clickHandler: function(_, isCloseButton) {
+												if(isCloseButton !== true) {
+													window.location.reload();
+												}
+												return true;
 											}
 										});
 									}
