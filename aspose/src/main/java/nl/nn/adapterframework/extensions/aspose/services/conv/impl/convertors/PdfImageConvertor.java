@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,27 +37,22 @@ import com.aspose.pdf.SaveFormat;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Converts the files which are required and supported by the aspose pdf
+ * Converts the files which are required and supported by the aspose image
  * library.
  * 
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
- *
  */
 public class PdfImageConvertor extends AbstractConvertor {
 
-	private static final float NO_SCALE_FACTOR = 1.0f;
-
-	private static final int NUMBER_OF_MARGINS = 2;
-
-	private static final String IMAGE = "image";
-
-	private static final String TIFF = "tiff";
-
 	private static final Logger LOGGER = LogUtil.getLogger(PdfImageConvertor.class);
+
+	private static final float NO_SCALE_FACTOR = 1.0f;
+	private static final int NUMBER_OF_MARGINS = 2;
+	private static final String IMAGE = "image";
+	private static final String TIFF = "tiff";
 
 	// contains mapping from MediaType to the LoadOption for the aspose word
 	// conversion.
@@ -76,19 +71,14 @@ public class PdfImageConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	PdfImageConvertor(String pdfOutputLocation) {
+	protected PdfImageConvertor(String pdfOutputLocation) {
 		// Give the supported media types.
-		super(pdfOutputLocation,
-				MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override
-	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
-			throws Exception {
-
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, ConversionOption conversionOption, String charset) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
-			// mediaType should always be supported otherwise there a program error because
-			// the supported media types should be part of the map
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
@@ -108,20 +98,18 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into 
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			image =  com.aspose.imaging.Image.load(file.getAbsolutePath());
+			image =  com.aspose.imaging.Image.load(message.asInputStream());
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				try(TiffOptions options = new TiffOptions(TiffExpectedFormat.TiffJpegRgb)){
 					image.save(tmpImageFile.getAbsolutePath(), options);
 				}
 			}else {
-				Files.copy(file.toPath(), tmpImageFile.toPath());
+				Files.copy(message.asInputStream(), tmpImageFile.toPath());
 				BufferedImage bufferedImage = ImageExtensions.toJava(image);
 				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
 
-				float maxImageWidthInPoints = PageConvertUtil
-						.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-				float maxImageHeightInPoints = PageConvertUtil
-						.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+				float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+				float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
 
 				float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
 				float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
@@ -132,7 +120,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 					scaleFactor = NO_SCALE_FACTOR;
 				}
 			}
-			
+
 			Image pdfImage = new Image();
 			pdfImage.setFile(tmpImageFile.getAbsolutePath());
 			
@@ -145,10 +133,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			LOGGER.info(
-					"Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-			
+
 		} finally {
 			doc.freeMemory();
 			doc.dispose();

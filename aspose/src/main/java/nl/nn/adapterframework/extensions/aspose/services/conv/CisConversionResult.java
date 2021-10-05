@@ -25,10 +25,6 @@ import org.apache.tika.mime.MediaType;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-/**
- * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
- *         Hoorn</a> (d937275)
- */
 public class CisConversionResult {
 
 	private final static String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
