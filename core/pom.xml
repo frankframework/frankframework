@@ -457,16 +457,34 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
 			<version>${cxf.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.xml.messaging.saaj</groupId>
+					<artifactId>saaj-impl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${cxf.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.xml.messaging.saaj</groupId>
+					<artifactId>saaj-impl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-rs-client</artifactId>
 			<version>${cxf.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.xml.messaging.saaj</groupId>
+					<artifactId>saaj-impl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
