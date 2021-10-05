@@ -61,24 +61,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheMode(String) cacheMode}</td><td>controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER</td><td>effectively: <ul>
- *   <li>in transacted receivers: CACHE_NONE</li>
- *   <li>in non transacted receivers: CACHE_CONSUMER</li>
- * </ul></td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receive timeout, in milliseconds</td><td>3000</td></tr>
- * </table>
+ * 
  * The following session keys are set for each message:
  * <ul>
  *   <li>id (the message id)</li>
@@ -582,6 +565,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 
+	/**
+	 * Controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER	
+	 */
 	public void setCacheMode(String string) {
 		cacheMode = string;
 	}

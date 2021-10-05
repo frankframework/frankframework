@@ -1799,7 +1799,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('EditScheduleCtrl', ['$scope', 'Api', 'Misc', '$stateParams', '$state', function($scope, Api, Misc, $stateParams, $state) {
+.controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function($scope, Api, $stateParams) {
 	$scope.state = [];
 	$scope.addAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
@@ -1826,9 +1826,9 @@ angular.module('iaf.beheerconsole')
 				name: data.name,
 				group: data.group,
 				adapter: data.adapter,
-				receiver: data.receiver,
+				receiver: "",
 				cron: data.triggers[0].cronExpression,
-				interval: -1,
+				interval: data.triggers[0].repeatInterval,
 				message: data.message,
 				description: data.description,
 				locker: data.locker,
@@ -1845,13 +1845,16 @@ angular.module('iaf.beheerconsole')
 		fd.append("group", $scope.form.group);
 		fd.append("adapter", $scope.form.adapter);
 		fd.append("receiver", $scope.form.receiver);
-		fd.append("cron", $scope.form.cron);
-		fd.append("interval", $scope.form.interval);
+		if($scope.form.cron)
+			fd.append("cron", $scope.form.cron);
+		if($scope.form.interval)
+			fd.append("interval", $scope.form.interval);
 		fd.append("persistent", $scope.form.persistent);
 		fd.append("message", $scope.form.message);
 		fd.append("description", $scope.form.description);
 		fd.append("locker", $scope.form.locker);
-		fd.append("lockkey", $scope.form.lockkey);
+		if($scope.form.lockkey)
+			fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Put(url, fd, function(data) {
 			$scope.addAlert("success", "Successfully edited schedule!");

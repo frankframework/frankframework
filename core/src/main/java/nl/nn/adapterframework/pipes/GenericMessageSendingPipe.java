@@ -39,14 +39,6 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * <tr><td>{@link ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
- * </table>
- * </p>
  * 
  * @author  Dennis van Loon
  * @since   4.1.1

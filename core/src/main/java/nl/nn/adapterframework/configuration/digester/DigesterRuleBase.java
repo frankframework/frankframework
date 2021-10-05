@@ -37,6 +37,9 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
+/**
+ * @author Niels Meijer
+ */
 public abstract class DigesterRuleBase extends Rule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;

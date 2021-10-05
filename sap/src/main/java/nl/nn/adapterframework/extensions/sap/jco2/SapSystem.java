@@ -25,6 +25,8 @@ import com.sap.mw.idoc.jco.JCoIDoc;
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
 
+import lombok.Getter;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapSystem;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -32,43 +34,26 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the System. SAP-related Ibis objects refer to SapSystems by setting their SystemName-attribute to this value</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
- * <tr><td>{@link #setGwhost(String) gwhost}</td><td>name of the SAP-application server to connect to</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMandant(String) mandant}</td><td>Mandant i.e. 'client'</td><td>100</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias to obtain userid and password</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserid(String) userid}</td><td>userid used in the connection</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPasswd(String) passwd}</td><td>passwd used in the connection</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLanguage(String) language}</td><td>Language indicator</td><td>NL</td></tr>
- * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
- * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
- * <tr><td>{@link #setServiceOffset(int) serviceOffset}</td><td>number added to systemNr to find corresponding RFC service number</td><td>3300</td></tr>
- * <tr><td>{@link #setUnicode(boolean) unicode}</td><td>when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)</td><td>false</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements ISapSystem, JCO.ServerStateChangedListener  {
 
-	private int maxConnections = 10;
 
-	private String gwhost;	// The application server where the RFC-destination is registerd
+	private @Getter String gwhost;	// The application server where the RFC-destination is registerd
 
- 	private String authAlias= null;
-	private String mandant	= "100";	 	// mandant
-	private String userid   = null;
-	private String passwd   = null;
-	private String language = "NL";
-	private String systemnr = "00";
-	private int    traceLevel = 0;
+ 	private @Getter String authAlias= null;
+	private @Getter String userid   = null;
+	private @Getter String passwd   = null;
+	private @Getter String mandant	= "100";
+	private @Getter String systemnr = "00";
+	private @Getter String language = "NL";
+	private @Getter int maxConnections = 10;
+	private @Getter int    traceLevel = 0;
 
-	private int serviceOffset = 3300;
+	private @Getter int serviceOffset = 3300;
 
-	private boolean unicode = false;
+	private @Getter boolean unicode = false;
 
 	private IRepository jcoRepository = null;
 	private IDoc.Repository idocRepository = null;
@@ -263,99 +248,68 @@ public class SapSystem extends GlobalListItem  implements ISapSystem, JCO.Server
 			}
 		}).toString();	}
 
-	public String getGwhost() {
-		return gwhost;
-	}
 
-	public String getLanguage() {
-		return language;
-	}
-
-	public String getMandant() {
-		return mandant;
-	}
-
-
-	public String getSystemnr() {
-		return systemnr;
-	}
-
-	@Override
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
-	@Override
-	public void setUserid(String string) {
-		userid = string;
-	}
-	public String getUserid() {
-		return userid;
-	}
-	@Override
-	public void setPasswd(String string) {
-		passwd = string;
-	}
-	public String getPasswd() {
-		return passwd;
-	}
-
+	@IbisDoc({"1", "name of the SAP-application server to connect to", ""})
 	@Override
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
 
+	@IbisDoc({"2", "alias to obtain userid and password", ""})
 	@Override
-	public void setLanguage(String string) {
-		language = string;
+	public void setAuthAlias(String string) {
+		authAlias = string;
 	}
 
+	@IbisDoc({"3", "userid used in the connection", ""})
+	@Override
+	public void setUserid(String string) {
+		userid = string;
+	}
+
+	@IbisDoc({"4", "passwd used in the connection", ""})
+	@Override
+	public void setPasswd(String string) {
+		passwd = string;
+	}
+
+	@IbisDoc({"5", "Mandant i.e. 'client'", "100"})
 	@Override
 	public void setMandant(String string) {
 		mandant = string;
 	}
 
-
-
+	@IbisDoc({"6", "Language indicator", "NL"})
 	@Override
-	public void setSystemnr(String string) {
-		systemnr = string;
+	public void setLanguage(String string) {
+		language = string;
 	}
 
-
-	public int getMaxConnections() {
-		return maxConnections;
-	}
-
+	@IbisDoc({"7", "maximum number of connections that may connect simultaneously to the SAP system", "10"})
 	@Override
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	public int getServiceOffset() {
-		return serviceOffset;
-	}
-
-	@Override
-	public void setServiceOffset(int i) {
-		serviceOffset = i;
-	}
-
-	public int getTraceLevel() {
-		return traceLevel;
-	}
-
+	@IbisDoc({"8", "trace level (effective only when logging level is debug). 0=none, 10= maximum", "0"})
 	@Override
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
 
-	public boolean isUnicode() {
-		return unicode;
+	@IbisDoc({"9", "number added to systemNr to find corresponding RFC service number", "3300"})
+	@Override
+	public void setServiceOffset(int i) {
+		serviceOffset = i;
 	}
 
+	@IbisDoc({"10", "SAP system nr", "00"})
+	@Override
+	public void setSystemnr(String string) {
+		systemnr = string;
+	}
+
+	@IbisDoc({"11", "when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)", "false"})
 	@Override
 	public void setUnicode(boolean b) {
 		unicode = b;
