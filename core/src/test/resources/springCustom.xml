@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation=
+		"
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		"
+	>
+
+	<!-- Use a mocked IbisManager and Scheduler for testing purposes -->
+	<import resource="testConfigurationContext.xml"/>
+
+	<bean name="ibisManager"
+		class="nl.nn.adapterframework.webcontrol.api.MockIbisManager"
+		autowire="byName"
+		>
+	</bean>
+</beans>
