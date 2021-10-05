@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-          http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd">
-  <!--
-  This Spring file is loaded/included via the SPRING.CONFIG.LOCATIONS property in AppConstants.properties
-  -->
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	default-autowire="byName"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	">
 
-  <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
-    <constructor-arg value="nl.nn.adapterframework.configuration.IbisManager"/>
-  </bean>
+	<context:property-placeholder />
+
+	<bean
+		name="testSpringXmlPropertyResolver"
+		class="java.lang.String"
+		>
+		<constructor-arg value="${jms.messageListenerClassName}"/>
+	</bean>
+
+	<bean name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="nl.nn.adapterframework.configuration.IbisManager" />
+	</bean>
 
 </beans>

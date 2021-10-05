@@ -16,6 +16,6 @@ public class SpringConfigurationXmlPropertyResolver {
 		context.init(false);
 
 		//Make sure property in the Spring XML is resolved
-		assertEquals("nl.nn.adapterframework.jms.IbisMessageListenerContainer", context.getBean("messageListenerClassName", String.class));
+		assertEquals("nl.nn.adapterframework.jms.IbisMessageListenerContainer", context.getBean("testSpringXmlPropertyResolver", String.class));
 	}
 }
