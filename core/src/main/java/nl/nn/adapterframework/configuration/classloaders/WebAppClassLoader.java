@@ -44,7 +44,7 @@ public class WebAppClassLoader extends ClassLoaderBase {
 			// if no basepath is present, or the localname already starts with the basepath
 			if (getBasePath() == null || localname.startsWith(getBasePath())) {
 				return getParent().getResource(localname);
-			} else { // force the basepath!
+			} else { // else force the basepath!
 				return getParent().getResource(getBasePath()+localname);
 			}
 		}
