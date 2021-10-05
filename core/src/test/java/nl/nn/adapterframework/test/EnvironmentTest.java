@@ -17,3 +17,4 @@ public class EnvironmentTest {
 		System.out.println(String.format("SAXParserFactory implementation: %s", factory.getClass().getName()));
 	}
 }
+
