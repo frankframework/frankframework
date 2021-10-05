@@ -32,9 +32,9 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
- * @ff.parameters All parameters present are applied to the query to be executed.
- * 
  * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
+ * 
+ * @ff.parameters All parameters present are applied to the query to be executed.
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
