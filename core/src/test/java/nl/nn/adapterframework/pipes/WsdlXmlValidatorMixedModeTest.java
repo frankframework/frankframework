@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -86,7 +84,7 @@ public class WsdlXmlValidatorMixedModeTest {
         return new Message(new StringReader(string.toString()));
     }
 
-    
+
     protected void validate(IPipe val, String msg, String failureReason) throws Exception {
         Message messageToValidate = getTestXml(msg);
     	if (failureReason!=null) {
@@ -95,8 +93,6 @@ public class WsdlXmlValidatorMixedModeTest {
     		val.doPipe(messageToValidate, session);
     	}
     }
-    
-    
 
     public final boolean ooMode=true;
 
