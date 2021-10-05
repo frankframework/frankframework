@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+          http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd">
+  <!--
+  This Spring file is loaded/included via the SPRING.CONFIG.LOCATIONS property in AppConstants.properties
+  -->
+
+	<bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+		autowire="byName" scope="prototype">
+	</bean>
+
+	<bean name="proto-receiver" class="nl.nn.adapterframework.receivers.Receiver"
+		autowire="byName" scope="prototype">
+	</bean>
+
+	<bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
+		autowire="byName" scope="prototype">
+	</bean>
+
+	<bean
+		name="jdbcMigrator"
+		class="nl.nn.adapterframework.jdbc.migration.Migrator"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="jndiContextPrefix" ref="jndiContextPrefix"/>
+	</bean>
+
+  <bean  name="ibisManager" class="org.mockito.Mockito" factory-method="mock">
+    <constructor-arg value="nl.nn.adapterframework.configuration.IbisManager"/>
+  </bean>
+  <import resource="springTEST.xml"/>
+</beans>
