@@ -112,7 +112,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					format=EnumUtils.parse(DocumentFormat.class, outputFormat);
 				}
 			}
-			if (format==null && isAutoFormat() && responseMode) {
+			if (format==null && isAutoFormat() && responseMode && session.containsKey(getInputFormatSessionKey())) {
 				String inputFormat = session.getMessage(getInputFormatSessionKey()).asString().toLowerCase();
 				if (inputFormat.contains("json")) {
 					format = DocumentFormat.JSON;

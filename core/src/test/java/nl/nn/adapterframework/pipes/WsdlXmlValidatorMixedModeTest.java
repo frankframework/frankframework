@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -85,29 +87,20 @@ public class WsdlXmlValidatorMixedModeTest {
     }
 
     
-    protected void validate(IPipe val, String msg, String failureReason) throws IOException {
+    protected void validate(IPipe val, String msg, String failureReason) throws Exception {
         Message messageToValidate = getTestXml(msg);
-        try {
-        	val.doPipe(messageToValidate, session);
-        	if (failureReason!=null) {
-        		fail("expected failure, reason ["+failureReason+"]");
-        	}
-        } catch (Exception e) {
-        	if (failureReason!=null) {
-        		if (e.getMessage().indexOf(failureReason)<0) {
-            		fail("expected failure to contain ["+failureReason+"], but was ["+e.getMessage()+"]");
-        		}       		
-        	} else {
-        		fail("unexpetectd failure: ["+e.getMessage()+"]");
-        	}    	
-        }
+    	if (failureReason!=null) {
+    		assertThrows(failureReason, Exception.class, () -> val.doPipe(messageToValidate, session));
+    	} else {
+    		val.doPipe(messageToValidate, session);
+    	}
     }
     
     
 
     public final boolean ooMode=true;
 
-    public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws IOException {
+    public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws Exception {
     	if (ooMode) {
     		IPipe responseValidator;
     		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
