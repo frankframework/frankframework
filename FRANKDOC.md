@@ -161,9 +161,19 @@ Some XML elements in a Frank config can have nested element `<Param>`. The meani
 * `@ff.parameters`: Documents how `<Param>` sub-elements are used by this Java class.
 * `@ff.parameter`: Documents the meaning of specific parameters. The first word after this tag is the name of the parameter.
 
-
+TODO: Add example of parameters, but then I need another PR to be merged.
 
 ## Deprecated child elements and attributes
+
+As a Java engineer, you know the `@Deprecated` Java annotation. You use it for Java classes and methods in a library that should no longer be used. Deprecated items only exist for backward compatibility, and they may be removed in a future version of the library. In the source code of the Frank!Framework, WeAreFrank! also uses this annotation. This section explains how `@Deprecated` attribute setters, `@Deprecated` config child setters and `@Deprecated` Java classes appear in the Frank!Doc.
+
+First, the strict XSD that is used by Frank developers does not allow you to use `@Deprecated` items. Any attribute setter, config child setter or Java class that is `@Deprecated` does not appear in the strict XSD. Accessing it in a Frank config is flagged as an error as shown in earlier images of Visual Studio Code.
+
+Second, `@Deprecated` items are available in `FrankConfig-compatibility.xsd`. Frank configs that reference them can be parsed by the Frank!Framework. This means that the configs still do their job.
+
+Third, you can choose in the Frank!Doc website whether you want to see `@Deprecated` items or not.
+
+TODO: Have strike-through config child setters if they are deprecated.
 
 ## Other JavaDoc tags
 
