@@ -30,7 +30,6 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -43,6 +42,7 @@ import org.w3c.dom.Node;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -95,21 +95,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * <b>Configuration:</b>
  * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserId(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpUserid(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
- * </table>
- * <p>
- * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
@@ -140,7 +125,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class MailSender extends MailSenderBase {
 
-	private String smtpHost;
+	private @Getter String smtpHost;
+	
 	private Properties properties = new Properties();
 	private Session session = null;
 
@@ -422,16 +408,9 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	/**
-	 * Name of the SMTP Host.
-	 */
-	@IbisDoc({ "name of the host by which the messages are to be send", "" })
+	@IbisDoc({ "Name of the SMTP-host by which the messages are to be send", "" })
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
-	}
-
-	public String getSmtpHost() {
-		return smtpHost;
 	}
 
 	public void setProperties(Properties properties) {

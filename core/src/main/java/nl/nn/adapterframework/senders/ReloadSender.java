@@ -29,16 +29,11 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Performs a reload on database config .
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
+ * Performs a reload on database configuration.
+ * 
  * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
  * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
+ * 
  * @author	Lars Sinke
  * @author	Niels Meijer
  */

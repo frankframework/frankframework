@@ -368,7 +368,7 @@ public class ApiServiceDispatcher {
 
 			Status status = Status.fromStatusCode(exitCode);
 			exit.add("description", status.getReasonPhrase());
-			if(!ple.getEmptyResult()) {
+			if(!ple.isEmptyResult()) {
 				JsonObjectBuilder content = Json.createObjectBuilder();
 				if(StringUtils.isNotEmpty(schemaReferenceElement)){
 					String reference = null;

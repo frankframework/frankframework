@@ -19,10 +19,10 @@ import java.io.StringReader;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +61,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private ISecurityHandler securityHandler = null;
 	
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
-	private Set<Message> closeables = new HashSet<>(); 
+	private Set<Message> closeables = ConcurrentHashMap.newKeySet(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}

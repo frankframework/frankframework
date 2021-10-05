@@ -18,55 +18,31 @@ package nl.nn.adapterframework.soap;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.soap.SOAPException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
- *
- *   <td>soapHeader when inputWrapper of pipeline and direction=unwrap, empty otherwise</td>
- * </tr>
- * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the SOAP Header</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to create the content of the SOAP Header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapBodyStyleSheet(String) soapBodyStyleSheet}</td><td>(only used when <code>direction=wrap</code>) stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xslt2=<code>true</code></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code>) when <code>true</code>, namespaces (and prefixes) in the content of the SOAP Body are removed</td><td>false</td></tr>
- * <tr><td>{@link #setRemoveUnusedOutputNamespaces(boolean) removeUnusedOutputNamespaces}</td><td>(only used when <code>direction=unwrap</code> and <code>removeOutputNamespaces=false</code>) when <code>true</code>, unused namespaces in the content of the SOAP Body are removed</td><td>true</td></tr>
- * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when <code>direction=wrap</code>) when not empty, this namespace is added to the root element in the SOAP Body</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoapNamespace(String) soapNamespace}</td><td>(only used when <code>direction=wrap</code>) namespace of the SOAP Envelope</td><td>http://schemas.xmlsoap.org/soap/envelope/</td></tr>
- * <tr><td>{@link #setRoot(String) root}</td><td>when not empty, the root element in the SOAP Body is changed to this value</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIgnoreSoapFault(boolean) ignoreSoapFault}</td><td>(only used when <code>direction=unwrap</code>) when <code>false</code> and the SOAP Body contains a SOAP Fault, a PipeRunException is thrown</td><td>false</td></tr>
- * <tr><td>{@link #setWssAuthAlias(String) wssAuthAlias}</td><td>alias used to obtain credentials for authentication to Web Services Security</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWssUserName(String) wssUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWssPassword(String) wssPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWssPasswordDigest(boolean) wssPasswordDigest}</td><td>when true, the password is sent digested. Otherwise it is sent in clear text</td><td>true</td></tr>
- * <table>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
-
+ * 
+ * @ff.parameters Any parameters defined on the pipe will be applied to the created transformer.
+ * 
  * @author Peter Leeuwenburgh
  */
 public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {

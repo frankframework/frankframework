@@ -257,7 +257,8 @@ public class SoapWrapper {
 
 			// We only support signing for soap1_1 ?
 			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
-			SOAPMessage msg = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL).createMessage();
+			MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
+			SOAPMessage msg = factory.createMessage();
 			SOAPPart part = msg.getSOAPPart();
 			part.setContent(new StreamSource(soapMessage.asInputStream()));
 

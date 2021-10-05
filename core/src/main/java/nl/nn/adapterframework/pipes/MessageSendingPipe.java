@@ -84,59 +84,16 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
  * from a {@link ICorrelatedPullingListener listener}.
- *
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
- * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuditTrailNamespaceDefs(String) auditTrailNamespaceDefs}</td><td>namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuditTrailSessionKey(String) auditTrailSessionKey}</td><td>Key of a PipeLineSession-variable. If specified, the value of the PipeLineSession variable is used as audit trail (instead of the default "no audit trail")</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideMethod(String) hideMethod}</td><td>(only used when hideRegex is not empty and only applies to error/logstore) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked</td><td>"all"</td></tr>
- * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOutOnResult(String) timeOutOnResult}</td><td>when not empty, a TimeOutException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setExceptionOnResult(String) exceptionOnResult}</td><td>when not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryXPath</code>)</td><td>0</td></tr>
- * <tr><td>{@link #setRetryMinInterval(int) retryMinInterval}</td><td>The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code></td><td>1</td></tr>
- * <tr><td>{@link #setRetryMaxInterval(int) retryMaxInterval}</td><td>The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made</td><td>600</td></tr>
- * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object</td><td>false</td></tr>
- * <tr><td>{@link #setPresumedTimeOutInterval(int) presumedTimeOutInterval}</td><td>when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. A value of -1 indicates to never presume timeouts</td><td>10 s</td></tr> 
- * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
- * </table>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender,
- * if this is a {@link ISenderWithParameters ISenderWithParameters}.
+ * 
+ * Any parameters defined on the pipe will be handed to the sender, <u>if</u> this is a {@link ISenderWithParameters ISenderWithParameters}.
+ * <p>
  * When a parameter with the name stubFilename is present, it will <u>not</u> be handed to the sender 
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
  * file for this stubFilename will be done at runtime, while the file for the stubFilename specified 
- * as an attribute will be done at configuration time.</td></tr>
- * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
- * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
- * <tr><td><code>inputWrapper</code></td><td>specification of Pipe to wrap input messages (before validating)</td></tr>
- * <tr><td><code>outputWrapper</code></td><td>specification of Pipe to wrap output messages (after validating)</td></tr>
- * <tr><td>{@link ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
- * </table>
+ * as an attribute will be done at configuration time.
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified. If "timeout" and <code>resultOnTimeOut</code> are not specified, "exception" is used in such a case</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
- * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
- * </table>
- * </p>
+ * 
+ * 
  * @author  Gerrit van Brakel
  */
 
