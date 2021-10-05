@@ -57,7 +57,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (getActionEnum()!=FileSystemAction.LISTATTACHMENTS) {
+		if (getAction()!=FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session, next);
 		} else {
 

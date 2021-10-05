@@ -152,11 +152,11 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 
 
 	@IbisDocRef({"1", FILESYSTEMACTOR})
-	public void setAction(String action) {
+	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
-	public FileSystemAction getActionEnum() {
-		return actor.getActionEnum();
+	public FileSystemAction getAction() {
+		return actor.getAction();
 	}
 
 	@IbisDocRef({"2", FILESYSTEMACTOR})

@@ -55,7 +55,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		actor.setAction("move");
+		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
