@@ -57,6 +57,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class PdfPipe extends FixedForwardPipe {
 
 	private static final String FILENAME_SESSION_KEY = "fileName";
+	private static final String DOCUMENT_ACTION_CONVERT="convert";
+	private static final String DOCUMENT_ACTION_COMBINE="combine";
 
 	private @Getter boolean saveSeparate = false;
 	private @Getter String pdfOutputLocation = null;
@@ -72,9 +74,9 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private CisConversionService cisConversionService;
 
-	private enum DocumentAction implements DocumentedEnum{
-		@EnumLabel("convert") CONVERT,
-		@EnumLabel("combine") COMBINE;
+	protected enum DocumentAction implements DocumentedEnum{
+		@EnumLabel(DOCUMENT_ACTION_CONVERT) CONVERT,
+		@EnumLabel(DOCUMENT_ACTION_COMBINE) COMBINE;
 	}
 
 	@Override
@@ -176,9 +178,9 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({ "action to be processed by pdf pipe possible values:{combine, convert}", "null" })
-	public void setAction(String action) {
-		this.action = EnumUtils.parse(DocumentAction.class, action);
+	@IbisDoc({ "action to be processed by pdf pipe possible values: {"+DOCUMENT_ACTION_COMBINE+", "+DOCUMENT_ACTION_CONVERT+"}", "null" })
+	public void setAction(DocumentAction action) {
+		this.action = action;
 	}
 
 	@IbisDoc({ "session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'", "defaultMainDocumentSessionKey" })

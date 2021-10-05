@@ -40,6 +40,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -119,7 +120,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	public String executeConversion(String pipeName, String fileToConvert) throws Exception {
 		pipe.setName(pipeName);
-		pipe.setAction("convert");
+		pipe.setAction(DocumentAction.CONVERT);
 		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
 		pipe.start();
@@ -281,7 +282,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void multiThreadedMailWithWordAttachment() throws Exception {
 		pipe=createPipe();
 		pipe.setName("multiThreadedmailWithWordAttachment");
-		pipe.setAction("convert");
+		pipe.setAction(DocumentAction.CONVERT);
 		pipe.registerForward(new PipeForward("success", "dummy"));
 		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
@@ -311,37 +312,27 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void emptyAction() throws Exception {
-		assertThrows("unknown documentAction value", IllegalArgumentException.class, () -> pipe.setAction(""));
-	}
-	
-	@Test
 	public void nullAction() throws Exception {
 		assertThrows("please specify an action for pdf pipe. possible values: {convert, combine}", ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
-	public void wrongAction() throws Exception {
-		assertThrows("unknown documentAction value", IllegalArgumentException.class, () -> pipe.setAction("test123"));
-	}
-
-	@Test
 	public void emptyLicense() throws Exception {
-		pipe.setAction("convert"); //without action the pipe will never reach the license block!
+		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
 		pipe.setLicense("");
 		pipe.configure();
 	}
 
 	@Test(expected = ConfigurationException.class)
 	public void wrongLicense() throws Exception {
-		pipe.setAction("convert"); //without action the pipe will never reach the license block!
+		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
 		pipe.setLicense("test123");//can't find this 'license' file
 		pipe.configure();
 	}
 
 	@Test
 	public void attachFileToMainDoc() throws Exception{
-		pipe.setAction("combine");
+		pipe.setAction(DocumentAction.COMBINE);
 		pipe.setMainDocumentSessionKey("mainDoc");
 		pipe.setFilenameToAttachSessionKey("attachedFilename");
 
