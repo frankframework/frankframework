@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 
 import javax.transaction.TransactionManager;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -35,6 +36,11 @@ public class StatusRecordingTransactionManagerTest {
 	public void setup() throws IOException {
 		folder = new TemporaryFolder();
 		folder.create();
+	}
+
+	@After
+	public void tearDown() {
+		folder.delete();
 	}
 
 	private class TestableStatusRecordingTransactionManager extends StatusRecordingTransactionManager {

@@ -45,6 +45,7 @@ public class BtmJtaTransactionManagerTest {
 	@After
 	public void tearDown() {
 		TransactionManagerServices.getTransactionManager().shutdown();
+		folder.delete();
 	}
 	
 	public BtmJtaTransactionManager getBtmJtaTransactionManager() {
