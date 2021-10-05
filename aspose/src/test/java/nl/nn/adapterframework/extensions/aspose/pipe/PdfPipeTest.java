@@ -229,7 +229,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emailWithAttachments() throws Exception {
-		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedEmail.pdf");
+		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
 	}
 	
 	@Test
