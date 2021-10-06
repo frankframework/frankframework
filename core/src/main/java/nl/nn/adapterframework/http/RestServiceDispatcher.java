@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +65,7 @@ public class RestServiceDispatcher  {
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private ConcurrentSkipListMap<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentSkipListMap<>(new RestUriComparator());
+	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
