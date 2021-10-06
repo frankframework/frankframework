@@ -391,7 +391,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.outputFormatSessionKey = outputFormatSessionKey;
 	}
 
-	@IbisDoc({"4", "Session key to store the inputformat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formated response", "Json2XmlValidator.inputformat +<name of the pipe>"})
+	@IbisDoc({"4", "Session key to store the inputformat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response", "Json2XmlValidator.inputformat +<name of the pipe>"})
 	public void setInputFormatSessionKey(String inputFormatSessionKey) {
 		this.inputFormatSessionKey = inputFormatSessionKey;
 	}
