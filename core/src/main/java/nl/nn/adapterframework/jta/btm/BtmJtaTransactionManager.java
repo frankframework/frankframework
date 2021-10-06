@@ -41,7 +41,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	}
 
 	@Override
-	public boolean shutdownTransactionManager() {
+	protected boolean shutdownTransactionManager() {
 		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
 		transactionManager.shutdown();
 		int inflightCount = transactionManager.getInFlightTransactionCount();
