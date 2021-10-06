@@ -43,7 +43,8 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Converts the files which are required and supported by the aspose image
  * library.
- * 
+ * @author
+ * 	Gerard van der Hoorn
  */
 public class PdfImageConvertor extends AbstractConvertor {
 

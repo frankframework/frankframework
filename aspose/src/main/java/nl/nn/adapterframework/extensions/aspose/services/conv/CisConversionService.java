@@ -19,7 +19,10 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.stream.Message;
-
+/**
+ * @author
+ * 	Gerard van der Hoorn
+ */
 public interface CisConversionService {
 
 	/**

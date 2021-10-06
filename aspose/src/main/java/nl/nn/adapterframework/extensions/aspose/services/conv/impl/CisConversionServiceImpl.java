@@ -28,7 +28,10 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-
+/**
+ * @author
+ * 	Gerard van der Hoorn
+ */
 public class CisConversionServiceImpl implements CisConversionService {
 
 	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
@@ -49,10 +52,6 @@ public class CisConversionServiceImpl implements CisConversionService {
 
 	@Override
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
-		// message should always be available.
-		if (Message.isEmpty(message)) {
-			throw new IllegalArgumentException("inputStream == null");
-		}
 
 		CisConversionResult result = null;
 		MediaType mediaType = getMediaType(message, filename);
@@ -70,7 +69,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
 				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, charset);
-				LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
+				if(LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
 		return result;

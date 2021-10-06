@@ -31,8 +31,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.DocumentedEnum;
-import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
 import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
@@ -45,6 +43,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 
@@ -56,8 +55,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class PdfPipe extends FixedForwardPipe {
 
 	private static final String FILENAME_SESSION_KEY = "fileName";
-	private static final String DOCUMENT_ACTION_CONVERT="convert";
-	private static final String DOCUMENT_ACTION_COMBINE="combine";
 
 	private @Getter boolean saveSeparate = false;
 	private @Getter String pdfOutputLocation = null;
@@ -73,16 +70,16 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private CisConversionService cisConversionService;
 
-	protected enum DocumentAction implements DocumentedEnum{
-		@EnumLabel(DOCUMENT_ACTION_CONVERT) CONVERT,
-		@EnumLabel(DOCUMENT_ACTION_COMBINE) COMBINE;
+	protected enum DocumentAction {
+		CONVERT,
+		COMBINE;
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(getAction() == null) {
-			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: {"+DocumentAction.COMBINE+", "+DocumentAction.CONVERT+"}");
+			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+EnumUtils.getEnumList(DocumentAction.class));
 		}
 		if(StringUtils.isNotEmpty(getPdfOutputLocation())) {
 			File outputLocation = new File(getPdfOutputLocation());
@@ -95,7 +92,7 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir=AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("ibis.tmpdir");
+				String ibisTempDir=AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
 				if(StringUtils.isNotEmpty(ibisTempDir)) {
 					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
 				} else {
@@ -133,21 +130,11 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public void stop() {
-		if(isTempDirCreated()) {
-			try {
-				Files.delete(Paths.get(getPdfOutputLocation()));//temp file should be removed after use, not when the ibis shuts down
-				log.info("Temporary directory is deleted : " + getPdfOutputLocation());
-				setPdfOutputLocation(null);
-			} catch (IOException e) {
-				log.debug("Could not delete the temp folder " + getPdfOutputLocation());
-			}
-		}
-		super.stop();
-	}
-
-	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+		// message should always be available.
+		if (Message.isEmpty(input)) {
+			throw new IllegalArgumentException("message == null");
+		}
 		try {
 			switch(getAction()) {
 				case COMBINE:
@@ -170,14 +157,13 @@ public class PdfPipe extends FixedForwardPipe {
 					session.put("documents", main.toXML());
 					return new PipeRunResult(getSuccessForward(), main.toXML());
 				default:
-					throw new PipeRunException(this, "action attribute must be one of the followings ["+DocumentAction.COMBINE+", "+DocumentAction.CONVERT+"]");
+					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
 		}
 	}
 
-	@IbisDoc({ "action to be processed by pdf pipe possible values: {"+DOCUMENT_ACTION_COMBINE+", "+DOCUMENT_ACTION_CONVERT+"}", "null" })
 	public void setAction(DocumentAction action) {
 		this.action = action;
 	}

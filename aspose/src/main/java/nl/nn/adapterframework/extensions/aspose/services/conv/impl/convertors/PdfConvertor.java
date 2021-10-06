@@ -35,6 +35,8 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Converts the files which are required and supported by the aspose pdf
  * library.
+ * @author
+ * 	Gerard van der Hoorn
  * 
  */
 public class PdfConvertor extends AbstractConvertor {

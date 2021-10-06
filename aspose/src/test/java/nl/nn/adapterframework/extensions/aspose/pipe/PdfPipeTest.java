@@ -313,7 +313,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void nullAction() throws Exception {
-		assertThrows("please specify an action for pdf pipe. possible values: {convert, combine}", ConfigurationException.class, () -> pipe.configure());
+		assertThrows("please specify an action for pdf pipe [PdfPipe under test]. possible values: [CONVERT, COMBINE]", ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
