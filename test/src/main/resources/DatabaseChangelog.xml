@@ -56,4 +56,21 @@ TagDatabase
 		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
+	<changeSet id="IAF_Util:8" author="Niels Meijer">
+		<comment>Add IBISFILETRIGGER Table</comment>
+		<createTable tableName="IBISFILETRIGGER">
+			<column name="UNIQUEKEY" type="java.sql.Types.VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISFILETRIGGER" />
+			</column>
+			<column name="NAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="URI" type="java.sql.Types.VARCHAR(256)" />
+			<column name="CREATED_AT" type="DATETIME" />
+			<column name="SIZE" type="INTEGER" />
+			<column name="FLOWID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="MESSAGE" type="java.sql.Types.VARCHAR(1000)" />
+			<column name="STATUS" type="java.sql.Types.CHAR(1)" />
+			<column name="UPDATED_AT" type="DATETIME" />
+			<column name="PRIORITY" type="INTEGER" />
+		</createTable>
+	</changeSet>
 </databaseChangeLog>

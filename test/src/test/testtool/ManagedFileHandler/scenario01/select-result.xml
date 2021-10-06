@@ -1,0 +1,20 @@
+<result>
+  <fielddefinition>
+    <field name="UNIQUEKEY" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+    <field name="NAME" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+    <field name="URI" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+    <field name="SIZE" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+    <field name="FLOWID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+    <field name="MESSAGE" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+  </fielddefinition>
+  <rowset>
+    <row number="0">
+      <field name="UNIQUEKEY">C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035</field>
+      <field name="NAME">input.xml-2021-10-06 13_12_40.035</field>
+      <field name="URI">C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035</field>
+      <field name="SIZE">3162</field>
+      <field name="FLOWID">NNX00123</field>
+      <field name="MESSAGE">&lt;Message&gt;&lt;Filename&gt;input.xml-2021-10-06 13_12_40.035&lt;/Filename&gt;&lt;OriginalFilename&gt;input.xml&lt;/OriginalFilename&gt;&lt;MFHFlowId&gt;NNX12345&lt;/MFHFlowId&gt;&lt;CanonicalName&gt;C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035&lt;/CanonicalName&gt;&lt;LegacyMessage&gt;&lt;OnCompletedTransferNotify_Action&gt;&lt;TransferFlowId&gt;NNX12345&lt;/TransferFlowId&gt;&lt;UserData&gt;input.xml-2021-10-06 13_12_40.035&lt;/UserData&gt;&lt;ClientFilename&gt;C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035&lt;/ClientFilename&gt;&lt;ServerFilename&gt;C:\Temp\testdata\mfh\inProcess\input.xml-2021-10-06 13_12_40.035&lt;/ServerFilename&gt;&lt;LocalTransactionID&gt;input.xml-2021-10-06 13:12:40.035&lt;/LocalTransactionID&gt;&lt;/OnCompletedTransferNotify_Action&gt;&lt;/LegacyMessage&gt;&lt;/Message&gt;</field>
+    </row>
+  </rowset>
+</result>

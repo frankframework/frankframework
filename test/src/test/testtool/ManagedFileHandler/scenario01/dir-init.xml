@@ -1,0 +1,15 @@
+<project default="copy.file">
+	<target name="copy.file">
+		<property name="root.dir" value="${root.dir.MFHIn}" />
+		<property name="target.dir" value="${root.dir}/in" />
+		<property name="inprocess.dir" value="${root.dir}/inProcess" />
+		<property name="processed.dir" value="${root.dir}/processed" />
+		<delete dir="${target.dir}"/>
+		<delete dir="${inprocess.dir}"/>
+		<delete dir="${processed.dir}"/>
+		<mkdir dir="${target.dir}"/>
+		<mkdir dir="${inprocess.dir}"/>
+		<mkdir dir="${processed.dir}"/>
+		<copy file="input.xml" todir="${target.dir}" preservelastmodified="true"/>
+	</target>
+</project>

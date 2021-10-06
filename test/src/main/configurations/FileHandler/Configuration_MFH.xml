@@ -1,0 +1,243 @@
+<Module>
+
+	<!-- Trigger to scan file system running with cron schedule sends the directory to be scanned as input-->
+	
+	<Job
+		active="${active.adapter.mfhInScheduled.alternative}"
+		name="TriggerMFH"
+		cronExpression="${trigger.mfh.scheduled.job.cron}"
+		description="Triggers MFH flow to detect files"
+		function="SendMessage"
+		javaListener="MFHInScheduled"
+		message="${root.dir.MFHInScheduled}"
+	>
+		<Locker
+			name="TriggerMFH"
+			objectId="TriggerMFH"
+			ignoreTableNotExist="true"
+		/>
+	</Job>
+	
+	<Job
+		active="${active.adapter.mfh.moveFiles}"
+		name="TriggerMFHMoveFiles"
+		cronExpression="${trigger.mfh.scheduled.job.cron}"
+		function="SendMessage"
+		javaListener="MFH move files listener"
+		message="${root.dir.MFHInScheduled}"
+	>
+		<Locker
+			name="TriggerMFHMoveFiles"
+			objectId="TriggerMFHMoveFiles"
+			ignoreTableNotExist="true"
+		/>
+	</Job>
+
+<!-- Adapter to create the trigger message that will be stored in database.
+	Uses createTriggerMessage.xsl file to create the message. The message format can be adjusted with the xsl 
+	Has a directory listener which scans the fixed inputFolder to detect files. 
+	Has also a java-listener to be the sub-adapter of scheduled mfh scanner 
+	wildcard can be set in the directoryListener to filter files.
+	-->
+	<Adapter name="MFHIn" active="${active.adapter.mfhIn}" pollInterval="5">
+		<Receiver> 
+			<DirectoryListener
+				fileTimeSensitive="true"
+				name="MFHIn"
+				messageType="info"
+				root="${root.dir.MFHIn}"
+				inputFolder="in"
+				inProcessFolder="inProcess"
+				createFolders="true"
+			/>
+		</Receiver>
+		<Receiver> <!-- This could be called from the scheduled adapter-->
+			<JavaListener name="MFHInScheduledFiles" serviceName="ibis4test-MFHin"/>
+		</Receiver>
+		<Pipeline>
+			<Exit path="EXIT" state="success" />
+			
+			<XsltPipe
+				name="wrapInput"
+				styleSheetName="MFH/xsl/createTriggerMessage.xsl"
+				storeResultInSessionKey="triggerMessage"
+			>
+				<Param name="CanonicalName" xpathExpression="file/@canonicalName" />
+				<Param name="Filename" xpathExpression="file/@name" />
+				<Param name="MFHFlowId" value="NNX12345" /> <!-- for now hardcoded-->
+				<Param name="FlowId" value="NNX12345" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
+				<Param name="originalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
+				<Param name="LocalTransactionID" sessionKey="cid" />
+			</XsltPipe>
+
+			<SenderPipe 
+				name="insertPipe"
+			>
+				<FixedQuerySender
+					name="insertPipe"
+					useNamedParams="true"
+					query="INSERT INTO IBISFILETRIGGER (UNIQUEKEY, NAME, URI, CREATED_AT, SIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{UNIQUEKEY}, ?{FILENAME}, ?{FILEURI}, NOW(), ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, NOW())"
+					queryType="OTHER"
+				>
+					<Param name="UNIQUEKEY" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
+					<Param name="FILENAME" sessionKey="originalMessage" xpathExpression="file/@name" />
+					<Param name="FILEURI" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
+					<Param name="FILESIZE" sessionKey="originalMessage" xpathExpression="file/@size" />
+					<Param name="FLOWID" value="NNX00123" />
+					<Param name="MESSAGE" sessionKey="triggerMessage" type="xml" />
+				</FixedQuerySender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+	
+<!-- Adapter to scan the input folder. It will be triggered by TriggerMFH job and will list the files that matches the wildcard in the folder
+	Then the listed files can be iterated and sent to sub-adapter which stores info in db -->
+	<Adapter name="MFHInScheduledAlternative" active="${active.adapter.mfhInScheduled.alternative}">
+		<Receiver>
+			<JavaListener name="MFHInScheduled"/>
+		</Receiver>
+
+		<Pipeline>
+			<Exit state="success" path="EXIT"/>
+			<LocalFileSystemPipe 
+				name="scanFolder" 
+				action="list" 
+				storeResultInSessionKey="fileList" 
+				wildcard="*Sch*"
+			/>
+
+			<ForEachChildElementPipe 
+				name="IterateOverFiles" 
+				targetElement="file" 
+			>
+				<SenderSeriesSender storeInputInSessionKey="element">
+					<LocalFileSystemSender 
+						action="move" 
+						createFolder="true"
+					>
+						<Param name="filename" xpathExpression="/file/@canonicalName"/>
+						<Param name="destination" xpathExpression="concat(substring-before(/file/@canonicalName, file/@name), '..\', 'inProcess')"/>
+					</LocalFileSystemSender>
+
+					<LocalFileSystemSender 
+						action="info" 
+					>
+						<Param name="filename" value="&lt;dummy/&gt;" xpathExpression="concat($inputFolderToScan, '\..\', 'inProcess\', $movedFile)">
+							<Param name="movedFile"/>
+							<Param name="inputFolderToScan" sessionKey="originalMessage"/>
+						</Param>
+					</LocalFileSystemSender>
+
+					<LocalFileSystemSender 
+						action="rename"
+					>
+						<Param name="filename" xpathExpression="/file/@canonicalName"/>
+						<Param name="destination"  xpathExpression="concat(/file/@canonicalName, '-', format-dateTime(dateTime(file/@modificationDate,file/@modificationTime), '[Y0001]-[M01]-[D01] [H01]_[m01]_[s01].[f001]'))">
+						</Param>
+					</LocalFileSystemSender>
+
+					<LocalFileSystemSender 
+						action="info" 
+					>
+						<Param name="filename" value="&lt;dummy/&gt;" xpathExpression="concat($inputFolderToScan, '\..\', 'inProcess\', $movedFile)">
+							<Param name="movedFile"/>
+							<Param name="inputFolderToScan" sessionKey="originalMessage"/>
+						</Param>
+					</LocalFileSystemSender>
+
+					<IbisLocalSender 
+						name="IbisLocalSender" 
+						javaListener="MFHInScheduledFiles"
+					> 
+						<Param name="originalFilename" sessionKey="element" xpathExpression="file/@name" />
+					</IbisLocalSender>
+				</SenderSeriesSender>
+			</ForEachChildElementPipe>
+		</Pipeline>
+	</Adapter>
+
+<!-- Adapter that will be triggered by a job. After trigger it will move the files to the folder that the directory listener listens to -->
+	<Adapter name="MFH move files" active="${active.adapter.mfh.moveFiles}">
+		<Receiver>
+			<JavaListener name="MFH move files listener"/>
+		</Receiver>
+
+		<Pipeline>
+			<Exit state="success" path="EXIT"/>
+			<LocalFileSystemPipe 
+				name="scanFolder" 
+				action="list" 
+				wildcard="*Sch*"
+				createFolder="true"
+			/>
+
+			<ForEachChildElementPipe 
+				name="IterateOverFiles" 
+				targetElement="file" 
+			>
+				<LocalFileSystemSender 
+					action="move" 
+					createFolder="true"
+				>
+					<Param name="filename" xpathExpression="/file/@canonicalName"/>
+					<Param name="destination" value="${root.dir.MFHIn}/in"/>
+				</LocalFileSystemSender>
+
+			</ForEachChildElementPipe>
+		</Pipeline>
+	</Adapter>
+	
+	<!-- Adapter may process a message from the IBISFILETRIGGER table 
+	Has a table listener listening to IBISFILETRIGGER table. 
+	It is possible to specify a 'selectCondition' in table listener to retrieve only some of the records.
+	For example selectCondition="FLOWID='NNX12345'
+	Generates sessionKeys that can be used in the flow by parsing the message data
+	Depending on the 
+
+-->
+	<Adapter name="MFHProcessor">
+		<Receiver>
+			<JdbcTableListener
+				name="IBISFILETRIGGER_listener"
+				tableName="IBISFILETRIGGER"
+				statusField="STATUS"
+				timestampField="UPDATED_AT"
+				statusValueAvailable="1"
+				statusValueInProcess="2"
+				statusValueProcessed="3"
+				statusValueError="4"
+				statusValueHold="5"
+				keyField="UNIQUEKEY"
+				messageField="MESSAGE"
+			/>
+		</Receiver>
+		<Receiver> <!-- This could be called from the scheduled adapter-->
+			<JavaListener name="processMessage" serviceName="ibis4test-processMessage"/>
+		</Receiver>
+		<Pipeline>
+			<Exit state="success" path="EXIT"/>
+
+<!-- The parameters can be extended with more information-->
+			<PutParametersInSessionPipe name="paramsInSession">
+				<Param name="canonicalName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
+				<Param name="filename" sessionKey="originalMessage" xpathExpression="/Message/Filename"/>
+				<Param name="MFHFlowId" sessionKey="originalMessage" xpathExpression="/Message/MFHFlowId"/>
+				<Param name="serverFileName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
+				<Param name="flowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
+				<Param name="clientFilename" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/ClientFilename"/>
+			</PutParametersInSessionPipe>
+<!-- Some processing may be in place (XmlSwitchPipe switch between flows)-->
+
+
+			<LocalFileSystemPipe name="Move to processed folder" action="move" createFolder="true">
+				<Param name="filename" sessionKey="clientFilename"/>
+				<Param name="destination" xpathExpression="concat(substring-before($clientFilename,$nameOfTheFile),'..\processed\')">
+					<Param name="nameOfTheFile" sessionKey="filename"/>
+					<Param name="clientFilename" sessionKey="clientFilename"/>
+				</Param>
+			</LocalFileSystemPipe>
+			
+		</Pipeline>
+	</Adapter>
+
+</Module>
