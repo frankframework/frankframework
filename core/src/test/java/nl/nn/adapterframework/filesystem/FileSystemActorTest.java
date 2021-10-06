@@ -185,14 +185,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertEquals(contents, result.asString());
 	}
 
-//	@Test
-//	public void fileSystemActorTestConfigureInvalidAction() throws Exception {
-//		thrown.expectMessage("unknown fileSystemAction value [xxx]. Must be one of "+Arrays.stream(FileSystemAction.values()).map(v->v.getLabel()).collect(Collectors.toList()));
-////		thrown.expectMessage("fake owner of FileSystemActor"); 
-//		actor.setAction("xxx");
-//		actor.configure(fileSystem,null,owner);
-//	}
-
 	@Test
 	public void fileSystemActorTestBasicOpen() throws Exception {
 		actor.setAction(FileSystemAction.LIST);

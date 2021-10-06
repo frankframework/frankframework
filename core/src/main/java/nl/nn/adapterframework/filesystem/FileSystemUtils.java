@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ public class FileSystemUtils {
 	/**
 	 * Check if a source file exists.
 	 */
-	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, String action) throws FileNotFoundException, FileSystemException {
+	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
 		if (!fileSystem.exists(source)) {
-			throw new FileNotFoundException("file to "+action+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
+			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
 		}
 	}
 	
@@ -88,7 +88,7 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> F renameFile(IWritableFileSystem<F> fileSystem, F source, F destination, boolean overwrite, int numOfBackups) throws FileSystemException {
-		checkSource(fileSystem, source, "rename");
+		checkSource(fileSystem, source, FileSystemAction.RENAME);
 		prepareDestination(fileSystem, destination, overwrite, numOfBackups, FileSystemAction.RENAME);
 		F newFile = fileSystem.renameFile(source, destination);
 		if (newFile == null) {
@@ -98,7 +98,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		checkSource(fileSystem, file, FileSystemAction.MOVE.getLabel());
+		checkSource(fileSystem, file, FileSystemAction.MOVE);
 		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.MOVE);
 		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
 		if (newFile == null) {
@@ -108,7 +108,7 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> F copyFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		checkSource(fileSystem, file, FileSystemAction.COPY.getLabel());
+		checkSource(fileSystem, file, FileSystemAction.COPY);
 		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.COPY);
 		F newFile = fileSystem.copyFile(file, destinationFolder, createFolders);
 		if (newFile == null) {

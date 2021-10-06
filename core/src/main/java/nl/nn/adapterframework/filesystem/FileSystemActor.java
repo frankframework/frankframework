@@ -362,7 +362,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				case INFO: {
 					F file=getFile(input, pvl);
-					FileSystemUtils.checkSource(fileSystem, file, "inspect");
+					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
 					return FileSystemUtils.getFileInfo(fileSystem, file).toXML();
 				}
 				case READ: {
@@ -479,19 +479,17 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				}
 				case FORWARD: {
 					F file=getFile(input, pvl);
-					FileSystemUtils.checkSource(fileSystem, file, "forward");
+					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.FORWARD);
 					String destinationAddress = determineDestination(pvl);
 					((IMailFileSystem<F,?>)fileSystem).forwardMail(file, destinationAddress);
 					return null;
 				}
 				default:
-					break;
+					throw new FileSystemException("action ["+getAction()+"] is not supported!");
 			}
 		} catch (Exception e) {
-			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
+			throw new FileSystemException("unable to process ["+getAction()+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
-
-		return input;
 	}
 
 	
