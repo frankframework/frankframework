@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.configuration.classloaders;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.net.URL;
 
@@ -46,7 +47,7 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 		createAndConfigure("WebAppClassLoader"); //re-create the classload with basepath
 
 		URL resource = getResource(getAbsoluteFilePath("ClassLoaderTestFile.xml"));
-		assertNotNull("unable to retrieve resource from zip file", resource);
+		assertNull(resource); //File is considered illegal and should not be found with this classloader
 	}
 
 	@Test

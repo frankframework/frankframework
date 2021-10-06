@@ -44,8 +44,9 @@ public class WebAppClassLoader extends ClassLoaderBase {
 			// if no basepath is present, or the localname already starts with the basepath
 			if (getBasePath() == null || localname.startsWith(getBasePath())) {
 				return getParent().getResource(localname);
-			} else { // else force the basepath!
-				return getParent().getResource(getBasePath()+localname);
+			} else { // else consider the file illegal, it should not be found within this classloader.
+				log.debug("unable to retrieve file [{}] with localname [{}] from [{}]", ()->name, ()->localname, ()->toString());
+				return null;
 			}
 		}
 
