@@ -13,14 +13,12 @@ import java.nio.file.Paths;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
@@ -64,6 +62,7 @@ public class BtmJtaTransactionManagerTest {
 		BtmJtaTransactionManager tm = getBtmJtaTransactionManager();
 		tm.afterPropertiesSet();
 		BitronixTransactionManager btm = (BitronixTransactionManager)tm.getTransactionManager();
+		assertNotNull(btm); // assert that transaction manager is a BitronixTransactionManager
 
 		String btmServerId = TransactionManagerServices.getConfiguration().getServerId();
 		String tmUid = tm.getUid();
@@ -79,6 +78,7 @@ public class BtmJtaTransactionManagerTest {
 		BtmJtaTransactionManager tm = getBtmJtaTransactionManager();
 		tm.afterPropertiesSet();
 		BitronixTransactionManager btm = (BitronixTransactionManager)tm.getTransactionManager();
+		assertNotNull(btm); // assert that transaction manager is a BitronixTransactionManager
 
 		assertEquals(presetTmUid, TransactionManagerServices.getConfiguration().getServerId());
 		assertEquals(presetTmUid, tm.getUid());
@@ -91,6 +91,7 @@ public class BtmJtaTransactionManagerTest {
 		BtmJtaTransactionManager tm = getBtmJtaTransactionManager();
 		tm.afterPropertiesSet();
 		BitronixTransactionManager btm = (BitronixTransactionManager)tm.getTransactionManager();
+		assertNotNull(btm); // assert that transaction manager is a BitronixTransactionManager
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
 
