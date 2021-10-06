@@ -138,6 +138,20 @@ public class StatusRecordingTransactionManagerTest {
 		assertStatus("PENDING", tmUid);
 	}
 	
+
+	@Test
+	public void testCreateFolders() {
+		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		tm.setUidFile(folder.getRoot()+"/a/b/c/"+TMUID_FILE);
+		tm.initUserTransactionAndTransactionManager();
+		assertEquals(delegateTransactionManager, tm.getTransactionManager());
+		String tmUid = tm.getUid();
+		assertNotNull(tmUid);
+		String recordedTmUid = read("/a/b/c/"+TMUID_FILE);
+		assertEquals(tmUid, recordedTmUid);
+	}
+	
+	
 	
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));

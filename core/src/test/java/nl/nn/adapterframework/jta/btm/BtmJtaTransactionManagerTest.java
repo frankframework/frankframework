@@ -32,8 +32,7 @@ public class BtmJtaTransactionManagerTest {
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
 	
-	@Mock
-	private TransactionManager delegateTransactionManager;
+	private BtmJtaTransactionManager delegateTransactionManager;
 	private TemporaryFolder folder;
 	
 	@Before
@@ -44,7 +43,9 @@ public class BtmJtaTransactionManagerTest {
 
 	@After
 	public void tearDown() {
-		TransactionManagerServices.getTransactionManager().shutdown();
+		if (delegateTransactionManager!=null) {
+			delegateTransactionManager.shutdownTransactionManager();
+		}
 		folder.delete();
 	}
 	
@@ -54,6 +55,7 @@ public class BtmJtaTransactionManagerTest {
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
 		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm1.tlog");
 		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm2.tlog");
+		delegateTransactionManager = result;
 		return result;
 	}
 	
