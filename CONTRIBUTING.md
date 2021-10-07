@@ -138,15 +138,17 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Install Eclipse with Lombok
 
-- Download Eclipse from [Eclipse 2021-09](https://www.eclipse.org/downloads/packages/release/2021-09/r). This is an installer, run it. Choose "Eclipse IDE for Enterprise Java and Web Developers ". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message).
+- Download Eclipse from [here](https://www.eclipse.org/downloads/packages/), choosing "Eclipse IDE for Enterprise Java Developers". We tested our instructions with version 2021-09, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
 - Download version 1.18.12. You may need the link "older versions".
 - Run the .jar you downloaded. Under Windows you can double-click it.
-- You see a GUI. If you used Eclipse 2020-06, the GUI will automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the 
-eclipse.exe file.
+- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the eclipse.exe file.
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
-- The Frank!Framework can only run on Java 8. Please install Java 8 in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html). In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore. You must start Eclipse from a Java 11 or later JRE, and then configure a Java 8 JRE or JDK in the settings. This will be explained later.
+- The Frank!Framework can only run on Java 8. Please install Java 8 in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html).
+
+**NOTE:** In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore 
+with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, and then configure a Java 8 JRE or JDK in the settings. This will be explained later.
 
 ### Configure Eclipse
 
