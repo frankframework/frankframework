@@ -128,24 +128,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assembly/dockerAssembly.xml</descriptor>
-					</descriptors>
-				</configuration>
-				<executions>
-					<execution>
-						<id>prepare-as-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.6</version>
@@ -156,11 +138,6 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker-compose">
-									<arg value="down"/>
-									<arg value="--volumes"/>
-									<arg value="--remove-orphans"/>
-								</exec>
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
