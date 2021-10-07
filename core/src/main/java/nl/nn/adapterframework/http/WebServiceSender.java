@@ -63,7 +63,7 @@ public class WebServiceSender extends HttpSender {
 
 	public WebServiceSender() {
 		super();
-		setMethodType("POST");
+		setMethodType(HttpMethod.POST);
 		setContentType("text/xml");
 	}
 
