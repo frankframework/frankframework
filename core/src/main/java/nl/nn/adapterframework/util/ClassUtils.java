@@ -24,7 +24,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -152,20 +151,6 @@ public class ClassUtils {
 			}
 		}
 
-		if (url != null) {
-			String externalForm = url.toExternalForm();
-			if (externalForm.startsWith("jar:file:") && externalForm.contains("/../")) {
-				try { // normalize paths containing "/../" in resources in jars. These constructs are not resolved properly otherwise. (see https://github.com/ibissource/iaf/issues/2231)
-					URI uri = new URI(externalForm.substring(4)); // strip the jar: prefix
-					String normalizedResourceUrl = "jar:"+uri.normalize().toString();
-					if (log.isDebugEnabled()) log.debug("normalized url [{}] into [{}]", url, normalizedResourceUrl);
-					url = new URL(normalizedResourceUrl);
-				} catch (Exception e) {
-					log.warn("Could not normalize jar:file URL", e);
-				}
-			}
-		}
-		
 		return url;
 	}
 
