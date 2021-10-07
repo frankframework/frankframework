@@ -234,7 +234,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum unknown testEnum value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testEnum] to unparsable value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
 	}
 
 	@Test

@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.configuration.digester;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -75,10 +76,15 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			}
 
 			Object valueToSet = parseValueToSet(m, value);
-			log.trace("attempting to call method [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
+			log.trace("attempting to populate field [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
 
 			if(valueToSet != null) {
-				BeanUtils.setProperty(getBean(), name, valueToSet);
+				try {
+					BeanUtils.setProperty(getBean(), name, valueToSet);
+				} catch (InvocationTargetException e) {
+					log.warn("unable to populate field [{}] with value [{}] on object [{}]", name, valueToSet, getBean(), e);
+					addLocalWarning(e.getCause().getMessage());
+				}
 			}
 		}
 	}
