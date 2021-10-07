@@ -17,7 +17,6 @@ import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 public class ResourceTest {
 
