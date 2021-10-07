@@ -48,7 +48,7 @@ public class FrankDocModelConfigChildrenTest {
 	public void setUp() throws Exception {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
 		instance = new FrankDocModel(classRepository, null);
-		instance.createConfigChildDescriptorsFrom("doc/simple-digester-rules.xml");
+		instance.createConfigChildDescriptorsFrom(FrankDocModel.openResource("doc/simple-digester-rules.xml"));
 		instance.findOrCreateRootFrankElement(CONTAINER);
 		instance.findOrCreateRootFrankElement(CONTAINER_DERIVED);
 		instance.findOrCreateRootFrankElement(CONTAINER_OTHER);

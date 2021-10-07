@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,9 +21,9 @@ public class ConfigChildTechnicalOverrideTest {
 	private static FrankDocModel model;
 
 	@BeforeClass
-	public static void setUp() {
+	public static void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate(DIGESTER_RULES, PACKAGE + "Master", repository);
+		model = FrankDocModel.populate(FrankDocModel.openResource(DIGESTER_RULES), PACKAGE + "Master", repository);
 	}
 
 	@Test

@@ -36,7 +36,9 @@ class FrankDocletOptions {
 		STRICT_REL_PATH("strictPath"),
 		COMPATIBILITY_REL_PATH("compatibilityPath"),
 		JSON_REL_PATH("jsonPath"),
-		ELEMENT_SUMMARY_PATH("elementSummaryPath");
+		ELEMENT_SUMMARY_PATH("elementSummaryPath"),
+		DIGESTER_RULES_PATH("digesterRulesPath"),
+		ROOT_CLASS("rootClass");
 
 		private @Getter String mavenName;
 
@@ -52,6 +54,8 @@ class FrankDocletOptions {
 	private @Getter String xsdCompatibilityPath = "xml/xsd/FrankConfig-compatibility.xsd";
 	private @Getter String jsonOutputPath = "js/frankdoc.json";
 	private @Getter String elementSummaryPath = "txt/elementSummary.txt";
+	private @Getter String digesterRulesPath;
+	private @Getter String rootClass;
 
 	static {
 		optionsByName = Arrays.asList(Option.values()).stream().collect(Collectors.toMap(Option::getMavenName, Function.identity()));
@@ -132,6 +136,12 @@ class FrankDocletOptions {
 			break;
 		case ELEMENT_SUMMARY_PATH:
 			elementSummaryPath = value;
+			break;
+		case DIGESTER_RULES_PATH:
+			digesterRulesPath = value;
+			break;
+		case ROOT_CLASS:
+			rootClass = value;
 			break;
 		default:
 			throw new IllegalArgumentException("Programming error. Switch over FrankDocletOptions.Option was supposed to cover all cases");

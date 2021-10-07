@@ -19,6 +19,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,9 +36,9 @@ public class HighestCommonInterfaceTest {
 	private ElementType interface2ElementType;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate("doc/role-inherit-digester-rules.xml", PACKAGE + "Master", repository);
+		model = FrankDocModel.populate(FrankDocModel.openResource("doc/role-inherit-digester-rules.xml"), PACKAGE + "Master", repository);
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");

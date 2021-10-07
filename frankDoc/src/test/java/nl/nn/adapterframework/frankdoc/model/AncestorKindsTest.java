@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,9 +42,9 @@ public class AncestorKindsTest {
 	private FrankDocModel model;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate("doc/sparse-digester-rules.xml", PACKAGE + "ContainerChild", classRepository);
+		model = FrankDocModel.populate(FrankDocModel.openResource("doc/sparse-digester-rules.xml"), PACKAGE + "ContainerChild", classRepository);
 	}
 
 	@Test

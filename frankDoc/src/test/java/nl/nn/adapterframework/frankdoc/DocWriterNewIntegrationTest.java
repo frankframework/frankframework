@@ -39,8 +39,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
 import nl.nn.adapterframework.frankdoc.model.FrankDocModel;
-import nl.nn.adapterframework.frankdoc.model.FrankElement;
-import nl.nn.adapterframework.frankdoc.model.FrankElementStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class DocWriterNewIntegrationTest {
@@ -103,7 +101,7 @@ public class DocWriterNewIntegrationTest {
 
 	private String generateXsd(
 			XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
-		FrankDocModel model = FrankDocModel.populate(digesterRulesFileName, rootClassName, classRepository);
+		FrankDocModel model = FrankDocModel.populate(FrankDocModel.openResource(digesterRulesFileName), rootClassName, classRepository);
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();
@@ -118,23 +116,5 @@ public class DocWriterNewIntegrationTest {
 			writer.close();
 		}
 		return output.getAbsolutePath();
-	}
-
-	@Ignore
-	@Test
-	public void testStatistics() throws IOException {
-		FrankDocModel model = FrankDocModel.populate(classRepository);
-		File output = new File("testStatistics.csv");
-		System.out.println("Output file of test statistics: " + output.getAbsolutePath());
-		Writer writer = new BufferedWriter(new FileWriter(output));
-		try {
-			writer.append(FrankElementStatistics.header() + "\n");
-			for(FrankElement elem: model.getAllElements().values()) {
-				writer.append(elem.getStatistics().toString() + "\n");
-			}
-		}
-		finally {
-			writer.close();
-		}
 	}
 }

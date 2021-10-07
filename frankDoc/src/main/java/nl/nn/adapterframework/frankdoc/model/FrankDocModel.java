@@ -18,7 +18,9 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,12 +36,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.digester.DigesterRule;
-import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
@@ -54,7 +55,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 	private static String ENUM = "Enum";
-	private static final String DIGESTER_RULES = "digester-rules.xml";
 
 	private FrankClassRepository classRepository;
 
@@ -84,15 +84,11 @@ public class FrankDocModel {
 		this.rootClassName = rootClassName;
 	}
 
-	public static FrankDocModel populate(FrankClassRepository classRepository) {
-		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
-	}
-
-	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
+	public static FrankDocModel populate(final InputSource digesterRulesInputSource, final String rootClassName, FrankClassRepository classRepository) {
 		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
-			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesFileName);
+			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesInputSource);
 			result.findOrCreateRootFrankElement(rootClassName);
 			result.checkRootElementsMatchDigesterRules(rootRoleNames);
 			result.buildDescendants();
@@ -112,24 +108,36 @@ public class FrankDocModel {
 		return result;
 	}
 
-	Set<String> createConfigChildDescriptorsFrom(final String path) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", () -> path);
-		Resource resource = Resource.getResource(path);
-		if(resource == null) {
-			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
-		}
+	Set<String> createConfigChildDescriptorsFrom(final InputSource digesterRulesInputSource) throws IOException, SAXException {
+		log.trace("Creating config child descriptors from file [{}]", () -> digesterRulesInputSource.getSystemId());
 		try {
 			Handler handler = new Handler();
-			XmlUtils.parseXml(resource.asInputSource(), handler);
+			XmlUtils.parseXml(digesterRulesInputSource, handler);
 			log.trace("Successfully created config child descriptors");
 			return handler.rootRoleNames;
 		}
 		catch(IOException e) {
-			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", digesterRulesInputSource.getSystemId()), e);
 		}
 		catch(SAXException e) {
-			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", digesterRulesInputSource.getSystemId()), e);
 		}
+	}
+
+	public static InputSource openFile(String path) throws IOException {
+		File f = new File(path);
+		InputStream s = f.toURI().toURL().openStream();
+		InputSource result = new InputSource(s);
+		result.setSystemId(path);
+		return result;
+	}
+
+	public static InputSource openResource(String path) throws IOException {
+		Resource resource = Resource.getResource(path);
+		if(resource == null) {
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
+		}
+		return resource.asInputSource();
 	}
 
 	private class Handler extends DigesterRulesHandler {

@@ -2,10 +2,12 @@ package nl.nn.adapterframework.frankdoc;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
@@ -21,17 +23,17 @@ public class FrankDocElementSummaryTest {
 		"Other (from summary): ").stream().map(s -> s + "\n").collect(Collectors.joining());
 	
 	@Test
-	public void testElementSummary() {
+	public void testElementSummary() throws IOException {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate(getDigesterRulesPath(DIGESTER_RULES_FILE_NAME), PACKAGE + "Master", classRepository);
+		FrankDocModel model = FrankDocModel.populate(getDigesterRulesInputSource(DIGESTER_RULES_FILE_NAME), PACKAGE + "Master", classRepository);
 		FrankDocElementSummaryFactory instance = new FrankDocElementSummaryFactory(model);
 		String actual = instance.getText();
 		System.out.println(actual);
 		assertEquals(EXPECTED, actual);
 	}
 
-	private String getDigesterRulesPath(String fileName) {
-		return "doc/" + fileName;
+	private InputSource getDigesterRulesInputSource(String fileName) throws IOException {
+		return FrankDocModel.openResource("doc/" + fileName);
 	}
 
 }

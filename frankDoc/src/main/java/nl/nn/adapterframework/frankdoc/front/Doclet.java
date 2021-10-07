@@ -54,7 +54,7 @@ class Doclet {
 		try {
 			FrankClassRepository repository = FrankClassRepository.getDocletInstance(
 					classes, FrankElementFilters.getIncludeFilter(), FrankElementFilters.getExcludeFilter(), FrankElementFilters.getExcludeFiltersForSuperclass());
-			model = FrankDocModel.populate(repository);
+			model = FrankDocModel.populate(FrankDocModel.openFile(options.getDigesterRulesPath()), options.getRootClass(), repository);
 			File outputBaseDir = new File(options.getOutputBaseDir());
 			outputBaseDir.mkdirs();
 			xsdStrictFile = new File(outputBaseDir, options.getXsdStrictPath());
@@ -65,6 +65,8 @@ class Doclet {
 			jsonFile.getParentFile().mkdirs();
 			elementSummaryFile = new File(outputBaseDir, options.getElementSummaryPath());
 			elementSummaryFile.getParentFile().mkdirs();
+		} catch(IOException e) {
+			throw new FrankDocException("IOException occurred while initializing", e);
 		} catch(SecurityException e) {
 			throw new FrankDocException("SecurityException occurred initializing the output directory", e);
 		}
