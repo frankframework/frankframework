@@ -53,7 +53,7 @@ abstract class AbstractConvertor implements Convertor {
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
-	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, ConversionOption conversionOption, String charset) throws Exception;
+	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset) throws Exception;
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
@@ -113,7 +113,7 @@ abstract class AbstractConvertor implements Convertor {
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
 			LOGGER.debug("Convert to file... " + filename);
-			convert(mediaType, message, result, conversionOption, charset);
+			convert(mediaType, message, result, charset);
 			LOGGER.debug("Convert to file finished. " + filename);
 
 		} catch (Exception e) {

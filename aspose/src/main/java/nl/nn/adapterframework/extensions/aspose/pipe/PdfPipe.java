@@ -150,7 +150,7 @@ public class PdfPipe extends FixedForwardPipe {
 					return new PipeRunResult(getSuccessForward(), result);
 				case CONVERT:
 					String filename = session.getMessage(FILENAME_SESSION_KEY).asString();
-					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPERATEPDF : ConversionOption.SINGLEPDF);
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
 

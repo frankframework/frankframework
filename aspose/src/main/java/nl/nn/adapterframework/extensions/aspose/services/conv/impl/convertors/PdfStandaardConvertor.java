@@ -22,7 +22,6 @@ import org.apache.tika.mime.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
-import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 
@@ -37,7 +36,7 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, ConversionOption conversionOption, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		Files.copy(message.asInputStream(charset), Paths.get(result.getPdfResultFile().getCanonicalPath()));
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}

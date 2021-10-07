@@ -81,7 +81,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, ConversionOption conversionOption, String charset) throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		MailMessage eml = null;
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
@@ -136,9 +136,9 @@ class MailConvertor extends AbstractConvertor {
 				Attachment attachment = attachments.get_Item(index);
 
 				// Convert the attachment.
-				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, conversionOption);
+				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
 				// If it is an singlepdf add the file to the the current pdf.
-				if (ConversionOption.SINGLEPDF.equals(conversionOption) && cisConversionResultAttachment.isConversionSuccessfull()) {
+				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessfull()) {
 					try {
 						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
 						pdfAttachmentUtil.addAttachmentInSinglePdf();
