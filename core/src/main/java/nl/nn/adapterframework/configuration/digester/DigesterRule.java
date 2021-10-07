@@ -22,7 +22,8 @@ import lombok.Setter;
 
 /**
  * Java representation of a digester rule specified in the digester-rules.xml file.
- *
+ * 
+ * @author Niels Meijer
  */
 public class DigesterRule {
 

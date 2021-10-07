@@ -22,6 +22,9 @@ import java.util.function.Function;
 
 import nl.nn.adapterframework.doc.DocumentedEnum;
 
+/**
+ * @author Niels Meijer
+ */
 public abstract class EnumUtils {
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
