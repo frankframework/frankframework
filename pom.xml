@@ -404,17 +404,25 @@
 					<version>3.2.0</version>
 					<configuration>
 						<doclint>none</doclint>
-						<taglet>nl.nn.adapterframework.frankdoc.front.TagletFfParameter</taglet>
-						<tagletArtifact>
-							<groupId>org.ibissource</groupId>
-							<artifactId>ibis-adapterframework-frankDoc</artifactId>
-							<version>${project.version}</version>
-						</tagletArtifact>
 						<tags>
 							<tag>
 								<name>ff.parameters</name>
 								<placement>a</placement>
 								<head>Parameters</head>
+							</tag>
+							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
+							     The standard doclet does not properly format JavaDoc tags in this case. This
+							     can be solved with a taglet, but WeAreFrank! does not want that complexity.
+							     We therefore accept that all occurrences of ff.parameter are formatted on the
+							     same line.
+
+								 The ff.parameter tag was introduced for the Frank!Doc. The Frank!Doc formats
+								 it properly.
+							-->
+							<tag>
+								<name>ff.parameter</name>
+								<placement>a</placement>
+								<head>Specific parameters</head>
 							</tag>
 							<tag>
 								<name>ff.default</name>
