@@ -39,16 +39,18 @@
 	Has also a java-listener to be the sub-adapter of scheduled mfh scanner 
 	wildcard can be set in the directoryListener to filter files.
 	-->
-	<Adapter name="MFHIn" active="${active.adapter.mfhIn}" pollInterval="5">
-		<Receiver> 
+	<Adapter name="MFHIn" active="${active.adapter.mfhIn}">
+		<Receiver pollInterval="5"> 
 			<DirectoryListener
+				minStableTime ="${currentflow.minstabletime}"
 				fileTimeSensitive="true"
 				name="MFHIn"
 				messageType="info"
-				root="${root.dir.MFHIn}"
+				root="${currentflow.rootdir}"
 				inputFolder="in"
 				inProcessFolder="inProcess"
 				createFolders="true"
+				wildcard="${currentflow.wildcard}"
 			/>
 		</Receiver>
 		<Receiver> <!-- This could be called from the scheduled adapter-->
@@ -103,7 +105,6 @@
 				name="scanFolder" 
 				action="list" 
 				storeResultInSessionKey="fileList" 
-				wildcard="*Sch*"
 			/>
 
 			<ForEachChildElementPipe 
