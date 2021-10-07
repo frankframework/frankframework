@@ -71,32 +71,52 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 				value = resolveValue(value);
 			} else { //Only check for default values for non-property values
-				checkReadMethodType(pd, name, value, attributes);
+				checkMethodType(pd, name, value, attributes);
 			}
 
-			Object valueToSet = getValueToSet(m, value);
+			Object valueToSet = parseValueToSet(m, value);
 			log.trace("attempting to call method [{}] with value [{}] on object [{}]", ()->name, ()->valueToSet, ()->getBean());
 
-			BeanUtils.setProperty(getBean(), name, valueToSet);
+			if(valueToSet != null) {
+				BeanUtils.setProperty(getBean(), name, valueToSet);
+			}
 		}
 	}
 
-	private Object getValueToSet(Method m, String value) {
+	private Object parseValueToSet(Method m, String value) {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
+		//Try to parse the value as an Enum
 		if(setterArgumentClass.isEnum()) {
 			return parseAsEnum(setterArgumentClass, value);
 		}
+
 		return value;
 	}
 
+	/**
+	 * Attempt to parse the attributes value as an Enum.
+	 * @param enumClass The Enum class used to parse the value
+	 * @param value The value to be parsed
+	 * @return The Enum constant or <code>NULL</code> (and a local configuration warning) if it cannot parse the value.
+	 */
 	@SuppressWarnings("unchecked")
 	private <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
-		return EnumUtils.parse((Class<E>) enumClass, value);
+		try {
+			return EnumUtils.parse((Class<E>) enumClass, value);
+		} catch(IllegalArgumentException e) {
+			addLocalWarning(e.getMessage());
+			return null;
+		}
 	}
 
-	protected void checkReadMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
+	/**
+	 * Check if the value to set equals the default.
+	 * Try to parse the value to the Getters return type.
+	 * If no Getter is available, try to use the Setters first argument.
+	 */
+	private void checkMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
 		Method rm = PropertyUtils.getReadMethod(pd);
-		if (rm!=null) {
+		if (rm != null) {
 			try {
 				Object bean = getBean();
 				Object defaultValue = rm.invoke(bean, new Object[0]);
@@ -115,6 +135,31 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			} catch (Throwable t) {
 				addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+rm.getName()+"] with type ["+rm.getReturnType()+"]");
 				log.warn("Error on getting default for object [" + getObjectName() + "] with method [" + rm.getName() + "] attribute ["+name+"] value ["+value+"]", t);
+			}
+		} else {
+			//No readMethod, thus we cannot check the default value. We can however check if we can parse the value
+			if (value.length()==0) {
+				addLocalWarning("attribute ["+name+"] has no value");
+				return;
+			}
+
+			//If it's a number (int/long) try to parse it, else BeanUtils will call the method with 0.
+			try {
+				Class<?> setterArgumentClass = pd.getWriteMethod().getParameters()[0].getType();
+
+				switch (setterArgumentClass.getTypeName()) {
+				case "int":
+				case "java.lang.Integer":
+					Integer.parseInt(value);
+					break;
+				case "long":
+					Long.parseLong(value);
+					break;
+				}
+			} catch(NumberFormatException e) {
+				addLocalWarning("attribute ["+name+"] with value ["+value+"] cannot be converted to a number");
+			} catch(Exception e) {
+				log.debug("unable to get the first setter parameter of attribute["+name+"] writeMethod ["+pd.getWriteMethod()+"]", e);
 			}
 		}
 	}
