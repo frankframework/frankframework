@@ -192,7 +192,7 @@ public class NetStorageSender extends HttpSenderBase {
 			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 			Map<String, String> headers = signer.computeHeaders();
 
-			if (getMethodTypeEnum() == HttpMethod.GET) {
+			if (getMethodType() == HttpMethod.GET) {
 				HttpGet method = new HttpGet(uri);
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
@@ -203,7 +203,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 				return method;
 			}
-			else if (getMethodTypeEnum() == HttpMethod.PUT) {
+			else if (getMethodType() == HttpMethod.PUT) {
 				HttpPut method = new HttpPut(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -219,7 +219,7 @@ public class NetStorageSender extends HttpSenderBase {
 				}
 				return method;
 			}
-			else if (getMethodTypeEnum() == HttpMethod.POST) {
+			else if (getMethodType() == HttpMethod.POST) {
 				HttpPost method = new HttpPost(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {

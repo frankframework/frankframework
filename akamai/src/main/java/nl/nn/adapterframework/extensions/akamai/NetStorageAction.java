@@ -22,6 +22,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.Misc;
 
@@ -30,7 +31,7 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class NetStorageAction {
 	private int version = 1;
-	private String method = null;
+	private HttpMethod method = null;
 	private InputStream fileStream = null;
 	private byte[] fileBytes = null;
 	private String action = null;
@@ -41,35 +42,35 @@ public class NetStorageAction {
 		this.action = action;
 		actionHeader.put("action", action);
 		if(action.equals("dir")) {
-			method = "GET";
+			method = HttpMethod.GET;
 		}
 		if(action.equals("du")) {
-			method = "GET";
+			method = HttpMethod.GET;
 		}
 		if(action.equals("delete")) {
-			method = "PUT";
+			method = HttpMethod.PUT;
 		}
 		if(action.equals("upload")) {
-			method = "PUT";
+			method = HttpMethod.PUT;
 		}
 		if(action.equals("mkdir")) {
-			method = "PUT";
+			method = HttpMethod.PUT;
 		}
 		if(action.equals("rmdir")) {
-			method = "POST";
+			method = HttpMethod.POST;
 		}
 		if(action.equals("rename")) {
-			method = "POST";
+			method = HttpMethod.POST;
 		}
 		if(action.equals("mtime")) {
-			method = "POST";
+			method = HttpMethod.POST;
 		}
 		if(action.equals("download")) {
-			method = "GET";
+			method = HttpMethod.GET;
 		}
 	}
 
-	public String getMethod() {
+	public HttpMethod getMethod() {
 		return method;
 	}
 
