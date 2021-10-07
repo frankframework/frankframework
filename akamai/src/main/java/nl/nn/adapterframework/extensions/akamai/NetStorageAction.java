@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class NetStorageAction {
 	private byte[] fileBytes = null;
 	private String action = null;
 	private String hashAlgorithm = null;
-	private Map<String, String> actionHeader = new HashMap<String, String>();
+	private Map<String, String> actionHeader = new HashMap<>();
 
 	public NetStorageAction(String action) {
 		this.action = action;
@@ -79,9 +79,11 @@ public class NetStorageAction {
 	}
 
 	public String compileHeader() {
-		if(getMethod().equals("GET"))
+		if(getMethod() == HttpMethod.GET) {
 			actionHeader.put("format", "xml");
+		}
 		actionHeader.put("version", version+"");
+
 		return NetStorageUtils.convertMapAsQueryParams(actionHeader);
 	}
 
