@@ -101,7 +101,7 @@ public class DocWriterNewIntegrationTest {
 
 	private String generateXsd(
 			XsdVersion version, final String digesterRulesFileName, final String rootClassName, String outputSchemaFileName, AttributeTypeStrategy attributeTypeStrategy) throws IOException {
-		FrankDocModel model = FrankDocModel.populate(FrankDocModel.openResource(digesterRulesFileName), rootClassName, classRepository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.openResource(digesterRulesFileName), rootClassName, classRepository);
 		DocWriterNew docWriter = new DocWriterNew(model, attributeTypeStrategy);
 		docWriter.init(rootClassName, version);
 		String xsdString = docWriter.getSchema();

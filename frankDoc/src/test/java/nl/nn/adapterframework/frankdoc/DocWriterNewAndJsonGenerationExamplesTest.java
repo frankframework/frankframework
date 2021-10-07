@@ -122,7 +122,7 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 	}
 
 	private InputSource getDigesterRulesInputSource(String fileName) throws IOException {
-		return FrankDocModel.openResource("doc/" + fileName);
+		return TestUtil.openResource("doc/" + fileName);
 	}
 
 	@Test

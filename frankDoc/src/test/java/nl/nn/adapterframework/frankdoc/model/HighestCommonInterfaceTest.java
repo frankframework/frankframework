@@ -38,7 +38,7 @@ public class HighestCommonInterfaceTest {
 	@Before
 	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate(FrankDocModel.openResource("doc/role-inherit-digester-rules.xml"), PACKAGE + "Master", repository);
+		model = FrankDocModel.populate(TestUtil.openResource("doc/role-inherit-digester-rules.xml"), PACKAGE + "Master", repository);
 		founder = model.findElementType(PACKAGE + "IFounder");
 		interfaceParent = model.findElementType(PACKAGE + "IInterfaceParent");
 		interfaceElementType = model.findElementType(PACKAGE + "IInterface");

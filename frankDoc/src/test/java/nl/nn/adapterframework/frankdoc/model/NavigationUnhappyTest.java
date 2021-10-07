@@ -20,7 +20,7 @@ public class NavigationUnhappyTest {
 	public void whenSomeChildrenAreBothAcceptedAndRejectedThenExceptionThrown() throws IOException {
 		String rootClassName = PACKAGE + "." + "GrandChild3";
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate(FrankDocModel.openResource("doc/empty-digester-rules.xml"), rootClassName, repository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.openResource("doc/empty-digester-rules.xml"), rootClassName, repository);
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> walk(rootClassName, model));
 		assertTrue(e.getMessage().contains("[parentAttributeSecond]"));
 	}

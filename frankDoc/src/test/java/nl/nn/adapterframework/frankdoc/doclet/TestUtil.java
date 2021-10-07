@@ -7,8 +7,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
 
+import org.xml.sax.InputSource;
+
 import com.sun.javadoc.ClassDoc;
 
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.doclet.classdocs.EasyDoclet;
 
 public final class TestUtil {
@@ -51,5 +54,13 @@ public final class TestUtil {
 		} catch(IOException e) {
 			throw new RuntimeException("Cannot load build.properties", e);
 		}
+	}
+
+	public static InputSource openResource(String path) throws IOException {
+		Resource resource = Resource.getResource(path);
+		if(resource == null) {
+			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
+		}
+		return resource.asInputSource();
 	}
 }

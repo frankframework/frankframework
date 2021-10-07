@@ -41,7 +41,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Test
 	public void testPopulate() throws IOException {
-		FrankDocModel model = FrankDocModel.populate(FrankDocModel.openResource("doc/empty-digester-rules.xml"), CHILD, classRepository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.openResource("doc/empty-digester-rules.xml"), CHILD, classRepository);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// Test the attribute with a value list, which is of type STRING.
@@ -70,7 +70,7 @@ public class FrankDocModelAttributeTypeTest {
 
 	@Test
 	public void whenAttributeSetterTakesEnumThenEnumTypedAttribute() throws IOException {
-		FrankDocModel model = FrankDocModel.populate(FrankDocModel.openResource("doc/empty-digester-rules.xml"), CHILD, classRepository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.openResource("doc/empty-digester-rules.xml"), CHILD, classRepository);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// By taking a fixed element index we test that the attributes appear in the right order.

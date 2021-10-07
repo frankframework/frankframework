@@ -23,7 +23,7 @@ public class FrankDocModelDocletTest {
 	@Before
 	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(SIMPLE);
-		instance = FrankDocModel.populate(FrankDocModel.openResource("doc/xsd-element-name-digester-rules.xml"), SIMPLE + "Container", repository);
+		instance = FrankDocModel.populate(TestUtil.openResource("doc/xsd-element-name-digester-rules.xml"), SIMPLE + "Container", repository);
 	}
 
 	@Test

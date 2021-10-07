@@ -41,7 +41,6 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
@@ -130,14 +129,6 @@ public class FrankDocModel {
 		InputSource result = new InputSource(s);
 		result.setSystemId(path);
 		return result;
-	}
-
-	public static InputSource openResource(String path) throws IOException {
-		Resource resource = Resource.getResource(path);
-		if(resource == null) {
-			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
-		}
-		return resource.asInputSource();
 	}
 
 	private class Handler extends DigesterRulesHandler {
