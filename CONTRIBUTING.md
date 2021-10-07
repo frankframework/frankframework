@@ -28,7 +28,7 @@ After modifying a project file:
 - ctrl-c
 - cd .. ; mvn clean install ; cd example ; mvn jetty:run
 
-The jetty-maven-plugin requires Maven 3.6 and Java 1.8.
+The jetty-maven-plugin requires Maven 3 and Java 1.8. We tested these instructions with Maven 3.6.3.
 
 ## Submitting changes
 
