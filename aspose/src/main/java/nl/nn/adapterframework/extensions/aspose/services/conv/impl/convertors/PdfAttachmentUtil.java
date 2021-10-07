@@ -153,7 +153,7 @@ public class PdfAttachmentUtil {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		pdfDoc.save(baos, SaveFormat.Pdf);
 
-		return new Message(baos.toByteArray(), charset);
+		return new Message(baos.toByteArray());
 	}
 
 }
