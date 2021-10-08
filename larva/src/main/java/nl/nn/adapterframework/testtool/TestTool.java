@@ -112,7 +112,7 @@ public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final int DEFAULT_TIMEOUT = 30000;
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
@@ -130,7 +130,7 @@ public class TestTool {
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false; 
-	private static int globalTimeout=DEFAULT_TIMEOUT;
+	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
@@ -160,6 +160,14 @@ public class TestTool {
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+		String paramGlobalTimeout = request.getParameter("timeout");
+		int timeout=globalTimeout;
+		if(paramGlobalTimeout != null) {
+			try {
+				timeout = Integer.parseInt(paramGlobalTimeout);
+			} catch(NumberFormatException e) {
+			}
+		}
 		String servletPath = request.getServletPath();
 		int i = servletPath.lastIndexOf('/');
 		String realPath = application.getRealPath(servletPath.substring(0, i));
@@ -167,7 +175,7 @@ public class TestTool {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -180,7 +188,7 @@ public class TestTool {
 	 */
 	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
-			String realPath, String paramScenariosRootDirectory,
+			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
@@ -236,8 +244,9 @@ public class TestTool {
 			} catch(NumberFormatException e) {
 			}
 		}
+
 		debugMessage("Write html form", writers);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 		debugMessage("Stop logging to logbuffer", writers);
 		if (writers!=null) {
 			writers.put("uselogbuffer", "stop");
@@ -303,7 +312,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
+								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -320,7 +329,7 @@ public class TestTool {
 										String step = (String)iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout);
 										if (stepPassed==RESULT_OK) {
 											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 										} else if (stepPassed==RESULT_AUTOSAVED) {
@@ -442,7 +451,7 @@ public class TestTool {
 				}
 				writeHtml("<br/>", writers, false);
 				writeHtml("<br/>", writers, false);
-				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 				debugMessage("Stop logging to htmlbuffer", writers);
 				if (writers!=null) {
 					writers.put("usehtmlbuffer", "stop");
@@ -453,7 +462,7 @@ public class TestTool {
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map<String, Object> writers) {
+	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
@@ -555,6 +564,19 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// timeout box
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Default timeout (ms)</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>Log level</td>", writers, false);
@@ -595,6 +617,7 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// submit button
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>&nbsp;</td>", writers, false);
@@ -1207,7 +1230,7 @@ public class TestTool {
 
 	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
 			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map<String, Object> writers) {
+			AppConstants appConstants, Map<String, Object> writers, int parameterTimeout) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		debugMessage("Get all queue names", writers);
 		List<String> jmsSenders = new ArrayList<String>();
@@ -1359,10 +1382,10 @@ public class TestTool {
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = globalTimeout;
+			int nTimeout = parameterTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {
@@ -1689,8 +1712,8 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setRequestTimeOut(globalTimeout);
-				listenerMessageHandler.setResponseTimeOut(globalTimeout);
+				listenerMessageHandler.setRequestTimeOut(parameterTimeout);
+				listenerMessageHandler.setResponseTimeOut(parameterTimeout);
 				try {
 					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
 					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
@@ -2700,7 +2723,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -2709,7 +2732,7 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(parameterTimeout);
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);
@@ -2875,7 +2898,7 @@ public class TestTool {
 		return result;	
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -2914,13 +2937,13 @@ public class TestTool {
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
