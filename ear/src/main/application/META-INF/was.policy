@@ -104,6 +104,8 @@ permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.
 // required for SUN SAAJ library
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.xml.*";
+// required to find SAAJ factory
+permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}conf${/}-", "read";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
