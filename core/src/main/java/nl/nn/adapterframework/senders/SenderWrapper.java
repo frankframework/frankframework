@@ -31,9 +31,9 @@ import nl.nn.adapterframework.stream.Message;
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
  * </table>
  * </p>
+ * @ff.parameters any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * 
  * @author  Gerrit van Brakel
  * @since   4.9

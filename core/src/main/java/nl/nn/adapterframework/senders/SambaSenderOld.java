@@ -68,6 +68,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author	Niels Meijer
  * @since	7.1-B4
  */
+@Deprecated
 public class SambaSenderOld extends SenderWithParametersBase {
 
 	private String domain = null;
