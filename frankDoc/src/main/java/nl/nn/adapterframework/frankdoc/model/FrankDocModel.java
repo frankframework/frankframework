@@ -18,9 +18,7 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,14 +122,6 @@ public class FrankDocModel {
 		catch(SAXException e) {
 			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", digesterRulesInputSource.getSystemId()), e);
 		}
-	}
-
-	public static InputSource openFile(String path) throws IOException {
-		File f = new File(path);
-		InputStream s = f.toURI().toURL().openStream();
-		InputSource result = new InputSource(s);
-		result.setSystemId(path);
-		return result;
 	}
 
 	private class Handler extends DigesterRulesHandler {
