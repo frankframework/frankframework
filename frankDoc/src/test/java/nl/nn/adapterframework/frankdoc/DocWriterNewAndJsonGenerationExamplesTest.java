@@ -19,6 +19,7 @@ import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
 import static org.junit.Assume.assumeNotNull;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -30,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
@@ -117,12 +117,11 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	private FrankDocModel createModel() throws Exception {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfClasses);
-		return FrankDocModel.populate(
-				getDigesterRulesInputSource(digesterRulesFileName), startClassName, classRepository);
+		return FrankDocModel.populate(getDigesterRulesURL(digesterRulesFileName), startClassName, classRepository);
 	}
 
-	private InputSource getDigesterRulesInputSource(String fileName) throws IOException {
-		return TestUtil.openResource("doc/" + fileName);
+	private URL getDigesterRulesURL(String fileName) throws IOException {
+		return TestUtil.resourceAsURL("doc/" + fileName);
 	}
 
 	@Test

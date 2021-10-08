@@ -21,6 +21,7 @@ import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
@@ -83,11 +85,11 @@ public class FrankDocModel {
 		this.rootClassName = rootClassName;
 	}
 
-	public static FrankDocModel populate(final InputSource digesterRulesInputSource, final String rootClassName, FrankClassRepository classRepository) {
+	public static FrankDocModel populate(final URL digesterRules, final String rootClassName, FrankClassRepository classRepository) {
 		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
-			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesInputSource);
+			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRules);
 			result.findOrCreateRootFrankElement(rootClassName);
 			result.checkRootElementsMatchDigesterRules(rootRoleNames);
 			result.buildDescendants();
@@ -107,8 +109,9 @@ public class FrankDocModel {
 		return result;
 	}
 
-	Set<String> createConfigChildDescriptorsFrom(final InputSource digesterRulesInputSource) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", () -> digesterRulesInputSource.getSystemId());
+	Set<String> createConfigChildDescriptorsFrom(final URL digesterRules) throws IOException, SAXException {
+		log.trace("Creating config child descriptors from file [{}]", () -> digesterRules.toString());
+		InputSource digesterRulesInputSource = Misc.asInputSource(digesterRules);
 		try {
 			Handler handler = new Handler();
 			XmlUtils.parseXml(digesterRulesInputSource, handler);

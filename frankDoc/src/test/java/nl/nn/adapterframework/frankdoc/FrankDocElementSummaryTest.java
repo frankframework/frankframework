@@ -3,11 +3,11 @@ package nl.nn.adapterframework.frankdoc;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.frankdoc.doclet.FrankClassRepository;
 import nl.nn.adapterframework.frankdoc.doclet.TestUtil;
@@ -25,15 +25,15 @@ public class FrankDocElementSummaryTest {
 	@Test
 	public void testElementSummary() throws IOException {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate(getDigesterRulesInputSource(DIGESTER_RULES_FILE_NAME), PACKAGE + "Master", classRepository);
+		FrankDocModel model = FrankDocModel.populate(getDigesterRulesURL(DIGESTER_RULES_FILE_NAME), PACKAGE + "Master", classRepository);
 		FrankDocElementSummaryFactory instance = new FrankDocElementSummaryFactory(model);
 		String actual = instance.getText();
 		System.out.println(actual);
 		assertEquals(EXPECTED, actual);
 	}
 
-	private InputSource getDigesterRulesInputSource(String fileName) throws IOException {
-		return TestUtil.openResource("doc/" + fileName);
+	private URL getDigesterRulesURL(String fileName) throws IOException {
+		return TestUtil.resourceAsURL("doc/" + fileName);
 	}
 
 }

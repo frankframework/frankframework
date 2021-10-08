@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * Copied from package nl.nn.adapterframework.configuration.digester.
  * 
  * TODO: Copy to new frank-doc project.
- *
- * @author martijn
  *
  */
 public abstract class DigesterRulesHandler extends DefaultHandler {

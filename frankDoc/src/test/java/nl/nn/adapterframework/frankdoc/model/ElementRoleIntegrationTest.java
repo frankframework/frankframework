@@ -34,7 +34,7 @@ public class ElementRoleIntegrationTest {
 	@Before
 	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate(TestUtil.openResource("doc/role-digester-rules.xml"), PACKAGE + "Master", repository);
+		model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/role-digester-rules.xml"), PACKAGE + "Master", repository);
 	}
 
 	@Test

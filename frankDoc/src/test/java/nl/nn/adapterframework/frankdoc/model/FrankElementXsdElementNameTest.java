@@ -39,7 +39,7 @@ public class FrankElementXsdElementNameTest {
 	@Before
 	public void setUp() throws IOException {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate(TestUtil.openResource(DIGESTER_RULES), CONTAINER, classRepository);
+		model = FrankDocModel.populate(TestUtil.resourceAsURL(DIGESTER_RULES), CONTAINER, classRepository);
 	}
 
 	@Test

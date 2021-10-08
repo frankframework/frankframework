@@ -37,7 +37,7 @@ public class ConfigChildSetterDescriptorTest {
 		// No need to set include and exclude filters of the FrankClassRepository, because
 		// we are not asking for the implementations of an interface.
 		instance = new FrankDocModel(TestUtil.getFrankClassRepositoryDoclet(), null);
-		instance.createConfigChildDescriptorsFrom(TestUtil.openResource("doc/fake-digester-rules.xml"));
+		instance.createConfigChildDescriptorsFrom(TestUtil.resourceAsURL("doc/fake-digester-rules.xml"));
 	}
 
 	@Test
