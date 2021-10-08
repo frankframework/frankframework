@@ -189,6 +189,10 @@ permission java.net.URLPermission "https:*", "*";
 
 // required for Aspose libary's fonts
 permission java.io.FilePermission "/usr/share/fonts/-", "read";
+permission java.io.FilePermission "/System Folder/Fonts", "read";
+permission java.io.FilePermission "/System/Library/Fonts", "read";
+permission java.io.FilePermission "/Network/Library/Fonts", "read";
+permission java.io.FilePermission "/Library/Fonts", "read";
 
 // required for ladybug retrieving userprincipal
 permission java.security.SecurityPermission "printIdentity";
