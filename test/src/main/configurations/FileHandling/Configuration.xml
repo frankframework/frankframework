@@ -1,6 +1,6 @@
 <!DOCTYPE configuration [
 	<!ENTITY ConfigurationMFH SYSTEM "./Configuration_MFH.xml">
 ]>
-<configuration name="FileHandler">
+<configuration name="FileHandling">
 	&ConfigurationMFH;
 </configuration>
