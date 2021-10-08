@@ -202,13 +202,13 @@ public class HttpSender extends HttpSenderBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getMethodType() == HttpMethod.POST || getMethodType() == HttpMethod.PUT || getMethodType() == HttpMethod.PATCH)) {
+		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (getMethodType() != HttpMethod.POST) {
+		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
 				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
 			}
@@ -276,7 +276,7 @@ public class HttpSender extends HttpSenderBase {
 				queryParametersAppended = true;
 			}
 
-			switch (getMethodType()) {
+			switch (getHttpMethod()) {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
@@ -313,9 +313,9 @@ public class HttpSender extends HttpSenderBase {
 				}
 
 				HttpEntityEnclosingRequestBase method;
-				if (getMethodType() == HttpMethod.POST) {
+				if (getHttpMethod() == HttpMethod.POST) {
 					method = new HttpPost(relativePath.toString());
-				} else if (getMethodType() == HttpMethod.PATCH) {
+				} else if (getHttpMethod() == HttpMethod.PATCH) {
 					method = new HttpPatch(relativePath.toString());
 				} else {
 					method = new HttpPut(relativePath.toString());
@@ -589,7 +589,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		if (getMethodType() == HttpMethod.HEAD) {
+		if (getHttpMethod() == HttpMethod.HEAD) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
 			for (Header header : headers) {

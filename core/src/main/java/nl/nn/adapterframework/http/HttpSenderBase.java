@@ -70,6 +70,7 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -171,7 +172,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public enum HttpMethod {
 		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
 	}
-	private HttpMethod method = HttpMethod.GET;
+	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
 	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
@@ -622,7 +623,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -788,10 +789,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(HttpMethod method) {
-		this.method = method;
-	}
-	public HttpMethod getMethodType() {
-		return method;
+		this.httpMethod = method;
 	}
 
 	/**

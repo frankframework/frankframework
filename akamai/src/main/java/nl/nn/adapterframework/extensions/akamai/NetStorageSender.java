@@ -68,10 +68,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
  * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
  *
- * <br/>
- * <br/>
- * <br/>
- *
  *
  * @author	Niels Meijer
  * @since	7.0-B4
@@ -192,7 +188,7 @@ public class NetStorageSender extends HttpSenderBase {
 			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 			Map<String, String> headers = signer.computeHeaders();
 
-			if (getMethodType() == HttpMethod.GET) {
+			if (getHttpMethod() == HttpMethod.GET) {
 				HttpGet method = new HttpGet(uri);
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
 					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
@@ -203,7 +199,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 				return method;
 			}
-			else if (getMethodType() == HttpMethod.PUT) {
+			else if (getHttpMethod() == HttpMethod.PUT) {
 				HttpPut method = new HttpPut(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -219,7 +215,7 @@ public class NetStorageSender extends HttpSenderBase {
 				}
 				return method;
 			}
-			else if (getMethodType() == HttpMethod.POST) {
+			else if (getHttpMethod() == HttpMethod.POST) {
 				HttpPost method = new HttpPost(uri);
 
 				for (Map.Entry<String, String> entry : headers.entrySet()) {
