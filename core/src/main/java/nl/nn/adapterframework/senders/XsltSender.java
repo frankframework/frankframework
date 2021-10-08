@@ -56,11 +56,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- *
+ * @ff.parameters any parameters defined on the sender will be applied to the created transformer
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */

@@ -43,11 +43,7 @@ import nl.nn.adapterframework.xml.IXmlDebugger;
  * The XSLT stylesheet or XPathExpression operates on these element.
  * 
  * @see  <a href="https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/">https://www.xml.com/articles/2017/02/14/why-you-should-be-using-xslt-30/</a>
- *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
+ * 
  * @author Gerrit van Brakel
  */
 

@@ -17,29 +17,26 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Translate a record into XML, then send it using a sender.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>Sender that needs to handle the (XML) record</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * 
  * @author  John Dekker
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
 
-	private ISender sender = null;
+	private @Getter ISender sender = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -69,10 +66,8 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 
 
+	@IbisDoc({"10", "Sender that needs to handle the (XML) record"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
-	}
-	public ISender getSender() {
-		return sender;
 	}
 }
