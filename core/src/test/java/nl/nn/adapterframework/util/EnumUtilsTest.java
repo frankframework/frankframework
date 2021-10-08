@@ -16,7 +16,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNullValue() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown processState value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+		exception.expectMessage("cannot set field [processState] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parse(ProcessState.class, null);
 	}
@@ -46,7 +46,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingNormalEnum() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown processState value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+		exception.expectMessage("cannot set field [processState] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parse(ProcessState.class, "tralala");
 	}
@@ -54,7 +54,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingNormalEnumWithCustomFieldName() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown fieldName value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+		exception.expectMessage("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parseNormal(ProcessState.class, "fieldName", "tralala");
 	}
@@ -62,14 +62,14 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingDocumentedEnum() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown ftpType value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
+		exception.expectMessage("cannot set field [ftpType] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
 		EnumUtils.parse(FtpType.class, "tralala");
 	}
 
 	@Test
 	public void testParseNonExistingDocumentedEnumWithCustomFieldName() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown fieldName value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
+		exception.expectMessage("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
 		EnumUtils.parseDocumented(FtpType.class, "fieldName", "tralala");
 	}
 
@@ -91,7 +91,7 @@ public class EnumUtilsTest {
 	@Test
 	public void testParseNonExistingIntegerValue() {
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("unknown fieldName value [3]. Must be one of [1, 2]");
+		exception.expectMessage("cannot set field [fieldName] to unparsable value [3]. Must be one of [1, 2]");
 		EnumUtils.parseFromField(EnumWithInteger.class, "fieldName", 3, i -> i.i);
 	}
 }

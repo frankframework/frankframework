@@ -25,6 +25,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -72,7 +73,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("GET");
+			sender.setMethodType(HttpMethod.GET);
 
 			sender.configure();
 			sender.open();
@@ -97,7 +98,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("GET");
+			sender.setMethodType(HttpMethod.GET);
 
 			sender.configure();
 			sender.open();
