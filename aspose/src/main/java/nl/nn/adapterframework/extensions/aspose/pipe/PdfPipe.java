@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -64,7 +63,6 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
 	private @Getter String filenameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
 	private @Getter String charset = null;
-	private @Getter @Setter boolean tempDirCreated = false;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
 
@@ -99,7 +97,6 @@ public class PdfPipe extends FixedForwardPipe {
 					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
 				}
 				log.info("Temporary directory path : " + getPdfOutputLocation());
-				setTempDirCreated(true);
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
@@ -193,7 +190,7 @@ public class PdfPipe extends FixedForwardPipe {
 		this.unpackDefaultFonts = unpackDefaultFonts;
 	}
 
-	@IbisDoc({ "charset to be used to encode the given input string", "UTF-8" })
+	@IbisDoc({ "charset to be used to decode the given input message in case the input is not binary but character stream", "UTF-8" })
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

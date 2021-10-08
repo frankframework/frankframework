@@ -36,7 +36,7 @@ public class TestFileUtils {
 	}
 
 	public static Message getNonRepeatableTestFileMessage(String file) throws IOException {
-		return new Message(TestFileUtils.class.getResourceAsStream(file));
+		return new Message(getTestFileURL(file).openStream());
 	}
 
 	public static String getTestFile(URL url, String charset) throws IOException {
