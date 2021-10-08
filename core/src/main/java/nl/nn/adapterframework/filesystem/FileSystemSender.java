@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -144,17 +145,17 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 		return fileSystem;
 	}
 
-	protected void addActions(List<String> specificActions) {
+	protected void addActions(List<FileSystemAction> specificActions) {
 		actor.addActions(specificActions);
 	}
 
 
 
 	@IbisDocRef({"1", FILESYSTEMACTOR})
-	public void setAction(String action) {
+	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
-	public String getAction() {
+	public FileSystemAction getAction() {
 		return actor.getAction();
 	}
 
