@@ -69,7 +69,11 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					for(i in groupMembers) {
 						let memberName = groupMembers[i];
 						if($scope.elements[memberName].name == elementSimpleName) {
-							$rootScope.$broadcast('element', $scope.elements[memberName]);
+							let el = $scope.elements[memberName];
+							if($scope.showInheritance) {
+								el = $scope.flattenElements(el);
+							}
+							$rootScope.$broadcast('element', el);
 						}
 					}
 				} else {
