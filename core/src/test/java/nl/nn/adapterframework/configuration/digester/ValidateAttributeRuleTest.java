@@ -178,12 +178,24 @@ public class ValidateAttributeRuleTest extends Mockito {
 	public void testAttributeWithNoValue() throws Exception {
 		Map<String, String> attr = new HashMap<>();
 		attr.put("testString", "");
+		attr.put("testInteger", "");
+		attr.put("testBoolean", "");
+
+
+		attr.put("testStringWithoutGetter", "");
+		attr.put("testIntegerWithoutGetter", "");
+		attr.put("testBooleanWithoutGetter", "");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testString] has no value", configWarnings.get(0));
+		assertEquals(6, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testInteger] has no value", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testBoolean] has no value", configWarnings.get(1));
+		assertEquals("ClassWithEnum attribute [testBooleanWithoutGetter] has no value", configWarnings.get(2));
+		assertEquals("ClassWithEnum attribute [testString] has no value", configWarnings.get(3));
+		assertEquals("ClassWithEnum attribute [testStringWithoutGetter] has no value", configWarnings.get(4));
+		assertEquals("ClassWithEnum attribute [testIntegerWithoutGetter] has no value", configWarnings.get(5));
 	}
 
 
@@ -197,6 +209,32 @@ public class ValidateAttributeRuleTest extends Mockito {
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
 		assertEquals("ClassWithEnum attribute [testInteger] with value [a String] cannot be converted to a number: For input string: \"a String\"", configWarnings.get(0));
+	}
+
+	@Test
+	public void testAttributeWithoutGetterNumberFormatException() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testStringWithoutGetter", "a String"); //Should work
+		attr.put("testIntegerWithoutGetter", "a String"); //Throws Exception
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testIntegerWithoutGetter] with value [a String] cannot be converted to a number", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnparsableEnum() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testEnum", "unparsable");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum cannot set field [testEnum] to unparsable value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
 	}
 
 	@Test
@@ -250,6 +288,9 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Getter String deprecatedConfigWarningString;
 		private @Getter @Setter int testInteger = 0;
 		private @Getter @Setter boolean testBoolean = false;
+		private @Setter String testStringWithoutGetter = "string";
+		private @Setter int testIntegerWithoutGetter = 0;
+		private @Setter boolean testBooleanWithoutGetter = false;
 
 		@ConfigurationWarning("my test warning")
 		public void setConfigWarningString(String str) {

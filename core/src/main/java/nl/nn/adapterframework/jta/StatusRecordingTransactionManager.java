@@ -87,7 +87,11 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 			setUid(recorded_tmuid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
-			setUid((Misc.getHostname()+"-"+Misc.createSimpleUUID()).substring(0, TMUID_MAX_LENGTH));
+			String tmuid = Misc.getHostname()+"-"+Misc.createSimpleUUID();
+			if (tmuid.length()>TMUID_MAX_LENGTH) {
+				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
+			}
+			setUid(tmuid);
 			log.info("created tmuid ["+getUid()+"]");
 		}
 		if (!getUid().equals(recorded_tmuid)) {

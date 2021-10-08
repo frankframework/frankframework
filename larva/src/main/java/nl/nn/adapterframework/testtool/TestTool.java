@@ -80,6 +80,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
@@ -97,6 +98,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -1770,7 +1772,8 @@ public class TestTool {
 						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
 					}
 					if (StringUtils.isNotEmpty(methodtype)) {
-						httpSender.setMethodType(methodtype);
+						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
+						httpSender.setMethodType(method);
 					}
 					if (StringUtils.isNotEmpty(paramsInUrlString)) {
 						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
