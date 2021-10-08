@@ -72,7 +72,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 			if(value.contains(StringResolver.DELIM_START) && value.contains(StringResolver.DELIM_STOP)) { //If value contains a property, resolve it
 				value = resolveValue(value);
 			} else { //Only check for default values for non-property values
-				checkMethodType(pd, name, value, attributes);
+				checkTypeCompatibility(pd, name, value, attributes);
 			}
 
 			Object valueToSet = parseValueToSet(m, value);
@@ -116,11 +116,12 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	/**
-	 * Check if the value to set equals the default.
-	 * Try to parse the value to the Getters return type.
-	 * If no Getter is available, try to use the Setters first argument.
+	 * Check if the value is not empty,
+	 * Can be parsed to match the Getters return type, 
+	 * Equals the default value (parsed by invoking the getter, if present).
+	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
-	private void checkMethodType(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
+	private void checkTypeCompatibility(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
 		Method rm = PropertyUtils.getReadMethod(pd);
 		if (rm != null) {
 			try {
