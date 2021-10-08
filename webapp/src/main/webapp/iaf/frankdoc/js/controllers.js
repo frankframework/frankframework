@@ -27,8 +27,14 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			let el = angular.copy(element);
 			let parent = $scope.elements[element.parent];
 
-			el.attributes = copyOf(el.attributes, parent.attributes, 'name', parent.name);
-			el.children = copyOf(el.children, parent.children, 'roleName', parent.name);
+			//Add separator where attributes inherit from
+			if(parent.attributes && parent.attributes.length > 0) {
+				if(!el.attributes) { el.attributes = []; } //Make sure an array exists
+				el.attributes.push({from: parent.name});
+			}
+
+			el.attributes = copyOf(el.attributes, parent.attributes, 'name');
+			el.children = copyOf(el.children, parent.children, 'roleName');
 
 			if(!el.parametersDescription && parent.parametersDescription) {
 				el.parametersDescription = parent.parametersDescription;
@@ -137,7 +143,7 @@ function javaDocUrlOf(element) {
 		return null;
 	}
 }
-function copyOf(attr1, attr2, fieldName, elementName) {
+function copyOf(attr1, attr2, fieldName) {
 	if(attr1 && !attr2) {
 		return attr1;
 	} else if(attr2 && !attr1) {
@@ -151,9 +157,6 @@ function copyOf(attr1, attr2, fieldName, elementName) {
 			let at = attr1[i];
 			seen.push(at[fieldName])
 			newAttr.push(at);
-		}
-		if(fieldName == "name") { //we are assuming this is an attribute copy
-			newAttr.push({from: elementName});
 		}
 		for(i in attr2) {
 			let at = attr2[i];
