@@ -434,6 +434,10 @@
 								<placement>a</placement>
 								<head>Default element</head>
 							</tag>
+							<tag>
+								<name>ff.ignoreTypeMembership</name>
+								<placement>X</placement>
+							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
 					</configuration>
