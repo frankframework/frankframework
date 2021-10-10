@@ -36,7 +36,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -208,7 +208,7 @@ public class NetStorageSender extends HttpSenderBase {
 				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 
 				if(netStorageAction.getFile() != null) {
-					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
+					HttpEntity entity = new ByteArrayEntity(netStorageAction.getFile());
 					method.setEntity(entity);
 				}
 				return method;
@@ -224,7 +224,7 @@ public class NetStorageSender extends HttpSenderBase {
 				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 
 				if(netStorageAction.getFile() != null) {
-					HttpEntity entity = new InputStreamEntity(netStorageAction.getFile());
+					HttpEntity entity = new ByteArrayEntity(netStorageAction.getFile());
 					method.setEntity(entity);
 				}
 				return method;

@@ -15,8 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.akamai;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * @author Niels Meijer
@@ -32,7 +31,6 @@ import nl.nn.adapterframework.util.Misc;
 public class NetStorageAction {
 	private int version = 1;
 	private HttpMethod method = null;
-	private InputStream fileStream = null;
 	private byte[] fileBytes = null;
 	private String action = null;
 	private HashAlgorithm hashAlgorithm = null;
@@ -94,12 +92,12 @@ public class NetStorageAction {
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
 		if(requiresFileParam()) {
 			Object paramValue = pvl.getParameterValue("file").getValue();
-			if(paramValue instanceof InputStream)
-				fileStream = (InputStream) paramValue;
-			else if(paramValue instanceof byte[])
-				fileBytes = (byte[]) paramValue;
-			else
-				throw new SenderException("expected InputStream or ByteArray but got ["+paramValue.getClass().getName()+"] instead");
+			Message file = Message.asMessage(paramValue);
+			try {
+				fileBytes = file.asByteArray();
+			} catch (IOException e) {
+				throw new SenderException("unable to read file from parameter", e);
+			}
 
 			String md5 = null;
 			String sha1 = null;
@@ -118,9 +116,6 @@ public class NetStorageAction {
 
 			if(hashAlgorithm != null) {
 				try {
-					if(fileStream != null)
-						fileBytes = Misc.streamToBytes(fileStream);
-
 					if(md5 == null && hashAlgorithm == HashAlgorithm.MD5) {
 						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.MD5);
 						if(checksum != null)
@@ -136,7 +131,6 @@ public class NetStorageAction {
 						if(checksum != null)
 							sha256 = NetStorageUtils.convertByteArrayToHexString(checksum);
 					}
-					fileStream = new ByteArrayInputStream(fileBytes);
 				}
 				catch (Exception e) {
 					throw new SenderException("error while calculating ["+hashAlgorithm+"] hash", e);
@@ -161,8 +155,8 @@ public class NetStorageAction {
 		}
 	}
 
-	public InputStream getFile() {
-		return fileStream;
+	public byte[] getFile() {
+		return fileBytes;
 	}
 
 	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
