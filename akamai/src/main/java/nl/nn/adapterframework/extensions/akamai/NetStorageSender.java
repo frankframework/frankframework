@@ -39,12 +39,14 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
+import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -62,12 +64,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * <p>See {@link nl.nn.adapterframework.http.HttpSenderBase} for more arguments and parameters!</p>
  *
- * <p><b>Parameters:</b></p>
- * <p>Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.</p>
  *
- * <p><b>AuthAlias: (WebSphere based application servers)</b></p>
+ * <p><b>AuthAlias:</b></p>
  * <p>If you do not want to specify the nonce and the accesstoken used to authenticate with Akamai, you can use the authalias property. The username represents the nonce and the password the accesstoken.</p>
  *
+ * @ff.parameters Some actions require specific parameters to be set. Optional parameters for the <code>upload</code> action are: md5, sha1, sha256 and mtime.
  *
  * @author	Niels Meijer
  * @since	7.0-B4
@@ -76,19 +77,19 @@ public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 	private String URL_PARAM_KEY = "urlParameter";
 
-	private String action = null;
+	private @Getter String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
-	private String url = null;
-	private String nonce = null;
-	private int signVersion = 5;
-	private int actionVersion = 1;
-	private String hashAlgorithm = null;
-	private List<String> hashAlgorithms = Arrays.asList("MD5", "SHA1", "SHA256");
-	private String rootDir = null;
 
-	private String authAlias;
-	private String cpCode = null;
-	private String accessToken = null;
+	private @Getter int signVersion = 5;
+	private @Getter int actionVersion = 1;
+	private @Getter String rootDir = null;
+
+	private HashAlgorithm hashAlgorithm = null;
+
+	private @Getter String cpCode = null;
+	private @Getter String authAlias = null;
+	private @Getter String nonce = null;
+	private @Getter String accessToken = null;
 	private CredentialFactory accessTokenCf = null;
 
 	@Override
@@ -112,9 +113,6 @@ public class NetStorageSender extends HttpSenderBase {
 			throw new ConfigurationException(getLogPrefix()+"cpCode must be specified");
 		if(!getUrl().startsWith("http"))
 			throw new ConfigurationException(getLogPrefix()+"url must be start with http(s)");
-
-		if(hashAlgorithm != null && !hashAlgorithms.contains(hashAlgorithm))
-			throw new ConfigurationException(getLogPrefix()+"unknown authenticationMethod ["+hashAlgorithm+"] supported methods are "+hashAlgorithms.toString()+"");
 
 		if(getSignVersion() < 3 || getSignVersion() > 5)
 			throw new ConfigurationException(getLogPrefix()+"signVersion must be either 3, 4 or 5");
@@ -183,7 +181,7 @@ public class NetStorageSender extends HttpSenderBase {
 
 		try {
 			setMethodType(netStorageAction.getMethod());
-			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+url+"] with action ["+getAction()+"]");
+			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+getUrl()+"] with action ["+getAction()+"]");
 
 			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
 			Map<String, String> headers = signer.computeHeaders();
@@ -338,70 +336,32 @@ public class NetStorageSender extends HttpSenderBase {
 		return responseBody;
 	}
 
-	/**
-	 * Only works in combination with the UPLOAD action. If set, and not 
-	 * specified as parameter, the sender will sign the file to be uploaded. 
-	 * NOTE: if the file input is a Stream this will put the file in memory!
-	 * @param hashAlgorithm supports 3 types; md5, sha1, sha256
-	 */
-	@IbisDoc({"only works in combination with the <code>upload</code> action. if set, and not specified as parameter, the sender will sign the file to be uploaded. possible values: md5, sha1, sha256. <br/>note: if the file input is a stream this will put the file in memory!", ""})
-	public void setHashAlgorithm(String hashAlgorithm) {
-		this.hashAlgorithm = hashAlgorithm.toUpperCase();
+	/** Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.*/
+	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
+		this.hashAlgorithm = hashAlgorithm;
 	}
 
-	/**
-	 * NetStorage action to be used
-	 * @param action delete, dir, download, du, mkdir, mtime, rename,
-	 * rmdir, upload
-	 * @IbisDoc.required
-	 */
-	@IbisDoc({"possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload", ""})
+	/** NetStorage action to be used */
 	public void setAction(String action) {
 		this.action = action.toLowerCase();
 	}
 
-	public String getAction() {
-		return action;
-	}
-
-	/**
-	 * At the time of writing, NetStorage only supports version 1
-	 * @param actionVersion
-	 * @IbisDoc.default 1
-	 */
-	@IbisDoc({"akamai currently only supports action version 1!", "1"})
+	/** At the time of writing, NetStorage only supports version 1
+	 * @ff.default 1 */
 	public void setActionVersion(int actionVersion) {
 		this.actionVersion = actionVersion;
 	}
 
-	/**
-	 * NetStorage CP Code
-	 * @param cpCode of the storage group
-	 * @IbisDoc.optional
-	 */
-	@IbisDoc({"the cp code to be used", ""})
+	/** NetStorage CP Code of the storage group */
 	public void setCpCode(String cpCode) {
 		this.cpCode = cpCode;
 	}
 
-	public String getCpCode() {
-		return cpCode;
-	}
-
-	/**
-	 * @param url the base URL for NetStorage (without CpCode)
-	 * @IbisDoc.required
-	 */
-	@IbisDoc({"the destination, aka akamai host. only the hostname is allowed; eq. xyz-nsu.akamaihd.net", ""})
+	/** The destination URL for the Akamai NetStorage. (Only the hostname, without CpCode; eq. xyz-nsu.akamaihd.net) */
 	@Override
 	public void setUrl(String url) {
 		if(!url.endsWith("/")) url += "/";
-		this.url = url;
-	}
-
-	@Override
-	public String getUrl() {
-		return url;
+		super.setUrl(url);
 	}
 
 	/**
@@ -413,22 +373,13 @@ public class NetStorageSender extends HttpSenderBase {
 		this.nonce = nonce;
 	}
 
-	public String getNonce() {
-		return nonce;
-	}
-
 	/**
 	 * Version to validate queries made to NetStorage backend.
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
-	 * @IbisDoc.default 5 (SHA256)
 	 */
 	@IbisDoc({"the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)", "5"})
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
-	}
-
-	public int getSignVersion() {
-		return signVersion;
 	}
 	public SignType getSignType() {
 		if(getSignVersion() == 3)
@@ -448,24 +399,12 @@ public class NetStorageSender extends HttpSenderBase {
 		this.accessToken = accessToken;
 	}
 
-	public String getAccessToken() {
-		return accessToken;
-	}
-
 	@Override
 	public String getPhysicalDestinationName() {
 		return "URL ["+getUrl()+"] cpCode ["+getCpCode()+"] action ["+getAction()+"]";
 	}
 
-	public String getRootDir() {
-		return rootDir;
-	}
-	/**
-	 * rootDirectory on top of the url + cpCode
-	 * @param rootDir
-	 * @IbisDoc.optional
-	 */
-	@IbisDoc({"<i>optional</i> root directory", ""})
+	/** Root directory (appended to the url + cpCode) */
 	public void setRootDir(String rootDir) {
 		if(!rootDir.startsWith("/")) rootDir = "/" + rootDir;
 		if(rootDir.endsWith("/"))
@@ -473,15 +412,8 @@ public class NetStorageSender extends HttpSenderBase {
 		this.rootDir = rootDir;
 	}
 
-	@Override
-	public String getAuthAlias() {
-		return authAlias;
-	}
-	/**
-	 * @param authAlias to contain the Nonce (username) and AccessToken (password)
-	 */
-	@IbisDoc({"alias used to obtain credentials for nonce (username) and accesstoken (password)", ""})
-	@Override
+	/** Alias used to obtain credentials for nonce (username) and accesstoken (password) */
+	@Override //Overridden to prevent the super class from setting credentials
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

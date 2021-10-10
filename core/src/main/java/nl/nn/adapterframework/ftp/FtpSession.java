@@ -1009,8 +1009,8 @@ public class FtpSession implements IConfigurable {
 	}
 
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * CertificateExpiredExceptions are ignored when set to true
+	 * @ff.default false
 	 */
 	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {

@@ -35,7 +35,7 @@ public class NetStorageAction {
 	private InputStream fileStream = null;
 	private byte[] fileBytes = null;
 	private String action = null;
-	private String hashAlgorithm = null;
+	private HashAlgorithm hashAlgorithm = null;
 	private Map<String, String> actionHeader = new HashMap<>();
 
 	public NetStorageAction(String action) {
@@ -121,17 +121,17 @@ public class NetStorageAction {
 					if(fileStream != null)
 						fileBytes = Misc.streamToBytes(fileStream);
 
-					if(md5 == null && hashAlgorithm.equals("MD5")) {
+					if(md5 == null && hashAlgorithm == HashAlgorithm.MD5) {
 						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.MD5);
 						if(checksum != null)
 							md5 = NetStorageUtils.convertByteArrayToHexString(checksum);
 					}
-					if(sha1 == null && hashAlgorithm.equals("SHA1")) {
+					if(sha1 == null && hashAlgorithm == HashAlgorithm.SHA1) {
 						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.SHA1);
 						if(checksum != null)
 							sha1 = NetStorageUtils.convertByteArrayToHexString(checksum);
 					}
-					if(sha256 == null && hashAlgorithm.equals("SHA256")) {
+					if(sha256 == null && hashAlgorithm == HashAlgorithm.SHA256) {
 						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.SHA256);
 						if(checksum != null)
 							sha256 = NetStorageUtils.convertByteArrayToHexString(checksum);
@@ -165,11 +165,7 @@ public class NetStorageAction {
 		return fileStream;
 	}
 
-	public String getName() {
-		return action;
-	}
-
-	public void setHashAlgorithm(String hashAlgorithm) {
+	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm;
 	}
 

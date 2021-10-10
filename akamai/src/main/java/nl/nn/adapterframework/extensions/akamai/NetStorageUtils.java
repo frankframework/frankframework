@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import lombok.Getter;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
@@ -50,17 +51,12 @@ public class NetStorageUtils {
 		MD5("MD5"), SHA1("SHA-1"), SHA256("SHA-256");
 
 		/**
-		 * Algorithm name as defined in
-		 * {@link java.security.MessageDigest#getInstance(String)}
+		 * Algorithm name as defined in {@link java.security.MessageDigest#getInstance(String)}
 		 */
-		private final String algorithm;
+		private @Getter final String algorithm;
 
 		private HashAlgorithm(final String algorithm) {
 			this.algorithm = algorithm;
-		}
-
-		public String getAlgorithm() {
-			return this.algorithm;
 		}
 	}
 
