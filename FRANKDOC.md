@@ -128,7 +128,7 @@ It appears as follows in the Frank!Doc website:
 
 ![webappEnumSetterArgument](./picturesForContributors/webappEnumSetterArgument.jpg)
 
-The setter `setMethodType()` produces an attribute `methodType` (number 1). The row shows an empty field for the type (number 2), but it would be shown if the attribute would be Boolean or integer. Below that all possible values are shown (number 3).
+The setter `setMethodType()` produces an attribute `methodType` (number 1). The row shows an empty field for the type (number 2), but it would be filled if the attribute would be Boolean or integer. Below that all possible values are shown (number 3).
 
 There is an alternative way to define restricted string attributes in the Java code. An example appears in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java):
 
