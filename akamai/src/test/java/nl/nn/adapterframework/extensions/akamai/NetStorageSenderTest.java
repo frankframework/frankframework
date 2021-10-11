@@ -116,7 +116,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void dirAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("dir");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -139,7 +139,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void deleteAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("delete");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -162,7 +162,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void uploadAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("upload");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		Parameter param = new Parameter();
 		param.setName("file");
@@ -188,10 +188,204 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	}
 
 	@Test
+	public void uploadActionWithMD5Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		sender.setHashAlgorithm(HashAlgorithm.MD5);
+		Message input = new Message("my/special/path/");
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadActionWithCustomMD5Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		sender.setHashAlgorithm(HashAlgorithm.MD5);
+		Message input = new Message("my/special/path/");
+
+		Parameter hashParam = new Parameter();
+		hashParam.setName("md5");
+		hashParam.setValue("a1658c154b6af0fba9d93aa86e5be06f");//Matches response file but uses a different input message
+		sender.addParameter(hashParam);
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>----");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.replace("----", "").trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadActionWithSHA1Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		sender.setHashAlgorithm(HashAlgorithm.SHA1);
+		Message input = new Message("my/special/path/");
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadActionWithCustomSHA1Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		sender.setHashAlgorithm(HashAlgorithm.SHA1);
+		Message input = new Message("my/special/path/");
+
+		Parameter hashParam = new Parameter();
+		hashParam.setName("sha1");
+		hashParam.setValue("51e8bbf813bdbcede109d13b863a58132e80b2e2");//Matches response file but uses a different input message
+		sender.addParameter(hashParam);
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>----");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.replace("----", "").trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadActionWithSHA256Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		sender.setHashAlgorithm(HashAlgorithm.SHA256);
+		Message input = new Message("my/special/path/");
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadActionWithCustomSHA256Hash() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		Message input = new Message("my/special/path/");
+
+		Parameter hashParam = new Parameter();
+		hashParam.setName("sha256");
+		hashParam.setValue("71d1503b5afba60e212a46e4112fba56503e281224957ad8dee6034ad25f12dc"); //Matches response file but uses a different input message
+		sender.addParameter(hashParam);
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>----");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.replace("----", "").trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
 	public void mkdirAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("mkdir");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -214,7 +408,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void rmdirAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("rmdir");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
@@ -264,7 +458,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void mtimeAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("mtime");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		Parameter param = new Parameter();
 		param.setName("mtime");
@@ -291,7 +485,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void downloadAction() throws Throwable {
 		NetStorageSender sender = getSender();
 		sender.setAction("download");
-		Message input = new Message("my/special/path/"); //Last slash should be removed!
+		Message input = new Message("my/special/path/");
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);

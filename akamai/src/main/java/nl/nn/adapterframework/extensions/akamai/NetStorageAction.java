@@ -19,8 +19,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.InputStreamEntity;
+
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -31,7 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 public class NetStorageAction {
 	private int version = 1;
 	private HttpMethod method = null;
-	private byte[] fileBytes = null;
+	private Message file = null;
 	private String action = null;
 	private HashAlgorithm hashAlgorithm = null;
 	private Map<String, String> actionHeader = new HashMap<>();
@@ -72,10 +76,6 @@ public class NetStorageAction {
 		return method;
 	}
 
-	public boolean requiresFileParam() {
-		return action.equals("upload");
-	}
-
 	public String compileHeader() {
 		if(getMethod() == HttpMethod.GET) {
 			actionHeader.put("format", "xml");
@@ -90,58 +90,32 @@ public class NetStorageAction {
 	}
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
-		if(requiresFileParam()) {
+		if(action.equals("upload") && pvl.parameterExists(NetStorageSender.FILE_PARAM_KEY)) {
 			Object paramValue = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).getValue();
-			Message file = Message.asMessage(paramValue);
-			try {
-				fileBytes = file.asByteArray();
-			} catch (IOException e) {
-				throw new SenderException("unable to read file from parameter", e);
-			}
-
-			String md5 = null;
-			String sha1 = null;
-			String sha256 = null;
-			if(pvl.parameterExists("md5")) {
-				md5 = pvl.getParameterValue("md5").asStringValue(null);
-			}
-
-			if(pvl.parameterExists("sha1")) {
-				sha1 = pvl.getParameterValue("sha1").asStringValue(null);
-			}
-
-			if(pvl.parameterExists("sha256")) {
-				sha256 = pvl.getParameterValue("sha256").asStringValue(null);
-			}
+			file = Message.asMessage(paramValue);
 
 			if(hashAlgorithm != null) {
 				try {
-					if(md5 == null && hashAlgorithm == HashAlgorithm.MD5) {
-						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.MD5);
-						if(checksum != null)
-							md5 = NetStorageUtils.convertByteArrayToHexString(checksum);
+					String hash = null;
+					String algorithm = hashAlgorithm.name().toLowerCase();
+					if(pvl.parameterExists(NetStorageSender.HASHVALUE_PARAM_KEY)) {
+						hash = pvl.getParameterValue(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
 					}
-					if(sha1 == null && hashAlgorithm == HashAlgorithm.SHA1) {
-						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.SHA1);
-						if(checksum != null)
-							sha1 = NetStorageUtils.convertByteArrayToHexString(checksum);
+					else if(pvl.parameterExists(algorithm)) { //backwards compatibility
+						hash = pvl.getParameterValue(algorithm).asStringValue(null);
 					}
-					if(sha256 == null && hashAlgorithm == HashAlgorithm.SHA256) {
-						byte[] checksum = NetStorageUtils.computeHash(fileBytes, HashAlgorithm.SHA256);
-						if(checksum != null)
-							sha256 = NetStorageUtils.convertByteArrayToHexString(checksum);
+					else {
+						hash = hashAlgorithm.computeHash(file);
+					}
+
+					if(StringUtils.isNotEmpty(hash)) {
+						actionHeader.put(algorithm, hash);
 					}
 				}
-				catch (Exception e) {
+				catch (IOException e) {
 					throw new SenderException("error while calculating ["+hashAlgorithm+"] hash", e);
 				}
 			}
-			if(md5 != null)
-				actionHeader.put("md5", md5);
-			if(sha1 != null)
-				actionHeader.put("sha1", sha1);
-			if(sha256 != null)
-				actionHeader.put("sha256", sha256);
 
 			if(pvl.parameterExists("size")) {
 				int size = pvl.getParameterValue("size").asIntegerValue(0);
@@ -160,8 +134,15 @@ public class NetStorageAction {
 		}
 	}
 
-	public byte[] getFile() {
-		return fileBytes;
+	public HttpEntity getFileEntity() throws IOException {
+		if(file == null) {
+			return null;
+		}
+
+		if(file.requiresStream()) {
+			return new InputStreamEntity(file.asInputStream());
+		}
+		return new ByteArrayEntity(file.asByteArray());
 	}
 
 	public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {

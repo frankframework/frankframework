@@ -36,17 +36,16 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
-import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -79,6 +78,7 @@ public class NetStorageSender extends HttpSenderBase {
 	public static final String DESTINATION_PARAM_KEY = "destination";
 	public static final String FILE_PARAM_KEY = "file";
 	public static final String MTIME_PARAM_KEY = "mtime";
+	public static final String HASHVALUE_PARAM_KEY = "hashValue";
 
 	private @Getter String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
@@ -130,6 +130,18 @@ public class NetStorageSender extends HttpSenderBase {
 		}
 		if(getAction().equals("mtime") && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+		}
+
+		//check if md5/sha1/sha256 -> geef deprecated warning + parse hashAlgorithme
+		//hashValue  parameterList
+		for(HashAlgorithm algorithm : HashAlgorithm.values()) {
+			String simpleName = algorithm.name().toLowerCase();
+			Parameter hashValue = parameterList.findParameter(simpleName);
+
+			if(hashValue != null) {
+				setHashAlgorithm(algorithm);
+				ConfigurationWarnings.add(this, log, "deprecated parameter ["+simpleName+"]: please use attribute [hashAlgorithm] in combination with parameter ["+HASHVALUE_PARAM_KEY+"]");
+			}
 		}
 
 		accessTokenCf = new CredentialFactory(getAuthAlias(), getNonce(), getAccessToken());
@@ -185,62 +197,66 @@ public class NetStorageSender extends HttpSenderBase {
 		if(parameters != null)
 			netStorageAction.mapParameters(parameters);
 
-		try {
-			setMethodType(netStorageAction.getMethod());
-			log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+getUrl()+"] with action ["+getAction()+"]");
+		setMethodType(netStorageAction.getMethod());
+		log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+getUrl()+"] with action ["+getAction()+"]");
 
-			NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf.getUsername(), accessTokenCf.getPassword(), netStorageAction, getSignType());
-			Map<String, String> headers = signer.computeHeaders();
+		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
+		Map<String, String> headers = signer.computeHeaders(netStorageAction);
 
-			if (getHttpMethod() == HttpMethod.GET) {
-				HttpGet method = new HttpGet(uri);
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+		if (getHttpMethod() == HttpMethod.GET) {
+			HttpGet method = new HttpGet(uri);
+			for (Map.Entry<String, String> entry : headers.entrySet()) {
+				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
-
-				return method;
+				method.setHeader(entry.getKey(), entry.getValue());
 			}
-			else if (getHttpMethod() == HttpMethod.PUT) {
-				HttpPut method = new HttpPut(uri);
+			log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			return method;
+		}
+		else if (getHttpMethod() == HttpMethod.PUT) {
+			HttpPut method = new HttpPut(uri);
 
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+			for (Map.Entry<String, String> entry : headers.entrySet()) {
+				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
-				if(netStorageAction.getFile() != null) {
-					HttpEntity entity = new ByteArrayEntity(netStorageAction.getFile());
+				method.setHeader(entry.getKey(), entry.getValue());
+			}
+			log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+
+			try {
+				HttpEntity entity = netStorageAction.getFileEntity();
+				if(entity != null) {
 					method.setEntity(entity);
 				}
 				return method;
+			} catch (IOException e) {
+				throw new SenderException("unable to parse file", e);
 			}
-			else if (getHttpMethod() == HttpMethod.POST) {
-				HttpPost method = new HttpPost(uri);
+		}
+		else if (getHttpMethod() == HttpMethod.POST) {
+			HttpPost method = new HttpPost(uri);
 
-				for (Map.Entry<String, String> entry : headers.entrySet()) {
-					log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+			for (Map.Entry<String, String> entry : headers.entrySet()) {
+				log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
 
-					method.setHeader(entry.getKey(), entry.getValue());
-				}
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
+				method.setHeader(entry.getKey(), entry.getValue());
+			}
+			log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 
-				if(netStorageAction.getFile() != null) { //DESTINATION_PARAM_KEY
-					HttpEntity entity = new ByteArrayEntity(netStorageAction.getFile());
+			try {
+				HttpEntity entity = netStorageAction.getFileEntity();
+				if(entity != null) {
 					method.setEntity(entity);
 				}
 				return method;
+			} catch (IOException e) {
+				throw new SenderException("unable to parse file", e);
 			}
-
 		}
-		catch (Exception e) {
-			throw new SenderException(e);
+		else {
+			throw new SenderException("unknow http method");
 		}
-		return null;
 	}
 
 	@Override

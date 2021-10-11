@@ -32,13 +32,13 @@ public class NetStorageCmsSignerTest {
 	public void vaidateDataAndSignHeader() throws URISyntaxException {
 		URI uri = new URI("http://127.0.0.1/cpCode123/path");
 		NetStorageAction action = new NetStorageAction("du");
-		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, "myNonce", "accessToken", action) {
+		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, "myNonce", "accessToken") {
 			@Override
 			protected String getAuthDataHeaderValue() {
 				return "much auth value";
 			}
 		};
-		Map<String, String> headers = signer.computeHeaders();
+		Map<String, String> headers = signer.computeHeaders(action);
 		String sign = headers.get(NetStorageCmsSigner.AUTH_SIGN_HEADER);
 
 		assertEquals("w8k5LZTRNKubFvWIqUEgcTrDZhPCo48PeHX45zxSlBU=", sign);
