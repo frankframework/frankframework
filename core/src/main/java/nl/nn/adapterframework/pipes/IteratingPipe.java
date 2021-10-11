@@ -74,6 +74,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
  * 
+ * @ff.forward maxItemsReached The iteration stopped when the configured maximum number of items was processed.
+ * @ff.forward stopConditionMet The iteration stopped when the configured condition expression became true.
+ * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */

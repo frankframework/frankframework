@@ -91,6 +91,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
  * file for this stubFilename will be done at runtime, while the file for the stubFilename specified 
  * as an attribute will be done at configuration time.
+
+ * @ff.forward timeout
+ * @ff.forward illegalResult
+ * @ff.forward presumedTimeout
+ * @ff.forward interrupt
  * 
  * @author  Gerrit van Brakel
  */
