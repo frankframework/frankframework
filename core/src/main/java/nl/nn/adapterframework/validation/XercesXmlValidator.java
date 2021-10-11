@@ -69,14 +69,6 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 /**
  * Xerces based XML validator.
  *
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"notValid"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @author Johan Verrips IOS
  * @author Jaco de Groot

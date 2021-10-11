@@ -76,12 +76,6 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * <br/>
  * <h3>Note on using packages</h3>
  * The package processor makes some assumptions about the datatypes:
  * <ul>
@@ -93,6 +87,8 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * </p>
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
+ * 
+ * @ff.parameters all parameters present are applied to the statement to be executed
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
