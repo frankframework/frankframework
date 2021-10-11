@@ -116,11 +116,25 @@ Attribute `autoStart` has a setter with argument type `boolean`. The Frank!Doc t
 
 Value `xyz` is not a Boolean value and hence you see a red flag. You may be surprised by the complicated regular expression in this screenshot. It is there to allow references to properties like `${myProperty}`. Type checking is also done by `FrankConfig-compatibility.xsd`. If a configuration has type-violating attributes, the errors are detected when the configuration is loaded.
 
-An example of a restricted string attribute is present in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java):
+An example of a restricted string attribute is present in [HttpSenderBase](./core/src/main/java/nl/nn/adapterframework/http/HttpSenderBase.java):
+
+![eclipseEnumSetterArgument](./picturesForContributors/eclipseEnumSetterArgument.jpg)
+
+Here is the definition of enum type HttpMethod:
+
+![eclipseHttpMethodEnum](./picturesForContributors/eclipseHttpMethodEnum.jpg)
+
+And it appears as follows in the Frank!Doc website:
+
+![webappEnumSetterArgument](./picturesForContributors/webappEnumSetterArgument.jpg)
+
+The setter `setMethodType` produces an attribute `methodType` (number 1). The row shows an empty field for the type (number 2), but below that all possible values are shown (number 3).
+
+There is an alternative way to define restricted string attributes in the Java code. An example appears in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java):
 
 ![eclipseLdapSenderAttributeOperation](./picturesForContributors/eclipseLdapSenderAttributeOperation.jpg)
 
-You give the attribute setter argument type String. You add a getter that appends the attribute name with the word `Enum`. The return type of the enum getter is an enum that determines what values are allowed. Part of enum `Operation` is shown below:
+You give the attribute setter argument type String. You add a getter that appends the attribute name with the word `Enum`. The return type of the enum getter is the enum that determines what values are allowed. Part of enum `Operation` is shown below:
 
 ![eclipseEnumOperation](./picturesForContributors/eclipseEnumOperation.jpg)
 
