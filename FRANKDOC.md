@@ -124,11 +124,11 @@ Here is the definition of enum type HttpMethod:
 
 ![eclipseHttpMethodEnum](./picturesForContributors/eclipseHttpMethodEnum.jpg)
 
-And it appears as follows in the Frank!Doc website:
+It appears as follows in the Frank!Doc website:
 
 ![webappEnumSetterArgument](./picturesForContributors/webappEnumSetterArgument.jpg)
 
-The setter `setMethodType` produces an attribute `methodType` (number 1). The row shows an empty field for the type (number 2), but below that all possible values are shown (number 3).
+The setter `setMethodType()` produces an attribute `methodType` (number 1). The row shows an empty field for the type (number 2), but it would be shown if the attribute would be Boolean or integer. Below that all possible values are shown (number 3).
 
 There is an alternative way to define restricted string attributes in the Java code. An example appears in [LdapSender](./core/src/main/java/nl/nn/adapterframework/ldap/LdapSender.java):
 
@@ -146,11 +146,11 @@ You see a list of the allowed values. Enum value `OPERATION_READ` shows up as "r
 
 In `FrankConfig-strict.xsd`, type checking against enums is case sensitive. In the example, the value "READ" for attribute `operation` would be flagged as an error. In `FrankConfig-compatibility.xsd`, type checking is case insensitive. This means that value "READ" is accepted when your configuration is parsed. This is the case to support backward compatibility.
 
-Here is how attributes are shown in the Frank!Doc web application:
+Here is again how restricted string attributes are shown, this time with `@EnumLabel` annotations and value descriptions:
 
 ![webappAttributeOperation](./picturesForContributors/webappAttributeOperation.jpg)
 
-You see the description in the JavaDoc comment (or [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation) of attribute setter (number 1). Enum-restricted string attributes do not show a type (number 2), but it is shown for Boolean and integer attributes. Each enum value (number 3) is shown with its description (number 4) that comes from the JavaDoc comment of the enum value.
+You see the description in the JavaDoc comment (or [@IbisDoc](./core/src/main/java/nl/nn/adapterframework/doc/IbisDoc.java) Java annotation) of attribute setter (number 1). Enum-restricted string attributes do not show a type (number 2) as said earlier, but it is shown for Boolean and integer attributes. Each enum value (number 3) is shown with its description (number 4) that comes from the JavaDoc comment of the enum value.
 
 ## Attribute default value
 
