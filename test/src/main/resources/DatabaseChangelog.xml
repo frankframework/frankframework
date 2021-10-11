@@ -59,7 +59,7 @@ TagDatabase
 	<changeSet id="IAF_Util:8" author="Niels Meijer">
 		<comment>Add IBISFILETRIGGER Table</comment>
 		<createTable tableName="IBISFILETRIGGER">
-			<column name="UNIQUEKEY" type="java.sql.Types.VARCHAR(100)">
+			<column name="UNIQUEKEY" type="java.sql.Types.VARCHAR(256)">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISFILETRIGGER" />
 			</column>
 			<column name="NAME" type="java.sql.Types.VARCHAR(100)" />

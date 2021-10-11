@@ -3,32 +3,16 @@
 	<!-- Trigger to scan file system running with cron schedule sends the directory to be scanned as input-->
 	
 	<Job
-		active="${active.adapter.mfhInScheduled.alternative}"
-		name="TriggerMFH"
+		active="${active.adapter.mfh.renamefiles}"
+		name="TriggerMFHRenameFiles"
 		cronExpression="${trigger.mfh.scheduled.job.cron}"
-		description="Triggers MFH flow to detect files"
 		function="SendMessage"
-		javaListener="MFHInScheduled"
+		javaListener="MFH rename files listener"
 		message="${root.dir.MFHInScheduled}"
 	>
 		<Locker
-			name="TriggerMFH"
-			objectId="TriggerMFH"
-			ignoreTableNotExist="true"
-		/>
-	</Job>
-	
-	<Job
-		active="${active.adapter.mfh.moveFiles}"
-		name="TriggerMFHMoveFiles"
-		cronExpression="${trigger.mfh.scheduled.job.cron}"
-		function="SendMessage"
-		javaListener="MFH move files listener"
-		message="${root.dir.MFHInScheduled}"
-	>
-		<Locker
-			name="TriggerMFHMoveFiles"
-			objectId="TriggerMFHMoveFiles"
+			name="TriggerMFHRenameFiles"
+			objectId="TriggerMFHRenameFiles"
 			ignoreTableNotExist="true"
 		/>
 	</Job>
@@ -49,6 +33,7 @@
 				root="${currentflow.rootdir}"
 				inputFolder="in"
 				inProcessFolder="inProcess"
+				errorFolder="error"
 				createFolders="true"
 				wildcard="${currentflow.wildcard}"
 			/>
@@ -91,84 +76,21 @@
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
-	
-<!-- Adapter to scan the input folder. It will be triggered by TriggerMFH job and will list the files that matches the wildcard in the folder
-	Then the listed files can be iterated and sent to sub-adapter which stores info in db -->
-	<Adapter name="MFHInScheduledAlternative" active="${active.adapter.mfhInScheduled.alternative}">
+
+<!-- Adapter that will be triggered by a job. After trigger it will rename the files with mfh- prefix. In this adapter an wildcard is required to filter the files that will be processed with this adapter.
+ -->
+	<Adapter name="MFH rename files" active="${active.adapter.mfh.renameFiles}">
 		<Receiver>
-			<JavaListener name="MFHInScheduled"/>
+			<JavaListener name="MFH rename files listener"/>
 		</Receiver>
 
 		<Pipeline>
 			<Exit state="success" path="EXIT"/>
 			<LocalFileSystemPipe 
 				name="scanFolder" 
-				action="list" 
-				storeResultInSessionKey="fileList" 
-			/>
-
-			<ForEachChildElementPipe 
-				name="IterateOverFiles" 
-				targetElement="file" 
-			>
-				<SenderSeriesSender storeInputInSessionKey="element">
-					<LocalFileSystemSender 
-						action="move" 
-						createFolder="true"
-					>
-						<Param name="filename" xpathExpression="/file/@canonicalName"/>
-						<Param name="destination" xpathExpression="concat(substring-before(/file/@canonicalName, file/@name), '..\', 'inProcess')"/>
-					</LocalFileSystemSender>
-
-					<LocalFileSystemSender 
-						action="info" 
-					>
-						<Param name="filename" value="&lt;dummy/&gt;" xpathExpression="concat($inputFolderToScan, '\..\', 'inProcess\', $movedFile)">
-							<Param name="movedFile"/>
-							<Param name="inputFolderToScan" sessionKey="originalMessage"/>
-						</Param>
-					</LocalFileSystemSender>
-
-					<LocalFileSystemSender 
-						action="rename"
-					>
-						<Param name="filename" xpathExpression="/file/@canonicalName"/>
-						<Param name="destination"  xpathExpression="concat(/file/@canonicalName, '-', format-dateTime(dateTime(file/@modificationDate,file/@modificationTime), '[Y0001]-[M01]-[D01] [H01]_[m01]_[s01].[f001]'))">
-						</Param>
-					</LocalFileSystemSender>
-
-					<LocalFileSystemSender 
-						action="info" 
-					>
-						<Param name="filename" value="&lt;dummy/&gt;" xpathExpression="concat($inputFolderToScan, '\..\', 'inProcess\', $movedFile)">
-							<Param name="movedFile"/>
-							<Param name="inputFolderToScan" sessionKey="originalMessage"/>
-						</Param>
-					</LocalFileSystemSender>
-
-					<IbisLocalSender 
-						name="IbisLocalSender" 
-						javaListener="MFHInScheduledFiles"
-					> 
-						<Param name="originalFilename" sessionKey="element" xpathExpression="file/@name" />
-					</IbisLocalSender>
-				</SenderSeriesSender>
-			</ForEachChildElementPipe>
-		</Pipeline>
-	</Adapter>
-
-<!-- Adapter that will be triggered by a job. After trigger it will move the files to the folder that the directory listener listens to -->
-	<Adapter name="MFH move files" active="${active.adapter.mfh.moveFiles}">
-		<Receiver>
-			<JavaListener name="MFH move files listener"/>
-		</Receiver>
-
-		<Pipeline>
-			<Exit state="success" path="EXIT"/>
-			<LocalFileSystemPipe 
-				name="scanFolder" 
-				action="list" 
-				wildcard="*Sch*"
+				action="list"
+				excludeWildcard="mfh-*"
+				wildcard="${scheduled.mfh.adapter.wildcard}"
 				createFolder="true"
 			/>
 
@@ -177,11 +99,11 @@
 				targetElement="file" 
 			>
 				<LocalFileSystemSender 
-					action="move" 
+					action="rename"
 					createFolder="true"
 				>
 					<Param name="filename" xpathExpression="/file/@canonicalName"/>
-					<Param name="destination" value="${root.dir.MFHIn}/in"/>
+					<Param name="destination" xpathExpression="concat(substring-before(/file/@canonicalName, file/@name),'mfh-', file/@name)"/>
 				</LocalFileSystemSender>
 
 			</ForEachChildElementPipe>

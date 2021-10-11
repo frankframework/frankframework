@@ -10,6 +10,6 @@
 		<mkdir dir="${target.dir}"/>
 		<mkdir dir="${inprocess.dir}"/>
 		<mkdir dir="${processed.dir}"/>
-		<copy file="input.xml" todir="${target.dir}" preservelastmodified="true"/>
+		<copy file="mfh-input.xml" todir="${target.dir}" preservelastmodified="true"/>
 	</target>
 </project>
