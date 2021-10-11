@@ -170,12 +170,21 @@ The default value is also shown in the Frank!Doc web application:
 
 ## Parameters
 
-Some XML elements in a Frank config can have nested element `<Param>`. The meaning of this element depends on the context: parameters can be query parameters of a database query, HTTP request parameters or something else. You can document the meaning of parameters in the JavaDoc comment above a Java class declaration. You can use the following two JavaDoc tags:
+Some XML elements in a Frank config can have nested element `<Param>`. The meaning of this element depends on the context: parameters can be query parameters of a database query, HTTP request parameters or something else. You can document this meaning in the JavaDoc comment above a Java class declaration. You use JavaDoc tag `@ff.parameters`. An example is Java class [HttpSender](./core/src/main/java/nl/nn/adapterframework/http/HttpSender.java):
 
-* `@ff.parameters`: Documents how `<Param>` sub-elements are used by this Java class.
-* `@ff.parameter`: Documents the meaning of specific parameters. The first word after this tag is the name of the parameter.
+![eclipseFfParameters](./picturesForContributors/eclipseFfParameters.jpg)
 
-TODO: Add example of parameters, but then I need another PR to be merged.
+In the Frank!Doc website parameters have a separate subsection next to config children and attributes, as shown below:
+
+![webappParameters](./picturesForContributors/webappParameters.jpg)
+
+In addition to the `@ff.parameters` tag, you can use the `@ff.parameter` tag to document the meaning of specific parameters. That tag also appears in the JavaDoc comment above a class. In contrast to the `@ff.parameters` tag, the `@ff.parameter` tag can appear multiple times. An example can be found in [CompareIntegerPipe](./core/src/main/java/nl/nn/adapterframework/pipes/CompareIntegerPipe.java)
+
+![eclipseFfParameter](./picturesForContributors/eclipseFfParameter.jpg)
+
+The pipe compares two values that can each be supplied through `<Param>` tags. The JavaDoc explains the meaning of the specific parameters named `operand1` and `operand2`. Here is how this appears in the Frank!Doc website:
+
+![webappTwoFfParameter](./picturesForContributors/webappTwoFfParameter.jpg)
 
 ## Deprecated child elements and attributes
 
