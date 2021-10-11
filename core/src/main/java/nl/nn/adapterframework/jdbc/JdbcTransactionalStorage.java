@@ -48,6 +48,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -349,7 +350,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 		super.configure();
 		checkDatabase();
-		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionDefinition.PROPAGATION_REQUIRED, 0);
+		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.REQUIRED, 0);
 	}
 
 	@Override
