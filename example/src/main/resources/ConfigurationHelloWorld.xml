@@ -22,8 +22,7 @@
 	<scheduler>
 		<job
 			name="HelloWorld"
-			adapterName="HelloWorld"
-			receiverName="HelloWorld"
+			javaListener="HelloWorld"
 			interval="0"
 			function="sendMessage"
 			active="${HelloWorld.job.active}"

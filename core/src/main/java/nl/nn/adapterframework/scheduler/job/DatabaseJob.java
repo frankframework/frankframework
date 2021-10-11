@@ -13,11 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler;
+package nl.nn.adapterframework.scheduler.job;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
-public class DatabaseJobDef extends JobDef {
+public class DatabaseJob extends SendMessageJob {
+	private @Getter @Setter String adapterName; //Allow for easily selecting a JavaListener in the console
 
 	@Override
 	public void configure() throws ConfigurationException {

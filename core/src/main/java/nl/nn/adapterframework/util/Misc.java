@@ -66,6 +66,7 @@ import javax.json.stream.JsonGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -1412,5 +1413,11 @@ public class Misc {
 		}
 
 		return sw.toString().trim();
+	}
+
+	public static InputSource asInputSource(URL url) throws IOException {
+		InputSource inputSource = new InputSource(url.openStream());
+		inputSource.setSystemId(url.toExternalForm());
+		return inputSource;
 	}
 }

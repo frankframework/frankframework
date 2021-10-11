@@ -4,8 +4,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,8 +40,8 @@ public class FrankDocModelAttributeTypeTest {
 	}
 
 	@Test
-	public void testPopulate() {
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", CHILD, classRepository);
+	public void testPopulate() throws IOException {
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), CHILD, classRepository);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// Test the attribute with a value list, which is of type STRING.
@@ -63,5 +66,24 @@ public class FrankDocModelAttributeTypeTest {
 		// Test the int attribute
 		childAttribute = child.getAttributes(ElementChild.ALL_NOT_EXCLUDED).get(1);
 		assertEquals(AttributeType.INT, childAttribute.getAttributeType());
+	}
+
+	@Test
+	public void whenAttributeSetterTakesEnumThenEnumTypedAttribute() throws IOException {
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), CHILD, classRepository);
+		FrankElement child = model.findFrankElement(CHILD);
+		assertNotNull(child);
+		// By taking a fixed element index we test that the attributes appear in the right order.
+		FrankAttribute childAttribute = child.getAttributes(ElementChild.ALL_NOT_EXCLUDED).get(2);
+		assertEquals("enumSetterAttribute", childAttribute.getName());
+		AttributeType attributeType = childAttribute.getAttributeType();
+		assertEquals(AttributeType.STRING, attributeType);
+		AttributeEnum attributeEnum = childAttribute.getAttributeEnum();
+		assertEquals("MyOtherEnum", attributeEnum.getUniqueName(""));
+		assertEquals(PACKAGE + "MyOtherEnum", attributeEnum.getFullName());
+		List<AttributeEnumValue> values = attributeEnum.getValues();
+		assertEquals("OTHER_ENUM_FIRST", values.get(0).getLabel());
+		assertEquals("OTHER_ENUM_SECOND", values.get(1).getLabel());
+		assertSame(attributeEnum, model.findAttributeEnum(PACKAGE + "MyOtherEnum"));
 	}
 }

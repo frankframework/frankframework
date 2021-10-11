@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,9 +37,9 @@ public class FrankElementXsdElementNameTest {
 	private FrankDocModel model;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		classRepository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate(DIGESTER_RULES, CONTAINER, classRepository);
+		model = FrankDocModel.populate(TestUtil.resourceAsURL(DIGESTER_RULES), CONTAINER, classRepository);
 	}
 
 	@Test

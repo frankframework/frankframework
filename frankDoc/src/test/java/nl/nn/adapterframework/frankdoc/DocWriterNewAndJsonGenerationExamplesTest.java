@@ -18,6 +18,8 @@ package nl.nn.adapterframework.frankdoc;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEqual;
 import static org.junit.Assume.assumeNotNull;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -55,6 +57,8 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.textconfig.plural.Start", "textconfig-expected-strict-plural.xsd", null},
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.ignore.attributes.Master", "ignoreattr.xsd", "ignoreattr.json"},
 			// Tests that GroupCreator considers parent elements that only reject attributes, not introduce them.
+			// Also tests that the getter is correctly compared with the setter when enums are used. There should be
+			// a type mismatch warning for attribute setter setMyAttribute.
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.exclude.Master", "exclude.xsd", "exclude.json"},
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.type.defaultElement.Master", "withDefault.xsd", null},
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.highest.commonInterface.Master", "highestCommonInterface.xsd", "highestCommonInterface.json"},
@@ -66,7 +70,10 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules-root.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.root.A", null, "testDigesterRulesViolationsRoot.json"},
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "multiword-digester-rules-long.xml", "nl.nn.adapterframework.frankdoc.testtarget.examples.pattern.violation.longPattern.A", null, "testDigesterRulesViolationsLong.json"},
 			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "reduced-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.entity.reference.Configuration", "entityReference.xsd", "entityReference.json"},
-			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.element.name.Master", null, "elementNames.json"}
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.element.name.Master", null, "elementNames.json"},
+			// The resulting JSON file is not relevant. Please run this test separately and check that you have warnings about overloaded attributes.
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.attribute.overload.Master", null, "overloadedAttributes.json"},
+			{XsdVersion.STRICT, AttributeTypeStrategy.ALLOW_PROPERTY_REF, "general-test-digester-rules.xml", "nl.nn.adapterframework.frankdoc.testtarget.attribute.enumExclude.Master", "enumExcludedAttributes.xsd", "enumExcludedAttributes.json"}
 		});
 	}
 
@@ -110,12 +117,11 @@ public class DocWriterNewAndJsonGenerationExamplesTest {
 
 	private FrankDocModel createModel() throws Exception {
 		FrankClassRepository classRepository = TestUtil.getFrankClassRepositoryDoclet(packageOfClasses);
-		return FrankDocModel.populate(
-				getDigesterRulesPath(digesterRulesFileName), startClassName, classRepository);
+		return FrankDocModel.populate(getDigesterRulesURL(digesterRulesFileName), startClassName, classRepository);
 	}
 
-	private String getDigesterRulesPath(String fileName) {
-		return "doc/" + fileName;
+	private URL getDigesterRulesURL(String fileName) throws IOException {
+		return TestUtil.resourceAsURL("doc/" + fileName);
 	}
 
 	@Test

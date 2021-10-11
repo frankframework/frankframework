@@ -32,13 +32,9 @@ import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>the values of all parameters present are appended as arguments to the command</td></tr>
- * </table>
- * </p>
- *
+ * 
+ * @ff.parameters All parameters present are appended as arguments to the command.
+ * 
  * @since   4.8
  * @author  Gerrit van Brakel
  */

@@ -65,9 +65,9 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
-import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.job.DatabaseJob;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
@@ -224,10 +224,13 @@ public final class ShowScheduler extends Base {
 
 		if(expanded) {
 			JobDef jobDef = (JobDef) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			jobData.put("adapter", jobDef.getAdapterName());
-			jobData.put("receiver", jobDef.getReceiverName());
-			jobData.put("message", jobDef.getMessage());
-			
+			if(jobDef instanceof DatabaseJob) {
+				DatabaseJob dbJob = (DatabaseJob) jobDef;
+				jobData.put("adapter", dbJob.getAdapterName());
+				jobData.put("listener", dbJob.getJavaListener());
+				jobData.put("message", dbJob.getMessage());
+			}
+
 			Locker locker = jobDef.getLocker();
 			if(locker != null) {
 				jobData.put("locker", true);
@@ -547,11 +550,11 @@ public final class ShowScheduler extends Base {
 		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
+		DatabaseJob jobdef = SpringUtils.createBean(applicationContext, DatabaseJob.class);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
-		jobdef.setReceiverName(listenerName);
+		jobdef.setJavaListener(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
 		jobdef.setDescription(description);

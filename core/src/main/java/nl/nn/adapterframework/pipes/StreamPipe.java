@@ -48,18 +48,6 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Stream an input stream to an output stream.
  *
- * <p><b>Parameters:</b></p>
- * <table border="1">
- * <tr><th>name</th><th>default</th></tr>
- * <tr><td>inputStream</td><td>the input stream object to use instead of an input stream object taken from pipe input</td></tr>
- * <tr><td>outputStream</td><td>the output stream object to use unless httpResponse parameter is specified</td></tr>
- * <tr><td>httpResponse</td><td>an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)</td></tr>
- * <tr><td>httpRequest</td><td>an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key</td></tr>
- * <tr><td>contentType</td><td>the Content-Type header to set in case httpResponse was specified</td></tr>
- * <tr><td>contentDisposition</td><td>the Content-Disposition header to set in case httpResponse was specified</td></tr>
- * <tr><td>redirectLocation</td><td>the redirect location to set in case httpResponse was specified</td></tr>
- * </table>
- * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -67,6 +55,15 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>"antiVirusFailed"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr>
  * </table>
  * </p>
+ * 
+ * @ff.parameter inputStream 		the input stream object to use instead of an input stream object taken from pipe input
+ * @ff.parameter outputStream		the output stream object to use unless httpResponse parameter is specified
+ * @ff.parameter httpResponse		an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)
+ * @ff.parameter httpRequest		an HttpServletRequest object to stream from. Each part is put in a session key and the result of this pipe is a xml with info about these parts and the name of the session key
+ * @ff.parameter contentType		the Content-Type header to set in case httpResponse was specified
+ * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
+ * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
+ * 
  * @author Jaco de Groot
  */
 public class StreamPipe extends FixedForwardPipe {

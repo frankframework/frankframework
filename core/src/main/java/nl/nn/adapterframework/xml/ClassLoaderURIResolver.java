@@ -56,6 +56,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 		String absoluteOrRelativeRef;
 		String globalClasspathRef=null;
 		String protocol=null;
+
 		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
 			absoluteOrRelativeRef=href;
@@ -97,7 +98,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
-		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"] in scope of ["+scopeProvider+"]");
 		return resource;
 	}
 

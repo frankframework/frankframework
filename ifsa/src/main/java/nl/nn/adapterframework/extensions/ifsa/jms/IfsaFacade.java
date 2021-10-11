@@ -564,11 +564,9 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	}
 
     /**
-     * Method logs a warning when the newMessageProtocol is not FF or RR.
-     * <p>When the messageProtocol equals to FF, transacted is set to true</p>
-     * <p>Creation date: (08-05-2003 9:03:53)</p>
+     * Protocol of the IFSA-Service to be called.
+     * When the protocol equals to <code>FF</code>, transacted is set to true.
      * @see IfsaMessageProtocolEnum
-     * @param newMessageProtocol String
      */
     public void setMessageProtocol(String newMessageProtocol) {
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
@@ -688,6 +686,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 	public long getTimeOut() {
 		return timeOut;
 	}
+	/** The receive timeout in milliseconds */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
 	}

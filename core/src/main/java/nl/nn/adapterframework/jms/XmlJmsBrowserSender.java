@@ -52,15 +52,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code>
  * </p>
  * 
- * <p>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th></tr>
- * <tr><td>jmsRealm</td><td>when present will set jmsRealm from which to retrieve the JMS properties</td></tr>
- * <tr><td>queueConnectionFactoryName</td><td>when present will set queueConnectionFactoryName (when queueConnectionFactoryName was set by jmsRealm it will be overwritten)</td></tr>
- * <tr><td>destinationName</td><td>name of the JMS destination (queue or topic) to use</td></tr>
- * <tr><td>destinationType</td><td>either QUEUE or TOPIC</td></tr>
- * </table>
- * </p>
  * 
  * <p>
  * <b>example (browse output):</b>

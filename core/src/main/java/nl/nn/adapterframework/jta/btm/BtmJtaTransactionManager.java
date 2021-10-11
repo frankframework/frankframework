@@ -15,76 +15,36 @@
 */
 package nl.nn.adapterframework.jta.btm;
 
-import java.io.FileOutputStream;
-
-import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.transaction.jta.JtaTransactionManager;
 
 import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
-import lombok.Getter;
-import lombok.Setter;
+import nl.nn.adapterframework.jta.StatusRecordingTransactionManager;
 
-public class BtmJtaTransactionManager extends JtaTransactionManager implements DisposableBean {
+public class BtmJtaTransactionManager extends StatusRecordingTransactionManager {
 	
-	private enum Status {
-		INITIALIZING,
-		RUNNING,
-		PENDING,
-		COMPLETED;
-	}
-	
-	private @Getter @Setter String statusFile;
-	
-	private volatile BitronixTransactionManager transactionManager;
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected UserTransaction retrieveUserTransaction() throws TransactionSystemException {
-		return getBitronixTransactionManager();
+		return (BitronixTransactionManager)retrieveTransactionManager();
 	}
 
 	@Override
-	protected TransactionManager retrieveTransactionManager() throws TransactionSystemException {
-		return getBitronixTransactionManager();
+	protected BitronixTransactionManager createTransactionManager() {
+		Configuration configuration = TransactionManagerServices.getConfiguration();
+		configuration.setServerId(getUid());
+		return TransactionManagerServices.getTransactionManager();
 	}
 
-	private BitronixTransactionManager getBitronixTransactionManager() throws TransactionSystemException {
-		BitronixTransactionManager localRef = transactionManager;
-		if (localRef == null) {
-			synchronized (this) {
-				localRef = transactionManager;
-				if (localRef == null) {
-					writeStatus(Status.INITIALIZING);
-					transactionManager = localRef = TransactionManagerServices.getTransactionManager();
-					writeStatus(Status.RUNNING);
-				}
-			}
-		}
-		return localRef;
-	}
-	
-	
 	@Override
-	public void destroy() throws Exception {
+	protected boolean shutdownTransactionManager() {
+		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
 		transactionManager.shutdown();
 		int inflightCount = transactionManager.getInFlightTransactionCount();
-		writeStatus(inflightCount>0 ? Status.PENDING : Status.COMPLETED);
+		return inflightCount>0;
 	}
-
-	private void writeStatus(Status status) throws TransactionSystemException {
-		String statusFile = getStatusFile(); 
-		if (StringUtils.isNotEmpty(statusFile)) {
-			try (FileOutputStream fos = new FileOutputStream(statusFile)) {
-				fos.write(status.toString().getBytes());
-			} catch (Exception e) {
-				throw new TransactionSystemException("Cannot write status ["+status+"] to file ["+statusFile+"]", e);
-			}
-		}
-	}
-	
 }

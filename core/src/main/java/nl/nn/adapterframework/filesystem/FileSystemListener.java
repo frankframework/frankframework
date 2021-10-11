@@ -369,11 +369,26 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	@Override
 	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
 		try {
-			if (!fileSystem.exists(message) || !knownProcessStates().contains(toState)) {
+			if (!getFileSystem().exists(message) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				return FileSystemUtils.moveFile(fileSystem, message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+				return FileSystemUtils.moveFile(getFileSystem(), message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders());
+			}
+			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
+				F movedFile = getFileSystem().moveFile(message, getStateFolder(toState), false);
+				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
+				F renamedFile = getFileSystem().toFile(newName);
+				int i=1;
+				while(getFileSystem().exists(renamedFile)) {
+					renamedFile=getFileSystem().toFile(newName+"-"+i);
+					if(i>5) {
+						log.warn("Cannot rename file ["+message+"] with the timestamp suffix. File moved to ["+getStateFolder(toState)+"] folder with the original name");
+						return movedFile;
+					}
+					i++;
+				}
+				return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
 			}
 			return getFileSystem().moveFile(message, getStateFolder(toState), false);
 		} catch (FileSystemException e) {
@@ -403,7 +418,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		if (isDisableMessageBrowsers() || !knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(fileSystem, getStateFolder(state), getMessageIdPropertyKey());
+		return new FileSystemMessageBrowser<F, FS>(getFileSystem(), getStateFolder(state), getMessageIdPropertyKey());
 	}	
 	
 	@Override

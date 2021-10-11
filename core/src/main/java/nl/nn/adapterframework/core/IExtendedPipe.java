@@ -15,19 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Locker;
 
 /**
  * extra attributes to do logging and use sessionvariables.
- * 
- * 
- * <p>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Locker locker}</td><td>optional: the pipe will only be executed if a lock could be set successfully</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
@@ -44,77 +35,75 @@ public interface IExtendedPipe extends IPipe {
 	 */
 	void setPipeLine(PipeLine pipeline);
 
-	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
+	/** If set, input is taken from this session key, instead of regular input */
 	public void setGetInputFromSessionKey(String string);
 	public String getGetInputFromSessionKey();
 
-	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
+	/** If set, this fixed value is taken as input, instead of regular input */
 	public void setGetInputFromFixedValue(String string);
 	public String getGetInputFromFixedValue();
 
-	@IbisDoc({"3", "If set and the input is empty, this fixed value is taken as input", ""})
+	/** If set and the input is empty, this fixed value is taken as input */
 	public void setEmptyInputReplacement(String string);
 	public String getEmptyInputReplacement();
 
-	@IbisDoc({"4", "If set <code>true</code>, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of <code>getInputFromSessionKey</code>, <code>getInputFromFixedValue</code> or <code>emptyInputReplacement</code>)", "false"})
+	/** If set <code>true</code>, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of <code>getInputFromSessionKey</code>, <code>getInputFromFixedValue</code> or <code>emptyInputReplacement</code>) */
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
 
-	@IbisDoc({"5", "If set, the result (before replacing when <code>true</code>) is stored under this session key", ""})
+	/** If set, the result (before replacing when <code>true</code>) is stored under this session key */
 	public void setStoreResultInSessionKey(String string);
 	public String getStoreResultInSessionKey();
 
-	@IbisDoc({"6", "If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment)", ""})
+	/** If set (>=0) and the character data length inside a xml element exceeds this size, the character data is chomped (with a clear comment) */
 	public void setChompCharSize(String string);
 	public String getChompCharSize();
 
-	@IbisDoc({"7", "If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + }", ""})
+	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + } */
 	public void setElementToMove(String string);
 	public String getElementToMove();
 
-	@IbisDoc({"8", "(Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored", "ref_ + the name of the element"})
+	/** (Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored
+	 * @ff.default ref_ + the name of the element
+	 */
 	public void setElementToMoveSessionKey(String string);
 	public String getElementToMoveSessionKey();
 
-	@IbisDoc({"9", "Like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe')", ""})
+	/** Like <code>elementToMove</code> but element is preceded with all ancestor elements and separated by semicolons (e.g. 'adapter;pipeline;pipe') */
 	public void setElementToMoveChain(String string);
 	public String getElementToMoveChain();
 
 	public void setRemoveCompactMsgNamespaces(boolean b);
 	public boolean isRemoveCompactMsgNamespaces();
 	
-	@IbisDoc({"If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)})", "false"})
+	/** If set <code>true</code>, compacted messages in the result are restored to their original format (see also  {@link #setElementToMove(java.lang.String)}) */
 	public void setRestoreMovedElements(boolean restoreMovedElements);
 	public boolean isRestoreMovedElements();
 
-	/**
-	 * Sets a threshold for the duration of message execution; 
-	 * If the threshold is exceeded, the message is logged to be analyzed.
+	/** If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory to be analyzed
+	 * @ff.default -1
 	 */
-	@IbisDoc({"If durationThreshold >=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory", "-1"})
 	public void setDurationThreshold(long maxDuration) ;
 	public long getDurationThreshold();
 
-	@IbisDoc({"Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. An exception is thrown when the lock cannot be obtained, " +
-			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner."})
+	/** 
+	 * Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. An exception is thrown when the lock cannot be obtained, 
+	 * e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner.
+	 */
 	public void setLocker(Locker locker);
 	public Locker getLocker();
 
 	public void setWriteToSecLog(boolean b);
 	public boolean isWriteToSecLog();
 
-	@IbisDoc({"", "(Only used when <code>writetoseclog=true</code>) Comma separated list of keys of session variables that is appended to the security log record", ""})
+	/** (Only used when <code>writetoseclog=true</code>) Comma separated list of keys of session variables that is appended to the security log record */
 	public void setSecLogSessionKeys(String string);
 	public String getSecLogSessionKeys();
 
-	/**
-	 * Register an event for flexible monitoring.
-	 */
+	/**Register an event for flexible monitoring. */
 	public void registerEvent(String description);
 	
-	/**
-	 * Throw an event for flexible monitoring.
-	 */
+	/** Throw an event for flexible monitoring. */
 	public void throwEvent(String event);
 
 	public boolean hasSizeStatistics();

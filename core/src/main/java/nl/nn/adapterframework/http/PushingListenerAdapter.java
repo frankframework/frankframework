@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

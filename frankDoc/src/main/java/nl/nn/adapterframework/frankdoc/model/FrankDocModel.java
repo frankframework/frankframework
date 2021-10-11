@@ -19,6 +19,7 @@ package nl.nn.adapterframework.frankdoc.model;
 import static nl.nn.adapterframework.frankdoc.model.ElementChild.ALL;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,13 +35,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.digester.DigesterRule;
-import nl.nn.adapterframework.configuration.digester.DigesterRulesHandler;
-import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.frankdoc.Utils;
 import nl.nn.adapterframework.frankdoc.doclet.FrankAnnotation;
 import nl.nn.adapterframework.frankdoc.doclet.FrankClass;
@@ -49,12 +48,12 @@ import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.frankdoc.doclet.FrankDocletConstants;
 import nl.nn.adapterframework.frankdoc.doclet.FrankMethod;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class FrankDocModel {
 	private static Logger log = LogUtil.getLogger(FrankDocModel.class);
 	private static String ENUM = "Enum";
-	private static final String DIGESTER_RULES = "digester-rules.xml";
 
 	private FrankClassRepository classRepository;
 
@@ -84,15 +83,11 @@ public class FrankDocModel {
 		this.rootClassName = rootClassName;
 	}
 
-	public static FrankDocModel populate(FrankClassRepository classRepository) {
-		return FrankDocModel.populate(DIGESTER_RULES, "nl.nn.adapterframework.configuration.Configuration", classRepository);
-	}
-
-	public static FrankDocModel populate(final String digesterRulesFileName, final String rootClassName, FrankClassRepository classRepository) {
+	public static FrankDocModel populate(final URL digesterRules, final String rootClassName, FrankClassRepository classRepository) {
 		FrankDocModel result = new FrankDocModel(classRepository, rootClassName);
 		try {
 			log.trace("Populating FrankDocModel");
-			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRulesFileName);
+			Set<String> rootRoleNames = result.createConfigChildDescriptorsFrom(digesterRules);
 			result.findOrCreateRootFrankElement(rootClassName);
 			result.checkRootElementsMatchDigesterRules(rootRoleNames);
 			result.buildDescendants();
@@ -112,23 +107,20 @@ public class FrankDocModel {
 		return result;
 	}
 
-	Set<String> createConfigChildDescriptorsFrom(final String path) throws IOException, SAXException {
-		log.trace("Creating config child descriptors from file [{}]", () -> path);
-		Resource resource = Resource.getResource(path);
-		if(resource == null) {
-			throw new IOException(String.format("Cannot find resource on the classpath: [%s]", path));
-		}
+	Set<String> createConfigChildDescriptorsFrom(final URL digesterRules) throws IOException, SAXException {
+		log.trace("Creating config child descriptors from file [{}]", () -> digesterRules.toString());
+		InputSource digesterRulesInputSource = Misc.asInputSource(digesterRules);
 		try {
 			Handler handler = new Handler();
-			XmlUtils.parseXml(resource.asInputSource(), handler);
+			XmlUtils.parseXml(digesterRulesInputSource, handler);
 			log.trace("Successfully created config child descriptors");
 			return handler.rootRoleNames;
 		}
 		catch(IOException e) {
-			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", path), e);
+			throw new IOException(String.format("An IOException occurred while parsing XML from [%s]", digesterRulesInputSource.getSystemId()), e);
 		}
 		catch(SAXException e) {
-			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", path), e);
+			throw new SAXException(String.format("A SAXException occurred while parsing XML from [%s]", digesterRulesInputSource.getSystemId()), e);
 		}
 	}
 
@@ -285,6 +277,7 @@ public class FrankDocModel {
 
 	List<FrankAttribute> createAttributes(FrankClass clazz, FrankElement attributeOwner) throws FrankDocException {
 		log.trace("Creating attributes for FrankElement [{}]", () -> attributeOwner.getFullName());
+		checkForAttributeSetterOverloads(clazz);
 		AttributeExcludedSetter attributeExcludedSetter = new AttributeExcludedSetter(clazz, classRepository);
 		FrankMethod[] methods = clazz.getDeclaredMethods();
 		Map<String, FrankMethod> enumGettersByAttributeName = getEnumGettersByAttributeName(clazz);
@@ -299,14 +292,20 @@ public class FrankDocModel {
 				checkForTypeConflict(method, getterAttributes.get(attributeName), attributeOwner);
 			}
 			FrankAttribute attribute = new FrankAttribute(attributeName, attributeOwner);
-			attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
-			log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+			if(method.getParameterTypes()[0].isEnum()) {
+				log.trace("Attribute [{}] has setter that takes enum: [{}]", () -> attribute.getName(), () -> method.getParameterTypes()[0].toString());
+				attribute.setAttributeType(AttributeType.STRING);
+				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) method.getParameterTypes()[0]));
+			} else {
+				attribute.setAttributeType(AttributeType.fromJavaType(method.getParameterTypes()[0].getName()));
+				log.trace("Attribute {} has type {}", () -> attributeName, () -> attribute.getAttributeType().toString());
+				if(enumGettersByAttributeName.containsKey(attributeName)) {
+					log.trace("Attribute {} has enum values", () -> attributeName);
+					attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
+				}
+			}
 			documentAttribute(attribute, method, attributeOwner);
 			log.trace("Default [{}]", () -> attribute.getDefaultValue());
-			if(enumGettersByAttributeName.containsKey(attributeName)) {
-				log.trace("Attribute {} has enum values", () -> attributeName);
-				attribute.setAttributeEnum(findOrCreateAttributeEnum((FrankClass) enumGettersByAttributeName.get(attributeName).getReturnType()));
-			}
 			try {
 				// Method FrankAttribute.typeCheckDefaultValue() does not write the warning
 				// but only throws an exception. This allows us to test that method
@@ -327,6 +326,23 @@ public class FrankDocModel {
 		return result;
 	}
 
+	private void checkForAttributeSetterOverloads(FrankClass clazz) {
+		List<FrankMethod> cumulativeAttributeSetters = getAttributeMethodList(clazz.getDeclaredAndInheritedMethods(), "set");
+		Map<String, List<FrankMethod>> attributeSettersByAttributeName = cumulativeAttributeSetters.stream()
+				.collect(Collectors.groupingBy(m -> attributeOf(m.getName(), "set")));
+		for(String attributeName: attributeSettersByAttributeName.keySet()) {
+			List<FrankMethod> attributeSetterCandidates = attributeSettersByAttributeName.get(attributeName);
+			List<String> candidateTypes = attributeSetterCandidates.stream()
+					.map(m -> m.getParameterTypes()[0].getName())
+					.distinct()
+					.collect(Collectors.toList());
+			if(candidateTypes.size() >= 2) {
+				log.warn("Class [{}] has overloaded declared or inherited attribute setters. Type of attribute [{}] can be any of [{}]",
+						clazz.getName(), attributeName, candidateTypes.stream().collect(Collectors.joining(", ")));
+			}
+		}
+	}
+
 	private Map<String, FrankMethod> getGetterAndIsserAttributes(FrankMethod[] methods, FrankElement attributeOwner) {
 		Map<String, FrankMethod> getterAttributes = getAttributeToMethodMap(methods, "get");
 		Map<String, FrankMethod> isserAttributes = getAttributeToMethodMap(methods, "is");
@@ -345,18 +361,21 @@ public class FrankDocModel {
      * over the entrySet() of the returned Map.
 	 */
 	static LinkedHashMap<String, FrankMethod> getAttributeToMethodMap(FrankMethod[] methods, String prefix) {
-		List<FrankMethod> methodList = Arrays.asList(methods);
-		methodList = methodList.stream()
-				.filter(FrankMethod::isPublic)
-				.filter(Utils::isAttributeGetterOrSetter)
-				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
-				.collect(Collectors.toList());
 		LinkedHashMap<String, FrankMethod> result = new LinkedHashMap<>();
-		for(FrankMethod method: methodList) {
+		for(FrankMethod method: getAttributeMethodList(methods, prefix)) {
 			String attributeName = attributeOf(method.getName(), prefix);
 			result.put(attributeName, method);
 		}
 		return result;
+	}
+
+	private static List<FrankMethod> getAttributeMethodList(FrankMethod[] methods, String prefix) {
+		List<FrankMethod> methodList = Arrays.asList(methods);
+		return methodList.stream()
+				.filter(FrankMethod::isPublic)
+				.filter(Utils::isAttributeGetterOrSetter)
+				.filter(m -> m.getName().startsWith(prefix) && (m.getName().length() > prefix.length()))
+				.collect(Collectors.toList());
 	}
 
 	private static String attributeOf(String methodName, String prefix) {

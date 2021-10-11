@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Lombok;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -41,9 +42,9 @@ public class FileSystemUtils {
 	/**
 	 * Check if a source file exists.
 	 */
-	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, String action) throws FileNotFoundException, FileSystemException {
+	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
 		if (!fileSystem.exists(source)) {
-			throw new FileNotFoundException("file to "+action+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
+			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
 		}
 	}
 	
@@ -51,7 +52,7 @@ public class FileSystemUtils {
 	 * Prepares the destination of a file:
 	 * - if the file exists, checks overwrite, or performs rollover
 	 */
-	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, String action) throws FileSystemException {
+	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, FileSystemAction action) throws FileSystemException {
 		if (fileSystem.exists(destination)) {
 			if (overwrite) {
 				log.debug("removing current destination file ["+fileSystem.getCanonicalName(destination)+"]");
@@ -60,7 +61,7 @@ public class FileSystemUtils {
 				if (numOfBackups>0) {
 					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, destination, numOfBackups);
 				} else {
-					throw new FileSystemException("Cannot "+action+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
+					throw new FileSystemException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
 				}
 			}
 		}
@@ -69,7 +70,7 @@ public class FileSystemUtils {
 	/**
 	 * Prepares the destination folder, e.g. for move or copy.
 	 */
-	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, String action) throws FileSystemException {
+	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, FileSystemAction action) throws FileSystemException {
 		if (!fileSystem.folderExists(destinationFolder)) {
 			if (fileSystem.exists(fileSystem.toFile(destinationFolder))) {
 				throw new FileSystemException("destination ["+destinationFolder+"] exists but is not a folder");
@@ -87,8 +88,8 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> F renameFile(IWritableFileSystem<F> fileSystem, F source, F destination, boolean overwrite, int numOfBackups) throws FileSystemException {
-		checkSource(fileSystem, source, "rename");
-		prepareDestination(fileSystem, destination, overwrite, numOfBackups, "rename");
+		checkSource(fileSystem, source, FileSystemAction.RENAME);
+		prepareDestination(fileSystem, destination, overwrite, numOfBackups, FileSystemAction.RENAME);
 		F newFile = fileSystem.renameFile(source, destination);
 		if (newFile == null) {
 			throw new FileSystemException("cannot rename file [" + fileSystem.getName(source) + "] to [" + fileSystem.getName(destination) + "]");
@@ -97,8 +98,8 @@ public class FileSystemUtils {
 	}
 
 	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		checkSource(fileSystem, file, "move");
-		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, "move");
+		checkSource(fileSystem, file, FileSystemAction.MOVE);
+		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.MOVE);
 		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
 		if (newFile == null) {
 			throw new FileSystemException("cannot move file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
@@ -107,8 +108,8 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> F copyFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		checkSource(fileSystem, file, "copy");
-		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, "copy");
+		checkSource(fileSystem, file, FileSystemAction.COPY);
+		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.COPY);
 		F newFile = fileSystem.copyFile(file, destinationFolder, createFolders);
 		if (newFile == null) {
 			throw new FileSystemException("cannot copy file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
@@ -314,7 +315,7 @@ public class FileSystemUtils {
 			Date modificationDate = fileSystem.getModificationTime(f);
 			//add date
 			if (modificationDate != null) {
-				String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
+				String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
 				fileXml.addAttribute("modificationDate", date);
 
 				// add the time

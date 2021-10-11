@@ -15,23 +15,19 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Puts each parameter value in the PipeLineSession, under the key specified by the parameter name.
+ * Stores parameter values in the PipeLineSession.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
+ * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name 
  * 
  * @author  Peter Leeuwenburgh
  */
