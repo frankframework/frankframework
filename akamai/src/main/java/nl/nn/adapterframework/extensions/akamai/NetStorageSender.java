@@ -75,7 +75,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class NetStorageSender extends HttpSenderBase {
 	private Logger log = LogUtil.getLogger(NetStorageSender.class);
-	private String URL_PARAM_KEY = "urlParameter";
+	private static final String URL_PARAM_KEY = "urlParameter";
+	public static final String DESTINATION_PARAM_KEY = "destination";
+	public static final String FILE_PARAM_KEY = "file";
+	public static final String MTIME_PARAM_KEY = "mtime";
 
 	private @Getter String action = null;
 	private List<String> actions = Arrays.asList("du", "dir", "delete", "upload", "mkdir", "rmdir", "rename", "mtime", "download");
@@ -119,12 +122,15 @@ public class NetStorageSender extends HttpSenderBase {
 
 
 		ParameterList parameterList = getParameterList();
-		if(getAction().equals("upload") && parameterList.findParameter("file") == null)
+		if(getAction().equals("upload") && parameterList.findParameter(FILE_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the upload action requires a file parameter to be present");
-		if(getAction().equals("rename") && parameterList.findParameter("destination") == null)
+		}
+		if(getAction().equals("rename") && parameterList.findParameter(DESTINATION_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the rename action requires a destination parameter to be present");
-		if(getAction().equals("mtime") && parameterList.findParameter("mtime") == null)
+		}
+		if(getAction().equals("mtime") && parameterList.findParameter(MTIME_PARAM_KEY) == null) {
 			throw new ConfigurationException(getLogPrefix()+"the mtime action requires a mtime parameter to be present");
+		}
 
 		accessTokenCf = new CredentialFactory(getAuthAlias(), getNonce(), getAccessToken());
 	}
@@ -223,7 +229,7 @@ public class NetStorageSender extends HttpSenderBase {
 				}
 				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
 
-				if(netStorageAction.getFile() != null) {
+				if(netStorageAction.getFile() != null) { //DESTINATION_PARAM_KEY
 					HttpEntity entity = new ByteArrayEntity(netStorageAction.getFile());
 					method.setEntity(entity);
 				}

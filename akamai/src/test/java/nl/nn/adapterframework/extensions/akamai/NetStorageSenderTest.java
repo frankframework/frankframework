@@ -25,8 +25,8 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
-import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -51,7 +51,6 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Override
 	public NetStorageSender getSender() throws Exception {
 		NetStorageSender sender = super.getSender(false);
-		sender.setAction("du");
 		sender.setCpCode("cpCode123");
 		sender.setNonce("myNonce");
 		sender.setAccessToken(null); //As long as this is NULL, X-Akamai-ACS-Auth-Sign will be NULL
@@ -61,6 +60,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void testContentType() throws Throwable {
 		NetStorageSender sender = getSender();
+		sender.setAction("du");
 		sender.configure();
 		assertNull("no content-type should be present", sender.getFullContentType());
 	}
@@ -68,12 +68,11 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void duAction() throws Throwable {
 		NetStorageSender sender = getSender();
+		sender.setAction("du");
 		Message input = new Message("my/special/path/"); //Last slash should be removed!
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
-
-			sender.setMethodType(HttpMethod.GET);
 
 			sender.configure();
 			sender.open();
@@ -92,19 +91,216 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void duActionWithRootDir() throws Throwable {
 		NetStorageSender sender = getSender();
+		sender.setAction("du");
 		sender.setRootDir("/my/special/"); //Start and end with a slash!
 		Message input = new Message("path/"); //Last slash should be removed!
 
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType(HttpMethod.GET);
-
 			sender.configure();
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void dirAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("dir");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("dirAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void deleteAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("delete");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("deleteAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void uploadAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("upload");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		Parameter param = new Parameter();
+		param.setName("file");
+		param.setSessionKey("fileMessage");
+		sender.addParameter(param);
+		try {
+			Message file = new Message("<dummyFile>");
+			PipeLineSession pls = new PipeLineSession(session);
+			pls.put("fileMessage", file);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("uploadAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void mkdirAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("mkdir");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("mkdirAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void rmdirAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("rmdir");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("rmdirAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void renameAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("rename");
+		Message input = new Message("my/special/path/file1.txt");
+
+		Parameter param = new Parameter();
+		param.setName("destination");
+		param.setValue("my/other/special/path/file2.txt");
+		sender.addParameter(param);
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("renameAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void mtimeAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("mtime");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		Parameter param = new Parameter();
+		param.setName("mtime");
+		param.setValue("1633945058");
+		sender.addParameter(param);
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("mtimeAction.txt"), result.trim());
+		} catch (SenderException e) {
+			throw e.getCause();
+		} finally {
+			if (sender != null) {
+				sender.close();
+			}
+		}
+	}
+
+	@Test
+	public void downloadAction() throws Throwable {
+		NetStorageSender sender = getSender();
+		sender.setAction("download");
+		Message input = new Message("my/special/path/"); //Last slash should be removed!
+
+		try {
+			PipeLineSession pls = new PipeLineSession(session);
+
+			sender.configure();
+			sender.open();
+
+			String result = sender.sendMessage(input, pls).asString();
+			assertEqualsIgnoreCRLF(getFile("downloadAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

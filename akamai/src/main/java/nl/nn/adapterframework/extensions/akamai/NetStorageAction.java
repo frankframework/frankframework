@@ -91,7 +91,7 @@ public class NetStorageAction {
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
 		if(requiresFileParam()) {
-			Object paramValue = pvl.getParameterValue("file").getValue();
+			Object paramValue = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).getValue();
 			Message file = Message.asMessage(paramValue);
 			try {
 				fileBytes = file.asByteArray();
@@ -149,8 +149,13 @@ public class NetStorageAction {
 			}
 		}
 
-		if(pvl.parameterExists("mtime")) {
-			long mtime = pvl.getParameterValue("mtime").asLongValue(-1L);
+		if(action.equals("rename") && pvl.parameterExists(NetStorageSender.DESTINATION_PARAM_KEY)) {
+			String destination = pvl.getParameterValue(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
+			actionHeader.put("destination", destination);
+		}
+
+		if(pvl.parameterExists(NetStorageSender.MTIME_PARAM_KEY)) {
+			long mtime = pvl.getParameterValue(NetStorageSender.MTIME_PARAM_KEY).asLongValue(-1L);
 			actionHeader.put("mtime", mtime+"");
 		}
 	}
