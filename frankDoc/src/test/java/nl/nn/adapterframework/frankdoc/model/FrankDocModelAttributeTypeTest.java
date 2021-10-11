@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,8 +40,8 @@ public class FrankDocModelAttributeTypeTest {
 	}
 
 	@Test
-	public void testPopulate() {
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", CHILD, classRepository);
+	public void testPopulate() throws IOException {
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), CHILD, classRepository);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// Test the attribute with a value list, which is of type STRING.
@@ -68,8 +69,8 @@ public class FrankDocModelAttributeTypeTest {
 	}
 
 	@Test
-	public void whenAttributeSetterTakesEnumThenEnumTypedAttribute() {
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", CHILD, classRepository);
+	public void whenAttributeSetterTakesEnumThenEnumTypedAttribute() throws IOException {
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), CHILD, classRepository);
 		FrankElement child = model.findFrankElement(CHILD);
 		assertNotNull(child);
 		// By taking a fixed element index we test that the attributes appear in the right order.

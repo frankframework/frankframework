@@ -2,6 +2,8 @@ package nl.nn.adapterframework.frankdoc.model;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,9 +21,9 @@ public class FrankDocModelDocletTest {
 	private FrankDocModel instance;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(SIMPLE);
-		instance = FrankDocModel.populate("doc/xsd-element-name-digester-rules.xml", SIMPLE + "Container", repository);
+		instance = FrankDocModel.populate(TestUtil.resourceAsURL("doc/xsd-element-name-digester-rules.xml"), SIMPLE + "Container", repository);
 	}
 
 	@Test

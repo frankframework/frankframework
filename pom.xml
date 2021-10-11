@@ -687,6 +687,10 @@
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
+								<additionalOption>-digesterRulesPath</additionalOption>
+								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
+								<additionalOption>-rootClass</additionalOption>
+								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
 							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>

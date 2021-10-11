@@ -16,6 +16,9 @@ limitations under the License.
 
 package nl.nn.adapterframework.frankdoc.front;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Map;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import nl.nn.adapterframework.frankdoc.doclet.FrankDocException;
 import nl.nn.adapterframework.util.LogUtil;
 
 class FrankDocletOptions {
@@ -36,7 +40,9 @@ class FrankDocletOptions {
 		STRICT_REL_PATH("strictPath"),
 		COMPATIBILITY_REL_PATH("compatibilityPath"),
 		JSON_REL_PATH("jsonPath"),
-		ELEMENT_SUMMARY_PATH("elementSummaryPath");
+		ELEMENT_SUMMARY_PATH("elementSummaryPath"),
+		DIGESTER_RULES_PATH("digesterRulesPath"),
+		ROOT_CLASS("rootClass");
 
 		private @Getter String mavenName;
 
@@ -52,6 +58,8 @@ class FrankDocletOptions {
 	private @Getter String xsdCompatibilityPath = "xml/xsd/FrankConfig-compatibility.xsd";
 	private @Getter String jsonOutputPath = "js/frankdoc.json";
 	private @Getter String elementSummaryPath = "txt/elementSummary.txt";
+	private @Getter URL digesterRulesUrl;
+	private @Getter String rootClass;
 
 	static {
 		optionsByName = Arrays.asList(Option.values()).stream().collect(Collectors.toMap(Option::getMavenName, Function.identity()));
@@ -94,7 +102,7 @@ class FrankDocletOptions {
 		return optionString.substring(1);
 	}
 
-	static FrankDocletOptions getInstance(String[][] options) {
+	static FrankDocletOptions getInstance(String[][] options) throws FrankDocException {
 		log.info("Creating FrankDocletOptions object");
 		FrankDocletOptions result = new FrankDocletOptions();
 		result.fill(options);
@@ -102,7 +110,7 @@ class FrankDocletOptions {
 		return result;
 	}
 
-	private void fill(String[][] options) {
+	private void fill(String[][] options) throws FrankDocException {
 		for(int i = 0; i < options.length; ++i) {
 			String[] opt = options[i];
 			// Remove first "-" sign.
@@ -116,7 +124,7 @@ class FrankDocletOptions {
 		}
 	}
 
-	private void setOption(Option opt, String value) {
+	private void setOption(Option opt, String value) throws FrankDocException {
 		switch (opt) {
 		case BASE_OUTPUT_DIR:
 			outputBaseDir = value;
@@ -133,8 +141,23 @@ class FrankDocletOptions {
 		case ELEMENT_SUMMARY_PATH:
 			elementSummaryPath = value;
 			break;
+		case DIGESTER_RULES_PATH:
+			setDigesterRulesUrl(value);
+			break;
+		case ROOT_CLASS:
+			rootClass = value;
+			break;
 		default:
 			throw new IllegalArgumentException("Programming error. Switch over FrankDocletOptions.Option was supposed to cover all cases");
+		}
+	}
+
+	private void setDigesterRulesUrl(String value) throws FrankDocException {
+		try {
+			File f = new File(value);
+			digesterRulesUrl = f.toURI().toURL();
+		} catch(MalformedURLException e) {
+			throw new FrankDocException(String.format("Invalid path to digester rules file: [%s]", value), e);
 		}
 	}
 }

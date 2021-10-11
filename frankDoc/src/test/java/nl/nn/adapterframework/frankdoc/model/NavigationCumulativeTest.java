@@ -71,7 +71,7 @@ public class NavigationCumulativeTest {
 	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), rootClassName, repository);
 		FrankElement subject = model.findFrankElement(rootClassName);
 		List<String> actual = subject.getCumulativeAttributes(childSelector, childRejector).stream()
 				.map(a -> a.getName()).collect(Collectors.toList());
