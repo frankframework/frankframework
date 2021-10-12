@@ -212,3 +212,28 @@ It is taken from [RecordTransformer](./core/src/main/java/nl/nn/adapterframework
 
 ## Other JavaDoc tags
 
+There are a few other JavaDoc tags that are relevant for the Frank!Doc:
+
+**@ff.noAttribute: ** Put this JavaDoc tag above a setter method to prevent it from becoming an attribute. You can also use this JavaDoc tag to suppress inheritance of an attribute. If you override an attribute setter and put the `@ff.noAttribute` tag above the overriding method, then the overriding Java class will not declare and not inherit the attribute.
+
+**@ff.ignoreTypeMembership: ** This annotation was introduced for Java class [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java). This class extends [JdbcTransactionalStorage](./core/src/main/java/nl/nn/adapterframework/jdbc/JdbcTransactionalStorage.java) and implements [ISenderWithParameters](./core/src/main/java/nl/nn/adapterframework/core/ISenderWithParameters.java). Indirectly it implements [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java), which has a [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) for group "TransactionalStorages". Indirectly, it also implements [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java), which has a [@FrankDocGroup](./core/src/main/java/nl/nn/adapterframework/doc/FrankDocGroup.java) annotation for group "Senders".
+
+Class [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) should only be part of "Senders" however, not of "TransactionalStorages". This is indicated in the JavaDoc above class [MessageStoreSender](./core/src/main/java/nl/nn/adapterframework/jdbc/MessageStoreSender.java) with the `@ff.ignoreTypeMembership` tag. It has argument `nl.nn.adapterframework.core.ITransactionalStorage`, the type from which it is excluded.
+
+The `@ff.ignoreTypeMembership` also suppresses the introduction of attributes. In the example, all attribute setters (indirectly) inherited from [ITransactionalStorage](./core/src/main/java/nl/nn/adapterframework/core/ITransactionalStorage.java) that are not also overridden from [ISenderWithParameters](./core/src/main/java/nl/nn/adapterframework/core/ISenderWithParameters.java) are excluded as attributes.
+
+**@ff.defaultElement: ** To explain this tag, something else must be explained first. Consider the example Frank configuration shown below:
+
+![vscodeGenericElementOption](./picturesForContributors/vscodeGenericElementOption.jpg)
+
+As explained earlier, VSCode shows all allowed sub-elements. Examples of these are `<MailSenderPipe>` and `<PdfPipe>`, which are references to Java classes that implement [IPipe](./core/src/main/java/nl/nn/adapterframework/core/IPipe.java). In the figure another possibility is highlighted, which is `<Pipe>`. This one is called the generic element option. Editing can proceed as follows:
+
+![vscodePipeGenericElementOption](./picturesForContributors/vscodePipeGenericElementOption.jpg)
+
+The tag `<Pipe>` encodes the role that the referenced Java class plays, and you reference the Java class through the `className` attribute.
+
+Now we can see the meaning of the `@ff.defaultElement` tag. You can use it to provide a default value for the `className` attribute. It is present in Java interface [IPipe](./core/src/main/java/nl/nn/adapterframework/core/IPipe.java) as shown:
+
+![eclipseIPipe](./picturesForContributors/eclipseIPipe.jpg)
+
+The default value is `nl.nn.adapterframework.pipes.SenderPipe` in this example. The autocomplete function of VSCode can add this default value for the `className` attribute. If it is omitted in a Frank config, then it is assumed to have the default value. You can thus use `<Pipe>` (without `className` attribute) as a synonym of `<SenderPipe>` because `<SenderPipe>` points to Java class [SenderPipe](./core/src/main/java/nl/nn/adapterframework/pipes/SenderPipe.java).
