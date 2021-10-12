@@ -32,7 +32,7 @@ public class NetStorageCmsSignerTest {
 	@Test
 	public void vaidateDataAndSignHeader() throws URISyntaxException {
 		URI uri = new URI("http://127.0.0.1/cpCode123/path");
-		NetStorageAction action = new NetStorageAction(Action.DU);
+		NetStorageRequest action = new NetStorageRequest(Action.DU);
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, "myNonce", "accessToken") {
 			@Override
 			protected String getAuthDataHeaderValue() {

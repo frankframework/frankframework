@@ -107,9 +107,9 @@ public class NetStorageCmsSigner {
 	 * Computes the value for the the X-Akamai-ACS-Action: header. This is an url query-string encoded separated
 	 * list of parameters in the form of name=value&name2=value2. 
 	 * @param action the set of action parameters to be sent in the API request
-	 * @return an url encoded query string of name-value pairs from the {@link nl.nn.adapterframework.extensions.akamai.NetStorageAction}
+	 * @return an url encoded query string of name-value pairs from the {@link nl.nn.adapterframework.extensions.akamai.NetStorageRequest}
 	 */
-	protected String getActionHeaderValue(NetStorageAction action) {
+	protected String getActionHeaderValue(NetStorageRequest action) {
 		return action.compileHeader();
 	}
 
@@ -136,7 +136,7 @@ public class NetStorageCmsSigner {
 	 * encoded representation of the hash as required by the spec. The api server will compute this same hash to validate
 	 * the request
 	 *
-	 * @param action action header values {@link #getActionHeaderValue(NetStorageAction)}
+	 * @param action action header values {@link #getActionHeaderValue(NetStorageRequest)}
 	 * @param authData data header values {@link #getAuthDataHeaderValue()}
 	 * @return a base64 encoded return string
 	 */
@@ -157,7 +157,7 @@ public class NetStorageCmsSigner {
 	 * @param netStorageAction the set of action parameters to be sent in the API request
 	 * @return Map of name-value pairs representing HTTP Headers and values.
 	 */
-	public Map<String, String> computeHeaders(NetStorageAction netStorageAction) {
+	public Map<String, String> computeHeaders(NetStorageRequest netStorageAction) {
 		final Map<String, String> headers = new HashMap<>(3);
 		final String action = getActionHeaderValue(netStorageAction);
 		final String authData = getAuthDataHeaderValue();

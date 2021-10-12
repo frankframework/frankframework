@@ -23,16 +23,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.logging.log4j.Logger;
@@ -188,65 +182,21 @@ public class NetStorageSender extends HttpSenderBase {
 
 	@Override
 	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
-
-		NetStorageAction netStorageAction = new NetStorageAction(getAction());
-		netStorageAction.setVersion(actionVersion);
-		netStorageAction.setHashAlgorithm(hashAlgorithm);
+		NetStorageRequest request = new NetStorageRequest(uri, getAction());
+		request.setVersion(actionVersion);
+		request.setHashAlgorithm(hashAlgorithm);
 
 		if(parameters != null) {
-			netStorageAction.mapParameters(parameters);
+			request.mapParameters(parameters);
 		}
 
-		setMethodType(netStorageAction.getMethod());
-		if(log.isDebugEnabled()) log.debug("opening ["+netStorageAction.getMethod()+"] connection to ["+getUrl()+"] with action ["+getAction()+"]");
+		setMethodType(request.getMethodType()); //For logging purposes
+		if(log.isDebugEnabled()) log.debug("opening ["+request.getMethodType()+"] connection to ["+uri+"] with action ["+getAction()+"]");
 
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, accessTokenCf, getSignType());
-		Map<String, String> headers = signer.computeHeaders(netStorageAction);
+		request.sign(signer);
 
-		HttpRequestBase method;
-		switch (getHttpMethod()) {
-			case GET:
-				method = new HttpGet(uri);
-				break;
-
-			case PUT:
-				method = new HttpPut(uri);
-
-				try {
-					HttpEntity entity = netStorageAction.getFileEntity();
-					if(entity != null) {
-						((HttpEntityEnclosingRequestBase) method).setEntity(entity);
-					}
-				} catch (IOException e) {
-					throw new SenderException("unable to parse file", e);
-				}
-				break;
-
-			case POST:
-				method = new HttpPost(uri);
-
-				try {
-					HttpEntity entity = netStorageAction.getFileEntity();
-					if(entity != null) {
-						((HttpEntityEnclosingRequestBase) method).setEntity(entity);
-					}
-				} catch (IOException e) {
-					throw new SenderException("unable to parse file", e);
-				}
-				break;
-
-			default:
-				throw new SenderException("unknow http method");
-		}
-
-		for (Map.Entry<String, String> entry : headers.entrySet()) {
-			log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
-
-			method.setHeader(entry.getKey(), entry.getValue());
-		}
-		log.debug(getLogPrefix()+"HttpSender constructed ["+getHttpMethod()+"] method ["+method.getURI()+"] query ["+method.getURI().getQuery()+"] ");
-
-		return method;
+		return request.build();
 	}
 
 	@Override
