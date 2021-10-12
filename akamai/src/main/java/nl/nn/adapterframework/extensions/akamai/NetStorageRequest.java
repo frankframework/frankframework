@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -77,6 +78,8 @@ public class NetStorageRequest {
 			case MTIME:
 				method = new HttpPost(uri);
 				break;
+			default:
+				throw new NotImplementedException("unknown action ["+action+"]");
 		}
 	}
 
