@@ -208,7 +208,7 @@ Here is an example of how deprecated children look like:
 
 ![webappDeprecatedConfigChild](./picturesForContributors/webappDeprecatedConfigChild.jpg)
 
-It is taken from [RecordTransformer](./core/src/main/java/nl/nn/adapterframework/batch/RecordTransformer.java). The child called "child" is crossed out because method `registerChild()` is `@Deprecated`. Deprecated attributes are crossed out in the Attributes section when they are `@Deprecated`.
+It is taken from [RecordTransformer](./core/src/main/java/nl/nn/adapterframework/batch/RecordTransformer.java). The child called "child" is crossed out because method `registerChild()` is `@Deprecated`. Similarly, attributes are crossed out in the Attributes section when their setter is `@Deprecated`.
 
 ## Other JavaDoc tags
 
