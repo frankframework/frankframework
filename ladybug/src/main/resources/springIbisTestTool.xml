@@ -8,10 +8,11 @@
 	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/pom.properties</value>
+				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/p5om.properties</value>
 				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
 			</list>
 		</property>
+		<property name="ignoreResourceNotFound" value="true" />
 	</bean>
 
 	<bean
@@ -27,7 +28,7 @@
 	</bean>
 
 	<bean name="configVersion" class="java.lang.String">
-		<constructor-arg value="${version}"/>
+		<constructor-arg value="${version:#{''}}"/>
 	</bean>
 
 	<bean name="maxCheckpoints" class="java.lang.Integer">
