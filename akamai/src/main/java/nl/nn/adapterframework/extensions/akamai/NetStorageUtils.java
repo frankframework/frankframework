@@ -1,4 +1,5 @@
 /*
+ * Copyright 2021 WeAreFrank!
  * Copyright 2017 Nationale-Nederlanden
  * Copyright 2014 Akamai Technologies http://developer.akamai.com.
  *
@@ -16,13 +17,8 @@
  */
 package nl.nn.adapterframework.extensions.akamai;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -39,30 +35,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author colinb@akamai.com (Colin Bendell)
  */
 public class NetStorageUtils {
-
-	/**
-	 * An enum of the hash algorithms supported by {@link #computeHash(java.io.InputStream, nl.nn.adapterframework.extensions.akamai.NetStorageUtils.HashAlgorithm)}
-	 * Currently supported hashes include MD5; SHA1; SHA256
-	 *
-	 * The string representation matches the java {@link java.security.MessageDigest#getInstance(String)} canonical names.
-	 */
-	public enum HashAlgorithm {
-		MD5("MD5"), SHA1("SHA-1"), SHA256("SHA-256");
-
-		/**
-		 * Algorithm name as defined in
-		 * {@link java.security.MessageDigest#getInstance(String)}
-		 */
-		private final String algorithm;
-
-		private HashAlgorithm(final String algorithm) {
-			this.algorithm = algorithm;
-		}
-
-		public String getAlgorithm() {
-			return this.algorithm;
-		}
-	}
 
 	/**
 	 * An enum of the keyed-hash algorithms supported by {@link #computeKeyedHash(byte[], String, nl.nn.adapterframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm)}
@@ -90,71 +62,6 @@ public class NetStorageUtils {
 	}
 
 	/**
-	 * Computes the hash of a given InputStream. This is a wrapper over the MessageDigest crypto functions.
-	 *
-	 * @param srcStream a source stream. This will be wrapped in a {@link java.io.BufferedInputStream}
-	 *                  in case the source stream is not buffered
-	 * @param hashAlgorithm the Algorithm to use to compute the hash
-	 * @return a byte[] representation of the hash. If the InputStream is a null object
-	 * then null will be returned. If the InputStream is empty an empty byte[] {} will be returned.
-	 * @throws IOException If there is a problem with the InputStream during the compute of the hash
-	 */
-	public static byte[] computeHash(InputStream srcStream, HashAlgorithm hashAlgorithm) throws IOException {
-		if (srcStream == null) return null;
-
-		try {
-			MessageDigest digest = MessageDigest.getInstance(hashAlgorithm.getAlgorithm());
-			InputStream inputStream = new BufferedInputStream(srcStream);
-			byte[] buff = new byte[1024 ^ 2];
-
-			int size;
-			while ((size = inputStream.read(buff)) != -1)
-				digest.update(buff, 0, size);
-
-			return digest.digest();
-		} catch (NoSuchAlgorithmException e) {
-			//no-op. This will never happen since we are using an enum to limit the hash algorithms
-			throw new IllegalArgumentException("This should never happen! We are using an enum!", e);
-		}
-	}
-
-	/**
-	 * Computes the hash of a given InputStream. This is a wrapper over the MessageDigest crypto functions.
-	 *
-	 * @param srcBytes to generate a hash over
-	 * @param hashAlgorithm the Algorithm to use to compute the hash
-	 * @return a byte[] representation of the hash. If the InputStream is a null object
-	 * then null will be returned. If the InputStream is empty an empty byte[] {} will be returned.
-	 * @throws IOException If there is a problem with the InputStream during the compute of the hash
-	 */
-	public static byte[] computeHash(byte[] srcBytes, HashAlgorithm hashAlgorithm) throws IOException {
-		if (srcBytes == null) return null;
-
-		try {
-			MessageDigest digest = MessageDigest.getInstance(hashAlgorithm.getAlgorithm());
-
-			return digest.digest(srcBytes);
-		} catch (NoSuchAlgorithmException e) {
-			//no-op. This will never happen since we are using an enum to limit the hash algorithms
-			throw new IllegalArgumentException("This should never happen! We are using an enum!", e);
-		}
-	}
-
-	/**
-	 * Converts a bytearray to a hexString
-	 * TODO move this to Misc!?
-	 * @param arrayBytes the input to convert
-	 * @return a string with the converted input
-	 */
-	public static String convertByteArrayToHexString(byte[] arrayBytes) {
-		StringBuffer stringBuffer = new StringBuffer();
-		for (int i = 0; i < arrayBytes.length; i++) {
-			stringBuffer.append(Integer.toString((arrayBytes[i] & 0xff) + 0x100, 16).substring(1));
-		}
-		return stringBuffer.toString();
-	}
-
-	/**
 	 * Computes the HMAC hash of a given byte[]. This is a wrapper over the Mac crypto functions.
 	 * @param data byte[] of content to hash
 	 * @param key secret key to salt the hash
@@ -171,21 +78,6 @@ public class NetStorageUtils {
 		} catch (Exception e) {
 			throw new IllegalArgumentException("This should never happen!", e);
 		}
-	}
-
-	/**
-	 * Hex encoding wrapper for a byte array. The output will be 2 character padded
-	 * string in lower case.
-	 * @param value a byte array to encode. The assumption is that the string to encode
-	 *              is small enough to be held in memory without streaming the encoding
-	 * @return a 2 character zero padded string in lower case
-	 */
-	public static String encodeHex(byte[] value) {
-		if (value == null) return null;
-		StringBuilder str = new StringBuilder();
-		for (byte aValue : value) str.append(String.format("%02x", aValue));
-
-		return str.toString();
 	}
 
 	/**

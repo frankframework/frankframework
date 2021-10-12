@@ -147,7 +147,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * @Deprecated Please avoid the use of the raw object.
+	 * @deprecated Please avoid the use of the raw object.
 	 */
 	@Deprecated
 	public Object asObject() {
