@@ -1,6 +1,6 @@
 <project default="copy.file">
 	<target name="copy.file">
-		<property name="root.dir" value="${currentflow.rootdir}" />
+		<property name="root.dir" value="${testdata.dir}/mfh" />
 		<property name="target.dir" value="${root.dir}/in" />
 		<property name="inprocess.dir" value="${root.dir}/inProcess" />
 		<property name="processed.dir" value="${root.dir}/processed" />
