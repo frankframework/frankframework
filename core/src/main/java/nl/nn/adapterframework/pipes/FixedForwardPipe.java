@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,11 +34,6 @@ import nl.nn.adapterframework.stream.Message;
  * Provides a base-class for a Pipe that always has the same forward.
  * Ancestor classes should call <code>super.configure()</code> in their <code>configure()</code>-methods.
  *
- * <tr><td>{@link #setSkipOnEmptyInput(boolean) skipOnEmptyInput}</td><td>when set, this pipe is skipped</td><td>false</td></tr>
- * <tr><td>{@link #setIfParam(String) ifParam}</td><td>when set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIfValue(String) ifValue}</td><td>see <code>ifParam</code></td><td>&nbsp;</td></tr>
- * </table>
- * </p>
  * @author Gerrit van Brakel
  */
 public abstract class FixedForwardPipe extends AbstractPipe {

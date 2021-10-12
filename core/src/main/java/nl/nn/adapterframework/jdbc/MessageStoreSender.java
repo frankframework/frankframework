@@ -70,13 +70,7 @@ import nl.nn.adapterframework.stream.Message;
 		/>
 </pre></code>
  * 
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>messageId</td><td>string</td><td>messageId to check for duplicates, when this parameter isn't present the messageId it read from sessionKey messageId</td></tr>
- * </table>
- * </p>
+ * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  * 
  * @author Jaco de Groot
  * 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,15 +35,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Pipe that compares lexicographically two strings.
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
- * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v2</td></tr>
- * </table>
- * </p>
- * 
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
  * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
@@ -59,7 +50,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  *		&lt;/ignore&gt;
  *	&lt;/ignores&gt;
  * </pre></code><br/>Substrings between "after" and "before" are ignored
- * 
+ *
+ * @ff.forward lessthan operand1 &lt; operand2
+ * @ff.forward greaterthan operand1 &gt; operand2
+ * @ff.forward equals operand1 = operand2
+ *
  * @author  Peter Leeuwenburgh
  */
 public class CompareStringPipe extends AbstractPipe {

@@ -49,12 +49,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
- * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
- * </table>
+ * 
+ * @ff.forward success no errors and all tests passed
+ * @ff.forward fail errors or failed tests
  * 
  * @author Jaco de Groot
  *

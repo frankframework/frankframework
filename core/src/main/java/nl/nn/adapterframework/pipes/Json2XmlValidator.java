@@ -56,18 +56,10 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
-*<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
-*
-* <table border="1">
-* <tr><th>state</th><th>condition</th></tr>
-* <tr><td>success</td><td>default</td></tr>
-* <tr><td>parserError</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>illegalRoot</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>failure</td><td>if a validation error occurred</td></tr>
-* </table>
-* <br>
-* @author Gerrit van Brakel
-*/
+ *<code>Pipe</code> that validates the XML or JSON input message against a XML-Schema and returns either XML or JSON.
+ *
+ * @author Gerrit van Brakel
+ */
 public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
 
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputformat ";
