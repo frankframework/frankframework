@@ -61,34 +61,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Worker class for {@link FileSystemPipe} and {@link FileSystemSender}.
  * 
- * <table align="top" border="1">
- * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
- * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>write</td><td>write contents to a file<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>forward</td><td>(for MailFileSystems only:) forward an existing file to an email address</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination (an email address in this case): taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <table>
+ * @ff.parameter action overrides attribute <code>action</code>
+ * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
+ * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>. 
+ * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
+ * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
  * 
  * @author Gerrit van Brakel
  */
@@ -152,20 +129,43 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private byte[] eolArray=null;
 
 	public enum FileSystemAction implements DocumentedEnum {
+		/** list files in a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol> */
 		@EnumLabel(ACTION_LIST) LIST,
+		/** show info about a single file<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol> */
 		@EnumLabel(ACTION_INFO) INFO,
+		/** read a file, returns an InputStream<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>&nbsp; */
 		@EnumLabel(ACTION_READ1) READ,
 		@EnumLabel(ACTION_READ2) DOWNLOAD,
+		/** like read, but deletes the file after it has been read<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/> */
 		@EnumLabel(ACTION_READ_DELETE) READDELETE,
+		/** move a file to another folder<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_MOVE) MOVE,
+		/** copy a file to another folder<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_COPY) COPY,
+		/** delete a file<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/> */
 		@EnumLabel(ACTION_DELETE) DELETE,
+		/** create a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol><br/> */
 		@EnumLabel(ACTION_MKDIR) MKDIR,
+		/** remove a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol><br/> */
 		@EnumLabel(ACTION_RMDIR) RMDIR,
+		/** write contents to a file<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_WRITE1) WRITE,
 		@EnumLabel(ACTION_WRITE2) UPLOAD,
+		/** append contents to a file (only for filesystems that support 'append')<br/>
+ *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
+ *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
+ *  At least one of the parameters must be specified.<br/>
+ *  The missing parameter defaults to the input message.<br/>
+ *  For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_APPEND) APPEND,
+		/** change the name of a file<br/>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_RENAME) RENAME,
+		/** (for MailFileSystems only:) forward an existing file to an email address<br/>filename: taken from parameter <code>filename</code> or input message<br/>destination (an email address in this case): taken from attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_FORWARD) FORWARD,
 
 //		/** Specific to AmazonS3Sender */

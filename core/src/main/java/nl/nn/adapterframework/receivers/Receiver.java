@@ -75,6 +75,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
@@ -125,7 +126,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
  * <table border="1">
- * <tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
+ * <tr><th>{@link #setTransactionAttribute(TransactionAttribute) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
  * <tr><td>Required</td><td>true</td></tr>
  * <tr><td>RequiresNew</td><td>true</td></tr>
  * <tr><td>Mandatory</td><td>true</td></tr>

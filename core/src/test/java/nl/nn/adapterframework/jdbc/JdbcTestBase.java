@@ -65,12 +65,7 @@ public abstract class JdbcTestBase {
 		DbmsSupportFactory factory = new DbmsSupportFactory();
 		dbmsSupport = factory.getDbmsSupport(connection);
 
-		try {
-			prepareDatabase();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		prepareDatabase();
 	}
 
 	protected void createDbTable() throws Exception {
