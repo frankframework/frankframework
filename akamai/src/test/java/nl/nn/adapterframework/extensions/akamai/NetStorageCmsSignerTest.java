@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 
+import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
 import nl.nn.adapterframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 
 public class NetStorageCmsSignerTest {
@@ -31,7 +32,7 @@ public class NetStorageCmsSignerTest {
 	@Test
 	public void vaidateDataAndSignHeader() throws URISyntaxException {
 		URI uri = new URI("http://127.0.0.1/cpCode123/path");
-		NetStorageAction action = new NetStorageAction("du");
+		NetStorageAction action = new NetStorageAction(Action.DU);
 		NetStorageCmsSigner signer = new NetStorageCmsSigner(uri, "myNonce", "accessToken") {
 			@Override
 			protected String getAuthDataHeaderValue() {

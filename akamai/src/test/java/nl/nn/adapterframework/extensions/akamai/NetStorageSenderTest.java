@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -60,7 +61,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void testContentType() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("du");
+		sender.setAction(Action.DU);
 		sender.configure();
 		assertNull("no content-type should be present", sender.getFullContentType());
 	}
@@ -68,7 +69,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void duAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("du");
+		sender.setAction(Action.DU);
 		Message input = new Message("my/special/path/"); //Last slash should be removed!
 
 		try {
@@ -91,7 +92,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void duActionWithRootDir() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("du");
+		sender.setAction(Action.DU);
 		sender.setRootDir("/my/special/"); //Start and end with a slash!
 		Message input = new Message("path/"); //Last slash should be removed!
 
@@ -115,7 +116,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void dirAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("dir");
+		sender.setAction(Action.DIR);
 		Message input = new Message("my/special/path/");
 
 		try {
@@ -138,7 +139,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void deleteAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("delete");
+		sender.setAction(Action.DELETE);
 		Message input = new Message("my/special/path/");
 
 		try {
@@ -161,7 +162,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		Message input = new Message("my/special/path/");
 
 		Parameter param = new Parameter();
@@ -190,7 +191,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithMD5Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
@@ -220,7 +221,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithCustomMD5Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
@@ -255,7 +256,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithSHA1Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
@@ -285,7 +286,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithCustomSHA1Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
@@ -320,7 +321,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithSHA256Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		sender.setHashAlgorithm(HashAlgorithm.SHA256);
 		Message input = new Message("my/special/path/");
 
@@ -350,7 +351,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void uploadActionWithCustomSHA256Hash() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("upload");
+		sender.setAction(Action.UPLOAD);
 		Message input = new Message("my/special/path/");
 
 		Parameter hashParam = new Parameter();
@@ -384,7 +385,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void mkdirAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("mkdir");
+		sender.setAction(Action.MKDIR);
 		Message input = new Message("my/special/path/");
 
 		try {
@@ -407,7 +408,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void rmdirAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("rmdir");
+		sender.setAction(Action.RMDIR);
 		Message input = new Message("my/special/path/");
 
 		try {
@@ -430,7 +431,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void renameAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("rename");
+		sender.setAction(Action.RENAME);
 		Message input = new Message("my/special/path/file1.txt");
 
 		Parameter param = new Parameter();
@@ -457,7 +458,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void mtimeAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("mtime");
+		sender.setAction(Action.MTIME);
 		Message input = new Message("my/special/path/");
 
 		Parameter param = new Parameter();
@@ -484,7 +485,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	@Test
 	public void downloadAction() throws Throwable {
 		NetStorageSender sender = getSender();
-		sender.setAction("download");
+		sender.setAction(Action.DOWNLOAD);
 		Message input = new Message("my/special/path/");
 
 		try {

@@ -24,7 +24,9 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -34,50 +36,36 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class NetStorageAction {
 	private int version = 1;
-	private HttpMethod method = null;
+	private @Getter HttpMethod method = null;
 	private Message file = null;
-	private String action = null;
+	private Action action = null;
 	private HashAlgorithm hashAlgorithm = null;
 	private Map<String, String> actionHeader = new HashMap<>();
 
-	public NetStorageAction(String action) {
+	public NetStorageAction(Action action) {
 		this.action = action;
-		actionHeader.put("action", action);
-		if(action.equals("dir")) {
-			method = HttpMethod.GET;
+		actionHeader.put("action", action.name().toLowerCase());
+		switch (action) {
+			case DIR:
+			case DU:
+			case DOWNLOAD:
+				method = HttpMethod.GET;
+				break;
+			case DELETE:
+			case UPLOAD:
+			case MKDIR:
+				method = HttpMethod.PUT;
+				break;
+			case RMDIR:
+			case RENAME:
+			case MTIME:
+				method = HttpMethod.POST;
+				break;
 		}
-		if(action.equals("du")) {
-			method = HttpMethod.GET;
-		}
-		if(action.equals("delete")) {
-			method = HttpMethod.PUT;
-		}
-		if(action.equals("upload")) {
-			method = HttpMethod.PUT;
-		}
-		if(action.equals("mkdir")) {
-			method = HttpMethod.PUT;
-		}
-		if(action.equals("rmdir")) {
-			method = HttpMethod.POST;
-		}
-		if(action.equals("rename")) {
-			method = HttpMethod.POST;
-		}
-		if(action.equals("mtime")) {
-			method = HttpMethod.POST;
-		}
-		if(action.equals("download")) {
-			method = HttpMethod.GET;
-		}
-	}
-
-	public HttpMethod getMethod() {
-		return method;
 	}
 
 	public String compileHeader() {
-		if(getMethod() == HttpMethod.GET) {
+		if(method == HttpMethod.GET) {
 			actionHeader.put("format", "xml");
 		}
 		actionHeader.put("version", version+"");
@@ -90,7 +78,7 @@ public class NetStorageAction {
 	}
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
-		if(action.equals("upload") && pvl.parameterExists(NetStorageSender.FILE_PARAM_KEY)) {
+		if(action == Action.UPLOAD && pvl.parameterExists(NetStorageSender.FILE_PARAM_KEY)) {
 			Object paramValue = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).getValue();
 			file = Message.asMessage(paramValue);
 
@@ -123,7 +111,7 @@ public class NetStorageAction {
 			}
 		}
 
-		if(action.equals("rename") && pvl.parameterExists(NetStorageSender.DESTINATION_PARAM_KEY)) {
+		if(action == Action.RENAME && pvl.parameterExists(NetStorageSender.DESTINATION_PARAM_KEY)) {
 			String destination = pvl.getParameterValue(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
 			actionHeader.put("destination", destination);
 		}
