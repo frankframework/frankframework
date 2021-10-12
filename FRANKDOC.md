@@ -192,11 +192,23 @@ As a Java engineer, you know the `@Deprecated` Java annotation. You use it for J
 
 First, the strict XSD that is used by Frank developers does not allow you to use `@Deprecated` items. Any attribute setter, config child setter or Java class that is `@Deprecated` does not appear in the strict XSD. Accessing it in a Frank config is flagged as an error as shown in earlier images of Visual Studio Code.
 
-Second, `@Deprecated` items are available in `FrankConfig-compatibility.xsd`. Frank configs that reference them can be parsed by the Frank!Framework. This means that the configs still do their job.
+Second, `@Deprecated` items are available in `FrankConfig-compatibility.xsd`. Frank configs that reference them can be parsed by the Frank!Framework. This means that these Frank configs still do their job.
 
-Third, you can choose in the Frank!Doc website whether you want to see `@Deprecated` items or not.
+Third, you can choose in the Frank!Doc website whether you want to see `@Deprecated` items or not. Use the button shown below:
 
-TODO: Have strike-through config child setters if they are deprecated.
+![webappShowDeprecated](./picturesForContributors/webappShowDeprecated.jpg)
+
+`Deprecated` Java classes are crossed out in the list of class names to the bottom-left. See the picture below for the example of [DummyTransactionalStorage](./core/src/main/java/nl/nn/adapterframework/jdbc/DummyTransactionalStorage.java):
+
+![webappDeprecatedClass](./picturesForContributors/webappDeprecatedClass.jpg)
+
+The button "Show Deprecated" has been pressed (number 3). We selected [DummyTransactionalStorage](./core/src/main/java/nl/nn/adapterframework/jdbc/DummyTransactionalStorage.java) (number 1) in group "TransactionalStorages" (number 2). To the bottom-left, you see that "DummyTransactionalStorage" is crossed out. To the right, in the information about [DummyTransactionalStorage](./core/src/main/java/nl/nn/adapterframework/jdbc/DummyTransactionalStorage.java), you see a label (number 4) showing that this class is deprecated.
+
+Here is an example of how deprecated children look like:
+
+![webappDeprecatedConfigChild](./picturesForContributors/webappDeprecatedConfigChild.jpg)
+
+It is taken from [RecordTransformer](./core/src/main/java/nl/nn/adapterframework/batch/RecordTransformer.java). The child called "child" is crossed out because method `registerChild()` is `@Deprecated`. Deprecated attributes are crossed out in the Attributes section when they are `@Deprecated`.
 
 ## Other JavaDoc tags
 
