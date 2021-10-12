@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * An enum of the hash algorithms. Currently supported hashes include MD5; SHA1; SHA256
@@ -49,7 +50,7 @@ public enum HashAlgorithm {
 
 		byte[] checksum = computeHash(fileBytes, this);
 		if(checksum != null) {
-			return convertByteArrayToHexString(checksum);
+			return Misc.asHex(checksum);
 		}
 
 		throw new IllegalStateException("error computing checksum");
@@ -72,19 +73,5 @@ public enum HashAlgorithm {
 			//no-op. This will never happen since we are using an enum to limit the hash algorithms
 			throw new IllegalArgumentException("This should never happen! We are using an enum!", e);
 		}
-	}
-
-	/**
-	 * Converts a bytearray to a hexString
-	 * TODO move this to Misc!?
-	 * @param arrayBytes the input to convert
-	 * @return a string with the converted input
-	 */
-	private static String convertByteArrayToHexString(byte[] arrayBytes) {
-		StringBuffer stringBuffer = new StringBuffer();
-		for (int i = 0; i < arrayBytes.length; i++) {
-			stringBuffer.append(Integer.toString((arrayBytes[i] & 0xff) + 0x100, 16).substring(1));
-		}
-		return stringBuffer.toString();
 	}
 }
