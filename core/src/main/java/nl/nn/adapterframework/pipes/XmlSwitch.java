@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  * 
  * @ff.forward &lt;name of the root-element&gt; default
- * @ff.forward>&lt;result of transformation&gt when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
+ * @ff.forward &lt;result of transformation&gt; when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
  * 
  * @author Johan Verrips
  */

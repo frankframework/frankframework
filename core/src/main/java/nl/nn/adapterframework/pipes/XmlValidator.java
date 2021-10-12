@@ -75,8 +75,8 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.
- * @ff.forward outputParserError a <code>parserError</code> in the response.
- * @ff.forward outputFailure a <code>failure</code> in the response.
+ * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
+ * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
  * 
  * @author Johan Verrips IOS
  * @author Jaco de Groot
