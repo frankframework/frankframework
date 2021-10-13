@@ -312,6 +312,9 @@
 		<property name="tabs">
 			<ref bean="tabs"/>
 		</property>
+		<property name="testStorage">
+			<ref bean="#{testStorageActive}"/>
+		</property>
 	</bean>
 
 	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
