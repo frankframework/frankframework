@@ -506,10 +506,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
-		return retrieveConfigNamesFromDatabase(ibisContext, false, true);
+		return retrieveConfigNamesFromDatabase(ibisContext, false, false);
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload, boolean isActive) throws ConfigurationException {
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload, boolean isInactive) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -519,9 +519,12 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(isActive))+"'";
+			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
 			if (onlyAutoReload) {
 				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
+			if(isInactive) {
+				query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE NAME NOT IN ("+query+")";
 			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
