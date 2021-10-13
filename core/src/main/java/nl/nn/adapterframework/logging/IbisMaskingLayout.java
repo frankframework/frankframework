@@ -135,8 +135,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 			return builder.build();
 		}
 
+		//NB: this might trigger a source location lookup.
 		MutableLogEvent mutable = new MutableLogEvent();
-		event.setIncludeLocation(false); //force source location lookup to false
 		mutable.initFrom(event);
 		mutable.setMessage(message);
 		return mutable;
