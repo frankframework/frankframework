@@ -107,7 +107,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	public Date getTsSent() {
-		return getTsReceived(this);
+		return getTsSent(this);
 	}
 
 	public static Date getTsSent(Map<String, Object> context) {
@@ -133,9 +133,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (tsReceived==null) {
 			tsReceived=new Date();
 		}
-		map.put(TS_RECEIVED_KEY,DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
+		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
 		if (tsSent!=null) {
-			map.put(TS_SENT_KEY,DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
+			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
 		}
 	}
 
