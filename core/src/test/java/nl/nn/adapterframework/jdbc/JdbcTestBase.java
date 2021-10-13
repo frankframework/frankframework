@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.jdbc;
 
-import static org.junit.Assert.fail;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
