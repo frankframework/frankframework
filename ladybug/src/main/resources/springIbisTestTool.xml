@@ -8,7 +8,7 @@
 	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/p5om.properties</value>
+				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/pom.properties</value>
 				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
 			</list>
 		</property>
