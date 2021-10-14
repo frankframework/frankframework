@@ -124,7 +124,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAcknowledgeMode().getAcknowledgeMode(),
+					destination, getExceptionListener(), getCacheMode(), getAcknowledgeModeEnum().getAcknowledgeMode(),
 					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
@@ -185,7 +185,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");

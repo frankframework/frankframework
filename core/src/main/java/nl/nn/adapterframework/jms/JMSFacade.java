@@ -85,7 +85,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter boolean jmsTransacted = false;
 	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
-	private @Getter AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
+	private AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
 	private @Getter boolean persistent;
 	private @Getter long messageTimeToLive = 0;
 	private @Getter String destinationName;
@@ -232,7 +232,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeMode().getAcknowledgeMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -774,7 +774,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
 		}
 		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-		sb.append("[ackMode=" + getAcknowledgeMode() + "]");
+		sb.append("[ackMode=" + getAcknowledgeModeEnum() + "]");
 		sb.append("[persistent=" + isPersistent() + "]");
 		sb.append("[transacted=" + transacted + "]");
 		return sb.toString();
@@ -825,7 +825,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 		}
 	}
-
+	public AcknowledgeMode getAcknowledgeModeEnum() {
+		return acknowledgeMode;
+	}
+	
 	/**
 	 * Controls whether messages are processed persistently.
 	 *
