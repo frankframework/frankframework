@@ -34,8 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.LinkMethod;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -47,7 +49,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * This class sends messages with JMS.
@@ -58,25 +59,25 @@ import nl.nn.adapterframework.util.EnumUtils;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
-	private String replyToName = null;
-	private DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
-	private String messageType = null;
-	private int priority=-1;
-	private boolean synchronous=false;
-	private int replyTimeout=5000;
-	private String replySoapHeaderSessionKey="replySoapHeader";
-	private boolean soap=false;
-	private String encodingStyleURI=null;
-	private String serviceNamespaceURI=null;
-	private String soapAction=null;
-	private String soapHeaderParam="soapHeader";
-	private String linkMethod="MESSAGEID";
-	private String destinationParam = null;
+	private @Getter String replyToName = null;
+	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
+	private @Getter String messageType = null;
+	private @Getter int priority=-1;
+	private @Getter boolean synchronous=false;
+	private @Getter int replyTimeout=5000;
+	private @Getter String replySoapHeaderSessionKey="replySoapHeader";
+	private @Getter boolean soap=false;
+	private @Getter String encodingStyleURI=null;
+	private @Getter String serviceNamespaceURI=null;
+	private @Getter String soapAction=null;
+	private @Getter String soapHeaderParam="soapHeader";
+	private @Getter LinkMethod linkMethod=LinkMethod.MESSAGEID;
+	private @Getter String destinationParam = null;
 	
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
-	private List<String> responseHeadersList = new ArrayList<String>();
+	private @Getter List<String> responseHeadersList = new ArrayList<String>();
 
 	/**
 	 * Configures the sender
@@ -178,9 +179,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (getMessageType()!=null) {
 				msg.setJMSType(getMessageType());
 			}
-			if (getDeliveryModeEnum()!=DeliveryMode.NOT_SET) {
-				msg.setJMSDeliveryMode(getDeliveryModeEnum().getDeliveryMode());
-				mp.setDeliveryMode(getDeliveryModeEnum().getDeliveryMode());
+			if (getDeliveryMode()!=DeliveryMode.NOT_SET) {
+				msg.setJMSDeliveryMode(getDeliveryMode().getDeliveryMode());
+				mp.setDeliveryMode(getDeliveryMode().getDeliveryMode());
 			}
 			if (getPriority()>=0) {
 				msg.setJMSPriority(getPriority());
@@ -191,8 +192,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (pvl != null) {
 				setProperties(msg, pvl);
 			}
-			if (replyToName != null) {
-				replyQueue = getDestination(replyToName);
+			if (getReplyToName() != null) {
+				replyQueue = getDestination(getReplyToName());
 			} else {
 				if (isSynchronous()) {
 					replyQueue = getMessagingSource().getDynamicReplyQueue(s);
@@ -206,22 +207,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			// send message	
 			send(mp, msg);
 			if (log.isDebugEnabled()) {
-				log.debug("[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryModeEnum() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+				log.debug("[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName()+"]" : ""));
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryModeEnum() + "] " + ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+					log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName()+"]" : ""));
 				}
 			}
 			if (isSynchronous()) {
 				String replyCorrelationId=null;
-				if (replyToName != null) {
-					if ("CORRELATIONID".equalsIgnoreCase(getLinkMethod())) {
-						replyCorrelationId=correlationID;
-					} else if ("CORRELATIONID_FROM_MESSAGE".equalsIgnoreCase(getLinkMethod())) {
-						replyCorrelationId=msg.getJMSCorrelationID();
-					} else {
-						replyCorrelationId=msg.getJMSMessageID();
-					}
+				if (getReplyToName() != null) {
+					replyCorrelationId = getLinkMethod()==LinkMethod.CORRELATIONID ? correlationID : msg.getJMSMessageID();
 				}
 				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
@@ -326,8 +321,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("name", getName());
-		ts.append("replyToName", replyToName);
-		ts.append("deliveryMode", getDeliveryModeEnum());
+		ts.append("replyToName", getReplyToName());
+		ts.append("deliveryMode", getDeliveryMode());
 		result += ts.toString();
 		return result;
 
@@ -338,126 +333,75 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	public void setDestinationParam(String string) {
 		destinationParam = string;
 	}
-	protected String getDestinationParam() {
-		return destinationParam;
-	}
 
 	@IbisDoc({"2", "If <code>true</code>, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue", "false"})
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous=synchronous;
-	}
-	@Override
-	public boolean isSynchronous() {
-		return synchronous;
 	}
 
 	@IbisDoc({"3", "Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.", ""})
 	public void setReplyToName(String replyTo) {
 		this.replyToName = replyTo;
 	}
-	public String getReplyTo() {
-		return replyToName;
-	}
 	
 	@IbisDoc({"4", "Value of the JMSType field", "not set by application"})
 	public void setMessageType(String string) {
 		messageType = string;
 	}
-	public String getMessageType() {
-		return messageType;
-	}
 
 	@IbisDoc({"5", "Controls mode that messages are sent with", "not set by application"})
-	public void setDeliveryMode(String deliveryMode) {
-		this.deliveryMode = EnumUtils.parse(DeliveryMode.class, deliveryMode);
-	}
-	public void setDeliveryModeEnum(DeliveryMode deliveryMode) {
+	public void setDeliveryMode(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;
 	}
-	public DeliveryMode getDeliveryModeEnum() {
-		return deliveryMode;
-	}
-	
-
 
 
 	@IbisDoc({"6", "Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4", "-1"})
 	public void setPriority(int i) {
 		priority = i;
 	}
-	public int getPriority() {
-		return priority;
-	}
 
 	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
-	}
-	public boolean isSoap() {
-		return soap;
 	}
 
 	@IbisDoc({"8", "SOAP encoding style URI", ""})
 	public void setEncodingStyleURI(String string) {
 		encodingStyleURI = string;
 	}
-	public String getEncodingStyleURI() {
-		return encodingStyleURI;
-	}
 
 	@IbisDoc({"9", "SOAP service namespace URI", ""})
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
-	}
-	public String getServiceNamespaceURI() {
-		return serviceNamespaceURI;
 	}
 
 	@IbisDoc({"10", "SOAPAction string sent as message property", ""})
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}
-	public String getSoapAction() {
-		return soapAction;
-	}
 
 	@IbisDoc({"10", "Name of parameter containing SOAP header", "soapHeader"})
 	public void setSoapHeaderParam(String string) {
 		soapHeaderParam = string;
-	}
-	public String getSoapHeaderParam() {
-		return soapHeaderParam;
 	}
 
 	@IbisDoc({"11", "Maximum time in ms to wait for a reply. 0 means no timeout. (only for synchronous=true)", "5000"})
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
-	public int getReplyTimeout() {
-		return replyTimeout;
-	}
 
 	@IbisDoc({"12", "session key to store SOAP header of reply", "replySoapHeader"})
 	public void setReplySoapHeaderSessionKey(String string) {
 		replySoapHeaderSessionKey = string;
 	}
-	public String getReplySoapHeaderSessionKey() {
-		return replySoapHeaderSessionKey;
-	}
 
 	@IbisDoc({"13", "(Only used when synchronous='true' and and replytoname is set) either 'CORRELATIONID', 'CORRELATIONID_FROM_MESSAGE' or 'MESSAGEID'. Iindicates wether the server uses the correlationId from the pipeline, the correlationId from the message or the messageIid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.", "MESSAGEID"})
-	public void setLinkMethod(String method) {
+	public void setLinkMethod(LinkMethod method) {
 		linkMethod=method;
-	}
-	public String getLinkMethod() {
-		return linkMethod;
 	}
 
 	@IbisDoc({"14", "A list of JMS headers of the response to add to the pipelinesession", ""})
 	public void setResponseHeadersToSessionKeys(String responseHeaders) {
 		this.responseHeaders = responseHeaders;
-	}
-	public List<String> getResponseHeadersList() {
-		return responseHeadersList;
 	}
 }

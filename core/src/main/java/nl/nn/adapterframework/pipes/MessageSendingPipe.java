@@ -46,6 +46,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
+import nl.nn.adapterframework.core.LinkMethod;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -118,7 +119,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
 
-	private @Getter String linkMethod = "CORRELATIONID";
+	private @Getter LinkMethod linkMethod = LinkMethod.CORRELATIONID;
 
 	private @Getter String correlationIDStyleSheet;
 	private @Getter String correlationIDXPath;
@@ -270,10 +271,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
 			}
-			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
-				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
-				throw new ConfigurationException("Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
-			}	
 
 			if (!(getHideMethod().equalsIgnoreCase("all"))
 					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
@@ -607,7 +604,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
-					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
+					if (getLinkMethod() == LinkMethod.MESSAGEID) {
 						correlationID = sendResult.getResult().asString();
 						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
@@ -1039,9 +1036,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 * 
 	 * @param method either MESSAGEID or CORRELATIONID
 	 */
-	@IbisDoc({"1", "either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID "
+	@IbisDoc({"1", "For asynchronous communication, the server side may either use the messageID or the correlationID "
 		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "CORRELATIONID"})
-	public void setLinkMethod(String method) {
+	public void setLinkMethod(LinkMethod method) {
 		linkMethod = method;
 	}
 
