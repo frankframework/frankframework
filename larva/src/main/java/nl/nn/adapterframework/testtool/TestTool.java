@@ -85,6 +85,7 @@ import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
@@ -1326,7 +1327,7 @@ public class TestTool {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationTypeEnum(DestinationType.QUEUE);
+				jmsSender.setDestinationType(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1344,7 +1345,7 @@ public class TestTool {
 				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
 				if (deliveryMode != null) {
 					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					jmsSender.setDeliveryMode(deliveryMode);
+					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
 				if ("true".equals(persistent)) {
 					debugMessage("Set persistent to true", writers);
@@ -1396,7 +1397,7 @@ public class TestTool {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationTypeEnum(DestinationType.QUEUE);
+				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
