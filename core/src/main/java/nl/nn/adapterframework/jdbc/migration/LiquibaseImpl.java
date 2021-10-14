@@ -15,9 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import java.io.IOException;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +33,6 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -51,13 +54,20 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
+	public LiquibaseImpl(IbisContext ibisContext, DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException, IOException {
 		this.ibisContext = ibisContext;
 		this.configuration = configuration;
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(configuration.getClassLoader());
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
+		if(resourceAccessor.getResource(changeLogFile) == null) {
+			String msg = "unable to find database changelog file [" + changeLogFile + "]";
+			msg += " classLoader [" + configuration.getClassLoader() + "]";
+			throw new IOException(msg);
+		}
 
-		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
+		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
+
+		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
 	}
 
@@ -99,15 +109,21 @@ public class LiquibaseImpl {
 	}
 
 	public void rollback(String tagName) throws LiquibaseException {
-		liquibase.rollback(tagName, contexts);
+		if(liquibase != null) {
+			liquibase.rollback(tagName, contexts);
+		}
 	}
 
 	public void tag(String tagName) throws LiquibaseException {
-		liquibase.tag(tagName);
+		if(liquibase != null) {
+			liquibase.tag(tagName);
+		}
 	}
 
 	public Writer getUpdateScript(Writer writer) throws LiquibaseException {
-		liquibase.update(contexts, labelExpression, writer);
+		if(liquibase != null) {
+			liquibase.update(contexts, labelExpression, writer);
+		}
 		return writer;
 	}
 
