@@ -20,7 +20,6 @@ import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
