@@ -66,7 +66,7 @@ public class LiquibaseClassLoaderWrapper extends ClassLoader {
 	 */
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
-		Vector<URL> urls = new Vector<URL>();
+		Vector<URL> urls = new Vector<>();
 
 		if(StringUtils.isNotEmpty(name) && getResource(name) != null)
 			urls.add(getResource(name));
