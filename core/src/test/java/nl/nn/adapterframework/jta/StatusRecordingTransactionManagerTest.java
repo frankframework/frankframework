@@ -151,7 +151,13 @@ public class StatusRecordingTransactionManagerTest {
 		assertEquals(tmUid, recordedTmUid);
 	}
 	
-	
+	@Test
+	public void testTestReadWithWhitespace() {
+		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		String value = "fake tm uid";
+		tm.write(TMUID_FILE, "\n "+value+" \n\n");
+		assertEquals(value, tm.read(TMUID_FILE));
+	}	
 	
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
