@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -39,7 +38,6 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
-	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
 	
 	@Override
@@ -47,8 +45,7 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 		super.configure();
 		try(Connection connection=querySender.getConnection()){
 			DatabaseMetaData md = connection.getMetaData();
-			boolean showWarning = !suppressResultSetHoldabilityWarning || (querySender.getDatabaseType() == Dbms.DB2 && "WAS".equals(applicationServerType));
-			if (showWarning && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
+			if (!suppressResultSetHoldabilityWarning && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
 				// For (some?) combinations of WebSphere and (XA) Databases this seems to be the default and result in the following exception:
 				// com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
 				// When a ResultSetIteratingPipe is calling next() on the ResultSet after processing the first message it will throw the exception when:
@@ -56,7 +53,7 @@ public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 				// - the ResultSetIteratingPipe is transacted and sender contains a non transacted sender (transactionAttribute="NotSupported")
 				// Either none, or both need to be transacted.
 				// See issue #2015 ((ObjectClosedException) DSRA9110E: ResultSet is closed) on www.github.com
-				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
+				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT). This may cause 'DSRA9110E: ResultSet is closed' error on WebSphere if the subadapter has a different transactionality than the main adapter.");
 			}
 		} catch (JdbcException | SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
