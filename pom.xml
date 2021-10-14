@@ -11,6 +11,7 @@
 		<log4j2.version>2.14.1</log4j2.version>
 		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
+		<frankdoc.version>1.0-SNAPSHOT</frankdoc.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -144,11 +145,6 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-aspose</artifactId>
-				<version>7.7-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-frankDoc</artifactId>
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
 			<dependency>
@@ -567,7 +563,6 @@
 				<module>test</module>
 				<module>akamai</module>
 				<module>example</module>
-				<module>frankDoc</module>
 				<module>credentialProvider</module>
 			</modules>
 		</profile>
@@ -682,11 +677,11 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
+								<artifactId>frank-doc</artifactId>
+								<version>${frankdoc.version}</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
