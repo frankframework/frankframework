@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import java.io.IOException;
 import java.io.Writer;
 
 import javax.naming.NamingException;
@@ -100,6 +101,9 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		}
 		catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
+		}
+		catch (IOException e) {
+			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
 		}
 		catch (Throwable e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);

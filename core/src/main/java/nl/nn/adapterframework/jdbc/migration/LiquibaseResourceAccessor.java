@@ -47,11 +47,15 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		}
 	}
 
+	protected URL getResource(String path) {
+		return classLoader.getResource(path, false);
+	}
+
 	@Override
 	public Set<InputStream> getResourcesAsStream(String path) throws IOException {
 		Set<InputStream> returnSet = new HashSet<>();
 
-		URL url = classLoader.getResource(path, false);
+		URL url = getResource(path);
 		if(url != null) {
 			returnSet.add(url.openStream());
 		}

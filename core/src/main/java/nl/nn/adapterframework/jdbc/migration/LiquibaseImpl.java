@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,10 +52,16 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException {
+	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException, IOException {
 		this.configuration = configuration;
 
 		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
+		if(resourceAccessor.getResource(changeLogFile) == null) {
+			String msg = "unable to find database changelog file [" + changeLogFile + "]";
+			msg += " classLoader [" + configuration.getClassLoader() + "]";
+			throw new IOException(msg);
+		}
+
 		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
