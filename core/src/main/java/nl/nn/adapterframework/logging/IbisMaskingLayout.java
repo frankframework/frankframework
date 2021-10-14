@@ -118,8 +118,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 * @see https://issues.apache.org/jira/browse/LOG4J2-1179
-	 * @see https://issues.apache.org/jira/browse/LOG4J2-1382
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1179"
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1382"
 	 * 
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
