@@ -32,7 +32,6 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -52,13 +51,13 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(DataSource datasource, Configuration configuration, ClassLoader classLoader, String changeLogFile) throws LiquibaseException, SQLException {
+	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException {
 		this.configuration = configuration;
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(classLoader);
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
 		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
 
-		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
+		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
 	}
 

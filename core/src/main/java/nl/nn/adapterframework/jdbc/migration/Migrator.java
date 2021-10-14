@@ -31,12 +31,12 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -86,25 +86,23 @@ public class Migrator implements IConfigurable, AutoCloseable {
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 		}
 
-		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
-		if(cl.getResource(changeLogFile) == null) {
-			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
-			log.debug(msg);
+		ClassLoader classLoader = configuration.getClassLoader();
+		if(!(classLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+			ConfigurationWarnings.add(this, log, "unable to initialize database migrator");
+			return;
 		}
-		else {
-			try {
-				instance = new LiquibaseImpl(datasource, configuration, cl, changeLogFile);
-			}
-			catch (ValidationFailedException e) {
-				ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
-			}
-			catch (LiquibaseException e) {
-				ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
-			}
-			catch (Throwable e) {
-				ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
-			}
+
+		try {
+			instance = new LiquibaseImpl(datasource, configuration, changeLogFile);
+		}
+		catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
+		}
+		catch (LiquibaseException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
+		}
+		catch (Throwable e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
 		}
 	}
 
