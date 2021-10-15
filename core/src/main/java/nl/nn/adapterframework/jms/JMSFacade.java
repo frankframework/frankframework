@@ -83,9 +83,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	private @Getter boolean transacted = false;
 	private @Getter boolean jmsTransacted = false;
-	private SubscriberType subscriberType = SubscriberType.DURABLE;
+	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
-	private AcknowledgeMode ackMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
+	private AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
 	private @Getter boolean persistent;
 	private @Getter long messageTimeToLive = 0;
 	private @Getter String destinationName;
@@ -93,7 +93,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String authAlias;
 	private @Getter boolean lookupDestination = true;
 
-	private DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
+	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
 	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -453,7 +453,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result = getDestinationTypeEnum()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
+		String result = getDestinationType()+"("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
 		}
@@ -774,7 +774,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
 		}
 		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
-		sb.append("[ackMode=" + ackMode + "]");
+		sb.append("[ackMode=" + getAcknowledgeModeEnum() + "]");
 		sb.append("[persistent=" + isPersistent() + "]");
 		sb.append("[transacted=" + transacted + "]");
 		return sb.toString();
@@ -795,15 +795,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 
 	@IbisDoc({"2", "Type of the messageing destination", "queue"})
-	public void setDestinationType(String destinationType) {
-		this.destinationType = EnumUtils.parse(DestinationType.class, "destinationType", destinationType);
-		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
-	}
-	public void setDestinationTypeEnum(DestinationType destinationType) {
+	public void setDestinationType(DestinationType destinationType) {
 		this.destinationType=destinationType;
-	}
-	public DestinationType getDestinationTypeEnum() {
-		return destinationType;
+		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
 	}
 
 	/**
@@ -813,29 +807,28 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@Deprecated
 	@ConfigurationWarning("please use attribute acknowledgeMode instead")
 	public void setAckMode(int ackMode) {
-		this.ackMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
-	}
-
-	public AcknowledgeMode getAcknowledgeModeEnum() {
-		return ackMode;
+		this.acknowledgeMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
 	}
 
 
 	@IbisDoc({"3", "If not transacted, the way the application informs the JMS provider that it has successfully received a message.", "auto"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		try {
-			ackMode = EnumUtils.parseDocumented(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
+			this.acknowledgeMode = EnumUtils.parseDocumented(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
 		} catch (IllegalArgumentException e1) {
 			try {
-				ackMode = EnumUtils.parseNormal(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
+				this.acknowledgeMode = EnumUtils.parseNormal(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
 			} catch (IllegalArgumentException e2) {
 				e1.addSuppressed(e2);
 				ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e1);
-				ackMode = AcknowledgeMode.NOT_SET;
+				this.acknowledgeMode = AcknowledgeMode.NOT_SET;
 			}
 		}
 	}
-
+	public AcknowledgeMode getAcknowledgeModeEnum() {
+		return acknowledgeMode;
+	}
+	
 	/**
 	 * Controls whether messages are processed persistently.
 	 *
@@ -848,11 +841,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	@IbisDoc({"5", "Only applicable for topics", "DURABLE"})
-	public void setSubscriberType(String subscriberType) {
-		this.subscriberType = EnumUtils.parse(SubscriberType.class, subscriberType);
-	}
-	public SubscriberType getSubscriberTypeEnum() {
-		return subscriberType;
+	public void setSubscriberType(SubscriberType subscriberType) {
+		this.subscriberType = subscriberType;
 	}
 
 	/**
