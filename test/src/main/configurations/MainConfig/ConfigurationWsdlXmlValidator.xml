@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="WsdlXmlValidator" description="Test the functioning of the WsdlXmlValidator">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -57,4 +57,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>
