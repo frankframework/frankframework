@@ -582,7 +582,7 @@ public class ConfigurationUtils {
 		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false, false);
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload, boolean deactive) throws ConfigurationException {
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload, boolean isInactive) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -596,7 +596,7 @@ public class ConfigurationUtils {
 			if (onlyAutoReload) {
 				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
 			}
-			if(deactive) {
+			if(isInactive) {
 				query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE NAME NOT IN ("+query+")";
 			}
 			PreparedStatement stmt = conn.prepareStatement(query);

@@ -836,17 +836,17 @@ public class JobDef extends TransactionAttributes {
 				}
 			}
 
-			List<String> deactiveDbConfigNames = null;
+			List<String> inactiveDbConfigNames = null;
 			try {
 				// get inactive configs from db
-				deactiveDbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, false, true);
+				inactiveDbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, false, true);
 			} catch(ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}
 			// unload old (deactivated) configurations
-			if (deactiveDbConfigNames != null && !deactiveDbConfigNames.isEmpty()) {
+			if (inactiveDbConfigNames != null && !inactiveDbConfigNames.isEmpty()) {
 				for (String currentConfigurationName : configNames) {
-					if (deactiveDbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+					if (inactiveDbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
 						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
