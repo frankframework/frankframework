@@ -15,22 +15,21 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-
+import java.io.IOException;
 import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * LiquiBase implementation for IAF. 
@@ -69,26 +68,26 @@ public class Migrator extends JdbcFacade implements AutoCloseable {
 		if(changeLogFile == null)
 			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(configuration.getClassLoader());
-		if(cl.getResource(changeLogFile) == null) {
-			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			msg += " classLoader ["+ClassUtils.nameOf(configuration.getClassLoader())+"]";
-			log.debug(msg);
+		ClassLoader classLoader = configuration.getClassLoader();
+		if(!(classLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+			ConfigurationWarnings.add(configuration, log, "unable to initialize database migrator");
+			return;
 		}
-		else {
-			try {
-				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, connection, configuration, changeLogFile);
-			}
-			catch (ValidationFailedException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
-			}
-			catch (LiquibaseException e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
-			}
-			catch (Throwable e) {
-				ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
-			}
+
+		try {
+			instance = new LiquibaseImpl(ibisContext, getDatasource(), configuration, changeLogFile);
+		}
+		catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(configuration, log, "liquibase validation failed: "+e.getMessage(), e);
+		}
+		catch (LiquibaseException e) {
+			ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize", e);
+		}
+		catch (IOException e) {
+			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
+		}
+		catch (Throwable e) {
+			ConfigurationWarnings.add(configuration, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 		}
 	}
 
