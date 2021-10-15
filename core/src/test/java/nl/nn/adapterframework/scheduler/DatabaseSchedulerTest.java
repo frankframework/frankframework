@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
 import nl.nn.adapterframework.testutil.FixedQuerySenderMock;
 import nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder;
@@ -27,7 +26,7 @@ public class DatabaseSchedulerTest extends Mockito {
 
 	@Before
 	public void setup() throws Exception {
-		configuration = new TestConfiguration(true);
+		configuration = new TestConfiguration();
 		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
 
 		job = configuration.createBean(LoadDatabaseSchedulesJob.class);
@@ -43,7 +42,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void executeJob() throws Exception {
 		ResultSetBuilder builder = FixedQuerySenderMock.ResultSetBuilder.create();
 		builder.setValue("JOBNAME", "dummy name");
 		builder.setValue("JOBGROUP", "dummy group");
@@ -56,8 +55,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		adapter.setName("testAdapter");
 		configuration.registerAdapter(adapter);
 
-		FixedQuerySenderMock mock = new FixedQuerySenderMock(builder.build());
-		configuration.mockCreateBean(FixedQuerySender.class, mock);
+		configuration.mockQuery("SELECT COUNT(*) FROM IBISSCHEDULES", builder.build());
 
 		job.execute(configuration.getIbisManager());
 
