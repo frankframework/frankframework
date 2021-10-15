@@ -1,19 +1,4 @@
 <Module>
-	<!-- Trigger to scan file system running with cron schedule sends the directory to be scanned as input-->
-	<Job
-		active="${active.mfh.renamefiles}"
-		name="TriggerMFHRenameFiles"
-		cronExpression="${trigger.mfh.scheduled.job.cron}"
-		function="SendMessage"
-		javaListener="MFH rename files listener"
-		message="${currentflow.rootdir}/in"
-	>
-		<Locker
-			name="TriggerMFHRenameFiles"
-			objectId="TriggerMFHRenameFiles"
-			ignoreTableNotExist="true"
-		/>
-	</Job>
 
 <!-- Adapter to create the trigger message that will be stored in database.
 	Uses createTriggerMessage.xsl file to create the message. The message format can be adjusted with the xsl 
@@ -22,23 +7,23 @@
 -->
 
 	<Adapter name="MFHIn" active="${active.mfh}">
-		<Receiver pollInterval="${currentflow.pollInterval}"> 
+		<Receiver pollInterval="${mfh.flow1.pollInterval}"> 
 			<DirectoryListener
-				minStableTime ="${currentflow.minstabletime}"
+				minStableTime ="${mfh.flow1.minstabletime}"
 				fileTimeSensitive="true"
 				name="MFHIn"
 				messageType="info"
-				root="${currentflow.rootdir}"
+				root="${mfh.flow1.rootdir}"
 				inputFolder="in"
-				inProcessFolder="${currentflow.inprocess}"
+				inProcessFolder="${mfh.flow1.inprocess}"
 				errorFolder="error"
 				createFolders="true"
-				wildcard="${currentflow.wildcard}"
+				wildcard="${mfh.flow1.wildcard}"
 			/>
 		</Receiver>
 		<Pipeline>
 			<Exit path="EXIT" state="success" />
-			
+
 			<XsltPipe
 				name="wrapInput"
 				styleSheetName="MFH/xsl/createTriggerMessage.xsl"
@@ -46,8 +31,8 @@
 			>
 				<Param name="CanonicalName" xpathExpression="file/@canonicalName" />
 				<Param name="Filename" xpathExpression="file/@name" />
-				<Param name="MFHFlowId" value="${currentflow.mfhflowid}" /> 
-				<Param name="FlowId" value="${currentflow.flowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
+				<Param name="MFHFlowId" value="${mfh.flow1.mfhflowid}" /> 
+				<Param name="FlowId" value="${mfh.flow1.flowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
 				<Param name="originalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
 				<Param name="LocalTransactionID" sessionKey="cid" />
 			</XsltPipe>
@@ -58,10 +43,10 @@
 				<FixedQuerySender
 					name="insertPipe"
 					useNamedParams="true"
-					query="INSERT INTO IBISFILETRIGGER (UNIQUEKEY, NAME, URI, CREATED_AT, SIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{UNIQUEKEY}, ?{FILENAME}, ?{FILEURI}, NOW(), ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, NOW())"
+					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, NAME, URI, CREATED_AT, SIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, NOW(), ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, NOW())"
 					queryType="OTHER"
 				>
-					<Param name="UNIQUEKEY" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
+					<Param name="MESSAGEID" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
 					<Param name="FILENAME" sessionKey="originalMessage" xpathExpression="file/@name" />
 					<Param name="FILEURI" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
 					<Param name="FILESIZE" sessionKey="originalMessage" xpathExpression="file/@size" />
@@ -72,42 +57,6 @@
 		</Pipeline>
 	</Adapter>
 
-<!-- Adapter that will be triggered by a job. After trigger it will rename the files with mfh- prefix. 
-	In this adapter an wildcard is required to filter the files that will be processed with this adapter. 
--->
-	<Adapter name="MFH rename files" active="${active.mfh.renamefiles}">
-		<Receiver>
-			<JavaListener name="MFH rename files listener"/>
-		</Receiver>
-
-		<Pipeline>
-			<Exit state="success" path="EXIT"/>
-			<LocalFileSystemPipe 
-				name="scanFolder" 
-				action="list"
-				excludeWildcard="mfh-*"
-				wildcard="${mfh.renamefiles.wildcard}"
-				createFolder="true"
-			/>
-
-			<ForEachChildElementPipe 
-				name="IterateOverFiles" 
-				targetElement="file" 
-			>
-				<LocalFileSystemSender 
-					action="rename"
-					createFolder="true"
-				>
-					<Param name="filename" xpathExpression="/file/@canonicalName"/>
-					<Param name="destination" xpathExpression="concat(substring-before(/file/@canonicalName, file/@name),$prefix, file/@name)">
-						<Param name="prefix" value="${mfh.renamefiles.prefix}"/>
-					</Param>
-				</LocalFileSystemSender>
-
-			</ForEachChildElementPipe>
-		</Pipeline>
-	</Adapter>
-	
 <!-- Adapter may process a message from the IBISFILETRIGGER table 
 	Has a table listener listening to IBISFILETRIGGER table. 
 	It is possible to specify a 'selectCondition' in table listener to retrieve only some of the records.
@@ -126,7 +75,7 @@
 				statusValueProcessed="3"
 				statusValueError="4"
 				statusValueHold="5"
-				keyField="UNIQUEKEY"
+				keyField="MESSAGEID"
 				messageField="MESSAGE"
 			/>
 		</Receiver>
