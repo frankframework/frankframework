@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,7 +26,7 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if(FixedQuerySenderClassName.equals(beanName)) {
-			FixedQuerySenderMock qs = applicationContext.getBean("querySenderMock", FixedQuerySenderMock.class);
+			FixedQuerySenderMock qs = createMock();
 			qs.addMockedQueries(mocks);
 			System.err.println(qs);
 			return qs;
@@ -36,5 +37,10 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 
 	public void addMock(String query, ResultSet resultSet) {
 		mocks.put(query, resultSet);
+	}
+
+	private FixedQuerySenderMock createMock() {
+		return (FixedQuerySenderMock) applicationContext.getAutowireCapableBeanFactory()
+				.createBean(FixedQuerySenderMock.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 }
