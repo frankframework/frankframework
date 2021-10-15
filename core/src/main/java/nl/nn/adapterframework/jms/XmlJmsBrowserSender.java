@@ -114,7 +114,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
 			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
-		} catch (DomBuilderException | IOException e) {
+		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 
