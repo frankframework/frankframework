@@ -186,6 +186,8 @@ The pipe compares two values that can each be supplied through `<Param>` tags. T
 
 ![webappTwoFfParameter](./picturesForContributors/webappTwoFfParameter.jpg)
 
+**Note:** All text that you put after a JavaDoc tag is assumed to belong to that JavaDoc tag. Therefore, a JavaDoc comment should start with the text that does not belong to JavaDoc tags. You cannot mix JavaDoc tags with text that does not belong to a tag.
+
 ## Deprecated child elements and attributes
 
 As a Java engineer, you know the `@Deprecated` Java annotation. You use it for Java classes and methods in a library that should no longer be used. Deprecated items only exist for backward compatibility, and they may be removed in a future version of the library. In the source code of the Frank!Framework, WeAreFrank! also uses this annotation. This section explains how `@Deprecated` attribute setters, `@Deprecated` config child setters and `@Deprecated` Java classes appear in the Frank!Doc.
