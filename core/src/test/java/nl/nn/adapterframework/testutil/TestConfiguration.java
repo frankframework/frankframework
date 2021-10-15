@@ -41,6 +41,7 @@ public class TestConfiguration extends Configuration {
 		refresh();
 
 		//Add Custom Pre-Instantiation Processor to mock statically created FixedQuerySenders.
+		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
 		configure();
@@ -64,7 +65,7 @@ public class TestConfiguration extends Configuration {
 	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
-		qsPostProcessor.getMock().addMock(query, resultSet);
+		qsPostProcessor.addMock(query, resultSet);
 	}
 
 	public void autowireByType(Object bean) {

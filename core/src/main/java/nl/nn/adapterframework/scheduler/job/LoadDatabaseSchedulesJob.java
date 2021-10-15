@@ -52,7 +52,6 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class LoadDatabaseSchedulesJob extends JobDef {
 
-	
 	@Override
 	public void execute(IbisManager ibisManager) {
 		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();

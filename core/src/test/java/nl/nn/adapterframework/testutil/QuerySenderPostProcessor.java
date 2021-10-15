@@ -1,9 +1,15 @@
 package nl.nn.adapterframework.testutil;
 
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 
 /**
@@ -11,16 +17,24 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
  * @author Niels Meijer
  *
  */
-public class QuerySenderPostProcessor implements BeanPostProcessor {
+public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 	private final String FixedQuerySenderClassName = FixedQuerySender.class.getName();
-	private @Getter FixedQuerySenderMock mock = new FixedQuerySenderMock();
+	private @Setter ApplicationContext applicationContext;
+	private Map<String, ResultSet> mocks = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if(FixedQuerySenderClassName.equals(beanName)) {
-			return mock;
+			FixedQuerySenderMock qs = applicationContext.getBean("querySenderMock", FixedQuerySenderMock.class);
+			qs.addMockedQueries(mocks);
+			System.err.println(qs);
+			return qs;
 		}
 
 		return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
+	}
+
+	public void addMock(String query, ResultSet resultSet) {
+		mocks.put(query, resultSet);
 	}
 }
