@@ -37,7 +37,6 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.LinkMethod;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -78,6 +77,15 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
 	private @Getter List<String> responseHeadersList = new ArrayList<String>();
+
+	public enum LinkMethod {
+		/** use the generated messageId as the correlationId in the selector for response messages */
+		MESSAGEID, 
+		/** set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages */
+		CORRELATIONID, 
+		/** do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages */
+		CORRELATIONID_FROM_MESSAGE;
+	}
 
 	/**
 	 * Configures the sender
@@ -216,7 +224,19 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			if (isSynchronous()) {
 				String replyCorrelationId=null;
 				if (getReplyToName() != null) {
-					replyCorrelationId = getLinkMethod()==LinkMethod.CORRELATIONID ? correlationID : msg.getJMSMessageID();
+					switch (getLinkMethod()) {
+					case MESSAGEID:
+						replyCorrelationId=msg.getJMSMessageID();
+						break;
+					case CORRELATIONID:
+						replyCorrelationId=correlationID;
+						break;
+					case CORRELATIONID_FROM_MESSAGE:
+						replyCorrelationId=msg.getJMSCorrelationID();
+						break;
+					default:
+						throw new IllegalStateException("unknown linkMethod ["+getLinkMethod()+"]");
+					}
 				}
 				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
@@ -385,7 +405,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		soapHeaderParam = string;
 	}
 
-	@IbisDoc({"11", "Maximum time in ms to wait for a reply. 0 means no timeout. (only for synchronous=true)", "5000"})
+	@IbisDoc({"11", "(Only for synchronous=true). Maximum time in ms to wait for a reply. 0 means no timeout. ", "5000"})
 	public void setReplyTimeout(int i) {
 		replyTimeout = i;
 	}
@@ -395,12 +415,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		replySoapHeaderSessionKey = string;
 	}
 
-	@IbisDoc({"13", "(Only used when synchronous='true' and and replytoname is set) either 'CORRELATIONID', 'CORRELATIONID_FROM_MESSAGE' or 'MESSAGEID'. Iindicates wether the server uses the correlationId from the pipeline, the correlationId from the message or the messageIid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.", "MESSAGEID"})
+	@IbisDoc({"13", "(Only used when synchronous='true' and and <code>replyToName</code> is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending.", "MESSAGEID"})
 	public void setLinkMethod(LinkMethod method) {
 		linkMethod=method;
 	}
 
-	@IbisDoc({"14", "A list of JMS headers of the response to add to the pipelinesession", ""})
+	@IbisDoc({"14", "A list of JMS headers of the response to add to the PipeLineSession", ""})
 	public void setResponseHeadersToSessionKeys(String responseHeaders) {
 		this.responseHeaders = responseHeaders;
 	}

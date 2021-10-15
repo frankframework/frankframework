@@ -46,7 +46,6 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
-import nl.nn.adapterframework.core.LinkMethod;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -187,23 +186,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter ListenerProcessor listenerProcessor;
 
-
-	protected void propagateName() {
-		ISender sender=getSender();
-		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
-			sender.setName(getName() + "-sender");
-		}
-		ICorrelatedPullingListener listener=getListener();
-		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
-			listener.setName(getName() + "-replylistener");
-		}
-	}
-
-	@IbisDoc({"name of the pipe", ""})
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		propagateName();
+	public enum LinkMethod {
+		MESSAGEID, CORRELATIONID
 	}
 
 	/**
@@ -396,6 +380,24 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 
 		getPipeLine().configure(pipe);
+	}
+
+	protected void propagateName() {
+		ISender sender=getSender();
+		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
+			sender.setName(getName() + "-sender");
+		}
+		ICorrelatedPullingListener listener=getListener();
+		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
+			listener.setName(getName() + "-replylistener");
+		}
+	}
+
+	@IbisDoc({"name of the pipe", ""})
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		propagateName();
 	}
 
 //	/**
