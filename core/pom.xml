@@ -328,7 +328,7 @@
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib-nodep</artifactId>
-			<version>3.2.7</version>
+			<version>2.1_3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -461,10 +461,6 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jta_1.1_spec</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -476,10 +472,6 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jta_1.1_spec</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -490,10 +482,6 @@
 				<exclusion>
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -692,6 +680,76 @@
 					<optional>true</optional>
 				</dependency>
 			</dependencies>
+		</profile>
+		<profile>
+			<id>jdk11</id>
+			<activation>
+				<jdk>11</jdk>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>cglib</groupId>
+					<artifactId>cglib-nodep</artifactId>
+					<version>3.2.7</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-frontend-jaxws</artifactId>
+					<version>${cxf.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>com.sun.xml.messaging.saaj</groupId>
+							<artifactId>saaj-impl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-jta_1.1_spec</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-transports-http</artifactId>
+					<version>${cxf.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>com.sun.xml.messaging.saaj</groupId>
+							<artifactId>saaj-impl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-jta_1.1_spec</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-rs-client</artifactId>
+					<version>${cxf.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>com.sun.xml.messaging.saaj</groupId>
+							<artifactId>saaj-impl</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.geronimo.specs</groupId>
+							<artifactId>geronimo-jta_1.1_spec</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.8.1</version>
+						<configuration>
+							<release>11</release>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
