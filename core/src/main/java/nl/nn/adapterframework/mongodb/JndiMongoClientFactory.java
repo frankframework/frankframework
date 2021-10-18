@@ -21,12 +21,14 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 
+import org.springframework.beans.factory.DisposableBean;
+
 import com.mongodb.client.MongoClient;
 
 import nl.nn.adapterframework.jndi.JndiObjectFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory {
+public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory, DisposableBean {
 
 	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
 	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
@@ -50,6 +52,13 @@ public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoC
 	@Override
 	public List<String> getMongoClients() {
 		return new ArrayList<String>(objects.keySet());
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		for (MongoClient client:objects.values()) {
+			client.close();
+		}
 	}
 
 }
