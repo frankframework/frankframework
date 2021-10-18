@@ -19,9 +19,12 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 
 /**
+ * Enables the ability to provide a mockable FixedQuerySender. In some places a new QuerySender is created to execute (custom) statements.
+ * This allows the result to be mocked.
+ * 
+ * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
  * 
  * @author Niels Meijer
- *
  */
 public class FixedQuerySenderMock extends FixedQuerySender {
 	private Map<String, ResultSet> mocks = new HashMap<>();

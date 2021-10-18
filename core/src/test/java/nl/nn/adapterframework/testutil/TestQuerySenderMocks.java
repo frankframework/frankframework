@@ -12,9 +12,12 @@ import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
+ * Test mocked/stubbed ResultSets
+ * 
+ * @See {@link TestConfiguration#mockQuery(String, ResultSet)}
+ * @See {@link FixedQuerySenderMock}
  * 
  * @author Niels Meijer
- *
  */
 public class TestQuerySenderMocks {
 
