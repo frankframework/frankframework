@@ -56,11 +56,25 @@ There is a `<rule>` XML element that links the name `adapter` to the name of the
 
 ## How Java inheritance is shown
 
-In Java, config child setters and attribute setters are inherited like any Java method. As a consequence, attributes and config children are inherited. In `FrankConfig-strict.xsd` and in the JSON, inheritance is used to avoid unnecessary repetition and reduce file sizes. Frank developers do not see this in their text editor. Attributes look the same whether they are declared or inherited, and the same is true for child elements. In the web application however, inheritance is clearly visible as shown below:
+In Java, config child setters and attribute setters are inherited like any Java method. As a consequence, attributes and config children are inherited. In `FrankConfig-strict.xsd` and in the JSON, inheritance is used to avoid unnecessary repetition and reduce file sizes. Frank developers do not see this in their text editor. Attributes look the same whether they are declared or inherited, and the same is true for child elements. In the web application, Frank developers can choose how they want to see inheritance. The default is shown below:
 
 ![webappInheritance](./picturesForContributors/webappInheritance.jpg)
 
-Declared config children and declared attributes go first. If config children or attributes are inherited, there is a heading with the closest ancestor from which we have inheritance. The config children and the attributes inherited from that ancestor follow. Next comes a header for the next ancestor from which config children or attributes are inherited. The recursion ends when all declared and all inherited config children and attributes are present.
+After the JavaDoc you first see the nested config children, both inherited and declared. After the Parameters section, which is explained later, come all attributes. Both the config children and the attributes are grouped by their origin in the inheritance hierarchy: declared goes before inherited and closer ancestors go before further ancestors.
+
+Frank developers can change the way config children and attributes are grouped. They can use the button shown below:
+
+![webappButtonShowInheritance](./picturesForContributors/webappButtonShowInheritance.jpg)
+
+When the button is pressed, it changes as shown:
+
+![webappButtonHideInheritance](./picturesForContributors/webappButtonHideInheritance.jpg)
+
+The pipe information is now grouped as follows:
+
+![webappInheritanceShown](./picturesForContributors/webappInheritanceShown.jpg)
+
+First, everything declared in the AmountOfPagesPipe is shown: config children, attributes and the rest. Then in a next section the first ancestor is shown for which information is available. There are additional sections until the inheritance hierarchy is exhausted.
 
 ## Preferred order of attributes and child elements
 
