@@ -77,6 +77,7 @@
 				statusValueHold="5"
 				keyField="MESSAGEID"
 				messageField="MESSAGE"
+				orderField="CREATED_AT"
 			/>
 		</Receiver>
 		<Receiver> <!-- This could be called from the scheduled adapter-->
