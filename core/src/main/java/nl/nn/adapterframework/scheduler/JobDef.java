@@ -809,7 +809,7 @@ public class JobDef extends TransactionAttributes {
 				}
 			}
 		} catch (Exception e) {
-			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
 		} finally {
 			qs.close();
 		}
@@ -824,7 +824,7 @@ public class JobDef extends TransactionAttributes {
 			// load new (activated) configs
 			List<String> dbConfigNames = null;
 			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), dataSource, true);
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext());
 			} catch (ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}

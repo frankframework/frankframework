@@ -554,7 +554,7 @@ public class ConfigurationUtils {
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			log.info("scanning database for configurations");
 			try {
-				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext, null);
+				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisContext);
 				if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
 					log.debug("found database configurations "+dbConfigNames.toString()+"");
 					for (String dbConfigName : dbConfigNames) {
@@ -578,14 +578,10 @@ public class ConfigurationUtils {
 		return allConfigNameItems;
 	}
 
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm) throws ConfigurationException {
-		return retrieveConfigNamesFromDatabase(ibisContext, jmsRealm, false);
-	}
-
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, String jmsRealm, boolean onlyAutoReload) throws ConfigurationException {
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
-		FixedQuerySender qs = (FixedQuerySender) ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		qs.configure();
@@ -593,9 +589,6 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
-			if (onlyAutoReload) {
-				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
-			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();
