@@ -10,6 +10,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -19,19 +20,20 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
-	private final static String IBISSTORE_CHANGESET_PATH = "/Migrator/Ibisstore_4_unittests_changeset.xml";
+	private final static String IBISSTORE_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
 	protected Liquibase liquibase;
@@ -66,10 +68,16 @@ public abstract class JdbcTestBase {
 		prepareDatabase();
 	}
 
+	@After
+	public void teardown() throws Exception {
+		if(liquibase != null) {
+			liquibase.dropAll();
+		}
+	}
+
 	protected void createDbTable() throws Exception {
-		FileSystemResourceAccessor resourceAccessor = new FileSystemResourceAccessor(TestFileUtils.getTestFileURL("/").getPath());
-		String changesetFilePath = TestFileUtils.getTestFileURL(IBISSTORE_CHANGESET_PATH).getPath();
-		liquibase = new Liquibase(changesetFilePath, resourceAccessor, new JdbcConnection(getConnection()));
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
+		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
 		liquibase.update(new Contexts());
 	}
 	

@@ -42,12 +42,6 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		createDbTable();
 	}
 
-
-	@After
-	public void teardown() throws Exception {
-		liquibase.dropAll();
-	}
-
 	@Test
 	public void testQueryTextAndBrowseMessage() throws Exception {
 		testQueryTextAndBrowseMessageHelper(true);

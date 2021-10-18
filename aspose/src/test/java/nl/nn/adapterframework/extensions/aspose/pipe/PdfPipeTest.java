@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.testautomationguru.utility.PDFUtil;
@@ -213,6 +214,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		expectSuccessfullConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
 	}
 
+	@Ignore
 	@Test
 	public void tiff2Pdf() throws Exception {
 		expectSuccessfullConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");

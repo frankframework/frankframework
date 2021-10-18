@@ -44,11 +44,6 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		listener = new JavaListener();
 	}
 
-	@After
-	public void teardown() throws Exception {
-		liquibase.dropAll();
-	}
-
 	@Test
 	public void testMessageFilter() throws Exception {
 		String messageRoot = "message";
