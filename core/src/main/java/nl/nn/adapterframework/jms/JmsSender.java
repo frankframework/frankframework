@@ -53,7 +53,7 @@ import nl.nn.adapterframework.stream.Message;
  * This class sends messages with JMS.
  *
  * @ff.parameters All parameters present are set as message-properties.
- * @ff.parameter SoapAction - Automatically filled from attribute <code>soapAction</code>
+ * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
  * 
  * @author Gerrit van Brakel
  */
