@@ -32,7 +32,6 @@ import nl.nn.adapterframework.util.AppConstants;
  * MongoClientFactory that retrieves its configuration from JNDI.
  * 
  * @author Gerrit van Brakel
- * 
  */
 public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoClient> implements IMongoClientFactory, DisposableBean {
 

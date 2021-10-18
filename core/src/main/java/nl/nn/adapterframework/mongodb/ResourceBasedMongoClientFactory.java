@@ -34,7 +34,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * MongoClientFactory that retrieves its configuration from a properties file on the classpath.
  * 
  * @author Gerrit van Brakel
- * 
  */
 public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory, DisposableBean {
 
