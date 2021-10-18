@@ -32,6 +32,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * Baseclass for Jndi lookups.
  * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  * 
+ * @author Gerrit van Brakel
+ * 
  * @param <O> Object class used by clients
  * @param <L> Class looked up in JNDI
  */

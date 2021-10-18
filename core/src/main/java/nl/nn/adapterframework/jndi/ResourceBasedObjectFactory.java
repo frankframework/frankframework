@@ -27,6 +27,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 /**
  * Baseclass for Jndi lookups, using property files on the classpath.
  * 
+ * @author Gerrit van Brakel
+ * 
  */
 public class ResourceBasedObjectFactory<O, L> extends ObjectFactoryBase<O,L> {
 

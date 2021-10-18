@@ -29,6 +29,8 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Baseclass for Object lookups.
  * 
+ * @author Gerrit van Brakel
+ * 
  * @param <O> Object class used by clients
  * @param <L> Class looked up
  */

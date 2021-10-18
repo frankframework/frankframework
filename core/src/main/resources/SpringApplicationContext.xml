@@ -36,7 +36,7 @@
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
 	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory" />
-	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.ResourceBasedMongoClientFactory" />
+	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.JndiMongoClientFactory" />
 
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
 
