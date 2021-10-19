@@ -851,7 +851,6 @@ public class JdbcUtil {
 		String paramName=pv.getDefinition().getName();
 		String paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
-		Message parameterValueMessage = pv.asMessage();
 		if (log.isDebugEnabled()) log.debug("jdbc parameter ["+parameterIndex+"] applying parameter ["+paramName+"] value ["+value+"]");
 		if (Parameter.TYPE_DATE.equals(paramType)) {
 			if (value == null) {
@@ -903,6 +902,7 @@ public class JdbcUtil {
 			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
 			try {
+				Message parameterValueMessage = pv.asMessage();
 				long len = parameterValueMessage.size();
 				if(len != -1) {
 					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream(), (int) len);

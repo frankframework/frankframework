@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,7 +39,7 @@ public class JdbcUtilTest {
 		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 			connection.createStatement().execute("DROP TABLE TEMP");
 		}
-		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME)");
+		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME, TBLOB "+dbmsSupport.getBlobFieldType()+")");
 	}
 
 	@After
@@ -133,5 +134,15 @@ public class JdbcUtilTest {
 		warning1.setNextWarning(warning2);
 		return warning1;
 	}
-	
+
+	@Test
+	public void testParameterTypeInputstream() throws Exception {
+		String query = "INSERT INTO TEMP (TKEY, TBLOB) VALUES (?, ?)";
+		ParameterValueList params = new ParameterValueList();
+		params.add(new SimpleParameter(null, null, "10"));
+		params.add(new SimpleParameter(null, Parameter.TYPE_INPUTSTREAM, "test".getBytes()));
+		JdbcUtil.executeStatement(dbmsSupport, connection, query, params);
+		String selectQuery="SELECT TBLOB FROM TEMP WHERE TKEY=10";
+		assertEquals("test", JdbcUtil.executeBlobQuery(dbmsSupport, connection, selectQuery));
+	}
 }
