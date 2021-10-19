@@ -80,5 +80,6 @@ TagDatabase
 			<column name="STATUS"/>
 			<column name="CREATED_AT"/>
 		</createIndex>
+		<createSequence sequenceName="SEQ_IBISFILETRIGGER" startValue="1"/>
 	</changeSet>
 </databaseChangeLog>

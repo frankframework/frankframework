@@ -15,7 +15,7 @@
 				messageType="info"
 				root="${mfh.flow1.rootdir}"
 				inputFolder="in"
-				inProcessFolder="${mfh.flow1.inprocess}"
+				inProcessFolder="inProcess"
 				errorFolder="error"
 				createFolders="true"
 				wildcard="${mfh.flow1.wildcard}"
@@ -42,8 +42,8 @@
 			>
 				<FixedQuerySender
 					name="insertPipe"
-					useNamedParams="true"
-					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, NAME, URI, CREATED_AT, SIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, NOW(), ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, NOW())"
+					sqlDialect="ORACLE"
+					query="INSERT INTO IBISFILETRIGGER (KEY, MESSAGEID, NAME, URI, CREATED_AT, SIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (SEQ_IBISFILETRIGGER.NEXTVAL, ?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, NOW(), ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, NOW())"
 					queryType="OTHER"
 				>
 					<Param name="MESSAGEID" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
