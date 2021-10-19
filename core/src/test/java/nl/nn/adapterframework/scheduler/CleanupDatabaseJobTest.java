@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,6 +74,11 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 		adapter.setPipeLine(pipeline);
 		return adapter;
+	}
+
+	@After
+	public void teardown() throws Exception {
+		liquibase.dropAll();
 	}
 
 	@Test

@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +40,12 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setSequenceName("SEQ_"+tableName);
 		System.setProperty("tableName", tableName);
 		createDbTable();
+	}
+
+
+	@After
+	public void teardown() throws Exception {
+		liquibase.dropAll();
 	}
 
 	@Test
