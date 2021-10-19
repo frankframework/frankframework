@@ -872,6 +872,9 @@ angular.module('iaf.beheerconsole')
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
 		};
+		this.escapeURL = function(uri) {
+			return encodeURIComponent(uri);
+		}
 		this.isMobile = function() {
 			return ( navigator.userAgent.match(/Android/i)
 				|| navigator.userAgent.match(/webOS/i)

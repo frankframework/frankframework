@@ -269,7 +269,7 @@ angular.module('iaf.beheerconsole')
 						adapter.status = "stopped";
 
 					//Add flow diagrams
-					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + adapter.name + "/flow";
+					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
 
 					$rootScope.adapters[adapter.name] = adapter;
 
@@ -1889,7 +1889,7 @@ angular.module('iaf.beheerconsole')
 			break;
 		}
 
-		var URL = Misc.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + file.path + params;
+		var URL = Misc.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + Misc.escapeURL(file.path) + params;
 		if(resultType == "xml") {
 			window.open(URL, "_blank");
 			return;
@@ -1915,7 +1915,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.download = function (file) {
-		var url = Misc.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + file.path;
+		var url = Misc.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + Misc.escapeURL(file.path);
 		window.open(url, "_blank");
 	};
 
