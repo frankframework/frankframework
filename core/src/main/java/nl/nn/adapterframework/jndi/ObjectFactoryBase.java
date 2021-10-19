@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
 
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.util.LogUtil;
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @param <O> Object class used by clients
  * @param <L> Class looked up
  */
-public abstract class ObjectFactoryBase<O,L> {
+public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected Map<String,O> objects = new ConcurrentHashMap<>();
@@ -75,6 +76,28 @@ public abstract class ObjectFactoryBase<O,L> {
 	@SneakyThrows(NamingException.class)
 	private O compute(L object, String jndiName) {
 		return augment(object, jndiName);
+	}
+	
+	@Override
+	public void destroy() throws Exception {
+		Exception masterException=null;
+		for (Object object:objects.values()) {
+			if (object instanceof AutoCloseable) {
+				try {
+					((AutoCloseable)object).close();
+				} catch (Exception e) {
+					if (masterException==null) {
+						masterException = new Exception("Exception caught closing objects held by ("+getClass().getSimpleName()+")", e);
+					} else {
+						masterException.addSuppressed(e);
+					}
+				}
+			}
+		}
+		objects.clear();
+		if (masterException!=null) {
+			throw masterException;
+		}
 	}
 
 }

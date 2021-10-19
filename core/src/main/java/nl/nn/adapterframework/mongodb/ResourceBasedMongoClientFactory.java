@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * 
  * @author Gerrit van Brakel
  */
-public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory, DisposableBean {
+public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory {
 
 	public final String MONGODB_URL_PREFIX="mongodb://";
 	
@@ -82,13 +82,6 @@ public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<
 	@Override
 	public List<String> getMongoClients() {
 		return new ArrayList<String>(objects.keySet());
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		for (MongoClient client:objects.values()) {
-			client.close();
-		}
 	}
 
 }
