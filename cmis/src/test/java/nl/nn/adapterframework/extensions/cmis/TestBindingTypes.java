@@ -21,8 +21,6 @@ import org.apache.chemistry.opencmis.client.runtime.ObjectIdImpl;
 import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
 import org.apache.chemistry.opencmis.client.runtime.repository.ObjectFactoryImpl;
 import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
-import org.apache.chemistry.opencmis.commons.enums.VersioningState;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +31,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 @RunWith(Parameterized.class)
-public class TestBindingTypes extends SenderBase<CmisSender>{
+public class TestBindingTypes extends SenderTestBase<CmisSender>{
 
 	private final static String INPUT = "<cmis><id>id</id><objectId>dummy</objectId><objectTypeId>cmis:document</objectTypeId>"
 			+ "<fileName>fileInput.txt</fileName>" + 
@@ -109,7 +108,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public CmisSender createSender() throws ConfigurationException {
+	public CmisSender createSender() throws Exception {
 		CmisSender sender = spy(new CmisSender());
 
 		sender.setUrl("http://dummy.url");
@@ -142,18 +141,14 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 //		CREATE
 		Folder folder = mock(FolderImpl.class);
-		doReturn(cmisObject).when(folder).createDocument(anyMap(), any(ContentStreamImpl.class), any(VersioningState.class));
+		doReturn(cmisObject).when(folder).createDocument(anyMap(), any(), any());
 		doReturn(folder).when(cmisSession).getRootFolder();
 
 //		FIND
 		ItemIterable<QueryResult> query = new EmptyItemIterable<QueryResult>();
-		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any(OperationContext.class));
+		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any());
 
-		try {
-			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
-		} catch (SenderException e) {
-			//Since we stub the entire session it won't throw exceptions
-		}
+		doReturn(cmisSession).when(sender).createCmisSession(any());
 
 		return sender;
 	}
@@ -176,7 +171,7 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 		configure();
 
 		String actualResult = sender.sendMessage(input, session).asString();
-		assertEqualsIgnoreRN(expectedResult, actualResult);
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
 
 	@Test
@@ -187,6 +182,6 @@ public class TestBindingTypes extends SenderBase<CmisSender>{
 
 		assertTrue(Message.isEmpty(sender.sendMessage(input, session)));
 		String base64 = (String) session.get("fileContent");
-		assertEqualsIgnoreRN(Base64.encodeBase64String(expectedResult.getBytes()), base64);
+		TestAssertions.assertEqualsIgnoreRNTSpace(Base64.encodeBase64String(expectedResult.getBytes()), base64);
 	}
 }
