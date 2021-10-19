@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" xmlns:frank="https://wearefrank.nl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="exslt" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" xmlns:frank="https://wearefrank.nl/" exclude-result-prefixes="exslt" version="2.0">
 	<xsl:output method="xml" indent="no" omit-xml-declaration="yes"/>
 
 	<xsl:param name="adapterToId">
@@ -98,25 +98,6 @@
 <!--			<xsl:with-param name="outputValidatorId" select="$outputValidatorId"/>-->
 			<xsl:with-param name="firstPipe" select="$firstPipe"/>
 		</xsl:apply-templates>
-
-		<xsl:variable name="internalName">
-			<xsl:text>errorHandling</xsl:text>
-			<xsl:value-of select="$id"/>
-			<xsl:text>_</xsl:text>
-		</xsl:variable>
-		<element>
-			<identification>
-				<xsl:value-of select="concat($id, '|errorHandling|', $internalName)"/>
-			</identification>
-			<value>
-<!--				<xsl:text>	subgraph ErrorHandling&#10;	-->
-				<xsl:text>	</xsl:text>
-				<xsl:value-of select="$internalName"/>
-				<xsl:text>[/Error Handling/]&#10;</xsl:text>
-			</value>
-		</element>
-
-
 
 	</xsl:template>
 
@@ -273,14 +254,7 @@
 				<value>
 					<xsl:text>	</xsl:text>
 					<xsl:value-of select="$internalName"/>
-					<xsl:choose>
-						<xsl:when test="@className='nl.nn.adapterframework.pipes.XmlSwitch'
-								or@className='nl.nn.adapterframework.pipes.CompareIntegerPipe'
-								or@className='nl.nn.adapterframework.pipes.CompareStringPipe'
-								or@className='nl.nn.adapterframework.pipes.FilenameSwitch'
-								or@className='nl.nn.adapterframework.pipes.XmlIf'">{</xsl:when>
-						<xsl:otherwise>(</xsl:otherwise>
-					</xsl:choose>
+					<xsl:text>(</xsl:text>
 					<xsl:value-of select="@name"/>
 					<xsl:text disable-output-escaping="yes">&lt;br/></xsl:text>
 					<xsl:choose>
@@ -295,14 +269,7 @@
 							</xsl:call-template>
 						</xsl:otherwise>
 					</xsl:choose>
-					<xsl:choose>
-						<xsl:when test="@className='nl.nn.adapterframework.pipes.XmlSwitch'
-								or@className='nl.nn.adapterframework.pipes.CompareIntegerPipe'
-								or@className='nl.nn.adapterframework.pipes.CompareStringPipe'
-								or@className='nl.nn.adapterframework.pipes.FilenameSwitch'
-								or@className='nl.nn.adapterframework.pipes.XmlIf'">}</xsl:when>
-						<xsl:otherwise>)</xsl:otherwise>
-					</xsl:choose>
+					<xsl:text>)</xsl:text>
 					<xsl:text>&#10;</xsl:text>
 				</value>
 			</element>
@@ -317,18 +284,11 @@
 			</xsl:variable>
 
 			<xsl:variable name="forwards">
-				<xsl:variable name="forwardList">
-					<xsl:apply-templates select="." mode="determinePipeForwards">
-						<xsl:with-param name="pipeline" select="$pipeline"/>
-						<xsl:with-param name="specialIds" select="$specialIds"/>
-					</xsl:apply-templates>
-				</xsl:variable>
-				<!--Check if a forward is to handle errors, or if it's part of the normal flow.-->
-				<xsl:apply-templates select="$forwardList/*" mode="determineValidationFlow">
-					<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
+				<xsl:apply-templates select="." mode="determinePipeForwards">
+					<xsl:with-param name="pipeline" select="$pipeline"/>
+					<xsl:with-param name="specialIds" select="$specialIds"/>
 				</xsl:apply-templates>
 			</xsl:variable>
-
 <!--			<forwardsTest><xsl:copy-of select="$forwards"/></forwardsTest>-->
 			<xsl:apply-templates select="$forwards/*">
 				<xsl:with-param name="pipeline" select="$pipeline"/>
@@ -336,12 +296,13 @@
 				<xsl:with-param name="specialIds" select="$specialIds"/>
 				<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 				<xsl:with-param name="origin" select="@name"/>
+				<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 			</xsl:apply-templates>
 		</xsl:if>
 	</xsl:template>
 
 
-<!--Validators and wrappers-->
+<!--Validators-->
 	<xsl:template match="inputValidator">
 		<xsl:param name="pipeline"/>
 		<xsl:param name="id"/>
@@ -369,10 +330,10 @@
 				</xsl:call-template>
 				<xsl:text>])</xsl:text>
 				<xsl:text>&#10;</xsl:text>
-<!--				<xsl:text>	style </xsl:text>-->
-<!--				<xsl:value-of select="$internalName"/>-->
-<!--				<xsl:text> stroke-dasharray: 1 3</xsl:text>-->
-<!--				<xsl:text>&#10;</xsl:text>-->
+				<xsl:text>	style </xsl:text>
+				<xsl:value-of select="$internalName"/>
+				<xsl:text> stroke-dasharray: 1 3</xsl:text>
+				<xsl:text>&#10;</xsl:text>
 			</value>
 		</element>
 
@@ -411,17 +372,13 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:variable name="forwards">
-					<xsl:apply-templates select="$forwardTo/forward" mode="determineValidationFlow">
-						<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-					</xsl:apply-templates>
-				</xsl:variable>
-				<xsl:apply-templates select="$forwards/forward">
+				<xsl:apply-templates select="$forwardTo/forward">
 					<xsl:with-param name="pipeline" select="$pipeline"/>
 					<xsl:with-param name="id" select="$id"/>
 					<xsl:with-param name="specialIds" select="$specialIds"/>
 					<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 					<xsl:with-param name="origin" select="concat('inputValidator', $specialIds/inputValidator/text())"/>
+					<xsl:with-param name="isValidationFlow" select="false()"/> <!--The failure/error forwards are validation errors and are therefore validation flow-->
 				</xsl:apply-templates>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -456,10 +413,10 @@
 					</xsl:call-template>
 					<xsl:text>])</xsl:text>
 					<xsl:text>&#10;</xsl:text>
-<!--					<xsl:text>	style </xsl:text>-->
-<!--					<xsl:value-of select="$internalName"/>-->
-<!--					<xsl:text> stroke-dasharray: 1 3</xsl:text>-->
-<!--					<xsl:text>&#10;</xsl:text>-->
+					<xsl:text>	style </xsl:text>
+					<xsl:value-of select="$internalName"/>
+					<xsl:text> stroke-dasharray: 1 3</xsl:text>
+					<xsl:text>&#10;</xsl:text>
 				</value>
 			</element>
 
@@ -480,17 +437,13 @@
 				<xsl:with-param name="origin" select="concat('outputValidator', $specialIds/outputValidator/text())"/>
 				<xsl:with-param name="isValidationFlow" select="true()"/><!--The failure/error forwards are validation errors and are therefore validation flow-->
 			</xsl:apply-templates>
-			<xsl:variable name="forwards">
-				<xsl:apply-templates select="$forwardTo/forward" mode="determineValidationFlow">
-					<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-				</xsl:apply-templates>
-			</xsl:variable>
-			<xsl:apply-templates select="$forwards/forward">
+			<xsl:apply-templates select="$forwardTo/forward">
 				<xsl:with-param name="pipeline" select="$pipeline"/>
 				<xsl:with-param name="id" select="$id"/>
 				<xsl:with-param name="specialIds" select="$specialIds"/>
 				<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 				<xsl:with-param name="origin" select="concat('outputValidator', $specialIds/outputValidator/text())"/>
+				<xsl:with-param name="isValidationFlow" select="false()"/>
 			</xsl:apply-templates>
 			<!--Create forwards to each of the exits-->
 <!--			<xsl:for-each select="$pipeline//exit">-->
@@ -551,31 +504,23 @@
 			</pipe>
 		</xsl:variable>
 
-		<xsl:variable name="forwards1">
-			<xsl:apply-templates select="forward" mode="determineValidationFlow">
-				<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-			</xsl:apply-templates>
-		</xsl:variable>
-		<xsl:apply-templates select="forwards1/forward">
+		<xsl:apply-templates select="forward">
 			<xsl:with-param name="pipeline" select="$pipeline"/>
 			<xsl:with-param name="id" select="$id"/>
 			<xsl:with-param name="specialIds" select="$specialIds"/>
 			<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 			<xsl:with-param name="origin" select="concat('inputWrapper', $specialIds/inputWrapper)"/>
+			<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 		</xsl:apply-templates>
-<!--		<forwardToTest1><xsl:copy-of select="$forwardTo"/></forwardToTest1>-->
-<!--		<forwardToTest2><xsl:copy-of select="$forwardTo/*"/></forwardToTest2>-->
-		<xsl:variable name="forwards2">
-			<xsl:apply-templates select="$forwardTo/forward" mode="determineValidationFlow">
-				<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-			</xsl:apply-templates>
-		</xsl:variable>
-		<xsl:apply-templates select="forwards2/forward">
+		<forwardToTest1><xsl:copy-of select="$forwardTo"/></forwardToTest1>
+		<forwardToTest2><xsl:copy-of select="$forwardTo/*"/></forwardToTest2>
+		<xsl:apply-templates select="$forwardTo/forward">
 			<xsl:with-param name="pipeline" select="$pipeline"/>
 			<xsl:with-param name="id" select="$id"/>
 			<xsl:with-param name="specialIds" select="$specialIds"/>
 			<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 			<xsl:with-param name="origin" select="concat('inputWrapper', $specialIds/inputWrapper)"/>
+			<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 		</xsl:apply-templates>
 	</xsl:template>
 
@@ -622,17 +567,13 @@
 			</pipe>
 		</xsl:variable>
 
-		<xsl:variable name="forwards1">
-			<xsl:apply-templates select="forward" mode="determineValidationFlow">
-				<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-			</xsl:apply-templates>
-		</xsl:variable>
-		<xsl:apply-templates select="forwards1/forward">
+		<xsl:apply-templates select="forward">
 			<xsl:with-param name="pipeline" select="$pipeline"/>
 			<xsl:with-param name="id" select="$id"/>
 			<xsl:with-param name="specialIds" select="$specialIds"/>
 			<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 			<xsl:with-param name="origin" select="concat('outputWrapper', $specialIds/outputWrapper/text())"/>
+			<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 		</xsl:apply-templates>
 
 
@@ -653,17 +594,13 @@
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:variable name="forwards2">
-					<xsl:apply-templates select="$forwardTo/forward" mode="determineValidationFlow">
-						<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
-					</xsl:apply-templates>
-				</xsl:variable>
-				<xsl:apply-templates select="$forwards2/forward">
+				<xsl:apply-templates select="$forwardTo/forward">
 					<xsl:with-param name="pipeline" select="$pipeline"/>
 					<xsl:with-param name="id" select="$id"/>
 					<xsl:with-param name="specialIds" select="$specialIds"/>
 					<xsl:with-param name="flowHistory" select="$newFlowHistory"/>
 					<xsl:with-param name="origin" select="concat('outputWrapper', $specialIds/outputWrapper/text())"/>
+					<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 				</xsl:apply-templates>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -680,7 +617,7 @@
 
 
 <!--Forward stuff-->
-	<!--This template determines what a pipe will forward to-->
+	<!--This template determines what a pipe forwards to-->
 	<xsl:template match="pipe" mode="determinePipeForwards">
 		<xsl:param name="pipeline"/>
 		<xsl:param name="specialIds"/>
@@ -757,21 +694,21 @@
 <!--						<test06><xsl:value-of select="count($pipeline//pipe[@emptyForwardName = $pipeName]) = 0"/></test06>-->
 <!--						<test07><xsl:value-of select="count($pipeline//pipe[@thenForwardName = $pipeName]) = 0"/></test07>-->
 <!--						<test08><xsl:value-of select="count($pipeline//pipe[@elseForwardName = $pipeName]) = 0"/></test08>-->
-					<xsl:if test="
-									(if($pipeline//pipeline/@firstPipe) then (
-										$pipeline//pipeline/@firstPipe != $pipeName
-									) else (
-										$pipeline//pipeline/pipe[1]/@name != $pipeName
-									)) and
-									count($pipeline//pipe/forward[@path = $pipeName]) = 0 and
-									count($pipeline//inputValidator/forward[@path = $pipeName]) = 0 and
-									count($pipeline//outputValidator/forward[@path = $pipeName]) = 0 and
-									count($pipeline//pipe[@notFoundForwardName = $pipeName]) = 0 and
-									count($pipeline//pipe[@emptyForwardName = $pipeName]) = 0 and
-									count($pipeline//pipe[@thenForwardName = $pipeName]) = 0 and
-									count($pipeline//pipe[@elseForwardName = $pipeName]) = 0">
-						<forward name="unconfirmed-forward" path="{$pipeName}"/>
-					</xsl:if>
+						<xsl:if test="
+										(if($pipeline//pipeline/@firstPipe) then (
+											$pipeline//pipeline/@firstPipe != $pipeName
+										) else (
+											$pipeline//pipeline/pipe[1]/@name != $pipeName
+										)) and
+										count($pipeline//pipe/forward[@path = $pipeName]) = 0 and
+										count($pipeline//inputValidator/forward[@path = $pipeName]) = 0 and
+										count($pipeline//outputValidator/forward[@path = $pipeName]) = 0 and
+										count($pipeline//pipe[@notFoundForwardName = $pipeName]) = 0 and
+										count($pipeline//pipe[@emptyForwardName = $pipeName]) = 0 and
+										count($pipeline//pipe[@thenForwardName = $pipeName]) = 0 and
+										count($pipeline//pipe[@elseForwardName = $pipeName]) = 0">
+							<forward name="unconfirmed-forward" path="{$pipeName}"/>
+						</xsl:if>
 <!--					</pipe>-->
 				</xsl:for-each>
 			</xsl:if>
@@ -845,23 +782,13 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template match="forward" mode="determineValidationFlow">
-		<xsl:param name="isValidationFlow"/>
-		<xsl:copy>
-			<xsl:copy-of select="@*|*"/>
-			<xsl:if test="forward/@name = 'error' or forward/@name = 'failure' or $isValidationFlow">
-				<isValidationFlow/>
-			</xsl:if>
-		</xsl:copy>
-	</xsl:template>
-
 	<xsl:template match="forward">
 		<xsl:param name="pipeline"/>
 		<xsl:param name="id"/>
 		<xsl:param name="specialIds"/>
 		<xsl:param name="flowHistory"/>
 		<xsl:param name="origin"/>
-		<xsl:param name="isValidationFlow" select="''"/>
+		<xsl:param name="isValidationFlow"/>
 <!--		<forwardTest1><xsl:copy-of select="ancestor::pipeline"/></forwardTest1>-->
 		<xsl:call-template name="forward">
 			<xsl:with-param name="pipeline" select="$pipeline"/>
@@ -869,8 +796,7 @@
 			<xsl:with-param name="specialIds" select="$specialIds"/>
 			<xsl:with-param name="flowHistory" select="$flowHistory"/>
 			<xsl:with-param name="origin" select="$origin"/>
-			<!--If parameter isValidationFlow is specified, use that, else use the element isValidationFlow-->
-			<xsl:with-param name="isValidationFlow" select="if($isValidationFlow castable as xs:boolean) then ( $isValidationFlow ) else ( count(isValidationFlow) = 1 )"/>
+			<xsl:with-param name="isValidationFlow" select="$isValidationFlow"/>
 			<xsl:with-param name="text" select="@name"/>
 			<xsl:with-param name="destination" select="@path"/>
 			<xsl:with-param name="specialForward" select="if(string-length(@specialForward) != 0) then (@specialForward) else ('')"/>
@@ -891,6 +817,7 @@
 		<xsl:param name="isValidationFlow"/>
 		<xsl:param name="specialForward" select="''"/><!--Used to specify special forwards such as input and output wrappers and validators.-->
 		<xsl:param name="specialForwardValue"></xsl:param><!--Used to supply nessecary information when this forward is a special one.-->
+
 <!--		<forwardTest>-->
 <!--			<id><xsl:value-of select="$id"/></id>-->
 <!--			<specialIds><xsl:value-of select="$specialIds"/></specialIds>-->
@@ -938,27 +865,14 @@
 					</xsl:when>
 					<xsl:otherwise><xsl:text>| </xsl:text></xsl:otherwise>
 				</xsl:choose>
-				<!--Make all validationFlow go to 1 element for now-->
-				<xsl:choose>
-					<xsl:when test="not($isValidationFlow)">
-						<xsl:value-of select="replace($destination, ' ', '__')"/>
-						<!--If this forward goes to a different adapter, use the id supplied in $specialForwardValue, else use this adapters id-->
-						<xsl:value-of select="if($specialForward = 'differentAdapter') then ($specialForwardValue) else ($id)"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:text>errorHandling</xsl:text>
-						<xsl:value-of select="$id"/>
-						<!--Add this underscore after the id, so it's unique.
-						It's possible that there is a pipe named errorHandling, which could for example get the id: errorHandlingd1e3
-						In this case it's important that the special errorHandling box has a different id, like:    errorHandlingd1e3_-->
-						<xsl:text>_</xsl:text>
-					</xsl:otherwise>
-				</xsl:choose>
+				<xsl:value-of select="replace($destination, ' ', '__')"/>
+				<!--If this forward goes to a different adapter, use the id supplied in $specialForwardValue, else use this adapters id-->
+				<xsl:value-of select="if($specialForward = 'differentAdapter') then ($specialForwardValue) else ($id)"/>
 				<xsl:text>&#10;</xsl:text>
 			</value>
 		</element>
 
-		<xsl:if test="$specialForward != 'differentAdapter' and not($isValidationFlow)">
+		<xsl:if test="$specialForward != 'differentAdapter'">
 <!--			<doesNotGoToDifferentAdapter/>-->
 			<!--Forward to pipe-->
 			<xsl:choose>
