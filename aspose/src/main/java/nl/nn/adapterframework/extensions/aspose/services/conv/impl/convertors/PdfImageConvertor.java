@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,8 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tika.mime.MediaType;
 
 import com.aspose.imaging.extensions.ImageExtensions;
-import com.aspose.imaging.fileformats.tiff.enums.TiffExpectedFormat;
-import com.aspose.imaging.imageoptions.TiffOptions;
+import com.aspose.imaging.fileformats.tiff.TiffFrame;
+import com.aspose.imaging.fileformats.tiff.TiffImage;
+import com.aspose.imaging.imageoptions.PngOptions;
 import com.aspose.pdf.Document;
 import com.aspose.pdf.Image;
 import com.aspose.pdf.LoadOptions;
@@ -95,7 +97,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
 		Document doc = new Document();
-		float scaleFactor = 0;
 		try {
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
@@ -110,10 +111,15 @@ public class PdfImageConvertor extends AbstractConvertor {
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
 			image =  com.aspose.imaging.Image.load(file.getAbsolutePath());
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				try(TiffOptions options = new TiffOptions(TiffExpectedFormat.TiffJpegRgb)){
-					image.save(tmpImageFile.getAbsolutePath(), options);
+				TiffFrame[] frames = ((TiffImage)image).getFrames();
+				PngOptions pngOptions = new PngOptions();
+				for(int i=0; i<frames.length;i++) {
+					Image pdfImage = new Image();
+					frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
+					pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
+					page.getParagraphs().add(pdfImage);
 				}
-			}else {
+			} else {
 				Files.copy(file.toPath(), tmpImageFile.toPath());
 				BufferedImage bufferedImage = ImageExtensions.toJava(image);
 				LOGGER.debug("Image info height:" + bufferedImage.getHeight() + " width:" + bufferedImage.getWidth());
@@ -127,21 +133,20 @@ public class PdfImageConvertor extends AbstractConvertor {
 				float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
 
 				// Get the smallest scale factor so it will fit on the paper.
-				scaleFactor = Math.min(scaleWidth, scaleHeight);
+				float scaleFactor = Math.min(scaleWidth, scaleHeight);
 				if (scaleFactor > NO_SCALE_FACTOR) {
 					scaleFactor = NO_SCALE_FACTOR;
 				}
-			}
-			
-			Image pdfImage = new Image();
-			pdfImage.setFile(tmpImageFile.getAbsolutePath());
-			
-			// do not set scale if the image type is tiff
-			if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				pdfImage.setImageScale(scaleFactor);
+				Image pdfImage = new Image();
+				pdfImage.setFile(tmpImageFile.getAbsolutePath());
+				
+				// do not set scale if the image type is tiff
+				if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+					pdfImage.setImageScale(scaleFactor);
+				}
+				page.getParagraphs().add(pdfImage);
 			}
 
-			page.getParagraphs().add(pdfImage);
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
@@ -154,14 +159,23 @@ public class PdfImageConvertor extends AbstractConvertor {
 			doc.dispose();
 			doc.close();
 
+			// Delete always the temporary file.
+
+			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+				int length = ((TiffImage)image).getFrames().length;
+				for(int i=0; i<length; i++) {
+					Files.delete(Paths.get(tmpImageFile.getAbsolutePath()+i));
+				}
+			}
+
 			if (image != null) {
 				image.close();
 				image = null;
 			}
-			// Delete always the temporary file.
-			 if (tmpImageFile != null) {
-				 Files.delete(tmpImageFile.toPath());
-			 }
+
+			if (tmpImageFile != null) {
+				Files.deleteIfExists(tmpImageFile.toPath());
+			}
 		}
 	}
 
