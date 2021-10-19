@@ -905,12 +905,18 @@ public class JdbcUtil {
 				Message parameterValueMessage = pv.asMessage();
 				long len = parameterValueMessage.size();
 				if(len != -1) {
-					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream(), (int) len);
+					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream(), len);
 				} else {
 					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream());
 				}
 			} catch(IOException e) {
 				throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
+			}
+		} else if ("bytes".equals(paramType)) {
+			try {
+				statement.setBytes(parameterIndex, Message.asByteArray(value));
+			} catch (IOException e) {
+				throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
 			}
 		} else {
 			setParameter(statement, parameterIndex, (String)value, parameterTypeMatchRequired);
