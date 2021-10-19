@@ -43,6 +43,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
@@ -190,6 +191,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
+		}
+		if("bytes".equalsIgnoreCase(getType())) {
+			ConfigurationWarnings.add(this, log, "Parameter type ["+getType()+"] is deprecated. Please use inputstream instead" );
 		}
 		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);

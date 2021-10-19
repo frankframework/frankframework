@@ -62,6 +62,10 @@ public class ParameterValue {
 	public Object getValue() {
 		return value;
 	}
+	
+	public Message asMessage() {
+		return Message.asMessage(value);
+	}
 
 	public void setDefinition(Parameter parameterDef) {
 		this.definition = parameterDef;
