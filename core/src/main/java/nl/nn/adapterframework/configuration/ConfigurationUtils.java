@@ -506,10 +506,6 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
-		return retrieveConfigNamesFromDatabase(ibisContext, false);
-	}
-
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -520,9 +516,6 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
-			if (onlyAutoReload) {
-				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
-			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();
