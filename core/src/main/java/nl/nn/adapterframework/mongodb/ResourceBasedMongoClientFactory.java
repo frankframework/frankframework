@@ -28,6 +28,7 @@ import com.mongodb.client.MongoClients;
 
 import nl.nn.adapterframework.jndi.ResourceBasedObjectFactory;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 
 /*
  * MongoClientFactory that retrieves its configuration from a properties file on the classpath.
@@ -64,16 +65,7 @@ public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<
 		String authAlias = properties.getProperty(AUTH_ALIAS_KEY);
 		String username = properties.getProperty(USERNAME_KEY);
 		String password = properties.getProperty(PASSWORD_KEY);
-		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
-			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
-			int posAt;
-			if ((posAt=url.indexOf("@"))>0) {
-				url=url.substring(posAt+1);
-			} else {
-				url=url.substring(MONGODB_URL_PREFIX.length());
-			}
-			url=MONGODB_URL_PREFIX+cf.getUsername()+":"+cf.getPassword()+"@"+url;
-		}
+		url = Misc.insertAuthorityInUrlString(url, authAlias, username, password);
 		return MongoClients.create(url);
 	}
 
