@@ -806,7 +806,7 @@ public class JobDef {
 				// load new (activated) configs
 				List<String> dbConfigNames = null;
 				try {
-					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true, false);
+					dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, true, true);
 				} catch (ConfigurationException e) {
 					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
@@ -818,16 +818,16 @@ public class JobDef {
 					}
 				}
 
-				List<String> inactiveDbConfigNames = null;
+				List<String> deActiveDbConfigNames = null;
 				try {
-					inactiveDbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, false, true);
+					deActiveDbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), configJmsRealm, false, false);
 				} catch(ConfigurationException e) {
 					getMessageKeeper().add("error while retrieving configuration names from database", e);
 				}
 				// unload old (deactivated) configurations
-				if (inactiveDbConfigNames != null && !inactiveDbConfigNames.isEmpty()) {
+				if (deActiveDbConfigNames != null && !deActiveDbConfigNames.isEmpty()) {
 					for (String currentConfigurationName : configNames) {
-						if (inactiveDbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+						if (!deActiveDbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
 							ibisManager.getIbisContext().unload(currentConfigurationName);
 						}
 					}
