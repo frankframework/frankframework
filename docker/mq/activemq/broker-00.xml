@@ -9,7 +9,7 @@
 			</address>
 			<address name="Q.TEST.IN">
 				<anycast>
-					<queue name="Q.TEST.IIN"/>
+					<queue name="Q.TEST.IN"/>
 				</anycast>
 			</address>
 			<address name="Q.TEST.OUT">
