@@ -76,6 +76,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @ff.parameters Parameters are enabled, but the use of parameters is defined by the subclass
  * 
+ * @ff.forward success successful processing of the message of the pipe
+ * @ff.forward exception an exception was caught when processing the message
+ * 
  * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see PipeLineSession

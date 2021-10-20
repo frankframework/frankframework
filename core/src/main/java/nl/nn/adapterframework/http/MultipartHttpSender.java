@@ -29,7 +29,7 @@ public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {
 		setPostType(PostType.FORMDATA.name());
-		setMethodType("POST");
+		setMethodType(HttpMethod.POST);
 		setFirstBodyPartName("message");
 	}
 

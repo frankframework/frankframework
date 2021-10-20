@@ -5,6 +5,7 @@ import static nl.nn.adapterframework.frankdoc.model.ElementChild.REJECT_DEPRECAT
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -16,10 +17,10 @@ public class NavigationUnhappyTest {
 	private static final String PACKAGE = "nl.nn.adapterframework.frankdoc.testtarget.walking";
 
 	@Test
-	public void whenSomeChildrenAreBothAcceptedAndRejectedThenExceptionThrown() {
+	public void whenSomeChildrenAreBothAcceptedAndRejectedThenExceptionThrown() throws IOException {
 		String rootClassName = PACKAGE + "." + "GrandChild3";
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), rootClassName, repository);
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> walk(rootClassName, model));
 		assertTrue(e.getMessage().contains("[parentAttributeSecond]"));
 	}

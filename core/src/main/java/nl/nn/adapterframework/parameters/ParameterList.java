@@ -84,7 +84,7 @@ public class ParameterList extends ArrayList<Parameter> {
 			if ("*".equals(parmSessionKey)) {
 				String parmName = parm.getName();
 				for (String sessionKey: session.keySet()) {
-					if (!PipeLineSession.tsReceivedKey.equals(sessionKey) && !PipeLineSession.tsSentKey.equals(sessionKey)) {
+					if (!PipeLineSession.TS_RECEIVED_KEY.equals(sessionKey) && !PipeLineSession.TS_SENT_KEY.equals(sessionKey)) {
 						if ((sessionKey.startsWith(parmName) || "*".equals(parmName))) {
 							Parameter newParm = new Parameter();
 							newParm.setName(sessionKey);

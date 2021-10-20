@@ -17,7 +17,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 	@Test
 	public void configureWrongDirection() throws ConfigurationException {
 		exception.expect(Exception.class);
-		exception.expectMessage("unknown direction value [foutje!]. Must be one of [JSON2XML, XML2JSON]");
+		exception.expectMessage("cannot set field [direction] to unparsable value [foutje!]. Must be one of [JSON2XML, XML2JSON]");
 		pipe.setDirection("foutje!");
 		pipe.configure();
 	}

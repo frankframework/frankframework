@@ -15,9 +15,13 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import java.io.IOException;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,9 +33,8 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -49,12 +52,19 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(JdbcConnection connection, Configuration configuration, String changeLogFile) throws LiquibaseException {
+	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException, IOException {
 		this.configuration = configuration;
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(configuration.getClassLoader());
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
+		if(resourceAccessor.getResource(changeLogFile) == null) {
+			String msg = "unable to find database changelog file [" + changeLogFile + "]";
+			msg += " classLoader [" + configuration.getClassLoader() + "]";
+			throw new IOException(msg);
+		}
 
-		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
+		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
+
+		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
 	}
 
@@ -62,15 +72,15 @@ public class LiquibaseImpl {
 		configuration.log(message);
 	}
 
-	public void update() {
-		List<String> changes = new ArrayList<String>();
+	public void update() throws JdbcException {
+		List<String> changes = new ArrayList<>();
 		try {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
 				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
 			}
 
-			if(changeSets.size() > 0) {
+			if(!changeSets.isEmpty()) {
 				liquibase.update(contexts);
 
 				ChangeSet lastChange = changeSets.get(changeSets.size()-1);
@@ -90,7 +100,7 @@ public class LiquibaseImpl {
 		catch (Exception e) {
 			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(configuration, log, errorMsg, e);
+			throw new JdbcException(errorMsg, e);
 		}
 	}
 

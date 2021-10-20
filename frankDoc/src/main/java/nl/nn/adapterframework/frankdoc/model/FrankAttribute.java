@@ -54,7 +54,7 @@ public class FrankAttribute extends ElementChild {
 	 * These annotations should cause attributes to not exist. If an attribute should
 	 * not exist, then it also should not be inherited.
 	 */
-	private @Getter(onMethod = @__(@Override)) @Setter(AccessLevel.PACKAGE) boolean excluded = false;
+	private @Getter @Setter(AccessLevel.PACKAGE) boolean excluded = false;
 
 	public FrankAttribute(String name, FrankElement attributeOwner) {
 		super(attributeOwner);

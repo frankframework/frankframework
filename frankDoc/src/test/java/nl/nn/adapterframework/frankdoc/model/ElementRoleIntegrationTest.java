@@ -18,6 +18,8 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,9 +32,9 @@ public class ElementRoleIntegrationTest {
 	private FrankDocModel model;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		model = FrankDocModel.populate("doc/role-digester-rules.xml", PACKAGE + "Master", repository);
+		model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/role-digester-rules.xml"), PACKAGE + "Master", repository);
 	}
 
 	@Test

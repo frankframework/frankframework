@@ -87,9 +87,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
  * 
- * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
- * 
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -155,7 +152,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * </p>
- * 
+ *
+ * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers 
+ *
  * @author Niels Meijer
  * @since 7.0
  * @version 2.0
@@ -202,13 +201,13 @@ public class HttpSender extends HttpSenderBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		//For backwards compatibility we have to set the contentType to text/html on POST and PUT requests
-		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getMethodTypeEnum() == HttpMethod.POST || getMethodTypeEnum() == HttpMethod.PUT || getMethodTypeEnum() == HttpMethod.PATCH)) {
+		if(StringUtils.isEmpty(getContentType()) && postType == PostType.RAW && (getHttpMethod() == HttpMethod.POST || getHttpMethod() == HttpMethod.PUT || getHttpMethod() == HttpMethod.PATCH)) {
 			setContentType("text/html");
 		}
 
 		super.configure();
 
-		if (getMethodTypeEnum() != HttpMethod.POST) {
+		if (getHttpMethod() != HttpMethod.POST) {
 			if (!isParamsInUrl()) {
 				throw new ConfigurationException(getLogPrefix()+"paramsInUrl can only be set to false for methodType POST");
 			}
@@ -276,7 +275,7 @@ public class HttpSender extends HttpSenderBase {
 				queryParametersAppended = true;
 			}
 
-			switch (getMethodTypeEnum()) {
+			switch (getHttpMethod()) {
 			case GET:
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
@@ -313,9 +312,9 @@ public class HttpSender extends HttpSenderBase {
 				}
 
 				HttpEntityEnclosingRequestBase method;
-				if (getMethodTypeEnum() == HttpMethod.POST) {
+				if (getHttpMethod() == HttpMethod.POST) {
 					method = new HttpPost(relativePath.toString());
-				} else if (getMethodTypeEnum() == HttpMethod.PATCH) {
+				} else if (getHttpMethod() == HttpMethod.PATCH) {
 					method = new HttpPatch(relativePath.toString());
 				} else {
 					method = new HttpPut(relativePath.toString());
@@ -589,7 +588,7 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
-		if (getMethodTypeEnum() == HttpMethod.HEAD) {
+		if (getHttpMethod() == HttpMethod.HEAD) {
 			XmlBuilder headersXml = new XmlBuilder("headers");
 			Header[] headers = responseHandler.getAllHeaders();
 			for (Header header : headers) {
@@ -664,7 +663,10 @@ public class HttpSender extends HttpSenderBase {
 		}
 	}
 
-	@IbisDoc({"When <code>methodType=POST</code>, the type of post request", "RAW"})
+	/**
+	 * When <code>methodType=POST</code>, the type of post request
+	 * @ff.default RAW
+	 */
 	public void setPostType(String type) {
 		this.postType = EnumUtils.parse(PostType.class, type);
 	}

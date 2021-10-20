@@ -339,7 +339,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
-		
+
 		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
 		
 		

@@ -42,10 +42,8 @@ import nl.nn.adapterframework.util.SpringUtils;
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
+ * 
  * @author Johan Verrips
  */
 

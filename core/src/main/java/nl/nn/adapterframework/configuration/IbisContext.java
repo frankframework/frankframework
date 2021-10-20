@@ -34,7 +34,6 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
 import nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory;
-import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.lifecycle.IbisApplicationContext;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -338,10 +337,10 @@ public class IbisContext extends IbisApplicationContext {
 
 		Configuration configuration = null;
 		try {
-			try {
+			try { //May throw Spring Bean instantiation exceptions
 				configuration = createConfiguration(currentConfigurationName, classLoader);
-			} catch (Exception e) { //May throw Spring Bean instantiation exceptions
-				configuration = new Configuration(); //Instantiate a placeholder to store the exception in.
+			} catch (Exception e) { //Instantiate a placeholder to store the exception in.
+				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
 				ibisManager.addConfiguration(configuration);
 				if(classLoaderException != null) {
@@ -353,17 +352,6 @@ public class IbisContext extends IbisApplicationContext {
 
 			if(!configuration.getName().equals(currentConfigurationName)) { //Pre-digest validation to make sure no extra Spring magic happened.
 				throw new ConfigurationException("configurationName mismatch");
-			}
-
-			// Execute any database changes before calling configure.
-			// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-			if(AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
-				try(Migrator databaseMigrator = configuration.getBean("jdbcMigrator", Migrator.class)) {
-					databaseMigrator.configure();
-					databaseMigrator.update();
-				} catch (Exception e) {
-					configuration.log("unable to run JDBC migration", e);
-				}
 			}
 
 			configuration.configure();

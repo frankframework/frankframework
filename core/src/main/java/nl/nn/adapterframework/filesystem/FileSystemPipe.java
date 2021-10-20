@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -39,33 +40,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  * 
- * <table align="top" border="1">
- * <tr><th>Action</th><th>Description</th><th>Configuration</th></tr>
- * <tr><td>list</td><td>list files in a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td></tr>
- * <tr><td>info</td><td>show info about a single file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol></td></tr>
- * <tr><td>read</td><td>read a file, returns an InputStream</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>readDelete</td><td>like read, but deletes the file after it has been read</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>move</td><td>move a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>copy</td><td>copy a file to another folder</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <tr><td>delete</td><td>delete a file</td><td>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</td><td>&nbsp;</td></tr>
- * <tr><td>mkdir</td><td>create a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>rmdir</td><td>remove a folder/directory</td><td>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol></td><td>&nbsp;</td></tr>
- * <tr><td>write</td><td>write contents to a file<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>append</td><td>append contents to a file<br/>(only for filesystems that support 'append')<td>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified.
- *  </td><td>&nbsp;</td></tr>
- * <tr><td>rename</td><td>change the name of a file</td><td>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code></td></tr>
- * <table>
+ * @see FileSystemActor
  * 
  * @author Gerrit van Brakel
  */
@@ -162,15 +137,15 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		this.fileSystem = fileSystem;
 	}
 
-	protected void addActions(List<String> specificActions) {
+	protected void addActions(List<FileSystemAction> specificActions) {
 		actor.addActions(specificActions);
 	}
 
 	@IbisDocRef({"1", FILESYSTEMACTOR})
-	public void setAction(String action) {
+	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
-	public String getAction() {
+	public FileSystemAction getAction() {
 		return actor.getAction();
 	}
 

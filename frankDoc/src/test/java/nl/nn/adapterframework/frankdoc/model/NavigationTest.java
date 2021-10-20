@@ -125,7 +125,7 @@ public class NavigationTest {
 	public void test() throws Exception {
 		String rootClassName = PACKAGE + "." + simpleClassName;
 		FrankClassRepository repository = TestUtil.getFrankClassRepositoryDoclet(PACKAGE);
-		FrankDocModel model = FrankDocModel.populate("doc/empty-digester-rules.xml", rootClassName, repository);
+		FrankDocModel model = FrankDocModel.populate(TestUtil.resourceAsURL("doc/empty-digester-rules.xml"), rootClassName, repository);
 		FrankElement walkFrom = model.findFrankElement(rootClassName);
 		walkFrom.walkCumulativeAttributes(new CumulativeChildHandler<FrankAttribute>() {
 			@Override

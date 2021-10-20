@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -93,7 +94,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureBasic() throws Exception {
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 	}
 
@@ -143,7 +144,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setValue(null);
 		params.add(p);
 		params.configure();
-		actor.setAction("read");
+		actor.setAction(FileSystemAction.READ);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
@@ -173,7 +174,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(pFilename);
 		params.configure();
 
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
@@ -185,16 +186,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void fileSystemActorTestConfigureInvalidAction() throws Exception {
-		thrown.expectMessage("unknown or invalid action [xxx]");
-		thrown.expectMessage("fake owner of FileSystemActor");
-		actor.setAction("xxx");
-		actor.configure(fileSystem,null,owner);
-	}
-
-	@Test
 	public void fileSystemActorTestBasicOpen() throws Exception {
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 	}
@@ -203,7 +196,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExist() throws Exception {
 		thrown.expectMessage("inputFolder [xxx], canonical name [");
 		thrown.expectMessage("does not exist");
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -211,7 +204,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorTestConfigureInputDirectoryForListActionDoesNotExistButAllowCreate() throws Exception {
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.setCreateFolder(true);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem,null,owner);
@@ -222,7 +215,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	@Test
 	public void fileSystemActorListActionTestForFolderExistenceWithExistingFolder() throws Exception {
 		_createFolder("folder");
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder");
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -230,14 +223,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test()
 	public void fileSystemActorListActionTestForFolderExistenceWithRoot() throws Exception {
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 	}
 
 	@Test()
 	public void fileSystemActorListActionWhenDuplicateConfigurationAttributeHasPreference() throws Exception {
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
@@ -261,7 +254,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			}
 		}
 		
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		if (inputFolder!=null) {
 			actor.setInputFolder(inputFolder);
 		}
@@ -347,7 +340,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "regeltje tekst";
 
 		actor.setWildCard("*.xml");
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 
@@ -372,7 +365,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String contents = "regeltje tekst";
 		
 		actor.setExcludeWildcard("*.bak");
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 
@@ -401,7 +394,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		actor.setWildCard("*.xml");
 		actor.setExcludeWildcard("*.oud.xml");
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 
@@ -441,7 +434,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setValue(inputFolder);
 
 		params.add(p);
-		actor.setAction("list");
+		actor.setAction(FileSystemAction.LIST);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -486,7 +479,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		actor.setAction("info");
+		actor.setAction(FileSystemAction.INFO);
 		if (fileViaAttribute) {
 			actor.setFilename(filename);
 		}
@@ -539,7 +532,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		assertTrue(_fileExists(filename));
 	}
 
-	public void fileSystemActorReadActionTest(String action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
+	public void fileSystemActorReadActionTest(FileSystemAction action, boolean fileViaAttribute, boolean fileShouldStillExistAfterwards) throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";
 		
@@ -563,22 +556,22 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorReadActionTest() throws Exception {
-		fileSystemActorReadActionTest("read",false, true);
+		fileSystemActorReadActionTest(FileSystemAction.READ,false, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestFilenameViaAttribute() throws Exception {
-		fileSystemActorReadActionTest("read",true, true);
+		fileSystemActorReadActionTest(FileSystemAction.READ,true, true);
 	}
 
 	@Test
 	public void fileSystemActorReadActionTestCompatiblity() throws Exception {
-		fileSystemActorReadActionTest("download",false, true);
+		fileSystemActorReadActionTest(FileSystemAction.DOWNLOAD,false, true);
 	}
 
 	@Test
 	public void fileSystemActorReadDeleteActionTest() throws Exception {
-		fileSystemActorReadActionTest("readDelete",false, false);
+		fileSystemActorReadActionTest(FileSystemAction.READDELETE,false, false);
 	}
 
 	@Test
@@ -589,7 +582,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		actor.setAction("read");
+		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(filename);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -610,7 +603,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		actor.setAction("read");
+		actor.setAction(FileSystemAction.READ);
 		actor.setFilename(filename);
 		actor.setCharset("ISO-8859-1");
 		actor.configure(fileSystem,null,owner);
@@ -640,7 +633,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		waitForActionToFinish();
 
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		actor.setFilename(filename);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -672,7 +665,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setSessionKey("uploadActionTargetwString");
 
 		params.add(p);
-		actor.setAction("upload");
+		actor.setAction(FileSystemAction.UPLOAD);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -711,7 +704,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		params.add(p);
 		actor.setWriteLineSeparator(true);
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -749,7 +742,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setSessionKey("uploadActionTargetwByteArray");
 
 		params.add(p);
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -789,7 +782,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setSessionKey("uploadActionTarget");
 
 		params.add(p);
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
@@ -829,7 +822,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		paramlist.add(param);
 		paramlist.configure();
 		
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		actor.configure(fileSystem,paramlist,owner);
 		actor.open();
 		
@@ -871,7 +864,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setSessionKey("fileSystemActorWriteActionWithBackupKey");
 
 		params.add(p);
-		actor.setAction("write");
+		actor.setAction(FileSystemAction.WRITE);
 		actor.setNumberOfBackups(numOfBackups);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
@@ -941,7 +934,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.configure();
 		
 		actor.setWriteLineSeparator(isWriteLineSeparator);
-		actor.setAction("append");
+		actor.setAction(FileSystemAction.APPEND);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -980,7 +973,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		params.add(p);
 		params.configure();
 		
-		actor.setAction("append");
+		actor.setAction(FileSystemAction.APPEND);
 		actor.setRotateSize(rotateSize);
 		actor.setNumberOfBackups(numOfBackups);
 		actor.configure(fileSystem,params,owner);
@@ -1025,7 +1018,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		actor.setAction("move");
+		actor.setAction(FileSystemAction.MOVE);
 		actor.setWildCard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
@@ -1071,7 +1064,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		actor.setAction("move");
+		actor.setAction(FileSystemAction.MOVE);
 		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
@@ -1097,8 +1090,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	
 	@Test()
 	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
-		actor.setAction("move");
-		thrown.expectMessage("the move action requires the parameter [destination] or the attribute [destination] to be present");
+		actor.setAction(FileSystemAction.MOVE);
+		thrown.expectMessage("the ["+FileSystemAction.MOVE+"] action requires the parameter [destination] or the attribute [destination] to be present");
 		actor.configure(fileSystem,null,owner);
 	}
 	
@@ -1116,7 +1109,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		actor.setAction("move");
+		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
@@ -1155,7 +1148,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemActorMoveActionTest(null,"folder",false,false);
 	}
 	@Test
@@ -1194,7 +1187,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		actor.setAction("copy");
+		actor.setAction(FileSystemAction.COPY);
 		actor.setWildCard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
@@ -1240,7 +1233,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		waitForActionToFinish();
 		
-		actor.setAction("copy");
+		actor.setAction(FileSystemAction.COPY);
 		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
@@ -1278,7 +1271,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		actor.setAction("copy");
+		actor.setAction(FileSystemAction.COPY);
 		actor.setDestination(folder2);
 		ParameterList params = new ParameterList();
 		if (setCreateFolderAttribute) {
@@ -1317,7 +1310,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFolder(folder);
 		}
 
-		actor.setAction("mkdir");
+		actor.setAction(FileSystemAction.MKDIR);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
@@ -1342,7 +1335,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			_createFolder(folder);
 		}
 
-		actor.setAction("rmdir");
+		actor.setAction(FileSystemAction.RMDIR);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
@@ -1374,7 +1367,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(innerFolder, filename, "is not empty");
 		}
 
-		actor.setAction("rmdir");
+		actor.setAction(FileSystemAction.RMDIR);
 		actor.setRemoveNonEmptyFolder(true);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -1409,7 +1402,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(innerFolder, filename, "is not empty");
 		}
 
-		actor.setAction("rmdir");
+		actor.setAction(FileSystemAction.RMDIR);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
@@ -1427,7 +1420,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 			createFile(null, filename, "is not empty");
 		}
 
-		actor.setAction("delete");
+		actor.setAction(FileSystemAction.DELETE);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
 		
@@ -1464,7 +1457,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		waitForActionToFinish();
 		
-		actor.setAction("delete");
+		actor.setAction(FileSystemAction.DELETE);
 		actor.setWildCard("tobedeleted*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
@@ -1502,7 +1495,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		waitForActionToFinish();
 		
-		actor.setAction("delete");
+		actor.setAction(FileSystemAction.DELETE);
 		actor.setExcludeWildcard("tostay*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
@@ -1537,7 +1530,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		p.setValue(dest);
 
 		params.add(p);
-		actor.setAction("rename");
+		actor.setAction(FileSystemAction.RENAME);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();

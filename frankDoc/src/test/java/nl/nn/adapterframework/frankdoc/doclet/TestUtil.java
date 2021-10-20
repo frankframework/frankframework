@@ -3,6 +3,7 @@ package nl.nn.adapterframework.frankdoc.doclet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -51,5 +52,12 @@ public final class TestUtil {
 		} catch(IOException e) {
 			throw new RuntimeException("Cannot load build.properties", e);
 		}
+	}
+
+	public static URL resourceAsURL(String path) throws IOException {
+		if(! path.startsWith("/")) {
+			path = "/" + path;
+		}
+		return TestUtil.class.getResource(path);
 	}
 }

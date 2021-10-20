@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,13 +28,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  * 
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>
- * </table>
- * </p>
+ * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
  * 
  * @author Peter Leeuwenburgh
  */

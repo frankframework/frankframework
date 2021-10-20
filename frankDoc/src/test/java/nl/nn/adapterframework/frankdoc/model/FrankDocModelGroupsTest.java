@@ -18,6 +18,7 @@ package nl.nn.adapterframework.frankdoc.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -29,10 +30,10 @@ public class FrankDocModelGroupsTest {
 	private FrankDocModel instance;
 	
 	@Test
-	public void testGroups() {
+	public void testGroups() throws IOException {
 		String thePackage = "nl.nn.adapterframework.frankdoc.testtarget.groups.";
 		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", thePackage + "Container", r);
+		instance = FrankDocModel.populate(TestUtil.resourceAsURL("doc/fake-group-digester-rules.xml"), thePackage + "Container", r);
 		List<FrankDocGroup> groups = instance.getGroups();
 		assertEquals(2, groups.size());
 		FrankDocGroup current = groups.get(0);
@@ -57,10 +58,10 @@ public class FrankDocModelGroupsTest {
 	}
 
 	@Test
-	public void testFrankDocIgnoreTypeMembership() {
+	public void testFrankDocIgnoreTypeMembership() throws IOException {
 		String thePackage = "nl.nn.adapterframework.frankdoc.testtarget.groups.ignore.membership.";
 		FrankClassRepository r = TestUtil.getFrankClassRepositoryDoclet(thePackage);
-		instance = FrankDocModel.populate("doc/fake-group-digester-rules.xml", thePackage + "Container", r);
+		instance = FrankDocModel.populate(TestUtil.resourceAsURL("doc/fake-group-digester-rules.xml"), thePackage + "Container", r);
 		List<FrankDocGroup> groups = instance.getGroups();
 		assertEquals(3, groups.size());
 		FrankDocGroup group = groups.get(0);

@@ -35,10 +35,12 @@ import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Send a message with JMS.
@@ -78,11 +80,11 @@ public final class BrowseQueue extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		String connectionFactory = null,
-				destination = null,
-				type = null;
+				destination = null;
 		boolean rowNumbersOnly = false,
 				showPayload = false,
 				lookupDestination=false;
+		DestinationType type = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -93,7 +95,7 @@ public final class BrowseQueue extends Base {
 				destination = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("type")) {
-				type = entry.getValue().toString();
+				type = EnumUtils.parse(DestinationType.class, entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("rowNumbersOnly")) {
 				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());

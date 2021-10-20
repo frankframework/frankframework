@@ -70,6 +70,7 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -88,7 +89,6 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -172,7 +172,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public enum HttpMethod {
 		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
 	}
-	private HttpMethod method = HttpMethod.GET;
+	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
 	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
@@ -623,7 +623,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodTypeEnum()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -788,11 +788,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
-	public void setMethodType(String string) {
-		method = EnumUtils.parse(HttpMethod.class, string);
-	}
-	public HttpMethod getMethodTypeEnum() {
-		return method;
+	public void setMethodType(HttpMethod method) {
+		this.httpMethod = method;
 	}
 
 	/**
@@ -1046,8 +1043,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * CertificateExpiredExceptions are ignored when set to true
+	 * @ff.default false
 	 */
 	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {

@@ -46,8 +46,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String messageIdKey="messageId";
 	public static final String businessCorrelationIdKey="cid";
 	public static final String technicalCorrelationIdKey="tcid";
-	public static final String tsReceivedKey="tsReceived";
-	public static final String tsSentKey="tsSent";
+
+	public static final String TS_RECEIVED_KEY = "tsReceived";
+	public static final String TS_SENT_KEY = "tsSent";
 	public static final String securityHandlerKey="securityHandler";
 
 	public static final String HTTP_REQUEST_KEY    = "restListenerServletRequest";
@@ -59,7 +60,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	private ISecurityHandler securityHandler = null;
-	
+
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	private Set<Message> closeables = ConcurrentHashMap.newKeySet(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
@@ -91,6 +92,34 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Message.nullMessage();
 	}
 
+	public Date getTsReceived() {
+		return getTsReceived(this);
+	}
+
+	public static Date getTsReceived(Map<String, Object> context) {
+		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
+		if(tsReceived instanceof Date) {
+			return (Date) tsReceived;
+		} else if(tsReceived instanceof String) {
+			return DateUtils.parseToDate((String) tsReceived, DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return null;
+	}
+
+	public Date getTsSent() {
+		return getTsSent(this);
+	}
+
+	public static Date getTsSent(Map<String, Object> context) {
+		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
+		if(tsSent instanceof Date) {
+			return (Date) tsSent;
+		} else if(tsSent instanceof String) {
+			return DateUtils.parseToDate((String) tsSent, DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return null;
+	}
+
 	/**
 	 * Convenience method to set required parameters from listeners
 	 */
@@ -104,9 +133,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (tsReceived==null) {
 			tsReceived=new Date();
 		}
-		map.put(tsReceivedKey,DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
+		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
 		if (tsSent!=null) {
-			map.put(tsSentKey,DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
+			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
 		}
 	}
 
@@ -220,7 +249,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		return Double.parseDouble(this.getString(key));
 	}
-	
+
 	public void scheduleCloseOnSessionExit(Message message) {
 		closeables.add(message);
 	}
@@ -235,7 +264,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		};
 		scheduleCloseOnSessionExit(resourceMessage);
 	}
-	
+
 	public boolean isScheduledForCloseOnExit(Message message) {
 		return closeables.contains(message);
 	}
@@ -243,7 +272,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public void unscheduleCloseOnSessionExit(Message message) {
 		closeables.remove(message);
 	}
-	
+
 	@Override
 	public void close() {
 		log.debug("Closing PipeLineSession");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,9 +29,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -83,7 +85,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private int retryDelay = 10000;
 	private boolean ignoreTableNotExist = false;
 	
-	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
+	private @Getter @Setter TransactionAttribute transactionAttribute=TransactionAttribute.SUPPORTS;
 	private @Getter int transactionTimeout = 0;
 	private @Getter int lockWaitTimeout = 0;
 	
@@ -94,7 +96,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttributeNum(), getTransactionTimeout());
+		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 		if (StringUtils.isEmpty(getObjectId())) {
 			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
@@ -348,27 +350,6 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		transactionTimeout = i;
 	}
 
-	@Override
-	public void setTransactionAttribute(String attribute) throws ConfigurationException {
-		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
-		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
-		}
-	}
-	@Override
-	public String getTransactionAttribute() {
-		return JtaUtil.getTransactionAttributeString(transactionAttribute);
-	}
-
-	@Override
-	@Deprecated
-	public void setTransactionAttributeNum(int i) {
-		transactionAttribute = i;
-	}
-	@Override
-	public int getTransactionAttributeNum() {
-		return transactionAttribute;
-	}
 
 	@IbisDoc({"6", "If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
 	public void setLockWaitTimeout(int i) {

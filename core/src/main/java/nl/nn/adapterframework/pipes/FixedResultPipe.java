@@ -56,6 +56,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * 
  * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
+ *
+ * @ff.forward filenotfound the configured file was not found
+ *
  * 
  * @author Johan Verrips
  */

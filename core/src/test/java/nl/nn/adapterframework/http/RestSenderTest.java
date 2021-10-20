@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 
 public class RestSenderTest extends HttpSenderTestBase<RestSender> {
@@ -37,7 +38,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl("relative/path");
 
 		sender.configure();
@@ -50,7 +51,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -66,7 +67,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		sender.configure();
 		sender.open();
