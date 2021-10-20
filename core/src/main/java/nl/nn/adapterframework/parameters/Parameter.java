@@ -43,6 +43,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;

@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -47,7 +46,6 @@ import java.util.zip.ZipException;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -903,26 +901,23 @@ public class JdbcUtil {
 				statement.setBoolean(parameterIndex, (Boolean) value);
 			}
 		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
-			if (value instanceof FileInputStream) {
-				FileInputStream fis = (FileInputStream) value;
-				long len = 0;
-				try {
-					len = fis.getChannel().size();
-				} catch (IOException e) {
-					log.warn("could not determine file size", e);
+			try {
+				Message parameterValueMessage = pv.asMessage();
+				long len = parameterValueMessage.size();
+				if(len != -1) {
+					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream(), len);
+				} else {
+					statement.setBinaryStream(parameterIndex, parameterValueMessage.asInputStream());
 				}
-				statement.setBinaryStream(parameterIndex, fis, (int) len);
-			} else if (value instanceof ByteArrayInputStream) {
-				ByteArrayInputStream bais = (ByteArrayInputStream) value;
-				long len = bais.available();
-				statement.setBinaryStream(parameterIndex, bais, (int) len);
-			} else if (value instanceof InputStream) {
-				statement.setBinaryStream(parameterIndex, (InputStream) value);
-			} else {
-				throw new JdbcException("unknown inputstream [" + value.getClass() + "] for parameter [" + paramName + "]");
+			} catch(IOException e) {
+				throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
 			}
 		} else if ("bytes".equals(paramType)) {
-			statement.setBytes(parameterIndex, (byte[]) value);
+			try {
+				statement.setBytes(parameterIndex, Message.asByteArray(value));
+			} catch (IOException e) {
+				throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
+			}
 		} else {
 			setParameter(statement, parameterIndex, (String)value, parameterTypeMatchRequired);
 		}
@@ -930,37 +925,37 @@ public class JdbcUtil {
 
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
 		if (!parameterTypeMatchRequired) {
-			statement.setString(parameterIndex, (String) value);
+			statement.setString(parameterIndex, value);
 			return;
 		}
 		int sqlTYpe=statement.getParameterMetaData().getParameterType(parameterIndex);
 		try {
 			switch(sqlTYpe) {
 			case Types.INTEGER:
-				statement.setInt(parameterIndex, Integer.parseInt((String)value));
+				statement.setInt(parameterIndex, Integer.parseInt(value));
 				break;
 			case Types.NUMERIC:
 			case Types.DOUBLE:
-				statement.setDouble(parameterIndex, Double.parseDouble((String)value));
+				statement.setDouble(parameterIndex, Double.parseDouble(value));
 				break;
 			case Types.BIGINT:
-				statement.setLong(parameterIndex, Long.parseLong((String)value));
+				statement.setLong(parameterIndex, Long.parseLong(value));
 				break;
 			case Types.BLOB:
-				statement.setBytes(parameterIndex, ((String)value).getBytes(Charsets.UTF_8));
+				statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
 				break;
 			case Types.DATE:
-				statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate((String) value).getTime()));
+				statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate(value).getTime()));
 				break;
 			case Types.TIMESTAMP:
-				statement.setTimestamp(parameterIndex, new Timestamp(DateUtils.parseAnyDate((String) value).getTime()));
+				statement.setTimestamp(parameterIndex, new Timestamp(DateUtils.parseAnyDate(value).getTime()));
 				break;
 			default:
 				log.warn("parameter type ["+JDBCType.valueOf(sqlTYpe).getName()+"] handled as String");
 				//$FALL-THROUGH$
 			case Types.CHAR:
 			case Types.VARCHAR:
-				statement.setString(parameterIndex, (String) value);
+				statement.setString(parameterIndex, value);
 				break;
 			}
 		} catch (CalendarParserException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP

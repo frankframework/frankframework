@@ -1,46 +1,52 @@
 <result>
-  <fielddefinition>
+	<fielddefinition>
 		<field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
 		<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
 		<field name="TVARCHAR2" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
 		<field name="TINT" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
 		<field name="TDATETIME" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
-  </fielddefinition>
-  <rowset>
-    <row number="0">
-      <field name="TKEY">1</field>
-      <field name="TVARCHAR">just a text</field>
-      <field name="TVARCHAR2" null="true" />
-      <field name="TINT">1793</field>
-      <field name="TDATETIME" null="true" />
-    </row>
-    <row number="1">
-      <field name="TKEY">2</field>
-      <field name="TVARCHAR">just a second text</field>
-      <field name="TVARCHAR2" null="true" />
-      <field name="TINT">96</field>
-      <field name="TDATETIME" null="true" />
-    </row>
-    <row number="2">
-      <field name="TKEY">3</field>
-      <field name="TVARCHAR" null="true" />
-      <field name="TVARCHAR2">just a third text</field>
-      <field name="TINT" null="true" />
-      <field name="TDATETIME">2018-04-12 03:05:06</field>
-    </row>
-    <row number="3">
-      <field name="TKEY">4</field>
-      <field name="TVARCHAR">fourth text</field>
-      <field name="TVARCHAR2" null="true" />
-      <field name="TINT" null="true" />
-      <field name="TDATETIME" null="true" />
-    </row>
-    <row number="4">
-      <field name="TKEY">6</field>
-      <field name="TVARCHAR">5th text</field>
-      <field name="TVARCHAR2" null="true" />
-      <field name="TINT">15092002</field>
-      <field name="TDATETIME">2018-04-12 03:05:06</field>
-    </row>
-  </rowset>
+		<field name="TBLOB" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob"/>
+	</fielddefinition>
+	<rowset>
+		<row number="0">
+			<field name="TKEY">1</field>
+			<field name="TVARCHAR">just a text</field>
+			<field name="TVARCHAR2" null="true"/>
+			<field name="TINT">1793</field>
+			<field name="TDATETIME" null="true"/>
+			<field name="TBLOB" null="true"/>
+		</row>
+		<row number="1">
+			<field name="TKEY">2</field>
+			<field name="TVARCHAR">just a second text</field>
+			<field name="TVARCHAR2" null="true"/>
+			<field name="TINT">96</field>
+			<field name="TDATETIME" null="true"/>
+			<field name="TBLOB" null="true"/>
+		</row>
+		<row number="2">
+			<field name="TKEY">3</field>
+			<field name="TVARCHAR" null="true"/>
+			<field name="TVARCHAR2">just a third text</field>
+			<field name="TINT" null="true"/>
+			<field name="TDATETIME">2018-04-12 03:05:06</field>
+			<field name="TBLOB" null="true"/>
+		</row>
+		<row number="3">
+			<field name="TKEY">4</field>
+			<field name="TVARCHAR">fourth text</field>
+			<field name="TVARCHAR2" null="true"/>
+			<field name="TINT" null="true"/>
+			<field name="TDATETIME" null="true"/>
+			<field name="TBLOB" null="true"/>
+		</row>
+		<row number="4">
+			<field name="TKEY">6</field>
+			<field name="TVARCHAR">5th text</field>
+			<field name="TVARCHAR2" null="true"/>
+			<field name="TINT">15092002</field>
+			<field name="TDATETIME">2018-04-12 03:05:06</field>
+			<field name="TBLOB" null="true"/>
+		</row>
+	</rowset>
 </result>
