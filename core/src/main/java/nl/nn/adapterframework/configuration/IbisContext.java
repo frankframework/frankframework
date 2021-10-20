@@ -179,7 +179,7 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager.reload(configurationName);
 			unload(configurationName);
 			load(configurationName);
-		} catch (ConfigurationException e) {
+		} catch (ClassLoaderException e) {
 			log("failed to reload", MessageKeeperLevel.ERROR, e);
 		}
 	}
@@ -272,7 +272,7 @@ public class IbisContext extends IbisApplicationContext {
 				LOG.info("loading configuration ["+currentConfigurationName+"]");
 				configFound = true;
 
-				ConfigurationException customClassLoaderConfigurationException = null;
+				ClassLoaderException classLoaderException = null;
 				ClassLoader classLoader = null;
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
@@ -282,15 +282,15 @@ public class IbisContext extends IbisApplicationContext {
 					if(classLoader == null)
 						continue;
 
-				} catch (ConfigurationException e) {
-					customClassLoaderConfigurationException = e;
+				} catch (ClassLoaderException e) {
+					classLoaderException = e;
 					if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] got exception creating/retrieving classloader type ["+classLoaderType+"] errorMessage ["+e.getMessage()+"]");
 				}
 
 				if(LOG.isDebugEnabled()) LOG.debug("configuration ["+currentConfigurationName+"] found classloader ["+ClassUtils.nameOf(classLoader)+"]");
 				try {
 					loadingConfigs.add(currentConfigurationName);
-					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, customClassLoaderConfigurationException);
+					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, classLoaderException);
 				} catch (Exception e) {
 					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
 				} finally {

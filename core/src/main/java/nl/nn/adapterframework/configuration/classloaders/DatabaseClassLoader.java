@@ -17,7 +17,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
@@ -34,18 +34,18 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	}
 
 	@Override
-	protected Map<String, byte[]> loadResources() throws ConfigurationException {
+	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
 			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
-			throw new ConfigurationException(getErrorMessage(), t);
+			throw new ClassLoaderException(getErrorMessage(), t);
 		}
 
 		if (configuration == null) {
-			throw new ConfigurationException(getErrorMessage());
+			throw new ClassLoaderException(getErrorMessage());
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");

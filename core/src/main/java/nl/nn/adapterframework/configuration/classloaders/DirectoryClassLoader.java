@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
@@ -26,19 +27,19 @@ import nl.nn.adapterframework.util.AppConstants;
 public class DirectoryClassLoader extends ClassLoaderBase {
 	private File directory = null;
 
-	public DirectoryClassLoader(ClassLoader parent) throws ConfigurationException {
+	public DirectoryClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
 		super.configure(ibisContext, configurationName);
 
 		if (directory == null) {
 			AppConstants appConstants = AppConstants.getInstance();
 			String configurationsDirectory = appConstants.getResolvedProperty("configurations.directory");
 			if (configurationsDirectory == null) {
-				throw new ConfigurationException("Could not find property configurations.directory");
+				throw new ClassLoaderException("Could not find property configurations.directory");
 			}
 
 			setDirectory(configurationsDirectory);
@@ -50,7 +51,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 		}
 
 		if (!this.directory.isDirectory()) {
-			throw new ConfigurationException("Could not find directory to load configuration from: " + this.directory);
+			throw new ClassLoaderException("Could not find directory to load configuration from: " + this.directory);
 		}
 	}
 
@@ -58,10 +59,10 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 	 * Set the directory from which the configuration files should be loaded
 	 * @throws ConfigurationException if the directory can't be found
 	 */
-	public void setDirectory(String directory) throws ConfigurationException {
+	public void setDirectory(String directory) throws ClassLoaderException {
 		File dir = new File(directory);
 		if(!dir.isDirectory())
-			throw new ConfigurationException("directory ["+directory+"] not found");
+			throw new ClassLoaderException("directory ["+directory+"] not found");
 
 		this.directory = dir;
 	}
