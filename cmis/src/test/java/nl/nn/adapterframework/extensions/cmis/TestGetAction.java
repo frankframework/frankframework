@@ -170,7 +170,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 		if(!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(actualResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
 		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
