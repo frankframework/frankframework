@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+	<core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">
+		<addresses>
+			<address name="Q.TEST.FF">
+				<anycast>
+					<queue name="Q.TEST.FF"/>
+				</anycast>
+			</address>
+			<address name="Q.TEST.IN">
+				<anycast>
+					<queue name="Q.TEST.IIN"/>
+				</anycast>
+			</address>
+			<address name="Q.TEST.OUT">
+				<anycast>
+					<queue name="Q.TEST.OUT"/>
+				</anycast>
+			</address>
+		</addresses>
+	</core>
+</configuration>
