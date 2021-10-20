@@ -147,7 +147,7 @@
 				<xsl:text>	</xsl:text>
 				<xsl:value-of select="$internalName"/>
 				<xsl:text>{{Receiver</xsl:text>
-				<xsl:text disable-output-escaping="yes">&lt;br/></xsl:text>
+				<xsl:text disable-output-escaping="yes">&amp;lt;br></xsl:text>
 				<xsl:value-of select="@name"/>
 				<xsl:text>}}</xsl:text>
 				<xsl:text>&#10;</xsl:text>
@@ -282,7 +282,7 @@
 						<xsl:otherwise>(</xsl:otherwise>
 					</xsl:choose>
 					<xsl:value-of select="@name"/>
-					<xsl:text disable-output-escaping="yes">&lt;br/></xsl:text>
+					<xsl:text disable-output-escaping="yes">&amp;lt;br></xsl:text>
 					<xsl:choose>
 						<xsl:when test="@className = 'nl.nn.adapterframework.pipes.GenericMessageSendingPipe'">
 							<xsl:call-template name="afterLastIndexOf">
@@ -363,7 +363,7 @@
 			<value>
 				<xsl:text>	</xsl:text>
 				<xsl:value-of select="$internalName"/>
-				<xsl:text disable-output-escaping="yes">([inputValidator&lt;br/></xsl:text>
+				<xsl:text disable-output-escaping="yes">([inputValidator&amp;lt;br></xsl:text>
 				<xsl:call-template name="afterLastIndexOf">
 					<xsl:with-param name="string" select="@className"/>
 				</xsl:call-template>
@@ -450,7 +450,7 @@
 				<value>
 					<xsl:text>	</xsl:text>
 					<xsl:value-of select="$internalName"/>
-					<xsl:text disable-output-escaping="yes">([outputValidator&lt;br/></xsl:text>
+					<xsl:text disable-output-escaping="yes">([outputValidator&amp;lt;br></xsl:text>
 					<xsl:call-template name="afterLastIndexOf">
 						<xsl:with-param name="string" select="@className"/>
 					</xsl:call-template>
@@ -529,7 +529,7 @@
 			<value>
 				<xsl:text>	</xsl:text>
 				<xsl:value-of select="$internalName"/>
-				<xsl:text disable-output-escaping="yes">([inputWrapper&lt;br/></xsl:text>
+				<xsl:text disable-output-escaping="yes">([inputWrapper&amp;lt;br></xsl:text>
 				<xsl:call-template name="afterLastIndexOf">
 					<xsl:with-param name="string" select="@className"/>
 				</xsl:call-template>
@@ -600,7 +600,7 @@
 			<value>
 				<xsl:text>	</xsl:text>
 				<xsl:value-of select="$internalName"/>
-				<xsl:text disable-output-escaping="yes">([outputWrapper&lt;br/></xsl:text>
+				<xsl:text disable-output-escaping="yes">([outputWrapper&amp;lt;br></xsl:text>
 				<xsl:call-template name="afterLastIndexOf">
 					<xsl:with-param name="string" select="@className"/>
 				</xsl:call-template>
@@ -796,7 +796,7 @@
 						<!--If there is an outputWrapper, redirect the flow there instead-->
 						<xsl:when test="$pipeline//pipeline/outputWrapper">
 							<forward
-								name="{concat(@name, '&lt;br/&gt;', $destination)}"
+								name="{concat(@name, '&amp;lt;br&gt;', $destination)}"
 								path="{concat('outputWrapper', $specialIds/outputWrapper/text())}"
 								specialForward="outputWrapper">
 								<!--Here we define where the outputValidator forwards to. In this case, we're working with the pipeline outputValidator,
@@ -811,7 +811,7 @@
 						<!--If there is an outputValidator, redirect the flow there instead-->
 						<xsl:when test="$pipeline//pipeline/outputValidator">
 							<forward
-								name="{concat(@name, '&lt;br/&gt;', $destination)}"
+								name="{concat(@name, '&amp;lt;br&gt;', $destination)}"
 								path="{concat('outputValidator', $specialIds/outputValidator/text())}"
 								specialForward="outputValidator">
 								<!--Here we define where the outputValidator forwards to. In this case, we're working with the pipeline outputValidator,
@@ -1043,10 +1043,10 @@
 				<xsl:value-of select="$internalName"/>
 				<xsl:text>{{</xsl:text>
 <!--				<xsl:value-of select="@path"/>-->
-<!--				<xsl:text disable-output-escaping="yes">&lt;br/></xsl:text>-->
+<!--				<xsl:text disable-output-escaping="yes">&amp;lt;br></xsl:text>-->
 				<xsl:value-of select="@state"/>
 				<xsl:if test="@code">
-					<xsl:text disable-output-escaping="yes">&lt;br/></xsl:text>
+					<xsl:text disable-output-escaping="yes">&amp;lt;br></xsl:text>
 					<xsl:value-of select="@code"/>
 				</xsl:if>
 				<xsl:text>}}</xsl:text>

@@ -1,0 +1,13 @@
+<div class="inmodal">
+	<div class="modal-header">
+		<h4 class="modal-title">Mermaid Flow</h4>
+	</div>
+	<div class="modal-body" niet-ng-if="!error">
+		<div class="text-center h4">Mermaid flow for {{adapterName}}</div>
+		<span class="mermaid-view" mermaid-view adapterName="{{adapterName}}" ></span>
+	</div>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-white" ng-click="close()">Close</button>
+	</div>
+</div>
