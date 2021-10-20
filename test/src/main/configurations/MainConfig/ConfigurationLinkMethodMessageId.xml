@@ -9,7 +9,7 @@
 			</exits>
 			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported" linkMethod="MESSAGEID">
 				<sender className="nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender" applicationId="${applicationId}" messageProtocol="FF" serviceId="${SendUnstructuredEmail}" />
-				<listener className="nl.nn.adapterframework.jms.JmsListener" destinationName="jms/i4testiaf_in" timeOut="3000" jmsRealm="qcf" messageSelector="SOURCE ='I4TIAF?'"/>
+				<listener className="nl.nn.adapterframework.jms.JmsListener" destinationName="${jms.destination.i4testiaf_in}" timeOut="3000" jmsRealm="qcf" messageSelector="SOURCE ='I4TIAF?'"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

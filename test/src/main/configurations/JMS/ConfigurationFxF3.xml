@@ -11,7 +11,7 @@
 			<pipe name="Send2Jms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="jms/i4testiaf_in">
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}">
 					<param name="SOURCE" value="${hostname}_I4TIAFFXF3" />
 				</sender>
 				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
@@ -27,7 +27,7 @@
 	<adapter name="FxF3InListener" active="${active.jms}">
 		<receiver transactionAttribute="Required">
 			<listener className="nl.nn.adapterframework.extensions.fxf.FxfListener"
-				destinationName="jms/i4testiaf_in" jmsRealm="qcf" messageSelector="SOURCE='${hostname}_I4TIAFFXF3'"
+				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageSelector="SOURCE='${hostname}_I4TIAFFXF3'"
 				createProcessedDirectory="true" />
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/FxF3InListener" />

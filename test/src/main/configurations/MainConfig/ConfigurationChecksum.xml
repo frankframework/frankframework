@@ -112,7 +112,7 @@
 		        name="ResponseSender" > 
 		        <sender 
 		                className="nl.nn.adapterframework.jms.JmsSender" 
-		                destinationName="jms/i4testiaf_out"
+		                destinationName="${jms.destination.i4testiaf_out}"
 		                deliveryMode="NON_PERSISTENT"
 		                jmsRealm="qcf"
 		        >
