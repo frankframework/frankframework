@@ -56,11 +56,11 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			
-			<pipe name="StylesheetNameSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl">
-				<forward name="success" path="SetSessionKeyName" />
-				<forward name="failure" path="EXIT" />
-			</pipe>
+			<PutInSessionPipe name="StylesheetNameSessionKey">
+				<Param name="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl"/>
+				<Forward name="success" path="SetSessionKeyName" />
+				<Forward name="failure" path="EXIT" />
+			</PutInSessionPipe>
 
 			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetNameSessionKey="stylesheetLocation" namespaceAware="true"

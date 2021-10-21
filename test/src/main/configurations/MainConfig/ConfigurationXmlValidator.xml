@@ -95,10 +95,10 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schemaSessionKey -->
-			<pipe name="schemaSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
-				sessionKey="xsdLocation" value="/XmlValidator/schemaSessionKey/ING_REQ1041.xsd">
-				<forward name="success" path="schemaSessionKeyValidate" />
-			</pipe>
+			<PutInSessionPipe name="schemaSessionKey">
+				<Param name="xsdLocation" value="/XmlValidator/schemaSessionKey/ING_REQ1041.xsd"/>
+				<Forward name="success" path="schemaSessionKeyValidate" />
+			</PutInSessionPipe>
 			<pipe name="schemaSessionKeyValidate" className="nl.nn.adapterframework.pipes.XmlValidator"
 				schemaSessionKey="xsdLocation" root="ServiceRequest">
 				<forward name="success" path="EXIT" />
