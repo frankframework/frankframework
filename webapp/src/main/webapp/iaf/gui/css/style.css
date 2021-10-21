@@ -3475,9 +3475,6 @@ video {
   z-index: 2050;
 }
 /* MODAL */
-.modal {
-  padding: 30px;
-}
 .modal-content {
   background-clip: padding-box;
   background-color: #FFFFFF;
@@ -3489,8 +3486,6 @@ video {
 }
 .modal-dialog {
   z-index: 2200;
-  width: max-content;
-  margin: auto;
 }
 .modal-body {
   padding: 20px 30px 30px 30px;

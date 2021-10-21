@@ -432,13 +432,6 @@ angular.module('iaf.beheerconsole')
 		});
 	};
 
-	$scope.openFlowModal = function (adapter) {
-		$uibModal.open({
-			templateUrl: adapter,
-			controller: 'FlowCtrl',
-		});
-	};
-
 	$scope.sendFeedback = function (rating) {
 		if(!appConstants["console.feedbackURL"])
 			return;
@@ -565,32 +558,6 @@ angular.module('iaf.beheerconsole')
 		GDPR.setSettings(cookies);
 		$uibModalInstance.close();
 	};
-}])
-
-.controller('FlowCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
-	$scope.error = false;
-
-	$scope.close = function () {
-		$uibModalInstance.close();
-	};
-
-	// $scope.openCookieModel = function () {
-	// 	$uibModalInstance.close(); //close the current model
-
-	// 	$timeout(function() {
-	// 		$uibModal.open({
-	// 			templateUrl: 'views/common/cookieModal.html',
-	// 			size: 'lg',
-	// 			backdrop: 'static',
-	// 			controller: 'CookieModalCtrl',
-	// 		});
-	// 	});
-	// }
-
-	$uibModalInstance.rendered.then(function () {
-		console.log("modal is rendered");
-		mermaid.init()
-	});
 }])
 
 .controller('errorController', ['$scope', 'Api', 'Debug', '$http', 'Misc', '$state', '$timeout', function($scope, Api, Debug, $http, Misc, $state, $timeout) {
