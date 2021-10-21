@@ -6,11 +6,34 @@ Ibis AdapterFramework release notes
 
 
 
-Upcoming
+7.6.1
 --------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...7.6-release)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
+- Do not close zip archive during processing (#2109)
+- Fix log statements with throwables (#2135)
+- Fix ByteStream readers in JsonXMLReader (#2155)
+- Add ability to filter messages by message text (#2138)
+- Fix errorstore download message action (#2200)
+- Support classpath protocol in ClassLoaderURIResolver (#2193)
+- Add index for duplicates checks (#2208)
+- Fix Tibet2 storage when retrieving blob values (#2209)
+- Fix TransformerPool initialization with different xslt versions in XmlSwitch pipe (#2221)
+- Use configured success forward in DirectWrapperPipe (#2229)
+- Skip forward path validation if there is no pipeline (#2239)
+- JmsFacade send Message properties as String (#2241)
+- Add ability to find absolute resources in local ClassLoader (#2253)
+- Avoid log4j2 getSource() method call (#2339)
+- Fix migrator resources being found in other classloaders (#2342)
+- Remove autoreload check when autoDatabaseClassLoader is enabled (#2362)
+- Escape URL in GUI logging page (#2370)
+- Fix tiff file conversion (Aspose) (#2371)
+- Fix incompatible types for the inputstream parameters (#2368)
+
+
+7.6
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...v7.6)
 
 - Add writeLineSeparator attribute to FileSystemPipe (#1916)
 - Fix exception pipe should to not follow exception forward (#1913)
