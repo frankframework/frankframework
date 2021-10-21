@@ -34,8 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -118,7 +120,7 @@ public final class SendJmsMessage extends Base {
 		}
 		qms.setDestinationName(destination);
 		qms.setPersistent(persistent);
-		qms.setDestinationType(type);
+		qms.setDestinationType(EnumUtils.parse(DestinationType.class, type));
 		if (StringUtils.isNotEmpty(replyTo)) {
 			qms.setReplyToName(replyTo);
 		}

@@ -42,6 +42,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
@@ -245,6 +246,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 
+		runMigrator();
+
 		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
 			configurationDigester.digest();
@@ -277,6 +280,19 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
+	}
+
+	/** Execute any database changes before calling {@link #configure()}. */
+	protected void runMigrator() {
+		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
+		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
+			try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
+				databaseMigrator.configure();
+				databaseMigrator.update();
+			} catch (Exception e) {
+				log("unable to run JDBC migration", e);
+			}
+		}
 	}
 
 	@Override

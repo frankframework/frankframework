@@ -41,6 +41,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -138,7 +139,7 @@ public class SchemaUtils {
 			Set<XSD> xsds = xsdsGroupedByNamespace.get(namespace);
 			// Get attributes of root elements and get import elements from all XSD's
 			List<Attribute> rootAttributes = new ArrayList<Attribute>();
-			List<Attribute> rootNamespaceAttributes = new ArrayList<Attribute>();
+			List<Namespace> rootNamespaceAttributes = new ArrayList<Namespace>();
 			List<XMLEvent> imports = new ArrayList<XMLEvent>();
 			for (XSD xsd: xsds) {
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -209,7 +210,7 @@ public class SchemaUtils {
 	 * stripSchemaLocationFromImport is true it will be removed.
 	 * @throws java.io.IOException, XMLStreamException
 	 */
-	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Attribute> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
+	public static void xsdToXmlStreamWriter(final XSD xsd, XMLStreamWriter xmlStreamWriter, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports, boolean noOutput) throws IOException, ConfigurationException {
 		Map<String, String> namespacesToCorrect = new HashMap<String, String>();
 		NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
@@ -257,11 +258,11 @@ public class SchemaUtils {
 											rootAttributes.add(attribute);
 										}
 									}
-									iterator = startElement.getNamespaces();
-									while (iterator.hasNext()) {
-										Attribute attribute = iterator.next();
+									Iterator<Namespace> namespaceIterator = startElement.getNamespaces();
+									while (namespaceIterator.hasNext()) {
+										Namespace attribute = namespaceIterator.next();
 										boolean add = true;
-										for (Attribute attribute2 : rootNamespaceAttributes) {
+										for (Namespace attribute2 : rootNamespaceAttributes) {
 											if (XmlUtils.attributesEqual(attribute, attribute2)) {
 												add = false;
 											}
