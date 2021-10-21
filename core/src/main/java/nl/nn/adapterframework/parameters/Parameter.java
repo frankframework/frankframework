@@ -559,19 +559,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (result !=null) {
-			if (getMinInclusiveString()!=null || getMaxInclusiveString()!=null) {
-				if (getMinInclusiveString()!=null) {
-					if (((Number)result).floatValue()<minInclusive.floatValue()) {
-						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusiveString()+"]" );
-						result = minInclusive;
-					}
-				}
-				if (getMaxInclusiveString()!=null) {
-					if (((Number)result).floatValue()>maxInclusive.floatValue()) {
-						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusiveString()+"]" );
-						result = maxInclusive;
-					}
-				}
+			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusiveString()+"]" );
+				result = minInclusive;
+			}
+			if (getMaxInclusiveString()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusiveString()+"]" );
+				result = maxInclusive;
 			}
 		}
 		
