@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -268,8 +269,8 @@ public class ApiServiceDispatcher {
 			for (Parameter parameter : inputValidator.getParameterList()) {
 				String parameterSessionkey = parameter.getSessionKey();
 				if(StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
-					String parameterType = parameter.getType() != null ? parameter.getType() : "string";
-					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType)));
+					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;
+					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType.getLabel())));
 				}
 			}
 		}

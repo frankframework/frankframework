@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -71,7 +72,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		inputParameter.setRemoveNamespaces(true);
 		
 		pipe.addParameter(inputParameter);
@@ -90,7 +91,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
 		inputParameter.setSessionKey("sessionKey");
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		session.put("sessionKey", input);
 
@@ -108,7 +109,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
 		inputParameter.setSessionKey("sessionKey");
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		session.put("sessionKey", input);
 		pipe.addParameter(inputParameter);
 		pipe.setXpathExpression("$source/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
@@ -173,7 +174,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		inputParameter.setName("source");
 		inputParameter.setXpathExpression("/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		inputParameter.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		pipe.setXpathExpression("$source");
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
