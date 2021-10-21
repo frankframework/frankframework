@@ -257,7 +257,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * 
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(IbisContext)
-	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ConfigurationException)
+	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	public void load(String configurationName) {
 		boolean configFound = false;
@@ -325,7 +325,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ConfigurationException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
 
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
@@ -345,7 +345,7 @@ public class IbisContext extends IbisApplicationContext {
 				ibisManager.addConfiguration(configuration);
 				if(classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
-					throw classLoaderException;
+					throw new ConfigurationException("error instantiating ClassLoader", classLoaderException);
 				}
 				throw new ConfigurationException("error instantiating configuration", e);
 			}

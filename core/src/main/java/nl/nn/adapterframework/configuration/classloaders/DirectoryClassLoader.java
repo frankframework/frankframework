@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ClassLoaderException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -57,7 +56,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 
 	/**
 	 * Set the directory from which the configuration files should be loaded
-	 * @throws ConfigurationException if the directory can't be found
+	 * @throws ClassLoaderException if the directory can't be found
 	 */
 	public void setDirectory(String directory) throws ClassLoaderException {
 		File dir = new File(directory);

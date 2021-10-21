@@ -193,7 +193,7 @@ public class ClassLoaderManager {
 	 * Returns the ClassLoader for a specific configuration.
 	 * @param configurationName to get the ClassLoader for
 	 * @return ClassLoader or null on error
-	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
 	public ClassLoader get(String configurationName) throws ClassLoaderException {
 		return get(configurationName, null);
@@ -204,7 +204,7 @@ public class ClassLoaderManager {
 	 * @param configurationName to get the ClassLoader for
 	 * @param classLoaderType null or type of ClassLoader to load
 	 * @return ClassLoader or null on error
-	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
 	public ClassLoader get(String configurationName, String classLoaderType) throws ClassLoaderException {
 		if(ibisContext == null) {
