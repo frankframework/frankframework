@@ -373,7 +373,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		this.targetNamespace = targetNamespace;
 	}
 
-	@IbisDoc({"2", "Default format of the result.", "xml"})
+	@IbisDoc({"2", "Default format of the result.", "XML"})
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}
