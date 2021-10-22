@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,13 +46,44 @@ public class PipeLineSessionTest {
 		session.put("key6", list.toArray());
 		session.put("key7", new Date());
 		session.put("key8", 123);
+		session.put("key8b", "456");
 		session.put("key9", true);
+		session.put("key9b", "true");
+		session.put("key9c", "false");
 		session.put("key10", map);
+		session.put("key11", 123L);
+		session.put("key11b", "456");
 	}
 
 	@Test
 	public void testString() {
 		assertEquals("test1", session.get("key1"));
+		assertEquals("test1", session.get("key1", "default"));
+		assertEquals("default", session.get("key1a", "default"));
+	}
+
+	@Test
+	public void testTsSentTsReceived() {
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(1634150000000L);
+		Date tsReceived = cal.getTime();
+
+		Calendar cal2 = Calendar.getInstance();
+		cal2.setTimeInMillis(1634500000000L);
+		Date tsSent = cal2.getTime();
+
+		//Should set the value as a String
+		PipeLineSession.setListenerParameters(session, null, null, tsReceived, tsSent);
+
+		assertEquals(tsReceived, session.getTsReceived());
+		assertEquals(tsSent, session.getTsSent());
+
+		//Sets the raw value
+		session.put(PipeLineSession.TS_RECEIVED_KEY, tsReceived);
+		session.put(PipeLineSession.TS_SENT_KEY, tsSent);
+
+		assertEquals(tsReceived, session.getTsReceived());
+		assertEquals(tsSent, session.getTsSent());
 	}
 
 	@Test
@@ -89,11 +121,18 @@ public class PipeLineSessionTest {
 	@Test
 	public void testInteger() {
 		assertEquals(123, session.get("key8"));
+		assertEquals(123, session.get("key8", 0));
+		assertEquals(0, session.get("key8a", 0));
+		assertEquals(456, session.get("key8b", 0));
 	}
 
 	@Test
 	public void testBoolean() {
 		assertEquals(true, session.get("key9"));
+		assertEquals(true, session.get("key9", false));
+		assertEquals(false, session.get("key9a", false));
+		assertEquals(true, session.get("key9b", false));
+		assertEquals(false, session.get("key9c", true));
 	}
 
 	@Test
@@ -102,5 +141,13 @@ public class PipeLineSessionTest {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> map = (Map<String, Object>) session.get("key10");
 		assertEquals(3, map.size());
+	}
+
+	@Test
+	public void testLong() {
+		assertEquals(123L, session.get("key11"));
+		assertEquals(123L, session.get("key11", 0L));
+		assertEquals(0L, session.get("key11a", 0L));
+		assertEquals(456L, session.get("key11b", 0L));
 	}
 }

@@ -34,6 +34,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Selects an exitState, based on xpath evaluation
  * 
+ * @ff.forward then The configured condition is met
+ * @ff.forward else The configured condition is not met
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2018, 2020 Nationale-Nederlanden
+   Copyright 2016-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,14 +48,6 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Stream an input stream to an output stream.
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"antiVirusFailed"</td><td>if <code>checkAntiVirus=true</code> and an antivirus part is present of which the value differs from <code>antiVirusPassedMessage</code>. If not specified, a PipeRunException is thrown in that situation</td></tr>
- * </table>
- * </p>
- * 
  * @ff.parameter inputStream 		the input stream object to use instead of an input stream object taken from pipe input
  * @ff.parameter outputStream		the output stream object to use unless httpResponse parameter is specified
  * @ff.parameter httpResponse		an HttpServletResponse object to stream to (the output stream is retrieved by calling getOutputStream() on the HttpServletResponse object)
@@ -63,6 +55,8 @@ import nl.nn.adapterframework.util.Misc;
  * @ff.parameter contentType		the Content-Type header to set in case httpResponse was specified
  * @ff.parameter contentDisposition	the Content-Disposition header to set in case httpResponse was specified
  * @ff.parameter redirectLocation	the redirect location to set in case httpResponse was specified
+ * 
+ * @ff.forward antiVirusFailed the virus checking indicates a problem with the message
  * 
  * @author Jaco de Groot
  */
@@ -233,17 +227,15 @@ public class StreamPipe extends FixedForwardPipe {
 							PipeForward antiVirusFailedForward = findForward(ANTIVIRUS_FAILED_FORWARD);
 							if (antiVirusFailedForward == null) {
 								throw new PipeRunException(this, errorMessage);
-							} else {
-								if (antiVirusFailureAsSoapFault) {
-									errorMessage = createSoapFaultMessage(errorMessage).asString();
-								}
-								if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
-									return new PipeRunResult(antiVirusFailedForward, errorMessage);
-								} else {
-									session.put(getAntiVirusFailureReasonSessionKey(), errorMessage);
-									return new PipeRunResult(antiVirusFailedForward, result);
-								}
+							} 
+							if (antiVirusFailureAsSoapFault) {
+								errorMessage = createSoapFaultMessage(errorMessage).asString();
 							}
+							if (StringUtils.isEmpty(getAntiVirusFailureReasonSessionKey())) {
+								return new PipeRunResult(antiVirusFailedForward, errorMessage);
+							}
+							session.put(getAntiVirusFailureReasonSessionKey(), errorMessage);
+							return new PipeRunResult(antiVirusFailedForward, result);
 						}
 					}
 				}

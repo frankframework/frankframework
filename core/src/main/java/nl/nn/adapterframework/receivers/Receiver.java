@@ -75,6 +75,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
@@ -125,7 +126,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
  * <table border="1">
- * <tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
+ * <tr><th>{@link #setTransactionAttribute(TransactionAttribute) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
  * <tr><td>Required</td><td>true</td></tr>
  * <tr><td>RequiresNew</td><td>true</td></tr>
  * <tr><td>Mandatory</td><td>true</td></tr>
@@ -978,26 +979,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (getRunState() != RunStateEnum.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
 		}
-		Date tsReceived = null;
-		Date tsSent = null;
-		if (context!=null) {
-			//ClassCasting Exceptions occur when using PipeLineSessionBase.setListenerParameters, hence these silly instanceof's
-			Object tsReceivedObj = context.get(PipeLineSession.tsReceivedKey);
-			Object tsSentObj = (Date)context.get(PipeLineSession.tsSentKey);
-			if(tsReceivedObj instanceof Date) {
-				tsReceived = (Date) context.get(PipeLineSession.tsReceivedKey);
-			} else if(tsReceivedObj instanceof String) {
-				tsReceived = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
-			}
-			if(tsSentObj instanceof Date) {
-				tsSent = (Date) context.get(PipeLineSession.tsSentKey);
-			} else if(tsSentObj instanceof String) {
-				tsSent = DateUtils.parseToDate((String) tsSentObj, DateUtils.FORMAT_FULL_GENERIC);
-			}
-		} else {
-			context=new HashMap<>();
+
+		if (context == null) {
+			context = new HashMap<>();
 		}
 
+		Date tsReceived = PipeLineSession.getTsReceived(context);
+		Date tsSent = PipeLineSession.getTsSent(context);
 		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		String messageId = (String) context.get(PipeLineSession.originalMessageIdKey);
 		return processMessageInAdapter(rawMessage, message, messageId, correlationId, context, -1, false, false);
@@ -1112,9 +1100,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				if (msg instanceof Serializable) {
 					String originalMessageId = (String)threadContext.get(PipeLineSession.originalMessageIdKey);
 					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
-					String receivedDateStr = (String)threadContext.get(PipeLineSession.tsReceivedKey);
+					String receivedDateStr = (String)threadContext.get(PipeLineSession.TS_RECEIVED_KEY);
 					if (receivedDateStr==null) {
-						log.warn(getLogPrefix()+PipeLineSession.tsReceivedKey+" is unknown, cannot update comments");
+						log.warn(getLogPrefix()+PipeLineSession.TS_RECEIVED_KEY+" is unknown, cannot update comments");
 					} else {
 						Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 						errorStorage.deleteMessage(storageKey);

@@ -150,9 +150,16 @@ public class StatusRecordingTransactionManagerTest {
 		String recordedTmUid = read("/a/b/c/"+TMUID_FILE);
 		assertEquals(tmUid, recordedTmUid);
 	}
-	
-	
-	
+
+	@Test
+	public void testTestReadWithWhitespace() {
+		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		String value = "fake tm uid";
+		String fullPathTmFile = folder.getRoot()+"/"+TMUID_FILE;
+		tm.write(fullPathTmFile, "\n "+value+" \n\n");
+		assertEquals(value, tm.read(fullPathTmFile));
+	}
+
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
 		if (tmUid!=null) {

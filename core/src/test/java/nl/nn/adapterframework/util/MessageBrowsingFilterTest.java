@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import java.sql.PreparedStatement;
 import java.util.Date;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,11 +41,6 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		createDbTable();
 
 		listener = new JavaListener();
-	}
-
-	@After
-	public void teardown() throws Exception {
-		liquibase.dropAll();
 	}
 
 	@Test

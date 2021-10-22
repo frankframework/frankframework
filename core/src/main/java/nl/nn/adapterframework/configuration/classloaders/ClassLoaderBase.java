@@ -58,11 +58,11 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	private String basePath = null;
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 
-	public ClassLoaderBase() {
+	protected ClassLoaderBase() {
 		this(Thread.currentThread().getContextClassLoader());
 	}
 
-	public ClassLoaderBase(ClassLoader parent) {
+	protected ClassLoaderBase(ClassLoader parent) {
 		super(parent);
 	}
 

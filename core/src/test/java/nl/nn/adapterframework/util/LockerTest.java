@@ -18,6 +18,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.ResourceTransactionManager;
 
 import nl.nn.adapterframework.core.IbisTransaction;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
@@ -304,7 +305,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		String lockObjectId = null; 
 
 		locker.setTxManager(txManager);
-		locker.setTransactionAttribute("Required");
+		locker.setTransactionAttribute(TransactionAttribute.REQUIRED);
 		locker.setDbmsSupport(dbmsSupport);
 		locker.setObjectId("myLocker");
 		locker.configure();

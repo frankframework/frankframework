@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,19 +35,13 @@ import org.apache.commons.lang3.StringUtils;
  * If one of the parameters is missing then the input message will be used as the missing operand.
  * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
  *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
- * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
- * <tr><td>equals</td><td>when v1 = v2</td></tr>
- * </table>
- * </p>
- *
  * @ff.parameter operand1 The first operand, holds v1.
- * 
  * @ff.parameter operand2 The second operand, holds v2.
- *  
+ *
+ * @ff.forward lessthan operand1 &lt; operand2
+ * @ff.forward greaterthan operand1 &gt; operand2
+ * @ff.forward equals operand1 = operand2
+ *
  * @author     Richard Punt / Gerrit van Brakel
  */
 public class CompareIntegerPipe extends AbstractPipe {

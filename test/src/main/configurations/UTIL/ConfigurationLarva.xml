@@ -96,11 +96,10 @@
 			</exits>
 		</pipeline>
 	</adapter>
-	
+
 	<scheduler>
 		<job
 			name="Larva"
-			adapterName="Larva"
 			javaListener="Larva"
 			interval="86400000"
 			function="sendMessage"

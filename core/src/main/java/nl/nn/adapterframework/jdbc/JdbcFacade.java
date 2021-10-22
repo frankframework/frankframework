@@ -17,7 +17,6 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
@@ -28,10 +27,8 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
@@ -82,8 +79,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private IDbmsSupport dbmsSupport=null;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
-	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
-	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
@@ -143,17 +138,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			boolean showWarning = !suppressResultSetHoldabilityWarning || (getDatabaseType() == Dbms.DB2 && "WAS".equals(applicationServerType));
-			if (showWarning && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
-				// For (some?) combinations of WebShere and (XA) Databases this seems to be the default and result in the following exception:
-				// com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
-				// When a ResultSetIteratingPipe is calling next() on the ResultSet after processing the first message it will throw the exception when:
-				// - the ResultSetIteratingPipe is non-transacted and the sender calls a sub-adapter that is transacted (transactionAttribute="Required")
-				// - the ResultSetIteratingPipe is transacted and sender contains a non transacted sender (transactionAttribute="NotSupported")
-				// Either none, or both need to be transacted.
-				// See issue #2015 ((ObjectClosedException) DSRA9110E: ResultSet is closed) on www.github.com
-				ApplicationWarnings.add(log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
-			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
