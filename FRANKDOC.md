@@ -60,7 +60,7 @@ The Frank!Framework uses [Project Lombok](https://projectlombok.org/). Instead o
 
 ![eclipseLombokSetter](./picturesForContributors/eclipseLombokSetter.jpg)
 
-This snippet comes from [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). It introduces attribute "name". In the remainder of this text, some JavaDoc tags are explained that you can add to attribute setters. You can also use them for Lombok-generated attributes. In that case you have to put them on the field like shown for the JavaDoc comment.
+This snippet comes from [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). It introduces attribute "name". In the remainder of this text, some JavaDoc tags are explained that you can add to attribute setters. You can also use them for Lombok-generated attributes. In that case you have to put them on the field like shown for the JavaDoc comment. Note that this is not true for Java annotations like `@IbisDoc` and `@IbisDocRef`.
 
 ## How Java inheritance is shown
 
