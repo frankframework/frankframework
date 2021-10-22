@@ -54,6 +54,14 @@ The JavaDoc of the class appears at the top of the page. The JavaDoc of the conf
 
 There is a `<rule>` XML element that links the name `adapter` to the name of the config child setter, `registerAdapter`.
 
+#### Lombok
+
+The Frank!Framework uses [Project Lombok](https://projectlombok.org/). Instead of writing out getter and setter methods of fields, you can generate them automatically using `@Getter` and `@Setter` annotations. Frank attributes can be defined using Lombok-generated setters as shown below:
+
+![eclipseLombokSetter](./picturesForContributors/eclipseLombokSetter.jpg)
+
+This snippet comes from [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java). It introduces attribute "name". In the remainder of this text, some JavaDoc tags are explained that you can add to attribute setters. You can also use them for Lombok-generated attributes. In that case you have to put them on the field like shown for the JavaDoc comment.
+
 ## How Java inheritance is shown
 
 In Java, config child setters and attribute setters are inherited like any Java method. As a consequence, attributes and config children are inherited. In `FrankConfig-strict.xsd` and in the JSON, inheritance is used to avoid unnecessary repetition and reduce file sizes. Frank developers do not see this in their text editor. Attributes look the same whether they are declared or inherited, and the same is true for child elements. In the web application, Frank developers can choose how they want to see inheritance. The default is shown below:
