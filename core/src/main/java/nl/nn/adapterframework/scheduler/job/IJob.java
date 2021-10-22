@@ -16,10 +16,11 @@
 package nl.nn.adapterframework.scheduler.job;
 
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
-public interface IJob {
+public interface IJob extends IConfigurable {
 
 	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException;
 }

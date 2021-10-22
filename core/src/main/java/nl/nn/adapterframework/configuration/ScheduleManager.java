@@ -31,6 +31,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.scheduler.job.IJob;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -126,14 +127,18 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 
 		while (!getSchedulesList().isEmpty()) {
-			JobDef job = getSchedulesList().get(0);
+			IJob job = getSchedulesList().get(0);
 			unRegister(job);
 		}
 	}
 
-	public void register(JobDef job) {
+	public void register(IJob job) {
 		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
+		}
+
+		if(!(job instanceof JobDef)) {
+			throw new IllegalStateException("unable to add Job [" + job.getName() + "] class must implement "+JobDef.class.getName());
 		}
 
 		if(log.isDebugEnabled()) log.debug("registering JobDef ["+job+"] with ScheduleManager ["+this+"]");
@@ -144,10 +149,10 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 			throw new IllegalStateException("JobDef [" + job.getName() + "] already registered.");
 		}
 
-		schedules.put(job.getName(), job);
+		schedules.put(job.getName(), (JobDef) job);
 	}
 
-	public void unRegister(JobDef job) {
+	public void unRegister(IJob job) {
 		String name = job.getName();
 
 		schedules.remove(name);
