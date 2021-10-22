@@ -15,19 +15,29 @@
 */
 package nl.nn.adapterframework.monitoring.events;
 
+import org.springframework.context.ApplicationEvent;
+
+import lombok.Getter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 
-/** 
- * Thrown {@link MonitorEvent}. Must be registered via a {@link RegisterMonitorEvent} first.
+/**
+ * Base class for registering and throwing {@link MonitorEvent MonitorEvents}.
  * 
  * @author Niels Meijer
  */
-public class FireMonitorEvent extends MonitorEventBase {
+public class MonitorEventBase extends ApplicationEvent {
 
-	private static final long serialVersionUID = -5721423356070894439L;
+	private static final long serialVersionUID = -4911322849505894916L;
 
-	public FireMonitorEvent(EventThrowing source, MonitorEvent eventCode) {
-		super(source, eventCode);
+	private @Getter MonitorEvent monitorEvent;
+
+	public MonitorEventBase(EventThrowing source, MonitorEvent event) {
+		super(source);
+		this.monitorEvent = event;
 	}
 
+	@Override
+	public EventThrowing getSource() {
+		return (EventThrowing) super.getSource();
+	}
 }

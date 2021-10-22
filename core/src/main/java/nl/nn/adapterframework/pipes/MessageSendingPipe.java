@@ -62,6 +62,7 @@ import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
@@ -103,10 +104,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 	private Level MSGLOG_LEVEL_TERSE = Level.toLevel("TERSE");
-
-	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
-	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
-	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
 	private final static String TIMEOUT_FORWARD = "timeout";
 	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
@@ -368,9 +365,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			configure(getOutputWrapper());
 		}
 
-		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
-		registerEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
-		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+		registerEvent(MonitorEvent.PIPE_TIMEOUT_MONITOR_EVENT);
+		registerEvent(MonitorEvent.PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
+		registerEvent(MonitorEvent.PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
 	// configure wrappers/validators
@@ -672,11 +669,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				if (timeoutPending) {
 					timeoutPending=false;
-					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
+					throwEvent(MonitorEvent.PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
 		
 			} catch (TimeOutException toe) {
-				throwEvent(PIPE_TIMEOUT_MONITOR_EVENT);
+				throwEvent(MonitorEvent.PIPE_TIMEOUT_MONITOR_EVENT);
 				if (!timeoutPending) {
 					timeoutPending=true;
 				}
@@ -701,7 +698,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new PipeRunException(this, getLogPrefix(session) + "caught timeout-exception", toe);
 	
 			} catch (Throwable t) {
-				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+				throwEvent(MonitorEvent.PIPE_EXCEPTION_MONITOR_EVENT);
 				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);

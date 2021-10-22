@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 
 /**
@@ -36,12 +37,12 @@ public class EventPublisher implements ApplicationEventPublisherAware, EventHand
 	}
 
 	@Override
-	public void registerEvent(EventThrowing source, String eventCode) {
+	public void registerEvent(EventThrowing source, MonitorEvent eventCode) {
 		applicationEventPublisher.publishEvent(new RegisterMonitorEvent(source, eventCode));
 	}
 
 	@Override
-	public void fireEvent(EventThrowing source, String eventCode) {
+	public void fireEvent(EventThrowing source, MonitorEvent eventCode) {
 		applicationEventPublisher.publishEvent(new FireMonitorEvent(source, eventCode));
 	}
 }

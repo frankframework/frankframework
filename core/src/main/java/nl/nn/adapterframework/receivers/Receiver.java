@@ -83,6 +83,7 @@ import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -186,15 +187,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-
-	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
-	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
-	public static final String RCV_STARTED_RUNNING_MONITOR_EVENT = "Receiver Started Running";
-	public static final String RCV_SHUTDOWN_MONITOR_EVENT = "Receiver Shutdown";
-	public static final String RCV_SUSPENDED_MONITOR_EVENT = "Receiver Operation Suspended";
-	public static final String RCV_RESUMED_MONITOR_EVENT = "Receiver Operation Resumed";
-	public static final String RCV_THREAD_EXIT_MONITOR_EVENT = "Receiver Thread Exited";
-	public static final String RCV_MESSAGE_TO_ERRORSTORE_EVENT = "Receiver Moved Message to ErrorStorage";
 
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
@@ -440,7 +432,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			throw new ListenerException(e);
 		}
 		getListener().open();
-		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+		throwEvent(MonitorEvent.RCV_STARTED_RUNNING_MONITOR_EVENT);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
 			listenerContainer.start();
@@ -505,7 +497,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (runState.isInState(RunStateEnum.STOPPING)) {
 			runState.setRunState(RunStateEnum.STOPPED);
 		}
-		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
+		throwEvent(MonitorEvent.RCV_SHUTDOWN_MONITOR_EVENT);
 		resetRetryInterval();
 
 		info("stopped");
@@ -550,13 +542,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 			}
 
-			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
-			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			registerEvent(RCV_RESUMED_MONITOR_EVENT);
-			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_CONFIGURED_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_STARTED_RUNNING_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_SHUTDOWN_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_SUSPENDED_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_RESUMED_MONITOR_EVENT);
+			registerEvent(MonitorEvent.RCV_THREAD_EXIT_MONITOR_EVENT);
+
 			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
 			// Check if we need to use the in-process storage as
 			// error-storage.
@@ -695,7 +688,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				}
 				knownProcessStates.add(ProcessState.ERROR);
 				messageBrowsers.put(ProcessState.ERROR, errorStorage);
-				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
+				registerEvent(MonitorEvent.RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 			}
 			if (getListener() instanceof IProvidesMessageBrowsers) {
 				for (ProcessState state: knownProcessStates) {
@@ -733,7 +726,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			} else {
 				e = new ConfigurationException("Exception configuring receiver ["+getName()+"]",t);
 			}
-			throwEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
+			throwEvent(MonitorEvent.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
 			log.debug(getLogPrefix()+"Errors occured during configuration, setting runstate to ERROR");
 			runState.setRunState(RunStateEnum.ERROR);
 			throw e;
@@ -742,7 +735,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (adapter != null) {
 			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 		}
-		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
+		throwEvent(MonitorEvent.RCV_CONFIGURED_MONITOR_EVENT);
 		configurationSucceeded = true;
 
 		if(runState.isInState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
@@ -909,7 +902,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			log.debug(getLogPrefix()+"has no errorSender, errorStorage or knownProcessStates, will not move message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 			return;
 		}
-		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
+		throwEvent(MonitorEvent.RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 		log.debug(getLogPrefix()+"moves message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		TransactionStatus txStatus = null;
 		try {
@@ -1548,14 +1541,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public String getEventSourceName() {
 		return getLogPrefix().trim();
 	}
-	protected void registerEvent(String eventCode) {
+	protected void registerEvent(MonitorEvent event) {
 		if (eventPublisher != null) {
-			eventPublisher.registerEvent(this, eventCode);
+			eventPublisher.registerEvent(this, event);
 		}
 	}
-	protected void throwEvent(String eventCode) {
+	protected void throwEvent(MonitorEvent event) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this, eventCode);
+			eventPublisher.fireEvent(this, event);
 		}
 	}
 
@@ -1563,7 +1556,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		synchronized (this) {
 			if (suspensionMessagePending) {
 				suspensionMessagePending=false;
-				throwEvent(RCV_RESUMED_MONITOR_EVENT);
+				throwEvent(MonitorEvent.RCV_RESUMED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -1585,7 +1578,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
 			suspensionMessagePending=true;
-			throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
+			throwEvent(MonitorEvent.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {

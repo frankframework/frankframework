@@ -17,10 +17,16 @@ package nl.nn.adapterframework.monitoring.events;
 
 import nl.nn.adapterframework.monitoring.EventThrowing;
 
-public class RegisterMonitorEvent extends MonitorEvent {
+/**
+ * Event that indicates a Frank!Element is capable of throwing a supplied {@link MonitorEvent}
+ * 
+ * @author Niels Meijer
+ */
+public class RegisterMonitorEvent extends MonitorEventBase {
 
-	public RegisterMonitorEvent(EventThrowing source, String eventCode) {
+	private static final long serialVersionUID = -7148500016025718311L;
+
+	public RegisterMonitorEvent(EventThrowing source, MonitorEvent eventCode) {
 		super(source, eventCode);
 	}
-
 }

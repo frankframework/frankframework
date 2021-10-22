@@ -41,6 +41,7 @@ import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -293,15 +294,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return getLogPrefix(null).trim();
 	}
 	@Override
-	public void registerEvent(String description) {
+	public void registerEvent(MonitorEvent event) {
 		if (eventPublisher != null) {
-			eventPublisher.registerEvent(this, description);
+			eventPublisher.registerEvent(this, event);
 		}
 	}
 	@Override
-	public void throwEvent(String event) {
+	public void throwEvent(MonitorEvent event) {
 		if (eventPublisher != null) {
-			eventPublisher.fireEvent(this ,event);
+			eventPublisher.fireEvent(this, event);
 		}
 	}
 

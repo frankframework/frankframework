@@ -33,6 +33,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -278,11 +279,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				epipe.setPipeLine(this); //Temporary here because of validators and wrappers
 
 				if (epipe.getDurationThreshold() >= 0) {
-					epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+					epipe.registerEvent(MonitorEvent.LONG_DURATION_MONITORING_EVENT);
 				}
-				epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+				epipe.registerEvent(MonitorEvent.PIPE_EXCEPTION_MONITORING_EVENT);
 				if (getMessageSizeWarnNum() >= 0) {
-					epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
+					epipe.registerEvent(MonitorEvent.MESSAGE_SIZE_MONITORING_EVENT);
 				}
 				if (epipe.hasSizeStatistics()) {
 					if (pipe instanceof AbstractPipe) {

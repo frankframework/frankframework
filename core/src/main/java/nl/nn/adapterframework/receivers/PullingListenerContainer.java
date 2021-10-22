@@ -40,6 +40,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.TransactionAttribute;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -390,7 +391,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 	private void resetRetryInterval() {
 		synchronized (receiver) {
 			if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
+				receiver.throwEvent(MonitorEvent.RCV_SUSPENDED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -407,7 +408,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
+			receiver.throwEvent(MonitorEvent.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {

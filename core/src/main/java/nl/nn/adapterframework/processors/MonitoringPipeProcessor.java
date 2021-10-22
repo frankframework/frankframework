@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -77,12 +78,12 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 			pipeRunResult = chain.apply(message);
 		} catch (PipeRunException pre) {
 			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+				pe.throwEvent(MonitorEvent.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw pre;
 		} catch (RuntimeException re) {
 			if (pe!=null) {
-				pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+				pe.throwEvent(MonitorEvent.PIPE_EXCEPTION_MONITORING_EVENT);
 			}
 			throw new PipeRunException(pipe, "Uncaught runtime exception running pipe '" + (pipe==null?"null":pipe.getName()) + "'", re);
 		} finally {
@@ -97,7 +98,7 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 
 			if (pe!=null && pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
 				durationLog.info("Pipe ["+pe.getName()+"] of ["+pipeLine.getOwner().getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+message+"]");
-				pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+				pe.throwEvent(MonitorEvent.LONG_DURATION_MONITORING_EVENT);
 			}
 
 		}

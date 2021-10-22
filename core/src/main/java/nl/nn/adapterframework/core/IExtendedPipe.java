@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.Locker;
 
 /**
@@ -101,10 +102,10 @@ public interface IExtendedPipe extends IPipe {
 	public String getSecLogSessionKeys();
 
 	/**Register an event for flexible monitoring. */
-	public void registerEvent(String description);
-	
+	public void registerEvent(MonitorEvent event);
+
 	/** Throw an event for flexible monitoring. */
-	public void throwEvent(String event);
+	public void throwEvent(MonitorEvent event);
 
 	public boolean hasSizeStatistics();
 

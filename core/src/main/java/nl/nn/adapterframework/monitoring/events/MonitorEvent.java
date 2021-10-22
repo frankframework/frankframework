@@ -15,24 +15,40 @@
 */
 package nl.nn.adapterframework.monitoring.events;
 
-import org.springframework.context.ApplicationEvent;
+/**
+ * Shared collection of known monitoring events
+ * 
+ * @author Niels Meijer
+ */
+public enum MonitorEvent {
+	// global pipe events
+	LONG_DURATION_MONITORING_EVENT("Pipe Long Processing Duration"),
+	PIPE_EXCEPTION_MONITORING_EVENT("Pipe Exception"),
+	MESSAGE_SIZE_MONITORING_EVENT("Pipe Message Size Exceeding"),
 
-import nl.nn.adapterframework.monitoring.EventThrowing;
+	PIPE_TIMEOUT_MONITOR_EVENT("Sender Timeout"),
+	PIPE_CLEAR_TIMEOUT_MONITOR_EVENT("Sender Received Result on Time"),
+	PIPE_EXCEPTION_MONITOR_EVENT("Sender Exception Caught"),
 
-public class MonitorEvent extends ApplicationEvent {
-	private String eventCode;
+	// receiver events
+	RCV_CONFIGURED_MONITOR_EVENT("Receiver Configured"),
+	RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT("Exception Configuring Receiver"),
+	RCV_STARTED_RUNNING_MONITOR_EVENT("Receiver Started Running"),
+	RCV_SHUTDOWN_MONITOR_EVENT("Receiver Shutdown"),
+	RCV_SUSPENDED_MONITOR_EVENT("Receiver Operation Suspended"),
+	RCV_RESUMED_MONITOR_EVENT("Receiver Operation Resumed"),
+	RCV_THREAD_EXIT_MONITOR_EVENT("Receiver Thread Exited"),
+	RCV_MESSAGE_TO_ERRORSTORE_EVENT("Receiver Moved Message to ErrorStorage"),
 
-	public MonitorEvent(EventThrowing source, String eventCode) {
-		super(source);
-		this.eventCode = eventCode;
-	}
+	// validator events
+	XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT("Invalid XML: parser error"),
+	XML_VALIDATOR_NOT_VALID_MONITOR_EVENT("Invalid XML: does not comply to XSD"),
+	XML_VALIDATOR_VALID_MONITOR_EVENT("valid XML"),
 
-	@Override
-	public EventThrowing getSource() {
-		return (EventThrowing) super.getSource();
-	}
+	XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT("Switch: Forward Found"),
+	XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT("Switch: Forward Not Found");
 
-	public String getEventCode() {
-		return eventCode;
+	MonitorEvent(String string) {
+		// TODO Auto-generated constructor stub
 	}
 }

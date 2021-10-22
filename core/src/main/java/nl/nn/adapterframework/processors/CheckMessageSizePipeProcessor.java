@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -65,7 +66,7 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 				log.warn(String.format("pipe [%s] of adapter [%s], " + (input ? "input" : "result") + " message size [%s] exceeds [%s]", pipe.getName(), pipeLine.getOwner().getName(), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum())));
 				if (pipe instanceof IExtendedPipe) {
 					IExtendedPipe pe = (IExtendedPipe)pipe;
-					pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
+					pe.throwEvent(MonitorEvent.MESSAGE_SIZE_MONITORING_EVENT);
 				}
 			}
 		}

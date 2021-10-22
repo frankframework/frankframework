@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.Event;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
@@ -116,7 +117,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public void onApplicationEvent(RegisterMonitorEvent event) {
 		EventThrowing thrower = event.getSource();
-		String eventCode = event.getEventCode();
+		MonitorEvent eventCode = event.getMonitorEvent();
 
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");

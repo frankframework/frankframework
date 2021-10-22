@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -50,8 +51,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XmlSwitch extends AbstractPipe {
 
-	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";
-	public static final String XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = "Switch: Forward Not Found";
 	private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 
 	private @Getter String styleSheetName = null;
@@ -108,8 +107,8 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 		
-		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+		registerEvent(MonitorEvent.XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+		registerEvent(MonitorEvent.XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
 	
 	@Override
@@ -177,17 +176,17 @@ public class XmlSwitch extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
 		if (StringUtils.isEmpty(forward) && getEmptyForwardName()!=null) {
-			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+			throwEvent(MonitorEvent.XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 			pipeForward=findForward(getEmptyForwardName());
 		} else {
 			
 			if (findForward(forward) != null) {
-				throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+				throwEvent(MonitorEvent.XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 				pipeForward=findForward(forward);
 			}
 			else {
 				log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
-				throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+				throwEvent(MonitorEvent.XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 				pipeForward=findForward(getNotFoundForwardName());
 			}
 		}

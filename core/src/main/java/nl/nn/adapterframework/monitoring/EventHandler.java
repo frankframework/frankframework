@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.monitoring;
 
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
+
 /**
  * Interface exposed to objects to be monitored, to throw their events to; To be implemented by code that handles event.
  *  
@@ -23,7 +25,7 @@ package nl.nn.adapterframework.monitoring;
  */
 public interface EventHandler {
 
-	public void registerEvent(EventThrowing source, String eventCode);
-	public void fireEvent(EventThrowing source, String eventCode);
+	public void registerEvent(EventThrowing source, MonitorEvent eventCode);
+	public void fireEvent(EventThrowing source, MonitorEvent eventCode);
 
 }

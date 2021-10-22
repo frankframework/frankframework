@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -182,9 +183,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			}
 
 			validator.configure(getLogPrefix(null));
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
-			registerEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			registerEvent(MonitorEvent.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+			registerEvent(MonitorEvent.XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
+			registerEvent(MonitorEvent.XML_VALIDATOR_VALID_MONITOR_EVENT);
 		} catch(ConfigurationException e) {
 			configurationException = e;
 			throw e;

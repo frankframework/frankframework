@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -56,7 +57,7 @@ public class Trigger implements ITrigger {
 	private SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
-	private List<String> eventCodes = new ArrayList<>();
+	private List<MonitorEvent> eventCodes = new ArrayList<>();
 	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
 	private @Getter int threshold = 0;
@@ -89,7 +90,7 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public void onApplicationEvent(FireMonitorEvent event) {
-		if(configured && eventCodes.contains(event.getEventCode())) {
+		if(configured && eventCodes.contains(event.getMonitorEvent())) {
 			evaluateEvent(event);
 		}
 	}
@@ -98,9 +99,9 @@ public class Trigger implements ITrigger {
 		EventThrowing source = event.getSource();
 		if(evaluateAdapterFilters(source)) {
 			try {
-				evaluateEvent(source, event.getEventCode());
+				evaluateEvent(source, event.getMonitorEvent());
 			} catch (MonitorException e) {
-				throw new IllegalStateException("unable to evaluate trigger for event ["+event.getEventCode()+"]", e);
+				throw new IllegalStateException("unable to evaluate trigger for event ["+event.getMonitorEvent()+"]", e);
 			}
 		}
 	}
@@ -110,7 +111,7 @@ public class Trigger implements ITrigger {
 		return (getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName())));
 	}
 
-	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
+	public void evaluateEvent(EventThrowing source, MonitorEvent eventCode) throws MonitorException {
 		boolean alarm = isAlarm();
 		if (log.isDebugEnabled()) log.debug("evaluating MonitorEvent ["+source.getEventSourceName()+"]");
 
