@@ -103,10 +103,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	/**
-	 * name of the adapter
-	 */
-	private @Setter String name;
+	private String name;
 	private Configuration configuration;
 	private String targetDesignDocument;
 
@@ -798,7 +795,14 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}
-
+	/**
+	 * the functional name of this adapter
+	 */
+	@IbisDoc({"name of the adapter", ""})
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
 	/**
 	 * the configuration this adapter belongs to
 	 */
