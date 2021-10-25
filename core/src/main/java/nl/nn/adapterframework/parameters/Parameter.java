@@ -856,8 +856,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		maxInclusiveString = string;
 	}
 	
-	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
-		"minimum value, this minimum value is taken", ""})
+	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}
