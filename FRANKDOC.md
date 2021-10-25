@@ -14,13 +14,13 @@ A Frank developer uses the XML schema when he writes a Frank config. He may star
 
 ![vscodeStartConfig](./picturesForContributors/vscodeStartConfig.jpg)
 
-He types the text needed to reference the XML schema of the Frank!Doc (number 1). Then he writes the text `<A` (number 2). VSCode shows a red flag because this is invalid XML. VSCode can provide autocomplete help as shown (number 3). One of the options is the XML element `<Adapter>`. There is a button to get the tooltip help text of that element (number 4). This text is derived from the JavaDoc comment above the class declaration of [Adapter](./core/src/main/java/nl/nn/adapterframework/core/Adapter.java).
+He types the text needed to reference the XML schema of the Frank!Doc (number 1). Inside an `<Adapter>`, he writes the text `<R` (number 2). VSCode shows a red flag because this is invalid XML. VSCode can provide autocomplete help as shown (number 3). One of the options is the XML element `<Receiver>`. There is a button to get the tooltip help text of that element (number 4). This text is derived from the JavaDoc comment above the class declaration of [Receiver](./core/src/main/java/nl/nn/adapterframework/receivers/Receiver.java).
 
 Frank developers not only see errors about invalid XML, but also about violations of the XML schema.
 
 ![vscodeXsdViolation](./picturesForContributors/vscodeXsdViolation.jpg)
 
-The Frank developer has used an XML element `<xxx>` that does not exist. VSCode produces a red flag. The tooltip help he can get is also shown. He sees which XML elements he can use instead of `<xxx>`.
+The Frank developer has used an XML element `<xxx>` that does not exist. VSCode produces a red flag. The tooltip help he can get is also shown. He sees which XML elements he can use instead of `<xxx>`. You may be surprised that this figure shows option `<Pipeline>` while the previous figure did not. The reason is that in the previous picture one letter, `R`, was provided already.
 
 #### Web app with reference information for Frank developers
 
