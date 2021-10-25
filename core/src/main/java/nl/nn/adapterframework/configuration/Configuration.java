@@ -241,31 +241,32 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Digest the configuration and generate flow diagram.
 	 */
 	@Override
-	public void configure() {
+	public void configure() throws ConfigurationException {
 		log.info("configuring configuration ["+getId()+"]");
 		state = BootState.STARTING;
 		long start = System.currentTimeMillis();
 
-		runMigrator();
-
-		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
+			runMigrator();
+
+			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
+
+			FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+			try {
+				flowDiagramManager.generate(this);
+			} catch (Exception e) { //Don't throw an exception when generating the flow fails
+				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+			}
+
+			//Trigger a configure on all Lifecycle beans
+			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+			if(lifecycle instanceof ConfigurableLifecycle) {
+				((ConfigurableLifecycle) lifecycle).configure();
+			}
 		} catch (ConfigurationException e) {
-			throw new IllegalStateException(e);
-		}
-
-		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-		try {
-			flowDiagramManager.generate(this);
-		} catch (Exception e) { //Don't throw an exception when generating the flow fails
-			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-		}
-
-		//Trigger a configure on all Lifecycle beans
-		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-		if(lifecycle instanceof ConfigurableLifecycle) {
-			((ConfigurableLifecycle) lifecycle).configure();
+			state = BootState.STOPPED;
+			throw e;
 		}
 
 		setConfigured(true);

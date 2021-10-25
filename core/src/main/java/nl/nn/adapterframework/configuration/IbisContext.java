@@ -220,8 +220,8 @@ public class IbisContext extends IbisApplicationContext {
 		if (javaListenerNames.size() > 0) {
 			log("Not all java listeners are unregistered: " + javaListenerNames, MessageKeeperLevel.ERROR);
 		}
-		Set uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
-		if (uriPatterns.size() > 0) {
+		Set<String> uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
+		if (!uriPatterns.isEmpty()) {
 			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
 		}
 
@@ -319,14 +319,19 @@ public class IbisContext extends IbisApplicationContext {
 
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
-		return (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
+		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
+
+		//Pre-digest validation to make sure no extra Spring magic happened.
+		if(!configuration.getName().equals(name)) {
+			throw new IllegalStateException("configuration name mismatch");
+		}
+		return configuration;
 	}
 
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
 	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
-
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration ["+currentConfigurationName+"]");
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -342,7 +347,7 @@ public class IbisContext extends IbisApplicationContext {
 			} catch (Exception e) { //Instantiate a placeholder to store the exception in.
 				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
-				ibisManager.addConfiguration(configuration);
+				ibisManager.addConfiguration(configuration); //Manually add the configuration else it will be GC'd
 				if(classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
 					throw new ConfigurationException("error instantiating ClassLoader", classLoaderException);
@@ -350,17 +355,11 @@ public class IbisContext extends IbisApplicationContext {
 				throw new ConfigurationException("error instantiating configuration", e);
 			}
 
-			if(!configuration.getName().equals(currentConfigurationName)) { //Pre-digest validation to make sure no extra Spring magic happened.
-				throw new ConfigurationException("configurationName mismatch");
-			}
-
 			configuration.configure();
 
 			LOG.info("configured configuration ["+currentConfigurationName+"] successfully");
 		} catch (ConfigurationException e) {
-			if(configuration != null) {
-				configuration.setConfigurationException(e);
-			}
+			configuration.setConfigurationException(e);
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
