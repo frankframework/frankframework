@@ -343,17 +343,16 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, storageKey, true);
-				try (ResultSet rs =  stmt.executeQuery()) {
-	
-					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
-					}
-					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
-				}
+		try {
+			Connection conn = getConnection();
+			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
+			applyStandardParameters(stmt, storageKey, true);
+			ResultSet rs = stmt.executeQuery();
+			if (!rs.next()) {
+				throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 			}
+
+			return new JdbcMessageBrowserIteratorItem(conn, rs, true);
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}

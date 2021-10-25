@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.stream.Message;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
@@ -191,6 +192,25 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		String storeMessageOutput = storage.storeMessage(getConnection(),"1", "correlationId", new Date(), "comment", "label", message);
 
 		String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
+
+		Message result = storage.getMessage(key);
+		assertEquals(message.asString(),result.asString());
+	}
+
+	@Test
+	public void testGetContext() throws Exception {
+		storage.configure();
+
+		Message message = createMessage();
+		String storeMessageOutput = storage.storeMessage(getConnection(),"1", "correlationId", new Date(), "comment", "label", message);
+
+		String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
+
+		try(IMessageBrowsingIteratorItem item = storage.getContext(key)){
+			assertEquals("correlationId", item.getCorrelationId());
+			assertEquals("comment", item.getCommentString());
+			assertEquals("label", item.getLabel());
+		}
 
 		Message result = storage.getMessage(key);
 		assertEquals(message.asString(),result.asString());
