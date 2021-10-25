@@ -72,12 +72,12 @@ public class ServerStatistics extends Base {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
-		Map<String, Object> framework = new HashMap<String, Object>(2);
+		Map<String, Object> framework = new HashMap<>(2);
 		framework.put("name", "FF!");
 		framework.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("framework", framework);
 
-		Map<String, Object> instance = new HashMap<String, Object>(2);
+		Map<String, Object> instance = new HashMap<>(2);
 		instance.put("version", appConstants.getProperty("instance.version"));
 		instance.put("name", getIbisContext().getApplicationName());
 		returnMap.put("instance", instance);
@@ -96,7 +96,7 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		Map<String, Object> fileSystem = new HashMap<>(2);
 		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
 		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);

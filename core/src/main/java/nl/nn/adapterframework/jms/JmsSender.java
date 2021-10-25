@@ -53,6 +53,7 @@ import nl.nn.adapterframework.stream.Message;
  * This class sends messages with JMS.
  *
  * @ff.parameters All parameters present are set as message-properties.
+ * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
  * 
  * @author Gerrit van Brakel
  */
@@ -380,7 +381,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		priority = i;
 	}
 
-	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
+	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "false"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

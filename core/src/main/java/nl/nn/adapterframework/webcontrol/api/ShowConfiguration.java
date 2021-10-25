@@ -352,10 +352,10 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource");
-		boolean multiple_configs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activate_config  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
-		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
 		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
@@ -367,14 +367,14 @@ public final class ShowConfiguration extends Base {
 
 		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
-			if(multiple_configs) {
+			if(multipleConfigs) {
 				try {
-					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activateConfig, automaticReload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activateConfig, automaticReload, fileName, file, user);
 				if(configName != null) {
 					result.put(configName, "loaded");
 				}

@@ -17,6 +17,8 @@ package nl.nn.adapterframework.lifecycle;
 
 import org.springframework.context.Lifecycle;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 /**
  * Interface for Spring beans that require their Lifecycle to be managed by Spring.
  * See {@link ConfiguringLifecycleProcessor}
@@ -45,5 +47,5 @@ public interface ConfigurableLifecycle extends Lifecycle {
 		return inState(BootState.STARTED);
 	}
 
-	public void configure();
+	public void configure() throws ConfigurationException;
 }
