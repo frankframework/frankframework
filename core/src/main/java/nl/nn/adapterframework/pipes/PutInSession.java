@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import liquibase.util.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -47,6 +49,11 @@ public class PutInSession extends FixedForwardPipe {
 		if(StringUtils.isNotEmpty(getSessionKey())) {
 			Message v;
 			if (getValue() == null) {
+				try {
+					message.preserve();
+				} catch (IOException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot preserve message", e);
+				}
 				v = message;
 			} else {
 				v = Message.asMessage(getValue());

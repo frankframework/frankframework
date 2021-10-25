@@ -28,7 +28,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		String expected = message;
 		doPipe(pipe, message, session);
 
-		assertEquals(expected, session.getMessage("hola").asString()); // must be type String and have this value 
+		assertEquals(expected, session.getMessage("hola").asString());
 	}
 
 	@Test
@@ -37,7 +37,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 		pipe.setValue("val");
 		pipe.configure();
 		doPipe(pipe, "notimportant", session);
-		assertEquals("val", session.getMessage("hola").asString()); // must be type String and have this value 
+		assertEquals("val", session.getMessage("hola").asString());
 	}
 
 	@Test
