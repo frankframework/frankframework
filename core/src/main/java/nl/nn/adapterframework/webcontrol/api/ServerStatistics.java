@@ -186,38 +186,40 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("exception", message);
 			}
 
-			//ErrorStore count
-			if (configuration.isActive() && showCountErrorStore) {
-				long esr = 0;
-				for (Adapter adapter : configuration.getRegisteredAdapters()) {
-					for (Receiver<?> receiver: adapter.getReceivers()) {
-						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
-						if (errorStorage != null) {
-							try {
-								esr += errorStorage.getMessageCount();
-							} catch (Exception e) {
-								//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-								log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			if (configuration.isActive()) {
+				//ErrorStore count
+				if (showCountErrorStore) {
+					long esr = 0;
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						for (Receiver<?> receiver: adapter.getReceivers()) {
+							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
+							if (errorStorage != null) {
+								try {
+									esr += errorStorage.getMessageCount();
+								} catch (Exception e) {
+									//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+								}
 							}
 						}
 					}
+					totalErrorStoreCount += esr;
+					configurationsMap.put("errorStoreCount", esr);
 				}
-				totalErrorStoreCount += esr;
-				configurationsMap.put("errorStoreCount", esr);
-			}
 
-			//Configuration specific warnings
-			ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			if(configWarns != null && configWarns.size() > 0) {
-				configurationsMap.put("warnings", configWarns.getWarnings());
-			}
+				//Configuration specific warnings
+				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+				if(configWarns != null && configWarns.size() > 0) {
+					configurationsMap.put("warnings", configWarns.getWarnings());
+				}
 
-			//Configuration specific messages
-			MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
-			if(messageKeeper != null) {
-				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(!messages.isEmpty()) {
-					configurationsMap.put("messages", messages);
+				//Configuration specific messages
+				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
+				if(messageKeeper != null) {
+					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+					if(!messages.isEmpty()) {
+						configurationsMap.put("messages", messages);
+					}
 				}
 			}
 

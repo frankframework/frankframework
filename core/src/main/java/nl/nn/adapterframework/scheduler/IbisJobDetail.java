@@ -18,6 +18,7 @@ package nl.nn.adapterframework.scheduler;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.impl.JobDetailImpl;
 
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.util.Locker;
 
@@ -29,8 +30,8 @@ public class IbisJobDetail extends JobDetailImpl {
 		CONFIGURATION, DATABASE
 	}
 
-	public boolean compareWith(JobDef otherJobDef) {
-		JobDef thisJobDef = getJobDef();
+	public boolean compareWith(IJob otherJobDef) {
+		IJob thisJobDef = getJobDef();
 
 		//If the CRON expression is different in both jobs, it's not equal!
 		if (!StringUtils.equals(thisJobDef.getCronExpression(), otherJobDef.getCronExpression())) {
@@ -73,7 +74,7 @@ public class IbisJobDetail extends JobDetailImpl {
 		return type;
 	}
 
-	public JobDef getJobDef() {
-		return (JobDef) this.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
+	public IJob getJobDef() {
+		return (IJob) this.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
 	}
 }
