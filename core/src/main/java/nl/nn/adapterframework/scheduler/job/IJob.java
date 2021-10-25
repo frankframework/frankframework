@@ -20,11 +20,13 @@ import org.quartz.JobDetail;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeper;
 
+@FrankDocGroup(name = "Job")
 public interface IJob extends IConfigurable {
 
 	/**

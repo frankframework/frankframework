@@ -19,10 +19,10 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 
-public class DumpStatisticsJob extends JobDef {
+public class DumpFullStatisticsJob extends JobDef {
 
 	@Override
 	public void execute(IbisManager ibisManager) {
-		ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
+		ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 	}
 }

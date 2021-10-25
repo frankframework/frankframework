@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
+import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.EnumUtils;
 
 /**
@@ -33,8 +34,13 @@ public class JobFactory extends GenericFactory {
 	@Override
 	public Object createObject(Map<String, String> attrs) throws Exception {
 		String className = attrs.get("className");
-		if(StringUtils.isEmpty(className)) {
-			className = determineClassNameFromFunction(attrs.get("function"));
+		if(StringUtils.isEmpty(className) || className.equals(Job.class.getCanonicalName())) { //Default empty, filled when using new pre-parsing
+			String function = attrs.get("function");
+			if(StringUtils.isEmpty(function)) {
+				throw new IllegalArgumentException("function may not be empty");
+			}
+
+			className = determineClassNameFromFunction(function);
 			attrs.put("className", className);
 		}
 		return super.createObject(attrs);
