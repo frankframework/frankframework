@@ -270,7 +270,7 @@ public class ApiServiceDispatcher {
 				String parameterSessionkey = parameter.getSessionKey();
 				if(StringUtils.isNotEmpty(parameterSessionkey) && !parameterSessionkey.equals("headers") && !paramsFromHeaderAndCookie.contains(parameterSessionkey)) {
 					ParameterType parameterType = parameter.getType() != null ? parameter.getType() : ParameterType.STRING;
-					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType.getLabel())));
+					paramBuilder.add(addParameterToSchema(parameterSessionkey, "query", false, Json.createObjectBuilder().add("type", parameterType.toString().toLowerCase())));
 				}
 			}
 		}

@@ -121,7 +121,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				for (int i=0; i<parameterList.size(); i++) {
 					Parameter parameter = parameterList.getParameter(i);
 					if (parameter.getType()==ParameterType.NODE) {
-						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE.getLabel()+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC.getLabel()+"'");
+						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
 					}
 				}
 			}

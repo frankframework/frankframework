@@ -144,62 +144,62 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private boolean configured = false;
 	private CredentialFactory cf;
 
-	public enum ParameterType  implements DocumentedEnum {
+	public enum ParameterType {
 		/** renders the contents of the first node (in combination with xslt or xpath). <br/> Please note that if there are child nodes, only the contents are returned, use <code>xml</code> if the xml tags are required */
-		@EnumLabel("string") STRING,
+		STRING,
 
 		/** renders an xml-nodeset as an xml-string (in combination with xslt or xpath).This will include the xml tags*/
-		@EnumLabel("xml") XML,
+		XML,
 
 		/** renders the CONTENTS of the first node as a nodeset "+ 
 			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). <br/>"+
 			"Please note that the nodeset may contain multiple nodes, without a common root node. <br/>"+
 			"N.B. The result is the set of children of what you might expect it to be... */
-		@EnumLabel("node") NODE,
+		NODE,
 
 		/** renders xml as a DOM document; similar to <code>node</code> "+ 
 			"with the distinction that there is always a common root node (required for XSLT 2.0) */
-		@EnumLabel("domdoc") DOMDOC,
+		DOMDOC,
 
 		/** converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. "+ 
 			"When applied as a JDBC parameter, the method setDate() is used */
-		@EnumLabel("date") DATE,
+		DATE,
 
 		/** converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. "+ 
 			"When applied as a JDBC parameter, the method setTime() is used */
-		@EnumLabel("time") TIME,
+		TIME,
 
 		/** converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. "+ 
 			"When applied as a JDBC parameter, the method setTimestamp() is used */
-		@EnumLabel("datetime") DATETIME,
+		DATETIME,
 
 		/** similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
-		@EnumLabel("timestamp") TIMESTAMP,
+		TIMESTAMP,
 
 		/** converts the result from a XML dateTime to a Date. "+ 
 			"When applied as a JDBC parameter, the method setTimestamp() is used */
-		@EnumLabel("xmldatetime") XMLDATETIME,
+		XMLDATETIME,
 
 		/** converts the result to a Number, using decimalSeparator and groupingSeparator. "+ 
 			"When applied as a JDBC parameter, the method setDouble() is used */
-		@EnumLabel("number") NUMBER,
+		NUMBER,
 
 		/** converts the result to an Integer */
-		@EnumLabel("integer") INTEGER,
+		INTEGER,
 
 		/** converts the result to a boolean */
-		@EnumLabel("boolean") BOOLEAN,
+		BOOLEAN,
 
 		/** only applicable as a JDBC parameter, the method setBinaryStream() is used */
-		@EnumLabel("inputstream") INPUTSTREAM,
+		INPUTSTREAM,
 
-		@EnumLabel("bytes") BYTES,
+		BYTES,
 
 		/** converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
-		@EnumLabel("list") LIST,
+		LIST,
 
 		/** converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
-		@EnumLabel("map") MAP;
+		MAP;
 
 	}
 	
@@ -225,7 +225,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-			String outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? ParameterType.XML.getLabel() : "text";
+			String outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? ParameterType.XML.toString() : "text";
 			boolean includeXmlDeclaration=false;
 			
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
@@ -686,7 +686,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (substitutionValue == null) {
 			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
 		}
-		return substitutionValue;		
+		return substitutionValue;
 	}
 
 	@Override
@@ -857,7 +857,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
-
+	
 	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
 		"minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
