@@ -355,10 +355,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		countThreads--;
 	}
 
-	/**
-	 * Called from {@link ConfiguredJob} which should trigger this job definition
-	 */
-	protected final void executeJob(IbisManager ibisManager) {
+	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
+	@Override
+	public final void executeJob(IbisManager ibisManager) {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);

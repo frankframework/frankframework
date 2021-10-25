@@ -418,10 +418,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link JobDef job} for scheduling at the configuration.
-	 * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
+	 * Register an {@link IJob job} for scheduling at the configuration.
+	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
-	 * parameters of the job. (basically, it checks wether the adapter and the
+	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
 	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object

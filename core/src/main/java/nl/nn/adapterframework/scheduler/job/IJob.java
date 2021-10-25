@@ -20,6 +20,7 @@ import org.quartz.JobDetail;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -71,4 +72,7 @@ public interface IJob extends IConfigurable {
 	 */
 	public void setLocker(Locker locker);
 	public Locker getLocker();
+
+	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
+	public void executeJob(IbisManager ibisManager);
 }
