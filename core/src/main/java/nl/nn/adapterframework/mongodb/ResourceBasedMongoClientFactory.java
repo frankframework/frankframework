@@ -27,7 +27,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
 import nl.nn.adapterframework.jndi.ResourceBasedObjectFactory;
-import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 
 /*
