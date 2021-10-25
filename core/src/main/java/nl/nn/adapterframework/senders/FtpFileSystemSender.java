@@ -85,13 +85,13 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	@IbisDoc({"One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
 	public void setFtpTypeDescription(String ftpTypeDescription) {
 		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
 	}
-	@IbisDoc({"FTP protocol to use", "ftp"})
+	@IbisDoc({"FTP protocol to use", "FTP"})
 	public void setFtpType(String value) {
 		getFileSystem().setFtpType(value);
 	}

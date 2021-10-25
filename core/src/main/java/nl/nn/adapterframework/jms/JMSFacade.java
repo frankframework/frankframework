@@ -794,7 +794,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * that controls wether Topic functions are used or Queue functions.
 	 */
 
-	@IbisDoc({"2", "Type of the messageing destination", "queue"})
+	@IbisDoc({"2", "Type of the messageing destination", "QUEUE"})
 	public void setDestinationType(DestinationType destinationType) {
 		this.destinationType=destinationType;
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;

@@ -381,7 +381,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		priority = i;
 	}
 
-	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
+	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "false"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
