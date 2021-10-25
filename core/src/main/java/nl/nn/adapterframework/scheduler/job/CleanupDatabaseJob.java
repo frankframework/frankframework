@@ -197,7 +197,7 @@ public class CleanupDatabaseJob extends JobDef {
 		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			for (JobDef jobdef : configuration.getScheduledJobs()) {
+			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
 					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {

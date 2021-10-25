@@ -67,9 +67,9 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.scheduler.job.DatabaseJob;
-import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.scheduler.job.DatabaseJob;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -223,7 +223,7 @@ public final class ShowScheduler extends Base {
 		jobData.put("properties", getJobData(jobMap));
 
 		if(expanded) {
-			JobDef jobDef = (JobDef) jobMap.get(ConfiguredJob.JOBDEF_KEY);
+			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
 			if(jobDef instanceof DatabaseJob) {
 				DatabaseJob dbJob = (DatabaseJob) jobDef;
 				jobData.put("adapter", dbJob.getAdapterName());
@@ -313,7 +313,7 @@ public final class ShowScheduler extends Base {
 	private List<Map<String, Object>> getJobMessages(JobDetail jobDetail) throws ApiException {
 		List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
 
-		JobDef jobdef = (JobDef) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
+		IJob jobdef = (IJob) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
 		for (int t=0; t < jobdef.getMessageKeeper().size(); t++) {
 			Map<String, Object> message = new HashMap<String, Object>(3);
 			MessageKeeperMessage job = jobdef.getMessageKeeper().getMessage(t);

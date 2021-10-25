@@ -50,6 +50,7 @@ import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
@@ -418,17 +419,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link JobDef job} for scheduling at the configuration.
-	 * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
+	 * Register an {@link IJob job} for scheduling at the configuration.
+	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
-	 * parameters of the job. (basically, it checks wether the adapter and the
+	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
 	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
-	public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
+	public void registerScheduledJob(IJob jobdef) throws ConfigurationException {
 		scheduleManager.register(jobdef);
 	}
 
@@ -526,11 +527,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return loadedConfiguration;
 	}
 
-	public JobDef getScheduledJob(String name) {
+	public IJob getScheduledJob(String name) {
 		return scheduleManager.getSchedule(name);
 	}
 
-	public List<JobDef> getScheduledJobs() {
+	public List<IJob> getScheduledJobs() {
 		return scheduleManager.getSchedulesList();
 	}
 
