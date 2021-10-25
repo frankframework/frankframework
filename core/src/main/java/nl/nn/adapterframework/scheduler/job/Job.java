@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.digester.JobFactory;
@@ -41,10 +43,10 @@ public class Job extends JobDef {
 
 		super.configure();
 	}
+
 	@Override
 	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
-		// TODO Auto-generated method stub
-		
+		throw new NotImplementedException();
 	}
 
 	public void setFunction(JobDefFunctions function) {
