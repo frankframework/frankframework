@@ -18,6 +18,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
@@ -77,13 +78,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("1");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("2");
 		sender.addParameter(param2);
 
@@ -108,13 +109,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setSessionKey("originalMessage");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("2");
 		sender.addParameter(param2);
 
@@ -165,19 +166,19 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("1");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("2");
 		sender.addParameter(param2);
 
 		Parameter param3 = new Parameter();
 		param3.setName("z");
-		param3.setType("boolean");
+		param3.setType(ParameterType.BOOLEAN);
 		param3.setValue("true");
 		sender.addParameter(param3);
 
@@ -200,19 +201,19 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("1");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("2");
 		sender.addParameter(param2);
 
 		Parameter param3 = new Parameter();
 		param3.setName("z");
-		param3.setType("boolean");
+		param3.setType(ParameterType.BOOLEAN);
 		param3.setValue("false");
 		sender.addParameter(param3);
 
@@ -321,13 +322,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setSessionKey("originalMessage");
 		sender.addParameter(param);
 		
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("2");
 		sender.addParameter(param2);
 		
@@ -349,7 +350,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("100000");
 		sender.addParameter(param);
 		

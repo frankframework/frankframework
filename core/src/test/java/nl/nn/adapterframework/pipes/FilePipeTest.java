@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 
 /**
  * FilePipe Tester.
@@ -44,7 +45,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     @Test
     public void doTestSuccess() throws Exception {
         Parameter p = new Parameter();
-        p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType("int"); p.configure();
+        p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType(ParameterType.INTEGER); p.configure();
         session.put("key", p);
         PipeForward fw = new PipeForward();
         fw.setName("test");
@@ -72,7 +73,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
         p.setSessionKey("key");
         p.setName("p1");
         p.setValue("15");
-        p.setType("int");
+        p.setType(ParameterType.INTEGER);
         p.configure();
         session.put("key", p);
         PipeForward fw = new PipeForward();

@@ -21,6 +21,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
@@ -305,7 +306,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
 		inputParameter.setValue(input);
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		setXpathExpression("$source/request/b");
 

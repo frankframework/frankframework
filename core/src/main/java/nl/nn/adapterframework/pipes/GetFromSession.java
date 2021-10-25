@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class GetFromSession  extends FixedForwardPipe {
 
 	private String sessionKey;
-	private String type = null;
+	private ParameterType type = null;
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -61,7 +61,7 @@ public class GetFromSession  extends FixedForwardPipe {
 			log.warn(getLogPrefix(session)+"got null value from session under key ["+getSessionKey()+"]");
 		}
 		else {
-			if (Parameter.TYPE_MAP.equals(getType()) && result instanceof Map) {
+			if (getType()==ParameterType.MAP && result instanceof Map) {
 				Map<String, String> items = (Map<String, String>) result;
 				XmlBuilder itemsXml = new XmlBuilder("items");
 				for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
@@ -96,10 +96,10 @@ public class GetFromSession  extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"2", "<ul><li><code>string</code>: renders the contents</li><li><code>map</code>: converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;)</li></ul>", "string"})
-	public void setType(String type) {
+	public void setType(ParameterType type) {
 		this.type = type;
 	}
-	public String getType() {
+	public ParameterType getType() {
 		return type;
 	}
 
