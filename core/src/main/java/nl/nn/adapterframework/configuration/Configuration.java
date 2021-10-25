@@ -526,11 +526,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return loadedConfiguration;
 	}
 
-	public JobDef getScheduledJob(String name) {
+	public IJob getScheduledJob(String name) {
 		return scheduleManager.getSchedule(name);
 	}
 
-	public List<JobDef> getScheduledJobs() {
+	public List<IJob> getScheduledJobs() {
 		return scheduleManager.getSchedulesList();
 	}
 
