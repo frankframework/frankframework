@@ -30,7 +30,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -298,7 +297,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String jobGroup = null;
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
-	private JobDefFunctions function;
 
 	private Locker locker = null;
 	private @Getter int numThreads = 1;
@@ -313,9 +311,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
-		}
-		if (StringUtils.isEmpty(getFunction())) {
-			throw new ConfigurationException("a function must be specified");
 		}
 
 		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
@@ -433,7 +428,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
 		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
 		if(interval > -1) builder.append(" interval ["+interval+"]");
-		if(function != null) builder.append(" function ["+function+"]");
 		return builder.toString();
 	}
 
@@ -460,16 +454,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	@Override
 	public void setInterval(long interval) {
 		this.interval = interval;
-	}
-
-	public void setFunction(String function) {
-		this.function = EnumUtils.parse(JobDefFunctions.class, "function", function);
-	}
-	public String getFunction() {
-		return function==null?null:function.getLabel();
-	}
-	public JobDefFunctions getFunctionEnum() {
-		return function;
 	}
 
 	@Override
@@ -502,5 +486,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	@Override
 	public synchronized StatisticsKeeper getStatisticsKeeper() {
 		return statsKeeper;
+	}
+
+	/** @ff.noAttribute */
+	public void setFunction(Object ignoreMe) {
+		//Dummy method to avoid 'does not have an attribute [function] to set to value [dumpStatistics]' warnings
 	}
 }

@@ -40,7 +40,7 @@ public class SendMessageJob extends JobDef {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJavaListener())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a javaListener must be specified");
+			throw new ConfigurationException("a javaListener must be specified");
 		}
 
 		super.configure();

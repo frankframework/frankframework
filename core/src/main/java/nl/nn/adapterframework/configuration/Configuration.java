@@ -47,9 +47,8 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
-import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -429,7 +428,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
-	public void registerScheduledJob(IJob jobdef) throws ConfigurationException {
+	public void registerScheduledJob(IJob jobdef) {
 		scheduleManager.register(jobdef);
 	}
 
