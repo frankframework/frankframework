@@ -197,6 +197,28 @@ public class Misc {
 		return System.currentTimeMillis();
 	}
 
+	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
+		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
+			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
+			int posPrefixEnd;
+			String prefix;
+			String tail;
+			if ((posPrefixEnd=url.indexOf("://"))>0) {
+				prefix=url.substring(0, posPrefixEnd+3);
+				tail=url.substring(posPrefixEnd+3);
+			} else {
+				prefix="";
+				tail=url;
+			}
+			int posTail2Start;
+			if ((posTail2Start=tail.indexOf("@"))>0) {
+				tail=tail.substring(posTail2Start+1);
+			}
+			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
+		}
+		return url;
+	}
+	
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *

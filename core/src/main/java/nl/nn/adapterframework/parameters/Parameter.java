@@ -846,14 +846,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 		minLength = i;
 	}
 
-	@IbisDoc({"22", "If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed "+ 
-		"to this maximum length", "-1"})
+	@IbisDoc({"22", "If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length", "-1"})
 	public void setMaxLength(int i) {
 		maxLength = i;
 	}
 
-	@IbisDoc({"23", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this "+ 
-		"maximum value, this maximum value is taken", ""})
+	@IbisDoc({"23", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", ""})
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
@@ -864,7 +862,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		minInclusiveString = string;
 	}
 
-	@IbisDoc({"25", "If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "<code>false</code>"})
+	@IbisDoc({"25", "If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "false"})
 	public void setHidden(boolean b) {
 		hidden = b;
 	}
