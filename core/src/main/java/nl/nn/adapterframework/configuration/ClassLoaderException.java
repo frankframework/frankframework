@@ -25,8 +25,6 @@ import nl.nn.adapterframework.core.IbisException;
  */
 public class ClassLoaderException extends IbisException {
 
-	private static final long serialVersionUID = -5697166453658920989L;
-
 	public ClassLoaderException(String msg) {
 		super(msg);
 	}
