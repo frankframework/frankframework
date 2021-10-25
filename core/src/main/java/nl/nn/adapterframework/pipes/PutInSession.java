@@ -83,15 +83,11 @@ public class PutInSession extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Define parameters to store values in session keys")
 	@IbisDoc({"1", "Key of the session variable to store the input in", "" })
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Define parameters to store values in session keys")
 	@IbisDoc({"2", "Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored", "" })
 	public void setValue(String value) {
 		this.value = value;
