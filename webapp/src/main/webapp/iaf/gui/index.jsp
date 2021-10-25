@@ -30,7 +30,7 @@ if(version.isEmpty()) {
 	<link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
 	<link href="css/plugins/iCheck/custom.css" rel="stylesheet">
 	<link href="css/plugins/ladda/ladda-themeless.min.v1.0.5.css" rel="stylesheet">
-	<link href="css/plugins/prism.css" rel="stylesheet">
+	<link href="css/plugins/prism.v1.25.0.min.css" rel="stylesheet">
 	<link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
 	<link id="loadBefore" href="css/style.css?v=<%=version%>" rel="stylesheet">
 	<link rel="shortcut icon" href="favicon.ico">
