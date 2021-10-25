@@ -412,7 +412,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		try {
 			execute(ibisManager);
 		} catch (Exception e) {
-			String msg = "unhandled exception while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
+			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg, e);
 		}
