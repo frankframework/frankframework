@@ -223,7 +223,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-			String outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? ParameterType.XML.toString() : "text";
+			String outputType=getType() == ParameterType.XML || getType()==ParameterType.NODE || getType()==ParameterType.DOMDOC ? ParameterType.XML.toString().toLowerCase() : "text";
 			boolean includeXmlDeclaration=false;
 			
 			transformerPool=TransformerPool.configureTransformer0("Parameter ["+getName()+"] ", this, getNamespaceDefs(),getXpathExpression(), getStyleSheetName(),outputType,includeXmlDeclaration,paramList,getXsltVersion());
