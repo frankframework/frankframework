@@ -343,6 +343,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
+		// result set needs to stay open to access the fields of a record
+		// The caller may use try-with-resources to call the close method of IMessageBrowsingIteratorItem to close the open resources
 		try {
 			Connection conn = getConnection();
 			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
