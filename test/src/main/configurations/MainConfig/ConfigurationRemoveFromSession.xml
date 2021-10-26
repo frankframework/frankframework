@@ -9,8 +9,7 @@
 			</exits>
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- putAndRemoveOneKey -->
-			<pipe name="putAndRemoveOneKey" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="request" />
+			<pipe name="putAndRemoveOneKey" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request">
 				<forward name="success" path="removeOneKey" />
 			</pipe>
 			<!-- removeOneKey -->
@@ -18,12 +17,10 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- putAndRemoveMultipleKeys -->
-			<pipe name="putAndRemoveMultipleKeys" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="request1" />
+			<pipe name="putAndRemoveMultipleKeys" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request1">
 				<forward name="success" path="putAndRemoveMultipleKeys2" />
 			</pipe>
-			<pipe name="putAndRemoveMultipleKeys2" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="request3" />
+			<pipe name="putAndRemoveMultipleKeys2" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="request3">
 				<forward name="success" path="removeMultipleKeys" />
 			</pipe>
 			<!-- removeMultipleKeys -->

@@ -27,20 +27,22 @@
 				<forward name="success" path="StoreSuccessState" />
 				<forward name="fail" path="StoreFailState" />
 			</pipe>
-			<PutInSessionPipe 
+			<pipe 
 				name="StoreSuccessState"
-			>
-				<Param name="result" value="SUCCESS"/>
-				<Param name="mailaddresses" value="${errorreport.mailaddresses.pass}" />
-				<Forward name="success" path="SwitchMethod" />
-			</PutInSessionPipe>
-			<PutInSessionPipe 
+				className="nl.nn.adapterframework.pipes.PutParametersInSession"
+				>
+				<param name="result" value="SUCCESS"/>
+				<param name="mailaddresses" value="${errorreport.mailaddresses.pass}" />
+				<forward name="success" path="SwitchMethod" />
+			</pipe>
+			<pipe 
 				name="StoreFailState"
-			>
-				<Param name="result" value="FAILED"/>
-				<Param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
-				<Forward name="success" path="SwitchMethod" />
-			</PutInSessionPipe>
+				className="nl.nn.adapterframework.pipes.PutParametersInSession"
+				>
+				<param name="result" value="FAILED"/>
+				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
+				<forward name="success" path="SwitchMethod" />
+			</pipe>
 			<pipe
 				name="SwitchMethod"
 				className="nl.nn.adapterframework.pipes.XmlSwitch"
@@ -51,12 +53,14 @@
 				>
 				<forward name="GET" path="SetContentType" />
 			</pipe>
-			<PutInSessionPipe
+			<pipe
 				name="SetContentType"
-			>
-				<Param name="contentType" value="text/plain" />
-				<Forward name="success" path="EXIT" />
-			</PutInSessionPipe>
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="contentType"
+				value="text/plain"
+				>
+				<forward name="success" path="EXIT" />
+			</pipe>
 			<pipe
 				name="CreateMail"
 				className="nl.nn.adapterframework.pipes.XsltPipe"

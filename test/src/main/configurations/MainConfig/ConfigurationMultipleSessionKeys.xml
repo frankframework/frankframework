@@ -33,24 +33,24 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="put" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="sessionkey" value="hallo" />
+			<pipe name="put" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey" value="hallo">
 				<forward name="success" path="put2" />
 			</pipe>
-			<pipe name="put2" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="sessionkey2" value="goodbye" />
+			<pipe name="put2" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey2" value="goodbye">
 				<forward name="success" path="put3" />
 			</pipe>
-			<pipe name="put3" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="sessionkie3" value="morning" />
+			<pipe name="put3" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkie3" value="morning">
 				<forward name="success" path="put4" />
 			</pipe>
-			<pipe name="put4" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="sessionkey4" value="bientot" />
+			<pipe name="put4" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey4" value="bientot">
 				<forward name="success" path="put5" />
 			</pipe>
-			<pipe name="put5" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="sessionkey5" value="hello" />
+			<pipe name="put5" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="sessionkey5" value="hello">
 				<forward name="success" path="child" />
 			</pipe>
 			<pipe name="child"

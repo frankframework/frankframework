@@ -39,8 +39,8 @@
 				<forward name="success" path="setFileName" />
 			</pipe>
 
-			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="fileContentName" value="sample.pdf"/>
+			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="fileContentName" value="sample.pdf">
 				<forward name="success" path="callRest" />
 			</pipe>
 
@@ -82,8 +82,8 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="setContentType" className="nl.nn.adapterframework.pipes.PutInSession">
-				<param name="contentType" value="application/octet-stream" />
+			<pipe name="setContentType" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="contentType" value="application/octet-stream">
 				<forward name="success" path="getId" />
 			</pipe>
 
@@ -235,8 +235,8 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="createFileNameKey" className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
-				<param name="fileName" />
+			<pipe name="createFileNameKey" className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>
 

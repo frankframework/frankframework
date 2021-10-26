@@ -153,9 +153,9 @@
 			<pipe
 				name="move file [move2fileSessionKey]"
 				className="nl.nn.adapterframework.pipes.PutInSession"
-			>
-				<param name="move2filename" value="new_test.txt"/>
- 				<forward name="success" path="move file [move2fileSessionKey]2"/>
+				sessionKey="move2filename"
+				value="new_test.txt">
+ 			 	<forward name="success" path="move file [move2fileSessionKey]2"/> 			 
 			</pipe>
 			<pipe
 				name="move file [move2fileSessionKey]2"

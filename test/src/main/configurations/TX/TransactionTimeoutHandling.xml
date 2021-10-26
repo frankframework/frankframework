@@ -25,19 +25,21 @@
 				<exit path="READY" state="success"/>
 			</exits>
 
-			<PutInSessionPipe name="set start index"
+			<pipe name="set start index"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="index"
 				getInputFromFixedValue="1"
 			>
-				<Param name="index" />
-				<Forward name="success" path="set endIndex"/>
-			</PutInSessionPipe>
+				<forward name="success" path="set endIndex"/>
+			</pipe>
 
-			<PutInSessionPipe name="set endIndex"
+			<pipe name="set endIndex"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="endIndex"
 				getInputFromFixedValue="3"
 			>
-				<Param name="endIndex" />
-				<Forward name="success" path="delay"/>
-			</PutInSessionPipe>
+				<forward name="success" path="delay"/>
+			</pipe>
 			
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
@@ -88,19 +90,21 @@
 				<exit path="READY" state="success"/>
 			</exits>
 
-			<PutInSessionPipe name="set start index"
+			<pipe name="set start index"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="index"
 				getInputFromFixedValue="1"
 			>
-				<Param name="index" />
-				<Forward name="success" path="set endIndex"/>
-			</PutInSessionPipe>
+				<forward name="success" path="set endIndex"/>
+			</pipe>
 
-			<PutInSessionPipe name="set endIndex"
+			<pipe name="set endIndex"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				sessionKey="endIndex"
 				getInputFromFixedValue="3"
 			>
-				<Param name="endIndex" />
-				<Forward name="success" path="delay"/>
-			</PutInSessionPipe>
+				<forward name="success" path="delay"/>
+			</pipe>
 			
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
