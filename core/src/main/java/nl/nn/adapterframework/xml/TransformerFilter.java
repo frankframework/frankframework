@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
+import org.apache.xalan.transformer.TransformerImpl;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -46,6 +47,9 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
+		if (transformerHandler.getTransformer() instanceof TransformerImpl) {
+			((TransformerImpl) transformerHandler.getTransformer()).setTransformThread(Thread.currentThread());
+		}
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
 		if (expectChildThreads) {

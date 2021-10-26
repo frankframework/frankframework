@@ -43,6 +43,10 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 	}
 
 	public void insertException(SAXException exception) {
+		if(insertedException != null) {
+			log.error("exception ("+exception.getClass().getCanonicalName()+") ["+exception.getMessage()+"] overwrites existing exception", insertedException);
+		}
+
 		insertedException = exception;
 	}
 
@@ -117,7 +121,6 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 
 	@Override
 	public void startEntity(String name) throws SAXException {
-		checkInserted();
 		super.startEntity(name);
 		checkInserted();
 	}

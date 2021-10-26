@@ -85,10 +85,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 &lt;/configuration&gt;
 </pre></code>
- * @see Configuration
- * 
  * @author Johan Verrips
- * @author Niels Meijer
+ * @see Configuration
  */
 public class ConfigurationDigester implements ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
@@ -188,6 +186,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		try {
 			digester = getDigester(configuration);
 
+			
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
