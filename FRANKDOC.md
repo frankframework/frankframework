@@ -263,3 +263,5 @@ Now we can see the meaning of the `@ff.defaultElement` tag. You can use it to pr
 ![eclipseIPipe](./picturesForContributors/eclipseIPipe.jpg)
 
 The default value is `nl.nn.adapterframework.pipes.SenderPipe` in this example. The autocomplete function of VSCode can add this default value for the `className` attribute. If it is omitted in a Frank config, then it is assumed to have the default value. You can thus use `<Pipe>` (without `className` attribute) as a synonym of `<SenderPipe>` because `<SenderPipe>` points to Java class [SenderPipe](./core/src/main/java/nl/nn/adapterframework/pipes/SenderPipe.java).
+
+**@ff.mandatory:** JavaDoc tag that applies to attribute setters and has no arguments. If an attribute setter has this annotation, then the attribute definition in the strict XSD gets a `use="required"` attribute. Frank developers will see an error in their text editor if they omit the attribute. The compatibility XSD is affected in the same way. Configurations in which the attribute is not set will not load.
