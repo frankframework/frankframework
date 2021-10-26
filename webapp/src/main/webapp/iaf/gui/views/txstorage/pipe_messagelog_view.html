@@ -13,11 +13,13 @@
 					<h4>View message: {{message.id}}</h4>
 				</div>
 				<div class="ibox-content">
-					<p>Comment:
+					<span ng-if="metadata.comment">
+						<p>Comment:</p>
+						<pre>{{::metadata.comment}}</pre>
+					</span>
+					<p>Message <span ng-if="metadata.correlationId">with correlationId: <strong>{{metadata.correlationId}}</strong></span> <span ng-if="metadata.insertDate"> issued at: <strong><span to-date time="{{metadata.insertDate}}"></strong></span></span>
 						<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs m-r-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
 					</p>
-					<pre>{{::metadata.comment}}</pre>
-					<p>Message <span ng-if="metadata.correlationId">with correlationId: <strong>{{metadata.correlationId}}</strong></span> <span ng-if="metadata.insertDate"> issued at: <strong><span to-date time="{{metadata.insertDate}}"></strong></span></span></p>
 					<pre>{{::metadata.msg}}</pre>
 				</div>
 			</div>
