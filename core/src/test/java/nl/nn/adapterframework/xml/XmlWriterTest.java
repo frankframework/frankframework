@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.StringReader;
 
 import org.junit.Test;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -53,7 +55,6 @@ public class XmlWriterTest {
 		XmlUtils.parseXml(input, xmlWriter);
 		assertEquals(expected,xmlWriter.toString());
 	}
-	
 
 	@Test
 	public void testNoLexicalHandling() throws Exception {
@@ -71,4 +72,46 @@ public class XmlWriterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test(expected = SAXException.class)
+	public void testNullElement() throws Exception {
+		String input    = "<root>&lt;error&apos;/&gt;<error/></root>";
+		XmlWriter xmlWriter = new XmlWriter();
+		ContentHandler handler = new XalanTransformerHandlerMock(xmlWriter);
+		ExceptionCreatingFilter exFilter = new ExceptionCreatingFilter(handler);
+		XmlUtils.parseXml(input, exFilter);
+	}
+
+	//Simulate the NPE thrown by Xalan
+	private class XalanTransformerHandlerMock extends FullXmlFilter {
+		public XalanTransformerHandlerMock(ContentHandler handler) {
+			super(handler);
+		}
+
+		@Override
+		public void startEntity(String name) throws SAXException {
+			if(name == null) {
+				throw new NullPointerException();
+			}
+
+			super.startEntity(name);
+		}
+	}
+
+	//Throw the exception
+	private class ExceptionCreatingFilter extends ExceptionInsertingFilter {
+
+		public ExceptionCreatingFilter(ContentHandler handler) {
+			super(handler);
+		}
+
+		@Override
+		public void startEntity(String name) throws SAXException {
+			if("apos".equals(name)) {
+				insertException(new SAXException(name));
+				super.startEntity(null);
+			}
+
+			super.startEntity(name);
+		}
+	}
 }

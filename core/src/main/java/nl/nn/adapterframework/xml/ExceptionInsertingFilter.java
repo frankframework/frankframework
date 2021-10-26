@@ -54,7 +54,7 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 			throw exceptionToThrow;
 		}
 	}
-	
+
 	@Override
 	public void startDocument() throws SAXException {
 		super.startDocument();
@@ -84,8 +84,7 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 		super.endElement(uri, localName, qName);
 		checkInserted();
 	}
-	
-	
+
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		super.comment(ch, start, length);
@@ -118,6 +117,7 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 
 	@Override
 	public void startEntity(String name) throws SAXException {
+		checkInserted();
 		super.startEntity(name);
 		checkInserted();
 	}
