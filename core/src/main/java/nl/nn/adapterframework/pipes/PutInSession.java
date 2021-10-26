@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import liquibase.util.StringUtils;
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
