@@ -70,7 +70,7 @@ In Java, config child setters and attribute setters are inherited like any Java 
 
 ![webappInheritance](./picturesForContributors/webappInheritance.jpg)
 
-After the JavaDoc you first see the nested config children, both inherited and declared. The shown config children are inherited from [AbstractPipe](./core/src/main/java/nl/nn/adapterframework/pipes/AbstractPipe.java). After the Parameters section, which is explained later, come all attributes. Both the config children and the attributes are grouped by their origin in the inheritance hierarchy: declared goes before inherited and closer ancestors go before further ancestors.
+After the JavaDoc you first see the nested config children, both inherited and declared. The shown config children are inherited from [SenderWithParametersBase](./core/src/main/java/nl/nn/adapterframework/senders/SenderWithParametersBase.java). After the config children come the attributes. The attributes are grouped by their origin in the inheritance hierarchy: declared goes before inherited and closer ancestors go before further ancestors.
 
 Frank developers can change the way config children and attributes are grouped. They can use the button shown below:
 
@@ -80,11 +80,11 @@ When the button is pressed, it changes as shown:
 
 ![webappButtonHideInheritance](./picturesForContributors/webappButtonHideInheritance.jpg)
 
-The pipe information is now grouped as follows:
+The sender information is now grouped as follows:
 
 ![webappInheritanceShown](./picturesForContributors/webappInheritanceShown.jpg)
 
-First, everything declared in the AmountOfPagesPipe is shown: config children, attributes and the rest. Then in a next section the first ancestor is shown for which information is available. There are additional sections until the inheritance hierarchy is exhausted.
+First, everything declared in the [EchoSender](./core/src/main/java/nl/nn/adapterframework/senders/EchoSender.java) is shown. This class has no declared config children, so in this case there are only attributes. Then in a next section the first ancestor is shown for which information is available. There are additional sections until the inheritance hierarchy is exhausted.
 
 ## Preferred order of attributes and child elements
 
