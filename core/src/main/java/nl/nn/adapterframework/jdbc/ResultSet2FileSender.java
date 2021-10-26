@@ -78,7 +78,11 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
-			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
+			try {
+				maxRecords = Integer.parseInt(session.getMessage(getMaxRecordsSessionKey()).asString());
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
+			}
 		}
 
 		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
