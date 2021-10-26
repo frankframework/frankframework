@@ -42,7 +42,7 @@
 	<rule pattern="*/exit" registerMethod="registerPipeLineExit"/>
 
 	<rule pattern="*/job" factory="nl.nn.adapterframework.configuration.digester.JobFactory"
-		registerMethod="registerScheduledJob" typeAttribute="function"/>
+		registerMethod="registerScheduledJob" />
 	<rule pattern="*/locker" registerMethod="setLocker"/>
 	<rule pattern="*/param" registerMethod="addParameter" />
 	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" />
