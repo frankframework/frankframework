@@ -33,7 +33,7 @@ public class TransformerFilter extends FullXmlFilter {
 
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
-
+	
 	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
 		if (expectChildThreads) {
@@ -46,7 +46,6 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
-
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
 		if (expectChildThreads) {
@@ -59,7 +58,7 @@ public class TransformerFilter extends FullXmlFilter {
 			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
 			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
-
+				
 				@Override
 				public void error(TransformerException paramTransformerException) throws TransformerException {
 					try {
@@ -86,6 +85,7 @@ public class TransformerFilter extends FullXmlFilter {
 						// If absent, Xslt tests fail.
 						throw e; 
 					}
+					
 				}
 
 				@Override
@@ -100,11 +100,13 @@ public class TransformerFilter extends FullXmlFilter {
 						// If absent, Xslt tests fail.
 						throw e; 
 					}
+					
 				}
 			});
 		}
 		setContentHandler(inputHandler);
 	}
+
 
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
