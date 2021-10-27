@@ -21,7 +21,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.apache.xalan.transformer.TransformerImpl;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -30,13 +29,13 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
-public class TransformerFilter extends FullXmlFilter {
+public class TransformerFilter extends ExceptionInsertingFilter {
 
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
-	
+
 	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
-		super();
+		super(null);
 		if (expectChildThreads) {
 			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
@@ -47,9 +46,7 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		this.transformerHandler=transformerHandler;
 		transformerHandler.setResult(transformedStream);
-		if (transformerHandler.getTransformer() instanceof TransformerImpl) {
-			((TransformerImpl) transformerHandler.getTransformer()).setTransformThread(Thread.currentThread());
-		}
+
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
 		if (expectChildThreads) {
@@ -59,8 +56,6 @@ public class TransformerFilter extends FullXmlFilter {
 			 * through the transformerHandler automatically.
 			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
 			 */
-			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
-			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
 				
 				@Override
@@ -70,7 +65,7 @@ public class TransformerFilter extends FullXmlFilter {
 							errorListener.error(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
+						insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
@@ -84,7 +79,7 @@ public class TransformerFilter extends FullXmlFilter {
 							errorListener.fatalError(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
+						insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
@@ -99,7 +94,7 @@ public class TransformerFilter extends FullXmlFilter {
 							errorListener.warning(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						exceptionInsertingFilter.insertException(new SaxException(e));
+						insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
@@ -110,7 +105,6 @@ public class TransformerFilter extends FullXmlFilter {
 		}
 		setContentHandler(inputHandler);
 	}
-
 
 	public Transformer getTransformer() {
 		return transformerHandler.getTransformer();
