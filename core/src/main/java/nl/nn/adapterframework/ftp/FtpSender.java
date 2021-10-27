@@ -140,13 +140,13 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
-	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
 	public void setFtpType(String string) {
 		ftpSession.setFtpType(string);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,15 +17,7 @@ package nl.nn.adapterframework.scheduler.job;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
 public class DatabaseJob extends SendMessageJob {
 	private @Getter @Setter String adapterName; //Allow for easily selecting a JavaListener in the console
-
-	@Override
-	public void configure() throws ConfigurationException {
-		setFunction(JobDefFunctions.SEND_MESSAGE.getLabel());
-		super.configure();
-	}
 }

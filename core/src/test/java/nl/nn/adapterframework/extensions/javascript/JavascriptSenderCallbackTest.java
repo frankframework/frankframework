@@ -19,6 +19,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
@@ -50,13 +51,13 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("3");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("4");
 		sender.addParameter(param2);
 
@@ -76,13 +77,13 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 
 		Parameter param = new Parameter();
 		param.setName("x");
-		param.setType("integer");
+		param.setType(ParameterType.INTEGER);
 		param.setValue("3");
 		sender.addParameter(param);
 
 		Parameter param2 = new Parameter();
 		param2.setName("y");
-		param2.setType("integer");
+		param2.setType(ParameterType.INTEGER);
 		param2.setValue("4");
 		sender.addParameter(param2);
 

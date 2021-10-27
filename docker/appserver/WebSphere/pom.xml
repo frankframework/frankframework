@@ -24,7 +24,13 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${iaf.version}</version>
-			<classifier>full-configuration</classifier>
+			<classifier>resources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-test</artifactId>
+			<version>${iaf.version}</version>
+			<classifier>configurations</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -61,6 +67,11 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.2.3</version>
 		</dependency>
 	</dependencies>
 
@@ -156,11 +167,6 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker-compose">
-									<arg value="down"/>
-									<arg value="--volumes"/>
-									<arg value="--remove-orphans"/>
-								</exec>
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>

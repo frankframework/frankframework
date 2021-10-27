@@ -73,4 +73,5 @@ createTemplatedDatasource('ibis4test-mssql', 'Microsoft SQL Server JDBC Driver (
 
 createAuthAlias( authAliasName, 'testiaf_user', 'testiaf_user00', 'alias for iaf-test datasources' )
 createAuthAlias( 'testAuthAlias', 'testUser', 'testPassword', 'alias for authentication tests' )
+createAuthAlias( 'mongodb', 'testiaf_user', 'testiaf_user00', 'alias for mongodb test database' )
 

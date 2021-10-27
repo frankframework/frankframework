@@ -72,12 +72,12 @@ public class ServerStatistics extends Base {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
-		Map<String, Object> framework = new HashMap<String, Object>(2);
+		Map<String, Object> framework = new HashMap<>(2);
 		framework.put("name", "FF!");
 		framework.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("framework", framework);
 
-		Map<String, Object> instance = new HashMap<String, Object>(2);
+		Map<String, Object> instance = new HashMap<>(2);
 		instance.put("version", appConstants.getProperty("instance.version"));
 		instance.put("name", getIbisContext().getApplicationName());
 		returnMap.put("instance", instance);
@@ -96,7 +96,7 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		Map<String, Object> fileSystem = new HashMap<>(2);
 		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
 		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);
@@ -186,38 +186,40 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("exception", message);
 			}
 
-			//ErrorStore count
-			if (configuration.isActive() && showCountErrorStore) {
-				long esr = 0;
-				for (Adapter adapter : configuration.getRegisteredAdapters()) {
-					for (Receiver<?> receiver: adapter.getReceivers()) {
-						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
-						if (errorStorage != null) {
-							try {
-								esr += errorStorage.getMessageCount();
-							} catch (Exception e) {
-								//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-								log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			if (configuration.isActive()) {
+				//ErrorStore count
+				if (showCountErrorStore) {
+					long esr = 0;
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						for (Receiver<?> receiver: adapter.getReceivers()) {
+							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
+							if (errorStorage != null) {
+								try {
+									esr += errorStorage.getMessageCount();
+								} catch (Exception e) {
+									//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+								}
 							}
 						}
 					}
+					totalErrorStoreCount += esr;
+					configurationsMap.put("errorStoreCount", esr);
 				}
-				totalErrorStoreCount += esr;
-				configurationsMap.put("errorStoreCount", esr);
-			}
 
-			//Configuration specific warnings
-			ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			if(configWarns != null && configWarns.size() > 0) {
-				configurationsMap.put("warnings", configWarns.getWarnings());
-			}
+				//Configuration specific warnings
+				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+				if(configWarns != null && configWarns.size() > 0) {
+					configurationsMap.put("warnings", configWarns.getWarnings());
+				}
 
-			//Configuration specific messages
-			MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
-			if(messageKeeper != null) {
-				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(!messages.isEmpty()) {
-					configurationsMap.put("messages", messages);
+				//Configuration specific messages
+				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
+				if(messageKeeper != null) {
+					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+					if(!messages.isEmpty()) {
+						configurationsMap.put("messages", messages);
+					}
 				}
 			}
 

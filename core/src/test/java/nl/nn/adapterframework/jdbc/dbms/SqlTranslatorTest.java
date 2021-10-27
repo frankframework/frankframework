@@ -29,13 +29,13 @@ public class SqlTranslatorTest {
 	@Parameterized.Parameters(name = "{index} - {0} -> {1} [{3}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][]{
-			{"Oracle", "H2", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
-				{"Oracle", "MS SQL", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
+			{"ORACLE", "H2", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
+				{"ORACLE", "MS SQL", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
 				{"Oracle", "Oracle", "SELECT COUNT(*) FROM IBISSTORE", "SELECT COUNT(*) FROM IBISSTORE"},
 				{"Oracle", null, null, "java.lang.IllegalArgumentException"},
 //				{"not-a-db", "MS SQL", null, "java.lang.IllegalArgumentException"},
 //				{"", "MS SQL", null, "java.lang.IllegalArgumentException"},
-				{"Oracle", "MS SQL", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (NEXT VALUE FOR SEQ_IBISTEMP,0x);"},
+				{"oracle", "MS SQL", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());", "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (NEXT VALUE FOR SEQ_IBISTEMP,0x);"},
 				{"Oracle", "MS SQL", "SELECT SEQ_IBISTEMP.NEXTVAL FROM DuaL", "SELECT NEXT VALUE FOR SEQ_IBISTEMP"},
 				{"Oracle", "MySQL", "SELECT tkey, tblob1 FROM IBISTEMP FETCH FIRST 2 ROWS ONLY;", "SELECT tkey, tblob1 FROM IBISTEMP LIMIT 2;"},
 				{"Oracle", "MySQL", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB(),SYSDATE, SYSTIMESTAMP);", "INSERT INTO IBISTEMP (tkey,tblob1,tdate,ttimestamp) VALUES (NULL,'',SYSDATE(), CURRENT_TIMESTAMP());"},

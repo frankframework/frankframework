@@ -94,7 +94,6 @@ import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -184,9 +183,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
-	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
@@ -205,10 +204,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
 	 */
 	public enum OnError { CONTINUE, RECOVER, CLOSE };
+	private @Getter OnError onError = OnError.CONTINUE;
 
 	private @Getter String name;
-
-	private OnError onError = OnError.CONTINUE;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private @Getter int numThreads = 1;
@@ -1521,7 +1519,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public void exceptionThrown(String errorMessage, Throwable t) {
-		switch (getOnErrorEnum()) {
+		switch (getOnError()) {
 		case CONTINUE:
 			error(errorMessage+", will continue processing messages when they arrive", t);
 			break;
@@ -1740,7 +1738,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (OnError.CLOSE == getOnErrorEnum()) {
+			if (OnError.CLOSE == getOnError()) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1866,7 +1864,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public boolean isOnErrorContinue() {
-		return OnError.CONTINUE == getOnErrorEnum();
+		return OnError.CONTINUE == getOnError();
 	}
 
 	@Override
@@ -2014,17 +2012,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		propagateName();
 	}
 
-	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String value) {
-		if(StringUtils.isNotEmpty(value)) {
-			onError = EnumUtils.parse(OnError.class, value);
-		}
-	}
-	public void setOnErrorEnum(OnError value) {
+	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "CONTINUE"})
+	public void setOnError(OnError value) {
 		this.onError = value;
-	}
-	public OnError getOnErrorEnum() {
-		return onError;
 	}
 
 	/**
