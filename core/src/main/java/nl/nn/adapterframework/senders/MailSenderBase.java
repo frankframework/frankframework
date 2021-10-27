@@ -61,7 +61,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private int timeout = 20000;
 	private String bounceAddress;
 
-	protected abstract void sendEmail(MailSession mailSession) throws SenderException;
+	protected abstract String sendEmail(MailSession mailSession) throws SenderException;
 
 	@Override
 	public void configure() throws ConfigurationException {

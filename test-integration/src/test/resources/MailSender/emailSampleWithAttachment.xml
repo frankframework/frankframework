@@ -10,6 +10,6 @@
 	<messageBase64>false</messageBase64><!-- Optional -->
 	<charset>UTF-8</charset><!-- Optional -->
 	<attachments>
-		<attachment name="filename1" type="txt">This is the first attachment</attachment>
+		<attachment name="filename1" type="text/plain">This is the first attachment</attachment>
 	</attachments><!-- Optional -->
 </email>
