@@ -86,7 +86,6 @@ public class TransformerFilter extends FullXmlFilter {
 						// If absent, Xslt tests fail.
 						throw e; 
 					}
-					
 				}
 
 				@Override
@@ -101,7 +100,6 @@ public class TransformerFilter extends FullXmlFilter {
 						// If absent, Xslt tests fail.
 						throw e; 
 					}
-					
 				}
 			});
 		}
