@@ -29,13 +29,13 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
-public class TransformerFilter extends ExceptionInsertingFilter {
+public class TransformerFilter extends FullXmlFilter {
 
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
 
 	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
-		super(null);
+		super();
 		if (expectChildThreads) {
 			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
@@ -56,8 +56,10 @@ public class TransformerFilter extends ExceptionInsertingFilter {
 			 * through the transformerHandler automatically.
 			 * Here we set up a ExceptionInsertingFilter and ErrorListener that provide this.
 			 */
+			ExceptionInsertingFilter exceptionInsertingFilter = new ExceptionInsertingFilter(inputHandler);
+			inputHandler = exceptionInsertingFilter;
 			transformerHandler.getTransformer().setErrorListener(new ErrorListener() {
-				
+
 				@Override
 				public void error(TransformerException paramTransformerException) throws TransformerException {
 					try {
@@ -65,7 +67,7 @@ public class TransformerFilter extends ExceptionInsertingFilter {
 							errorListener.error(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						insertException(new SaxException(e));
+						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
@@ -79,7 +81,7 @@ public class TransformerFilter extends ExceptionInsertingFilter {
 							errorListener.fatalError(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						insertException(new SaxException(e));
+						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
@@ -94,7 +96,7 @@ public class TransformerFilter extends ExceptionInsertingFilter {
 							errorListener.warning(paramTransformerException);
 						}
 					} catch (TransformerException e) {
-						insertException(new SaxException(e));
+						exceptionInsertingFilter.insertException(new SaxException(e));
 						// this throw is necessary, although it causes log messages like 'Exception in thread "main/Thread-0"'
 						// If absent, Xslt tests fail.
 						throw e; 
