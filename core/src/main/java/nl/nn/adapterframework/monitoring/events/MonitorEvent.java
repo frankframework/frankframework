@@ -20,35 +20,63 @@ package nl.nn.adapterframework.monitoring.events;
  * 
  * @author Niels Meijer
  */
-public enum MonitorEvent {
+public class MonitorEvent {
 	// global pipe events
-	LONG_DURATION_MONITORING_EVENT("Pipe Long Processing Duration"),
-	PIPE_EXCEPTION_MONITORING_EVENT("Pipe Exception"),
-	MESSAGE_SIZE_MONITORING_EVENT("Pipe Message Size Exceeding"),
+	public static final MonitorEvent LONG_DURATION_MONITORING_EVENT = new MonitorEvent("Pipe Long Processing Duration");
+	public static final MonitorEvent PIPE_EXCEPTION_MONITORING_EVENT = new MonitorEvent("Pipe Exception");
+	public static final MonitorEvent MESSAGE_SIZE_MONITORING_EVENT = new MonitorEvent("Pipe Message Size Exceeding");
 
-	PIPE_TIMEOUT_MONITOR_EVENT("Sender Timeout"),
-	PIPE_CLEAR_TIMEOUT_MONITOR_EVENT("Sender Received Result on Time"),
-	PIPE_EXCEPTION_MONITOR_EVENT("Sender Exception Caught"),
+	public static final MonitorEvent PIPE_TIMEOUT_MONITOR_EVENT = new MonitorEvent("Sender Timeout");
+	public static final MonitorEvent PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = new MonitorEvent("Sender Received Result on Time");
+	public static final MonitorEvent PIPE_EXCEPTION_MONITOR_EVENT = new MonitorEvent("Sender Exception Caught");
 
 	// receiver events
-	RCV_CONFIGURED_MONITOR_EVENT("Receiver Configured"),
-	RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT("Exception Configuring Receiver"),
-	RCV_STARTED_RUNNING_MONITOR_EVENT("Receiver Started Running"),
-	RCV_SHUTDOWN_MONITOR_EVENT("Receiver Shutdown"),
-	RCV_SUSPENDED_MONITOR_EVENT("Receiver Operation Suspended"),
-	RCV_RESUMED_MONITOR_EVENT("Receiver Operation Resumed"),
-	RCV_THREAD_EXIT_MONITOR_EVENT("Receiver Thread Exited"),
-	RCV_MESSAGE_TO_ERRORSTORE_EVENT("Receiver Moved Message to ErrorStorage"),
+	public static final MonitorEvent RCV_CONFIGURED_MONITOR_EVENT = new MonitorEvent("Receiver Configured");
+	public static final MonitorEvent RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = new MonitorEvent("Exception Configuring Receiver");
+	public static final MonitorEvent RCV_STARTED_RUNNING_MONITOR_EVENT = new MonitorEvent("Receiver Started Running");
+	public static final MonitorEvent RCV_SHUTDOWN_MONITOR_EVENT = new MonitorEvent("Receiver Shutdown");
+	public static final MonitorEvent RCV_SUSPENDED_MONITOR_EVENT = new MonitorEvent("Receiver Operation Suspended");
+	public static final MonitorEvent RCV_RESUMED_MONITOR_EVENT = new MonitorEvent("Receiver Operation Resumed");
+	public static final MonitorEvent RCV_THREAD_EXIT_MONITOR_EVENT = new MonitorEvent("Receiver Thread Exited");
+	public static final MonitorEvent RCV_MESSAGE_TO_ERRORSTORE_EVENT = new MonitorEvent("Receiver Moved Message to ErrorStorage");
 
 	// validator events
-	XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT("Invalid XML: parser error"),
-	XML_VALIDATOR_NOT_VALID_MONITOR_EVENT("Invalid XML: does not comply to XSD"),
-	XML_VALIDATOR_VALID_MONITOR_EVENT("valid XML"),
+	public static final MonitorEvent XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = new MonitorEvent("Invalid XML: parser error");
+	public static final MonitorEvent XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = new MonitorEvent("Invalid XML: does not comply to XSD");
+	public static final MonitorEvent XML_VALIDATOR_VALID_MONITOR_EVENT = new MonitorEvent("valid XML");
 
-	XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT("Switch: Forward Found"),
-	XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT("Switch: Forward Not Found");
+	public static final MonitorEvent XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = new MonitorEvent("Switch: Forward Found");
+	public static final MonitorEvent XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = new MonitorEvent("Switch: Forward Not Found");
 
-	MonitorEvent(String string) {
-		// TODO Auto-generated constructor stub
+	private final String event;
+	public MonitorEvent(String event) {
+		if(event == null) {
+			throw new IllegalArgumentException();
+		}
+
+		this.event = event;
+	}
+
+	public String name() {
+		return event;
+	}
+
+	@Override
+	public String toString() {
+		return name();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof MonitorEvent) {
+			return obj.hashCode() == hashCode();
+		}
+
+		return super.equals(obj);
+	}
+
+	@Override
+	public int hashCode() {
+		return name().hashCode();
 	}
 }

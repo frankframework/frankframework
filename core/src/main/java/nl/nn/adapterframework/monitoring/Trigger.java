@@ -120,10 +120,10 @@ public class Trigger implements ITrigger {
 			cleanUpEvents(now);
 			eventDates.add(now);
 			if (eventDates.size() >= getThreshold()) {
-				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+				getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode.name(), null);
 			}
 		} else {
-			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
+			getMonitor().changeState(now, alarm, getSeverityEnum(), source, eventCode.name(), null);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class Trigger implements ITrigger {
 		for (int i=0; i<eventCodes.size(); i++) {
 			XmlBuilder event=new XmlBuilder("event");
 			trigger.addSubElement(event);
-			event.setValue(eventCodes.get(i));
+			event.setValue(eventCodes.get(i).name());
 		}
 		if (getAdapterFilters()!=null) {
 			if (getSourceFilteringEnum() != SourceFiltering.NONE) {
@@ -205,7 +205,7 @@ public class Trigger implements ITrigger {
 		eventCodes.clear();
 	}
 	public void addEventCode(String code) {
-		eventCodes.add(code);
+		eventCodes.add(new MonitorEvent(code));
 	}
 
 	public void setEventCode(String code) {
@@ -223,10 +223,10 @@ public class Trigger implements ITrigger {
 
 	@Override
 	public String[] getEventCodes() {
-		return eventCodes.toArray(new String[eventCodes.size()]);
+		return getEventCodeList().stream().map(e -> e.toString()).toArray(size -> new String[eventCodes.size()]);
 	}
 
-	public List<String> getEventCodeList() {
+	public List<MonitorEvent> getEventCodeList() {
 		return eventCodes;
 	}
 

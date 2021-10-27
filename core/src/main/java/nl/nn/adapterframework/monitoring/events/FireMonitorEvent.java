@@ -24,7 +24,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
  */
 public class FireMonitorEvent extends MonitorEventBase {
 
-	private static final long serialVersionUID = -5721423356070894439L;
+	private static final long serialVersionUID = -2L;
 
 	public FireMonitorEvent(EventThrowing source, MonitorEvent eventCode) {
 		super(source, eventCode);

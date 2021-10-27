@@ -25,9 +25,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
  * 
  * @author Niels Meijer
  */
-public class MonitorEventBase extends ApplicationEvent {
-
-	private static final long serialVersionUID = -4911322849505894916L;
+public abstract class MonitorEventBase extends ApplicationEvent {
 
 	private @Getter MonitorEvent monitorEvent;
 

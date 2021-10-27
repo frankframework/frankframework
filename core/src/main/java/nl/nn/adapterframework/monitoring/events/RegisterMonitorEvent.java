@@ -24,7 +24,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
  */
 public class RegisterMonitorEvent extends MonitorEventBase {
 
-	private static final long serialVersionUID = -7148500016025718311L;
+	private static final long serialVersionUID = 2L;
 
 	public RegisterMonitorEvent(EventThrowing source, MonitorEvent eventCode) {
 		super(source, eventCode);

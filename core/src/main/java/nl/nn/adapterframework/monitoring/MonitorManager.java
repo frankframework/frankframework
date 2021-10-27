@@ -56,7 +56,7 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<Monitor> monitors = new ArrayList<>();							// All monitors managed by this MonitorManager
-	private Map<String, Event> events = new HashMap<>();						// All events that can be thrown
+	private Map<MonitorEvent, Event> events = new HashMap<>();					// All events that can be thrown
 	private Map<String, IMonitorAdapter> destinations = new LinkedHashMap<>();	// All destinations (that can receive status messages) managed by this MonitorManager
 
 	private boolean enabled = AppConstants.getInstance().getBoolean("monitoring.enabled", false);
@@ -117,13 +117,13 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public void onApplicationEvent(RegisterMonitorEvent event) {
 		EventThrowing thrower = event.getSource();
-		MonitorEvent eventCode = event.getMonitorEvent();
+		MonitorEvent monitorEvent = event.getMonitorEvent();
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"registerEvent ["+eventCode+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
+			log.debug(getLogPrefix()+"registerEvent ["+monitorEvent+"] for adapter ["+(thrower.getAdapter() == null ? null : thrower.getAdapter().getName())+"] object ["+thrower.getEventSourceName()+"]");
 		}
 
-		register(thrower, eventCode);
+		register(thrower, monitorEvent);
 	}
 
 	public void addMonitor(Monitor monitor) {
@@ -164,19 +164,19 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 		return Collections.unmodifiableList(monitors);
 	}
 
-	private void register(EventThrowing eventThrowing, String eventCode) {
+	private void register(EventThrowing eventThrowing, MonitorEvent monitorEvent) {
 		Adapter adapter = eventThrowing.getAdapter();
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
 			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
 		}
 
 		//Update the list with potential events that can be thrown
-		Event event = events.getOrDefault(eventCode, new Event());
+		Event event = events.getOrDefault(monitorEvent, new Event());
 		event.addThrower(eventThrowing);
-		events.put(eventCode, event);
+		events.put(monitorEvent, event);
 	}
 
-	public Map<String, Event> getEvents() {
+	public Map<MonitorEvent, Event> getEvents() {
 		return events;
 	}
 

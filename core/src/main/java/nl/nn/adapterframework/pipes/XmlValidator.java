@@ -287,9 +287,9 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected RootValidations createRootValidation(String messageRoot) {
 		return new RootValidations(messageRoot);
 	}
-	
+
 	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
-		throwEvent(resultEvent);
+		throwEvent(new MonitorEvent(resultEvent));
 		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
 			return getSuccessForward();
 		}
