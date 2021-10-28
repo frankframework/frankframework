@@ -1,4 +1,3 @@
-cd %~dp0/../..
 
 docker container stop iaf-test-activemq
 docker container rm iaf-test-activemq
