@@ -175,11 +175,12 @@
 		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
 	/>
 
-	<Resource
-		name="jms/qcf-activemq"
+	<Resource name="jms/qcf-activemq"
+		auth="Container"
 		factory="org.apache.naming.factory.BeanFactory"
-		type="org.apache.activemq.ActiveMQXAConnectionFactory"
-		brokerURL="vm://localhost"
-	/>
-	
+		type="org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory"
+		brokerURL="tcp://host.docker.internal:61616"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
+	/>	
 </Context>
