@@ -50,7 +50,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jms-client-all</artifactId>
+			<artifactId>activemq-client</artifactId>
 			<version>${activemq.driver.version}</version>
 		</dependency>
 		<dependency>
