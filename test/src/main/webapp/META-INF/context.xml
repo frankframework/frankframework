@@ -175,39 +175,12 @@
 		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
 	/>
 
-
-
 	<Resource name="jms/qcf-activemq"
 		auth="Container"
 		factory="org.apache.naming.factory.BeanFactory"
-		type="org.apache.activemq.ActiveMQXAConnectionFactory"
+		type="org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory"
 		brokerURL="tcp://host.docker.internal:61616"
-		userName="${testiaf_user/username:-testiaf_user}"
+		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
-	/>
-	
-	<Resource name="jms/i4testiaf_ff_activemq" 
-		auth="Container" 
-		type="org.apache.activemq.artemis.jms.client.ActiveMQQueue" 
-		description="FF Queue"
-		factory="org.apache.activemq.artemis.jndi.JNDIReferenceFactory" 
-		address="Q.TEST.FF" 
-	/>
-	
-	<Resource name="jms/i4testiaf_in_activemq" 
-		auth="Container" 
-		type="org.apache.activemq.artemis.jms.client.ActiveMQQueue" 
-		description="In Queue"
-		factory="org.apache.activemq.artemis.jndi.JNDIReferenceFactory" 
-		address="Q.TEST.IN" 
-	/>
-	
-	<Resource name="jms/i4testiaf_out_activemq" 
-		auth="Container" 
-		type="org.apache.activemq.artemis.jms.client.ActiveMQQueue" 
-		description="Out Queue"
-		factory="org.apache.activemq.artemis.jndi.JNDIReferenceFactory" 
-		address="Q.TEST.OUT" 
-	/>
-	
+	/>	
 </Context>
