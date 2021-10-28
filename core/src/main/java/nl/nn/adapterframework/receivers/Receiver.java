@@ -250,6 +250,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter String hideMethod = "all";
 	private @Getter String hiddenInputSessionKeys=null;
 
+	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
+	private boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
 	private int retryInterval=1;
 
@@ -791,6 +794,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			info("starts listening"); // Don't log that it's ready before it's ready!?
 			runState.setRunState(RunStateEnum.STARTED);
+			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
 			error("error occured while starting", t);
 			runState.setRunState(RunStateEnum.ERROR);
@@ -1061,6 +1065,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} catch (Exception e) {
 			log.warn("Could not close result message ["+output+"]", e);
 		}
+		resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 	}
 
 	
@@ -1527,19 +1532,23 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	public void exceptionThrown(String errorMessage, Throwable t) {
 		switch (getOnError()) {
-		case CONTINUE:
-			error(errorMessage+", will continue processing messages when they arrive", t);
-			break;
-		case RECOVER:
-			// Make JobDef.recoverAdapters() try to recover
-			error(errorMessage+", will try to recover",t);
-			setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
-			break;
-		case CLOSE:
-			error(errorMessage+", stopping receiver", t);
-			stopRunning();
-			break;
-	}
+			case CONTINUE:
+				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
+					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached changing the adapter status to 'warning'");
+				}
+				error(errorMessage+", will continue processing messages when they arrive", t);
+				break;
+			case RECOVER:
+				// Make JobDef.recoverAdapters() try to recover
+				error(errorMessage+", will try to recover",t);
+				setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
+				break;
+			case CLOSE:
+				error(errorMessage+", stopping receiver", t);
+				stopRunning();
+				break;
+		}
 	}
 
 	@Override
@@ -2144,5 +2153,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
 	public void setForceRetryFlag(boolean b) {
 		forceRetryFlag = b;
+	}
+
+	@IbisDoc({"Number of connection attemps to put the adapter in warning status", "5"})
+	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {
+		this.numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = number;
+	}
+
+	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
+		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
+	}
+
+	public boolean getNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached() {
+		return numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached;
 	}
 }

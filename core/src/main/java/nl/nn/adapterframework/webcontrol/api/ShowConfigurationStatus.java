@@ -771,6 +771,10 @@ public final class ShowConfigurationStatus extends Base {
 		int messageLogMessageCount = 0;
 		while(it.hasNext()) {
 			Receiver rcv = it.next();
+			if(rcv.getNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
+				adapterInfo.put("receiverReachedMaxExceptions", "true");
+			}
+			
 			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
 			if(esmb != null) {
 				try {
