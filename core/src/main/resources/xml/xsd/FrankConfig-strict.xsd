@@ -111,14 +111,9 @@
         <xs:simpleType>
           <xs:union memberTypes="OnErrorAttributeValuesType variableRef">
             <xs:annotation>
-              <xs:documentation>One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously Default: continue</xs:documentation>
+              <xs:documentation>One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously Default: CONTINUE</xs:documentation>
             </xs:annotation>
           </xs:union>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="onErrorEnum">
-        <xs:simpleType>
-          <xs:union memberTypes="OnErrorAttributeValuesType variableRef" />
         </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="numThreads" type="frankInt">
@@ -269,10 +264,10 @@
           <xs:documentation>Name of the parameter</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="type" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents of the first node (in combination with xslt or xpath).&lt;br/&gt;Please note that if there are child nodes, only the contents are returned, use &lt;code&gt;xml&lt;/code&gt; if the xml tags are required&lt;/li&gt;&lt;li&gt;&lt;code&gt;xml&lt;/code&gt;:  renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags&lt;/li&gt;&lt;li&gt;&lt;code&gt;node&lt;/code&gt;: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). &lt;br/&gt;Please note that the nodeset may contain multiple nodes, without a common root node. &lt;br/&gt;N.B. The result is the set of children of what you might expect it to be...&lt;/li&gt;&lt;li&gt;&lt;code&gt;domdoc&lt;/code&gt;: renders xml as a DOM document; similar to &lt;code&gt;node&lt;/code&gt; with the distinction that there is always a common root node (required for XSLT 2.0)&lt;/li&gt;&lt;li&gt;&lt;code&gt;date&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd&lt;/code&gt;. When applied as a JDBC parameter, the method setDate() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;time&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;HH:mm:ss&lt;/code&gt;. When applied as a JDBC parameter, the method setTime() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;datetime&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd HH:mm:ss&lt;/code&gt;. When applied as a JDBC parameter, the method setTimestamp() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;timestamp&lt;/code&gt;: similar to datetime, except for the formatString that is &lt;code&gt;yyyy-MM-dd HH:mm:ss.SSS&lt;/code&gt; by default&lt;/li&gt;&lt;li&gt;&lt;code&gt;xmldatetime&lt;/code&gt;: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;number&lt;/code&gt;: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;integer&lt;/code&gt;: converts the result to an Integer&lt;/li&gt;&lt;li&gt;&lt;code&gt;inputstream&lt;/code&gt;: only applicable as a JDBC parameter, the method setBinaryStream() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;list&lt;/code&gt;: converts a List&amp;lt;String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
-        </xs:annotation>
+      <xs:attribute name="type">
+        <xs:simpleType>
+          <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
+        </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="value" type="xs:string">
         <xs:annotation>
@@ -381,7 +376,7 @@
       </xs:attribute>
       <xs:attribute name="hidden" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+          <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute ref="active" />
@@ -743,67 +738,39 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.OutputfieldsPart" use="prohibited" />
     </xs:complexType>
   </xs:element>
-  <xs:element name="Job">
+  <xs:element name="DirectoryCleaner">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.scheduler.JobDef - Definition / configuration of scheduler jobs.</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.util.DirectoryCleaner - Cleans up a directory.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="Locker" minOccurs="0" maxOccurs="1" />
-      </xs:sequence>
-      <xs:attribute name="jobGroup" type="xs:string" />
-      <xs:attribute name="name" type="xs:string">
+      <xs:attribute name="directory" type="xs:string">
         <xs:annotation>
-          <xs:documentation>Name of the job</xs:documentation>
+          <xs:documentation>directory to be cleaned up</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="description" type="xs:string">
+      <xs:attribute name="retention" type="xs:string">
         <xs:annotation>
-          <xs:documentation>(Optional) Description of the job</xs:documentation>
+          <xs:documentation>time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted Default: 30d</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="cronExpression" type="xs:string">
+      <xs:attribute name="subdirectories" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>CRON expression that determines the frequency of execution</xs:documentation>
+          <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, files in subdirectories will be deleted, too Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="interval" type="frankInt">
+      <xs:attribute name="deleteEmptySubdirectories" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.</xs:documentation>
+          <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, empty subdirectories will be deleted, too Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="function">
-        <xs:simpleType>
-          <xs:union memberTypes="JobDefFunctionsAttributeValuesType variableRef" />
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="numThreads" type="frankInt">
+      <xs:attribute name="notExistWarn" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>the number of threads that may execute concurrently Default: 1</xs:documentation>
+          <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about not existing directories Default: true</xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="messageKeeperSize" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionTimeout" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttribute">
-        <xs:simpleType>
-          <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef">
-            <xs:annotation>
-              <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-            </xs:annotation>
-          </xs:union>
-        </xs:simpleType>
       </xs:attribute>
       <xs:attribute ref="active" />
-      <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.JobDef" use="prohibited" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="directoryCleaner" use="prohibited" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.DirectoryCleaner" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="JmsRealm">
@@ -923,7 +890,7 @@
     <xs:sequence>
       <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="Adapter" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element ref="Job" minOccurs="0" maxOccurs="unbounded" />
+      <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:group ref="StatisticsHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="JmsRealm" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="Monitoring" minOccurs="0" maxOccurs="unbounded" />
@@ -948,6 +915,95 @@
       <xs:group ref="ListenerElementGroupBase" />
     </xs:choice>
   </xs:group>
+  <xs:simpleType name="ParameterTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STRING">
+        <xs:annotation>
+          <xs:documentation>renders the contents of the first node (in combination with xslt or xpath). &lt;br/&gt; Please note that if there are child nodes, only the contents are returned, use &lt;code&gt;xml&lt;/code&gt; if the xml tags are required</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XML">
+        <xs:annotation>
+          <xs:documentation>renders an xml-nodeset as an xml-string (in combination with xslt or xpath).This will include the xml tags</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="NODE">
+        <xs:annotation>
+          <xs:documentation>renders the CONTENTS of the first node as a nodeset "+ 
+			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). &lt;br/&gt;"+
+			"Please note that the nodeset may contain multiple nodes, without a common root node. &lt;br/&gt;"+
+			"N.B. The result is the set of children of what you might expect it to be...</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DOMDOC">
+        <xs:annotation>
+          <xs:documentation>renders xml as a DOM document; similar to &lt;code&gt;node&lt;/code&gt; "+ 
+			"with the distinction that there is always a common root node (required for XSLT 2.0)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATE">
+        <xs:annotation>
+          <xs:documentation>converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd&lt;/code&gt;. "+ 
+			"When applied as a JDBC parameter, the method setDate() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIME">
+        <xs:annotation>
+          <xs:documentation>converts the result to a Date, by default using formatString &lt;code&gt;HH:mm:ss&lt;/code&gt;. "+ 
+			"When applied as a JDBC parameter, the method setTime() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATETIME">
+        <xs:annotation>
+          <xs:documentation>converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd HH:mm:ss&lt;/code&gt;. "+ 
+			"When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIMESTAMP">
+        <xs:annotation>
+          <xs:documentation>similar to datetime, except for the formatString that is &lt;code&gt;yyyy-MM-dd HH:mm:ss.SSS&lt;/code&gt; by default</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="XMLDATETIME">
+        <xs:annotation>
+          <xs:documentation>converts the result from a XML dateTime to a Date. "+ 
+			"When applied as a JDBC parameter, the method setTimestamp() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="NUMBER">
+        <xs:annotation>
+          <xs:documentation>converts the result to a Number, using decimalSeparator and groupingSeparator. "+ 
+			"When applied as a JDBC parameter, the method setDouble() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INTEGER">
+        <xs:annotation>
+          <xs:documentation>converts the result to an Integer</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BOOLEAN">
+        <xs:annotation>
+          <xs:documentation>converts the result to a boolean</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INPUTSTREAM">
+        <xs:annotation>
+          <xs:documentation>only applicable as a JDBC parameter, the method setBinaryStream() is used</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BYTES" />
+      <xs:enumeration value="LIST">
+        <xs:annotation>
+          <xs:documentation>converts a List&amp;lt;String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="MAP">
+        <xs:annotation>
+          <xs:documentation>converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:group name="SenderElementGroup">
     <xs:choice>
       <xs:element name="Sender">
@@ -1148,6 +1204,22 @@ Sender to work with Amazon S3.</xs:documentation>
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.AmazonS3Sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CmisSender">
+        <xs:annotation>
+          <xs:documentation>CmisSender - nl.nn.adapterframework.extensions.cmis.CmisSender used as Sender
+
+Sender to obtain information from and write to a CMIS application.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CmisSenderType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.cmis.CmisSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -2238,6 +2310,192 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="FileSystemSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="CmisSenderType">
+    <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+    <xs:attributeGroup ref="CmisSenderCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="CmisSenderDeclaredAttributeGroup">
+    <xs:attribute name="overrideEntryPointWSDL" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>override entrypoint wsdl by reading it from the classpath, overrides url attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Accept self signed certificates Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Ignore certificate hostname validation Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Ignore expired certificate exceptions Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="certificateUrl" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path (or resource url) to certificate to be used for authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="certificateAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Auth Alias used to obtain certificate password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="certificatePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Certificate Password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Path (or resource url) to truststore to be used for authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Truststore Password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Keystore Type Default: pkcs12</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>KeyManager Algorithm Default: pkix</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Truststore Type Default: jks</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>TrustManager Algorithm Default: pkix</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyHost" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy host url</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Proxy host port Default: 80</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyUsername" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy Username</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Proxy Password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="action" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>specifies action to perform</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxConnections" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>the maximum number of concurrent connections Default: 10</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>the connection timeout in seconds Default: 10</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="url" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>url to connect to</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="repository" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>repository id</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username used in authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string" />
+    <xs:attribute name="bindingType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>'atompub', 'webservices' or 'browser' Default: 'atompub'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fileSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the sessionKey that contains the file to use. If &lt;code&gt;action=get&lt;/code&gt; and &lt;code&gt;getproperties=true&lt;/code&gt; the sessionKey to store the result in</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filenameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the session key that contains the name of the file to use. If not set, the value of the property &lt;code&gt;filename&lt;/code&gt; from the input message is used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="defaultMediaType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;action=create&lt;/code&gt; the mime type used to store the document when it's not set in the input message by a property Default: 'application/octet-stream'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="getProperties" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the content of the document is streamed to &lt;code&gt;fileInputStreamSessionKey&lt;/code&gt; and all document properties are put in the result as a xml string Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="getDocumentContent" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;). If true, the attachment for the document is the sender result or, if set, stored in &lt;code&gt;fileInputStreamSessionKey&lt;/code&gt;. If false, only the properties are returned Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="useRootFolder" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>(Only used when &lt;code&gt;action=create&lt;/code&gt;). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resultOnNotFound" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Only used when &lt;code&gt;action=get&lt;/code&gt;) result returned when no document was found for the given id (e.g. '[not_found]'). if empty an exception is thrown</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keepSession" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If true, the session is not closed at the end and it will be used in the next call Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CmisSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CmisSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="CommandSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="CommandSenderCumulativeAttributeGroup" />
@@ -2640,13 +2898,149 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="EsbJmsSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="EsbJmsSenderDeclaredAttributeGroup">
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="timeOut" type="frankInt" />
+    <xs:attribute name="messageProtocol">
+      <xs:simpleType>
+        <xs:union memberTypes="MessageProtocolAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>protocol of ESB service to be called</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="timeOut" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>receiver timeout, in milliseconds
+ ff.default 20000 (20s)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="deliveryMode">
+      <xs:simpleType>
+        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Controls mode that messages are sent with Default: not set by application</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="replyTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>(Only for synchronous=true). Maximum time in ms to wait for a reply. 0 means no timeout.  Default: 5000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="synchronous" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAPAction string sent as message property</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="MessageProtocolAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FF">
+        <xs:annotation>
+          <xs:documentation>Fire &amp; Forget protocol</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RR">
+        <xs:annotation>
+          <xs:documentation>Request-Reply protocol</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DeliveryModeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NOT_SET" />
+      <xs:enumeration value="PERSISTENT" />
+      <xs:enumeration value="NON_PERSISTENT" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="EsbJmsSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="EsbJmsSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
+    <xs:attribute name="destinationParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Parameter that is used, if specified and not empty, to determine the destination. Overrides the destination attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replyToName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Value of the JMSType field Default: not set by application</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="priority" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4 Default: -1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soap" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="encodingStyleURI" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP encoding style URI</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serviceNamespaceURI" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP service namespace URI</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapHeaderParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of parameter containing SOAP header Default: soapHeader</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replySoapHeaderSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>session key to store SOAP header of reply Default: replySoapHeader</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>(Only used when synchronous='true' and and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>A list of JMS headers of the response to add to the PipeLineSession</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:simpleType name="LinkMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MESSAGEID">
+        <xs:annotation>
+          <xs:documentation>use the generated messageId as the correlationId in the selector for response messages</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CORRELATIONID">
+        <xs:annotation>
+          <xs:documentation>set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CORRELATIONID_FROM_MESSAGE">
+        <xs:annotation>
+          <xs:documentation>do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:complexType name="JmsSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
@@ -2686,11 +3080,6 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         </xs:union>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="deliveryModeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="priority" type="frankInt">
       <xs:annotation>
         <xs:documentation>Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4 Default: -1</xs:documentation>
@@ -2698,7 +3087,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="soap" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyleURI" type="xs:string">
@@ -2723,7 +3112,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="replyTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Maximum time in ms to wait for a reply. 0 means no timeout. (only for synchronous=true) Default: 5000</xs:documentation>
+        <xs:documentation>(Only for synchronous=true). Maximum time in ms to wait for a reply. 0 means no timeout.  Default: 5000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replySoapHeaderSessionKey" type="xs:string">
@@ -2731,24 +3120,21 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>session key to store SOAP header of reply Default: replySoapHeader</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="linkMethod" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(Only used when synchronous='true' and and replytoname is set) either 'CORRELATIONID', 'CORRELATIONID_FROM_MESSAGE' or 'MESSAGEID'. Iindicates wether the server uses the correlationId from the pipeline, the correlationId from the message or the messageIid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>(Only used when synchronous='true' and and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>A list of JMS headers of the response to add to the pipelinesession</xs:documentation>
+        <xs:documentation>A list of JMS headers of the response to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:simpleType name="DeliveryModeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="NOT_SET" />
-      <xs:enumeration value="PERSISTENT" />
-      <xs:enumeration value="NON_PERSISTENT" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:attributeGroup name="JmsSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="JmsSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
@@ -2766,14 +3152,9 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       <xs:simpleType>
         <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Type of the messageing destination Default: queue</xs:documentation>
+            <xs:documentation>Type of the messageing destination Default: QUEUE</xs:documentation>
           </xs:annotation>
         </xs:union>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="destinationTypeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="acknowledgeMode">
@@ -3076,7 +3457,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       <xs:simpleType>
         <xs:union memberTypes="FtpTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>FTP protocol to use Default: ftp</xs:documentation>
+            <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -4687,7 +5068,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="action">
       <xs:simpleType>
-        <xs:union memberTypes="ActionAttributeValuesType variableRef">
+        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef">
           <xs:annotation>
             <xs:documentation>NetStorage action to be used</xs:documentation>
           </xs:annotation>
@@ -4742,7 +5123,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       <xs:enumeration value="SHA256" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ActionAttributeValuesType">
+  <xs:simpleType name="ActionAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:enumeration value="DU" />
       <xs:enumeration value="DIR" />
@@ -5351,7 +5732,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="TibcoSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="TibcoSenderDeclaredAttributeGroup">
-    <xs:attribute name="serverUrl" type="xs:string" />
+    <xs:attribute name="serverUrl" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL (hostname and port, separated by ':') of Tibco-Server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="TibcoSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="TibcoSenderDeclaredAttributeGroup" />
@@ -5749,6 +6134,20 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.rest.ApiListener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CmisEventListener">
+        <xs:annotation>
+          <xs:documentation>CmisEventListener - nl.nn.adapterframework.extensions.cmis.CmisEventListener used as Listener</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CmisEventListenerType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.cmis.CmisEventListener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -6258,6 +6657,16 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
     </xs:attribute>
     <xs:attribute name="applicationFaultsAsExceptions" type="frankBoolean" />
     <xs:attribute name="running" type="frankBoolean" />
+  </xs:attributeGroup>
+  <xs:complexType name="CmisEventListenerType">
+    <xs:attributeGroup ref="CmisEventListenerCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="CmisEventListenerDeclaredAttributeGroup">
+    <xs:attribute name="eventListener" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CmisEventListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CmisEventListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectoryListenerType">
     <xs:attributeGroup ref="DirectoryListenerCumulativeAttributeGroup" />
@@ -7197,6 +7606,22 @@ Sender to work with Amazon S3.</xs:documentation>
               <xs:attribute ref="active" />
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
               <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.AmazonS3Sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CmisErrorSender">
+        <xs:annotation>
+          <xs:documentation>CmisErrorSender - nl.nn.adapterframework.extensions.cmis.CmisSender used as ErrorSender
+
+Sender to obtain information from and write to a CMIS application.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CmisSenderType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.cmis.CmisSender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -8930,7 +9355,7 @@ XmlValidator that will read the XSD's to use from a WSDL.</xs:documentation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Default format of the result. Default: xml</xs:documentation>
+            <xs:documentation>Default format of the result. Default: XML</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -9576,7 +10001,7 @@ Pipe to wrap or unwrap a message from/into a SOAP Envelope.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="addOutputNamespace" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;direction=wrap&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;outputNamespace&lt;/code&gt; is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion') Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(only used when &lt;code&gt;direction=wrap&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;outputNamespace&lt;/code&gt; is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion') Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retrievePhysicalDestination" type="frankBoolean">
@@ -12284,7 +12709,7 @@ Pipe that creates a ZipStream.</xs:documentation>
       <xs:simpleType>
         <xs:union memberTypes="DirectionAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Either &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; Default: encode</xs:documentation>
+            <xs:documentation>Either &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; Default: ENCODE</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -12582,10 +13007,14 @@ Pipe that creates a ZipStream.</xs:documentation>
         <xs:documentation>name of the pipe</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="linkMethod" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. Default: CORRELATIONID</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType_2 variableRef">
+          <xs:annotation>
+            <xs:documentation>For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. Default: CORRELATIONID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="correlationIDStyleSheet" type="xs:string">
       <xs:annotation>
@@ -12713,6 +13142,12 @@ Pipe that creates a ZipStream.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="LinkMethodAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MESSAGEID" />
+      <xs:enumeration value="CORRELATIONID" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="MessageSendingPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="MessageSendingPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeDeclaredAttributeGroup" />
@@ -13609,10 +14044,14 @@ Pipe that creates a ZipStream.</xs:documentation>
         <xs:documentation>Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetFromSessionCumulativeAttributeGroup">
@@ -15282,23 +15721,374 @@ Pipe that creates a ZipStream.</xs:documentation>
     <xs:attributeGroup ref="ZipWriterPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:simpleType name="JobDefFunctionsAttributeValuesType">
+  <xs:group name="JobElementGroup">
+    <xs:choice>
+      <xs:element name="Job">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="DirectoryCleaner" />
+              <xs:element ref="Locker" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.scheduler.job.Job" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="JobElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="JobElementGroupBase">
+    <xs:choice>
+      <xs:element name="CheckReloadJob">
+        <xs:annotation>
+          <xs:documentation>CheckReloadJob - nl.nn.adapterframework.scheduler.job.CheckReloadJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CheckReloadJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CheckReloadJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CleanupDatabaseJob">
+        <xs:annotation>
+          <xs:documentation>CleanupDatabaseJob - nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CleanupDatabaseJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CleanupFileSystemJob">
+        <xs:annotation>
+          <xs:documentation>CleanupFileSystemJob - nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CleanupFileSystemJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DatabaseJob">
+        <xs:annotation>
+          <xs:documentation>DatabaseJob - nl.nn.adapterframework.scheduler.job.DatabaseJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DatabaseJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DatabaseJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DumpFullStatisticsJob">
+        <xs:annotation>
+          <xs:documentation>DumpFullStatisticsJob - nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DumpFullStatisticsJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DumpStatisticsJob">
+        <xs:annotation>
+          <xs:documentation>DumpStatisticsJob - nl.nn.adapterframework.scheduler.job.DumpStatisticsJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DumpStatisticsJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DumpStatisticsJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ExecuteQueryJob">
+        <xs:annotation>
+          <xs:documentation>ExecuteQueryJob - nl.nn.adapterframework.scheduler.job.ExecuteQueryJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ExecuteQueryJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.ExecuteQueryJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="IbisActionJob">
+        <xs:annotation>
+          <xs:documentation>IbisActionJob - nl.nn.adapterframework.scheduler.job.IbisActionJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IbisActionJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.IbisActionJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="LoadDatabaseSchedulesJob">
+        <xs:annotation>
+          <xs:documentation>LoadDatabaseSchedulesJob - nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob used as Job
+
+1.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="LoadDatabaseSchedulesJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RecoverAdaptersJob">
+        <xs:annotation>
+          <xs:documentation>RecoverAdaptersJob - nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecoverAdaptersJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendMessageJob">
+        <xs:annotation>
+          <xs:documentation>SendMessageJob - nl.nn.adapterframework.scheduler.job.SendMessageJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SendMessageJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.SendMessageJob" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="CheckReloadJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="JobDefDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Locker" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="JobDefDeclaredAttributeGroup">
+    <xs:attribute name="jobGroup" type="xs:string" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the job</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Optional) Description of the job</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cronExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>CRON expression that determines the frequency of execution.
+ Can &lt;code&gt;not&lt;/code&gt; be used in combination with Interval.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="interval" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Triggers the Job at the specified number of milliseconds. Keep cronExpression empty in order to use interval.
+ Value &lt;code&gt;0&lt;/code&gt; may be used to run once at startup of the application.
+ A value of 0 in combination with function 'sendMessage' will set dependencyTimeout on the IbisLocalSender to -1 to keep waiting indefinitely instead of 60 seconds for the adapter to start.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numThreads" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>the number of threads that may execute concurrently Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageKeeperSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JobDefCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JobDefDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CleanupDatabaseJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="CleanupDatabaseJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="CleanupDatabaseJobDeclaredAttributeGroup">
+    <xs:attribute name="queryTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CleanupDatabaseJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CleanupDatabaseJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CleanupFileSystemJobType">
+    <xs:group ref="CleanupFileSystemJobCumulativeChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="CleanupFileSystemJobDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="DirectoryCleaner" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="CleanupFileSystemJobCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="CleanupFileSystemJobDeclaredChildGroup" />
+      <xs:group ref="JobDefDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="DatabaseJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="DatabaseJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="DatabaseJobDeclaredAttributeGroup">
+    <xs:attribute name="adapterName" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DatabaseJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DatabaseJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SendMessageJobCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SendMessageJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="SendMessageJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="SendMessageJobDeclaredAttributeGroup">
+    <xs:attribute name="javaListener" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JavaListener to send the message to</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="message" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>message to be send into the pipeline</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SendMessageJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SendMessageJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="DumpFullStatisticsJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="DumpStatisticsJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="ExecuteQueryJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="ExecuteQueryJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="ExecuteQueryJobDeclaredAttributeGroup">
+    <xs:attribute name="query" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The SQL query text to be executed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used Default: ${jdbc.datasource.default}</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="queryTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ExecuteQueryJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ExecuteQueryJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="IbisActionJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="IbisActionJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="configurationName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Configuration on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="adapterName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Adapter on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="receiverName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Receiver on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="StopAdapter" />
-      <xs:enumeration value="StartAdapter" />
-      <xs:enumeration value="StopReceiver" />
-      <xs:enumeration value="StartReceiver" />
-      <xs:enumeration value="SendMessage" />
-      <xs:enumeration value="ExecuteQuery" />
-      <xs:enumeration value="dumpStatistics" />
-      <xs:enumeration value="dumpStatisticsFull" />
-      <xs:enumeration value="cleanupDatabase" />
-      <xs:enumeration value="cleanupFileSystem" />
-      <xs:enumeration value="recoverAdapters" />
-      <xs:enumeration value="checkReload" />
-      <xs:enumeration value="loadDatabaseSchedules" />
+      <xs:enumeration value="STOPADAPTER" />
+      <xs:enumeration value="STARTADAPTER" />
+      <xs:enumeration value="STOPRECEIVER" />
+      <xs:enumeration value="STARTRECEIVER" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attributeGroup name="IbisActionJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="IbisActionJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="LoadDatabaseSchedulesJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="RecoverAdaptersJobType">
+    <xs:group ref="JobDefDeclaredChildGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
   <xs:group name="StatisticsHandlerElementGroup">
     <xs:choice>
       <xs:element name="StatisticsHandler">
