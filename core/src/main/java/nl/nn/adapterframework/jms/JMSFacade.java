@@ -91,7 +91,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String destinationName;
 	private @Getter boolean useTopicFunctions = false;
 	private @Getter String authAlias;
-	private @Getter boolean lookupDestination = true;
+	private @Getter boolean lookupDestination = AppConstants.getInstance().getBoolean("jms.lookupDestination", true);
 
 	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
 
