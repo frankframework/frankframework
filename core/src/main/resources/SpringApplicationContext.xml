@@ -119,7 +119,7 @@
 
 	<bean
 		id="txManagerProxy"
-		class="nl.nn.adapterframework.util.SpringTxManagerProxy"
+		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
 		>
 		<property name="realTxManagerBeanName">
 			<idref bean="txManagerReal"/>
