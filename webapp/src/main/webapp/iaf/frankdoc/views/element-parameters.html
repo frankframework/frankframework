@@ -12,9 +12,9 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr ng-repeat="specific in element.parameters">
-				<td>{{ ::specific.name }}</td>
-				<td ng-if="specific.description" ng-bind-html="::specific.description"></td>
+			<tr ng-repeat="parameter in element.parameters">
+				<td>{{ ::parameter.name }}</td>
+				<td ng-bind-html="::parameter.description"></td>
 			</tr>
 		</tbody>
 	</table>
