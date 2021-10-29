@@ -11,7 +11,6 @@
 		<log4j2.version>2.14.1</log4j2.version>
 		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>1.0-SNAPSHOT</frankdoc.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
