@@ -35,8 +35,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -138,7 +138,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try {
 			config = manager.get(getConfigurationName());
 		}
-		catch (ConfigurationException e) {
+		catch (ClassLoaderException e) {
 			String msg = e.getMessage();
 			assertTrue(msg.startsWith("Could not get config"));
 			assertTrue(msg.endsWith("from database"));

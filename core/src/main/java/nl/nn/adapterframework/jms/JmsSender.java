@@ -43,6 +43,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -307,32 +308,27 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private void setProperties(javax.jms.Message msg, ParameterValueList msgProperties) throws JMSException {
 		for (int i=0; i<msgProperties.size(); i++) {
 			ParameterValue property = msgProperties.getParameterValue(i);
-			String type = property.getDefinition().getType();
+			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
 			if ((!isSoap() || !name.equals(getSoapHeaderParam()) && 
 				(StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam())))) {
 
 				if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"setting ["+type+"] property from param ["+name+"] to value ["+property.getValue()+"]"); }
-
-				if ("boolean".equalsIgnoreCase(type))
-					msg.setBooleanProperty(name, property.asBooleanValue(false));
-				else if ("byte".equalsIgnoreCase(type))
-					msg.setByteProperty(name, property.asByteValue((byte) 0));
-				else if ("double".equalsIgnoreCase(type))
-					msg.setDoubleProperty(name, property.asDoubleValue(0));
-				else if ("float".equalsIgnoreCase(type))
-					msg.setFloatProperty(name, property.asFloatValue(0));
-				else if ("int".equalsIgnoreCase(type))
-					msg.setIntProperty(name, property.asIntegerValue(0));
-				else if ("long".equalsIgnoreCase(type))
-					msg.setLongProperty(name, property.asLongValue(0L));
-				else if ("short".equalsIgnoreCase(type))
-					msg.setShortProperty(name, property.asShortValue((short) 0));
-				else if ("string".equalsIgnoreCase(type))
-					msg.setStringProperty(name, property.asStringValue(""));
-				else // if ("object".equalsIgnoreCase(type))
-					msg.setObjectProperty(name, property.getValue());
+				switch(type) {
+					case BOOLEAN:
+						msg.setBooleanProperty(name, property.asBooleanValue(false));
+						break;
+					case INTEGER:
+						msg.setIntProperty(name, property.asIntegerValue(0));
+						break;
+					case STRING:
+						msg.setStringProperty(name, property.asStringValue(""));
+						break;
+					default:
+						msg.setObjectProperty(name, property.getValue());
+						break;
+				}
 			}
 		}
 	}
@@ -381,7 +377,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		priority = i;
 	}
 
-	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "<code>false</code>"})
+	@IbisDoc({"7", "If <code>true</code>, messages sent are put in a soap envelope", "false"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

@@ -70,6 +70,7 @@ import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -1820,6 +1821,10 @@ public class TestTool {
 						httpSender.addParameter(parameter);
 					}
 					httpSender.configure();
+				} catch(ClassLoaderException e) {
+					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, writers);
+					queues = null;
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 					closeQueues(queues, properties, writers);

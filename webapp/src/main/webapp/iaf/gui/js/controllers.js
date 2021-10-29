@@ -262,6 +262,9 @@ angular.module('iaf.beheerconsole')
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
 							adapter.status = 'warning';
 					}
+					if(adapter.receiverReachedMaxExceptions){
+						adapter.status = 'warning';
+					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
 						if(adapter.pipes[x].sender) {
@@ -777,11 +780,12 @@ angular.module('iaf.beheerconsole')
 	function startPollingForConfigurationStateChanges(callback) {
 		Poller.add("server/configurations", function(configurations) {
 			$scope.updateConfigurations(configurations);
-	
+
 			var ready = true;
 			for(var i in configurations) {
 				var config = configurations[i];
-				if(config.state != "STARTED") {
+				//When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
+				if(config.state != "STARTED" && !(config.state == "STOPPED" && config.exception != null)) {
 					ready = false;
 					break;
 				}

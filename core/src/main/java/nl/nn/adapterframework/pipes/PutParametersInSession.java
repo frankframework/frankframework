@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -31,12 +32,14 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Peter Leeuwenburgh
  */
+@Deprecated
+@ConfigurationWarning("Please replace with PutInSessionPipe")
 public class PutParametersInSession extends FixedForwardPipe {
 	
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
-		if (parameterList != null) {
+		if (!parameterList.isEmpty()) {
 			try {
 				ParameterValueList pvl = parameterList.getValues(message, session, isNamespaceAware());
 				if (pvl != null) {

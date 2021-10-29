@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.jdbc.migration.JunitTestClassLoaderWrapper;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
@@ -44,7 +45,11 @@ public class TestConfiguration extends Configuration {
 		qsPostProcessor.setApplicationContext(this);
 		getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
-		configure();
+		try {
+			configure();
+		} catch (ConfigurationException e) {
+			throw new IllegalStateException("unable to configure configuration", e);
+		}
 
 		if(!TEST_CONFIGURATION_NAME.equals(AppConstants.getInstance().getProperty("instance.name"))) {
 			fail("instance.name has been altered");

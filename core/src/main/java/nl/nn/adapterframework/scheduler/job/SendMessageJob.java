@@ -40,7 +40,7 @@ public class SendMessageJob extends JobDef {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getJavaListener())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a javaListener must be specified");
+			throw new ConfigurationException("a javaListener must be specified");
 		}
 
 		super.configure();
@@ -56,7 +56,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
 		try {
 			localSender.open();
 			//sendMessage message cannot be NULL
@@ -65,8 +65,15 @@ public class SendMessageJob extends JobDef {
 			session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
 			localSender.sendMessage(message, session);
 		}
+		catch (SenderException e) {
+			throw new JobExecutionException("unable to send message to javaListener ["+javaListener+"]", e);
+		}
 		finally {
-			localSender.close();
+			try {
+				localSender.close();
+			} catch (SenderException e) {
+				log.warn("unable to close LocalSender", e);
+			}
 		}
 	}
 

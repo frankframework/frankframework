@@ -444,8 +444,36 @@
 								<name>ff.ignoreTypeMembership</name>
 								<placement>X</placement>
 							</tag>
+							<tag>
+								<name>ff.forward</name>
+								<placement>X</placement>
+							</tag>
+							<tag>
+								<name>ff.noAttribute</name>
+								<placement>X</placement>
+							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<failOnError>false</failOnError>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+						<skipDeploy>true</skipDeploy>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -691,7 +719,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>${frankdoc.version}</version>
+								<version>1.0-SNAPSHOT</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
@@ -706,6 +734,7 @@
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
 							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

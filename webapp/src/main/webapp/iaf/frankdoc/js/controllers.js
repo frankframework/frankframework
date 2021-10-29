@@ -35,6 +35,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 
 			el.attributes = copyOf(el.attributes, parent.attributes, 'name');
 			el.children = copyOf(el.children, parent.children, 'roleName');
+			el.forwards = copyOf(el.forwards, parent.forwards, 'name');
 
 			if(!el.parametersDescription && parent.parametersDescription) {
 				el.parametersDescription = parent.parametersDescription;
@@ -100,7 +101,8 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 			$scope.javaDocURL = javaDocUrlOf(element);
 		}
 	});
-}]).controller('parent-element', ['$scope', function($scope) {
+}])
+.controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;
 
 	var parent = $scope.element.parent;
@@ -131,6 +133,16 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		let simpleNames = [];
 		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
 		return simpleNames;
+	}
+}]).controller('attribute-description', ['$scope', function($scope) {
+	let enumFields = $scope.enums[$scope.attr.enum];
+	$scope.descriptiveEnum = false; //has at least 1 enum field with a description
+	for(let i in enumFields) {
+		let field = enumFields[i];
+		if(field.description != undefined) {
+			$scope.descriptiveEnum = true;
+			break;
+		}
 	}
 }]);
 

@@ -13,6 +13,8 @@
 
 	<div ng-if="element.parameters || element.parametersDescription" parameters></div>
 
+	<div ng-if="element.forwards" element-forwards></div>
+
 	<div ng-if="element.attributes || element.nonInheritedAttributes" element-attributes></div>
 
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>

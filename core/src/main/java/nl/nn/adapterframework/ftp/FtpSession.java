@@ -790,7 +790,7 @@ public class FtpSession implements IConfigurable {
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
-	@IbisDoc({"FTP protocol to use", "ftp"})
+	@IbisDoc({"FTP protocol to use", "FTP"})
 	public void setFtpType(String value) {
 		ftpType = EnumUtils.parse(FtpType.class, value);
 	}
