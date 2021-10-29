@@ -33,7 +33,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with PutInSession")
+@ConfigurationWarning("Please replace with PutInSessionPipe")
 public class PutParametersInSession extends FixedForwardPipe {
 	
 	@Override

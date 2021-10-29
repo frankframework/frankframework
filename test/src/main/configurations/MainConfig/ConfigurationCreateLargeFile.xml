@@ -40,8 +40,7 @@
 			</pipe>
 			<pipe name="SetStartIndex"
 				className="nl.nn.adapterframework.pipes.PutInSession"
-				getInputFromFixedValue="0">
-				<param name="index" />
+				sessionKey="index" getInputFromFixedValue="0">
 				<forward name="success" path="GetHeapSize" />
 			</pipe>
 			<pipe name="GetHeapSize"

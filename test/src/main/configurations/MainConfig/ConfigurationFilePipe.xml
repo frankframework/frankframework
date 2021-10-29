@@ -9,9 +9,8 @@
 			</exits>
 						
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession">
- 				<param name="filename" value="${testdata.dir}/test.txt" />
- 				<forward name="success" path="setFileData"/>
+			<pipe name="setFilename" className="nl.nn.adapterframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test.txt" >
+ 			 <forward name="success" path="setFileData"/> 			 
 			</pipe>
 			
 			<!-- get file text from sample file -->
