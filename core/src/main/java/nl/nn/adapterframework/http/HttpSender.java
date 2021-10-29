@@ -553,7 +553,7 @@ public class HttpSender extends HttpSenderBase {
 		if (response==null) {
 			Message responseMessage = responseHandler.getResponseMessage();
 			if(!Message.isEmpty(responseMessage)) {
-				responseMessage.closeOnCloseOf(session);
+				responseMessage.closeOnCloseOf(session, this);
 			}
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {

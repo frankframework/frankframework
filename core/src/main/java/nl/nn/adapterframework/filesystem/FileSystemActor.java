@@ -342,7 +342,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
 			if(input != null) {
-				input.closeOnCloseOf(session); // don't know if the input will be used
+				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 			}
 
 			FileSystemAction action;

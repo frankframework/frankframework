@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
 			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, session);
+				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}
 		return new Message(result);

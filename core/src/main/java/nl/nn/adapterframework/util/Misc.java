@@ -68,6 +68,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.InputSource;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -838,13 +839,13 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to) {
+	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
 				String key=st.nextToken();
 				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to);
+				Message.asMessage(value).closeOnCloseOf(to, requester);
 				to.put(key,value);
 			}
 		}
