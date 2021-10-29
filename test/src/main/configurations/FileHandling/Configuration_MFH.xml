@@ -42,7 +42,7 @@
 			>
 				<FixedQuerySender
 					name="insertPipe"
-					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, FILENAME, FILEURI, CREATED_AT, FILESIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, CURRENT_TIMESTAMP, ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 1, CURRENT_TIMESTAMP)"
+					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, FILENAME, FILEURI, CREATED_AT, FILESIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, CURRENT_TIMESTAMP, ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 'A', CURRENT_TIMESTAMP)"
 					queryType="OTHER"
 				>
 					<Param name="MESSAGEID" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
@@ -69,11 +69,11 @@
 				tableName="IBISFILETRIGGER"
 				statusField="STATUS"
 				timestampField="UPDATED_AT"
-				statusValueAvailable="1"
-				statusValueInProcess="2"
-				statusValueProcessed="3"
-				statusValueError="4"
-				statusValueHold="5"
+				statusValueAvailable="A"
+				statusValueInProcess="I"
+				statusValueProcessed="P"
+				statusValueError="E"
+				statusValueHold="H"
 				keyField="MESSAGEID"
 				messageField="MESSAGE"
 				orderField="CREATED_AT"

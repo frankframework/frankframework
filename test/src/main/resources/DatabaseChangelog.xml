@@ -73,7 +73,7 @@ TagDatabase
 			<column name="FILESIZE" type="INTEGER" />
 			<column name="FLOWID" type="java.sql.Types.VARCHAR(100)" />
 			<column name="MESSAGE" type="java.sql.Types.VARCHAR(1000)" />	<!-- an xml that contains information about the file and the flow. An example can be found in src\test\testtool\ManagedFileHandler\scenario01\message.xml -->
-			<column name="STATUS" type="java.sql.Types.CHAR(1)" />	<!-- status of the record. Statuses 1,2,3,4,5 mean AVAILABLE, INPROCESS, PROCESSED, ERROR and HOLD respectively -->
+			<column name="STATUS" type="java.sql.Types.CHAR(1)" />	<!-- status of the record. Statuses A,I,P,E,H mean AVAILABLE, INPROCESS, PROCESSED, ERROR and HOLD respectively -->
 			<column name="UPDATED_AT" type="DATETIME" />
 		</createTable>
 		<createIndex tableName="IBISFILETRIGGER" indexName="IX_IBISFILETRIGGER"> <!-- supposed to be used when the table listener's select query is being executed -->
