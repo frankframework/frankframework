@@ -771,7 +771,7 @@ public final class ShowConfigurationStatus extends Base {
 		int messageLogMessageCount = 0;
 		while(it.hasNext()) {
 			Receiver rcv = it.next();
-			if(rcv.getNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
+			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
 			

@@ -252,7 +252,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
-	private boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
+	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
 	private int retryInterval=1;
 
@@ -1535,7 +1535,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			case CONTINUE:
 				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
 					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
-					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached changing the adapter status to 'warning'");
+					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached, changing the adapter status to 'warning'");
 				}
 				error(errorMessage+", will continue processing messages when they arrive", t);
 				break;
@@ -2164,9 +2164,5 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
 		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
 		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
-	}
-
-	public boolean getNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached() {
-		return numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached;
 	}
 }
