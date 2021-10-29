@@ -151,7 +151,8 @@ public class IbisContext extends IbisApplicationContext {
 	 * 
 	 * @see #destroyApplicationContext()
 	 */
-	public synchronized void destroy() {
+	@Override
+	public synchronized void close() {
 		long start = System.currentTimeMillis();
 
 		if(ibisManager != null) {
@@ -165,7 +166,7 @@ public class IbisContext extends IbisApplicationContext {
 		}
 
 		log("shutdown in " + (System.currentTimeMillis() - start) + " ms"); //Should log this before the actual Context is destroyed
-		destroyApplicationContext();
+		super.close();
 	}
 
 	/**
@@ -215,7 +216,7 @@ public class IbisContext extends IbisApplicationContext {
 			return;
 		}
 
-		destroy();
+		close();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (javaListenerNames.size() > 0) {
 			log("Not all java listeners are unregistered: " + javaListenerNames, MessageKeeperLevel.ERROR);
