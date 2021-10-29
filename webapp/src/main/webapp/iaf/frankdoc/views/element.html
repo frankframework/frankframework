@@ -5,7 +5,7 @@
 			{{element.fullName}}
 		</a>
 	</h4>
-	<p class="element__tags">Elements: <span ng-repeat="tag in element.elementNames"><code>{{tag}}</code><span ng-if="!$last">, </span></span></p>
+	<p class="element__tags">Elements: <span ng-repeat="tag in element.elementNames"><a href="https://github.com/ibissource/iaf/wiki/{{tag}}" target="_blank" rel="noreferrer"><code>{{tag}}</code></a><span ng-if="!$last">, </span></span></p>
 
 	<div ng-if="::element.description" class="block">
 		<h4>JavaDoc</h4>
@@ -15,6 +15,8 @@
 	<div ng-if="element.children" element-children></div>
 
 	<div ng-if="element.parameters || element.parametersDescription" parameters></div>
+
+	<div ng-if="element.forwards" element-forwards></div>
 
 	<div ng-if="element.attributes || element.nonInheritedAttributes" element-attributes></div>
 

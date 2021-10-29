@@ -1,0 +1,17 @@
+<div class="block">
+	<h4>Forwards</h4>
+	<table ng-if="element.forwards" class="table table-sm table-striped">
+		<thead>
+			<tr>
+				<th class="tbl-15">Name</th>
+				<th class="tbl-65">Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="forward in element.forwards">
+				<td>{{ ::forward.name }}</td>
+				<td ng-bind-html="::forward.description"></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
