@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.credentialprovider.util.ClassUtils;
 
 public class ThreadConnector<T> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
@@ -49,7 +50,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
 		this(owner, threadLifeCycleEventListener, session==null?null:session.getMessageId());
 		if (session!=null) {
-			session.scheduleCloseOnSessionExit(this);
+			session.scheduleCloseOnSessionExit(this, ClassUtils.nameOf(owner));
 		} 
 	}
 	
