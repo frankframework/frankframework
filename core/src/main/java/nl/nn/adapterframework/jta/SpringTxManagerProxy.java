@@ -13,10 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.jta;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,6 +23,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * proxy class for transaction manager.
@@ -34,8 +37,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
-	private BeanFactory beanFactory;
-	private String realTxManagerBeanName;
+	private @Setter BeanFactory beanFactory;
+	private @Setter @Getter String realTxManagerBeanName;
 	private PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
@@ -89,17 +92,5 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		return realTxManager;
 	}
 
-	public String getRealTxManagerBeanName() {
-		return realTxManagerBeanName;
-	}
-
-	public void setRealTxManagerBeanName(String string) {
-		realTxManagerBeanName = string;
-	}
-
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
 
 }
