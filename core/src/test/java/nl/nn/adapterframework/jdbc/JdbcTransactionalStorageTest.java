@@ -22,7 +22,7 @@ import nl.nn.adapterframework.stream.Message;
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	private JdbcTransactionalStorage<Message> storage;
-	private final String tableName = "JdbcTransactionalStorageTest";
+	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
 
