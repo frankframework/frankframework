@@ -108,7 +108,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		String combinedExpected="<results>";
 	
 		for (int i=0;i<NUM_SENDERS;i++) {
-			combinedExpected+="<result senderClass=\"XsltSender[null]\" type=\"String\">"
+			combinedExpected+="<result senderClass=\"XsltSender\" type=\"String\">"
 					+expected.replaceFirst(">headerDefault<", ">header"+i+"<")
 							 .replaceFirst(">sessionKeyDefault<", ">sessionKeyValue"+i+"<")
 							 //.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
