@@ -1714,11 +1714,9 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setRequestTimeOut(parameterTimeout);
 				listenerMessageHandler.setResponseTimeOut(parameterTimeout);
 				try {
 					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
 					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
 				} catch(Exception e) {
 				}
@@ -1931,10 +1929,9 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
+				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
 				try {
 					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
 					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
 				} catch(Exception e) {
 				}
@@ -2317,19 +2314,19 @@ public class TestTool {
 				debugMessage("Closed web service listener '" + queueName + "'", writers);
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2399,19 +2396,19 @@ public class TestTool {
 				}
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2738,7 +2735,14 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(parameterTimeout);
+			ListenerMessage listenerMessage = null;
+			try {
+				listenerMessage = listenerMessageHandler.getRequestMessage(parameterTimeout);
+			} catch (TimeOutException e) {
+				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
+				return RESULT_ERROR;
+			}
+
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);

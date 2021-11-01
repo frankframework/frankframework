@@ -16,15 +16,18 @@
 package nl.nn.adapterframework.testtool;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,28 +35,33 @@ import nl.nn.adapterframework.util.LogUtil;
  * Message handler for JavaListener and WebServiceListener.
  * 
  * @author Jaco de Groot
+ * @author Niels Meijer
  */
-public class ListenerMessageHandler implements IMessageHandler {
+public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private static Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
-	private List requestMessages = new ArrayList();
-	private List responseMessages = new ArrayList();
-	private long requestTimeOut = TestTool.globalTimeout;
+	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
+	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
+
 	private long responseTimeOut = TestTool.globalTimeout;
 
 	@Override
-	public Message processRequest(IListener origin, String correlationId, Object rawMessage, Message message, Map context) throws ListenerException {
-		ListenerMessage listenerMessage;
+	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 		try {
-			listenerMessage = new ListenerMessage(correlationId, message.asString(), context);
+			ListenerMessage listenerMessage = new ListenerMessage(correlationId, message.asString(), context);
+			putRequestMessage(listenerMessage);
 		} catch (IOException e) {
-			throw new ListenerException("cannot convert message to string",e);
+			throw new ListenerException("cannot convert message to string", e);
 		}
-		putRequestMessage(listenerMessage);
-		listenerMessage = getResponseMessage();
-		return listenerMessage != null ? new Message(listenerMessage.getMessage()) : Message.nullMessage();
+
+		try {
+			ListenerMessage listenerMessage = getResponseMessage(responseTimeOut);
+			return new Message(listenerMessage.getMessage());
+		} catch (Exception e) {
+			throw new ListenerException("error processing request", e);
+		}
 	}
-	
-	public void putRequestMessage(ListenerMessage listenerMessage) {
+
+	private void putRequestMessage(ListenerMessage listenerMessage) {
 		if (listenerMessage != null) {
 			synchronized(requestMessages) {
 				requestMessages.add(listenerMessage);
@@ -63,29 +71,29 @@ public class ListenerMessageHandler implements IMessageHandler {
 		}
 	}
 
+	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if non is present */
 	public ListenerMessage getRequestMessage() {
-		return getRequestMessage(requestTimeOut);
+		try {
+			return getRequestMessage(0);
+		} catch (TimeOutException e) {
+			return null;
+		}
+	}
+	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
+	public ListenerMessage getRequestMessage(long timeOut) throws TimeOutException {
+		try {
+			ListenerMessage requestMessage = requestMessages.poll(timeOut, TimeUnit.MILLISECONDS);
+			if(requestMessage != null) {
+				return requestMessage;
+			}
+		} catch (InterruptedException e) {
+			log.error("interrupted while trying to read incoming message", e);
+			Thread.currentThread().interrupt();
+		}
+
+		throw new TimeOutException();
 	}
 
-	public ListenerMessage getRequestMessage(long timeOut) {
-		ListenerMessage listenerMessage = null;
-		long startTime = System.currentTimeMillis();
-		while (listenerMessage == null && System.currentTimeMillis() < startTime + timeOut) {
-			synchronized(requestMessages) {
-				if (requestMessages.size() > 0) {
-					listenerMessage = (ListenerMessage)requestMessages.remove(0);
-				}
-			}
-			if (listenerMessage == null) {
-				try {
-					Thread.sleep(100);
-				} catch(InterruptedException e) {
-				}
-			}
-		}
-		return listenerMessage;
-	}
-	
 	public void putResponseMessage(ListenerMessage listenerMessage) {
 		if (listenerMessage != null) {
 			synchronized (responseMessages) {
@@ -95,59 +103,56 @@ public class ListenerMessageHandler implements IMessageHandler {
 			log.error("listenerMessage is null");
 		}
 	}
-	
+
+	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if non is present */
 	public ListenerMessage getResponseMessage() {
-		return getResponseMessage(responseTimeOut);
-	}
-		
-	public ListenerMessage getResponseMessage(long timeOut) {
-		ListenerMessage listenerMessage = null;
-		long startTime = System.currentTimeMillis();
-		while (listenerMessage == null && System.currentTimeMillis() < startTime + timeOut) {
-			synchronized(responseMessages) {
-				if (responseMessages.size() > 0) {
-					listenerMessage = (ListenerMessage)responseMessages.remove(0);
-				}
-			}
-			if (responseMessages == null) {
-				try {
-					Thread.sleep(100);
-				} catch(InterruptedException e) {
-				}
-			}
+		try {
+			return getResponseMessage(0);
+		} catch (TimeOutException e) {
+			return null;
 		}
-		return listenerMessage;
 	}
-	
-	public void setRequestTimeOut(long requestTimeOut) {
-		this.requestTimeOut = requestTimeOut;
+	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
+	public ListenerMessage getResponseMessage(long timeOut) throws TimeOutException {
+		try {
+			ListenerMessage responseMessage = responseMessages.poll(timeOut, TimeUnit.MILLISECONDS);
+			if(responseMessage != null) {
+				return responseMessage;
+			}
+		} catch (InterruptedException e) {
+			log.error("interrupted while waiting for response message", e);
+			Thread.currentThread().interrupt();
+		}
+
+		throw new TimeOutException();
 	}
-	
+
 	public void setResponseTimeOut(long responseTimeOut) {
 		this.responseTimeOut = responseTimeOut;
 	}
 
 	@Override
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
+		processRawMessage(origin, rawMessage, null, false);
+	}
+
+	@Override
+	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String, Object> threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+		processRawMessage(origin, rawMessage, threadContext, -1, duplicatesAlreadyChecked);
+	}
+
+	@Override
+	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String, Object> threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		Message message = origin.extractMessage(rawMessage, threadContext);
 		processRequest(origin, correlationId, rawMessage, message, threadContext);
 	}
 
-	@Override
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
-		processRawMessage(origin, rawMessage, threadContext, duplicatesAlreadyChecked);
-	}
-
-	@Override
-	public void processRawMessage(IListener origin, Object rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null, false);
-	}
-
 
 	@Override
 	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
-		log.error("formatException(String arg0, String arg1, String arg2, Throwable arg3) not implemented");
+		NotImplementedException e = new NotImplementedException();
+		log.error("formatException not implemented", e);
 		return null;
 	}
 
