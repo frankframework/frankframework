@@ -1722,10 +1722,8 @@ public class TestTool {
 
 				try {
 					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					if(timeout > 0) {
-						listenerMessageHandler.setTimeout(timeout);
-						debugMessage("Timeout set to '" + timeout + "'", writers);
-					}
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				WebServiceListener webServiceListener = new WebServiceListener();
@@ -1939,10 +1937,8 @@ public class TestTool {
 
 				try {
 					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
-					if(timeout > 0) {
-						listenerMessageHandler.setTimeout(timeout);
-						debugMessage("Timeout set to '" + timeout + "'", writers);
-					}
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				JavaListener javaListener = new JavaListener();
@@ -2742,11 +2738,8 @@ public class TestTool {
 			ListenerMessage listenerMessage = null;
 			Long timeout = Long.parseLong(""+parameterTimeout);
 			try {
-				Long customTimeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
-				if(customTimeout > 0) {
-					timeout = customTimeout;
-					debugMessage("Timeout set to '" + timeout + "'", writers);
-				}
+				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+				debugMessage("Timeout set to '" + timeout + "'", writers);
 			} catch (Exception e) {
 			}
 			try {

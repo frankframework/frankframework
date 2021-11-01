@@ -48,7 +48,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 		try {
 			ListenerMessage requestMessage = new ListenerMessage(correlationId, message.asString(), context);
-			putRequestMessage(requestMessage);
+			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
 			return new Message(responseMessage.getMessage());
@@ -56,16 +56,6 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			throw new ListenerException("cannot convert message to string", e);
 		} catch (TimeOutException e) {
 			throw new ListenerException("error processing request", e);
-		}
-	}
-
-	private void putRequestMessage(ListenerMessage listenerMessage) {
-		if (listenerMessage != null) {
-			synchronized(requestMessages) {
-				requestMessages.add(listenerMessage);
-			}
-		} else {
-			log.error("listenerMessage is null");
 		}
 	}
 
@@ -111,9 +101,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	public void putResponseMessage(ListenerMessage listenerMessage) {
 		if (listenerMessage != null) {
-			synchronized (responseMessages) {
-				responseMessages.add(listenerMessage);
-			}
+			responseMessages.add(listenerMessage);
 		} else {
 			log.error("listenerMessage is null");
 		}
