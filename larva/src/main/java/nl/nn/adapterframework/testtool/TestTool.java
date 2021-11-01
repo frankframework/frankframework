@@ -1714,16 +1714,18 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setResponseTimeOut(parameterTimeout);
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				listenerMessageHandler.setTimeout(parameterTimeout);
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					if(timeout > 0) {
+						listenerMessageHandler.setTimeout(timeout);
+						debugMessage("Timeout set to '" + timeout + "'", writers);
+					}
 				} catch(Exception e) {
 				}
 				WebServiceListener webServiceListener = new WebServiceListener();
@@ -1930,15 +1932,17 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
 				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					if(timeout > 0) {
+						listenerMessageHandler.setTimeout(timeout);
+						debugMessage("Timeout set to '" + timeout + "'", writers);
+					}
 				} catch(Exception e) {
 				}
 				JavaListener javaListener = new JavaListener();
@@ -2736,8 +2740,17 @@ public class TestTool {
 		} else {
 			String message = null;
 			ListenerMessage listenerMessage = null;
+			Long timeout = Long.parseLong(""+parameterTimeout);
 			try {
-				listenerMessage = listenerMessageHandler.getRequestMessage(parameterTimeout);
+				Long customTimeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+				if(customTimeout > 0) {
+					timeout = customTimeout;
+					debugMessage("Timeout set to '" + timeout + "'", writers);
+				}
+			} catch (Exception e) {
+			}
+			try {
+				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
 			} catch (TimeOutException e) {
 				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
 				return RESULT_ERROR;

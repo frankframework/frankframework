@@ -42,21 +42,19 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
 
-	private long responseTimeOut = TestTool.globalTimeout;
+	private long defaultTimeout = TestTool.globalTimeout;
 
 	@Override
 	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
 		try {
-			ListenerMessage listenerMessage = new ListenerMessage(correlationId, message.asString(), context);
-			putRequestMessage(listenerMessage);
+			ListenerMessage requestMessage = new ListenerMessage(correlationId, message.asString(), context);
+			putRequestMessage(requestMessage);
+
+			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
+			return new Message(responseMessage.getMessage());
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert message to string", e);
-		}
-
-		try {
-			ListenerMessage listenerMessage = getResponseMessage(responseTimeOut);
-			return new Message(listenerMessage.getMessage());
-		} catch (Exception e) {
+		} catch (TimeOutException e) {
 			throw new ListenerException("error processing request", e);
 		}
 	}
@@ -71,7 +69,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 
-	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if non is present */
+	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getRequestMessage() {
 		try {
 			return getRequestMessage(0);
@@ -80,18 +78,35 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getRequestMessage(long timeOut) throws TimeOutException {
+	public ListenerMessage getRequestMessage(long timeout) throws TimeOutException {
+		return getMessageFromQueue(requestMessages, timeout, "request");
+	}
+
+	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeOutException {
 		try {
-			ListenerMessage requestMessage = requestMessages.poll(timeOut, TimeUnit.MILLISECONDS);
+			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
 			if(requestMessage != null) {
 				return requestMessage;
 			}
 		} catch (InterruptedException e) {
-			log.error("interrupted while trying to read incoming message", e);
+			log.error("interrupted while waiting for "+messageType+" message", e);
 			Thread.currentThread().interrupt();
 		}
 
 		throw new TimeOutException();
+	}
+
+	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
+	public ListenerMessage getResponseMessage() {
+		try {
+			return getResponseMessage(0);
+		} catch (TimeOutException e) {
+			return null;
+		}
+	}
+	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
+	public ListenerMessage getResponseMessage(long timeout) throws TimeOutException {
+		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 
 	public void putResponseMessage(ListenerMessage listenerMessage) {
@@ -104,31 +119,8 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 
-	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if non is present */
-	public ListenerMessage getResponseMessage() {
-		try {
-			return getResponseMessage(0);
-		} catch (TimeOutException e) {
-			return null;
-		}
-	}
-	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getResponseMessage(long timeOut) throws TimeOutException {
-		try {
-			ListenerMessage responseMessage = responseMessages.poll(timeOut, TimeUnit.MILLISECONDS);
-			if(responseMessage != null) {
-				return responseMessage;
-			}
-		} catch (InterruptedException e) {
-			log.error("interrupted while waiting for response message", e);
-			Thread.currentThread().interrupt();
-		}
-
-		throw new TimeOutException();
-	}
-
-	public void setResponseTimeOut(long responseTimeOut) {
-		this.responseTimeOut = responseTimeOut;
+	public void setTimeout(long defaultTimeout) {
+		this.defaultTimeout = defaultTimeout;
 	}
 
 	@Override
