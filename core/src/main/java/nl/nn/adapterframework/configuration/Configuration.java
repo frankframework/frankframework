@@ -454,12 +454,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getId();
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use attribute name instead")
-	public void setConfigurationName(String name) {
-		this.setName(name);
-	}
-
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
