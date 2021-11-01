@@ -267,7 +267,14 @@ public abstract class ClassUtils {
 		if(o instanceof Class) {
 			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
 		}
-		return Misc.concatStrings(org.springframework.util.ClassUtils.getUserClass(o).getSimpleName()," ",(o instanceof INamedObject ? "["+((INamedObject)o).getName()+"]":null));
+		String tail=null;
+		if (o instanceof INamedObject) {
+			String name = ((INamedObject)o).getName();
+			if (name!=null) {
+				tail = "["+ name +"]";
+			}
+		}
+		return Misc.concatStrings(org.springframework.util.ClassUtils.getUserClass(o).getSimpleName()," ",tail);
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
