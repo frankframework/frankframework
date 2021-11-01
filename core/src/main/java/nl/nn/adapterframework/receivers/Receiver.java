@@ -545,7 +545,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
-					setName(Misc.concatStrings(ClassUtils.nameOf(getListener()), " ", getListener().getName()));
+					setName(ClassUtils.nameOf(getListener()));
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}

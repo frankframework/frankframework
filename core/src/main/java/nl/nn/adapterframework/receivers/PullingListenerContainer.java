@@ -146,7 +146,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ControllerTask() {
-			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			setName(ClassUtils.nameOf(receiver));
 		}
 
 		@Override

@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -61,8 +60,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private ISecurityHandler securityHandler = null;
 
-	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
-	private Set<Message> closeables = ConcurrentHashMap.newKeySet(); // needs to be concurrent, closes may happen from other threads
+	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
+	// Values are labels to help debugging
+	private Map<Message,String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -250,11 +250,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Double.parseDouble(this.getString(key));
 	}
 
-	public void scheduleCloseOnSessionExit(Message message) {
-		closeables.add(message);
+	public void scheduleCloseOnSessionExit(Message message, String label) {
+		closeables.put(message, label);
 	}
 
-	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
 		// create a dummy Message, to be able to schedule the resource for close on exit of session
 		Message resourceMessage = new Message(new StringReader("dummy")) {
 			@Override
@@ -262,11 +262,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				resource.close();
 			}
 		};
-		scheduleCloseOnSessionExit(resourceMessage);
+		scheduleCloseOnSessionExit(resourceMessage, resource.toString()+" of "+requester);
 	}
 
 	public boolean isScheduledForCloseOnExit(Message message) {
-		return closeables.contains(message);
+		return closeables.containsKey(message);
 	}
 
 	public void unscheduleCloseOnSessionExit(Message message) {
@@ -278,11 +278,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		log.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
 			try {
-				Iterator<Message> it = closeables.iterator();
-				Message entry = it.next();
-				log.warn("messageId ["+getMessageId()+"] auto closing resource ["+entry+"]");
-				entry.close();
-				closeables.remove(entry);
+				Iterator<Entry<Message,String>> it = closeables.entrySet().iterator();
+				Entry<Message,String> entry = it.next();
+				log.warn("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
+				entry.getKey().close();
+				closeables.remove(entry.getKey());
 			} catch (Exception e) {
 				log.warn("Exception closing resource", e);
 			}
