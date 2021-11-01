@@ -612,7 +612,6 @@ public final class ShowConfigurationStatus extends Base {
 			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
 			
 			receiverInfo.put("name", receiver.getName());
-			receiverInfo.put("class", ClassUtils.nameOf(receiver));
 			Map<String, Object> messages = new HashMap<String, Object>(3);
 			messages.put("received", receiver.getMessagesReceived());
 			messages.put("retried", receiver.getMessagesRetried());

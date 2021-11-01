@@ -201,7 +201,7 @@ public class Message implements Serializable {
 	}
 	
 	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
-		closeOnCloseOf(session, requester!=null?requester.getClass().getSimpleName()+" ["+requester.getName()+"]":"<unknown>");
+		closeOnCloseOf(session, ClassUtils.nameOf(requester));
 	}
 	
 	public void closeOnCloseOf(PipeLineSession session, String requester) {

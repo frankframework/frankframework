@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
@@ -266,7 +267,7 @@ public abstract class ClassUtils {
 		if(o instanceof Class) {
 			return org.springframework.util.ClassUtils.getUserClass((Class<?>)o).getSimpleName();
 		}
-		return org.springframework.util.ClassUtils.getUserClass(o).getSimpleName();
+		return Misc.concatStrings(org.springframework.util.ClassUtils.getUserClass(o).getSimpleName()," ",(o instanceof INamedObject ? "["+((INamedObject)o).getName()+"]":null));
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

@@ -96,7 +96,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	@Override
 	public String getLogPrefix() {
-		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
+		return super.getLogPrefix();
 	}
 
 	@Override
