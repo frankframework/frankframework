@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -198,7 +198,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			} 
 		} else {
@@ -246,7 +246,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 		}

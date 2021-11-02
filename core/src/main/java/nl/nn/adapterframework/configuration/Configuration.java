@@ -60,11 +60,9 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
- * The Configuration is placeholder of all configuration objects. Besides that, it provides
- * functions for starting and stopping adapters as a facade.
+ * The Configuration is the container of all configuration objects.
  *
  * @author Johan Verrips
- * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
@@ -77,16 +75,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
-	private BootState state = BootState.STOPPED;
+	private @Getter BootState state = BootState.STOPPED;
 
-	private String version;
-	private IbisManager ibisManager;
-	private String originalConfiguration;
-	private String loadedConfiguration;
+	private @Getter String version;
+	private @Getter IbisManager ibisManager;
+	private @Getter String originalConfiguration;
+	private @Getter String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
 	private @Getter @Setter boolean configured = false;
 
-	private ConfigurationException configurationException = null;
+	private @Getter ConfigurationException configurationException = null;
 
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -347,11 +345,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return inState(BootState.STARTED) && super.isRunning();
 	}
 
-	@Override
-	public BootState getState() {
-		return state;
-	}
-
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -445,6 +438,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
 	 * 
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
+	 * @ff.noAttribute
 	 */
 	@Override
 	public void setName(String name) {
@@ -452,23 +446,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			if(state == BootState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
-
 			setBeanName(name);
 		}
 	}
-
-	/**
-	 * Returns the original configured name of this configuration
-	 */
 	@Override
 	public String getName() {
 		return getId();
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Please use attribute name instead")
-	public void setConfigurationName(String name) {
-		this.setName(name);
 	}
 
 	public void setVersion(String version) {
@@ -481,10 +464,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	public String getVersion() {
-		return version;
-	}
-
 	/**
 	 * If no ClassLoader has been set it tries to fall back on the `configurations.xxx.classLoaderType` property.
 	 * Because of this, it may not always represent the correct or accurate type.
@@ -494,9 +473,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
-			} else {
-				return null;
 			}
+			return null;
 		}
 
 		return getClassLoader().getClass().getSimpleName();
@@ -506,24 +484,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		this.ibisManager = ibisManager;
 	}
 
-	public IbisManager getIbisManager() {
-		return ibisManager;
-	}
-
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
-	public String getOriginalConfiguration() {
-		return originalConfiguration;
-	}
-
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
-	}
-
-	public String getLoadedConfiguration() {
-		return loadedConfiguration;
 	}
 
 	public IJob getScheduledJob(String name) {
@@ -536,10 +502,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void setConfigurationException(ConfigurationException exception) {
 		configurationException = exception;
-	}
-
-	public ConfigurationException getConfigurationException() {
-		return configurationException;
 	}
 
 	public ConfigurationWarnings getConfigurationWarnings() {

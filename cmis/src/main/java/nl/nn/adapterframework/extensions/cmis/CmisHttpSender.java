@@ -150,7 +150,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session);
+			responseMessage.closeOnCloseOf(session, this);
 
 			InputStream responseStream = null;
 			InputStream errorStream = null;

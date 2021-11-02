@@ -1,5 +1,0 @@
-<Master>
-  <Part className="nl.nn.adapterframework.frankdoc.testtarget.exotic.Member1">
-    <Child className="nl.nn.adapterframework.frankdoc.testtarget.exotic.Child1" />
-  </Part>
-</Master>
