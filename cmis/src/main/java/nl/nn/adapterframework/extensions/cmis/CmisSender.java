@@ -790,11 +790,17 @@ public class CmisSender extends SenderWithParametersBase {
 				VersioningState state = VersioningState.valueOf(versioningStatestr);
 
 				Element contentStreamXml = XmlUtils.getFirstChildTag(requestElement, "contentStream");
-				InputStream stream = (InputStream) session.get("ContentStream");
+				Message stream = session.getMessage("ContentStream");
 				String fileName = contentStreamXml.getAttribute("filename");
 				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length"));
 				String mediaType = contentStreamXml.getAttribute("mimeType");
-				ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream);
+				ContentStream contentStream;
+
+				try {
+					contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream.asInputStream());
+				} catch (IOException e) {
+					throw new SenderException("unable to parse ContentStream as InputStream", e);
+				}
 
 				ObjectId createdDocumentId = cmisSession.createDocument(props, folderId, contentStream, state);
 				XmlBuilder cmisId = new XmlBuilder("id");
