@@ -33,9 +33,13 @@ table.table thead th.tbl-10 {
 }
 table.table thead th.tbl-15 {
 	width: 15%;
+	min-width: 220px;
 }
 table.table thead th.tbl-65 {
 	width: 65%;
+}
+table.table thead th.tbl-85 {
+	width: 85%;
 }
 
 .sidebar {
