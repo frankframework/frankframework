@@ -54,7 +54,7 @@ The annotation causes every implementation of [ISender](./core/src/main/java/nl/
 
 #### Annotations on enum values
 
-**Annotation EnumLabel:**
+**Annotation @EnumLabel:**
 
 ## What is the Frank!Doc?
 
