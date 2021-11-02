@@ -264,7 +264,7 @@ public class IbisContext extends IbisApplicationContext {
 		boolean configFound = false;
 
 		//We have an ordered list with all configurations, lets loop through!
-		Map<String, String> allConfigNamesItems = ConfigurationUtils.retrieveAllConfigNames(this);
+		Map<String, String> allConfigNamesItems = retrieveAllConfigNames();
 		for (Entry<String, String> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
 			String classLoaderType = currentConfigNameItem.getValue();
@@ -307,6 +307,11 @@ public class IbisContext extends IbisApplicationContext {
 		if (!configFound && configurationName != null) {
 			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
 		}
+	}
+
+	/** Helper method to create stubbed configurations used in JunitTests */
+	protected Map<String, String> retrieveAllConfigNames() {
+		return ConfigurationUtils.retrieveAllConfigNames(this);
 	}
 
 	/**
