@@ -1,6 +1,35 @@
 # Frank!Doc user manual for contributors
 
-As a contributor to the Frank!Framework, you write JavaDoc comments that are used to generate the Frank!Doc. This document explains how your comments appear in this user documentation. It also explains some Java annotations that you need to maintain the Frank!Doc.
+As a contributor to the Frank!Framework, you write JavaDoc comments that are used to generate the Frank!Doc. This document explains how your comments appear in this user documentation. It starts with a quick overview of the Java annotations and the JavaDoc tags that you can use.
+
+## Overview of Java annotations and JavaDoc tags
+
+The following Java annotations and JavaDoc tags can appear on classes:
+
+**Annotation @FrankDocGroup:** This annotation defines the groups that appear in the top-left of the Frank!Doc webapp. The XSDs are not affected. The annotation has fields `name` and `order`. It can appear on classes and on interfaces. Here is an example from [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java):
+
+```
+@FrankDocGroup(order = 20, name = "Senders")
+public interface ISender extends IConfigurable {
+```
+
+The annotation causes every implementation of [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java) to belong to group "Senders". If this annotation is set on a class with `name="x"`, then that class and all its descendants go into group "x". The `order` field is used to define the sequence of the groups in the webapp. You can use the same value for `name` in multiple `@FrankDocGroup` annotations. From a group of `@FrankDocGroup` annotations with a common `name` attribute, only one should have its `order` field set to avoid ambiguity.
+
+**JavaDoc tag @ff.parameters:** Describes how this Java class uses parameters given by `<Param>` tags in Frank configurations. Has one argument that is the description to be shown.
+
+**JavaDoc tag @ff.parameter:**
+
+**JavaDoc tag @ff.forward:**
+
+**JavaDoc tag @ff.ignoreTypeMembership:**
+
+**JavaDoc tag @ff.default:**
+
+**JavaDoc tag @ff.noAttribute:**
+
+**JavaDoc tag @ff.mandatory:**
+
+**JavaDoc tag @ff.defaultElement:**
 
 ## What is the Frank!Doc?
 
