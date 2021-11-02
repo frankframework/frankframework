@@ -4,7 +4,7 @@ As a contributor to the Frank!Framework, you write JavaDoc comments that are use
 
 ## Overview of Java annotations and JavaDoc tags
 
-The following Java annotations and JavaDoc tags can appear on classes:
+#### Annotations on classes
 
 **Annotation @FrankDocGroup:** This annotation defines the groups that appear in the top-left of the Frank!Doc webapp. The XSDs are not affected. The annotation has fields `name` and `order`. It can appear on classes and on interfaces. Here is an example from [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java):
 
@@ -40,13 +40,21 @@ The annotation causes every implementation of [ISender](./core/src/main/java/nl/
 
 **JavaDoc tag @ff.ignoreTypeMembership:**
 
+#### Annotations on attribute setters
+
 **JavaDoc tag @ff.default:**
 
 **JavaDoc tag @ff.noAttribute:**
 
 **JavaDoc tag @ff.mandatory:**
 
+#### Annotations on config child setters
+
 **JavaDoc tag @ff.defaultElement:**
+
+#### Annotations on enum values
+
+**EnumLabel:**
 
 ## What is the Frank!Doc?
 
