@@ -67,6 +67,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
+import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -757,10 +758,15 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new SenderException(e);
 		}
 
-		String cmisEvent = (String) session.get("CmisEvent");
 		CmisEvent event = CmisEvent.GET_OBJECT;
-		if(StringUtils.isNotEmpty(cmisEvent))
-			event = CmisEvent.valueOf(cmisEvent);
+		try {
+			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
+			if(StringUtils.isNotEmpty(cmisEvent)) {
+				event = EnumUtils.parse(CmisEvent.class, cmisEvent);
+			}
+		} catch (IOException | IllegalArgumentException e) {
+			throw new SenderException("unable to parse CmisEvent", e);
+		}
 
 		switch (event) {
 			case DELETE_OBJECT:
@@ -769,7 +775,7 @@ public class CmisSender extends SenderWithParametersBase {
 				break;
 
 			case CREATE_DOCUMENT:
-				Map<String, Object> props = new HashMap<String, Object>();
+				Map<String, Object> props = new HashMap<>();
 				Element propertiesElement = XmlUtils.getFirstChildTag(requestElement, "properties");
 				if (propertiesElement != null) {
 					processProperties(propertiesElement, props);
@@ -784,11 +790,17 @@ public class CmisSender extends SenderWithParametersBase {
 				VersioningState state = VersioningState.valueOf(versioningStatestr);
 
 				Element contentStreamXml = XmlUtils.getFirstChildTag(requestElement, "contentStream");
-				InputStream stream = (InputStream) session.get("ContentStream");
+				Message stream = session.getMessage("ContentStream");
 				String fileName = contentStreamXml.getAttribute("filename");
 				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length"));
 				String mediaType = contentStreamXml.getAttribute("mimeType");
-				ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream);
+				ContentStream contentStream;
+
+				try {
+					contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream.asInputStream());
+				} catch (IOException e) {
+					throw new SenderException("unable to parse ContentStream as InputStream", e);
+				}
 
 				ObjectId createdDocumentId = cmisSession.createDocument(props, folderId, contentStream, state);
 				XmlBuilder cmisId = new XmlBuilder("id");

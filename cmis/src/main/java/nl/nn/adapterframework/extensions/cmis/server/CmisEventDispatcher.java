@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class CmisEventDispatcher {
 	private Logger log = LogUtil.getLogger(this);
 
 	private static CmisEventDispatcher self = null;
+	public static final String CMIS_EVENT_KEY = "CmisEvent";
 	private Map<CmisEvent, CmisEventListener> eventListeners = new HashMap<>();
 	private String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"adapterDispatcher");
 
@@ -122,7 +123,7 @@ public class CmisEventDispatcher {
 			}
 
 			HashMap<String, Object> messageContext = new HashMap<>();
-			messageContext.put("CmisEvent", event.name());
+			messageContext.put(CMIS_EVENT_KEY, event.name());
 
 			try {
 				String result = listener.processRequest(null, event.name(), messageContext);
