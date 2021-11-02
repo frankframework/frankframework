@@ -163,7 +163,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		message.closeOnCloseOf(session);
+		message.closeOnCloseOf(session, this);
 		MongoAction mngaction = getActionEnum();
 		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, next) : new MessageOutputStreamCap(this, next)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);

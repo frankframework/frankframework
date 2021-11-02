@@ -56,7 +56,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		super.configure();
 
 		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());

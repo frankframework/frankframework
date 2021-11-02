@@ -147,11 +147,6 @@
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
 			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-frankDoc</artifactId>
-				<version>7.7-SNAPSHOT</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
 				<version>${log4j2.version}</version>
@@ -448,8 +443,36 @@
 								<name>ff.ignoreTypeMembership</name>
 								<placement>X</placement>
 							</tag>
+							<tag>
+								<name>ff.forward</name>
+								<placement>X</placement>
+							</tag>
+							<tag>
+								<name>ff.noAttribute</name>
+								<placement>X</placement>
+							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<failOnError>false</failOnError>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+						<skipDeploy>true</skipDeploy>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -577,7 +600,6 @@
 				<module>test</module>
 				<module>akamai</module>
 				<module>example</module>
-				<module>frankDoc</module>
 				<module>credentialProvider</module>
 			</modules>
 		</profile>
@@ -692,11 +714,11 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
+								<artifactId>frank-doc</artifactId>
+								<version>1.0-SNAPSHOT</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
@@ -711,6 +733,7 @@
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
 							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

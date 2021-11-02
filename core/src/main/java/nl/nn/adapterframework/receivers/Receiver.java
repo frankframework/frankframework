@@ -93,13 +93,12 @@ import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -183,9 +182,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+	public static final TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public TransactionDefinition TXNEW_PROC;
-	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
 	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
@@ -213,10 +212,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
 	 */
 	public enum OnError { CONTINUE, RECOVER, CLOSE };
+	private @Getter OnError onError = OnError.CONTINUE;
 
 	private @Getter String name;
-
-	private OnError onError = OnError.CONTINUE;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private @Getter int numThreads = 1;
@@ -252,6 +250,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter String hideMethod = "all";
 	private @Getter String hiddenInputSessionKeys=null;
 
+	private Counter numberOfExceptionsCaughtWithoutMessageBeingReceived = new Counter(0);
+	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
+	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
 	private int retryInterval=1;
 
@@ -544,7 +545,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			super.configure();
 			if (StringUtils.isEmpty(getName())) {
 				if (getListener()!=null) {
-					setName(Misc.concatStrings(ClassUtils.nameOf(getListener()), " ", getListener().getName()));
+					setName(ClassUtils.nameOf(getListener()));
 				} else {
 					setName(ClassUtils.nameOf(this));
 				}
@@ -793,6 +794,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 			info("starts listening"); // Don't log that it's ready before it's ready!?
 			runState.setRunState(RunStateEnum.STARTED);
+			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
 			error("error occured while starting", t);
 			runState.setRunState(RunStateEnum.ERROR);
@@ -1063,6 +1065,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} catch (Exception e) {
 			log.warn("Could not close result message ["+output+"]", e);
 		}
+		resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 	}
 
 	
@@ -1528,20 +1531,24 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public void exceptionThrown(String errorMessage, Throwable t) {
-		switch (getOnErrorEnum()) {
-		case CONTINUE:
-			error(errorMessage+", will continue processing messages when they arrive", t);
-			break;
-		case RECOVER:
-			// Make JobDef.recoverAdapters() try to recover
-			error(errorMessage+", will try to recover",t);
-			setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
-			break;
-		case CLOSE:
-			error(errorMessage+", stopping receiver", t);
-			stopRunning();
-			break;
-	}
+		switch (getOnError()) {
+			case CONTINUE:
+				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.increase() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
+					log.warn("numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold is reached, changing the adapter status to 'warning'");
+				}
+				error(errorMessage+", will continue processing messages when they arrive", t);
+				break;
+			case RECOVER:
+				// Make JobDef.recoverAdapters() try to recover
+				error(errorMessage+", will try to recover",t);
+				setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
+				break;
+			case CLOSE:
+				error(errorMessage+", stopping receiver", t);
+				stopRunning();
+				break;
+		}
 	}
 
 	@Override
@@ -1747,7 +1754,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			String msg = "caught exception in message post processing";
 			error(msg, e);
 			errorMessage = msg + ": " + e.getMessage();
-			if (OnError.CLOSE == getOnErrorEnum()) {
+			if (OnError.CLOSE == getOnError()) {
 				log.info("closing after exception in post processing");
 				stopRunning();
 			}
@@ -1873,7 +1880,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public boolean isOnErrorContinue() {
-		return OnError.CONTINUE == getOnErrorEnum();
+		return OnError.CONTINUE == getOnError();
 	}
 
 	@Override
@@ -2021,17 +2028,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		propagateName();
 	}
 
-	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "continue"})
-	public void setOnError(String value) {
-		if(StringUtils.isNotEmpty(value)) {
-			onError = EnumUtils.parse(OnError.class, value);
-		}
-	}
-	public void setOnErrorEnum(OnError value) {
+	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "CONTINUE"})
+	public void setOnError(OnError value) {
 		this.onError = value;
-	}
-	public OnError getOnErrorEnum() {
-		return onError;
 	}
 
 	/**
@@ -2154,5 +2153,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
 	public void setForceRetryFlag(boolean b) {
 		forceRetryFlag = b;
+	}
+
+	@IbisDoc({"Number of connection attemps to put the adapter in warning status", "5"})
+	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {
+		this.numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = number;
+	}
+
+	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
+		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 	}
 }

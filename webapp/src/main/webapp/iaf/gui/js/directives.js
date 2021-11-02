@@ -48,6 +48,29 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.directive('formatCode', function() {
+	return {
+		restrict: 'A',
+		link: function($scope, element, attributes) {
+			var code = document.createElement('code');
+			element.addClass("line-numbers");
+			element.addClass("language-markup");
+			element.append(code);
+
+			var watch = $scope.$watch(attributes.formatCode, function(text) {
+				if(text && text != '') {
+					angular.element(code).text(text);
+					Prism.highlightElement(code);
+				}
+			});
+
+			element.on('$destroy', function() {
+				watch();
+			});
+		},
+	};
+})
+
 .directive('clipboard', function() {
 	return {
 		restrict: 'A',

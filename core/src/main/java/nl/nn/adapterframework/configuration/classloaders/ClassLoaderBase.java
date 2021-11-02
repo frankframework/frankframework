@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
@@ -41,7 +41,6 @@ import nl.nn.adapterframework.util.Misc;
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
  * 
  * @author Niels Meijer
- *
  */
 public abstract class ClassLoaderBase extends ClassLoader implements IConfigurationClassLoader {
 
@@ -67,12 +66,12 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
+	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
 		if(StringUtils.isEmpty(configurationFile)) {
-			throw new ConfigurationException("unable to determine configurationFile");
+			throw new ClassLoaderException("unable to determine configurationFile");
 		} else {
 			if(basePath == null && !getConfigurationName().equalsIgnoreCase(instanceName)) {
 				int i = configurationFile.lastIndexOf('/');
@@ -269,7 +268,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	}
 
 	@Override
-	public void reload() throws ConfigurationException {
+	public void reload() throws ClassLoaderException {
 		log.debug("reloading classloader ["+getConfigurationName()+"]");
 
 		AppConstants.removeInstance(this);

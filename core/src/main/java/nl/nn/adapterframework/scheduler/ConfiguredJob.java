@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.scheduler.job.IJob;
 
 
 
@@ -55,7 +56,7 @@ public class ConfiguredJob extends BaseJob {
 		try {
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			IbisManager ibisManager = (IbisManager)dataMap.get(MANAGER_KEY);
-			JobDef jobDef = (JobDef)dataMap.get(JOBDEF_KEY);
+			IJob jobDef = (IJob)dataMap.get(JOBDEF_KEY);
 			Thread.currentThread().setName(jobDef.getName() + "["+ctName+"]");
 			log.info(getLogPrefix(jobDef) + "executing");
 			jobDef.executeJob(ibisManager);

@@ -119,7 +119,7 @@ public abstract class StatusRecordingTransactionManager extends JtaTransactionMa
 					Files.createDirectories(folder);
 				}
 				try (OutputStream fos = Files.newOutputStream(file)) {
-					fos.write(text.getBytes(StandardCharsets.UTF_8));
+					fos.write((text+"\n").getBytes(StandardCharsets.UTF_8));
 				}
 			} catch (Exception e) {
 				throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);

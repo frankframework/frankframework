@@ -167,7 +167,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
+		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}

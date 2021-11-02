@@ -21,6 +21,7 @@ import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.scheduler.job.CheckReloadJob;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
 import nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob;
+import nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob;
 import nl.nn.adapterframework.scheduler.job.DumpStatisticsJob;
 import nl.nn.adapterframework.scheduler.job.ExecuteQueryJob;
 import nl.nn.adapterframework.scheduler.job.IJob;
@@ -40,7 +41,7 @@ public enum JobDefFunctions implements DocumentedEnum {
 	@EnumLabel("SendMessage") SEND_MESSAGE(SendMessageJob.class),
 	@EnumLabel("ExecuteQuery") QUERY(ExecuteQueryJob.class),
 	@EnumLabel("dumpStatistics") DUMPSTATS(DumpStatisticsJob.class),
-	@EnumLabel("dumpStatisticsFull") DUMPSTATSFULL(DumpStatisticsJob.class),
+	@EnumLabel("dumpStatisticsFull") DUMPSTATSFULL(DumpFullStatisticsJob.class),
 	@EnumLabel("cleanupDatabase") CLEANUPDB(CleanupDatabaseJob.class),
 	@EnumLabel("cleanupFileSystem") CLEANUPFS(CleanupFileSystemJob.class),
 	@EnumLabel("recoverAdapters") RECOVER_ADAPTERS(RecoverAdaptersJob.class),
