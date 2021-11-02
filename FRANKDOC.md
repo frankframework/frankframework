@@ -15,9 +15,26 @@ public interface ISender extends IConfigurable {
 
 The annotation causes every implementation of [ISender](./core/src/main/java/nl/nn/adapterframework/core/ISender.java) to belong to group "Senders". If this annotation is set on a class with `name="x"`, then that class and all its descendants go into group "x". The `order` field is used to define the sequence of the groups in the webapp. You can use the same value for `name` in multiple `@FrankDocGroup` annotations. From a group of `@FrankDocGroup` annotations with a common `name` attribute, only one should have its `order` field set to avoid ambiguity.
 
-**JavaDoc tag @ff.parameters:** Describes how this Java class uses parameters given by `<Param>` tags in Frank configurations. Has one argument that is the description to be shown.
+**JavaDoc tag @ff.parameters:** Describes how this Java class uses parameters given by `<Param>` tags in Frank configurations. Has one argument that is the description to be shown. Here is an example from [HttpSender](./core/src/main/java/nl/nn/adapterframework/http/HttpSender.java):
 
-**JavaDoc tag @ff.parameter:**
+```
+ *
+ * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers 
+ *
+```
+
+**JavaDoc tag @ff.parameter:** Describes specific parameters. Has two arguments, being the name of the described parameter and the description. Here is an example from [CompareIntegerPipe](./core/src/main/java/nl/nn/adapterframework/pipes/CompareIntegerPipe.java)
+
+```
+/**
+ * Pipe that compares the two integer values.
+ * If one of the parameters is missing then the input message will be used as the missing operand.
+ * This pipe can be used in combination with {@link IncreaseIntegerPipe} to construct loops.
+ *
+ * @ff.parameter operand1 The first operand, holds v1.
+ * @ff.parameter operand2 The second operand, holds v2.
+ *
+```
 
 **JavaDoc tag @ff.forward:**
 
