@@ -32,9 +32,9 @@
 				<Param name="CanonicalName" xpathExpression="file/@canonicalName" />
 				<Param name="Filename" xpathExpression="file/@name" />
 				<Param name="MFHFlowId" value="${mfh.flow1.mfhflowid}" /> 
-				<Param name="FlowId" value="${mfh.flow1.flowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
+				<Param name="LegacyFlowId" value="${mfh.flow1.flowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
 				<Param name="originalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
-				<Param name="LocalTransactionID" sessionKey="cid" />
+				<Param name="LocalTransactionID" sessionKey="messageId" />
 			</XsltPipe>
 
 			<SenderPipe 
@@ -79,7 +79,7 @@
 				orderField="CREATED_AT"
 			/>
 		</Receiver>
-		<Receiver> <!-- This could be called from the scheduled adapter-->
+		<Receiver>
 			<JavaListener name="processMessage" serviceName="ibis4test-processMessage"/>
 		</Receiver>
 		<Pipeline>
@@ -91,7 +91,7 @@
 				<Param name="filename" sessionKey="originalMessage" xpathExpression="/Message/Filename"/>
 				<Param name="MFHFlowId" sessionKey="originalMessage" xpathExpression="/Message/MFHFlowId"/>
 				<Param name="serverFileName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
-				<Param name="flowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
+				<Param name="LegacyFlowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
 				<Param name="clientFilename" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/ClientFilename"/>
 			</PutParametersInSessionPipe>
 <!-- Some processing may be in place (XmlSwitchPipe switch between flows)-->

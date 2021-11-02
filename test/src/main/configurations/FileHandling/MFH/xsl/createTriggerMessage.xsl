@@ -5,7 +5,7 @@
 	<xsl:param name="CanonicalName"/>
 	<xsl:param name="Filename"/>
 	<xsl:param name="MFHFlowId"/>
-	<xsl:param name="FlowId"/>
+	<xsl:param name="LegacyFlowId"/>
 	<xsl:param name="LocalTransactionID"/>
 	<xsl:param name="originalFilename"/>
 
@@ -18,7 +18,7 @@
 			<CanonicalName><xsl:value-of select="$CanonicalName"/></CanonicalName>
 			<LegacyMessage>
 				<OnCompletedTransferNotify_Action>
-					<TransferFlowId><xsl:value-of select="$FlowId"/></TransferFlowId>
+					<TransferFlowId><xsl:value-of select="$LegacyFlowId"/></TransferFlowId>
 					<UserData><xsl:value-of select="$Filename"/></UserData>
 					<ClientFilename><xsl:value-of select="$CanonicalName"/></ClientFilename>
 					<ServerFilename><xsl:value-of select="$CanonicalName"/></ServerFilename>
