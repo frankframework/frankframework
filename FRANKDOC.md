@@ -23,7 +23,7 @@ The annotation causes every implementation of [ISender](./core/src/main/java/nl/
  *
 ```
 
-**JavaDoc tag @ff.parameter:** Describes specific parameters. Has two arguments, being the name of the described parameter and the description. Here is an example from [CompareIntegerPipe](./core/src/main/java/nl/nn/adapterframework/pipes/CompareIntegerPipe.java)
+**JavaDoc tag @ff.parameter:** Describes specific parameters. Has two arguments, being the name of the described parameter and the description. Here is an example from [CompareIntegerPipe](./core/src/main/java/nl/nn/adapterframework/pipes/CompareIntegerPipe.java):
 
 ```
 /**
