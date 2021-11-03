@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.cmis.server;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
@@ -43,7 +44,7 @@ public class CmisEventDispatcher {
 
 	private static CmisEventDispatcher self = null;
 	public static final String CMIS_EVENT_KEY = "CmisEvent";
-	private Map<CmisEvent, CmisEventListener> eventListeners = new HashMap<>();
+	private Map<CmisEvent, CmisEventListener> eventListeners = new ConcurrentHashMap<>();
 	private String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"adapterDispatcher");
 
 	public static synchronized CmisEventDispatcher getInstance() {

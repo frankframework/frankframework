@@ -15,33 +15,25 @@
  */
 package nl.nn.adapterframework.extensions.cmis.server;
 
-public enum CmisEvent {
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 
-	GET_OBJECT("getObject"), 
-	GET_PROPERTIES("getProperties"), 
-	GET_OBJECT_BY_PATH("getObjectByPath"), 
-	UPDATE_PROPERTIES("updateProperties"), 
-	DELETE_OBJECT("deleteObject"), 
-	CREATE_ITEM("createItem"), 
-	CREATE_DOCUMENT("createDocument"), 
-	MOVE_OBJECT("moveObject"), 
-	CREATE_FOLDER("createFolder"), 
-	GET_ALLOWABLE_ACTIONS("getAllowableActions"), 
-	GET_CONTENTSTREAM("getContentStream"), 
-	GET_TYPE_DEFINITION("getTypeDefinition"), 
-	GET_TYPE_DESCENDANTS("getTypeDescendants"), 
-	GET_REPOSITORIES("getRepositories"), 
-	GET_REPOSITORY_INFO("getRepositoryInfo"), 
-	QUERY("query"),
-	GET_CHILDREN("getChildren");
-
-	private final String value;
-
-	CmisEvent(String v) {
-		value = v;
-	}
-
-	public String value() {
-		return value;
-	}
+public enum CmisEvent implements DocumentedEnum {
+	@EnumLabel("getObject") GET_OBJECT,
+	@EnumLabel("getProperties") GET_PROPERTIES,
+	@EnumLabel("getObjectByPath") GET_OBJECT_BY_PATH,
+	@EnumLabel("updateProperties") UPDATE_PROPERTIES,
+	@EnumLabel("deleteObject") DELETE_OBJECT,
+	@EnumLabel("createItem") CREATE_ITEM,
+	@EnumLabel("createDocument") CREATE_DOCUMENT, 
+	@EnumLabel("moveObject") MOVE_OBJECT, 
+	@EnumLabel("createFolder") CREATE_FOLDER, 
+	@EnumLabel("getAllowableActions") GET_ALLOWABLE_ACTIONS, 
+	@EnumLabel("getContentStream") GET_CONTENTSTREAM, 
+	@EnumLabel("getTypeDefinition") GET_TYPE_DEFINITION, 
+	@EnumLabel("getTypeDescendants") GET_TYPE_DESCENDANTS, 
+	@EnumLabel("getRepositories") GET_REPOSITORIES, 
+	@EnumLabel("getRepositoryInfo") GET_REPOSITORY_INFO, 
+	@EnumLabel("query") QUERY,
+	@EnumLabel("getChildren") GET_CHILDREN;
 }
