@@ -77,4 +77,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: FrankDoc
-        path: ${{ github.workspace }}/target/frankdoc/*.xml
+        path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xml
