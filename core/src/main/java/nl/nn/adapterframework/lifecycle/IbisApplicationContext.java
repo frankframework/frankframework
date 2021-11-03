@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  *
  */
-public class IbisApplicationContext {
+public class IbisApplicationContext implements Closeable {
 	private Exception startupException;
 
 	public enum BootState {
@@ -176,7 +177,8 @@ public class IbisApplicationContext {
 	/**
 	 * Destroys the Spring context
 	 */
-	protected void destroyApplicationContext() {
+	@Override
+	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
 			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
