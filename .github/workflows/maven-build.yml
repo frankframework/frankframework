@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis
+  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES=ibissource,codecoverage,cmis,proprietary" >> $GITHUB_ENV
+        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
@@ -72,3 +72,11 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+    - name: Store FrankDoc XSD
+      uses: actions/upload-artifact@v2
+      with:
+        name: FrankDoc
+        path: |
+          target\\frankdoc\\txt\\elementSummary.txt
+          target\\frankdoc\\xml\\xsd
