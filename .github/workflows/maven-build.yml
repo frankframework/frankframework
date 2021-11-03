@@ -62,7 +62,7 @@ jobs:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
+      run: mvn -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2

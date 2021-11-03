@@ -707,6 +707,7 @@
 					<url>https://nexus.ibissource.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
 					</snapshots>
 				</pluginRepository>
 			</pluginRepositories>
