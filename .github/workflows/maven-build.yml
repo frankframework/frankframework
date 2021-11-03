@@ -78,5 +78,5 @@ jobs:
       with:
         name: FrankDoc
         path: |
-          target\\frankdoc\\txt\\elementSummary.txt
-          target\\frankdoc\\xml\\xsd
+          iaf/target/frankdoc/txt/elementSummary.txt
+          iaf/target/frankdoc/xml/xsd
