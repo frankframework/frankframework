@@ -77,6 +77,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: FrankDoc
-        path: |
-          iaf/target/frankdoc/txt/elementSummary.txt
-          iaf/target/frankdoc/xml/xsd
+        path: target/frankdoc/*
