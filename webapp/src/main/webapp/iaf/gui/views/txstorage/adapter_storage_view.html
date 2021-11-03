@@ -22,7 +22,7 @@
 						<button ng-if="::processState=='Error'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="deleteMessage(message)" class="btn btn-danger btn-xs m-r-xs pull-right" type="button"><i class="fa fa-times"></i> Delete</button>
 						<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs m-r-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
 					</p>
-					<pre>{{::metadata.msg}}</pre>
+					<pre>{{::metadata.message}}</pre>
 				</div>
 			</div>
 		</div>

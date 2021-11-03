@@ -45,6 +45,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -93,28 +95,35 @@ public class TransactionalStorage extends Base {
 			messageId = Misc.urlDecode(messageId);
 
 			String message = getMessage(storage, receiver.getListener(), messageId);
-			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
+			MessageContextDTO entity = getMessageMetadata(storage, messageId, message);
 
 			return Response.status(Response.Status.OK).entity(entity).build();
 
 		} catch(ListenerException e) {
-			throw new ApiException("Could not get message metadata",e);
+			throw new ApiException("Could not get message metadata", e);
 		}
 	}
 
-	private Map<String, Object> getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
+	private MessageContextDTO getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
 		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
-			String comment = item.getCommentString();
-			Date insertDate = item.getInsertDate();
-			String correlationId = item.getCorrelationId();
+			MessageContextDTO dto = new MessageContextDTO(item);
+			dto.setMessage(message);
+			return dto;
+		}
+	}
 
-			Map<String, Object> entity = new HashMap<String, Object>();
-			entity.put("comment", comment);
-			entity.put("insertDate", insertDate);
-			entity.put("correlationId", correlationId);
-			entity.put("msg", message);
-			entity.put("messageId", messageId);
-			return entity;
+	public static class MessageContextDTO {
+		private @Getter String messageId;
+		private @Getter String correlationId;
+		private @Getter Date insertDate;
+		private @Getter String comment;
+		private @Getter @Setter String message;
+
+		public MessageContextDTO(IMessageBrowsingIteratorItem item) throws ListenerException {
+			messageId = item.getId();
+			correlationId = item.getCorrelationId();
+			insertDate = item.getInsertDate();
+			comment = item.getCommentString();
 		}
 	}
 
@@ -147,7 +156,7 @@ public class TransactionalStorage extends Base {
 		String message = getMessage(storage, receiver.getListener(), messageId);
 		MediaType mediaType = getMediaType(message);
 		String contentDispositionHeader = getContentDispositionHeader(mediaType, messageId);
-		
+
 		return Response
 				.status(Response.Status.OK)
 				.type(mediaType)
@@ -456,7 +465,7 @@ public class TransactionalStorage extends Base {
 		try {
 			String message = getMessage(storage, messageId);
 
-			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
+			MessageContextDTO entity = getMessageMetadata(storage, messageId, message);
 			return Response.status(Response.Status.OK).entity(entity).build();
 		} catch(ListenerException e) {
 			throw new ApiException("Could not get message metadata", e);
@@ -678,7 +687,7 @@ public class TransactionalStorage extends Base {
 			List<Object> messages = new LinkedList<Object>();
 			
 			for (count=0; iterator.hasNext(); ) {
-				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
+				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) { //TODO implement the DTO here
 					if(!filter.matchAny(iterItem))
 						continue;
 

@@ -1266,7 +1266,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/stores/"+$scope.processState;
+	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+"/receivers/"+Misc.escapeURL($scope.receiverName)+"/stores/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
