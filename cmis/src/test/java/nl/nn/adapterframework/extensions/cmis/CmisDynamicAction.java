@@ -21,7 +21,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		sender.setAction("dynamic");
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
-		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.DELETE_OBJECT.name());
+		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.DELETE_OBJECT.getLabel());
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
 		TestAssertions.assertEqualsIgnoreCRLF("<cmis deleted=\"true\" />", result);
@@ -33,7 +33,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		sender.setAction("dynamic");
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
-		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.CREATE_DOCUMENT.name());
+		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.CREATE_DOCUMENT.getLabel());
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id><properties><property name=\"cmis:name\">dummy</property></properties><versioningState>NONE</versioningState><contentStream filename=\"file.txt\" length=\"4\" mimeType=\"text/plain\"></contentStream></cmis>").asString();
@@ -46,7 +46,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		sender.setAction("dynamic");
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
-		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.GET_CONTENTSTREAM.name());
+		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.GET_CONTENTSTREAM.getLabel());
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
