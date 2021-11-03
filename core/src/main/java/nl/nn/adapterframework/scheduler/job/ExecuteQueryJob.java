@@ -55,12 +55,16 @@ public class ExecuteQueryJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws SenderException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
 		try {
 			qs.open();
 			Message result = qs.sendMessage(Message.nullMessage(), null);
 			log.info("result [" + result + "]");
-		} finally {
+		}
+		catch (SenderException e) {
+			throw new JobExecutionException("unable to execute query ["+getQuery()+"]", e);
+		}
+		finally {
 			qs.close();
 		}
 	}

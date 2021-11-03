@@ -320,7 +320,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
-			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]",t);
+			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");

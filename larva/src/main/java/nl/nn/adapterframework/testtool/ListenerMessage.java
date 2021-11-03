@@ -30,15 +30,15 @@ public class ListenerMessage {
 		this.message = message;
 		this.context = context;
 	}
-	
+
 	public String getCorrelationId() {
 		return correlationId;
 	}
-	
+
 	public String getMessage() {
 		return message;
 	}
-	
+
 	public Map getContext() {
 		return context;
 	}

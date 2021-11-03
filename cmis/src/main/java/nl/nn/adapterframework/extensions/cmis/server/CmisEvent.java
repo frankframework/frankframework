@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,14 +43,5 @@ public enum CmisEvent {
 
 	public String value() {
 		return value;
-	}
-
-	public static CmisEvent fromValue(String v) {
-		for (CmisEvent c : CmisEvent.values()) {
-			if (c.value.equalsIgnoreCase(v)) {
-				return c;
-			}
-		}
-		throw new IllegalArgumentException(v);
 	}
 }

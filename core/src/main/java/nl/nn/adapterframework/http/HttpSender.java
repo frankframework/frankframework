@@ -72,7 +72,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -440,7 +440,7 @@ public class HttpSender extends HttpSenderBase {
 		if (parameters!=null) {
 			for(int i=0; i<parameters.size(); i++) {
 				ParameterValue pv = parameters.getParameterValue(i);
-				String paramType = pv.getDefinition().getType();
+				ParameterType paramType = pv.getDefinition().getType();
 				String name = pv.getDefinition().getName();
 
 				// Skip parameters that are configured as ignored
@@ -448,7 +448,7 @@ public class HttpSender extends HttpSenderBase {
 					continue;
 
 
-				if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
+				if (paramType == ParameterType.INPUTSTREAM) {
 					Object value = pv.getValue();
 					if (value instanceof InputStream) {
 						InputStream fis = (InputStream)value;
@@ -553,7 +553,7 @@ public class HttpSender extends HttpSenderBase {
 		if (response==null) {
 			Message responseMessage = responseHandler.getResponseMessage();
 			if(!Message.isEmpty(responseMessage)) {
-				responseMessage.closeOnCloseOf(session);
+				responseMessage.closeOnCloseOf(session, this);
 			}
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {

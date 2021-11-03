@@ -23,10 +23,11 @@ import nl.nn.adapterframework.stream.Message;
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	private JdbcTransactionalStorage<Message> storage;
-	private final String tableName = "JdbcTransactionalStorageTest";
+	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
 
+	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
@@ -63,26 +64,26 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		Message message = createMessage();
 
 		// insert a record 
-		PreparedStatement stmt = prepareStatement();
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-		OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
-		try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
-			oos.writeObject(message);
+		try (PreparedStatement stmt = prepareStatement()) {
+	
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+			OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
+			try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+				oos.writeObject(message);
+			}
+			stmt.setBytes(1, baos.toByteArray());
+			stmt.execute();
+	
+			try (ResultSet rs = stmt.getGeneratedKeys()) {
+				if(rs.next()) {
+					// check inserted data being correctly retrieved
+					Message data =  storage.browseMessage(rs.getString(1));
+					assertEquals(message.asString(), data.asString());
+				} else {
+					Assert.fail("The query ["+storage.selectDataQuery+"] returned empty result set expected 1");
+				}
+			}
 		}
-		stmt.setBytes(1, baos.toByteArray());
-		stmt.execute();
-
-		ResultSet rs = stmt.getGeneratedKeys();
-		if(rs.next()) {
-			// check inserted data being correctly retrieved
-			Message data =  storage.browseMessage(rs.getString(1));
-			assertEquals(message.asString(), data.asString());
-		} else {
-			Assert.fail("The query ["+storage.selectDataQuery+"] returned empty result set expected 1");
-		}
-		rs.close();
-		stmt.close();
 
 	}
 
@@ -103,26 +104,26 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		Message message = createMessage();
 
 		// insert a record 
-		PreparedStatement stmt = prepareStatement();
+		try (PreparedStatement stmt = prepareStatement()) {
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-		OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
-		try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
-			oos.writeObject(message);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+			OutputStream out = blobsCompressed ? new DeflaterOutputStream(baos) : baos;
+			try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+				oos.writeObject(message);
+			}
+			stmt.setBytes(1, baos.toByteArray());
+			stmt.execute();
+	
+			String selectQuery = "SELECT * FROM "+tableName;
+			try (ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery()) {
+				if(rs.next()) {
+					Message result = storage.retrieveObject(rs, 9);
+					assertEquals(message.asString(),result.asString());
+				} else {
+					Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
+				}
+			}
 		}
-		stmt.setBytes(1, baos.toByteArray());
-		stmt.execute();
-
-		String selectQuery = "SELECT * FROM "+tableName;
-		ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery();
-		if(rs.next()) {
-			Message result = storage.retrieveObject(rs, 9);
-			assertEquals(message.asString(),result.asString());
-		} else {
-			Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
-		}
-		rs.close();
-		stmt.close();
 	}
 
 	private PreparedStatement prepareStatement() throws SQLException {
@@ -173,15 +174,15 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 		String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">")+1, storeMessageOutput.lastIndexOf("<"));
 		String selectQuery = "SELECT * FROM "+tableName+" where "+storage.getKeyField()+"="+key;
-		ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery();
-
-		if(rs.next()) {
-			Message result = storage.retrieveObject(rs, 1);
-			assertEquals(message.asString(),result.asString());
-		} else {
-			Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
+		try (ResultSet rs = getConnection().prepareStatement(selectQuery).executeQuery()) {
+	
+			if(rs.next()) {
+				Message result = storage.retrieveObject(rs, 1);
+				assertEquals(message.asString(),result.asString());
+			} else {
+				Assert.fail("The query ["+selectQuery+"] returned empty result set expected 1");
+			}
 		}
-		rs.close();
 	}
 
 	@Test

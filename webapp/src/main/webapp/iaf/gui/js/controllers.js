@@ -262,6 +262,9 @@ angular.module('iaf.beheerconsole')
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
 							adapter.status = 'warning';
 					}
+					if(adapter.receiverReachedMaxExceptions){
+						adapter.status = 'warning';
+					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
 						if(adapter.pipes[x].sender) {

@@ -149,7 +149,7 @@ public class Base64Pipe extends StreamingPipe {
 		return new MessageOutputStream(this, base64, target);
 	}
 
-	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "ENCODE"})
+	/** @ff.default ENCODE */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}

@@ -15,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 
 public class ParameterTest {
@@ -201,7 +202,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("myParameter");
 		p.setSessionKey(sessionKey);
-		p.setType("list");
+		p.setType(ParameterType.LIST);
 		p.setXpathExpression("items/item");
 		p.configure();
 
