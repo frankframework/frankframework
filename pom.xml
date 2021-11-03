@@ -701,6 +701,15 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
 			<build>
 				<plugins>
 					<plugin>
