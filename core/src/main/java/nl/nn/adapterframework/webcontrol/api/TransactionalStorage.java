@@ -40,11 +40,14 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -93,28 +96,48 @@ public class TransactionalStorage extends Base {
 			messageId = Misc.urlDecode(messageId);
 
 			String message = getMessage(storage, receiver.getListener(), messageId);
-			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
+			StorageItemDTO entity = getMessageMetadata(storage, messageId, message);
 
 			return Response.status(Response.Status.OK).entity(entity).build();
 
 		} catch(ListenerException e) {
-			throw new ApiException("Could not get message metadata",e);
+			throw new ApiException("Could not get message metadata", e);
 		}
 	}
 
-	private Map<String, Object> getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
+	private StorageItemDTO getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
 		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
-			String comment = item.getCommentString();
-			Date insertDate = item.getInsertDate();
-			String correlationId = item.getCorrelationId();
+			StorageItemDTO dto = new StorageItemDTO(item);
+			dto.setMessage(message);
+			return dto;
+		}
+	}
 
-			Map<String, Object> entity = new HashMap<String, Object>();
-			entity.put("comment", comment);
-			entity.put("insertDate", insertDate);
-			entity.put("correlationId", correlationId);
-			entity.put("msg", message);
-			entity.put("messageId", messageId);
-			return entity;
+	public static class StorageItemDTO {
+		private @Getter String id; //MessageId
+		private @Getter String originalId; //Made up Id?
+		private @Getter String correlationId;
+		private @Getter String type;
+		private @Getter String host;
+		private @Getter Date insertDate;
+		private @Getter Date expiryDate;
+		private @Getter String comment;
+		private @Getter String label;
+
+		// Optional fields (with setters, should only be displayed when !NULL
+		private @Getter(onMethod_={@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)}) @Setter Integer position;
+		private @Getter(onMethod_={@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)}) @Setter String message;
+
+		public StorageItemDTO(IMessageBrowsingIteratorItem item) throws ListenerException {
+			id = item.getId();
+			originalId = item.getOriginalId();
+			correlationId = item.getCorrelationId();
+			type = item.getType();
+			host = item.getHost();
+			insertDate = item.getInsertDate();
+			expiryDate = item.getExpiryDate();
+			comment = item.getCommentString();
+			label = item.getLabel();
 		}
 	}
 
@@ -147,7 +170,7 @@ public class TransactionalStorage extends Base {
 		String message = getMessage(storage, receiver.getListener(), messageId);
 		MediaType mediaType = getMediaType(message);
 		String contentDispositionHeader = getContentDispositionHeader(mediaType, messageId);
-		
+
 		return Response
 				.status(Response.Status.OK)
 				.type(mediaType)
@@ -278,23 +301,22 @@ public class TransactionalStorage extends Base {
 
 		String[] messageIds = getMessages(input);
 
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
 				resendMessage(receiver, messageIds[i]);
 			}
+			catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			}
 			catch(Exception e) {
-				if(e instanceof ApiException) {
-					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
-					errorMessages.add(e.getCause().getMessage());
-				}
-				else
-					errorMessages.add(e.getMessage());
+				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
@@ -329,7 +351,7 @@ public class TransactionalStorage extends Base {
 		Set<ProcessState> targetProcessStates = receiver.targetProcessStates().get(currentState);
 		ProcessState targetPS = ProcessState.getProcessStateFromName(targetState);
 
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		if(targetProcessStates != null && targetProcessStates.contains(targetPS)) {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(currentState);
 			for(int i=0; i < messageIds.length; i++) {
@@ -345,8 +367,9 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("It is not allowed to move messages from ["+processState+"] " + "to ["+targetState+"]");
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
@@ -406,23 +429,22 @@ public class TransactionalStorage extends Base {
 
 		String[] messageIds = getMessages(input);
 
-		List<String> errorMessages = new ArrayList<String>();
+		List<String> errorMessages = new ArrayList<>();
 		for(int i=0; i < messageIds.length; i++) {
 			try {
 				deleteMessage(receiver.getMessageBrowser(ProcessState.ERROR), messageIds[i]);
 			}
+			catch(ApiException e) { //The message of an ApiException is wrapped in HTML, try to get the original message instead!
+				errorMessages.add(e.getCause().getMessage());
+			}
 			catch(Exception e) {
-				if(e instanceof ApiException) {
-					//The message of an ApiException is wrapped in HTML, try to get the original message instead!
-					errorMessages.add(e.getCause().getMessage());
-				}
-				else
-					errorMessages.add(e.getMessage());
+				errorMessages.add(e.getMessage());
 			}
 		}
 
-		if(errorMessages.size() == 0)
+		if(errorMessages.isEmpty()) {
 			return Response.status(Response.Status.OK).build();
+		}
 
 		return Response.status(Response.Status.ACCEPTED).entity(errorMessages).build();
 	}
@@ -456,7 +478,7 @@ public class TransactionalStorage extends Base {
 		try {
 			String message = getMessage(storage, messageId);
 
-			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
+			StorageItemDTO entity = getMessageMetadata(storage, messageId, message);
 			return Response.status(Response.Status.OK).entity(entity).build();
 		} catch(ListenerException e) {
 			throw new ApiException("Could not get message metadata", e);
@@ -566,7 +588,7 @@ public class TransactionalStorage extends Base {
 				txStatus.setRollbackOnly();
 			}
 			throw new ApiException(e);
-		} finally { 
+		} finally {
 			transactionManager.commit(txStatus);
 		}
 	}
@@ -666,7 +688,7 @@ public class TransactionalStorage extends Base {
 			messageCount = -1;
 		}
 
-		Map<String, Object> returnObj = new HashMap<String, Object>(3);
+		Map<String, Object> returnObj = new HashMap<>(3);
 		returnObj.put("totalMessages", messageCount);
 		returnObj.put("skipMessages", filter.skipMessages());
 		returnObj.put("messageCount", messageCount - filter.skipMessages());
@@ -675,8 +697,8 @@ public class TransactionalStorage extends Base {
 		Date endDate = null;
 		try (IMessageBrowsingIterator iterator = transactionalStorage.getIterator(startDate, endDate, filter.getSortOrder())) {
 			int count;
-			List<Object> messages = new LinkedList<Object>();
-			
+			List<StorageItemDTO> messages = new LinkedList<>();
+
 			for (count=0; iterator.hasNext(); ) {
 				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
 					if(!filter.matchAny(iterItem))
@@ -684,19 +706,9 @@ public class TransactionalStorage extends Base {
 
 					count++;
 					if (count > filter.skipMessages()) { 
-						Map<String, Object> message = new HashMap<String, Object>(3);
-
-						message.put("id", iterItem.getId());
-						message.put("pos", count);
-						message.put("originalId", iterItem.getOriginalId());
-						message.put("correlationId", iterItem.getCorrelationId());
-						message.put("type", iterItem.getType());
-						message.put("host", iterItem.getHost());
-						message.put("insertDate", iterItem.getInsertDate());
-						message.put("expiryDate", iterItem.getExpiryDate());
-						message.put("comment", iterItem.getCommentString());
-						message.put("label", iterItem.getLabel());
-						messages.add(message);
+						StorageItemDTO dto = new StorageItemDTO(iterItem);
+						dto.setPosition(count);
+						messages.add(dto);
 					}
 	
 					if (filter.maxMessages() > 0 && count >= (filter.maxMessages() + filter.skipMessages())) {
@@ -705,6 +717,7 @@ public class TransactionalStorage extends Base {
 					}
 				}
 			}
+
 			returnObj.put("messages", messages);
 		} catch (ListenerException|IOException e) {
 			throw new ApiException(e);
@@ -712,7 +725,7 @@ public class TransactionalStorage extends Base {
 
 		return returnObj;
 	}
-	
+
 	public Map<ProcessState, Map<String, String>> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
 		if(targetProcessStates == null) {
 			return null;

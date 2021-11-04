@@ -1266,7 +1266,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/stores/"+$scope.processState;
+	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+"/receivers/"+Misc.escapeURL($scope.receiverName)+"/stores/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1323,7 +1323,7 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "pos", bSortable: false },
+		{ "name": "pos", "data": "position", bSortable: false },
 		{ "name": "id", "data": "id", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
@@ -1387,6 +1387,7 @@ angular.module('iaf.beheerconsole')
 		},
 		searching: false,
 		scrollX: true,
+		bAutoWidth: false,
 		orderCellsTop: true,
 		serverSide: true,
 		processing: true,
@@ -1574,7 +1575,7 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "pos", bSortable: false },
+		{ "data": "position", bSortable: false },
 		{ "data": "id", bSortable: false },
 		{ "data": "insertDate", className: "date" },
 		{ "data": "type", bSortable: false },
@@ -1601,6 +1602,7 @@ angular.module('iaf.beheerconsole')
 		},
 		searching: false,
 		scrollX: true,
+		bAutoWidth: false,
 		orderCellsTop: true,
 		serverSide: true,
 		processing: true,
