@@ -15,7 +15,6 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | JavaDoc tag | Attribute setter | `@ff.mandatory` | Makes attribute mandatory in Frank config. |
 | JavaDoc tag | Child setter | `@ff.defaultElement` | Set default value of `className` attribute. |
 | Java annotation | Enum constant | `@EnumLabel` | Set representation required in Frank configs. |
-| ---- | ---------- | ---- | -------- |
 
 #### Annotations on classes
 
