@@ -90,20 +90,16 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	}
 
 	protected String getParameterValue(ParameterValueList pvl, String parameterName) {
-		return getParameterValue(pvl, parameterName, null);
-	}
-
-	protected String getParameterValue(ParameterValueList pvl, String parameterName, String defaultValue) {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
 			for (int i = 0; i < parameterList.size(); i++) {
 				Parameter parameter = parameterList.getParameter(i);
 				if (parameter.getName().equalsIgnoreCase(parameterName)) {
-					return pvl.getParameterValue(i).asStringValue(defaultValue);
+					return pvl.getParameterValue(i).asStringValue(null);
 				}
 			}
 		}
-		return defaultValue;
+		return null;
 	}
 
 	public PipeForward getSuccessForward() {

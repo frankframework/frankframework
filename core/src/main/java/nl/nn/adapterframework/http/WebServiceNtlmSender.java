@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -188,13 +188,9 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 				result = EntityUtils.toString(httpEntity);
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
+		} catch (SocketTimeoutException | ConnectTimeoutException e) {
+			throw new TimeOutException(e);
 		} catch (Exception e) {
-			if (e instanceof SocketTimeoutException) {
-				throw new TimeOutException(e);
-			} 
-			if (e instanceof ConnectTimeoutException) {
-				throw new TimeOutException(e);
-			} 
 			throw new SenderException(e);
 		} finally {
 			httpPost.releaseConnection();

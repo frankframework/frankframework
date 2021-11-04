@@ -120,8 +120,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		String deprecatedUserNameParam = getParameterValue(pvl, "userName");
-		userName_work = getParameterValue(pvl, "username", deprecatedUserNameParam);
+		userName_work = (pvl.parameterExists("userName")) ? getParameterValue(pvl, "userName") : getParameterValue(pvl, "username");
 		if (userName_work == null) {
 			userName_work = getUsername();
 		}
