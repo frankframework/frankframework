@@ -149,7 +149,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * Shuts down the IbisContext, and therefore the Spring context
 	 * 
-	 * @see #destroyApplicationContext()
+	 * @see IbisApplicationContext#close()
 	 */
 	@Override
 	public synchronized void close() {
@@ -207,7 +207,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * Completely rebuilds the ibisContext and therefore also the Spring context
 	 * 
-	 * @see #destroy()
+	 * @see #close()
 	 * @see #init()
 	 */
 	public synchronized void fullReload() {
