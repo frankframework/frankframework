@@ -214,7 +214,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class CmisSender extends SenderWithParametersBase {
 
 	private String authAlias;
-	private String userName;
+	private String username;
 	private String password;
 	private String filenameSessionKey;
 	private String defaultMediaType = "application/octet-stream";
@@ -280,11 +280,10 @@ public class CmisSender extends SenderWithParametersBase {
 
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
-	 * @param pvl TODO
 	 */
 	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
-		String userName_work = null;
+		String username_work = null;
 		String password_work = null;
 
 		if (pvl != null) {
@@ -294,7 +293,7 @@ public class CmisSender extends SenderWithParametersBase {
 			}
 			pv = pvl.getParameterValue("userName");
 			if (pv != null) {
-				userName_work = (String) pv.getValue();
+				username_work = (String) pv.getValue();
 			}
 			pv = pvl.getParameterValue("password");
 			if (pv != null) {
@@ -305,14 +304,14 @@ public class CmisSender extends SenderWithParametersBase {
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		if (userName_work == null) {
-			userName_work = getUserName();
+		if (username_work == null) {
+			username_work = getUsername();
 		}
 		if (password_work == null) {
 			password_work = getPassword();
 		}
 
-		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
+		CredentialFactory cf = new CredentialFactory(authAlias_work, username_work, password_work);
 		try {
 			return getSessionBuilder().build(cf.getUsername(), cf.getPassword());
 		}
@@ -489,7 +488,7 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
 		String fileName = null;
 		try {
 			fileName = session.getMessage(getFilenameSessionKey()).asString();
@@ -1071,7 +1070,7 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setProxyUsername(proxyUsername);
 	}
 	@Deprecated
-	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	@ConfigurationWarning("Please use attribute proxyUsername instead")
 	public void setProxyUserName(String proxyUsername) {
 		setProxyUsername(proxyUsername);
 	}
@@ -1128,15 +1127,15 @@ public class CmisSender extends SenderWithParametersBase {
 	@IbisDoc({"username used in authentication to host", ""})
 	public void setUsername(String userName) {
 		sessionBuilder.setUsername(userName);
-		this.userName = userName;
+		this.username = userName;
 	}
 	@Deprecated
-	@ConfigurationWarning("Please use \"username\" instead")
+	@ConfigurationWarning("Please use attribute username instead")
 	public void setUserName(String userName) {
 		setUsername(userName);
 	}
-	public String getUserName() {
-		return userName;
+	public String getUsername() {
+		return username;
 	}
 
 	@IbisDoc({"", ""})

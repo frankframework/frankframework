@@ -116,7 +116,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter String styleSheetName = null;
 	private @Getter String pattern = null;
 	private @Getter String authAlias;
-	private @Getter String userName;
+	private @Getter String username;
 	private @Getter String password;
 	private @Getter String defaultValue = null;
 	private @Getter String defaultValueMethods = "defaultValue";
@@ -294,8 +294,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUserName()) || StringUtils.isNotEmpty(getPassword())) {
-			cf=new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
+			cf=new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		}
 	}
 
@@ -815,8 +815,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	@IbisDoc({"16", "Default username that is used when a <code>pattern</code> containing {username} is specified", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	@IbisDoc({"17", "Default password that is used when a <code>pattern</code> containing {password} is specified", " "})
