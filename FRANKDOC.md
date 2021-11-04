@@ -1,8 +1,21 @@
 # Frank!Doc user manual for contributors
 
-As a contributor to the Frank!Framework, you write JavaDoc comments that are used to generate the Frank!Doc. This document explains how your comments appear in this user documentation. It starts with a quick overview of the Java annotations and the JavaDoc tags that you can use.
+The Frank!Doc provides reference information for Frank developers as explained in [CONTRIBUTING.md](./CONTRIBUTING.md). It is produced by a doclet that assembles the Frank!Doc from the Java sources. You can control the Frank!Doc using custom JavaDoc tags and using Frank!Doc-related Java annotations. These annotations and tags are summarized in the table below:
 
-## Overview of Java annotations and JavaDoc tags
+
+| Kind | Appears on | Name | Function |
+| ---- | ---------- | ---- | -------- |
+| Java annotation | Class or interface | @FrankDocGroup | Define group as shown in top-left of webapp. |
+| JavaDoc tag | Class | `@ff.parameters` | Describes how parameters (Frank config `<Param>`) are used. |
+| JavaDoc tag | Class | `@ff.parameter` | Describes the meaning of a specific parameter. |
+| JavaDoc tag | Class | `@ff.forward` | Describes a forward (e.g. `success`, `failure`). |
+| JavaDoc tag | Class | `@ff.ignoreTypeMembership` | Suppress inheritance of attributes and webapp group membership |
+| JavaDoc tag | Attrobite setter | `@ff.default` | Describes default value. |
+| JavaDoc tag | Attribute setter | `@ff.noAttribute` | Suppresses declaration and inheritance of attribute. |
+| JavaDoc tag | Attribute setter | `@ff.mandatory` | Makes attribute mandatory in Frank config. |
+| JavaDoc tag | Child setter | `@ff.defaultElement` | Set default value of `className` attribute. |
+| Java annotation | Enum constant | `@EnumLabel` | Set representation required in Frank configs. |
+| ---- | ---------- | ---- | -------- |
 
 #### Annotations on classes
 
