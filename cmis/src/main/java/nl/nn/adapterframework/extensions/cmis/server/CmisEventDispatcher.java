@@ -87,7 +87,7 @@ public class CmisEventDispatcher {
 		CmisUtils.populateCmisAttributes(messageContext);
 
 		try {
-			messageContext.put("CmisEvent", event.name());
+			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
 			CmisEventListener listener = eventListeners.get(event);
 			String result = listener.processRequest(null, new Message(message), messageContext).asString();
 			if(StringUtils.isEmpty(result))
@@ -124,10 +124,10 @@ public class CmisEventDispatcher {
 			}
 
 			HashMap<String, Object> messageContext = new HashMap<>();
-			messageContext.put(CMIS_EVENT_KEY, event.name());
+			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
 
 			try {
-				String result = listener.processRequest(null, event.name(), messageContext);
+				String result = listener.processRequest(null, event.getLabel(), messageContext);
 				return Boolean.parseBoolean(result); // Result should determine if we should proceed, an exception may be thrown.
 			} catch (ListenerException e) {
 				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); //Append the message so it becomes visible in the soap-fault (when using WS)
@@ -138,6 +138,6 @@ public class CmisEventDispatcher {
 	}
 
 	public boolean hasEventListeners() {
-		return eventListeners.size() > 0;
+		return !eventListeners.isEmpty();
 	}
 }
