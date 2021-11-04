@@ -9,7 +9,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | JavaDoc tag | Class | `@ff.parameters` | Describes how parameters (Frank config `<Param>`) are used. |
 | JavaDoc tag | Class | `@ff.parameter` | Describes the meaning of a specific parameter. |
 | JavaDoc tag | Class | `@ff.forward` | Describes a forward (e.g. `success`, `failure`). |
-| JavaDoc tag | Class | `@ff.ignoreTypeMembership` | Suppress inheritance of attributes and webapp group membership |
+| JavaDoc tag | Class | `@ff.ignoreTypeMembership` | Suppress inheritance of attributes and webapp group membership. |
 | JavaDoc tag | Attrobite setter | `@ff.default` | Describes default value. |
 | JavaDoc tag | Attribute setter | `@ff.noAttribute` | Suppresses declaration and inheritance of attribute. |
 | JavaDoc tag | Attribute setter | `@ff.mandatory` | Makes attribute mandatory in Frank config. |
