@@ -1519,7 +1519,7 @@ angular.module('iaf.beheerconsole')
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
 	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
-		$scope.message.data = data;
+		$scope.metadata=JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
 			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
@@ -1652,7 +1652,7 @@ angular.module('iaf.beheerconsole')
 
 	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id));
 	Api.Get(url, function(data) {
-		$scope.message.data = data;
+		$scope.metadata = JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
 			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");

@@ -68,6 +68,7 @@ public class TransactionalStorage extends Base {
 	@GET
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/messages/{messageId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response browseReceiverMessage(
 				@PathParam("adapterName") String adapterName,
 				@PathParam("receiverName") String receiverName,
@@ -87,11 +88,34 @@ public class TransactionalStorage extends Base {
 		}
 
 		IMessageBrowser<?> storage = receiver.getMessageBrowser(ProcessState.getProcessStateFromName(processState));
+		try {
+			// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
+			messageId = Misc.urlDecode(messageId);
 
-		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
-		messageId = Misc.urlDecode(messageId);
+			String message = getMessage(storage, receiver.getListener(), messageId);
+			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
 
-		return getMessage(storage, receiver.getListener(), messageId);
+			return Response.status(Response.Status.OK).entity(entity).build();
+
+		} catch(ListenerException e) {
+			throw new ApiException("Could not get message metadata",e);
+		}
+	}
+
+	private Map<String, Object> getMessageMetadata(IMessageBrowser<?> storage, String messageId, String message) throws ListenerException {
+		try(IMessageBrowsingIteratorItem item = storage.getContext(messageId)) {
+			String comment = item.getCommentString();
+			Date insertDate = item.getInsertDate();
+			String correlationId = item.getCorrelationId();
+
+			Map<String, Object> entity = new HashMap<String, Object>();
+			entity.put("comment", comment);
+			entity.put("insertDate", insertDate);
+			entity.put("correlationId", correlationId);
+			entity.put("msg", message);
+			entity.put("messageId", messageId);
+			return entity;
+		}
 	}
 
 	@GET
@@ -120,8 +144,16 @@ public class TransactionalStorage extends Base {
 
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
-
-		return getMessage(storage, receiver.getListener(), messageId);
+		String message = getMessage(storage, receiver.getListener(), messageId);
+		MediaType mediaType = getMediaType(message);
+		String contentDispositionHeader = getContentDispositionHeader(mediaType, messageId);
+		
+		return Response
+				.status(Response.Status.OK)
+				.type(mediaType)
+				.entity(message)
+				.header("Content-Disposition", contentDispositionHeader)
+				.build();
 	}
 
 	@GET
@@ -416,10 +448,19 @@ public class TransactionalStorage extends Base {
 			throw new ApiException("Pipe ["+pipeName+"] not found!");
 		}
 
+		IMessageBrowser<?> storage = pipe.getMessageLog();
+
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		return getMessage(pipe.getMessageLog(), messageId);
+		try {
+			String message = getMessage(storage, messageId);
+
+			Map<String, Object> entity = getMessageMetadata(storage, messageId, message);
+			return Response.status(Response.Status.OK).entity(entity).build();
+		} catch(ListenerException e) {
+			throw new ApiException("Could not get message metadata", e);
+		}
 	}
 
 	@GET
@@ -446,7 +487,11 @@ public class TransactionalStorage extends Base {
 		// messageId is double URLEncoded, because it can contain '/' in ExchangeMailListener
 		messageId = Misc.urlDecode(messageId);
 
-		return getMessage(pipe.getMessageLog(), messageId);
+		String message = getMessage(pipe.getMessageLog(), messageId);
+		MediaType mediaType = getMediaType(message);
+		String contentDispositionHeader = getContentDispositionHeader(mediaType, messageId);
+
+		return Response.status(Response.Status.OK).type(mediaType).entity(message).header("Content-Disposition", contentDispositionHeader).build();
 	}
 
 	@GET
@@ -534,12 +579,12 @@ public class TransactionalStorage extends Base {
 		}
 	}
 
-	private Response getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
+	private String getMessage(IMessageBrowser<?> messageBrowser, String messageId) {
 		return getMessage(messageBrowser, null, messageId);
 	}
 
-	private Response getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
-		return buildResponse(getRawMessage(messageBrowser, listener, messageId), messageId);
+	private String getMessage(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) {
+		return getRawMessage(messageBrowser, listener, messageId);
 	}
 
 	private String getRawMessage(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) {
@@ -587,26 +632,29 @@ public class TransactionalStorage extends Base {
 		return msg;
 	}
 
-	private Response buildResponse(String msg, String fileName) {
+	private MediaType getMediaType(String msg) {
 		MediaType type = MediaType.TEXT_PLAIN_TYPE;
-		String fileNameExtension = "txt";
 		if (StringUtils.isEmpty(msg)) {
 			throw new ApiException("message not found");
-		} else {
-			if(msg.startsWith("<")) {
-				type = MediaType.APPLICATION_XML_TYPE;
-				fileNameExtension = "xml";
-			} else if(msg.startsWith("{") || msg.startsWith("[")) {
-				type = MediaType.APPLICATION_JSON_TYPE;
-				fileNameExtension = "json";
-			}
+		} 
+		if(msg.startsWith("<")) {
+			type = MediaType.APPLICATION_XML_TYPE;
+		} else if(msg.startsWith("{") || msg.startsWith("[")) {
+			type = MediaType.APPLICATION_JSON_TYPE;
+		}
+		return type;
+	}
+	
+	private String getContentDispositionHeader(MediaType type, String filename) {
+		String extension="txt";
+		if(MediaType.APPLICATION_XML_TYPE.equals(type)) {
+			extension = "xml";
+		} else if(MediaType.APPLICATION_JSON_TYPE.equals(type)) {
+			extension = "json";
 		}
 
-		return Response.status(Response.Status.OK)
-				.type(type)
-				.entity(msg)
-				.header("Content-Disposition", "attachment; filename=\"msg-"+fileName+"."+fileNameExtension+"\"")
-				.build();
+		return "attachment; filename=\"msg-"+filename+"."+extension+"\"";
+
 	}
 
 	private Map<String, Object> getMessages(IMessageBrowser<?> transactionalStorage, MessageBrowsingFilter filter) {
