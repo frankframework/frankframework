@@ -214,7 +214,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			destination = jSession.createQueue(queueName_work);
 
 			msgProducer = jSession.createProducer(destination);
