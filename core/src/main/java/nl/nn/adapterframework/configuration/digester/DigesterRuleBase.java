@@ -71,10 +71,11 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Add a configuration warning message to the current configuration.
 	 * Confirm {@link IbisException} when the cause is a {@link SAXParseException}.
 	 */
-	protected final void addLocalWarning(String message) {
+	protected final void addLocalWarning(String msg) {
+		String message = msg;
 		if(includeLineInformation) {
 			Locator loc = getDigester().getDocumentLocator();
-			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+message;
+			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
 		}
 		configurationWarnings.add(getBean(), log, message);
 	}

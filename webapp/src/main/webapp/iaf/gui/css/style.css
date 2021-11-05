@@ -1233,6 +1233,11 @@ button.btn-invisible {
   right: 0;
 }
 
+.line-numbers .line-numbers-rows {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 /* SCROLL TO TOP BUTTON */
 .scroll-to-top {
   opacity: 0;

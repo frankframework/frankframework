@@ -17,8 +17,8 @@
 					<div class="m-l-lg inline">
 						Show: 
 						<div class="btn-group">
-							<label class="btn btn-default" ng-model="config.configurationRadio" uib-btn-radio="'true'" ng-click="loadedConfig(config.configurationRadio)">Loaded Configuration</label>
-							<label class="btn btn-default" ng-model="config.configurationRadio" uib-btn-radio="'false'" ng-click="loadedConfig(config.configurationRadio)">Original Configuration</label>
+							<label class="btn btn-default" ng-model="loadedConfiguration" uib-btn-radio="true" ng-click="update()">Loaded Configuration</label>
+							<label class="btn btn-default" ng-model="loadedConfiguration" uib-btn-radio="false" ng-click="update()">Original Configuration</label>
 						</div>
 					</div>
 

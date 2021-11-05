@@ -185,11 +185,16 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		controller: 'NotificationsCtrl'
 	})
 	.state('pages.configuration', {
-		url: "/configurations",
+		url: "/configurations?name&loaded",
 		templateUrl: "views/ShowConfiguration.html",
+		reloadOnSearch: false,
 		data: {
 			pageTitle: 'Configurations',
 			breadcrumbs: 'Configurations > Show',
+		},
+		params: {
+			name: { value: 'All', squash: true},
+			loaded: { value: '', squash: true},
 		}
 	})
 	.state('pages.upload_configuration', {
