@@ -35,7 +35,9 @@ import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -79,6 +81,15 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		@EnumLabel("RR") REQUEST_REPLY,
 		/** Fire & Forget */
 		@EnumLabel("FF") FIRE_AND_FORGET;
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
+			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
+		}
+
+		super.configure();
 	}
 
 	@Override

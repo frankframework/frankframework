@@ -101,7 +101,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getParameterList() == null && getParameterList().findParameter("userName") != null) {
+		if (getParameterList() != null && getParameterList().findParameter("userName") != null) {
 			ConfigurationWarnings.add(this, log, "parameter [userName] has been replaced with [username]");
 		}
 
@@ -171,7 +171,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 
 			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work);
 			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
+			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			if (StringUtils.isNotEmpty(queueName_work)) {
 				String queueItem_work = getParameterValue(pvl, "queueItem");
