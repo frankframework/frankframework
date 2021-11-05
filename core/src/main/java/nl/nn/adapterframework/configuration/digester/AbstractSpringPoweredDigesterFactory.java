@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.digester3.AbstractObjectCreationFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -137,6 +138,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * before creating the object from the Spring factory.
 	 */
 	protected Object createObject(Map<String, String> attrs) throws Exception {
+		String classname = attrs.get("classname");
+		if(StringUtils.isNotEmpty(classname)) {
+			throw new IllegalStateException("invalid attribute [classname]");
+		}
+
 		String className = attrs.get("className");
 		if (log.isDebugEnabled()) {
 			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
