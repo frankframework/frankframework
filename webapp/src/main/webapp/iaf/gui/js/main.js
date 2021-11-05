@@ -106,4 +106,14 @@ $(function() {
 
 		env.element.appendChild(lineNumbersWrapper);
 	});
+	Prism.hooks.add('complete', function (env) {
+		let element = $(env.element).children("span.line-numbers-rows");
+		element.children("span").each(function( _, el ) {
+			el.addEventListener('click', updateAnchor);
+		});
+	});
+	function updateAnchor(event) {
+		let anchor = $(event.target).attr('id');
+		angular.element(document.body).scope().setAnchor(anchor);
+	}
 });

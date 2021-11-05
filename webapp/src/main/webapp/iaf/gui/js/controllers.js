@@ -1065,7 +1065,6 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('ShowConfigurationCtrl', ['$scope', 'Api', '$state', '$location', function($scope, Api, $state, $location) {
-	this.configurationRadio = 'true';
 	$scope.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
 	$scope.loadedConfiguration = ($state.params.loaded != undefined && $state.params.loaded == false);
 
@@ -1075,6 +1074,8 @@ angular.module('iaf.beheerconsole')
 
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
+		$location.hash('');
+		anchor = null;
 		getConfiguration();
 	};
 
