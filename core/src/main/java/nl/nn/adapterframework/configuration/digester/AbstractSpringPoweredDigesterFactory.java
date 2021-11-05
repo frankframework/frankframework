@@ -140,7 +140,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	protected Object createObject(Map<String, String> attrs) throws Exception {
 		String classname = attrs.get("classname");
 		if(StringUtils.isNotEmpty(classname)) {
-			throw new IllegalStateException("invalid attribute [classname]");
+			throw new IllegalStateException("invalid attribute [classname]. Did you mean [className]?");
 		}
 
 		String className = attrs.get("className");
