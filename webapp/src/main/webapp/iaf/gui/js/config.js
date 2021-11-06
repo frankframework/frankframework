@@ -478,7 +478,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		templateUrl: "views/common/errorpage.html",
 	});
 
-}]).run(['$rootScope', '$state', 'Debug', '$location', function($rootScope, $state, Debug, $location) {
+}]).run(['$rootScope', '$state', 'Debug', function($rootScope, $state, Debug) {
 	// Set this asap on localhost to capture all debug data
 	if(location.hostname == "localhost")
 		Debug.setLevel(3);
@@ -497,10 +497,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			$rootScope.$apply();
 		}
 	};
-
-	$rootScope.setAnchor = function(value) {
-		$location.hash(value);
-	}
 
 	$rootScope.setLogLevel = function(level) {
 		Debug.setLevel(level);
