@@ -29,7 +29,7 @@
 	<monitor name="Configuration error" destinations="GALM">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Exception Configuring Receiver" severity="CRITICAL"/>
 	</monitor>
-	<monitor name="Message size exceeding" type="TECHNICAL">
+	<monitor name="Message size exceeding">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Pipe Message Size Exceeding" severity="WARNING"/>
 	</monitor>
 	<monitor name="Message in Error" type="FUNCTIONAL" destinations="GALM">
