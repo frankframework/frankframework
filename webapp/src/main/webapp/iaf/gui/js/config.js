@@ -1,5 +1,5 @@
-angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider',
-	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider) {
+angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider', 'IdleProvider', 'KeepaliveProvider', 'appConstants', 'laddaProvider', '$anchorScrollProvider', 
+	function config($cookiesProvider, $locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider, IdleProvider, KeepaliveProvider, appConstants, laddaProvider, $anchorScrollProvider) {
 
 	if(appConstants["console.idle.time"] && appConstants["console.idle.time"] > 0) {
 		IdleProvider.idle(appConstants["console.idle.time"]);
@@ -7,6 +7,8 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 	}
 
 	$urlRouterProvider.otherwise("/");
+	$locationProvider.html5Mode(false);
+	$anchorScrollProvider.disableAutoScrolling();
 
 	$cookiesProvider.defaults.secure = (location.protocol == "https:");
 	$cookiesProvider.defaults.samesite = 'strict';
@@ -475,8 +477,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 		url: "/error",
 		templateUrl: "views/common/errorpage.html",
 	});
-
-	$locationProvider.html5Mode(false);
 
 }]).run(['$rootScope', '$state', 'Debug', '$location', function($rootScope, $state, Debug, $location) {
 	// Set this asap on localhost to capture all debug data

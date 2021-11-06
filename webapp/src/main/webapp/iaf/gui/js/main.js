@@ -93,12 +93,12 @@ $(function() {
 			return;
 		}
 
-		var linesNum = (1 + env.code.split('\n').length);
+		var linesNum = (env.code.split('\n').length);
 		var lineNumbersWrapper;
 
 		let lines = new Array(linesNum);
 		//See https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
-		for (let i=1; i<linesNum; ++i) lines[i] = '<span id="L'+i+'"></span>';
+		for (let i=0; i<linesNum; ++i) lines[i] = '<span id="L'+(i+1)+'"></span>';
 
 		lineNumbersWrapper = document.createElement('span');
 		lineNumbersWrapper.className = 'line-numbers-rows';
@@ -106,14 +106,4 @@ $(function() {
 
 		env.element.appendChild(lineNumbersWrapper);
 	});
-	Prism.hooks.add('complete', function (env) {
-		let element = $(env.element).children("span.line-numbers-rows");
-		element.children("span").each(function( _, el ) {
-			el.addEventListener('click', updateAnchor);
-		});
-	});
-	function updateAnchor(event) {
-		let anchor = $(event.target).attr('id');
-		angular.element(document.body).scope().setAnchor(anchor);
-	}
 });

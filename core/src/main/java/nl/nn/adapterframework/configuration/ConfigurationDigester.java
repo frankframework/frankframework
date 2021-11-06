@@ -204,7 +204,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
 			}
 
-			configuration.setLoadedConfiguration(loadedHide);
+			configuration.setLoadedConfiguration(loadedHide.trim()); //Something adds random spaces and newlines at the end of the string...
 			configLogger.info(loadedHide);
 			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {

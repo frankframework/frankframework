@@ -356,7 +356,7 @@ angular.module('iaf.beheerconsole')
 	};
 
 	Hooks.register("adapterUpdated:once", function() {
-		if($location.hash()) {
+		if($location.path() == "/status" && $location.hash()) {
 			var el = angular.element("#"+$location.hash());
 			if(el && el[0]) {
 				el[0].scrollIntoView();
@@ -1072,14 +1072,13 @@ angular.module('iaf.beheerconsole')
 		getConfiguration();
 	};
 
+	var anchor = $location.hash();
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
-		$location.hash('');
-		anchor = null;
+		$location.hash(''); //clear the hash from the url
+		anchor = null; //unset hash anchor
 		getConfiguration();
 	};
-
-	var anchor = $location.hash();
 
 	$scope.updateQueryParams = function() {
 		var transitionObj = {};
@@ -1091,6 +1090,20 @@ angular.module('iaf.beheerconsole')
 		$state.transitionTo('pages.configuration', transitionObj, { notify: false, reload: false });
 	};
 
+	$scope.clipboard = function() {
+		if($scope.configuration) {
+			var el = document.createElement('textarea');
+			el.value = $scope.configuration;
+			el.setAttribute('readonly', '');
+			el.style.position = 'absolute';
+			el.style.left = '-9999px';
+			document.body.appendChild(el);
+			el.select();
+			document.execCommand('copy');
+			document.body.removeChild(el);
+		}
+	}
+
 	getConfiguration = function() {
 		$scope.updateQueryParams();
 		var uri = "configurations";
@@ -1101,10 +1114,6 @@ angular.module('iaf.beheerconsole')
 
 			if(anchor) {
 				$location.hash(anchor);
-				let el = angular.element("#"+anchor);
-				if(el && el[0]) {
-					el[0].scrollIntoView();
-				}
 			}
 		});
 	};

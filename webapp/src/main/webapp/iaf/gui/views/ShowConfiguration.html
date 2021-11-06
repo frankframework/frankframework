@@ -17,13 +17,17 @@
 					<div class="m-l-lg inline">
 						Show: 
 						<div class="btn-group">
-							<label class="btn btn-default" ng-model="loadedConfiguration" uib-btn-radio="true" ng-click="update()">Loaded Configuration</label>
-							<label class="btn btn-default" ng-model="loadedConfiguration" uib-btn-radio="false" ng-click="update()">Original Configuration</label>
+							<label class="btn btn-sm btn-default" ng-model="loadedConfiguration" uib-btn-radio="true" ng-click="update()">Loaded Configuration</label>
+							<label class="btn btn-sm btn-default" ng-model="loadedConfiguration" uib-btn-radio="false" ng-click="update()">Original Configuration</label>
 						</div>
 					</div>
 
 					<br/>
-					<br/>
+
+					<div class="pull-right">
+						<button title="Copy Configuration" ng-click="clipboard()" class="btn btn-default btn-xs" type="button">Copy <i class="fa fa-clipboard"></i></button>
+					</div>
+					<div class="clearfix"></div>
 
 					<pre format-code="configuration"></pre>
 				</div>
