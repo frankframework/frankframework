@@ -175,11 +175,9 @@
 		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
 	/>
 
-	<Resource
-		name="jms/qcf-activemq"
+	<Resource name="jms/qcf-activemq"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
-		brokerURL="vm://localhost"
-	/>
-	
+		brokerURL="tcp://host.docker.internal:61616"
+	/>	
 </Context>

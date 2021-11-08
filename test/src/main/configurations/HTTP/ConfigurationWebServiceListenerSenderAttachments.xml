@@ -82,7 +82,7 @@
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
 			<pipe name="SetMultipartSessionKey" preserveInput="true"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession" getInputFromFixedValue="hello world" 
+				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world" 
 			>
 				<param name="multipartXml" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -133,7 +133,7 @@
 				<forward name="success" path="PutMultipartInSessionKey" />
 			</pipe>	
 			<pipe name="PutMultipartInSessionKey"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession" getInputFromFixedValue="hello world"
+				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world"
 			>
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />

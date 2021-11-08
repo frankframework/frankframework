@@ -15,60 +15,42 @@
 */
 package nl.nn.adapterframework.jndi;
 
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.core.JndiContextPrefixFactory;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for Jndi lookups.
  * Would be nice if we could have used JndiObjectFactoryBean but it has too much overhead
  * 
+ * @author Gerrit van Brakel
+ * 
  * @param <O> Object class used by clients
  * @param <L> Class looked up in JNDI
  */
-public class JndiObjectFactory<O,L> implements ApplicationContextAware {
-	protected Logger log = LogUtil.getLogger(this);
+public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements ApplicationContextAware {
 
 	private Class<L> lookupClass;
 	private @Setter String jndiContextPrefix = null;
-
-	protected Map<String,O> objects = new ConcurrentHashMap<>();
 
 	public JndiObjectFactory(Class<L> lookupClass) {
 		this.lookupClass = lookupClass;
 	}
 
-	public O get(String jndiName) throws NamingException {
-		return get(jndiName, null);
-	}
-
-	public O get(String jndiName, Properties jndiEnvironment) throws NamingException {
-		return objects.computeIfAbsent(jndiName, k -> compute(k, jndiEnvironment));
-	}
-
-	@SneakyThrows(NamingException.class)
-	private O compute(String jndiName, Properties jndiEnvironment) {
-		return augment(lookup(jndiName, jndiEnvironment), jndiName);
-	}
-
 	/**
 	 * Performs the actual JNDI lookup
 	 */
-	private L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
+	@Override
+	protected L lookup(String jndiName, Properties jndiEnvironment) throws NamingException {
 		L object = null;
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		try {
@@ -90,24 +72,6 @@ public class JndiObjectFactory<O,L> implements ApplicationContextAware {
 
 		log.debug("located Object with JNDI name [" + prefixedJndiName + "]"); //No exceptions during lookup means we found something!
 		return object;
-	}
-
-	@SuppressWarnings("unchecked")
-	protected O augment(L object, String objectName) throws NamingException {
-		return (O)object;
-	}
-
-	/**
-	 * Add and augment an Object to this factory so it can be used without the need of a JNDI lookup.
-	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a JNDI lookup.
-	 */
-	public O add(L object, String jndiName) {
-		return objects.computeIfAbsent(jndiName, k -> compute(object, jndiName));
-	}
-
-	@SneakyThrows(NamingException.class)
-	private O compute(L object, String jndiName) {
-		return augment(object, jndiName);
 	}
 
 	private String getPrefixedJndiName(String jndiName) {

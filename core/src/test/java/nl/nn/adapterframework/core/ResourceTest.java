@@ -13,7 +13,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -43,17 +42,17 @@ public class ResourceTest {
 
 
 	@Test
-	public void localClassLoaderPlainRef() throws TransformerException, SAXException, IOException {
+	public void localClassLoaderPlainRef() throws Exception {
 		testUri(null, "/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void localClassLoaderClasspathRef() throws TransformerException, SAXException, IOException {
+	public void localClassLoaderClasspathRef() throws Exception {
 		testUri(null, "classpath:/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void localClassLoaderFileRef() throws TransformerException, SAXException, IOException {
+	public void localClassLoaderFileRef() throws Exception {
 		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
@@ -61,17 +60,17 @@ public class ResourceTest {
 	}
 
 	@Test
-	public void bytesClassLoaderPlainRef() throws TransformerException, SAXException, IOException, ConfigurationException {
+	public void bytesClassLoaderPlainRef() throws Exception {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 	
 	@Test
-	public void bytesClassLoaderClasspathRef() throws TransformerException, SAXException, IOException, ConfigurationException {
+	public void bytesClassLoaderClasspathRef() throws Exception {
 		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void bytesClassLoaderFileRef() throws TransformerException, SAXException, IOException, ConfigurationException {
+	public void bytesClassLoaderFileRef() throws Exception {
 		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
@@ -182,7 +181,7 @@ public class ResourceTest {
 //	}
 
 
-	private IScopeProvider getBytesClassLoaderProvider() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoaderProvider() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

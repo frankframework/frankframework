@@ -213,7 +213,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 			checkConfiguration(getAction());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
-			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+": either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
 		}
 
 		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
@@ -237,7 +237,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private void checkConfiguration(FileSystemAction action2) throws ConfigurationException {
 		if (!actions.contains(action2))
-			throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
+			throw new ConfigurationException(ClassUtils.nameOf(owner)+": unknown or invalid action [" + action2 + "] supported actions are " + actions.toString() + "");
 
 		//Check if necessary parameters are available
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.WRITE,  PARAMETER_CONTENTS1, PARAMETER_FILENAME, "filename", getFilename());
@@ -260,7 +260,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
 			if (!parameter1Set && !parameter2Set && !attributeSet) {
-				throw new ConfigurationException(ClassUtils.nameOf(owner)+" ["+owner.getName()+"]: the ["+action+"] action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
+				throw new ConfigurationException(ClassUtils.nameOf(owner)+": the ["+action+"] action requires the parameter ["+parameter1+"] "+(parameter2!=null?"or parameter ["+parameter2+"] ":"")+(attributeName!=null?"or the attribute ["+attributeName+"] ": "")+"to be present");
 			}
 		}
 	}
@@ -342,7 +342,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeOutException {
 		try {
 			if(input != null) {
-				input.closeOnCloseOf(session); // don't know if the input will be used
+				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
 			}
 
 			FileSystemAction action;

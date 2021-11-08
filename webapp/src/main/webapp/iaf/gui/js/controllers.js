@@ -262,6 +262,9 @@ angular.module('iaf.beheerconsole')
 						if(adapterReceiver.hasErrorStorage && adapterReceiver.errorStorageCount > 0)
 							adapter.status = 'warning';
 					}
+					if(adapter.receiverReachedMaxExceptions){
+						adapter.status = 'warning';
+					}
 					adapter.hasSender = false;
 					for(x in adapter.pipes) {
 						if(adapter.pipes[x].sender) {
@@ -777,11 +780,12 @@ angular.module('iaf.beheerconsole')
 	function startPollingForConfigurationStateChanges(callback) {
 		Poller.add("server/configurations", function(configurations) {
 			$scope.updateConfigurations(configurations);
-	
+
 			var ready = true;
 			for(var i in configurations) {
 				var config = configurations[i];
-				if(config.state != "STARTED") {
+				//When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
+				if(config.state != "STARTED" && !(config.state == "STOPPED" && config.exception != null)) {
 					ready = false;
 					break;
 				}
@@ -1262,7 +1266,7 @@ angular.module('iaf.beheerconsole')
 	if(!$scope.processState)
 		return SweetAlert.Warning("Invalid URL", "No storage type provided!");
 
-	$scope.base_url = "adapters/"+$scope.adapterName+"/receivers/"+$scope.receiverName+"/stores/"+$scope.processState;
+	$scope.base_url = "adapters/"+Misc.escapeURL($scope.adapterName)+"/receivers/"+Misc.escapeURL($scope.receiverName)+"/stores/"+$scope.processState;
 
 	$scope.updateTable = function() {
 		var table = $('#datatable').DataTable();
@@ -1319,7 +1323,7 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
-		{ "name": "pos", "data": "pos", bSortable: false },
+		{ "name": "pos", "data": "position", bSortable: false },
 		{ "name": "id", "data": "id", bSortable: false },
 		{ "name": "insertDate", "data": "insertDate", className: "date" },
 		{ "name": "host", "data": "host", bSortable: false },
@@ -1383,6 +1387,7 @@ angular.module('iaf.beheerconsole')
 		},
 		searching: false,
 		scrollX: true,
+		bAutoWidth: false,
 		orderCellsTop: true,
 		serverSide: true,
 		processing: true,
@@ -1515,7 +1520,7 @@ angular.module('iaf.beheerconsole')
 		return SweetAlert.Warning("Invalid URL", "No message id provided!");
 
 	Api.Get($scope.base_url+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id)), function(data) {
-		$scope.message.data = data;
+		$scope.metadata=JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
 			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");
@@ -1570,7 +1575,7 @@ angular.module('iaf.beheerconsole')
 
 	var columns = [
 		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "pos", bSortable: false },
+		{ "data": "position", bSortable: false },
 		{ "data": "id", bSortable: false },
 		{ "data": "insertDate", className: "date" },
 		{ "data": "type", bSortable: false },
@@ -1597,6 +1602,7 @@ angular.module('iaf.beheerconsole')
 		},
 		searching: false,
 		scrollX: true,
+		bAutoWidth: false,
 		orderCellsTop: true,
 		serverSide: true,
 		processing: true,
@@ -1648,7 +1654,7 @@ angular.module('iaf.beheerconsole')
 
 	var url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages/"+encodeURIComponent(encodeURIComponent($scope.message.id));
 	Api.Get(url, function(data) {
-		$scope.message.data = data;
+		$scope.metadata = JSON.parse(data);
 	}, function(_, statusCode, statusText) {
 		if(statusCode == 500) {
 			SweetAlert.Warning("An error occured while opening the message", "message id ["+$scope.message.id+"] error ["+statusText+"]");

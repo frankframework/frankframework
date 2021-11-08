@@ -23,6 +23,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 public class LockerTest extends TransactionManagerTestBase {

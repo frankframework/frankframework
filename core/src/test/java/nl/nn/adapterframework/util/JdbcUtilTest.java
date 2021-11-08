@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -67,10 +67,10 @@ public class JdbcUtilTest {
 
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME) VALUES (?, ?, ?, ?)";
 		ParameterValueList params = new ParameterValueList();
-		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(6)));
+		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(6)));
 		params.add(new SimpleParameter(null, null, "5th text"));
-		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(15092002)));
-		params.add(new SimpleParameter(null, Parameter.TYPE_DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
+		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(15092002)));
+		params.add(new SimpleParameter(null, ParameterType.DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
 		JdbcUtil.executeStatement(dbmsSupport, connection, query, params);
 
 		query = "SELECT COUNT(*) FROM TEMP";
@@ -92,7 +92,7 @@ public class JdbcUtilTest {
 
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
 		params = new ParameterValueList();
-		params.add(new SimpleParameter(null, Parameter.TYPE_INTEGER, new Integer(3)));
+		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(3)));
 		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, params);
 		assertEquals("just a third text", listResult.get(0));
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());

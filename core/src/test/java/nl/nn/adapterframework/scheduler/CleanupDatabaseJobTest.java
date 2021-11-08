@@ -28,7 +28,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="JobDefTest";
+	private final String tableName="JOBDEFTEST";
 
 	@Override
 	@Before

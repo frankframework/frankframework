@@ -147,11 +147,6 @@
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
 			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-frankDoc</artifactId>
-				<version>7.7-SNAPSHOT</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
 				<version>${log4j2.version}</version>
@@ -345,6 +340,20 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>3.2.2</version>
+				</plugin>
+				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
 					<version>1.18.16.0</version>
@@ -448,8 +457,36 @@
 								<name>ff.ignoreTypeMembership</name>
 								<placement>X</placement>
 							</tag>
+							<tag>
+								<name>ff.forward</name>
+								<placement>X</placement>
+							</tag>
+							<tag>
+								<name>ff.noAttribute</name>
+								<placement>X</placement>
+							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<failOnError>false</failOnError>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+						<skipDeploy>true</skipDeploy>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -578,7 +615,6 @@
 				<module>test</module>
 				<module>akamai</module>
 				<module>example</module>
-				<module>frankDoc</module>
 				<module>credentialProvider</module>
 			</modules>
 		</profile>
@@ -680,6 +716,16 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
 			<build>
 				<plugins>
 					<plugin>
@@ -693,11 +739,11 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
+								<artifactId>frank-doc</artifactId>
+								<version>1.0-SNAPSHOT</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
@@ -712,6 +758,7 @@
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
 							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

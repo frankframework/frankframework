@@ -78,7 +78,7 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
-	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
+	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws Exception {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
@@ -156,7 +156,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	@Test
-	public void test() throws ConfigurationException, IOException, TransformerException {
+	public void test() throws Exception {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
@@ -176,7 +176,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 
-	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
+	private IScopeProvider getBytesClassLoader() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

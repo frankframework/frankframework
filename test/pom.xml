@@ -32,15 +32,6 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 <!--
 			<plugin>
 				<groupId>org.ibissource</groupId>
@@ -115,7 +106,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.2.2</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -193,24 +183,6 @@
 					<scope>runtime</scope>
 				</dependency>
 		 </dependencies>
-		</profile>
-		<profile>
-			<id>jdk11</id>
-			<activation>
-				<jdk>11</jdk>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.8.1</version>
-						<configuration>
-							<release>11</release>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 	</profiles>
 </project>

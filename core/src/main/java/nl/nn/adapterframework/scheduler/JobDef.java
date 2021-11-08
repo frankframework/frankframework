@@ -30,7 +30,6 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -46,8 +45,8 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * <br>
  * Operation of scheduling:
  * <ul>
- *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
+ *   <li>at configuration time {@link Configuration#registerScheduledJob(IJob) Configuration.registerScheduledJob()} is called; </li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(IJob) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
@@ -298,7 +297,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	private @Getter String jobGroup = null;
 	private @Getter String cronExpression;
 	private @Getter long interval = -1;
-	private JobDefFunctions function;
 
 	private Locker locker = null;
 	private @Getter int numThreads = 1;
@@ -313,9 +311,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
-		}
-		if (StringUtils.isEmpty(getFunction())) {
-			throw new ConfigurationException("a function must be specified");
 		}
 
 		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
@@ -334,14 +329,11 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		configured = true;
 	}
 
+	@Override
 	public JobDetail getJobDetail() {
 		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
 
-		JobDetail jobDetail = IbisJobBuilder.fromJobDef(this)
-				.setIbisManager(ibisManager)
-				.build();
-
-		return jobDetail;
+		return IbisJobBuilder.fromJobDef(this).setIbisManager(ibisManager).build();
 	}
 
 	public synchronized boolean incrementCountThreads() {
@@ -358,10 +350,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		countThreads--;
 	}
 
-	/**
-	 * Called from {@link ConfiguredJob} which should trigger this job definition
-	 */
-	protected final void executeJob(IbisManager ibisManager) {
+	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
+	@Override
+	public final void executeJob(IbisManager ibisManager) {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -437,7 +428,6 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
 		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
 		if(interval > -1) builder.append(" interval ["+interval+"]");
-		if(function != null) builder.append(" function ["+function+"]");
 		return builder.toString();
 	}
 
@@ -445,6 +435,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.jobGroup = jobGroup;
 	}
 
+	@Override
 	@IbisDoc({"Name of the job", ""})
 	public void setName(String name) {
 		this.name = name;
@@ -455,32 +446,22 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.description = description;
 	}
 
-	@IbisDoc({"CRON expression that determines the frequency of execution", ""})
+	@Override
 	public void setCronExpression(String cronExpression) {
 		this.cronExpression = cronExpression;
 	}
 
-	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
+	@Override
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}
 
-	public void setFunction(String function) {
-		this.function = EnumUtils.parse(JobDefFunctions.class, "function", function);
-	}
-	public String getFunction() {
-		return function==null?null:function.getLabel();
-	}
-	public JobDefFunctions getFunctionEnum() {
-		return function;
-	}
-
-	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained, " +
-				"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. "})
+	@Override
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
 	}
+	@Override
 	public Locker getLocker() {
 		return locker;
 	}
@@ -490,6 +471,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		numThreads = newNumThreads;
 	}
 
+	@Override
 	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
 			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
@@ -501,7 +483,13 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		this.messageKeeperSize = size;
 	}
 
+	@Override
 	public synchronized StatisticsKeeper getStatisticsKeeper() {
 		return statsKeeper;
+	}
+
+	/** @ff.noAttribute */
+	public void setFunction(Object ignoreMe) {
+		//Dummy method to avoid 'does not have an attribute [function] to set to value [dumpStatistics]' warnings
 	}
 }

@@ -70,6 +70,7 @@ import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -1659,7 +1660,7 @@ public class TestTool {
 				WebServiceSender webServiceSender = new WebServiceSender();
 				webServiceSender.setName("Test Tool WebServiceSender");
 				webServiceSender.setUrl(url);
-				webServiceSender.setUserName(userName);
+				webServiceSender.setUsername(userName);
 				webServiceSender.setPassword(password);
 				if (soap != null) {
 					webServiceSender.setSoap(new Boolean(soap));
@@ -1713,18 +1714,16 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setRequestTimeOut(parameterTimeout);
-				listenerMessageHandler.setResponseTimeOut(parameterTimeout);
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				listenerMessageHandler.setTimeout(parameterTimeout);
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				WebServiceListener webServiceListener = new WebServiceListener();
@@ -1789,7 +1788,7 @@ public class TestTool {
 					httpSender = new HttpSender();
 					httpSender.setName("Test Tool HttpSender");
 					httpSender.setUrl(url);
-					httpSender.setUserName(userName);
+					httpSender.setUsername(userName);
 					httpSender.setPassword(password);
 					httpSender.setHeadersParams(headerParams);
 					if (StringUtils.isNotEmpty(xhtmlString)) {
@@ -1820,6 +1819,10 @@ public class TestTool {
 						httpSender.addParameter(parameter);
 					}
 					httpSender.configure();
+				} catch(ClassLoaderException e) {
+					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, writers);
+					queues = null;
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 					closeQueues(queues, properties, writers);
@@ -1926,17 +1929,16 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				JavaListener javaListener = new JavaListener();
@@ -2312,19 +2314,19 @@ public class TestTool {
 				debugMessage("Closed web service listener '" + queueName + "'", writers);
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2394,19 +2396,19 @@ public class TestTool {
 				}
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2733,7 +2735,20 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(parameterTimeout);
+			ListenerMessage listenerMessage = null;
+			Long timeout = Long.parseLong(""+parameterTimeout);
+			try {
+				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+				debugMessage("Timeout set to '" + timeout + "'", writers);
+			} catch (Exception e) {
+			}
+			try {
+				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
+			} catch (TimeOutException e) {
+				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
+				return RESULT_ERROR;
+			}
+
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);

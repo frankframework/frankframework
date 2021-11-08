@@ -322,7 +322,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			session.scheduleCloseOnSessionExit(writer);
+			session.scheduleCloseOnSessionExit(writer, "debugger for inspectXml labeled ["+label+"]");
 			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()));
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		} 
@@ -408,33 +408,33 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	@Override
-	public Object threadCreated(ThreadDebugInfo ref, Object request) {
+	public <R> R threadCreated(ThreadDebugInfo ref, R request) {
 		if (!isEnabled()) {
-			return null;
+			return request;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
 			log.debug("threadCreated thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
 		}
-		return ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
+		return (R)ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
 
 	@Override
-	public Object threadEnded(ThreadDebugInfo ref, Object result) {
+	public <R> R threadEnded(ThreadDebugInfo ref, R result) {
 		if (!isEnabled()) {
-			return null;
+			return result;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
 			log.debug("threadEnded thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
 		}
-		return ibisDebugger.endThread(ref.owner, ref.correlationId, result);
+		return (R)ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
 	public Throwable threadAborted(ThreadDebugInfo ref, Throwable t) {
 		if (!isEnabled()) {
-			return null;
+			return t;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";

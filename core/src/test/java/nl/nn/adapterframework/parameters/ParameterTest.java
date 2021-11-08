@@ -15,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 
 public class ParameterTest {
@@ -27,7 +28,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setPattern("{username}");
-		p.setUserName("fakeUsername");
+		p.setUsername("fakeUsername");
 		p.configure();
 		
 		PipeLineSession session = new PipeLineSession();
@@ -89,7 +90,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setPattern("param [{siblingParameter}] sessionKey [{sessionKey}] username [{username}] password [{password}]");
-		p.setUserName("fakeUsername");
+		p.setUsername("fakeUsername");
 		p.setPassword("fakePassword");
 		p.configure();
 		
@@ -201,7 +202,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("myParameter");
 		p.setSessionKey(sessionKey);
-		p.setType("list");
+		p.setType(ParameterType.LIST);
 		p.setXpathExpression("items/item");
 		p.configure();
 

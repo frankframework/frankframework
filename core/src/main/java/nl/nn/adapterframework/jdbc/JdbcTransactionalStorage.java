@@ -731,7 +731,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		IbisTransaction itx = null;
 		if (txManager!=null) {
-			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this)+ " ["+getName()+"]");
+			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
 		}
 		try {
 			String result;

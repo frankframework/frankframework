@@ -612,7 +612,6 @@ public final class ShowConfigurationStatus extends Base {
 			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
 			
 			receiverInfo.put("name", receiver.getName());
-			receiverInfo.put("class", ClassUtils.nameOf(receiver));
 			Map<String, Object> messages = new HashMap<String, Object>(3);
 			messages.put("received", receiver.getMessagesReceived());
 			messages.put("retried", receiver.getMessagesRetried());
@@ -771,6 +770,10 @@ public final class ShowConfigurationStatus extends Base {
 		int messageLogMessageCount = 0;
 		while(it.hasNext()) {
 			Receiver rcv = it.next();
+			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
+				adapterInfo.put("receiverReachedMaxExceptions", "true");
+			}
+			
 			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
 			if(esmb != null) {
 				try {

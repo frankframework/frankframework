@@ -219,7 +219,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		return parameterList;
 	}
 
-	/** optional: the Pipe will only be executed if a lock could be set successfully */
 	@Override
 	public void setLocker(Locker locker) {
 		this.locker = locker;

@@ -188,10 +188,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private CloseableHttpClient httpClient;
 
 	/** SECURITY */
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String authDomain;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String authDomain;
 
 	/** PROXY **/
 	private String proxyHost;
@@ -390,7 +390,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			if(sslSocketFactory != null)
 				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
 
-			credentials = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			if (!StringUtils.isEmpty(credentials.getUsername())) {
 				String uname;
@@ -849,27 +849,23 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@IbisDoc({"21", "username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String username) {
+		this.username = username;
 	}
-	public String getUserName() {
-		return userName;
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	@IbisDoc({"22", "password used in authentication to host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
 
 	@IbisDoc({"23", "domain used in authentication to host", " "})
 	public void setAuthDomain(String string) {
 		authDomain = string;
-	}
-	public String getAuthDomain() {
-		return authDomain;
 	}
 
 

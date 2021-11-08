@@ -104,7 +104,7 @@ public class CmisSenderTest {
 //		sender.setRepository(repo);
 //		sender.setAction("get");
 //		sender.setBindingType("browser");
-		sender.setUserName(titanUser);
+		sender.setUsername(titanUser);
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
 		sender.configure();
