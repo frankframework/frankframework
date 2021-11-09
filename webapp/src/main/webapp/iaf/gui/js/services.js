@@ -23,7 +23,8 @@ angular.module('iaf.beheerconsole')
 						Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 					}
 				}
-			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+			}
+			if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
 				var tag = etags[uri];
 				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}

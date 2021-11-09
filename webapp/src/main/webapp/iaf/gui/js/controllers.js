@@ -210,7 +210,7 @@ angular.module('iaf.beheerconsole')
 			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
 			delete configurations.totalErrorStoreCount;
 
-			for(x in configurations.warnings) {
+			for(let x in configurations.warnings) {
 				$scope.addWarning('', configurations.warnings[x]);
 			}
 
@@ -1782,7 +1782,7 @@ angular.module('iaf.beheerconsole')
 
 .controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.state = [];
-	$scope.addAlert = function(type, message) {
+	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 
@@ -1817,7 +1817,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Post("schedules", fd, function(data) {
-			$scope.addAlert("success", "Successfully added schedule!");
+			$scope.addLocalAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
 					group:"",
@@ -1833,14 +1833,14 @@ angular.module('iaf.beheerconsole')
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addAlert("warning", error);
+			$scope.addLocalAlert("warning", error);
 		}, false);
 	};
 }])
 
 .controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function($scope, Api, $stateParams) {
 	$scope.state = [];
-	$scope.addAlert = function(type, message) {
+	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
@@ -1896,10 +1896,10 @@ angular.module('iaf.beheerconsole')
 			fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Put(url, fd, function(data) {
-			$scope.addAlert("success", "Successfully edited schedule!");
+			$scope.addLocalAlert("success", "Successfully edited schedule!");
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addAlert("warning", error);
+			$scope.addLocalAlert("warning", error);
 		}, false);
 	};
 
