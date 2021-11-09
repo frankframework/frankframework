@@ -2,11 +2,10 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:cxf="http://cxf.apache.org/core"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd 
-		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd 
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
 	>
 
@@ -23,12 +22,6 @@
 	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
-
-	<cxf:bus id="ff-soap-bus">
-		<cxf:features>
-			<cxf:logging />
-		</cxf:features>
-	</cxf:bus>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
