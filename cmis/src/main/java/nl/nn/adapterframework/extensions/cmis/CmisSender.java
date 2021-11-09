@@ -68,6 +68,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
+import nl.nn.adapterframework.jms.JMSFacade.AcknowledgeMode;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -760,9 +761,7 @@ public class CmisSender extends SenderWithParametersBase {
 		CmisEvent event = CmisEvent.GET_OBJECT;
 		try {
 			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
-			if(StringUtils.isNotEmpty(cmisEvent)) {
-				event = EnumUtils.parse(CmisEvent.class, cmisEvent);
-			}
+			event = parseEvent(cmisEvent);
 		} catch (IOException | IllegalArgumentException e) {
 			throw new SenderException("unable to parse CmisEvent", e);
 		}
@@ -939,6 +938,22 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 
 		return new Message(resultXml.toXML());
+	}
+
+	protected CmisEvent parseEvent(String cmisEvent) {
+		if(StringUtils.isNotEmpty(cmisEvent)) {
+			try {
+				return EnumUtils.parseDocumented(CmisEvent.class, "CmisEvent", cmisEvent);
+			} catch (IllegalArgumentException e1) {
+				try {
+					return EnumUtils.parseNormal(CmisEvent.class, "CmisEvent", cmisEvent);
+				} catch (IllegalArgumentException e2) {
+					e1.addSuppressed(e2);
+					throw e1;
+				}
+			}
+		}
+		throw new IllegalArgumentException("CmisEvent may not be empty");
 	}
 
 	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeOutException {
