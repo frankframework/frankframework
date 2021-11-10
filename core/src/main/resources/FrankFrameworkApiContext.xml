@@ -22,8 +22,5 @@
 		<jaxrs:providers>
 			<bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 		</jaxrs:providers>
-		<jaxrs:features>
-			<cxf:logging />
-		</jaxrs:features>
 	</jaxrs:server>
 </beans>
