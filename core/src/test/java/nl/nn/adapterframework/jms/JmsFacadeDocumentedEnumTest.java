@@ -28,7 +28,7 @@ public class JmsFacadeDocumentedEnumTest {
 		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());
 		jms.setAcknowledgeMode("dups");
 		assertEquals(AcknowledgeMode.DUPS_OK_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
-		jms.setAcknowledgeMode("client_acknowledge");
+		jms.setAcknowledgeMode(AcknowledgeMode.CLIENT_ACKNOWLEDGE.name());
 		assertEquals(AcknowledgeMode.CLIENT_ACKNOWLEDGE, jms.getAcknowledgeModeEnum());
 		jms.setAcknowledgeMode("");
 		assertEquals(AcknowledgeMode.NOT_SET, jms.getAcknowledgeModeEnum());

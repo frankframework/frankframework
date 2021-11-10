@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -20,10 +21,12 @@ public class EnumUtilsTest {
 
 	@Test
 	public void testParseNullValue() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("cannot set field [processState] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
-
-		EnumUtils.parse(ProcessState.class, null);
+		IllegalArgumentException exception = assertThrows(
+				IllegalArgumentException.class, () -> {
+					EnumUtils.parse(ProcessState.class, null);
+			}
+		);
+		assertEquals("cannot set field [processState] to unparsable value [null]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", exception.getMessage());
 	}
 
 	@Test
@@ -49,11 +52,20 @@ public class EnumUtilsTest {
 	}
 
 	@Test
-	public void testParseNonExistingNormalEnum() {
+	public void testParseNonExistingEnum() {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("cannot set field [processState] to unparsable value [tralala]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
 
 		EnumUtils.parse(ProcessState.class, "tralala");
+	}
+
+	@Test
+	public void testParseNonExistingEnumWithFieldName() {
+		EnumUtils.parse(ProcessState.class, "fieldname", "Available"); //Exists
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]");
+
+		EnumUtils.parse(ProcessState.class, "fieldname", "tralala2"); //Does not exist
 	}
 
 	@Test
@@ -83,23 +95,32 @@ public class EnumUtilsTest {
 
 	@Test
 	public void testParseBoth() {
-		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parseBoth(TestDocumentedEnum.class, "een"));
-		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parseBoth(TestDocumentedEnum.class, "one"));
-		assertEquals(TestNotDocumentedEnum.ONE, EnumUtils.parseBoth(TestNotDocumentedEnum.class, "one"));
+		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parse(TestDocumentedEnum.class, "een", true));
+		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parse(TestDocumentedEnum.class, "one", true));
+		assertEquals(TestNotDocumentedEnum.ONE, EnumUtils.parse(TestNotDocumentedEnum.class, "one", true));
 
 		IllegalArgumentException exception1 = assertThrows(
 				IllegalArgumentException.class, () -> {
-					EnumUtils.parseBoth(TestNotDocumentedEnum.class, "");
+					EnumUtils.parse(TestNotDocumentedEnum.class, "", true);
 			}
 		);
-		assertThat(exception1.getMessage(), Matchers.endsWith("[testNotDocumentedEnum] may not be empty"));
+		assertEquals("cannot set field [testNotDocumentedEnum] to unparsable value []. Must be one of [ONE, TWO]", exception1.getMessage());
 
 		IllegalArgumentException exception2 = assertThrows(
 				IllegalArgumentException.class, () -> {
-					EnumUtils.parseBoth(TestNotDocumentedEnum.class, "zero");
+					EnumUtils.parse(TestNotDocumentedEnum.class, "zero", true); //unknown not-documented enum
 			}
 		);
-		assertThat(exception2.getMessage(), Matchers.startsWith("cannot set field [testNotDocumentedEnum] to unparsable value [zero]"));
+		assertEquals("cannot set field [testNotDocumentedEnum] to unparsable value [zero]. Must be one of [ONE, TWO]", exception2.getMessage());
+		assertTrue(exception2.getSuppressed().length == 0);
+
+		IllegalArgumentException exception3 = assertThrows(
+				IllegalArgumentException.class, () -> {
+					EnumUtils.parse(TestDocumentedEnum.class, "zero", true); //unknown documented enum
+			}
+		);
+		assertEquals("cannot set field [testDocumentedEnum] to unparsable value [zero]. Must be one of [een, twee]", exception3.getMessage());
+		assertTrue(exception3.getSuppressed().length == 1);
 	}
 
 	public static enum EnumWithInteger {
