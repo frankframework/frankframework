@@ -761,7 +761,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
 			if(StringUtils.isNotEmpty(cmisEvent)) {
-				event = parseEvent(cmisEvent);
+				event = EnumUtils.parseBoth(CmisEvent.class, cmisEvent);
 			}
 		} catch (IOException | IllegalArgumentException e) {
 			throw new SenderException("unable to parse CmisEvent", e);
@@ -939,22 +939,6 @@ public class CmisSender extends SenderWithParametersBase {
 		}
 
 		return new Message(resultXml.toXML());
-	}
-
-	protected CmisEvent parseEvent(String cmisEvent) throws IllegalArgumentException {
-		if(StringUtils.isNotEmpty(cmisEvent)) {
-			try {
-				return EnumUtils.parseDocumented(CmisEvent.class, "CmisEvent", cmisEvent);
-			} catch (IllegalArgumentException e1) {
-				try {
-					return EnumUtils.parseNormal(CmisEvent.class, "CmisEvent", cmisEvent);
-				} catch (IllegalArgumentException e2) {
-					e1.addSuppressed(e2);
-					throw e1;
-				}
-			}
-		}
-		throw new IllegalArgumentException("CmisEvent may not be empty");
 	}
 
 	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeOutException {

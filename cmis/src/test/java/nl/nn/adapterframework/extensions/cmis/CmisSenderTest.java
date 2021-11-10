@@ -1,17 +1,13 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class CmisSenderTest extends SenderTestBase<CmisSender> {
@@ -101,25 +97,5 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setAction("find");
 		sender.configure();
 		sender.open();//Should configure and open just fine, but fail trying to connect to an endpoint.
-	}
-
-	@Test
-	public void parseCmisEvents() throws Exception {
-		assertEquals(CmisEvent.GET_OBJECT, sender.parseEvent(CmisEvent.GET_OBJECT.getLabel()));
-		assertEquals(CmisEvent.GET_OBJECT, sender.parseEvent(CmisEvent.GET_OBJECT.name()));
-
-		IllegalArgumentException exception1 = assertThrows(
-				IllegalArgumentException.class, () -> {
-				sender.parseEvent(null);
-			}
-		);
-		assertThat(exception1.getMessage(), Matchers.endsWith("CmisEvent may not be empty"));
-
-		IllegalArgumentException exception2 = assertThrows(
-				IllegalArgumentException.class, () -> {
-				sender.parseEvent("ken ik niet");
-			}
-		);
-		assertThat(exception2.getMessage(), Matchers.startsWith("cannot set field [CmisEvent] to unparsable value "));
 	}
 }

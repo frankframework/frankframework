@@ -1,13 +1,18 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 
 public class EnumUtilsTest {
@@ -71,6 +76,30 @@ public class EnumUtilsTest {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("cannot set field [fieldName] to unparsable value [tralala]. Must be one of [FTP, SFTP, FTPSI, FTPSX(TLS), FTPSX(SSL)]");
 		EnumUtils.parseDocumented(FtpType.class, "fieldName", "tralala");
+	}
+
+	public static enum TestDocumentedEnum implements DocumentedEnum { @EnumLabel("een") ONE, @EnumLabel("twee") TWO; }
+	public static enum TestNotDocumentedEnum { ONE, TWO; }
+
+	@Test
+	public void testParseBoth() {
+		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parseBoth(TestDocumentedEnum.class, "een"));
+		assertEquals(TestDocumentedEnum.ONE, EnumUtils.parseBoth(TestDocumentedEnum.class, "one"));
+		assertEquals(TestNotDocumentedEnum.ONE, EnumUtils.parseBoth(TestNotDocumentedEnum.class, "one"));
+
+		IllegalArgumentException exception1 = assertThrows(
+				IllegalArgumentException.class, () -> {
+					EnumUtils.parseBoth(TestNotDocumentedEnum.class, "");
+			}
+		);
+		assertThat(exception1.getMessage(), Matchers.endsWith("[testNotDocumentedEnum] may not be empty"));
+
+		IllegalArgumentException exception2 = assertThrows(
+				IllegalArgumentException.class, () -> {
+					EnumUtils.parseBoth(TestNotDocumentedEnum.class, "zero");
+			}
+		);
+		assertThat(exception2.getMessage(), Matchers.startsWith("cannot set field [testNotDocumentedEnum] to unparsable value [zero]"));
 	}
 
 	public static enum EnumWithInteger {
