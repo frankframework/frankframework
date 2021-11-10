@@ -3,13 +3,13 @@
 	<destination name="log" className="nl.nn.adapterframework.monitoring.SenderMonitorAdapter">
 		<sender className="nl.nn.adapterframework.senders.LogSender" logCategory="monitoring"/>
 	</destination>
-	<monitor name="Internal adapter exception" type="TECHNICAL" destinations="GALM,log">
+	<monitor name="Internal adapter exception" destinations="GALM,log">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
 			<adapterfilter adapter="TransactionTimeoutHandlingNonTransacted" />
 			<adapterfilter adapter="TransactionTimeoutHandlingTransacted" />
 		</trigger>
 	</monitor>
-	<monitor name="Sender timeout" type="TECHNICAL" destinations="GALM">
+	<monitor name="Sender timeout" destinations="GALM">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Sender Timeout" severity="CRITICAL" threshold="10" period="3600">
 			<adapterfilter adapter="TransactionHandlingMandatory">
 				<source>Pipe [Send transacted message to mandatory subadapter]</source>
@@ -19,17 +19,17 @@
 			</adapterfilter>
 		</trigger>
 	</monitor>
-	<monitor name="Sender exception" type="TECHNICAL" destinations="GALM">
+	<monitor name="Sender exception" destinations="GALM">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Sender Exception Caught" severity="CRITICAL" threshold="10" period="3600"/>
 	</monitor>
 	<monitor name="Invalid XML Message" type="FUNCTIONAL">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Invalid XML: does not comply to XSD" severity="WARNING"/>
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Invalid XML: parser error" severity="WARNING"/>
 	</monitor>
-	<monitor name="Configuration error" type="TECHNICAL" destinations="GALM">
+	<monitor name="Configuration error" destinations="GALM">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Exception Configuring Receiver" severity="CRITICAL"/>
 	</monitor>
-	<monitor name="Message size exceeding" type="TECHNICAL">
+	<monitor name="Message size exceeding">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Pipe Message Size Exceeding" severity="WARNING"/>
 	</monitor>
 	<monitor name="Message in Error" type="FUNCTIONAL" destinations="GALM">
@@ -40,7 +40,7 @@
 			<event>Receiver Moved Message to ErrorStorage</event>
 		</trigger>
 	</monitor>
-	<monitor name="Receiver Shutdown" type="TECHNICAL" destinations="GALM">
+	<monitor name="Receiver Shutdown" destinations="GALM">
 		<trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING">
 			<event>Receiver Shutdown</event>
 		</trigger>

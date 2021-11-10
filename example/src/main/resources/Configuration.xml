@@ -4,10 +4,6 @@
 	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
 ]>
 <configuration name="Ibis4Example">
-	<jmsRealms>
-		<jmsRealm realmName="jdbc" datasourceName="${jdbc.datasource.default}"/>
-		<!-- jmsRealm realmName="qcf" queueConnectionFactoryName="jms/qcf"/ -->
-	</jmsRealms>
 	&HelloWorld;
 	&HelloWorlds;
 	&HelloBeautifulWorld;
