@@ -471,6 +471,10 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -482,6 +486,10 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -492,6 +500,10 @@
 				<exclusion>
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
