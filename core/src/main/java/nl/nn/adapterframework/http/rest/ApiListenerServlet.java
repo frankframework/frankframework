@@ -463,7 +463,8 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 					messageContext.put("multipartAttachments", attachments.toXML());
 				} else {
-					if(request.getContentLength() > -1) { //If content is present (POST/PUT) this header must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
+					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
+					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
 						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
 					} else {
 						body = Message.nullMessage();

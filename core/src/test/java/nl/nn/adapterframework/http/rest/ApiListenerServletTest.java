@@ -200,10 +200,12 @@ public class ApiListenerServletTest extends Mockito {
 			}
 		}
 
-		if(!method.equals(Methods.GET) && content != null)
-			request.setContent(content.getBytes());
-		else
-			request.setContent("".getBytes()); //Empty content
+		if(!method.equals(Methods.GET)) {
+			if(content != null)
+				request.setContent(content.getBytes());
+			else
+				request.setContent("".getBytes()); //Empty content
+		}
 
 		return request;
 	}
