@@ -186,26 +186,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		try {
 			digester = getDigester(configuration);
 
-			
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			String loaded = resolveEntitiesAndProperties(configuration, configurationResource, appConstants);
 
-			List<String> propsToHide = new ArrayList<>();
-			String propertiesHideString = appConstants.getString("properties.hide", null);
-			if (propertiesHideString != null) {
-				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-			}
-			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, propsToHide);
-			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(loadedHide);
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(loadedHide);
-			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
-			}
-
-			configuration.setLoadedConfiguration(loadedHide.trim()); //Something adds random spaces and newlines at the end of the string...
-			configLogger.info(loadedHide);
+			configLogger.info(configuration.getLoadedConfiguration());
 			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -246,17 +232,38 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
 		String loaded = writer.toString();
 
-		if(!preparse) {
-			loaded = StringResolver.substVars(loaded, appConstants);
-			loaded = ConfigurationUtils.getCanonicalizedConfiguration(loaded);
-			loaded = ConfigurationUtils.getActivatedConfiguration(loaded);
+		if(preparse) {
+			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
+			configuration.setLoadedConfiguration(loadedHide);
+		} else {
+			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
+			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
+			configuration.setLoadedConfiguration(loadedHide);
 
-			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
-			}
+			loaded = StringResolver.substVars(loaded, appConstants);
+			loaded = processCanonicalizedActivatedStubbedXslts(loaded, configuration.getClassLoader());
 		}
 
 		return loaded;
+	}
+
+	private String processCanonicalizedActivatedStubbedXslts(String configuration, ClassLoader classLoader) throws ConfigurationException {
+		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
+		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
+
+		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
+			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
+		}
+		return configuration;
+	}
+
+	private List<String> getPropsToHide(Properties appConstants) {
+		List<String> propsToHide = new ArrayList<>();
+		String propertiesHideString = appConstants.getProperty("properties.hide");
+		if (propertiesHideString != null) {
+			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+		}
+		return propsToHide;
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(Configuration configuration, ContentHandler writer) throws IOException, SAXException {
