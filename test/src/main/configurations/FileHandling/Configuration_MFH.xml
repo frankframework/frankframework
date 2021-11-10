@@ -33,7 +33,7 @@
 				<Param name="Filename" xpathExpression="file/@name" />
 				<Param name="MFHFlowId" value="${mfh.flow1.mfhflowid}" /> 
 				<Param name="LegacyFlowId" value="${mfh.flow1.legacyflowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
-				<Param name="originalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
+				<Param name="OriginalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
 				<Param name="LocalTransactionID" sessionKey="messageId" />
 			</XsltPipe>
 

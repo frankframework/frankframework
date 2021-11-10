@@ -7,13 +7,13 @@
 	<xsl:param name="MFHFlowId"/>
 	<xsl:param name="LegacyFlowId"/>
 	<xsl:param name="LocalTransactionID"/>
-	<xsl:param name="originalFilename"/>
+	<xsl:param name="OriginalFilename"/>
 
 	<!-- Still needs to be improved-->
 	<xsl:template match="/">
 		<Message>
 			<Filename><xsl:value-of select="$Filename"/></Filename>
-			<OriginalFilename><xsl:value-of select="$originalFilename"/></OriginalFilename>
+			<OriginalFilename><xsl:value-of select="$OriginalFilename"/></OriginalFilename>
 			<MFHFlowId><xsl:value-of select="$MFHFlowId"/></MFHFlowId>
 			<CanonicalName><xsl:value-of select="$CanonicalName"/></CanonicalName>
 			<LegacyMessage>
