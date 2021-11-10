@@ -1943,8 +1943,8 @@ angular.module('iaf.beheerconsole')
 			$scope.alert = false;
 			$.extend($scope, data);
 			$scope.path = data.directory;
-			if(data.count > 500) {
-				$scope.alert = "Total number of items ("+data.count+") exceeded maximum number, only showing first 500 items!";
+			if(data.count > data.list.length) {
+				$scope.alert = "Total number of items ["+data.count+"] exceeded maximum number, only showing first ["+(data.list.length-1)+"] items!";
 			}
 		}, function(data) {
 			$scope.alert = (data) ? data.error : "An unknown error occured!";
