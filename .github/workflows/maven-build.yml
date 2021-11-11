@@ -59,7 +59,7 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc" >> $GITHUB_ENV
+        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc,jdk11" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
