@@ -5,7 +5,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 
 | Kind | Name | Appears on | Function |
 | ---- | ---- | ---------- | -------- |
-| Java annotation | `@FrankDocGroup` | Class or interface |  | Define group as shown in top-left of webapp, fields `name` and `order`.|
+| Java annotation | `@FrankDocGroup` | Class or interface | Define group as shown in top-left of webapp, fields `name` and `order`.|
 | JavaDoc tag | `@ff.parameters` | Class | Describes how parameters (Frank config `<Param>`) are used. |
 | JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. |
 | JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). |
