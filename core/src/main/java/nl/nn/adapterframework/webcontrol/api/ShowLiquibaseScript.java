@@ -15,13 +15,14 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -30,6 +31,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
@@ -37,24 +39,42 @@ import nl.nn.adapterframework.jdbc.migration.Migrator;
 @Path("/")
 public final class ShowLiquibaseScript extends Base {
 
-	@POST
+	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response getConfigurations() throws ApiException {
 
-		Response.ResponseBuilder response = Response.noContent();
+		List<String> configNames= new ArrayList<String>();
 
-		String configuration = null;
-		for (Entry<String, Object> entry : json.entrySet()) {
-			String key = entry.getKey();
-			if("configuration".equalsIgnoreCase(key)) {
-				configuration = entry.getValue().toString();
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
+				if(databaseMigrator.hasLiquibaseScript(config)) {
+					configNames.add(config.getName());
+				}
 			}
 		}
 
-		if(configuration == null) {
+		HashMap<String, Object> resultMap = new HashMap<>();
+		resultMap.put("configurationsWithLiquibaseScript", configNames);
+
+		return Response.status(Response.Status.OK).entity(resultMap).build();
+	}
+
+	@POST
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/jdbc/liquibase")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response execute(MultipartBody inputDataMap) throws ApiException {
+
+		Response.ResponseBuilder response = Response.noContent();
+		InputStream file=null;
+		if(inputDataMap.getAttachment("file") != null) {
+			file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
+		}
+		String configuration = resolveStringFromMap(inputDataMap, "configuration", null);
+
+		if(configuration == null && file == null) {
 			return response.status(Response.Status.BAD_REQUEST).build();
 		}
 
@@ -62,7 +82,12 @@ public final class ShowLiquibaseScript extends Base {
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
 		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-			databaseMigrator.configure();
+			if(file != null) {
+				String fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
+				databaseMigrator.configure(file, fileName);
+			} else {
+				databaseMigrator.configure();
+			}
 			result = databaseMigrator.getUpdateSql(writer).toString();
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);

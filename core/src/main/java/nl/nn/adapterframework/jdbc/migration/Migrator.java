@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 
 import javax.naming.NamingException;
@@ -61,7 +62,7 @@ public class Migrator implements IConfigurable, AutoCloseable {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(configuration, null);
+		configure(null, null);
 	}
 
 	private DataSource getDatasource(String datasourceName) throws ConfigurationException {
@@ -76,17 +77,17 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		return new TransactionAwareDataSourceProxy(datasource);
 	}
 
-	private synchronized void configure(Configuration configuration, String changeLogFile) throws ConfigurationException {
+	public synchronized void configure(InputStream file, String filename) throws ConfigurationException {
 		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
 
 		String datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", defaultDatasourceName));
 		DataSource datasource = getDatasource(datasourceName);
 
-		if(changeLogFile == null) {
-			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		if(filename != null) {
+			changeLogFile = filename;
 		}
-
 		ClassLoader classLoader = configuration.getClassLoader();
 		if(!(classLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
 			ConfigurationWarnings.add(this, log, "unable to initialize database migrator");
@@ -94,7 +95,7 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		}
 
 		try {
-			instance = new LiquibaseImpl(datasource, configuration, changeLogFile);
+			instance = new LiquibaseImpl(datasource, configuration, changeLogFile, file);
 		}
 		catch (ValidationFailedException e) {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -142,6 +143,17 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		}
 	}
 
+	public boolean hasLiquibaseScript(Configuration config) {
+		AppConstants appConstants = AppConstants.getInstance(config.getClassLoader());
+		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(config.getClassLoader());
+		if(resourceAccessor.getResource(changeLogFile) == null) {
+			log.debug("No liquibase script ["+changeLogFile+"] found in the classpath of configuration ["+config.getName()+"]");
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
 		if(!(applicationContext instanceof Configuration)) {
@@ -154,4 +166,5 @@ public class Migrator implements IConfigurable, AutoCloseable {
 	public ApplicationContext getApplicationContext() {
 		return configuration;
 	}
+
 }

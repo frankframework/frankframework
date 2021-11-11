@@ -210,7 +210,7 @@ angular.module('iaf.beheerconsole')
 			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
 			delete configurations.totalErrorStoreCount;
 
-			for(let x in configurations.warnings) {
+			for(x in configurations.warnings) {
 				$scope.addWarning('', configurations.warnings[x]);
 			}
 
@@ -356,11 +356,8 @@ angular.module('iaf.beheerconsole')
 	};
 
 	Hooks.register("adapterUpdated:once", function() {
-		if($location.path() == "/status" && $location.hash()) {
-			var el = angular.element("#"+$location.hash());
-			if(el && el[0]) {
-				el[0].scrollIntoView();
-			}
+		if($location.hash()) {
+			angular.element("#"+$location.hash())[0].scrollIntoView();
 		}
 	});
 	Hooks.register("adapterUpdated", function(adapter) {
@@ -1064,57 +1061,27 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowConfigurationCtrl', ['$scope', 'Api', '$state', '$location', function($scope, Api, $state, $location) {
-	$scope.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
-	$scope.loadedConfiguration = ($state.params.loaded != undefined && $state.params.loaded == false);
+.controller('ShowConfigurationCtrl', ['$scope', 'Api', function($scope, Api) {
+	this.configurationRadio = 'true';
+	$scope.selectedConfiguration = "All";
+	$scope.loadedConfiguration = true;
 
-	$scope.update = function() {
+	$scope.loadedConfig = function(bool) {
+		$scope.loadedConfiguration = (bool == "true") ? true : false;
 		getConfiguration();
 	};
 
-	var anchor = $location.hash();
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
-		$location.hash(''); //clear the hash from the url
-		anchor = null; //unset hash anchor
 		getConfiguration();
 	};
 
-	$scope.updateQueryParams = function() {
-		var transitionObj = {};
-		if($scope.selectedConfiguration != "All")
-			transitionObj.name = $scope.selectedConfiguration;
-		if(!$scope.loadedConfiguration)
-			transitionObj.loaded = $scope.loadedConfiguration;
-
-		$state.transitionTo('pages.configuration', transitionObj, { notify: false, reload: false });
-	};
-
-	$scope.clipboard = function() {
-		if($scope.configuration) {
-			var el = document.createElement('textarea');
-			el.value = $scope.configuration;
-			el.setAttribute('readonly', '');
-			el.style.position = 'absolute';
-			el.style.left = '-9999px';
-			document.body.appendChild(el);
-			el.select();
-			document.execCommand('copy');
-			document.body.removeChild(el);
-		}
-	}
-
 	getConfiguration = function() {
-		$scope.updateQueryParams();
 		var uri = "configurations";
 		if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;
 		if($scope.loadedConfiguration) uri += "?loadedConfiguration=true";
 		Api.Get(uri, function(data) {
 			$scope.configuration = data;
-
-			if(anchor) {
-				$location.hash(anchor);
-			}
 		});
 	};
 	getConfiguration();
@@ -1782,7 +1749,7 @@ angular.module('iaf.beheerconsole')
 
 .controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.state = [];
-	$scope.addLocalAlert = function(type, message) {
+	$scope.addAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 
@@ -1817,7 +1784,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Post("schedules", fd, function(data) {
-			$scope.addLocalAlert("success", "Successfully added schedule!");
+			$scope.addAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
 					group:"",
@@ -1833,14 +1800,14 @@ angular.module('iaf.beheerconsole')
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addLocalAlert("warning", error);
+			$scope.addAlert("warning", error);
 		}, false);
 	};
 }])
 
 .controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function($scope, Api, $stateParams) {
 	$scope.state = [];
-	$scope.addLocalAlert = function(type, message) {
+	$scope.addAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
@@ -1896,10 +1863,10 @@ angular.module('iaf.beheerconsole')
 			fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Put(url, fd, function(data) {
-			$scope.addLocalAlert("success", "Successfully edited schedule!");
+			$scope.addAlert("success", "Successfully edited schedule!");
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addLocalAlert("warning", error);
+			$scope.addAlert("warning", error);
 		}, false);
 	};
 
@@ -2111,14 +2078,33 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('LiquibaseScriptCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
-	if($scope.configurations) {
-		$scope.form = {configuration: $scope.configurations[0].name};
-	}
-	$scope.generateSql=false;
+	$scope.file = null;
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files[0]; //Can only parse 1 file!
+	};
+
+	Api.Get("jdbc/liquibase", function(data) {
+		$.extend($scope, data);
+		if($scope.configurationsWithLiquibaseScript && $scope.configurationsWithLiquibaseScript.length > 0) {
+			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
+		}
+	});
+
+	$scope.generateSql = false;
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};
+		var fd = new FormData();
 		$scope.generateSql=true;
-		Api.Post("jdbc/liquibase", JSON.stringify(formData), function(returnData) {
+		if($scope.file != null){
+			fd.append("file", $scope.file);
+		}
+
+		fd.append("configuration", formData.configuration);
+		Api.Post("jdbc/liquibase", fd, function(returnData) {
 			$scope.error = "";
 			$scope.generateSql=false;
 			$.extend($scope, returnData);
