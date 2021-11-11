@@ -92,36 +92,41 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter ConfigurationWarnings configurationWarnings;
 
-	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
+	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validate", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
-		private Configuration configuration;
 		private String schema;
-		public XmlErrorHandler(Configuration configuration, String schema) {
-			this.configuration = configuration;
+		public XmlErrorHandler(String schema) {
 			this.schema = schema;
 		}
+
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Warning" + buildErrorMessage(exception));
+			logErrorMessage("Validation warning", exception);
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Error" + buildErrorMessage(exception));
+			logErrorMessage("Validation error", exception);
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "FatalError" + buildErrorMessage(exception));
+			logErrorMessage("Fatal validation error", exception);
 		}
 
-		private String buildErrorMessage(SAXParseException exception) {
-			return " in ["+exception.getSystemId()+"] at line ["+exception.getLineNumber()+"] when validating against schema ["+schema+"]: " + exception.getMessage();
+		private void logErrorMessage(String prefix, SAXParseException exception) {
+			String msg = prefix+" in ["+exception.getSystemId()+"] at line ["+exception.getLineNumber()+"] when validating against schema ["+schema+"]: " + exception.getMessage();
+			if (validation) {
+				configurationWarnings.add((Object)null, log, msg);
+			} else {
+				log.debug(msg);
+			}
 		}
 	}
 
@@ -145,7 +150,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
 		loadDigesterRules(digester, digesterRulesResource);
 
-		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
@@ -155,7 +159,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(configuration, CONFIGURATION_VALIDATION_SCHEMA);
+			XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
 			digester.setErrorHandler(xeh);
 		}
 
@@ -222,7 +226,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
 			handler = getStub4TesttoolContentHandler(writer, appConstants);
-			handler = getCanonicalizedConfiguration(configuration, handler);
+			handler = getCanonicalizedConfiguration(handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
@@ -270,9 +274,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return propsToHide;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(Configuration configuration, ContentHandler writer) throws IOException, SAXException {
+	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(configuration, frankConfigXSD));
+		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {
