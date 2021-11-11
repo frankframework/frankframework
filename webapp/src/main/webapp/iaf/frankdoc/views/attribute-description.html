@@ -1,15 +1,13 @@
 <div>
-	<div ng-if="! attr.enum" ng-bind-html="::attr.description" />
-	<div ng-if="attr.enum">
-		<div ng-bind-html="::attr.description" />
+	<div ng-if="::attr.description" ng-bind-html="::attr.description" />
 
-		<br />
+	<div ng-if="attr.enum">
 		<div ng-controller="attribute-description">
 			<table ng-if="descriptiveEnum">
 				<thead>
 					<tr>
 						<th class="tbl-15">Value</th>
-						<th>Description</th>
+						<th class="tbl-85">Description</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="enumField in ::enums[attr.enum]">
@@ -18,7 +16,7 @@
 				</tr>
 			</table>
 
-			<p ng-if="!descriptiveEnum">Must be one of: <span ng-repeat="enumValue in ::enums[attr.enum]"><code>{{enumValue.label}}</code><span ng-if="!$last">, </span></span></p>
+			<span ng-if="!descriptiveEnum">Possible values: <span ng-repeat="enumValue in ::enums[attr.enum]"><code>{{enumValue.label}}</code><span ng-if="!$last">, </span></span></span>
 		</div>
 	</div>
 </div>

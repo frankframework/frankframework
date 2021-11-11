@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -431,15 +430,15 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
-	/**
+	/*
 	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
 	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
 	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
 	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
 	 * 
 	 * The DisplayName will always be updated, which is purely used for logging purposes.
-	 * @ff.noAttribute
 	 */
+	/** Name of the Configuration */
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {

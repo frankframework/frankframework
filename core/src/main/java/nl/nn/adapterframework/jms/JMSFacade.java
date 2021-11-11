@@ -814,15 +814,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@IbisDoc({"3", "If not transacted, the way the application informs the JMS provider that it has successfully received a message.", "auto"})
 	public void setAcknowledgeMode(String acknowledgeMode) {
 		try {
-			this.acknowledgeMode = EnumUtils.parseDocumented(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
-		} catch (IllegalArgumentException e1) {
-			try {
-				this.acknowledgeMode = EnumUtils.parseNormal(AcknowledgeMode.class, "acknowledgeMode", acknowledgeMode);
-			} catch (IllegalArgumentException e2) {
-				e1.addSuppressed(e2);
-				ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e1);
-				this.acknowledgeMode = AcknowledgeMode.NOT_SET;
-			}
+			this.acknowledgeMode = EnumUtils.parse(AcknowledgeMode.class, acknowledgeMode, true);
+		} catch (IllegalArgumentException e) {
+			ConfigurationWarnings.add(this, log, "invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge", e);
+			this.acknowledgeMode = AcknowledgeMode.NOT_SET;
 		}
 	}
 	public AcknowledgeMode getAcknowledgeModeEnum() {

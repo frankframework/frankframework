@@ -231,7 +231,7 @@ public class ServerStatistics extends Base {
 
 		//Global warnings
 		if (globalConfigWarnings.size()>0) {
-			List<Object> warnings = new ArrayList<Object>();
+			List<Object> warnings = new ArrayList<>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));
 			}
@@ -241,8 +241,9 @@ public class ServerStatistics extends Base {
 		//Global messages
 		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-		if(messages.size() > 0)
+		if(!messages.isEmpty()) {
 			returnMap.put("messages", messages);
+		}
 
 		Response.ResponseBuilder response = null;
 

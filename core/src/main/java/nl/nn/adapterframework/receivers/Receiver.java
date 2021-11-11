@@ -1720,6 +1720,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Changes runstate. 
 	 * Always stops the receiver when state is `**ERROR**`
+	 * @ff.noAttribute
 	 */
 	public void setRunState(RunStateEnum state) {
 		if(RunStateEnum.ERROR.equals(state)) {
@@ -1731,7 +1732,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-	
 	/**
 	 * Get the {@link RunStateEnum runstate} of this receiver.
 	 */
@@ -1739,7 +1739,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public RunStateEnum getRunState() {
 		return runState.getRunState();
 	}
-	
+
 	public boolean isInRunState(RunStateEnum someRunState) {
 		return runState.isInState(someRunState);
 	}

@@ -1660,7 +1660,7 @@ public class TestTool {
 				WebServiceSender webServiceSender = new WebServiceSender();
 				webServiceSender.setName("Test Tool WebServiceSender");
 				webServiceSender.setUrl(url);
-				webServiceSender.setUserName(userName);
+				webServiceSender.setUsername(userName);
 				webServiceSender.setPassword(password);
 				if (soap != null) {
 					webServiceSender.setSoap(new Boolean(soap));
@@ -1788,7 +1788,7 @@ public class TestTool {
 					httpSender = new HttpSender();
 					httpSender.setName("Test Tool HttpSender");
 					httpSender.setUrl(url);
-					httpSender.setUserName(userName);
+					httpSender.setUsername(userName);
 					httpSender.setPassword(password);
 					httpSender.setHeadersParams(headerParams);
 					if (StringUtils.isNotEmpty(xhtmlString)) {

@@ -28,7 +28,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setPattern("{username}");
-		p.setUserName("fakeUsername");
+		p.setUsername("fakeUsername");
 		p.configure();
 		
 		PipeLineSession session = new PipeLineSession();
@@ -90,7 +90,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.setPattern("param [{siblingParameter}] sessionKey [{sessionKey}] username [{username}] password [{password}]");
-		p.setUserName("fakeUsername");
+		p.setUsername("fakeUsername");
 		p.setPassword("fakePassword");
 		p.configure();
 		
