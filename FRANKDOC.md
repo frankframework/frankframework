@@ -3,18 +3,18 @@
 The Frank!Doc provides reference information for Frank developers as explained in [CONTRIBUTING.md](./CONTRIBUTING.md). It is produced by a doclet that assembles the Frank!Doc from the Java sources. You can control the Frank!Doc using custom JavaDoc tags and using Frank!Doc-related Java annotations. These annotations and tags are summarized in the table below:
 
 
-| Kind | Appears on | Name | Function |
-| ---- | ---------- | ---- | -------- |
-| Java annotation | Class or interface | @FrankDocGroup | Define group as shown in top-left of webapp, fields `name` and `order`. |
-| JavaDoc tag | Class | `@ff.parameters` | Describes how parameters (Frank config `<Param>`) are used. |
-| JavaDoc tag | Class | `@ff.parameter` | Describes the meaning of a specific parameter. |
-| JavaDoc tag | Class | `@ff.forward` | Describes a forward (e.g. `success`, `failure`). |
-| JavaDoc tag | Class | `@ff.ignoreTypeMembership` | Suppress inheritance of attributes and webapp group membership. |
-| JavaDoc tag | Attribute setter | `@ff.default` | Describes default value. |
-| JavaDoc tag | Attribute setter | `@ff.noAttribute` | Suppresses declaration and inheritance of attribute. |
-| JavaDoc tag | Attribute setter | `@ff.mandatory` | Makes attribute mandatory in Frank config. |
-| JavaDoc tag | Child setter | `@ff.defaultElement` | Set default value of `className` attribute in XSD syntax 1 element. |
-| Java annotation | Enum constant | `@EnumLabel` | Set representation required in Frank configs. |
+| Kind | Name | Appears on | Function |
+| ---- | ---- | ---------- | -------- |
+| Java annotation | `@FrankDocGroup` | Class or interface |  | Define group as shown in top-left of webapp, fields `name` and `order`.|
+| JavaDoc tag | `@ff.parameters` | Class | Describes how parameters (Frank config `<Param>`) are used. |
+| JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. |
+| JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). |
+| JavaDoc tag | `@ff.ignoreTypeMembership` | Class | Suppress inheritance of attributes and webapp group membership. |
+| JavaDoc tag | `@ff.default` | Attribute setter | Describes default value. |
+| JavaDoc tag | `@ff.noAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. |
+| JavaDoc tag | `@ff.mandatory` | Attribute setter | Makes attribute mandatory in Frank config. |
+| JavaDoc tag | `@ff.defaultElement` | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
+| Java annotation | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
 
 Here is more detailed information about some of these tags and annotations:
 
