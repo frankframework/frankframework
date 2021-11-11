@@ -57,9 +57,9 @@ jobs:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
     - name: Update maven profiles
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+      if: ${{ env.USE_PROPRIETARY == 'true' && matrix.java == '8'}}
       run: |
-        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc,jdk11" >> $GITHUB_ENV
+        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
