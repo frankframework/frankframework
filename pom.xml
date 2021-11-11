@@ -841,6 +841,9 @@
 			</properties>
 			<activation>
 				<jdk>11</jdk>
+				<property> 
+					<name>jdk11</name>
+				</property>
 			</activation>
 			<modules>
 				<module>core</module>
@@ -857,7 +860,6 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.8.1</version>
 						<configuration>
 							<release>11</release>
 						</configuration>
