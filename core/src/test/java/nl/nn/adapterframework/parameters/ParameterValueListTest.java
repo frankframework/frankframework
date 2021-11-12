@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -40,8 +39,8 @@ public class ParameterValueListTest {
 		assertEquals("[key1, key2, key4, key3]", sortedList.toString());
 
 		List<String> sortedList2 = new ArrayList<>();
-		for (Iterator<ParameterValue> param = list.getIterator(); param.hasNext();) {
-			sortedList2.add(param.next().getName());
+		for (ParameterValue param : list) {
+			sortedList2.add(param.getName());
 		}
 		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
 

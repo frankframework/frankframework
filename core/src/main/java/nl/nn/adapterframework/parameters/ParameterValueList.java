@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -27,11 +28,11 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * List of parametervalues.
+ * List of {@link ParameterValue ParameterValues}.
  * 
  * @author Gerrit van Brakel
  */
-public class ParameterValueList {
+public class ParameterValueList implements Iterable<ParameterValue> {
 
 	List<ParameterValue> list;
 	Map<String, ParameterValue> map;
@@ -89,7 +90,7 @@ public class ParameterValueList {
 	}
 
 	Map<String, ParameterValue> getParameterValueMap() {
-		return map;
+		return Collections.unmodifiableMap(map);
 	}
 
 	/**
@@ -117,7 +118,8 @@ public class ParameterValueList {
 		}
 	}
 
-	protected Iterator<ParameterValue> getIterator() {
+	@Override
+	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
 	}
 }
