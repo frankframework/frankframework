@@ -1652,8 +1652,8 @@ public class TestTool {
 			String password = (String)properties.get(name + ".password");
 			String authAlias = (String)properties.get(name + ".authAlias");
 			String soap = (String)properties.get(name + ".soap");
-			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
-			String verifyHostname = (String)properties.get(name + ".verifyHostname");
+			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
@@ -1668,12 +1668,8 @@ public class TestTool {
 				if (soap != null) {
 					webServiceSender.setSoap(new Boolean(soap));
 				}
-				if (allowSelfSignedCertificates != null) {
-					webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-				}
-				if (verifyHostname != null) {
-					webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
-				}
+				webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+				webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
 				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 				if (serviceNamespaceURI != null) {
 					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
@@ -1775,8 +1771,8 @@ public class TestTool {
 			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
- 			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
- 			String verifyHostname = (String)properties.get(name + ".verifyHostname");
+ 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+ 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
@@ -1820,12 +1816,8 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
-					if (allowSelfSignedCertificates != null) {
-						httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-					}
-					if (verifyHostname != null) {
-						httpSender.setVerifyHostname(new Boolean(verifyHostname));
-					}
+					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+					httpSender.setVerifyHostname(new Boolean(verifyHostname));
 					session = new PipeLineSession();
 					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
