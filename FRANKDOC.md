@@ -9,7 +9,6 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | JavaDoc tag | `@ff.parameters` | Class | Describes how parameters (Frank config `<Param>`) are used. |
 | JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. |
 | JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). |
-| JavaDoc tag | `@ff.ignoreTypeMembership` | Class | Suppress inheritance of attributes and webapp group membership. |
 | JavaDoc tag | `@ff.default` | Attribute setter | Describes default value. |
 | JavaDoc tag | `@ff.noAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. |
 | JavaDoc tag | `@ff.mandatory` | Attribute setter | Makes attribute mandatory in Frank config. |
@@ -23,8 +22,6 @@ Here is more detailed information about some of these tags and annotations:
 **JavaDoc tag @ff.parameter:** First argument is name of parameter, second argument is description of that parameter.
 
 **JavaDoc tag @ff.forward:** First argument is name of forward, second argument is description.
-
-**JavaDoc tag @ff.ignoreTypeMembership:** Argument is full name of Java interface. The class owning the `@ff.ignoreTypeMembership` does not define or inherit attributes from setters that are overridden from the referenced interface. An attribute is not suppressed if its setter is as well overridden from an ancestor (class or interface) that does not have the referenced interface as ancestor itself. Attributes can be re-introduced in derived classes of the owning class. If the referenced interface has a `@FrankDocGroup` annotation, then the owning class and its descendants are excluded from that group.
 
 **JavaDoc tag @ff.noAttribute:** Attributes can be re-introduced in derived classes by overriding the setter.
 
