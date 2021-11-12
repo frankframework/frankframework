@@ -648,7 +648,7 @@
 			<id>cmis</id>
 			<activation>
 				<property>
-					<name>!cmis</name>
+					<name>!no-cmis</name>
 				</property>
 			</activation>
 			<modules>
