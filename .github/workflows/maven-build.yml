@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc,jdk11
+  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
@@ -66,6 +66,7 @@ jobs:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
+        jdk11: true
       run: mvn -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
