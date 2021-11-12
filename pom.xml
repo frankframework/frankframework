@@ -648,7 +648,7 @@
 			<id>cmis</id>
 			<activation>
 				<property>
-					<name>cmis</name>
+					<name>!no-cmis</name>
 				</property>
 			</activation>
 			<modules>
@@ -835,11 +835,13 @@
 				</plugins>
 			</reporting>
 		</profile>
-		<profile>
+		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
 			<id>jdk11</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
 				<jdk>11</jdk>
+				<property>
+					<name>jdk11</name>
+				</property>
 			</activation>
 			<build>
 				<pluginManagement>

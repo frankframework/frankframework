@@ -59,13 +59,14 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES=ibissource,codecoverage,cmis,proprietary,attachFrankDoc" >> $GITHUB_ENV
+        echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
+        jdk11: true # allows the use of the JDK11 profile, when running JDK11
       run: mvn -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
