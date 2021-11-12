@@ -92,32 +92,41 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Setter ConfigurationWarnings configurationWarnings;
 
-	private static final String CONFIGURATION_VALIDATION_KEY = "configurations.validate";
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
+	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validate", false);
 
 	private class XmlErrorHandler implements ErrorHandler  {
-		private Configuration configuration;
 		private String schema;
-		public XmlErrorHandler(Configuration configuration, String schema) {
-			this.configuration = configuration;
+		public XmlErrorHandler(String schema) {
 			this.schema = schema;
 		}
+
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Warning when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			logErrorMessage("Validation warning", exception);
 		}
 		@Override
 		public void error(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "Error when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			logErrorMessage("Validation error", exception);
 		}
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXParseException {
-			ConfigurationWarnings.add(configuration, log, "FatalError when validating against schema ["+schema+"] in ["+exception.getSystemId()+"] at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
+			logErrorMessage("Fatal validation error", exception);
+		}
+
+		private void logErrorMessage(String prefix, SAXParseException exception) {
+			String msg = prefix+" in ["+exception.getSystemId()+"] at line ["+exception.getLineNumber()+"] when validating against schema ["+schema+"]: " + exception.getMessage();
+			if (validation) {
+				configurationWarnings.add((Object)null, log, msg);
+			} else {
+				log.debug(msg);
+			}
 		}
 	}
 
@@ -141,7 +150,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRules());
 		loadDigesterRules(digester, digesterRulesResource);
 
-		boolean validation = AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY, false);
 		if (validation) {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
@@ -151,7 +159,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdUrl.toExternalForm());
-			XmlErrorHandler xeh = new XmlErrorHandler(configuration, CONFIGURATION_VALIDATION_SCHEMA);
+			XmlErrorHandler xeh = new XmlErrorHandler(CONFIGURATION_VALIDATION_SCHEMA);
 			digester.setErrorHandler(xeh);
 		}
 
@@ -186,26 +194,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		try {
 			digester = getDigester(configuration);
 
-			
 			if (log.isDebugEnabled()) log.debug("digesting configuration ["+configuration.getName()+"] configurationFile ["+configurationFile+"]");
 
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			String loaded = resolveEntitiesAndProperties(configuration, configurationResource, appConstants);
 
-			List<String> propsToHide = new ArrayList<>();
-			String propertiesHideString = appConstants.getString("properties.hide", null);
-			if (propertiesHideString != null) {
-				propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
-			}
-			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, propsToHide);
-			loadedHide = ConfigurationUtils.getCanonicalizedConfiguration(loadedHide);
-			loadedHide = ConfigurationUtils.getActivatedConfiguration(loadedHide);
-			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-				loadedHide = ConfigurationUtils.getStubbedConfiguration(configuration, loadedHide);
-			}
-
-			configuration.setLoadedConfiguration(loadedHide.trim()); //Something adds random spaces and newlines at the end of the string...
-			configLogger.info(loadedHide);
+			configLogger.info(configuration.getLoadedConfiguration());
 			digester.parse(new StringReader(loaded));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -232,7 +226,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		if(preparse) {
 			writer = new ElementPropertyResolver(appConstants);
 			handler = getStub4TesttoolContentHandler(writer, appConstants);
-			handler = getCanonicalizedConfiguration(configuration, handler);
+			handler = getCanonicalizedConfiguration(handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
 			writer = new XmlWriter();
@@ -246,22 +240,43 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
 		String loaded = writer.toString();
 
-		if(!preparse) {
-			loaded = StringResolver.substVars(loaded, appConstants);
-			loaded = ConfigurationUtils.getCanonicalizedConfiguration(loaded);
-			loaded = ConfigurationUtils.getActivatedConfiguration(loaded);
+		if(preparse) {
+			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
+			configuration.setLoadedConfiguration(loadedHide);
+		} else {
+			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
+			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
+			configuration.setLoadedConfiguration(loadedHide);
 
-			if (ConfigurationUtils.isConfigurationStubbed(configuration.getClassLoader())) {
-				loaded = ConfigurationUtils.getStubbedConfiguration(configuration, loaded);
-			}
+			loaded = StringResolver.substVars(loaded, appConstants);
+			loaded = processCanonicalizedActivatedStubbedXslts(loaded, configuration.getClassLoader());
 		}
 
 		return loaded;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(Configuration configuration, ContentHandler writer) throws IOException, SAXException {
+	private String processCanonicalizedActivatedStubbedXslts(String configuration, ClassLoader classLoader) throws ConfigurationException {
+		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
+		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
+
+		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
+			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
+		}
+		return configuration;
+	}
+
+	private List<String> getPropsToHide(Properties appConstants) {
+		List<String> propsToHide = new ArrayList<>();
+		String propertiesHideString = appConstants.getProperty("properties.hide");
+		if (propertiesHideString != null) {
+			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
+		}
+		return propsToHide;
+	}
+
+	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(configuration, frankConfigXSD));
+		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
 	}
 
 	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException, SAXException {

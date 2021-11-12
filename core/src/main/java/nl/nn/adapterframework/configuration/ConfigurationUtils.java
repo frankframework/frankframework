@@ -89,11 +89,11 @@ public class ConfigurationUtils {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
-	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+	public static String getStubbedConfiguration(ClassLoader classLoader, String originalConfig) throws ConfigurationException {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
+		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
