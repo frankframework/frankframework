@@ -119,9 +119,8 @@ public class LiquibaseImpl {
 		liquibase.tag(tagName);
 	}
 
-	public Writer getUpdateScript(Writer writer) throws LiquibaseException {
+	public void getUpdateScript(Writer writer) throws LiquibaseException {
 		liquibase.update(contexts, labelExpression, writer);
-		return writer;
 	}
 
 	public void close() throws DatabaseException {

@@ -15,19 +15,26 @@ limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +42,8 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StreamUtil;
 
 @Path("/")
 public final class ShowLiquibaseScript extends Base {
@@ -61,11 +70,53 @@ public final class ShowLiquibaseScript extends Base {
 		return Response.status(Response.Status.OK).entity(resultMap).build();
 	}
 
+	@GET
+	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Path("/jdbc/liquibase/download")
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response downloadScript() throws ApiException {
+
+		List<Configuration> configurations = new ArrayList<Configuration>();
+
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
+				if(databaseMigrator.hasLiquibaseScript(config)) {
+					configurations.add(config);
+				}
+			}
+		}
+
+		StreamingOutput stream = new StreamingOutput() {
+			@Override
+			public void write(OutputStream out) throws IOException, WebApplicationException {
+				try (ZipOutputStream zos = new ZipOutputStream(out)) {
+					for (Configuration configuration : configurations) {
+						AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+
+						String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+						try(InputStream file = configuration.getClassLoader().getResourceAsStream(changeLogFile)){
+							if(file != null) {
+								ZipEntry entry = new ZipEntry(changeLogFile);
+								zos.putNextEntry(entry);
+								zos.write(StreamUtil.streamToByteArray(file, false));
+								zos.closeEntry();
+							}
+						}
+					}
+				} catch (IOException e) {
+					throw new ApiException("Failed to create zip file with scripts.", e);
+				}
+			}
+		};
+
+		return Response.ok(stream).type(MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=\"DatabaseChangelog.zip\"").build();
+	}
+
 	@POST
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/jdbc/liquibase")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response execute(MultipartBody inputDataMap) throws ApiException {
+	public Response generateSQL(MultipartBody inputDataMap) throws ApiException {
 
 		Response.ResponseBuilder response = Response.noContent();
 		InputStream file=null;
@@ -78,21 +129,33 @@ public final class ShowLiquibaseScript extends Base {
 			return response.status(Response.Status.BAD_REQUEST).build();
 		}
 
-		String result = null;
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
 		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
 			if(file != null) {
-				String fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
-				databaseMigrator.configure(file, fileName);
+				String filename = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
+
+				if (filename.endsWith(".xml")) {
+					databaseMigrator.configure(file, filename);
+					databaseMigrator.getUpdateSql(writer);
+				} else {
+					try(ZipInputStream stream = new ZipInputStream(file)){
+						ZipEntry entry;
+						while((entry = stream.getNextEntry()) != null) {
+							filename = entry.getName();
+							databaseMigrator.configure(StreamUtil.dontClose(stream), filename);
+							databaseMigrator.getUpdateSql(writer);
+						}
+					}
+				}
 			} else {
 				databaseMigrator.configure();
+				databaseMigrator.getUpdateSql(writer);
 			}
-			result = databaseMigrator.getUpdateSql(writer).toString();
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);
 		}
-
+		String result = writer.toString();
 		if(StringUtils.isEmpty(result)) {
 			throw new ApiException("Make sure liquibase xml script exists for configuration ["+configuration+"]");
 		}

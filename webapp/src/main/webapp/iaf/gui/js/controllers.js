@@ -2077,7 +2077,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LiquibaseScriptCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
+.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.file = null;
 	$scope.handleFile = function(files) {
 		if(files.length == 0) {
@@ -2093,6 +2093,10 @@ angular.module('iaf.beheerconsole')
 			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
 		}
 	});
+
+	$scope.download = function() {
+		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");
+	};
 
 	$scope.generateSql = false;
 	$scope.submit = function(formData) {

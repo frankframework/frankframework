@@ -121,15 +121,14 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		}
 	}
 
-	public Writer getUpdateSql(Writer writer) throws JdbcException {
+	public void getUpdateSql(Writer writer) throws JdbcException {
 		if(this.instance != null) {
 			try {
-				return instance.getUpdateScript(writer);
+				instance.getUpdateScript(writer);
 			} catch (Exception e) {
 				throw new JdbcException("unable to generate database migration script", e);
 			}
 		}
-		return writer;
 	}
 
 	@Override
