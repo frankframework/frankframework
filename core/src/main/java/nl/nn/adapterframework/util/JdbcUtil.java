@@ -917,23 +917,23 @@ public class JdbcUtil {
 				}
 				break;
 			case INPUTSTREAM:
+			case BYTES:
+			case BINARY:
 				try {
 					Message message = Message.asMessage(value);
 					long len = message.size();
-					if(len != -1) {
-						statement.setBinaryStream(parameterIndex, message.asInputStream(), len);
-					} else {
-						statement.setBinaryStream(parameterIndex, message.asInputStream());
+					if(message.requiresStream()) {
+						if(len != -1) {
+							statement.setBinaryStream(parameterIndex, message.asInputStream(), len);
+						} else {
+							statement.setBinaryStream(parameterIndex, message.asInputStream());
+						}
+					}
+					else {
+						statement.setBytes(parameterIndex, message.asByteArray());
 					}
 				} catch(IOException e) {
 					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
-				}
-				break;
-			case BYTES:
-				try {
-					statement.setBytes(parameterIndex, Message.asByteArray(value));
-				} catch (IOException e) {
-					throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
 				}
 				break;
 			default:

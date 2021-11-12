@@ -447,24 +447,19 @@ public class HttpSender extends HttpSenderBase {
 				if (skipParameter(name))
 					continue;
 
-
-				if (paramType == ParameterType.INPUTSTREAM) {
-					Object value = pv.getValue();
-					if (value instanceof InputStream) {
-						InputStream fis = (InputStream)value;
-						String fileName = null;
-						String sessionKey = pv.getDefinition().getSessionKey();
-						if (sessionKey != null) {
-							fileName = session.getMessage(sessionKey + "Name").asString();
-						}
-
-						entity.addPart(createMultipartBodypart(name, fis, fileName));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
-					} else {
-						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
+				Message msg = Message.asMessage(pv.getValue());
+				if (msg.isBinary()) {
+					InputStream fis = msg.asInputStream();
+					String fileName = null;
+					String sessionKey = pv.getDefinition().getSessionKey();
+					if (sessionKey != null) {
+						fileName = session.getMessage(sessionKey + "Name").asString();
 					}
+
+					entity.addPart(createMultipartBodypart(name, fis, fileName));
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
 				} else {
-					String value = pv.asStringValue("");
+					String value = msg.asString();
 					entity.addPart(createMultipartBodypart(name, value));
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
