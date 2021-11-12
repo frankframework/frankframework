@@ -59,7 +59,7 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES={{env.PROFILES}},proprietary" >> $GITHUB_ENV
+        echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
