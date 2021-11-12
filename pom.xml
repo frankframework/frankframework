@@ -835,17 +835,12 @@
 				</plugins>
 			</reporting>
 		</profile>
-		<profile>
+		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
 			<id>jdk11</id>
 			<activation>
+				<jdk>11</jdk>
 				<property>
-					<name>java.specification.version</name>
-					<value>11</value>
-					<!-- 
-						For some reason Eclipse (m2e) doesn't resolve this property.
-						As such the default build in Eclipse will be Java 8.
-						When compiling the project with Java 11 this profile !WILL! be activated
-					 -->
+					<name>jdk11</name>
 				</property>
 			</activation>
 			<build>
