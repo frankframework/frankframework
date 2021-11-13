@@ -414,9 +414,9 @@ public class CmisSender extends SenderWithParametersBase {
 			boolean getProperties = isGetProperties();
 			boolean getDocumentContent = isGetDocumentContent();
 			if (pvl != null) {
-				if(pvl.parameterExists("getProperties"))
+				if(pvl.contains("getProperties"))
 					getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
-				if(pvl.parameterExists("getDocumentContent"))
+				if(pvl.contains("getDocumentContent"))
 					getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
 			}
 

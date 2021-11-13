@@ -23,9 +23,9 @@ public class ParameterValueListTest {
 		list.add(new ResolvedParameterValue("key4", "value4"));
 		list.add(new ResolvedParameterValue("key3", "value3"));
 
-		assertTrue(list.containsKey("key1"));
-		assertTrue(list.parameterExists("key2"));
-		assertFalse(list.parameterExists("doesnt-exist"));
+		assertTrue(list.contains("key1"));
+		assertTrue(list.contains("key2"));
+		assertFalse(list.contains("doesnt-exist"));
 		assertEquals(4, list.size());
 		assertEquals("[value1, value2, value3, value4]", list.getValueMap().values().toString());
 

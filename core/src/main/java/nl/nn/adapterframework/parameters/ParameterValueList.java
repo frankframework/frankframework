@@ -17,14 +17,13 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -39,8 +38,8 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 	public ParameterValueList() {
 		super();
-		list = new ArrayList<ParameterValue>();
-		map  = new HashMap<String, ParameterValue>();
+		list = new ArrayList<>();
+		map  = new LinkedHashMap<>();
 	}
 
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
@@ -68,7 +67,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return pv ==null ? null : pv.getValue();
 	}
 
-	public boolean containsKey(String name) {
+	public boolean contains(String name) {
 		return map.containsKey(name);
 	}
 
@@ -79,10 +78,6 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 			list.remove(pv);
 		}
 		return pv;
-	}
-
-	public boolean parameterExists(String name) {
-		return map.get(name)!=null;
 	}
 
 	public int size() {

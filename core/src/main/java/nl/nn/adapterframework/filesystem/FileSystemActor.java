@@ -293,7 +293,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getFilename())) {
 			return getFilename();
 		}
-		if (pvl!=null && pvl.containsKey(PARAMETER_FILENAME)) {
+		if (pvl!=null && pvl.contains(PARAMETER_FILENAME)) {
 			return pvl.getParameterValue(PARAMETER_FILENAME).asStringValue(null);
 		}
 		try {
@@ -307,7 +307,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getDestination())) {
 			return getDestination();
 		}
-		if (pvl!=null && pvl.containsKey(PARAMETER_DESTINATION)) {
+		if (pvl!=null && pvl.contains(PARAMETER_DESTINATION)) {
 			String destination = pvl.getParameterValue(PARAMETER_DESTINATION).asStringValue(null);
 			if (StringUtils.isEmpty(destination)) {
 				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
@@ -326,7 +326,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
 		}
-		if (pvl!=null && pvl.containsKey(PARAMETER_INPUTFOLDER)) {
+		if (pvl!=null && pvl.contains(PARAMETER_INPUTFOLDER)) {
 			return pvl.getParameterValue(PARAMETER_INPUTFOLDER).asStringValue(null);
 		}
 		try {
@@ -346,7 +346,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			}
 
 			FileSystemAction action;
-			if (pvl != null && pvl.containsKey(PARAMETER_ACTION)) {
+			if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 				try {
 					action = EnumUtils.parse(FileSystemAction.class, pvl.getParameterValue(PARAMETER_ACTION).asStringValue(getAction()+""));
 				} catch(IllegalArgumentException e) {
@@ -538,7 +538,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 
 	private void writeContentsToFile(OutputStream out, Message input, ParameterValueList pvl) throws IOException, FileSystemException {
 		Object contents;
-		if (pvl!=null && pvl.containsKey(PARAMETER_CONTENTS1)) {
+		if (pvl!=null && pvl.contains(PARAMETER_CONTENTS1)) {
 			 contents=pvl.getParameterValue(PARAMETER_CONTENTS1).getValue();
 		} else {
 			contents=input;

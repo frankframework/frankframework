@@ -97,7 +97,7 @@ public class NetStorageRequest {
 	}
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
-		if(action == Action.UPLOAD && pvl.parameterExists(NetStorageSender.FILE_PARAM_KEY)) {
+		if(action == Action.UPLOAD && pvl.contains(NetStorageSender.FILE_PARAM_KEY)) {
 			Object paramValue = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).getValue();
 			file = Message.asMessage(paramValue);
 			if(Message.isEmpty(file)) {
@@ -119,18 +119,18 @@ public class NetStorageRequest {
 				throw new SenderException("unable to parse file", e);
 			}
 
-			if(pvl.parameterExists("size")) {
+			if(pvl.contains("size")) {
 				int size = pvl.getParameterValue("size").asIntegerValue(0);
 				actionHeader.put("size", size+"");
 			}
 		}
 
-		if(action == Action.RENAME && pvl.parameterExists(NetStorageSender.DESTINATION_PARAM_KEY)) {
+		if(action == Action.RENAME && pvl.contains(NetStorageSender.DESTINATION_PARAM_KEY)) {
 			String destination = pvl.getParameterValue(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
 			actionHeader.put("destination", destination);
 		}
 
-		if(pvl.parameterExists(NetStorageSender.MTIME_PARAM_KEY)) {
+		if(pvl.contains(NetStorageSender.MTIME_PARAM_KEY)) {
 			long mtime = pvl.getParameterValue(NetStorageSender.MTIME_PARAM_KEY).asLongValue(-1L);
 			actionHeader.put("mtime", mtime+"");
 		}
@@ -139,10 +139,10 @@ public class NetStorageRequest {
 	private void generateHash(ParameterValueList pvl) throws IOException {
 		String hash = null;
 		String algorithm = hashAlgorithm.name().toLowerCase();
-		if(pvl.parameterExists(NetStorageSender.HASHVALUE_PARAM_KEY)) {
+		if(pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
 			hash = pvl.getParameterValue(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
 		}
-		else if(pvl.parameterExists(algorithm)) { //backwards compatibility
+		else if(pvl.contains(algorithm)) { //backwards compatibility
 			hash = pvl.getParameterValue(algorithm).asStringValue(null);
 		}
 		else {
