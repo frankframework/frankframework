@@ -102,17 +102,6 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return result;
 	}
 
-	/**
-	 * Helper routine for quickly iterating through the resolved parameters
-	 * in the order in which they are defined 
-	 */
-	public void forAllParameters(IParameterHandler handler) throws ParameterException {
-		for (Iterator<ParameterValue> param = list.iterator(); param.hasNext();) {
-			ParameterValue paramValue = param.next();
-			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
-		}
-	}
-
 	@Override
 	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
