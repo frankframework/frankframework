@@ -110,10 +110,10 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			JCO.Function function=getFunction(sapSystem, pvl);
 
 			if (StringUtils.isEmpty(getSapSystemName())) {
-				pvl.removeParameterValue(getSapSystemNameParam());
+				pvl.remove(getSapSystemNameParam());
 			}
 			if (StringUtils.isEmpty(getFunctionName())) {
-				pvl.removeParameterValue(getFunctionNameParam());
+				pvl.remove(getFunctionNameParam());
 			}
 			String correlationID = session==null ? null : session.getMessageId();
 		    message2FunctionCall(function, message.asString(), correlationID, pvl);

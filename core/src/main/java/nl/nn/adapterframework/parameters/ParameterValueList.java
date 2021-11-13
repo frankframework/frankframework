@@ -72,7 +72,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 
-	public ParameterValue removeParameterValue(String name) {
+	public ParameterValue remove(String name) {
 		ParameterValue pv = map.remove(name);
 		if (pv!=null) {
 			list.remove(pv);
@@ -91,11 +91,11 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	/**
 	 * Returns a Map of value objects
 	 */
-	public Map<String,Object> getValueMap() throws ParameterException {
+	public Map<String,Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
+		Map<String,Object> result = new LinkedHashMap<>(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}

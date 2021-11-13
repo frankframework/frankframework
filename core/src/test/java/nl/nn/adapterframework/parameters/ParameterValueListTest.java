@@ -44,8 +44,8 @@ public class ParameterValueListTest {
 		}
 		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
 
-		assertTrue(key2 == list.removeParameterValue("key2"));
-		assertNull(list.removeParameterValue("doesnt-exist"));
+		assertTrue(key2 == list.remove("key2"));
+		assertNull(list.remove("doesnt-exist"));
 
 		assertEquals("value3", list.getParameterValue("key3").getValue());
 		assertEquals("value1", list.getParameterValue(0).getValue());
