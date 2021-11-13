@@ -41,6 +41,8 @@ public class ParameterValueListTest {
 
 		assertEquals("value3", list.getParameterValue("key3").getValue());
 		assertEquals("value1", list.getParameterValue(0).getValue());
+		assertEquals("value4", list.getParameterValue(1).getValue());
+		assertEquals("value3", list.getParameterValue(2).getValue());
 	}
 
 	public static class ResolvedParameterValue extends ParameterValue {

@@ -15,11 +15,9 @@
 */
 package nl.nn.adapterframework.parameters;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.ParameterException;
@@ -33,12 +31,10 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class ParameterValueList implements Iterable<ParameterValue> {
 
-	List<ParameterValue> list;
 	Map<String, ParameterValue> map;
 
 	public ParameterValueList() {
 		super();
-		list = new ArrayList<>();
 		map  = new LinkedHashMap<>();
 	}
 
@@ -50,12 +46,18 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public void add(ParameterValue pv) {
-		list.add(pv);
 		map.put(pv.getDefinition().getName(),pv);
 	}
 
 	public ParameterValue getParameterValue(int i) {
-		return list.get(i);
+		int index = 0;
+		for(ParameterValue pv : this) {
+			if(i == index) {
+				return pv;
+			}
+			index++;
+		}
+		return null;
 	}
 
 	public ParameterValue getParameterValue(String name) {
@@ -73,15 +75,11 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 
 	public ParameterValue remove(String name) {
-		ParameterValue pv = map.remove(name);
-		if (pv!=null) {
-			list.remove(pv);
-		}
-		return pv;
+		return map.remove(name);
 	}
 
 	public int size() {
-		return list.size();
+		return map.size();
 	}
 
 	Map<String, ParameterValue> getParameterValueMap() {
@@ -104,6 +102,6 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 	@Override
 	public Iterator<ParameterValue> iterator() {
-		return list.iterator();
+		return map.values().iterator();
 	}
 }
