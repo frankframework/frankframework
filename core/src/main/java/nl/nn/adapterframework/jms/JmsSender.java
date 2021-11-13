@@ -305,9 +305,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	/**
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
-	private void setProperties(javax.jms.Message msg, ParameterValueList msgProperties) throws JMSException {
-		for (int i=0; i<msgProperties.size(); i++) {
-			ParameterValue property = msgProperties.getParameterValue(i);
+	private void setProperties(javax.jms.Message msg, ParameterValueList pvl) throws JMSException {
+		for(ParameterValue property : pvl) {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 

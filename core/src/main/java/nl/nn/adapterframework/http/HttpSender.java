@@ -72,7 +72,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
-import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -365,8 +364,7 @@ public class HttpSender extends HttpSenderBase {
 				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
 			}
 			if (parameters!=null) {
-				for(int i=0; i<parameters.size(); i++) {
-					ParameterValue pv = parameters.getParameterValue(i);
+				for(ParameterValue pv : parameters) {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
@@ -438,9 +436,7 @@ public class HttpSender extends HttpSenderBase {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
-			for(int i=0; i<parameters.size(); i++) {
-				ParameterValue pv = parameters.getParameterValue(i);
-				ParameterType paramType = pv.getDefinition().getType();
+			for(ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
 
 				// Skip parameters that are configured as ignored

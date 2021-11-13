@@ -43,6 +43,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -212,9 +213,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		
 		Map params = new HashMap();
 		if (paramValueList != null && paramList != null) {
-			for (int i = 0; i < paramList.size(); i++) {
-				String key = paramList.getParameter(i).getName();
-				String value = paramValueList.getParameterValue(i).asStringValue(null);
+			for(ParameterValue pv : paramValueList) {
+				String key = pv.getName();
+				String value = pv.asStringValue(null);
 				params.put(key, value);
 			}
 		}
