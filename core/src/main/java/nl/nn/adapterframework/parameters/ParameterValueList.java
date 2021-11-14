@@ -66,7 +66,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 	public Object getValue(String name) {
 		ParameterValue pv = map.get(name);
-		return pv ==null ? null : pv.getValue();
+		return pv == null ? null : pv.getValue();
 	}
 
 	public boolean contains(String name) {
@@ -82,7 +82,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return map.size();
 	}
 
-	Map<String, ParameterValue> getParameterValueMap() {
+	private Map<String, ParameterValue> getParameterValueMap() {
 		return Collections.unmodifiableMap(map);
 	}
 
