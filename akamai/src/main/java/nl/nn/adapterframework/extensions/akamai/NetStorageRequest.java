@@ -98,8 +98,7 @@ public class NetStorageRequest {
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
 		if(action == Action.UPLOAD && pvl.contains(NetStorageSender.FILE_PARAM_KEY)) {
-			Object paramValue = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).getValue();
-			file = Message.asMessage(paramValue);
+			file = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).asMessage();
 			if(Message.isEmpty(file)) {
 				throw new SenderException("no file specified");
 			}

@@ -62,6 +62,9 @@ public class ParameterValue {
 	public Object getValue() {
 		return value;
 	}
+	public Message asMessage() {
+		return Message.asMessage(value);
+	}
 
 	public void setDefinition(Parameter parameterDef) {
 		this.definition = parameterDef;
@@ -130,6 +133,12 @@ public class ParameterValue {
 		return value != null ? Short.valueOf(valueAsString()).shortValue() : defaultValue;
 	}
 
+	/**
+	 * @return convert the value to a string
+	 */
+	public String asStringValue() {
+		return asStringValue(null);
+	}
 	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a string

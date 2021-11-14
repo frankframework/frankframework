@@ -599,7 +599,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
+				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
 				uri = getURI(url);
 			} else {
 				uri = staticUri;

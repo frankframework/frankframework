@@ -289,15 +289,15 @@ public class CmisSender extends SenderWithParametersBase {
 		if (pvl != null) {
 			ParameterValue pv = pvl.getParameterValue("authAlias");
 			if (pv != null) {
-				authAlias_work = (String) pv.getValue();
+				authAlias_work = pv.asStringValue();
 			}
 			pv = pvl.getParameterValue("userName");
 			if (pv != null) {
-				username_work = (String) pv.getValue();
+				username_work = pv.asStringValue();
 			}
 			pv = pvl.getParameterValue("password");
 			if (pv != null) {
-				password_work = (String) pv.getValue();
+				password_work = pv.asStringValue();
 			}
 		}
 

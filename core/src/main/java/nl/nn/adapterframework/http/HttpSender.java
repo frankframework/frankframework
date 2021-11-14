@@ -443,7 +443,7 @@ public class HttpSender extends HttpSenderBase {
 				if (skipParameter(name))
 					continue;
 
-				Message msg = Message.asMessage(pv.getValue());
+				Message msg = pv.asMessage();
 				if (msg.isBinary()) {
 					InputStream fis = msg.asInputStream();
 					String fileName = null;
