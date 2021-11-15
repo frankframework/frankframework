@@ -92,7 +92,7 @@ public class JdbcUtilTest {
 
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
 		params = new ParameterValueList();
-		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(3)));
+		params.add(new SimpleParameter("an-integer", ParameterType.INTEGER, new Integer(3)));
 		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, params);
 		assertEquals("just a third text", listResult.get(0));
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());

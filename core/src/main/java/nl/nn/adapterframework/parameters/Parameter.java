@@ -207,7 +207,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		MAP;
 
 	}
-	
+
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
