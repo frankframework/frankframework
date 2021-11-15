@@ -8,8 +8,6 @@ import javax.sql.XADataSource;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
-
 public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
 	@Override
