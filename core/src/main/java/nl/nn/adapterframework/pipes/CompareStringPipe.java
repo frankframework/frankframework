@@ -218,7 +218,7 @@ public class CompareStringPipe extends AbstractPipe {
 
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null) {
+		if (pvl != null && parameterList != null && pvl.contains(parameterName)) {
 			return pvl.getParameterValue(parameterName).asStringValue(null);
 		}
 		return null;
