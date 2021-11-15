@@ -59,6 +59,7 @@ public class MessageOutputStream implements AutoCloseable {
 	private Set<AutoCloseable> resourcesToClose;
 	
 	private ThreadConnector<?> threadConnector;
+	private ThreadConnector<?> targetThreadConnector;
 	
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
@@ -88,26 +89,30 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, next);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
 		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 
 
@@ -149,25 +154,37 @@ public class MessageOutputStream implements AutoCloseable {
 	@Override
 	public final void close() throws Exception {
 		try {
-			closeRequestStream();
-		} finally {
 			try {
-				if (nextStream!=null) {
-					nextStream.close();
-				}
+				closeRequestStream();
 			} finally {
 				try {
-					afterClose();
-				} finally {
-					if (resourcesToClose!=null) {
-						resourcesToClose.forEach(r -> {
-							try {
-								r.close();
-							} catch (Exception e) {
-								log.warn("Could not close resource", e);
-							}
-						});
+					if (nextStream!=null) {
+						nextStream.close();
 					}
+				} finally {
+					try {
+						afterClose();
+					} finally {
+						if (resourcesToClose!=null) {
+							resourcesToClose.forEach(r -> {
+								try {
+									r.close();
+								} catch (Exception e) {
+									log.warn("Could not close resource", e);
+								}
+							});
+						}
+					}
+				}
+			}
+		} finally {
+			try {
+				if (targetThreadConnector!=null) {
+					targetThreadConnector.close();
+				}
+			} finally {
+				if (threadConnector!=null) {
+					threadConnector.close();
 				}
 			}
 		}

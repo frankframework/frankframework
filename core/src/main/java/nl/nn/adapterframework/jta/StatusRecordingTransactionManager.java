@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.util.StreamUtils;
 
 import lombok.Getter;
@@ -42,7 +41,7 @@ import nl.nn.credentialprovider.util.Misc;
  * @author Gerrit van Brakel
  *
  */
-public abstract class StatusRecordingTransactionManager extends JtaTransactionManager implements DisposableBean {
+public abstract class StatusRecordingTransactionManager extends ThreadConnectableJtaTransactionManager implements DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final long serialVersionUID = 1L;

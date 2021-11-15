@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -43,6 +44,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingSenderBase;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
@@ -87,7 +89,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private int transformerPoolMapSize = 100;
 
 	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private boolean streamingXslt;
+	private @Getter boolean streamingXslt;
 
 
 	/**
@@ -169,11 +171,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ContentHandler handler = createHandler(null, session, target);
-		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session);
+		ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null; 
+		ContentHandler handler = createHandler(null, threadConnector, session, target);
+		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session, threadConnector);
 	}
 
-	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, MessageOutputStream target) throws StreamingException {
 		ContentHandler handler = null;
 
 		try {
@@ -256,7 +259,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			}
 			
 
-			TransformerFilter mainFilter = poolToUse.getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, handler);
+			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler);
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
 			}
@@ -285,20 +288,22 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		}
 		try {
 			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-				ContentHandler handler = createHandler(message, session, target);
-				if (isDebugInput() && log.isDebugEnabled()) {
-					handler = new XmlTap(handler) {
-						@Override
-						public void endDocument() throws SAXException {
-							super.endDocument();
-							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
-						}
-					};
+				try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null) {
+					ContentHandler handler = createHandler(message, threadConnector, session, target);
+					if (isDebugInput() && log.isDebugEnabled()) {
+						handler = new XmlTap(handler) {
+							@Override
+							public void endDocument() throws SAXException {
+								super.endDocument();
+								log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
+							}
+						};
+					}
+					XMLReader reader = getXmlReader(session, handler);
+					InputSource source = message.asInputSource();
+					reader.parse(source);
+					return target.getPipeRunResult();
 				}
-				XMLReader reader = getXmlReader(session, handler);
-				InputSource source = message.asInputSource();
-				reader.parse(source);
-				return target.getPipeRunResult();
 			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"Exception on transforming input", e);

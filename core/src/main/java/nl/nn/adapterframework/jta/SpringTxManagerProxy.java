@@ -34,12 +34,12 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
+public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware, IThreadConnectableTransactionManager {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
 	private @Setter BeanFactory beanFactory;
 	private @Setter @Getter String realTxManagerBeanName;
-	private PlatformTransactionManager realTxManager;
+	private IThreadConnectableTransactionManager<Object,Object> realTxManager;
 
 	private boolean trace=false;
 
@@ -79,7 +79,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		getRealTxManager().rollback(txStatus);
 	}
 
-	public PlatformTransactionManager getRealTxManager() {
+	public IThreadConnectableTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however
 		// not synchronized for performance-reasons.
 		// I consider this safe, because the TX manager should
@@ -87,10 +87,25 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		// Bean Factory and thus each thread should always
 		// get the same instance.
 		if (realTxManager == null) {
-			realTxManager = (PlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
+			realTxManager = (IThreadConnectableTransactionManager) beanFactory.getBean(realTxManagerBeanName);
 		}
 		return realTxManager;
 	}
 
+	@Override
+	public Object getCurrentTransaction() throws TransactionException {
+		return getRealTxManager().getCurrentTransaction();
+	}
 
+	@Override
+	public Object suspendTransaction(Object transaction) {
+		return getRealTxManager().suspendTransaction(transaction);
+	}
+
+	@Override
+	public void resumeTransaction(Object transaction, Object resources) {
+		getRealTxManager().resumeTransaction(transaction, resources);	
+	}
+
+	
 }

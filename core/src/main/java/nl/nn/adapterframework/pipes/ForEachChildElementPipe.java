@@ -46,6 +46,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.SaxAbortException;
 import nl.nn.adapterframework.stream.SaxTimeoutException;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -294,7 +295,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 	
-	protected void createHandler(HandlerRecord result, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector threadConnector, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 		
@@ -312,7 +313,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		
 		if (getExtractElementsTp()!=null) {
 			if (log.isDebugEnabled()) log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(this, threadLifeCycleEventListener, session, streamingXslt, result.inputHandler);
+			TransformerFilter transformerFilter = getExtractElementsTp().getTransformerFilter(threadConnector, result.inputHandler);
 			result.inputHandler=transformerFilter;
 			result.transformerErrorListener=(TransformerErrorListener)transformerFilter.getErrorListener();
 			result.errorMessage="Could not process list of elements using xpath ["+getElementXPathExpression()+"]";
@@ -367,8 +368,9 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			MessageOutputStream target=getTargetStream(session);
 			Writer resultWriter = target.asWriter();
 			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, session, callback);
-			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, session);
+			ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null; 
+			createHandler(handlerRecord, threadConnector, session, callback);
+			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, session, threadConnector);
 		} catch (TransformerException e) {
 			throw new StreamingException(handlerRecord.errorMessage, e);
 		}
@@ -400,32 +402,36 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			}
 		}
 		HandlerRecord handlerRecord = new HandlerRecord();
-		try {
-			createHandler(handlerRecord, session, callback);
-		} catch (TransformerException e) {
-			throw new SenderException(handlerRecord.errorMessage, e);
-		}
-
-		try {
-			XmlUtils.parseXml(src,handlerRecord.inputHandler);
-		} catch (Exception e) {
+		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null) {
 			try {
-				if (e instanceof SaxTimeoutException) {
-					if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
-						throw (TimeOutException)e.getCause();
-					}
-					throw new TimeOutException(e);
-				}
-				if (!(e instanceof SaxAbortException)) {
-					throw new SenderException(e);
-				}
-			} finally {
+				createHandler(handlerRecord, threadConnector, session, callback);
+			} catch (TransformerException e) {
+				throw new SenderException(handlerRecord.errorMessage, e);
+			}
+	
+			try {
+				XmlUtils.parseXml(src,handlerRecord.inputHandler);
+			} catch (Exception e) {
 				try {
-					handlerRecord.inputHandler.endDocument();
-				} catch (Exception e2) {
-					log.warn("Exception in endDocument()",e2);
+					if (e instanceof SaxTimeoutException) {
+						if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
+							throw (TimeOutException)e.getCause();
+						}
+						throw new TimeOutException(e);
+					}
+					if (!(e instanceof SaxAbortException)) {
+						throw new SenderException(e);
+					}
+				} finally {
+					try {
+						handlerRecord.inputHandler.endDocument();
+					} catch (Exception e2) {
+						log.warn("Exception in endDocument()",e2);
+					}
 				}
 			}
+		} catch (IOException e) {
+			throw new SenderException(e);
 		}
 		return handlerRecord.itemHandler.stopReason;
 		// 2020-06-12 removing below 'rethrowTransformerException()', as it does not break the tests, and cannot be implemented when providing an OutputStream.

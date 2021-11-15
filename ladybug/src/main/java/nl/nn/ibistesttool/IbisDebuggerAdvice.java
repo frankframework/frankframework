@@ -45,6 +45,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -76,6 +77,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
+	protected @Setter IThreadConnectableTransactionManager txManager;
 
 	private @Setter IbisDebugger ibisDebugger;
 	private @Setter IbisManager ibisManager;
@@ -478,7 +480,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, requestReplyExecutor.getCorrelationID());
+			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, txManager, requestReplyExecutor.getCorrelationID());
 		}
 		
 		@Override
