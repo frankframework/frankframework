@@ -108,4 +108,4 @@ jobs:
         new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
         mode: addition
         tolerance: better
-        output: FrankConfig-strict-compatibility.txt
+        output: FrankConfig-compatibility-compare.txt
