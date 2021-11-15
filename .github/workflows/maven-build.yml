@@ -8,7 +8,7 @@ env:
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
-    branches: [master, 7.5-release, 7.6-release]
+    branches: [master, 7.5-release, 7.6-release, getFrankDocUpdate]
     paths-ignore:
       - "**.md"
       - "webapp/src/main/webapp/iaf/**"
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8' ]
 
     steps:
     - name: Checkout repository
@@ -83,3 +83,11 @@ jobs:
       with:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
+
+    - name: Retrieve previous FrankDoc XSD
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: maven-build.yml
+        commit:  ${{ github.event.pull_request.base.sha }}
+        name: FrankDoc
+        path: ${{ github.workspace }}/previous/frankdoc/xml/xsd/
