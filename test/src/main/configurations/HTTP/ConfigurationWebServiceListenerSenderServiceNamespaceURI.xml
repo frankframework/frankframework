@@ -66,7 +66,7 @@
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -89,7 +89,7 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -119,7 +119,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -132,7 +132,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -176,7 +176,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -189,7 +189,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -203,7 +203,7 @@
 					timeout="1000"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -217,7 +217,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -232,7 +232,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
@@ -247,7 +247,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -260,7 +260,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
@@ -274,7 +274,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -288,7 +288,7 @@
 					timeout="1000" 
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />

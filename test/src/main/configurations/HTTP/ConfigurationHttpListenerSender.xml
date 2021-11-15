@@ -29,7 +29,7 @@
 					firstBodyPartName="request"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -66,7 +66,7 @@
 					timeout="1000" firstBodyPartName="request"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />

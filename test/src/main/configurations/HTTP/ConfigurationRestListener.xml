@@ -51,7 +51,7 @@
 					postType="FORMDATA"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
@@ -160,7 +160,7 @@
 					urlParam="url_param" streamResultToServlet="true"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -202,7 +202,7 @@
 					urlParam="url_param"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -265,7 +265,7 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					urlParam="url_param"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 				>

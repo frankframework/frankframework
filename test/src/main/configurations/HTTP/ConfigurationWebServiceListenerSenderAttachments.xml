@@ -109,7 +109,7 @@
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					postType="MTOM"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -151,7 +151,7 @@
 					verifyHostname="false"
 					postType="MTOM"
 					multipartXmlSessionKey="multipart"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -175,7 +175,7 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -209,7 +209,7 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>

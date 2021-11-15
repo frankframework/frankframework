@@ -103,7 +103,7 @@
 					urlParam="url_param" methodType="POST" resultStatusCodeSessionKey="statusCode"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				>
 					<param name="url_param" value="" /> <!-- use pipeline input -->
 				</sender>

@@ -36,7 +36,7 @@
 					namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
-					authAlias="framework.api.user.alias"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
