@@ -138,11 +138,6 @@ public class ThreadConnector<T> implements AutoCloseable {
 	
 	@Override
 	public void close() throws IOException {
-		Thread currentThread = Thread.currentThread();
-		if (currentThread != parentThread) {
-			throw new IllegalStateException("close() must be called from parentThread");
-		}
-		
 		try {
 			if (transactionConnector!=null) {
 				transactionConnector.close();
