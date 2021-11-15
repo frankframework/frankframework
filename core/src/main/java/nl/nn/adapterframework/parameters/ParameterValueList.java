@@ -49,6 +49,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		map.put(pv.getDefinition().getName(),pv);
 	}
 
+	@Deprecated
 	public ParameterValue getParameterValue(int i) {
 		int index = 0;
 		for(ParameterValue pv : this) {
