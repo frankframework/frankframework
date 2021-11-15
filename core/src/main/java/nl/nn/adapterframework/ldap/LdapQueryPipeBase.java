@@ -121,7 +121,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return host;
 	}
 
-	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
+	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified"})
 	public void setPort(int i) {
 		port = i;
 	}
