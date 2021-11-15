@@ -67,10 +67,10 @@ public class JdbcUtilTest {
 
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME) VALUES (?, ?, ?, ?)";
 		ParameterValueList params = new ParameterValueList();
-		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(6)));
-		params.add(new SimpleParameter(null, null, "5th text"));
-		params.add(new SimpleParameter(null, ParameterType.INTEGER, new Integer(15092002)));
-		params.add(new SimpleParameter(null, ParameterType.DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
+		params.add(new SimpleParameter("param-must-have-a-name1", ParameterType.INTEGER, new Integer(6)));
+		params.add(new SimpleParameter("param-must-have-a-name2", null, "5th text"));
+		params.add(new SimpleParameter("param-must-have-a-name3", ParameterType.INTEGER, new Integer(15092002)));
+		params.add(new SimpleParameter("param-must-have-a-name4", ParameterType.DATETIME, DateUtils.parseToDate("2018-04-12 03:05:06", "yyyy-MM-dd HH:mm:ss")));
 		JdbcUtil.executeStatement(dbmsSupport, connection, query, params);
 
 		query = "SELECT COUNT(*) FROM TEMP";

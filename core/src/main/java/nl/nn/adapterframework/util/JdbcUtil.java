@@ -917,7 +917,6 @@ public class JdbcUtil {
 				}
 				break;
 			case INPUTSTREAM:
-			case BYTES:
 			case BINARY:
 				try {
 					Message message = Message.asMessage(value);
@@ -934,6 +933,13 @@ public class JdbcUtil {
 					}
 				} catch(IOException e) {
 					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
+				}
+				break;
+			case BYTES:
+				try {
+					statement.setBytes(parameterIndex, Message.asByteArray(value));
+				} catch (IOException e) {
+					throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
 				}
 				break;
 			default:
