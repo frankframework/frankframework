@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
 import nl.nn.adapterframework.stream.Message;
@@ -90,8 +91,11 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 
 	protected String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null && pvl.contains(parameterName)) {
-			return pvl.getParameterValue(parameterName).asStringValue(null);
+		if (pvl != null && parameterList != null) {
+			ParameterValue pv = pvl.findParameterValue(parameterName);
+			if(pv != null) {
+				return pv.asStringValue(null);
+			}
 		}
 		return null;
 	}

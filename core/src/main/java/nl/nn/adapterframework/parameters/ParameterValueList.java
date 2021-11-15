@@ -60,8 +60,19 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return null;
 	}
 
+	/** Get a specific {@link ParameterValue} */
 	public ParameterValue getParameterValue(String name) {
 		return map.get(name);
+	}
+
+	/** Find a (case insensitive) {@link ParameterValue} */
+	public ParameterValue findParameterValue(String name) {
+		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
+			if(entry.getKey().equalsIgnoreCase(name)) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 
 	public Object getValue(String name) {

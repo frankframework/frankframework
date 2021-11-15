@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -58,12 +59,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CompareStringPipe extends AbstractPipe {
 
-	private final static String LESSTHANFORWARD = "lessthan";
-	private final static String GREATERTHANFORWARD = "greaterthan";
-	private final static String EQUALSFORWARD = "equals";
-	private final static String OPERAND1 = "operand1";
-	private final static String OPERAND2 = "operand2";
-	private final static String IGNOREPATTERNS = "ignorepatterns";
+	private static final String LESSTHANFORWARD = "lessthan";
+	private static final String GREATERTHANFORWARD = "greaterthan";
+	private static final String EQUALSFORWARD = "equals";
+	private static final String OPERAND1 = "operand1";
+	private static final String OPERAND2 = "operand2";
+	private static final String IGNOREPATTERNS = "ignorepatterns";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
@@ -218,8 +219,11 @@ public class CompareStringPipe extends AbstractPipe {
 
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
-		if (pvl != null && parameterList != null && pvl.contains(parameterName)) {
-			return pvl.getParameterValue(parameterName).asStringValue(null);
+		if (pvl != null && parameterList != null) {
+			ParameterValue pv = pvl.findParameterValue(parameterName);
+			if(pv != null) {
+				return pv.asStringValue(null);
+			}
 		}
 		return null;
 	}
