@@ -182,7 +182,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return statusField;
 	}
 
-	@IbisDoc({"5", "(optional) Field determining the order in which messages are processed", ""})
+	@IbisDoc({"5", "(optional) Comma separated list of fields determining the order in which messages are processed", ""})
 	public void setOrderField(String string) {
 		orderField = string;
 	}

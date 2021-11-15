@@ -378,7 +378,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					XmlBuilder headersXml = new XmlBuilder("headers");
-					String params[] = listener.getHeaderParams().split(",");
+					String[] params = listener.getHeaderParams().split(",");
 					for (String headerParam : params) {
 						if(IGNORE_HEADERS.contains(headerParam)) {
 							continue;
@@ -463,7 +463,12 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 					messageContext.put("multipartAttachments", attachments.toXML());
 				} else {
-					body = parseContentAsMessage(request.getInputStream(), request.getContentType());
+					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
+					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
+						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
+					} else {
+						body = Message.nullMessage();
+					}
 				}
 
 				/**

@@ -761,7 +761,7 @@ public class CmisSender extends SenderWithParametersBase {
 		try {
 			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
 			if(StringUtils.isNotEmpty(cmisEvent)) {
-				event = EnumUtils.parse(CmisEvent.class, cmisEvent);
+				event = EnumUtils.parse(CmisEvent.class, cmisEvent, true);
 			}
 		} catch (IOException | IllegalArgumentException e) {
 			throw new SenderException("unable to parse CmisEvent", e);
@@ -1200,7 +1200,7 @@ public class CmisSender extends SenderWithParametersBase {
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please return document content (as sender output) to the listener")
+	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
 	@IbisDoc({"(Only used when <code>action=get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;

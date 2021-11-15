@@ -210,7 +210,7 @@ angular.module('iaf.beheerconsole')
 			configurations['All'].errorStoreCount = configurations.totalErrorStoreCount;
 			delete configurations.totalErrorStoreCount;
 
-			for(x in configurations.warnings) {
+			for(let x in configurations.warnings) {
 				$scope.addWarning('', configurations.warnings[x]);
 			}
 
@@ -356,8 +356,11 @@ angular.module('iaf.beheerconsole')
 	};
 
 	Hooks.register("adapterUpdated:once", function() {
-		if($location.hash()) {
-			angular.element("#"+$location.hash())[0].scrollIntoView();
+		if($location.path() == "/status" && $location.hash()) {
+			var el = angular.element("#"+$location.hash());
+			if(el && el[0]) {
+				el[0].scrollIntoView();
+			}
 		}
 	});
 	Hooks.register("adapterUpdated", function(adapter) {
@@ -1061,27 +1064,57 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('ShowConfigurationCtrl', ['$scope', 'Api', function($scope, Api) {
-	this.configurationRadio = 'true';
-	$scope.selectedConfiguration = "All";
-	$scope.loadedConfiguration = true;
+.controller('ShowConfigurationCtrl', ['$scope', 'Api', '$state', '$location', function($scope, Api, $state, $location) {
+	$scope.selectedConfiguration = ($state.params.name != '') ? $state.params.name : "All";
+	$scope.loadedConfiguration = ($state.params.loaded != undefined && $state.params.loaded == false);
 
-	$scope.loadedConfig = function(bool) {
-		$scope.loadedConfiguration = (bool == "true") ? true : false;
+	$scope.update = function() {
 		getConfiguration();
 	};
 
+	var anchor = $location.hash();
 	$scope.changeConfiguration = function(name) {
 		$scope.selectedConfiguration = name;
+		$location.hash(''); //clear the hash from the url
+		anchor = null; //unset hash anchor
 		getConfiguration();
 	};
 
+	$scope.updateQueryParams = function() {
+		var transitionObj = {};
+		if($scope.selectedConfiguration != "All")
+			transitionObj.name = $scope.selectedConfiguration;
+		if(!$scope.loadedConfiguration)
+			transitionObj.loaded = $scope.loadedConfiguration;
+
+		$state.transitionTo('pages.configuration', transitionObj, { notify: false, reload: false });
+	};
+
+	$scope.clipboard = function() {
+		if($scope.configuration) {
+			var el = document.createElement('textarea');
+			el.value = $scope.configuration;
+			el.setAttribute('readonly', '');
+			el.style.position = 'absolute';
+			el.style.left = '-9999px';
+			document.body.appendChild(el);
+			el.select();
+			document.execCommand('copy');
+			document.body.removeChild(el);
+		}
+	}
+
 	getConfiguration = function() {
+		$scope.updateQueryParams();
 		var uri = "configurations";
 		if($scope.selectedConfiguration != "All") uri += "/" + $scope.selectedConfiguration;
 		if($scope.loadedConfiguration) uri += "?loadedConfiguration=true";
 		Api.Get(uri, function(data) {
 			$scope.configuration = data;
+
+			if(anchor) {
+				$location.hash(anchor);
+			}
 		});
 	};
 	getConfiguration();
@@ -1749,7 +1782,7 @@ angular.module('iaf.beheerconsole')
 
 .controller('AddScheduleCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
 	$scope.state = [];
-	$scope.addAlert = function(type, message) {
+	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 
@@ -1784,7 +1817,7 @@ angular.module('iaf.beheerconsole')
 		fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Post("schedules", fd, function(data) {
-			$scope.addAlert("success", "Successfully added schedule!");
+			$scope.addLocalAlert("success", "Successfully added schedule!");
 			$scope.form = {
 					name:"",
 					group:"",
@@ -1800,14 +1833,14 @@ angular.module('iaf.beheerconsole')
 			};
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addAlert("warning", error);
+			$scope.addLocalAlert("warning", error);
 		}, false);
 	};
 }])
 
 .controller('EditScheduleCtrl', ['$scope', 'Api', '$stateParams', function($scope, Api, $stateParams) {
 	$scope.state = [];
-	$scope.addAlert = function(type, message) {
+	$scope.addLocalAlert = function(type, message) {
 		$scope.state.push({type:type, message: message});
 	};
 	var url ="schedules/"+$stateParams.group+"/job/"+$stateParams.name;
@@ -1863,10 +1896,10 @@ angular.module('iaf.beheerconsole')
 			fd.append("lockkey", $scope.form.lockkey);
 
 		Api.Put(url, fd, function(data) {
-			$scope.addAlert("success", "Successfully edited schedule!");
+			$scope.addLocalAlert("success", "Successfully edited schedule!");
 		}, function(errorData, status, errorMsg) {
 			var error = (errorData) ? errorData.error : errorMsg;
-			$scope.addAlert("warning", error);
+			$scope.addLocalAlert("warning", error);
 		}, false);
 	};
 

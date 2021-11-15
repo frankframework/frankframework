@@ -28,11 +28,13 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXParseException;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
@@ -45,7 +47,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
-	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", false);
+	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
+	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -65,12 +68,14 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * Add a configuration warning message to the current configuration
+	 * Add a configuration warning message to the current configuration.
+	 * Display location information conform {@link IbisException} when the cause is a {@link SAXParseException}.
 	 */
-	protected final void addLocalWarning(String message) {
+	protected final void addLocalWarning(String msg) {
+		String message = msg;
 		if(includeLineInformation) {
 			Locator loc = getDigester().getDocumentLocator();
-			message = "on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
+			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
 		}
 		configurationWarnings.add(getBean(), log, message);
 	}
