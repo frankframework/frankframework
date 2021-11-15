@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -46,6 +48,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	public void add(ParameterValue pv) {
+		if(pv == null || pv.getDefinition() == null) {
+			throw new IllegalStateException("No parameter defined");
+		}
+		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
+			throw new IllegalStateException("Parameter must have a name");
+		}
 		map.put(pv.getDefinition().getName(),pv);
 	}
 

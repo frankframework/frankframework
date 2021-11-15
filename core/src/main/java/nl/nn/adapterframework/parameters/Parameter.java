@@ -223,6 +223,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getName())) {
+			throw new ConfigurationException("Parameter must have a name");
+		}
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}
