@@ -155,8 +155,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String replaceFrom;
 				if (isReplaceFixedParams()) {
 					replaceFrom=pv.getDefinition().getName();

@@ -63,14 +63,14 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 	}
 	
 	protected String getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, String attributeValue) {
-		if (pvl!=null && pvl.containsKey(parameterName)) {
+		if (pvl!=null && pvl.contains(parameterName)) {
 			return pvl.getParameterValue(parameterName).asStringValue(attributeValue);
 		}
 		return attributeValue;
 	}
 
 	protected int getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, int attributeValue) {
-		if (pvl!=null && pvl.containsKey(parameterName)) {
+		if (pvl!=null && pvl.contains(parameterName)) {
 			return pvl.getParameterValue(parameterName).asIntegerValue(attributeValue);
 		}
 		return attributeValue;

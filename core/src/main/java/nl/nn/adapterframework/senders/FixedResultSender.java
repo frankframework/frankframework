@@ -95,8 +95,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 				throw new SenderException("exception extracting parameters",e);
 			}
 			if (pvl!=null) {
-				for (int i=0; i<pvl.size(); i++) {
-					ParameterValue pv = pvl.getParameterValue(i);
+				for(ParameterValue pv : pvl) {
 					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 				}
 			}

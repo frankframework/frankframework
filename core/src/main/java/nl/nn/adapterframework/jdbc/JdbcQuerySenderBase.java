@@ -390,11 +390,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
-					if (newParameterList.getParameter(i).getType() == ParameterType.INPUTSTREAM) {
-						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + newParameterList.getParameter(i).getName() + "]");
-						try {
-							InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, message, session, true);
-							inputStream.close();
+					Parameter param = newParameterList.getParameter(i);
+					if (param.getType() == ParameterType.INPUTSTREAM) {
+						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
+						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
+							if(object instanceof AutoCloseable) {
+								((AutoCloseable)object).close();
+							}
+							else {
+								log.error("unable to auto-close parameter ["+param.getName()+"]");
+							}
 						} catch (Exception e) {
 							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
 						}
