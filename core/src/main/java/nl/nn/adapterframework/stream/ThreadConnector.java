@@ -66,7 +66,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	
 	public <R> R startThread(R input) {
 		if (transactionConnector!=null) {
-			transactionConnector.beginChildTread();
+			transactionConnector.beginChildThread();
 		}
 		childThread = Thread.currentThread();
 		if (childThread!=parentThread) {

@@ -70,7 +70,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	}
 	
 	// resume transaction, that was saved in parent thread, in the child thread.
-	public void beginChildTread() {
+	public void beginChildThread() {
 		if (transaction!=null) {
 			txManager.resumeTransaction(transaction, resources);
 		}

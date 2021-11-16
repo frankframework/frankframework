@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -71,8 +72,9 @@ public abstract class JdbcTestBase {
 			case BTM:
 				productKey = ((PoolingDataSource)dataSource).getUniqueName();
 				break;
-	//		case NARAYANA:
-	//			return new NarayanaXADataSourceFactory();
+			case NARAYANA:
+				//return new NarayanaXADataSourceFactory();
+				throw new NotImplementedException("Narayana DataSource wrapper not yet implemented");
 			default:
 				throw new IllegalArgumentException("Don't know how to setup() for transactionManagerType ["+transactionManagerType+"]");
 		}
@@ -90,9 +92,7 @@ public abstract class JdbcTestBase {
 		if(liquibase != null) {
 			liquibase.dropAll();
 		}
-		if (transactionManagerType == TransactionManagerType.BTM) {
-			dataSourceFactory.destroy();
-		}
+		dataSourceFactory.destroy();
 	}
 	
 	public static URLDataSourceFactory createDataSourceFactory(TransactionManagerType transactionManagerType) {
@@ -101,8 +101,9 @@ public abstract class JdbcTestBase {
 			return new URLDataSourceFactory();
 		case BTM:
 			return new BTMXADataSourceFactory();
-//		case NARAYANA:
-//			return new NarayanaXADataSourceFactory();
+		case NARAYANA:
+			//return new NarayanaXADataSourceFactory();
+			throw new NotImplementedException("NarayanaXADataSourceFactory not yet implemented");
 		default:
 			throw new IllegalArgumentException("Don't know how to create DataSourceFactory for transactionManagerType ["+transactionManagerType+"]");
 		}

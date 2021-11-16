@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware, IThreadConnectableTransactionManager {
+public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware, IThreadConnectableTransactionManager<Object,Object> {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
 	private @Setter BeanFactory beanFactory;
@@ -79,7 +79,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		getRealTxManager().rollback(txStatus);
 	}
 
-	public IThreadConnectableTransactionManager getRealTxManager() {
+	public IThreadConnectableTransactionManager<Object,Object> getRealTxManager() {
 		// This can be called from multiple threads, however
 		// not synchronized for performance-reasons.
 		// I consider this safe, because the TX manager should

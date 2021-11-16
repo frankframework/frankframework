@@ -209,7 +209,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	
 				@Override
 				public void run() {
-					transactionConnector.beginChildTread();
+					transactionConnector.beginChildThread();
 					try {
 						runQuery(query);
 					} catch (Throwable e) {
