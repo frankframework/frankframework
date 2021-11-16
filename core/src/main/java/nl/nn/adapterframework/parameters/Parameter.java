@@ -99,14 +99,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
-	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
-	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
-	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
+	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
+	public static final String TYPE_TIME_PATTERN="HH:mm:ss";
+	public static final String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
+	public static final String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
-	public final static String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
-	public final static String FIXEDHOSTNAME ="MYHOST000012345";
-	
+	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
+	public static final String FIXEDHOSTNAME ="MYHOST000012345";
+
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
@@ -223,9 +223,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getName())) {
-			throw new ConfigurationException("Parameter must have a name");
-		}
 		if (StringUtils.isNotEmpty(getSessionKey()) && StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			throw new ConfigurationException("Parameter ["+getName()+"] cannot have both sessionKey and sessionKeyXPath specified");
 		}

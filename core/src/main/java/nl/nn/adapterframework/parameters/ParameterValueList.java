@@ -47,12 +47,15 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return params.getValues(message, session);
 	}
 
-	public void add(ParameterValue pv) {
+	protected void add(ParameterValue pv) {
 		if(pv == null || pv.getDefinition() == null) {
 			throw new IllegalStateException("No parameter defined");
 		}
 		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
 			throw new IllegalStateException("Parameter must have a name");
+		}
+		if(contains(pv.getDefinition().getName())) {
+			throw new IllegalStateException("Parameter name must be unique");
 		}
 		map.put(pv.getDefinition().getName(),pv);
 	}

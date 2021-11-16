@@ -37,7 +37,7 @@ public class ParameterValue {
 	private Object value;
 	private Parameter definition;
 
-	ParameterValue(Parameter type, Object value) {
+	protected ParameterValue(Parameter type, Object value) {
 		this.definition = type;
 		this.value = value;
 	}

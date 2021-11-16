@@ -18,6 +18,8 @@ package nl.nn.adapterframework.parameters;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -30,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Gerrit van Brakel
  */
 public class ParameterList extends ArrayList<Parameter> {
-	
+
 	public ParameterList() {
 		super();
 	}
@@ -38,17 +40,22 @@ public class ParameterList extends ArrayList<Parameter> {
 	public ParameterList(int i) {
 		super(i);
 	}
-	
+
 	public void configure() throws ConfigurationException {
 		for (int i=0; i<size(); i++) {
-			getParameter(i).configure();
+			Parameter param = getParameter(i);
+			if (StringUtils.isEmpty(param.getName())) {
+				param.setName("parameter" + i);
+			}
+
+			param.configure();
 		}
 	}
-	
+
 	public Parameter getParameter(int i) {
 		return get(i);
 	}
-	
+
 	public Parameter findParameter(String name) {
 		for (Iterator<Parameter> it=iterator();it.hasNext();) {
 			Parameter p = it.next();
@@ -58,7 +65,7 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		return null;
 	}
-	
+
 	public boolean parameterEvaluationRequiresInputMessage() {
 		for (Parameter p:this) {
 			if (p.requiresInputValueForResolution()) {
@@ -67,7 +74,6 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		return false;
 	}
-	
 
 	public ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
@@ -77,7 +83,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	 */
 	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		ParameterValueList result = new ParameterValueList();
-		for (Parameter parm:this) {
+		for (Parameter parm : this) {
 			String parmSessionKey = parm.getSessionKey();
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to 
 			// each session variable whose name starts with the name of the original parameter
@@ -108,6 +114,4 @@ public class ParameterList extends ArrayList<Parameter> {
 	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
-
-	
 }
