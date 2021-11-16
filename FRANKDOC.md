@@ -5,7 +5,8 @@ The Frank!Doc provides reference information for Frank developers as explained i
 
 | Kind | Name | Appears on | Function |
 | ---- | ---- | ---------- | -------- |
-| Java annotation | `@FrankDocGroup` | Class or interface | Define group as shown in top-left of webapp, fields `name` and `order`.|
+| Java annotation | `@FrankDocGroup` | Interface | Define group as shown in top-left of webapp. Implementations added to group (non-exclusive). |
+| Java annotation | `@FrankDocGroup` | Class | Class and descendants belong to specified group exclusively. |
 | JavaDoc tag | `@ff.parameters` | Class | Describes how parameters (Frank config `<Param>`) are used. |
 | JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. |
 | JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). |
@@ -18,7 +19,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 
 Here is more detailed information about some of these tags and annotations:
 
-**Annotation @FrankDocGroup:**: Has fields `name` and `order` (integer), which is used by the webapp to sort the groups. You can define a group by setting multiple `@FrankDocGroup` annotations with the same `name`. Only one `@FrankDocGroup` annotation of a group should have its `order` field set to avoid ambiguity.
+**Annotation @FrankDocGroup:**: Has fields `name` and `order` (integer), which is used by the webapp to sort the groups. You can define a group by setting multiple `@FrankDocGroup` annotations with the same `name`. Only one `@FrankDocGroup` annotation of a group should have its `order` field set to avoid ambiguity. This annotation behaves differently on classes and interfaces. When a Java class implements an interface that has a `@FrankDocGroup` annotation, then the class is put in the group non-exclusively. A class can belong to multiple groups when it implements multiple interfaces with different groups. However, when a class has a `@FrankDocGroup` annotation, then the class only belongs to that group. `@FrankDocGroup` annotations on classes are inherited by descendant classes, so descendant classes are also in the specified group exclusively in this case.
 
 **JavaDoc tag @ff.parameter:** First argument is name of parameter, second argument is description of that parameter.
 
