@@ -7,12 +7,20 @@ import nl.nn.adapterframework.stream.Message;
 
 public class SimpleParameter extends Parameter {
 
-	public SimpleParameter(String value) throws ConfigurationException {
-		this(value, null);
+	public SimpleParameter(String value) {
+		this(null, value, null);
+	}
+
+	public SimpleParameter(String name, String value) {
+		this(name, value, null);
 	}
 
 	public SimpleParameter(String value, ParameterType type) {
+		this(null, value, type);
+	}
+	public SimpleParameter(String name, String value, ParameterType type) {
 		super();
+		setName(name);
 		setValue(value);
 		if(type != null) {
 			setType(type);

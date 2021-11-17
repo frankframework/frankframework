@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,28 +33,40 @@ import nl.nn.adapterframework.stream.Message;
  * @author Gerrit van Brakel
  */
 public class ParameterList extends ArrayList<Parameter> {
+	private AtomicInteger index = new AtomicInteger();
 
 	public ParameterList() {
 		super();
 	}
 
-	public ParameterList(int i) {
-		super(i);
+	@Override
+	public void clear() {
+		index = new AtomicInteger();
+		super.clear();
 	}
 
 	public void configure() throws ConfigurationException {
-		for (int i=0; i<size(); i++) {
-			Parameter param = getParameter(i);
-			if (StringUtils.isEmpty(param.getName())) {
-				param.setName("parameter" + i);
-			}
-
+		for(Parameter param : this) {
 			param.configure();
 		}
+		index = null; //Once configured there is no need to keep this in memory
+	}
+
+	@Override
+	public boolean add(Parameter param) {
+		if (StringUtils.isEmpty(param.getName())) {
+			param.setName("parameter" + index.getAndIncrement());
+		}
+
+		return super.add(param);
 	}
 
 	public Parameter getParameter(int i) {
 		return get(i);
+	}
+
+	public boolean contains(String name) {
+		return findParameter(name) != null;
 	}
 
 	public Parameter findParameter(String name) {

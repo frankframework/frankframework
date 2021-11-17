@@ -77,9 +77,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 @FrankDocGroup(name = "Senders")
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
-	
-	public final String PARAM_MESSAGEID = "messageId";
-	
+	public static final String PARAM_MESSAGEID = "messageId";
+
 	private ParameterList paramList = null;
 	private String sessionKeys = null;
 
@@ -119,7 +118,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		try {
 			Message messageToStore=message;
 			if (sessionKeys != null) {
-				List<String> list = new ArrayList<String>();
+				List<String> list = new ArrayList<>();
 				list.add(StringEscapeUtils.escapeCsv(message.asString()));
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
@@ -139,7 +138,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = (String)paramList.getValues(message, session).getValue(PARAM_MESSAGEID);
+					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}

@@ -25,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
@@ -135,7 +136,34 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		String hash=prr.getResult().asString();
 		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
 	}
-	
+
+	@Test
+	public void paramSha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setAlgorithm("HmacSHA512");
+		pipe.addParameter(new SimpleParameter("secret", "Potato"));
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash=prr.getResult().asString();
+		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
+	}
+
+	@Test
+	public void emptyParamSha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+		pipe.setSecret("Aardappel");
+		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setAlgorithm("HmacSHA512");
+		pipe.addParameter(new SimpleParameter("secret", ""));
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, "Potato", session);
+		String hash=prr.getResult().asString();
+		assertEquals("beb37d574dce469b92b4494daf92f2065dede3c0b14b7a5d5f0390d4829b580a2867c4d2af3d937757dbcfd083811682eed108d6b0fdf6f760e150f1dfeeb8e3", hash);
+	}
+
 	@Test
 	public void largeMessage() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		pipe.setSecret("Potato");

@@ -72,8 +72,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return null;
 	}
 
-	/** Get a specific {@link ParameterValue} */
+	@Deprecated //Fix this in a separate PR
 	public ParameterValue getParameterValue(String name) {
+		return get(name);
+	}
+	/** Get a specific {@link ParameterValue} */
+	public ParameterValue get(String name) {
 		return map.get(name);
 	}
 
@@ -87,15 +91,9 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return null;
 	}
 
-	public Object getValue(String name) {
-		ParameterValue pv = map.get(name);
-		return pv == null ? null : pv.getValue();
-	}
-
 	public boolean contains(String name) {
 		return map.containsKey(name);
 	}
-
 
 	public ParameterValue remove(String name) {
 		return map.remove(name);

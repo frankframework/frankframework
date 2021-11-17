@@ -24,7 +24,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -76,13 +76,13 @@ public class HashPipe extends FixedForwardPipe {
 			ParameterList parameterList = getParameterList();
 			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session);
 			if(pvl != null) {
-				String authAliasParamValue = (String)pvl.getValue("authAlias");
-				if (StringUtils.isNotEmpty(authAliasParamValue)) {
-					authAlias = authAliasParamValue;
+				ParameterValue authAliasParamValue = pvl.get("authAlias");
+				if (authAliasParamValue != null) {
+					authAlias = authAliasParamValue.asStringValue();
 				}
-				String secretParamValue = (String)pvl.getValue("secret");
-				if (StringUtils.isNotEmpty(secretParamValue)) {
-					secret = secretParamValue;
+				ParameterValue secretParamValue = pvl.get("secret");
+				if (secretParamValue != null) {
+					secret = secretParamValue.asStringValue();
 				}
 			}
 		}
