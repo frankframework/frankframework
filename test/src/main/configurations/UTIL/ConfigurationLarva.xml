@@ -97,10 +97,29 @@
 		</pipeline>
 	</adapter>
 
+	<Adapter name="LarvaScheduled" active="${larva.adapter.active}">
+		<Receiver>
+			<JavaListener
+				name="LarvaScheduled"
+			/>
+		</Receiver>
+		<Pipeline>
+			<Exit path="EXIT" state="success" />
+			<DelayPipe name="delay" delayTime="30000"/>
+			<SenderPipe 
+				name="callLarva">
+				<IbisLocalSender 
+					name="callLarva"
+					javaListener="Larva"/>
+				<Forward name="success" path="EXIT" />
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
 	<scheduler>
 		<job
 			name="Larva"
-			javaListener="Larva"
+			javaListener="LarvaScheduled"
 			interval="86400000"
 			function="sendMessage"
 			active="${larva.adapter.scheduler.active}"

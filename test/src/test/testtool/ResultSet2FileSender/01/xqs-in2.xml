@@ -1,6 +1,35 @@
 <root>
 	<select>
 		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>TKEY</name>
+			</column>
+			<column>
+				<name>TCHAR</name>
+			</column>
+			<column>
+				<name>TVARCHAR</name>
+			</column>
+			<column>
+				<name>TNUMBER</name>
+			</column>
+			<column>
+				<name>TTIMESTAMP</name>
+			</column>
+			<column>
+				<name>TDATE</name>
+			</column>
+			<column>
+				<name>TBLOB1</name>
+			</column>
+			<column>
+				<name>TCLOB</name>
+			</column>
+			<column>
+				<name>TBLOB2</name>
+			</column>
+		</columns>
 		<order>tkey</order>
 	</select>
 	<sql>
