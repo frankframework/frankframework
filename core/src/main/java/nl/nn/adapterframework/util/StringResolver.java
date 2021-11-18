@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.credentialprovider.util.AppConstants;
-
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
  * 
