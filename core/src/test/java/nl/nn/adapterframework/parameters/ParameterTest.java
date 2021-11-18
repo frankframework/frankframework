@@ -216,7 +216,6 @@ public class ParameterTest {
 		assertTrue(result instanceof String);
 
 		String stringResult = Message.asMessage(result).asString();
-		System.out.println(stringResult);
 		assertEquals("fiets bel appel", stringResult);
 	}
 
