@@ -92,6 +92,9 @@ jobs:
         name: FrankDoc
         path: ${{ github.workspace }}/previous/frankdoc/xml/xsd/
 
+    - name: Make helper script nonFailingDiff executable
+      run: chmod a+x ${GITHUB_WORKSPACE}/.github/workflows/nonFailingDiff
+
     - name: Compare strict XSD with predecessor
       run: ${GITHUB_WORKSPACE}/.github/workflows/nonFailingDiff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-strict.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
 
