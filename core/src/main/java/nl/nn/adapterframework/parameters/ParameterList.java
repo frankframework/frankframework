@@ -66,10 +66,6 @@ public class ParameterList extends ArrayList<Parameter> {
 		return get(i);
 	}
 
-	public boolean contains(String name) {
-		return findParameter(name) != null;
-	}
-
 	public Parameter findParameter(String name) {
 		for (Iterator<Parameter> it=iterator();it.hasNext();) {
 			Parameter p = it.next();
