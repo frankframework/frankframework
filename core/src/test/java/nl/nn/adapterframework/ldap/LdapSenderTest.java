@@ -173,7 +173,10 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		compareXML("Ldap/expected/delete.xml", getTree());
 	}
 
+	//Create a new sender and execute the TREE action to run a diff against that changes
 	private String getTree() throws Exception {
+		super.tearDown();
+		super.setUp();
 		sender.setOperation("getTree");
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");

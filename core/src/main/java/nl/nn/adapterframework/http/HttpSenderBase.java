@@ -538,12 +538,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
-			for(int i=0; i < parameters.size(); i++) {
-				if (skipParameter(paramList.get(i).getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
+			for(ParameterValue pv : parameters) {
+				if (skipParameter(pv.getName())) {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+pv.getName()+"]");
 					continue;
 				}
-				ParameterValue pv = parameters.getParameterValue(i);
 				try {
 					if (parametersAppended) {
 						path.append("&");
@@ -600,7 +599,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
+				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
 				uri = getURI(url);
 			} else {
 				uri = staticUri;
@@ -843,9 +842,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
-	}
-	public String getAuthAlias() {
-		return authAlias;
 	}
 
 	@IbisDoc({"21", "username used in authentication to host", ""})

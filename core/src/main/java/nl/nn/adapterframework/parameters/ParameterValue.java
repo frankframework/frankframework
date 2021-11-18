@@ -36,12 +36,12 @@ public class ParameterValue {
 
 	private Object value;
 	private Parameter definition;
-	
-	ParameterValue(Parameter type, Object value) {
+
+	protected ParameterValue(Parameter type, Object value) {
 		this.definition = type;
 		this.value = value;
 	}
-	
+
 	/**
 	 * Returns the description of the parameter
 	 */
@@ -61,6 +61,9 @@ public class ParameterValue {
 	 */
 	public Object getValue() {
 		return value;
+	}
+	public Message asMessage() {
+		return Message.asMessage(value);
 	}
 
 	public void setDefinition(Parameter parameterDef) {
@@ -105,7 +108,7 @@ public class ParameterValue {
 	public int asIntegerValue(int defaultValue) {
 		return value != null ? Integer.valueOf(valueAsString()).intValue() : defaultValue;
 	}
-	
+
 	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a long
@@ -113,7 +116,7 @@ public class ParameterValue {
 	public long asLongValue(long defaultValue) {
 		return value != null ? Long.valueOf(valueAsString()).longValue() : defaultValue;
 	}
-	
+
 	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a float
@@ -131,13 +134,19 @@ public class ParameterValue {
 	}
 
 	/**
+	 * @return convert the value to a string
+	 */
+	public String asStringValue() {
+		return asStringValue(null);
+	}
+	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a string
 	 */
 	public String asStringValue(String defaultValue) {
 		return value != null ? valueAsString() : defaultValue;
 	}
-	
+
 	private String valueAsString() {
 		if (value instanceof Message) {
 			Message message = (Message)value;

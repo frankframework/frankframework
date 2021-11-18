@@ -15,119 +15,116 @@
 */
 package nl.nn.adapterframework.parameters;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * List of parametervalues.
+ * List of {@link ParameterValue ParameterValues}.
  * 
  * @author Gerrit van Brakel
  */
-public class ParameterValueList {
-	
-	List<ParameterValue> list;
+public class ParameterValueList implements Iterable<ParameterValue> {
+
 	Map<String, ParameterValue> map;
-	
+
 	public ParameterValueList() {
 		super();
-		list = new ArrayList<ParameterValue>();
-		map  = new HashMap<String, ParameterValue>();
+		map  = new LinkedHashMap<>();
 	}
 
-	public ParameterValueList(int i) {
-		super();
-		list = new ArrayList<ParameterValue>(i);
-		map  = new HashMap<String, ParameterValue>();
-	}
-	
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
 		if (params==null) {
 			return null;
 		}
 		return params.getValues(message, session);
 	}
-	
-	public void add(ParameterValue pv) {
-		list.add(pv);
+
+	protected void add(ParameterValue pv) {
+		if(pv == null || pv.getDefinition() == null) {
+			throw new IllegalStateException("No parameter defined");
+		}
+		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
+			throw new IllegalStateException("Parameter must have a name");
+		}
+		if(contains(pv.getDefinition().getName())) {
+			throw new IllegalStateException("Parameter name must be unique");
+		}
 		map.put(pv.getDefinition().getName(),pv);
 	}
-	
+
+	@Deprecated
 	public ParameterValue getParameterValue(int i) {
-		return list.get(i);
+		int index = 0;
+		for(ParameterValue pv : this) {
+			if(i == index) {
+				return pv;
+			}
+			index++;
+		}
+		return null;
 	}
 
+	/** Get a specific {@link ParameterValue} */
 	public ParameterValue getParameterValue(String name) {
 		return map.get(name);
 	}
 
-	public Object getValue(int i) {
-		return list.get(i).getValue();
-	}
-
-	public String getName(int i) {
-		return list.get(i).getName();
+	/** Find a (case insensitive) {@link ParameterValue} */
+	public ParameterValue findParameterValue(String name) {
+		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
+			if(entry.getKey().equalsIgnoreCase(name)) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 
 	public Object getValue(String name) {
 		ParameterValue pv = map.get(name);
-		return pv ==null ? null : pv.getValue();
+		return pv == null ? null : pv.getValue();
 	}
 
-	public boolean containsKey(String name) {
+	public boolean contains(String name) {
 		return map.containsKey(name);
 	}
 
 
-	public ParameterValue removeParameterValue(String name) {
-		ParameterValue pv = map.remove(name);
-		if (pv!=null) {
-			list.remove(pv);
-		}
-		return pv;
-	}
-	
-	public boolean parameterExists(String name) {
-		return map.get(name)!=null;
+	public ParameterValue remove(String name) {
+		return map.remove(name);
 	}
 
 	public int size() {
-		return list.size();
+		return map.size();
 	}
-	
-	Map<String, ParameterValue> getParameterValueMap() {
-		return map;
+
+	private Map<String, ParameterValue> getParameterValueMap() {
+		return Collections.unmodifiableMap(map);
 	}
 
 	/**
 	 * Returns a Map of value objects
 	 */
-	public Map<String,Object> getValueMap() throws ParameterException {
+	public Map<String,Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
-		// convert map with parameterValue to map with value		
-		Map<String,Object> result = new LinkedHashMap<String,Object>(paramValuesMap.size());
+		// convert map with parameterValue to map with value
+		Map<String,Object> result = new LinkedHashMap<>(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
 
-	/*
-	 * Helper routine for quickly iterating through the resolved parameters
-	 * in the order in which they are defined 
-	 */
-	public void forAllParameters(IParameterHandler handler) throws ParameterException {
-		for (Iterator<ParameterValue> param = list.iterator(); param.hasNext();) {
-			ParameterValue paramValue = param.next();
-			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
-		}
+	@Override
+	public Iterator<ParameterValue> iterator() {
+		return map.values().iterator();
 	}
 }

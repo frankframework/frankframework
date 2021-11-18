@@ -18,14 +18,14 @@ package nl.nn.adapterframework.pipes;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
 import nl.nn.adapterframework.stream.Message;
@@ -92,11 +92,9 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	protected String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(parameterName)) {
-					return pvl.getParameterValue(i).asStringValue(null);
-				}
+			ParameterValue pv = pvl.findParameterValue(parameterName);
+			if(pv != null) {
+				return pv.asStringValue(null);
 			}
 		}
 		return null;

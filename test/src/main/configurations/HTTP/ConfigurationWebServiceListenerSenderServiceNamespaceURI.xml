@@ -64,7 +64,10 @@
 					serviceNamespace="urn:ws:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -84,7 +87,10 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -111,7 +117,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -121,7 +130,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -162,7 +174,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false"/>
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -172,7 +187,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -183,7 +201,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000"
-					allowSelfSignedCertificates="true" verifyHostname="false"  />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -194,7 +215,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -206,7 +230,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -218,7 +245,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
@@ -228,7 +258,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -239,7 +272,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -250,7 +286,10 @@
 					serviceNamespace="urn:ws_timeout:serviceNamespaceURI"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />

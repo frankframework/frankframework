@@ -1,5 +1,5 @@
 <div>
-	<div ng-if="::attr.description" ng-bind-html="::attr.description" />
+	<div ng-if="::attr.description" ng-bind-html="::attr.description | javadoc:this" />
 
 	<div ng-if="attr.enum">
 		<div ng-controller="attribute-description">
@@ -12,7 +12,7 @@
 				</thead>
 				<tr ng-repeat="enumField in ::enums[attr.enum]">
 					<td>{{::enumField.label}}</td>
-					<td ng-bind-html="enumField.description" />
+					<td ng-bind-html="enumField.description | javadoc:this" />
 				</tr>
 			</table>
 

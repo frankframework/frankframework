@@ -21,13 +21,13 @@ import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -59,12 +59,12 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CompareStringPipe extends AbstractPipe {
 
-	private final static String LESSTHANFORWARD = "lessthan";
-	private final static String GREATERTHANFORWARD = "greaterthan";
-	private final static String EQUALSFORWARD = "equals";
-	private final static String OPERAND1 = "operand1";
-	private final static String OPERAND2 = "operand2";
-	private final static String IGNOREPATTERNS = "ignorepatterns";
+	private static final String LESSTHANFORWARD = "lessthan";
+	private static final String GREATERTHANFORWARD = "greaterthan";
+	private static final String EQUALSFORWARD = "equals";
+	private static final String OPERAND1 = "operand1";
+	private static final String OPERAND2 = "operand2";
+	private static final String IGNOREPATTERNS = "ignorepatterns";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
@@ -220,11 +220,9 @@ public class CompareStringPipe extends AbstractPipe {
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
-			for (int i = 0; i < parameterList.size(); i++) {
-				Parameter parameter = parameterList.getParameter(i);
-				if (parameter.getName().equalsIgnoreCase(parameterName)) {
-					return pvl.getParameterValue(i).asStringValue(null);
-				}
+			ParameterValue pv = pvl.findParameterValue(parameterName);
+			if(pv != null) {
+				return pv.asStringValue(null);
 			}
 		}
 		return null;

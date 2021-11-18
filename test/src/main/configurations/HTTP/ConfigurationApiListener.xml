@@ -100,7 +100,11 @@
 			<pipe name="callApiListener"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" methodType="post" resultStatusCodeSessionKey="statusCode">
+					urlParam="url_param" methodType="POST" resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="url_param" value="" /> <!-- use pipeline input -->
 				</sender>
 			</pipe>

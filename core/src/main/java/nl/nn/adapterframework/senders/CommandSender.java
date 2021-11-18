@@ -26,6 +26,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -64,8 +65,8 @@ public class CommandSender extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException("Could not extract parametervalues",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				commandline.add(pvl.getParameterValue(i).getValue());
+			for(ParameterValue pv : pvl) {
+				commandline.add(pv.getValue());
 			}
 		}
 		return new Message(ProcessUtil.executeCommand(commandline, timeOut));

@@ -99,14 +99,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
-	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
-	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
-	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
+	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
+	public static final String TYPE_TIME_PATTERN="HH:mm:ss";
+	public static final String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
+	public static final String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
-	public final static String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
-	public final static String FIXEDHOSTNAME ="MYHOST000012345";
-	
+	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
+	public static final String FIXEDHOSTNAME ="MYHOST000012345";
+
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
@@ -143,64 +143,71 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private CredentialFactory cf;
 
 	public enum ParameterType {
-		/** renders the contents of the first node (in combination with xslt or xpath). <br/> Please note that if there are child nodes, only the contents are returned, use <code>xml</code> if the xml tags are required */
+		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that 
+		 * if there are child nodes, only the contents are returned, use <code>XML</code> if the xml tags are required */
 		STRING,
 
-		/** renders an xml-nodeset as an xml-string (in combination with xslt or xpath).This will include the xml tags*/
+		/** Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags */
 		XML,
 
-		/** renders the CONTENTS of the first node as a nodeset "+ 
-			"that can be used as such when passed as xslt-parameter (only for XSLT 1.0). <br/>"+
-			"Please note that the nodeset may contain multiple nodes, without a common root node. <br/>"+
-			"N.B. The result is the set of children of what you might expect it to be... */
+		/** Renders the CONTENTS of the first node as a nodeset
+		 * that can be used as such when passed as xslt-parameter (only for XSLT 1.0).
+		 * Please note that the nodeset may contain multiple nodes, without a common root node.
+		 * N.B. The result is the set of children of what you might expect it to be... */
 		NODE,
 
-		/** renders xml as a DOM document; similar to <code>node</code> "+ 
-			"with the distinction that there is always a common root node (required for XSLT 2.0) */
+		/** Renders XML as a DOM document; similar to <code>node</code>
+			with the distinction that there is always a common root node (required for XSLT 2.0) */
 		DOMDOC,
 
-		/** converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. "+ 
-			"When applied as a JDBC parameter, the method setDate() is used */
+		/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>.
+		 * When applied as a JDBC parameter, the method setDate() is used */
 		DATE,
 
-		/** converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. "+ 
-			"When applied as a JDBC parameter, the method setTime() is used */
+		/** Converts the result to a Date, by default using formatString <code>HH:mm:ss</code>.
+		 * When applied as a JDBC parameter, the method setTime() is used */
 		TIME,
 
-		/** converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. "+ 
-			"When applied as a JDBC parameter, the method setTimestamp() is used */
+		/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>.
+		 * When applied as a JDBC parameter, the method setTimestamp() is used */
 		DATETIME,
 
-		/** similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
+		/** Similar to <code>DATETIME</code>, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
 		TIMESTAMP,
 
-		/** converts the result from a XML dateTime to a Date. "+ 
-			"When applied as a JDBC parameter, the method setTimestamp() is used */
+		/** Converts the result from a XML formatted dateTime to a Date.
+		 * When applied as a JDBC parameter, the method setTimestamp() is used */
 		XMLDATETIME,
 
-		/** converts the result to a Number, using decimalSeparator and groupingSeparator. "+ 
-			"When applied as a JDBC parameter, the method setDouble() is used */
+		/** Converts the result to a Number, using decimalSeparator and groupingSeparator.
+		 * When applied as a JDBC parameter, the method setDouble() is used */
 		NUMBER,
 
-		/** converts the result to an Integer */
+		/** Converts the result to an Integer */
 		INTEGER,
 
-		/** converts the result to a boolean */
+		/** Converts the result to a Boolean */
 		BOOLEAN,
 
-		/** only applicable as a JDBC parameter, the method setBinaryStream() is used */
-		INPUTSTREAM,
+		/** Only applicable as a JDBC parameter, the method setBinaryStream() is used */
+		@ConfigurationWarning("use type [BINARY] instead")
+		@Deprecated INPUTSTREAM,
 
-		BYTES,
+		/** Only applicable as a JDBC parameter, the method setBytes() is used */
+		@ConfigurationWarning("use type [BINARY] instead")
+		@Deprecated BYTES,
 
-		/** converts a List&lt;String&gt; object to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		/** Forces the parameter value to be treated as binary data (eg. when using a SQL BLOB field). */
+		BINARY,
+
+		/** Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		LIST,
 
-		/** converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		/** Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		MAP;
 
 	}
-	
+
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {

@@ -25,11 +25,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -73,9 +74,8 @@ import nl.nn.adapterframework.stream.Message;
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  * 
  * @author Jaco de Groot
- * 
- * @ff.ignoreTypeMembership nl.nn.adapterframework.core.ITransactionalStorage
  */
+@FrankDocGroup(name = "Senders")
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
 	
 	public final String PARAM_MESSAGEID = "messageId";

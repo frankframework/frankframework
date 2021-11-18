@@ -149,8 +149,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
 			}
 		}
