@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.parameters;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ public class ParameterListTest {
 		list.add(new SimpleParameter("key3", "value3"));
 		list.configure();
 
-		assertTrue(list.contains("key1"));
-		assertTrue(list.contains("key2"));
-		assertFalse(list.contains("doesnt-exist"));
+		assertNotNull(list.findParameter("key1"));
+		assertNotNull(list.findParameter("key2"));
+		assertNull(list.findParameter("doesnt-exist"));
 		assertEquals(4, list.size());
 
 		List<String> sortedList2 = new ArrayList<>();
