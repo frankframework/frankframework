@@ -97,3 +97,4 @@ jobs:
 
     - name: Compare compatibility XSD with predecessor
       run: diff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-compatibility.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd; echo "Exit code $?"
+
