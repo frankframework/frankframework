@@ -93,19 +93,7 @@ jobs:
         path: ${{ github.workspace }}/previous/frankdoc/xml/xsd/
 
     - name: Compare strict XSD with predecessor
-      uses: LouisBrunner/diff-action@v0.1.0
-      with:
-        old: ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-strict.xsd
-        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
-        mode: addition
-        tolerance: better
-        output: FrankConfig-strict-compare.txt
+      run: diff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-strict.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
 
     - name: Compare compatibility XSD with predecessor
-      uses: LouisBrunner/diff-action@v0.1.0
-      with:
-        old: ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
-        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
-        mode: addition
-        tolerance: better
-        output: FrankConfig-compatibility-compare.txt
+      run: diff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-compatibility.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
