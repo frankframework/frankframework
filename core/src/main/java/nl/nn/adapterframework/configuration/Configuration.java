@@ -285,8 +285,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
 			try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
-				databaseMigrator.configure();
-				databaseMigrator.update();
+				if(databaseMigrator.hasLiquibaseScript(this)) {
+					databaseMigrator.configure();
+					databaseMigrator.update();
+				}
 			} catch (Exception e) {
 				log("unable to run JDBC migration", e);
 			}

@@ -2140,7 +2140,7 @@ angular.module('iaf.beheerconsole')
 		if(!formData) formData = {};
 		var fd = new FormData();
 		$scope.generateSql=true;
-		if($scope.file != null){
+		if($scope.file != null) {
 			fd.append("file", $scope.file);
 		}
 
@@ -2305,7 +2305,7 @@ angular.module('iaf.beheerconsole')
 			}
 			$scope.form.resultType = executeQueryCookie.resultType;
 		}
-		
+
 	});
 
 	$scope.submit = function(formData) {
