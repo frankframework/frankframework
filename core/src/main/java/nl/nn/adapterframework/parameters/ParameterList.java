@@ -54,8 +54,9 @@ public class ParameterList extends ArrayList<Parameter> {
 
 	@Override
 	public boolean add(Parameter param) {
+		int i = index.getAndIncrement();
 		if (StringUtils.isEmpty(param.getName())) {
-			param.setName("parameter" + index.getAndIncrement());
+			param.setName("parameter" + i);
 		}
 
 		return super.add(param);
