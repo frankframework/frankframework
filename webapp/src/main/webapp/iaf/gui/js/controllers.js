@@ -880,7 +880,7 @@ angular.module('iaf.beheerconsole')
 	authService.logout();
 }])
 
-.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'Alert', 
+.controller('LoginCtrl', ['$scope', 'authService', '$timeout', 'Alert',
 	function($scope, authService, $timeout, Alert) {
 	$timeout(function() {
 		$scope.notifications = Alert.get();
@@ -895,7 +895,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('NotificationsCtrl', ['$scope', 'Api', '$stateParams', 'Hooks', 'Notification', 
+.controller('NotificationsCtrl', ['$scope', 'Api', '$stateParams', 'Hooks', 'Notification',
 	function($scope, Api, $stateParams, Hooks, Notification) {
 	if($stateParams.id > 0) {
 		$scope.notification = Notification.get($stateParams.id);
@@ -1015,7 +1015,7 @@ angular.module('iaf.beheerconsole')
 		var fd = new FormData();
 		if($scope.form.datasource && $scope.form.datasource != "")
 			fd.append("datasource", $scope.form.datasource);
-		else 
+		else
 			fd.append("datasource", $scope.datasources[0]);
 
 		fd.append("encoding", $scope.form.encoding);
@@ -1481,7 +1481,7 @@ angular.module('iaf.beheerconsole')
 
 	$scope.resendMessage = $scope.doResendMessage;
 	$scope.deleteMessage = $scope.doDeleteMessage;
-	
+
 	$scope.selectAll = function() {
 		for(i in $scope.selectedMessages) {
 			$scope.selectedMessages[i] = true;
@@ -1702,7 +1702,7 @@ angular.module('iaf.beheerconsole')
 	}, {responseType:'text', transformResponse: function(data) {
 		return data;
 	}});
-	
+
 }])
 
 .controller('WebservicesCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
@@ -2160,7 +2160,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('SendJmsMessageCtrl', ['$scope', 'Api', function($scope, Api) {
-	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.destinationTypes = ["QUEUE", "TOPIC"];
 	$scope.processing = false;
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
@@ -2174,13 +2174,13 @@ angular.module('iaf.beheerconsole')
 		var fd = new FormData();
 		if(formData.connectionFactory && formData.connectionFactory != "")
 			fd.append("connectionFactory", formData.connectionFactory);
-		else 
+		else
 			fd.append("connectionFactory", $scope.connectionFactories[0]);
 		if(formData.destination && formData.destination != "")
 			fd.append("destination", formData.destination);
 		if(formData.type && formData.type != "")
 			fd.append("type", formData.type);
-		else 
+		else
 			fd.append("type", $scope.destinationTypes[0]);
 		if(formData.replyTo && formData.replyTo != "")
 			fd.append("replyTo", formData.replyTo);
@@ -2229,7 +2229,7 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('BrowseJmsQueueCtrl', ['$scope', 'Api', 'Cookies', function($scope, Api, Cookies) {
-	$scope.destinationTypes = ["QUEUE", "TOPIC"]; 
+	$scope.destinationTypes = ["QUEUE", "TOPIC"];
 	$scope.form = {};
 	Api.Get("jms", function(data) {
 		$.extend($scope, data);
@@ -2367,7 +2367,7 @@ angular.module('iaf.beheerconsole')
 		if(!formData.resultType) formData.resultType = $scope.resultTypes[0] || false;
 
 		$scope.columnNames = [{
-			
+
 		}];
 		var columnNameArray = [];
 		$scope.result = [];
