@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if diff $1 $2 ; then
+    echo "No differences"
+else
+    echo
+fi

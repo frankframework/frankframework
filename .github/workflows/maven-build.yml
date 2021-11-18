@@ -93,8 +93,8 @@ jobs:
         path: ${{ github.workspace }}/previous/frankdoc/xml/xsd/
 
     - name: Compare strict XSD with predecessor
-      run: if [ diff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-strict.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd ]; then echo "No differences"; else exit 0 fi
+      run: ./nonFailingDiff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-strict.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
 
     - name: Compare compatibility XSD with predecessor
-      run: if [ diff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-compatibility.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd ]; then echo "No differences"; else exit 0 fi
+      run: ./nonFailingDiff ${{ github.workspace }}/previous/frankdoc/xml/xsd/FrankConfig-compatibility.xsd ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
 
