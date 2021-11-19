@@ -86,8 +86,8 @@ jobs:
 
     - name: Call [Compare Frank!Doc] workflow
       uses: benc-uk/workflow-dispatch@v1
-      if: false
+      if: ${{ matrix.java == '8' && github.event_name == 'pull_request'}}
       with:
         workflow: Compare FrankDoc
         token: ${{ secrets.PAT }}
-        inputs: '{"target": "${{ github.sha }}"}'
+        inputs: '{"target": "${{ GITHUB_SHA }}"}'
