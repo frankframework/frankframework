@@ -15,8 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import liquibase.changelog.ChangeSet;
-import liquibase.changelog.DatabaseChangeLog;
 import liquibase.logging.core.AbstractLogger;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -27,10 +25,15 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class LiquibaseLogger extends AbstractLogger {
-	private static final Logger log = LogUtil.getLogger(LiquibaseLogger.class);
+	private static Logger log;
+
+	public LiquibaseLogger(String name) {
+		log = LogUtil.getLogger(name);
+	}
 
 	@Override
 	public void setName(String name) {
+		// logger will be initialized with the name no need to set it here
 	}
 
 	@Override
@@ -45,30 +48,22 @@ public class LiquibaseLogger extends AbstractLogger {
 
 	@Override
 	public void warning(String message) {
-		if(log.isWarnEnabled()) {
-			log.warn(message);
-		}
+		log.warn(message);
 	}
 
 	@Override
 	public void warning(String message, Throwable e) {
-		if(log.isWarnEnabled()) {
-			log.warn(message, e);
-		}
+		log.warn(message, e);
 	}
 
 	@Override
 	public void info(String message) {
-		if(log.isInfoEnabled()) {
-			log.info(message);
-		}
+		log.info(message);
 	}
 
 	@Override
 	public void info(String message, Throwable e) {
-		if(log.isInfoEnabled()) {
-			log.info(message, e);
-		}
+		log.info(message, e);
 	}
 
 	@Override
@@ -80,25 +75,16 @@ public class LiquibaseLogger extends AbstractLogger {
 
 	@Override
 	public void debug(String message, Throwable e) {
-		if(log.isDebugEnabled()) {
-			log.debug(message, e);
-		}
-	}
-
-	@Override
-	public void setLogLevel(String logLevel, String logFile) {
-	}
-
-	@Override
-	public void setChangeLog(DatabaseChangeLog databaseChangeLog) {
-	}
-
-	@Override
-	public void setChangeSet(ChangeSet changeSet) {
+		log.debug(message, e);
 	}
 
 	@Override
 	public int getPriority() {
 		return 1;
+	}
+
+	@Override
+	public void setLogLevel(String logLevel, String logFile) {
+		// log level is managed by log4j see log4j4ibis.xml
 	}
 }

@@ -76,8 +76,8 @@ public class LiquibaseImpl {
 		LogFactory.setInstance(new LogFactory() {
 
 			@Override
-			public liquibase.logging.Logger getLog() {
-				liquibase.logging.Logger log = new LiquibaseLogger();
+			public liquibase.logging.Logger getLog(String name) {
+				liquibase.logging.Logger log = new LiquibaseLogger(name);
 				return log;
 			}
 		});
