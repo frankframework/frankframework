@@ -72,7 +72,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
-import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -365,8 +364,7 @@ public class HttpSender extends HttpSenderBase {
 				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
 			}
 			if (parameters!=null) {
-				for(int i=0; i<parameters.size(); i++) {
-					ParameterValue pv = parameters.getParameterValue(i);
+				for(ParameterValue pv : parameters) {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
@@ -438,33 +436,26 @@ public class HttpSender extends HttpSenderBase {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
-			for(int i=0; i<parameters.size(); i++) {
-				ParameterValue pv = parameters.getParameterValue(i);
-				ParameterType paramType = pv.getDefinition().getType();
+			for(ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
 
 				// Skip parameters that are configured as ignored
 				if (skipParameter(name))
 					continue;
 
-
-				if (paramType == ParameterType.INPUTSTREAM) {
-					Object value = pv.getValue();
-					if (value instanceof InputStream) {
-						InputStream fis = (InputStream)value;
-						String fileName = null;
-						String sessionKey = pv.getDefinition().getSessionKey();
-						if (sessionKey != null) {
-							fileName = session.getMessage(sessionKey + "Name").asString();
-						}
-
-						entity.addPart(createMultipartBodypart(name, fis, fileName));
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+value+"] and name ["+fileName+"]");
-					} else {
-						throw new SenderException(getLogPrefix()+"unknown inputstream ["+value.getClass()+"] for parameter ["+name+"]");
+				Message msg = pv.asMessage();
+				if (msg.isBinary()) {
+					InputStream fis = msg.asInputStream();
+					String fileName = null;
+					String sessionKey = pv.getDefinition().getSessionKey();
+					if (sessionKey != null) {
+						fileName = session.getMessage(sessionKey + "Name").asString();
 					}
+
+					entity.addPart(createMultipartBodypart(name, fis, fileName));
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
 				} else {
-					String value = pv.asStringValue("");
+					String value = msg.asString();
 					entity.addPart(createMultipartBodypart(name, value));
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}

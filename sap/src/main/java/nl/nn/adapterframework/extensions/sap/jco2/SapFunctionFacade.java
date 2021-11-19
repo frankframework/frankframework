@@ -300,8 +300,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			setParameters(function.getTableParameterList(),  request, 0);
 		}
 		if (pvl!=null) {
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String name = pv.getDefinition().getName();
 				String value = pv.asStringValue("");
 				int slashPos=name.indexOf('/');

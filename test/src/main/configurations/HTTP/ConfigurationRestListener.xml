@@ -48,7 +48,11 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
-					postType="FORMDATA">
+					postType="FORMDATA"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
 					<param name="file" sessionKey="fileContent" type="inputstream" />
@@ -153,7 +157,11 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" streamResultToServlet="true">
+					urlParam="url_param" streamResultToServlet="true"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -191,7 +199,11 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param">
+					urlParam="url_param"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="writeFile" />
@@ -252,7 +264,11 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param">
+					urlParam="url_param"
+					authAlias="${framework.api.user.alias}"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="safePdfFile" />

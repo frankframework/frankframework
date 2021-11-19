@@ -470,10 +470,6 @@
 								<head>Default element</head>
 							</tag>
 							<tag>
-								<name>ff.ignoreTypeMembership</name>
-								<placement>X</placement>
-							</tag>
-							<tag>
 								<name>ff.forward</name>
 								<placement>X</placement>
 							</tag>
