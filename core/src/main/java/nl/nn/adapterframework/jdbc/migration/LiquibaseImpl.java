@@ -35,6 +35,7 @@ import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.logging.LogFactory;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -70,6 +71,16 @@ public class LiquibaseImpl {
 			resourceAccessor = new StreamResourceAccessor(file);
 		}
 		connection = new JdbcConnection(datasource.getConnection());
+
+		// Override liquibase internal logger
+		LogFactory.setInstance(new LogFactory() {
+
+			@Override
+			public liquibase.logging.Logger getLog() {
+				liquibase.logging.Logger log = new LiquibaseLogger();
+				return log;
+			}
+		});
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
