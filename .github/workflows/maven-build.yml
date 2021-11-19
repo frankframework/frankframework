@@ -98,21 +98,21 @@ jobs:
         
         
         
-    - name: Retrieve Frank!Doc XSD from commit
+    - name: Retrieve target XSD from commit
       uses: dawidd6/action-download-artifact@v2
       if: false
       with:
-        name: FrankDoc
         workflow: maven-build.yml
         commit:  ${{ github.sha }}
+        name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
 
-    - name: Retrieve previous Frank!Doc XSD
+    - name: Retrieve base Frank!Doc XSD
       uses: dawidd6/action-download-artifact@v2
       with:
-        name: FrankDoc
         workflow: maven-build.yml
         commit:  ${{ github.event.pull_request.base.sha }}
+        name: FrankDoc
         path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
 
     - name: Compare strict XSD with target
