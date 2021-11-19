@@ -81,7 +81,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 			transactions.remove();
 			resourceHolders.remove();
 		} else {
-			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] close() already called");
+			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] close() already called, or parentThread does not need resume");
 		}
 	}
 	
