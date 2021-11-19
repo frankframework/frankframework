@@ -28,6 +28,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -89,6 +91,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private int transformerPoolMapSize = 100;
 
 	protected ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
+	protected @Setter IThreadConnectableTransactionManager txManager;
 	private @Getter boolean streamingXslt;
 
 
@@ -170,10 +173,10 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager,  session) : null; 
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null; 
 		ContentHandler handler = createHandler(null, threadConnector, session, target);
-		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, session, threadConnector);
+		return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 	}
 
 	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, MessageOutputStream target) throws StreamingException {
@@ -287,8 +290,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			throw new SenderException(getLogPrefix()+"got null input");
 		}
 		try {
-			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-				try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null) {
+			try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null) {
+				try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 					ContentHandler handler = createHandler(message, threadConnector, session, target);
 					if (isDebugInput() && log.isDebugEnabled()) {
 						handler = new XmlTap(handler) {

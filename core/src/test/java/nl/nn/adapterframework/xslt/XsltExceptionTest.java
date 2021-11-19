@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -35,7 +36,7 @@ public class XsltExceptionTest {
 				super.startElement(uri, localName, qName, atts);
 			}
 		};
-		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null) : null) {
+		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, (PipeLineSession)null) : null) {
 			TransformerFilter transformer = tp.getTransformerFilter(threadConnector, filter);
 			
 			try {

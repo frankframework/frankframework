@@ -45,10 +45,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private ThreadState threadState=ThreadState.ANNOUNCED;
 	private TransactionConnector<?,?> transactionConnector;
 
-	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, threadLifeCycleEventListener, null, session);
-	}
-	
+
 	public ThreadConnector(Object owner, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener=threadLifeCycleEventListener;
@@ -65,13 +62,13 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 	
 	public <R> R startThread(R input) {
-		if (transactionConnector!=null) {
-			transactionConnector.beginChildThread();
-		}
 		childThread = Thread.currentThread();
 		if (childThread!=parentThread) {
 			childThread.setName(parentThread.getName()+"/"+childThread.getName());
 			IbisMaskingLayout.addToThreadLocalReplace(hideRegex);
+			if (transactionConnector!=null) {
+				transactionConnector.beginChildThread();
+			}
 			if (threadLifeCycleEventListener!=null) {
 				threadState = ThreadState.CREATED;
 				return threadLifeCycleEventListener.threadCreated(threadInfo, input);

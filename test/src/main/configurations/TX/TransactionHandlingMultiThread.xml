@@ -82,6 +82,13 @@
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
+			
+			<pipe name="DualXsltPipe" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" /> <!-- forward to XsltPipe, that will provide OutputStream  -->
+			<pipe name="XsltPipe" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" /> <!-- forward to ForEachChildElementPipe, that will provide OutputStream  -->
+			<pipe name="ForEachChildElementPipe" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" elementXPathExpression="/*/*">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+				<forward name="success" path="EXIT" />
+			</pipe>
 		</pipeline>
 	</adapter>
 	

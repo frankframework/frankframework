@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -89,29 +90,29 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
-		this(owner, next);
+	// this constructor for testing only
+	protected <T> MessageOutputStream(INamedObject owner, ContentHandler handler) {
+		this(owner, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		this.targetThreadConnector = targetThreadConnector;
+		threadConnector = new ThreadConnector<T>(owner, null, null, (PipeLineSession)null);
 	}
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
 		this.targetThreadConnector = targetThreadConnector;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
-		this(owner, next);
+	// this constructor for testing only
+	protected <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler) {
+		this(owner, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
-		this.targetThreadConnector = targetThreadConnector;
+		threadConnector = new ThreadConnector<T>(owner, null, null, (PipeLineSession)null);
 	}
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
 		this.targetThreadConnector = targetThreadConnector;
 	}
 

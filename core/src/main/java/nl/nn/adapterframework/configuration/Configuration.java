@@ -526,8 +526,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Dummy method to include monitoring in the Frank!Doc.
+	 * Specifies event monitoring 
 	 */
+	// above comment is used in FrankDoc
 	public void registerMonitoring(MonitorManager factory) {
 	}
 

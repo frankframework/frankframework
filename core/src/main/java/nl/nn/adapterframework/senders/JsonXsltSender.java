@@ -63,11 +63,11 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, session) : null; 
 		ContentHandler handler = createHandler(null, threadConnector, session, target);
 		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session, threadConnector);
+		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class JsonXsltSender extends XsltSender {
 			return super.createHandler(input, threadConnector, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session, null);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
 		ContentHandler handler = super.createHandler(input, threadConnector, session, prev);
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);
