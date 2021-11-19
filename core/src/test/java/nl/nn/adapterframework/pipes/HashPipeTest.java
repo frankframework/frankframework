@@ -1,9 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
 
@@ -12,7 +9,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
 import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
@@ -152,20 +148,5 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
 		String hash=prr.getResult().asString();
 		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
-	}
-
-	@Test
-	public void largeMessageNonPreserved() throws Exception {
-		pipe.setSecret("Potato");
-		pipe.configure();
-		pipe.start();
-
-		Message largeFile = new Message("hash me plz");//new UrlMessage(TestFileUtils.getTestFileURL("/HashPipe/largeInput.txt"));
-		Message input = Message.asMessage(new ByteArrayInputStream(largeFile.asByteArray()));
-		assertFalse(input.isRepeatable()); //Ensure it can only be read once
-		PipeRunResult prr = doPipe(pipe, input, session);
-		String hash=prr.getResult().asString();
-		assertEquals("KZAvcWh5wSTeoBWty9MHZl+L4ApUjbWnJNaVq6xftAo=", hash);
-		assertEquals("hash me plz", input.asString());
 	}
 }
