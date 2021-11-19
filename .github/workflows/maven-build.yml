@@ -100,6 +100,7 @@ jobs:
         
     - name: Retrieve Frank!Doc XSD from commit
       uses: dawidd6/action-download-artifact@v2
+      if: false
       with:
         name: Target Frank!Doc
         workflow: maven-build.yml
