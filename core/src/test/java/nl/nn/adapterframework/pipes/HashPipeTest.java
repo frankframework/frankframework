@@ -4,20 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
 import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
@@ -74,7 +69,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.configure();
 		pipe.start();
 
@@ -86,7 +81,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void md5hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
 		pipe.configure();
 		pipe.start();
@@ -99,7 +94,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void sha512hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.configure();
 		pipe.start();
@@ -111,7 +106,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 
 	@Test
 	public void paramSha512hex() throws Exception {
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new SimpleParameter("secret", "Potato"));
 		pipe.configure();
@@ -125,7 +120,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void emptyParamSha512hex() throws Exception {
 		pipe.setSecret("Aardappel");
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new SimpleParameter("secret", ""));
 		pipe.configure();
@@ -150,7 +145,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void largeMessageHex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.configure();
 		pipe.start();
 
