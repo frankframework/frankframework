@@ -86,7 +86,46 @@ jobs:
 
     - name: Call [Compare Frank!Doc] workflow
       uses: benc-uk/workflow-dispatch@v1
+      if: false
       with:
         workflow: Compare FrankDoc
         token: ${{ secrets.PAT }}
         inputs: '{"target": "${{ github.sha }}"}'
+
+        
+        
+        
+        
+        
+        
+    - name: Retrieve Frank!Doc XSD from commit
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        name: Target Frank!Doc
+        commit:  ${{ github.sha }}
+        path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
+
+    - name: Retrieve previous Frank!Doc XSD
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        name: Base Frank!Doc
+        commit:  ${{ github.event.pull_request.head.sha }}
+        path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
+
+    - name: Compare strict XSD with target
+      uses: LouisBrunner/diff-action@v0.1.0
+      with:
+        old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-strict.xsd
+        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
+        mode: addition
+        tolerance: better
+        output: FrankConfig-strict-compare.txt
+
+    - name: Compare compatibility XSD with target
+      uses: LouisBrunner/diff-action@v0.1.0
+      with:
+        old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
+        new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
+        mode: addition
+        tolerance: better
+        output: FrankConfig-compatibility-compare.txt
