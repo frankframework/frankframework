@@ -97,10 +97,10 @@
 		</pipeline>
 	</adapter>
 
-	<Adapter name="LarvaScheduled" active="${larva.adapter.active}">
+	<Adapter name="LarvaDelayed" active="${larva.adapter.active}">
 		<Receiver>
 			<JavaListener
-				name="LarvaScheduled"
+				name="LarvaDelayed"
 			/>
 		</Receiver>
 		<Pipeline>
@@ -119,7 +119,7 @@
 	<scheduler>
 		<job
 			name="Larva"
-			javaListener="LarvaScheduled"
+			javaListener="LarvaDelayed"
 			interval="86400000"
 			function="sendMessage"
 			active="${larva.adapter.scheduler.active}"
