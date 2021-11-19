@@ -66,6 +66,15 @@ public class LiquibaseImpl {
 		}
 
 		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
+		// Override liquibase internal logger
+		LogFactory.setInstance(new LogFactory() {
+
+			@Override
+			public liquibase.logging.Logger getLog(String name) {
+				liquibase.logging.Logger log = new LiquibaseLogger(name);
+				return log;
+			}
+		});
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
