@@ -102,7 +102,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       if: false
       with:
-        name: Target Frank!Doc
+        name: FrankDoc
         workflow: maven-build.yml
         commit:  ${{ github.sha }}
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
@@ -110,7 +110,7 @@ jobs:
     - name: Retrieve previous Frank!Doc XSD
       uses: dawidd6/action-download-artifact@v2
       with:
-        name: Base Frank!Doc
+        name: FrankDoc
         workflow: maven-build.yml
         commit:  ${{ github.event.pull_request.base.sha }}
         path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
