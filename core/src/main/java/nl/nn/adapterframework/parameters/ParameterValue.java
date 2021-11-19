@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public class ParameterValue {
 			try {
 				return message.asString();
 			} catch (IOException e) {
-				throw new RuntimeException("cannot open stream",e);
+				throw new IllegalStateException("cannot open stream", e);
 			}
 		}
 		return value.toString();
