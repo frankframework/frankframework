@@ -1580,6 +1580,9 @@ a.list-group-item.active:focus {
   background-color: #fcf8e3;
   border-color: #faebcc;
 }
+.alert-warning > div.pointer:hover {
+  text-decoration: underline;
+}
 .alert-danger {
   color: #a94442;
   background-color: #f2dede;

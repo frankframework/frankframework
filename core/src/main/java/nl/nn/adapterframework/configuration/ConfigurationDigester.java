@@ -98,8 +98,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
-	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
-	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validate", false);
+	private boolean schemaBasedParsing = AppConstants.getInstance().getBoolean("configurations.digester.schemaBasedParsing", true);
+	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), true);
+	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private String schema;
@@ -122,7 +123,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		private void logErrorMessage(String prefix, SAXParseException exception) {
 			String msg = prefix+" in ["+exception.getSystemId()+"] at line ["+exception.getLineNumber()+"] when validating against schema ["+schema+"]: " + exception.getMessage();
-			if (validation) {
+			if (!suppressValidationWarnings) {
 				configurationWarnings.add((Object)null, log, msg);
 			} else {
 				log.debug(msg);
@@ -213,17 +214,17 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	private String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		return resolveEntitiesAndProperties(configuration, resource, appConstants, preparse);
+		return resolveEntitiesAndProperties(configuration, resource, appConstants, schemaBasedParsing);
 	}
 
 	/**
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean preparse) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
+	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
 		XmlWriter writer;
 		ContentHandler handler;
-		if(preparse) {
+		if(schemaBasedParsing) {
 			writer = new ElementPropertyResolver(appConstants);
 			handler = getStub4TesttoolContentHandler(writer, appConstants);
 			handler = getCanonicalizedConfiguration(handler);
@@ -240,7 +241,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
 		String loaded = writer.toString();
 
-		if(preparse) {
+		if(schemaBasedParsing) {
 			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
 			configuration.setLoadedConfiguration(loadedHide);
 		} else {
