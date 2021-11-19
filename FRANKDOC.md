@@ -5,23 +5,16 @@ The Frank!Doc provides reference information for Frank developers as explained i
 
 | Kind | Name | Appears on | Function |
 | ---- | ---- | ---------- | -------- |
-| Java annotation | `@FrankDocGroup` | Class or interface | Define group as shown in top-left of webapp, fields `name` and `order`.|
+| Java annotation | `@FrankDocGroup` | Class or interface | Define group as shown in top-left of webapp. Has fields `name` and `order` (integer).|
 | JavaDoc tag | `@ff.parameters` | Class | Describes how parameters (Frank config `<Param>`) are used. |
-| JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. |
-| JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). |
+| JavaDoc tag | `@ff.parameter` | Class | Describes the meaning of a specific parameter. First argument is name of parameter. Second argument is description of that parameter.|
+| JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). First argument is name of forward. Second argument is description.|
 | JavaDoc tag | `@ff.default` | Attribute setter | Describes default value. |
-| JavaDoc tag | `@ff.noAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. |
+| JavaDoc tag | `@ff.noAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. Attributes can be re-introduced in derived classes by overriding the setter.|
 | JavaDoc tag | `@ff.mandatory` | Attribute setter | Makes attribute mandatory in Frank config. |
 | JavaDoc tag | `@ff.defaultElement` | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | Java annotation | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
 
-Here is more detailed information about some of these tags and annotations:
+**Annotation @FrankDocGroup, on interface:**  When a Java class implements an interface that has a `@FrankDocGroup` annotation, then the class is put in the group non-exclusively. A class can belong to multiple groups when it implements multiple interfaces with different groups.
 
-**Annotation @FrankDocGroup:**: Has fields `name` and `order` (integer), which is used by the webapp to sort the groups. You can define a group by setting multiple `@FrankDocGroup` annotations with the same `name`. Only one `@FrankDocGroup` annotation of a group should have its `order` field set to avoid ambiguity.
-
-**JavaDoc tag @ff.parameter:** First argument is name of parameter, second argument is description of that parameter.
-
-**JavaDoc tag @ff.forward:** First argument is name of forward, second argument is description.
-
-**JavaDoc tag @ff.noAttribute:** Attributes can be re-introduced in derived classes by overriding the setter.
-
+**Annotation @FrankDocGroup, on class:** When a class has a `@FrankDocGroup` annotation, then the class only belongs to that group. `@FrankDocGroup` annotations on classes are inherited by descendant classes, so descendant classes are also in the specified group exclusively.
