@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -25,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -39,33 +40,24 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Pipe that hashes the input.
- * 
+ * Pipe that hashes the input message.
  * 
  * @author	Niels Meijer
  */
 public class HashPipe extends FixedForwardPipe {
 
-	private String algorithm = "HmacSHA256";
-	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private String secret = null;
-	private String authAlias = null;
-	private String binaryToTextEncoding = "Base64";
+	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter String secret = null;
+	private @Getter String authAlias = null;
 
-	protected List<String> algorithms = Arrays.asList("HmacMD5", "HmacSHA1", "HmacSHA256", "HmacSHA384", "HmacSHA512");
-	protected List<String> binaryToTextEncodings = Arrays.asList("Base64", "Hex");
+	private @Getter HashAlgorithm algorithm = HashAlgorithm.HmacSHA256;
+	private @Getter HashEncoding hashEncoding = HashEncoding.Base64;
 
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-
-		if (!algorithms.contains(getAlgorithm())) {
-			throw new ConfigurationException("illegal value for algorithm [" + getAlgorithm() + "], must be one of " + algorithms.toString());
-		}
-		
-		if (!binaryToTextEncodings.contains(getBinaryToTextEncoding())) {
-			throw new ConfigurationException("illegal value for binary to text method [" + getBinaryToTextEncoding() + "], must be one of " + binaryToTextEncodings.toString());
-		}
+	public enum HashAlgorithm {
+		HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384, HmacSHA512;
+	}
+	public enum HashEncoding {
+		Base64, Hex;
 	}
 
 	@Override
@@ -75,7 +67,7 @@ public class HashPipe extends FixedForwardPipe {
 		try {
 			ParameterList parameterList = getParameterList();
 			ParameterValueList pvl = parameterList==null ? null : parameterList.getValues(message, session);
-			if(pvl != null) {
+			if(pvl != null) { // at this location, it would never be useful that the parameterValue defaults to inputMessage
 				ParameterValue authAliasParamValue = pvl.get("authAlias");
 				if (authAliasParamValue != null) {
 					authAlias = authAliasParamValue.asStringValue();
@@ -97,11 +89,12 @@ public class HashPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + "empty secret, unable to hash");
 
 		try {
-			Mac mac = Mac.getInstance(getAlgorithm());
+			Mac mac = Mac.getInstance(getAlgorithm().name());
 
 			SecretKeySpec secretkey = new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
 			mac.init(secretkey);
 
+			// if we need to preserve this, use: mac.update(message.asByteArray());
 			try (InputStream inputStream = message.asInputStream()) {
 				byte[] byteArray = new byte[1024];
 				int readLength;
@@ -109,30 +102,36 @@ public class HashPipe extends FixedForwardPipe {
 					mac.update(byteArray, 0, readLength);
 				}
 			}
-			
+
 			String hash = "";
-			if ("base64".equalsIgnoreCase(getBinaryToTextEncoding())) {
-				hash = Base64.encodeBase64String(mac.doFinal());
-			} else if ("hex".equalsIgnoreCase(getBinaryToTextEncoding())) {
-				hash = Hex.encodeHexString(mac.doFinal());
-			}else {
-				// Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
-				throw new PipeRunException(this, getLogPrefix(session) + "error determining binaryToText method");
+			switch (getHashEncoding()) {
+				case Base64:
+					hash = Base64.encodeBase64String(mac.doFinal());
+					break;
+				case Hex:
+					hash = Hex.encodeHexString(mac.doFinal());
+					break;
+	
+				default: // Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
+					throw new PipeRunException(this, getLogPrefix(session) + "error determining hashEncoding");
 			}
-			
+
 			return new PipeRunResult(getSuccessForward(), hash);
 		}
-		catch (Exception e) {
+		catch (IOException e) {
+			throw new PipeRunException(this, getLogPrefix(session) + "error reading input", e);
+		}
+		catch (IllegalStateException | InvalidKeyException | NoSuchAlgorithmException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "error creating hash", e);
 		}
 	}
 
-	@IbisDoc({"1", "Hashing algoritm to use, one of HmacMD5, HmacSHA1, HmacSHA256, HmacSHA384 or HmacSHA512", "hmacsha256"})
-	public void setAlgorithm(String algorithm) {
+	/**
+	 * Hash Algorithm to use
+	 * @ff.default HmacSHA256
+	 */
+	public void setAlgorithm(HashAlgorithm algorithm) {
 		this.algorithm = algorithm;
-	}
-	public String getAlgorithm() {
-		return algorithm;
 	}
 
 	@Deprecated
@@ -144,33 +143,27 @@ public class HashPipe extends FixedForwardPipe {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	@IbisDoc({"3","method to use for converting the hash from bytes to String, one of Base64 or Hex", "Base64"})
-	public void setBinaryToTextEncoding(String binaryToTextEncoding) {
-		this.binaryToTextEncoding = binaryToTextEncoding;
+	/**
+	 * Method to use for converting the hash from bytes to String
+	 * @ff.default Base64
+	 */
+	public void setHashEncoding(HashEncoding hashEncoding) {
+		this.hashEncoding = hashEncoding;
 	}
-	public String getBinaryToTextEncoding() {
-		return binaryToTextEncoding;
+	@Deprecated
+	@ConfigurationWarning("use attribute hashEncoding instead")
+	public void setBinaryToTextEncoding(HashEncoding hashEncoding) {
+		setHashEncoding(hashEncoding);
 	}
 
 	@IbisDoc({"4", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
-	public String getSecret() {
-		return secret;
-	}
-
 
 	@IbisDoc({"5","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
 }

@@ -1,23 +1,11 @@
-/*
-   Copyright 2018, 2020 Nationale-Nederlanden
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.Test;
 
@@ -26,6 +14,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.SimpleParameter;
+import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
+import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
@@ -34,29 +26,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public HashPipe createPipe() {
 		return new HashPipe();
 	}
-	
-	@Test
-	public void wrongAlgorithm() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		exception.expect(ConfigurationException.class);
-		exception.expectMessage("illegal value for algorithm [dummy], must be one of " + pipe.algorithms.toString());
-
-		pipe.setSecret("Potato");
-		pipe.setAlgorithm("dummy");
-		pipe.configure();
-	}
 
 	@Test
-	public void wrongBinaryToTextEncoding() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		exception.expect(ConfigurationException.class);
-		exception.expectMessage("illegal value for binary to text method [dummy], must be one of " + pipe.binaryToTextEncodings.toString());
-
-		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding("dummy");
-		pipe.configure();
-	}
-	
-	@Test
-	public void noSecret() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void noSecret() throws Exception {
 		exception.expect(PipeRunException.class);
 
 		pipe.configure();
@@ -65,7 +37,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void basic() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void basic() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.configure();
 		pipe.start();
@@ -76,9 +48,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void md5() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void md5() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setAlgorithm("HmacMD5");
+		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
 		pipe.configure();
 		pipe.start();
 
@@ -88,9 +60,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void sha512() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void sha512() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setAlgorithm("HmacSHA512");
+		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.configure();
 		pipe.start();
 
@@ -100,9 +72,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 	
 	@Test
-	public void hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
 		pipe.configure();
 		pipe.start();
 
@@ -110,12 +82,12 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		String hash=prr.getResult().asString();
 		assertEquals("29902f716879c124dea015adcbd307665f8be00a548db5a724d695abac5fb40a", hash);
 	}
-	
+
 	@Test
-	public void md5hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void md5hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding("Hex");
-		pipe.setAlgorithm("HmacMD5");
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setAlgorithm(HashAlgorithm.HmacMD5);
 		pipe.configure();
 		pipe.start();
 
@@ -125,10 +97,10 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void sha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void sha512hex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding("Hex");
-		pipe.setAlgorithm("HmacSHA512");
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.configure();
 		pipe.start();
 
@@ -138,9 +110,9 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void paramSha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		pipe.setBinaryToTextEncoding("Hex");
-		pipe.setAlgorithm("HmacSHA512");
+	public void paramSha512hex() throws Exception {
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new SimpleParameter("secret", "Potato"));
 		pipe.configure();
 		pipe.start();
@@ -151,10 +123,10 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void emptyParamSha512hex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void emptyParamSha512hex() throws Exception {
 		pipe.setSecret("Aardappel");
-		pipe.setBinaryToTextEncoding("Hex");
-		pipe.setAlgorithm("HmacSHA512");
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
+		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
 		pipe.addParameter(new SimpleParameter("secret", ""));
 		pipe.configure();
 		pipe.start();
@@ -165,25 +137,40 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	}
 
 	@Test
-	public void largeMessage() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void largeMessage() throws Exception {
 		pipe.setSecret("Potato");
 		pipe.configure();
 		pipe.start();
-		
+
 		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
 		String hash=prr.getResult().asString();
 		assertEquals("M7Z60BhL72SMyCEUVesQOuvBRUcokJPyy95lSQODDZU=", hash);
 	}
-	
+
 	@Test
-	public void largeMessageHex() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void largeMessageHex() throws Exception {
 		pipe.setSecret("Potato");
-		pipe.setBinaryToTextEncoding("Hex");
+		pipe.setBinaryToTextEncoding(HashEncoding.Hex);
 		pipe.configure();
 		pipe.start();
-		
+
 		PipeRunResult prr = doPipe(pipe, TestFileUtils.getTestFile("/HashPipe/largeInput.txt"), session);
 		String hash=prr.getResult().asString();
 		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
+	}
+
+	@Test
+	public void largeMessageNonPreserved() throws Exception {
+		pipe.setSecret("Potato");
+		pipe.configure();
+		pipe.start();
+
+		Message largeFile = new Message("hash me plz");//new UrlMessage(TestFileUtils.getTestFileURL("/HashPipe/largeInput.txt"));
+		Message input = Message.asMessage(new ByteArrayInputStream(largeFile.asByteArray()));
+		assertFalse(input.isRepeatable()); //Ensure it can only be read once
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String hash=prr.getResult().asString();
+		assertEquals("KZAvcWh5wSTeoBWty9MHZl+L4ApUjbWnJNaVq6xftAo=", hash);
+		assertEquals("hash me plz", input.asString());
 	}
 }
