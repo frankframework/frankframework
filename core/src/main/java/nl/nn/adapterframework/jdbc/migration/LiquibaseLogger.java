@@ -35,6 +35,7 @@ public class LiquibaseLogger extends AbstractLogger {
 
 	@Override
 	public void severe(String message) {
+		log.error(message);
 	}
 
 	@Override
