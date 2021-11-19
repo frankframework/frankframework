@@ -104,7 +104,7 @@ jobs:
       with:
         name: Target Frank!Doc
         workflow: maven-build.yml
-        commit:  ${{ github.event.pull_request.head.sha }}
+        commit:  ${{ github.sha }}
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
 
     - name: Retrieve previous Frank!Doc XSD
@@ -112,7 +112,7 @@ jobs:
       with:
         name: Base Frank!Doc
         workflow: maven-build.yml
-        commit:  ${{ github.event.pull_request.head.sha }}
+        commit:  ${{ github.event.pull_request.base.sha }}
         path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
 
     - name: Compare strict XSD with target
