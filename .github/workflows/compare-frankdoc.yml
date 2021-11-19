@@ -1,6 +1,6 @@
 # This workflow will try to diff the current Frank!Doc XSD with the given target
 
-name: Compare Frank!Doc
+name: Compare FrankDoc
 
 on:
   workflow_dispatch:
