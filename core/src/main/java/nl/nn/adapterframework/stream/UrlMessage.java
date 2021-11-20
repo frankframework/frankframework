@@ -18,12 +18,12 @@ package nl.nn.adapterframework.stream;
 import java.net.URL;
 
 public class UrlMessage  extends Message {
-	
-	public UrlMessage(URL url, String charset) {
-		super(() -> url.openStream(), charset, url.getClass());
-	}
-	
+
 	public UrlMessage(URL url) {
 		this(url, null);
+	}
+
+	public UrlMessage(URL url, String charset) {
+		super(() -> url.openStream(), charset, url.getClass());
 	}
 }

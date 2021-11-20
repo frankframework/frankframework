@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.ibissource</groupId>
 	<artifactId>ibis-adapterframework-parent</artifactId>
@@ -146,6 +146,7 @@
 				<artifactId>ibis-adapterframework-aspose</artifactId>
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
+
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
@@ -157,12 +158,25 @@
 				<artifactId>log4j-web</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- LOG4J SLF4J bridge -->
+			<!-- SLF4J Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
+			<!-- Apache Commons Logging Binding-->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-jcl</artifactId>
+				<version>${log4j2.version}</version>
+			</dependency>
+			<!-- Java Util Logging Binding-->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-jul</artifactId>
+				<version>${log4j2.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>javax.ejb</groupId>
 				<artifactId>ejb-api</artifactId>
@@ -251,47 +265,18 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<archive>
-						<addMavenDescriptor>true</addMavenDescriptor>
-						<manifest>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<packagingExcludes>.gitignore</packagingExcludes>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.commonjava.maven.plugins</groupId>
@@ -339,6 +324,51 @@
 
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>true</addMavenDescriptor>
+							<manifest>
+								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>3.3.0</version>
+					<configuration>
+						<packagingExcludes>.gitignore</packagingExcludes>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.2.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>prepare-package</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
@@ -438,10 +468,6 @@
 								<name>ff.defaultElement</name>
 								<placement>a</placement>
 								<head>Default element</head>
-							</tag>
-							<tag>
-								<name>ff.ignoreTypeMembership</name>
-								<placement>X</placement>
 							</tag>
 							<tag>
 								<name>ff.forward</name>
@@ -618,7 +644,7 @@
 			<id>cmis</id>
 			<activation>
 				<property>
-					<name>cmis</name>
+					<name>!no-cmis</name>
 				</property>
 			</activation>
 			<modules>
@@ -701,6 +727,16 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
 			<build>
 				<plugins>
 					<plugin>
@@ -794,6 +830,44 @@
 					</plugin>
 				</plugins>
 			</reporting>
+		</profile>
+		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
+			<id>jdk11</id>
+			<activation>
+				<jdk>11</jdk>
+				<property>
+					<name>jdk11</name>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<configuration>
+								<release>11</release>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.2</version>
+						<configuration>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile>
+							<reuseForks>true</reuseForks>
+							<includes>
+								<include>**/*.java</include>
+							</includes>
+							<excludes>
+								<exclude>it.**</exclude>
+							</excludes>
+							<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

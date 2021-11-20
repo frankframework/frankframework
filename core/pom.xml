@@ -50,7 +50,10 @@
 		<dependency><!--Apache Commons Logging Binding-->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
-			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency><!-- Java Util Logging Binding-->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-jul</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -468,6 +471,10 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -478,6 +485,10 @@
 				<exclusion>
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -490,12 +501,22 @@
 					<groupId>com.sun.xml.messaging.saaj</groupId>
 					<artifactId>saaj-impl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.geronimo.specs</groupId>
+					<artifactId>geronimo-jta_1.1_spec</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.1.1</version>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>2.13.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->

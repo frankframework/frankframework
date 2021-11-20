@@ -8,13 +8,13 @@
 		<thead>
 			<tr>
 				<th class="tbl-15">Name</th>
-				<th class="tbl-65">Description</th>
+				<th class="tbl-85">Description</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr ng-repeat="parameter in element.parameters">
 				<td>{{ ::parameter.name }}</td>
-				<td ng-bind-html="::parameter.description"></td>
+				<td ng-bind-html="::parameter.description | javadoc:this"></td>
 			</tr>
 		</tbody>
 	</table>

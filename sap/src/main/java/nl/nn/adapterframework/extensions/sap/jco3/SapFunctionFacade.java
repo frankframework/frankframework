@@ -287,8 +287,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		int requestFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
 		setParameters(input, function.getTableParameterList(), request, requestFieldIndex);
 		if (pvl!=null) {
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String name = pv.getDefinition().getName();
 				String value = pv.asStringValue("");
 				int slashPos=name.indexOf('/');

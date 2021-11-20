@@ -36,7 +36,7 @@ public class LdapFindMemberPipeTest {
 		pipe.setHost(host);
 		pipe.setPort(port);
 		pipe.setUseSsl(useSSL);
-		pipe.setUserName(bindDN);
+		pipe.setUsername(bindDN);
 		pipe.setPassword(bindPassword);
 	}
 	

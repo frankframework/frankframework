@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis
+  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
   USE_PROPRIETARY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource'}}
 on:
   push:
@@ -22,6 +22,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8', '11' ]
 
     steps:
     - name: Checkout repository
@@ -41,10 +44,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
 
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v2
       with:
-        java-version: 1.8
+        distribution: 'zulu'
+        java-version: ${{ matrix.java }}
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
@@ -55,14 +59,15 @@ jobs:
     - name: Update maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
-        echo "PROFILES=ibissource,codecoverage,cmis,proprietary" >> $GITHUB_ENV
+        echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-      run: mvn -B -V -T1 package -Dmaven.javadoc.skip=true -P${{env.PROFILES}}
+        jdk11: true # allows the use of the JDK11 profile, when running JDK11
+      run: mvn -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
@@ -72,3 +77,9 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+    - name: Store FrankDoc XSD
+      uses: actions/upload-artifact@v2
+      with:
+        name: FrankDoc
+        path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd

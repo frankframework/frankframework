@@ -28,7 +28,11 @@ import nl.nn.adapterframework.doc.DocumentedEnum;
 public abstract class EnumUtils {
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, getFieldName(enumClass), value);
+		return parse(enumClass, value, false);
+	}
+
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value, boolean fallbackToStandardEnumParsing) {
+		return parse(enumClass, getFieldName(enumClass), value, fallbackToStandardEnumParsing);
 	}
 
 	private static String getFieldName(Class<?> enumClass) {
@@ -39,13 +43,30 @@ public abstract class EnumUtils {
 	}
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
+		return parse(enumClass, fieldName, value, false);
+	}
+
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value, boolean fallbackToStandardEnumParsing) {
 		if(DocumentedEnum.class.isAssignableFrom(enumClass)) {
-			return parseDocumented(enumClass, fieldName, value);
+			try {
+				return parseDocumented(enumClass, fieldName, value);
+			} catch (IllegalArgumentException e1) {
+				if(fallbackToStandardEnumParsing) {
+					try {
+						return parseNormal(enumClass, fieldName, value);
+					} catch (IllegalArgumentException e2) {
+						e1.addSuppressed(e2);
+						throw e1;
+					}
+				} else {
+					throw e1;
+				}
+			}
 		}
 		return parseNormal(enumClass, fieldName, value);
 	}
 
-	public static <E extends Enum<E>> E parseNormal(Class<E> enumClass, String fieldName, String value) {
+	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, String fieldName, String value) {
 		E result = parseIgnoreCase(enumClass, value);
 		if (result==null) {
 			throw new IllegalArgumentException((fieldName!=null?"cannot set field ["+fieldName+"] to ":"")+"unparsable value ["+value+"]. Must be one of "+ getEnumList(enumClass));
@@ -56,7 +77,7 @@ public abstract class EnumUtils {
 	/**
 	 * Solely for DocumentedEnums !
 	 */
-	public static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
+	protected static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
 		return parseFromField(enumClass, fieldName, value, e -> ((DocumentedEnum)e).getLabel());
 	}
 

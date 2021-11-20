@@ -13,7 +13,6 @@ import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.SpringUtils;
-import nl.nn.adapterframework.webcontrol.api.MockIbisManager;
 
 /**
  * Test Configuration utility
