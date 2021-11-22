@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.ifsa.jms;
+package nl.nn.adapterframework.extensions.sap;
 
-@Deprecated
-public class IfsaProviderListener extends PushingIfsaProviderListener {
+/**
+ * Use JCO3 by default
+ */
+public class IdocSender extends nl.nn.adapterframework.extensions.sap.jco3.IdocSender {
 }
