@@ -33,7 +33,7 @@ import org.springframework.util.StreamUtils;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
