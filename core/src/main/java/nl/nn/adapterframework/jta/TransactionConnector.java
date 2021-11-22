@@ -38,15 +38,20 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 
 	private IThreadConnectableTransactionManager<T,R> txManager;
 	private Thread parentThread;
+	private Thread childThread;
 	private static ThreadLocal<Object> transactions=new ThreadLocal<>();
 	private static ThreadLocal<Object> resourceHolders=new ThreadLocal<>();
 	private T transaction;
 	private R resourceHolder;
-	private boolean parentThreadNeedsResume=false;
+	private boolean childThreadTransactionSuspended;
 
 	/**
 	 * Constructor, to be called from 'main' thread.
+	 * 
 	 */
+	// When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
+	// not on the main thread anymore, because the transaction must be suspended there.
+	// It cannot be resumed here, because then the state conflicts with the resume in close().
 	public TransactionConnector(IThreadConnectableTransactionManager txManager) {
 		super();
 		parentThread=Thread.currentThread();
@@ -57,12 +62,13 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		resourceHolder = (R)resourceHolders.get();
 		this.txManager = txManager;
 		if (transaction==null && TransactionSynchronizationManager.isSynchronizationActive()) {
-			log.debug("["+hashCode()+"] suspending transaction of parent thread ["+parentThread.getName()+"]");
+			log.debug("[{}] suspending transaction of parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
 			transaction = this.txManager.getCurrentTransaction();
 			resourceHolder = this.txManager.suspendTransaction(transaction);
 			transactions.set(transaction);
 			resourceHolders.set(resourceHolder);
-			parentThreadNeedsResume = true;
+		} else {
+			log.debug("[{}] no active transaction in parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
 		}
 	}
 
@@ -73,37 +79,46 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		if (currentThread != parentThread) {
 			throw new IllegalStateException("["+hashCode()+"] close() must be called from parentThread");
 		}
-		if (transaction!=null && parentThreadNeedsResume) {
-			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] close() resuming transaction in thread ["+parentThread.getName()+"] after child thread ended");
+		if (childThread!=null && !childThreadTransactionSuspended) {
+			log.warn("childThread transaction was not suspended");
+		}
+		if (transaction!=null && transactions.get()!=null) {
+			log.debug("[{}] close() resuming transaction in thread [{}] after child thread ended", ()->hashCode(), ()->parentThread.getName());
 			txManager.resumeTransaction(transaction, resourceHolder);
 			transaction=null;
-			parentThreadNeedsResume = false;
 			transactions.remove();
 			resourceHolders.remove();
 		} else {
-			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] close() already called, or parentThread does not need resume");
+			log.debug("[{}] close() already called, or parentThread does not need resume", ()->hashCode());
 		}
 	}
-	
+
 	// resume transaction, that was saved in parent thread, in the child thread.
+	// After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 
+	// because the transaction context has been transferred to the childThread.
 	public void beginChildThread() {
 		if (transaction!=null) {
-			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] resuming transaction of parent thread ["+parentThread.getName()+"] in child thread ["+Thread.currentThread().getName()+"]");
+			childThread = Thread.currentThread();
+			log.debug("[{}] beginChildThread() resuming transaction of parent thread [{}] in child thread [{}]", ()->hashCode(), ()->parentThread.getName(), ()->childThread.getName());
 			txManager.resumeTransaction(transaction, resourceHolder);
+		} else {
+			log.debug("[{}] beginChildThread() no transaction to resume", ()->hashCode());
 		}
 	}
-	
 
 	// endThread() to be called from child thread in a finally clause
 	public void endChildThread() {
-//		Thread currentThread = Thread.currentThread();
-//		if (currentThread == parentThread) {
-//			throw new IllegalStateException("["+hashCode()+"] endChildThread() must not be called from parentThread");
-//		}
-//		if (transaction!=null) {
-//			if (log.isDebugEnabled()) log.debug("["+hashCode()+"] suspending transaction of parent thread ["+parentThread.getName()+"] in child thread ["+currentThread.getName()+"]");
-//			resources = this.txManager.suspendTransaction(transaction);
-//		}
+		if (childThread==null || transaction==null) {
+			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction", ()->hashCode(), ()->Thread.currentThread().getName());
+			return;
+		}
+		Thread currentThread = Thread.currentThread();
+		if (currentThread != childThread) {
+			throw new IllegalStateException("["+hashCode()+"] endChildThread() must be called from childThread ["+childThread.getName()+"]");
+		}
+		log.debug("[{}] endChildThread() collecting current resources in thread [{}]", ()->hashCode(), ()->Thread.currentThread().getName());
+		resourceHolder = this.txManager.suspendTransaction(transaction);
+		childThreadTransactionSuspended = true;
 	}
 
 }
