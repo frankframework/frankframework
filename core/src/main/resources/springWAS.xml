@@ -14,7 +14,7 @@
 
 	<bean
 		id="txManagerReal"
-		class="org.springframework.transaction.jta.WebSphereUowTransactionManager"
+		class="nl.nn.adapterframework.jta.websphere.ThreadConnectableWebSphereTransactionManager"
 		lazy-init="true"
 		>
 		<property name="transactionManager" ref="wasTransactionManager"/>
