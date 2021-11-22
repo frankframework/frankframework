@@ -42,12 +42,9 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
-import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -515,20 +512,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
-	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
-	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm);
-	}
-
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return getClassLoader();
-	}
-
-	/**
-	 * Dummy method to include monitoring in the Frank!Doc.
-	 */
-	public void registerMonitoring(MonitorManager factory) {
 	}
 
 	@Override

@@ -3,18 +3,17 @@
 	<!-- Rules are parsed with the DigesterRuleParser. Objects will be created with the Spring Beans Factory. -->
 	<!-- See DigesterRule for more information -->
 
-	<rule pattern="IOS-Adaptering" factory="null"/><!-- deprecated, use configuration or module instead -->
 	<rule pattern="configuration" factory="null"/>
 
 	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.digester.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
 
-
-	<rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
+	<rule pattern="configuration/jmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm"/>
 
+	<rule pattern="configuration/sapSystems/"/>
 	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
-	<rule pattern="*/adapter" registerMethod="registerAdapter" />
+	<rule pattern="*/adapter" registerMethod="registerAdapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine"/>
 	<rule pattern="*/errorMessageFormatter" registerMethod="setErrorMessageFormatter"/>
 
@@ -57,7 +56,7 @@
 	<rule pattern="*/cache" registerMethod="setCache"/>
 
 	<!-- Digester rules for monitoring -->
-	<rule pattern="*/monitoring" registerMethod="registerMonitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+	<rule pattern="configuration/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
 	<rule pattern="*/destination" registerMethod="registerDestination"/>
 
