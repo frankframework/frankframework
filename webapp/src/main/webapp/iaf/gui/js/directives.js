@@ -219,7 +219,7 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.directive('mermaidView', ['$compile', '$http', 'Misc' , function($compile, $http, Misc) {
+.directive('mermaidView', ['$compile', '$http', 'Misc', function($compile, $http, Misc) {
 	return {
 		restrict: 'A',
 		scope: {
@@ -227,12 +227,12 @@ angular.module('iaf.beheerconsole')
 		},
 		link: function(scope, elem) {
 			let mermaidUrl = Misc.getServerPath() + "iaf/api/adapters/" + scope.adaptername + "/flow?flowType=mermaid";
-			$http.get(mermaidUrl).then(function(results) { 
+			$http.get(mermaidUrl).then(function(results) {
 				elem.html(results.data);
 				$compile(elem.contents())(scope);
 			});
 
-			var watch = scope.$watch(function() {
+			scope.$watch(function() {
 				return elem.children().length;
 			}, function() {
 				scope.$evalAsync(function() {

@@ -433,8 +433,6 @@ angular.module('iaf.beheerconsole')
 	};
 
 	$scope.openFlowModal = function (adapter) {
-		// const flowMermaid = Misc.getServerPath() + 'iaf/api/adapters/' + adapter.name + "/flow?flowType=mermaid";
-
 		$uibModal.open({
 			templateUrl: 'views/mermaid.html',
 			resolve: {
@@ -575,7 +573,6 @@ angular.module('iaf.beheerconsole')
 }])
 
 .controller('FlowCtrl', ['$scope', '$uibModalInstance', 'adapterName', function($scope, $uibModalInstance, adapterName) {
-	$scope.error = false;
 	$scope.adapterName = adapterName;
 
 	$scope.close = function () {
