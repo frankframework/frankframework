@@ -146,6 +146,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
 - The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html).
+- You may want to update m2e to prevent that Eclipse downloads unnecessary source jar files. Go to Help | Install New Software... . In the "Work with" field, enter the following link: https://download.eclipse.org/technology/m2e/releases/latest/. Then follow the steps.
 
 **NOTE:** In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore 
 with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typically the JRE delivered with Eclipse, and then configure a Java 8 **JDK** in the workspace or project settings. A Java 8 JRE is not sufficient because some unit tests require a JDK. Configuring Eclipse to use the Java 8 JDK will be explained later.
