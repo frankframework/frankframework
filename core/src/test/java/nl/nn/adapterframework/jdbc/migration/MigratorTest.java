@@ -99,7 +99,7 @@ public class MigratorTest extends JdbcTestBase {
 		try {
 			migrator.configure();
 
-			TestAppender.addToLogger(loggerName, appender);
+			TestAppender.registerAppender(loggerName, appender);
 			migrator.update();
 
 			List<String> logLines = appender.getLogLines();
@@ -112,7 +112,29 @@ public class MigratorTest extends JdbcTestBase {
 			}
 			assertTrue("Expecting "+msg+"to be present as log line", flag);
 		} finally {
-			TestAppender.removeAppenderFrom(loggerName, appender);
+			TestAppender.unregisterAppender(loggerName, appender);
+		}
+	}
+	
+	@Test
+	public void testNoLogLinesWithErrorLogLevel() throws Exception {
+
+		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
+
+		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
+
+		try {
+			migrator.configure();
+
+			TestAppender.registerAppender(loggerName, appender);
+			Configurator.setLevel(loggerName, Level.ERROR);
+			migrator.update();
+
+			List<String> logLines = appender.getLogLines();
+			assertTrue("All log lines should have been INFO level!", logLines.size() == 0);
+		} finally {
+			TestAppender.unregisterAppender(loggerName, appender);
+			Configurator.setLevel(loggerName, Level.DEBUG);
 		}
 	}
 	
@@ -125,7 +147,7 @@ public class MigratorTest extends JdbcTestBase {
 		try {
 			migrator.configure();
 
-			TestAppender.addToLogger(loggerName, appender);
+			TestAppender.registerAppender(loggerName, appender);
 			Configurator.setLevel(loggerName, Level.ERROR);
 			migrator.update();
 
@@ -135,7 +157,7 @@ public class MigratorTest extends JdbcTestBase {
 			String msg = "Change Set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer failed.  Error:";
 			assertTrue("Expected log message="+msg, logEvents.get(0).getMessage().toString().contains(msg));
 		} finally {
-			TestAppender.removeAppenderFrom(loggerName, appender);
+			TestAppender.unregisterAppender(loggerName, appender);
 			Configurator.setLevel(loggerName, Level.DEBUG);
 		}
 	}

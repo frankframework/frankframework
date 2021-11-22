@@ -100,13 +100,13 @@ public class TestAppender extends AbstractAppender {
 		logger.removeAppender(appender);
 	}
 
-	public static void addToLogger(String name, TestAppender appender) {
-		Logger logger = (Logger) LogUtil.getLogger(name);
+	public static void registerAppender(String targetLogger, TestAppender appender) {
+		Logger logger = (Logger) LogUtil.getLogger(targetLogger);
 		logger.addAppender(appender);
 	}
 
-	public static void removeAppenderFrom(String name, TestAppender appender) {
-		Logger logger = (Logger) LogUtil.getLogger(name);
+	public static void unregisterAppender(String targetLogger, TestAppender appender) {
+		Logger logger = (Logger) LogUtil.getLogger(targetLogger);
 		logger.removeAppender(appender);
 	}
 
