@@ -30,8 +30,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author Gerrit van Brakel
  *
- * @param <T>
- * @param <R>
+ * @param <T> the transaction 
+ * @param <R> a holder of suspended resources
  */
 public class TransactionConnector<T,R> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
@@ -48,10 +48,9 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	/**
 	 * Constructor, to be called from 'main' thread.
 	 * 
+	 * When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
+	 * not on the main thread anymore, because the transaction must be suspended there.
 	 */
-	// When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
-	// not on the main thread anymore, because the transaction must be suspended there.
-	// It cannot be resumed here, because then the state conflicts with the resume in close().
 	public TransactionConnector(IThreadConnectableTransactionManager txManager) {
 		super();
 		parentThread=Thread.currentThread();
@@ -65,6 +64,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 			log.debug("[{}] suspending transaction of parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
 			transaction = this.txManager.getCurrentTransaction();
 			resourceHolder = this.txManager.suspendTransaction(transaction);
+			// The transaction cannot be resumed here, because then the state will conflict with the resume in close().
 			transactions.set(transaction);
 			resourceHolders.set(resourceHolder);
 		} else {
@@ -72,7 +72,9 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		}
 	}
 
-	// close() to be called from parent thread, when child thread has ended
+	/**
+	 * close() to be called from parent thread, when child thread has ended.
+	 */
 	@Override
 	public void close() {
 		Thread currentThread = Thread.currentThread();
@@ -93,9 +95,11 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		}
 	}
 
-	// resume transaction, that was saved in parent thread, in the child thread.
-	// After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 
-	// because the transaction context has been transferred to the childThread.
+	/**
+	 * resume transaction, that was saved in parent thread, in the child thread.
+	 * After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 
+	 * because the transaction context has been transferred to the childThread.
+	 */
 	public void beginChildThread() {
 		if (transaction!=null) {
 			childThread = Thread.currentThread();
@@ -106,7 +110,9 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		}
 	}
 
-	// endThread() to be called from child thread in a finally clause
+	/**
+	 * endThread() to be called from child thread in a finally clause
+	 */
 	public void endChildThread() {
 		if (childThread==null || transaction==null) {
 			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction", ()->hashCode(), ()->Thread.currentThread().getName());
