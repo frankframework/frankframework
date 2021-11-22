@@ -5,17 +5,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
+import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
+	TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
+	private static final String loggerName = "liquibase";
 	private TestConfiguration configuration;
 	private Migrator migrator = null;
 	private String tableName="DUMMYTABLE";
@@ -79,5 +87,55 @@ public class MigratorTest extends JdbcTestBase {
 		assertTrue(warning.contains("Migration failed for change set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
 		assertTrue("table ["+tableName+"] should exist", dbmsSupport.isTablePresent(connection, tableName));
+	}
+	
+	@Test
+	public void testScriptExecutionLogs() throws Exception {
+
+		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
+
+		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
+
+		try {
+			migrator.configure();
+
+			TestAppender.addToLogger(loggerName, appender);
+			migrator.update();
+
+			List<String> logLines = appender.getLogLines();
+
+			boolean flag = false;
+			for (String line : logLines) {
+				if(line.contains("ChangeSet /Migrator/DatabaseChangelog.xml::two::Niels Meijer ran successfully in")) {
+					flag=true;
+				}
+			}
+			assertTrue(flag);
+		} finally {
+			TestAppender.removeAppenderFrom(loggerName, appender);
+		}
+	}
+	
+	@Test
+	public void testChangingLogLevel() throws Exception {
+		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
+
+		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+
+		try {
+			migrator.configure();
+
+			TestAppender.addToLogger(loggerName, appender);
+			Configurator.setLevel(loggerName, Level.ERROR);
+			migrator.update();
+
+			List<LogEvent> logEvents = appender.getLogEvents();
+			assertTrue(logEvents.size()==1);
+			assertTrue(logEvents.get(0).getLevel().equals(Level.ERROR));
+			assertTrue(logEvents.get(0).getMessage().toString().contains("Change Set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer failed.  Error:"));
+		} finally {
+			TestAppender.removeAppenderFrom(loggerName, appender);
+			Configurator.setLevel(loggerName, Level.DEBUG);
+		}
 	}
 }
