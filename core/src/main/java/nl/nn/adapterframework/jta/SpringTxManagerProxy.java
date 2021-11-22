@@ -22,6 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Getter;
@@ -34,12 +35,13 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware, IThreadConnectableTransactionManager<Object,Object> {
+public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, BeanFactoryAware {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
 	private @Setter BeanFactory beanFactory;
 	private @Setter @Getter String realTxManagerBeanName;
-	private IThreadConnectableTransactionManager<Object,Object> realTxManager;
+	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
+	private PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
 
@@ -79,7 +81,7 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		getRealTxManager().rollback(txStatus);
 	}
 
-	public IThreadConnectableTransactionManager<Object,Object> getRealTxManager() {
+	public PlatformTransactionManager getRealTxManager() {
 		// This can be called from multiple threads, however
 		// not synchronized for performance-reasons.
 		// I consider this safe, because the TX manager should
@@ -87,24 +89,38 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		// Bean Factory and thus each thread should always
 		// get the same instance.
 		if (realTxManager == null) {
-			realTxManager = (IThreadConnectableTransactionManager) beanFactory.getBean(realTxManagerBeanName);
+			realTxManager = (PlatformTransactionManager) beanFactory.getBean(realTxManagerBeanName);
 		}
 		return realTxManager;
 	}
 
+	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
+		if (threadConnectableProxy==null) {
+			PlatformTransactionManager realTxManager = getRealTxManager();
+			if (realTxManager instanceof IThreadConnectableTransactionManager) {
+				threadConnectableProxy = (IThreadConnectableTransactionManager)realTxManager;
+			} else if (realTxManager instanceof JtaTransactionManager) {
+				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager)realTxManager);
+			} else {
+				throw new IllegalStateException("Don't know how to make ["+realTxManager.getClass().getTypeName()+"] thread connectable");
+			}
+		}
+		return threadConnectableProxy;
+	}
+	
 	@Override
 	public Object getCurrentTransaction() throws TransactionException {
-		return getRealTxManager().getCurrentTransaction();
+		return getThreadConnectableProxy().getCurrentTransaction();
 	}
 
 	@Override
 	public Object suspendTransaction(Object transaction) {
-		return getRealTxManager().suspendTransaction(transaction);
+		return getThreadConnectableProxy().suspendTransaction(transaction);
 	}
 
 	@Override
 	public void resumeTransaction(Object transaction, Object resources) {
-		getRealTxManager().resumeTransaction(transaction, resources);	
+		getThreadConnectableProxy().resumeTransaction(transaction, resources);	
 	}
 
 	

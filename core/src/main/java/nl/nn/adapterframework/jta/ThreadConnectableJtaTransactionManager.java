@@ -23,16 +23,12 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 
 public class ThreadConnectableJtaTransactionManager extends JtaTransactionManager implements IThreadConnectableTransactionManager<Object,Object> {
 
-	public ThreadConnectableJtaTransactionManager() {
-		super();
+	public ThreadConnectableJtaTransactionManager(JtaTransactionManager transactionManager) {
+		this(transactionManager.getTransactionManager());
 	}
 
 	public ThreadConnectableJtaTransactionManager(TransactionManager transactionManager) {
 		super(transactionManager);
-	}
-
-	public ThreadConnectableJtaTransactionManager(UserTransaction userTransaction) {
-		super(userTransaction);
 	}
 
 	public ThreadConnectableJtaTransactionManager(UserTransaction userTransaction, TransactionManager transactionManager) {
