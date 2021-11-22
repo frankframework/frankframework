@@ -103,14 +103,14 @@ public class MigratorTest extends JdbcTestBase {
 			migrator.update();
 
 			List<String> logLines = appender.getLogLines();
-
+			String msg = "ChangeSet /Migrator/DatabaseChangelog.xml::two::Niels Meijer ran successfully in";
 			boolean flag = false;
 			for (String line : logLines) {
-				if(line.contains("ChangeSet /Migrator/DatabaseChangelog.xml::two::Niels Meijer ran successfully in")) {
+				if(line.contains(msg)) {
 					flag=true;
 				}
 			}
-			assertTrue(flag);
+			assertTrue("Expecting "+msg+"to be present as log line", flag);
 		} finally {
 			TestAppender.removeAppenderFrom(loggerName, appender);
 		}
@@ -130,9 +130,10 @@ public class MigratorTest extends JdbcTestBase {
 			migrator.update();
 
 			List<LogEvent> logEvents = appender.getLogEvents();
-			assertTrue(logEvents.size()==1);
-			assertTrue(logEvents.get(0).getLevel().equals(Level.ERROR));
-			assertTrue(logEvents.get(0).getMessage().toString().contains("Change Set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer failed.  Error:"));
+			assertTrue("Expected logEvent count is 1 but was:"+logEvents.size(), logEvents.size()==1);
+			assertTrue("Expectd LogEvent level is ERROR but was:"+logEvents.get(0).getLevel(), logEvents.get(0).getLevel().equals(Level.ERROR) );
+			String msg = "Change Set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer failed.  Error:";
+			assertTrue("Expected log message="+msg, logEvents.get(0).getMessage().toString().contains(msg));
 		} finally {
 			TestAppender.removeAppenderFrom(loggerName, appender);
 			Configurator.setLevel(loggerName, Level.DEBUG);
