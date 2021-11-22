@@ -91,10 +91,10 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 	
 	// this constructor for testing only
-	protected <T> MessageOutputStream(INamedObject owner, ContentHandler handler) {
-		this(owner, (IForwardTarget)null);
+	<T> MessageOutputStream(ContentHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
 	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
@@ -104,10 +104,10 @@ public class MessageOutputStream implements AutoCloseable {
 	}
 	
 	// this constructor for testing only
-	protected <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler) {
-		this(owner, (IForwardTarget)null);
+	<T> MessageOutputStream(JsonEventHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, null, null, (PipeLineSession)null);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
 	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
