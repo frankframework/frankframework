@@ -21,10 +21,10 @@ import java.io.Writer;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +46,7 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	private ISecurityHandler securityHandler = null;
 	
 	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
-	private Set<Message> closeables = new HashSet<>(); 
+	private Set<Message> closeables = ConcurrentHashMap.newKeySet(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSessionBase() {
 		super();
 	}
@@ -210,17 +210,17 @@ public class PipeLineSessionBase extends HashMap<String,Object> implements IPipe
 	}
 
 	@Override
-	public void scheduleCloseOnSessionExit(Writer writer) {
-		// create a dummy Message, to be able to schedule the writer for close on exit of session
-		Message writerMessage = new Message(new StringReader("dummy")) {
+	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+		// create a dummy Message, to be able to schedule the resource for close on exit of session
+		Message resourceMessage = new Message(new StringReader("dummy")) {
 			@Override
-			public void close() throws IOException {
-				writer.close();
+			public void close() throws Exception {
+				resource.close();
 			}
 		};
-		scheduleCloseOnSessionExit(writerMessage);
+		scheduleCloseOnSessionExit(resourceMessage);
 	}
-	
+
 	@Override
 	public boolean isScheduledForCloseOnExit(Message message) {
 		return closeables.contains(message);

@@ -349,6 +349,15 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 	}
 
 	@Override
+	public void cancelChildThread(Object handle) {
+		if (!isEnabled()) {
+			return;
+		}
+		ThreadDebugInfo ref = (ThreadDebugInfo)handle;
+		ibisDebugger.cancelThread(ref.owner, ref.threadId, ref.correlationId);
+	}
+
+	@Override
 	public Object threadCreated(Object handle, Object request) {
 		if (!isEnabled()) {
 			return null;
