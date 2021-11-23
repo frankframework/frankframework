@@ -100,16 +100,6 @@ public class TestAppender extends AbstractAppender {
 		logger.removeAppender(appender);
 	}
 
-	public static void registerAppender(String targetLogger, TestAppender appender) {
-		Logger logger = (Logger) LogUtil.getLogger(targetLogger);
-		logger.addAppender(appender);
-	}
-
-	public static void unregisterAppender(String targetLogger, TestAppender appender) {
-		Logger logger = (Logger) LogUtil.getLogger(targetLogger);
-		logger.removeAppender(appender);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

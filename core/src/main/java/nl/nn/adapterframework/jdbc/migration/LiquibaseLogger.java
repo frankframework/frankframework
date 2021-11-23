@@ -68,9 +68,7 @@ public class LiquibaseLogger extends AbstractLogger {
 
 	@Override
 	public void debug(String message) {
-		if(log.isTraceEnabled()) {// prints too much unnecessary only print if trace enabled
-			log.debug(message);
-		}
+		log.trace(message);
 	}
 
 	@Override

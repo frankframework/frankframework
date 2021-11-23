@@ -22,11 +22,11 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
-	TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
-	private static final String loggerName = "liquibase";
 	private TestConfiguration configuration;
 	private Migrator migrator = null;
 	private String tableName="DUMMYTABLE";
+	private String rootLoggerName="nl.nn.adapterframework";
+	private String liquibaseLoggerName="liquibase";
 
 	private TestConfiguration getConfiguration() {
 		if(configuration == null) {
@@ -95,24 +95,17 @@ public class MigratorTest extends JdbcTestBase {
 		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
 
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
-
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {
 			migrator.configure();
 
-			TestAppender.registerAppender(loggerName, appender);
+			TestAppender.addToRootLogger(appender);
 			migrator.update();
 
-			List<String> logLines = appender.getLogLines();
 			String msg = "ChangeSet /Migrator/DatabaseChangelog.xml::two::Niels Meijer ran successfully in";
-			boolean flag = false;
-			for (String line : logLines) {
-				if(line.contains(msg)) {
-					flag=true;
-				}
-			}
-			assertTrue("Expecting "+msg+"to be present as log line", flag);
+			assertTrue("Expecting message ["+msg+"] to be present as log line", appender.toString().contains(msg));
 		} finally {
-			TestAppender.unregisterAppender(loggerName, appender);
+			TestAppender.removeAppender(appender);
 		}
 	}
 	
@@ -122,19 +115,21 @@ public class MigratorTest extends JdbcTestBase {
 		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
 
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
-
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {
 			migrator.configure();
 
-			TestAppender.registerAppender(loggerName, appender);
-			Configurator.setLevel(loggerName, Level.ERROR);
+			TestAppender.addToRootLogger(appender);
+			Configurator.setLevel(rootLoggerName, Level.ERROR);
+			Configurator.setLevel(liquibaseLoggerName, Level.ERROR);
 			migrator.update();
 
 			List<String> logLines = appender.getLogLines();
-			assertTrue("All log lines should have been INFO level!", logLines.size() == 0);
+			assertTrue("log level is set to error. INFO log lines should not be present", logLines.size() == 0);
 		} finally {
-			TestAppender.unregisterAppender(loggerName, appender);
-			Configurator.setLevel(loggerName, Level.DEBUG);
+			TestAppender.removeAppender(appender);
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+			Configurator.setLevel(liquibaseLoggerName, Level.INFO);
 		}
 	}
 	
@@ -143,22 +138,25 @@ public class MigratorTest extends JdbcTestBase {
 		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
 
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
-
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {
 			migrator.configure();
 
-			TestAppender.registerAppender(loggerName, appender);
-			Configurator.setLevel(loggerName, Level.ERROR);
+			TestAppender.addToRootLogger(appender);
+			Configurator.setLevel(rootLoggerName, Level.ERROR);
+			Configurator.setLevel(liquibaseLoggerName, Level.ERROR);
 			migrator.update();
 
 			List<LogEvent> logEvents = appender.getLogEvents();
+			System.err.println("testChangingLogLevel ::::: "+ appender.toString() );
 			assertTrue("Expected logEvent count is 1 but was:"+logEvents.size(), logEvents.size()==1);
 			assertTrue("Expectd LogEvent level is ERROR but was:"+logEvents.get(0).getLevel(), logEvents.get(0).getLevel().equals(Level.ERROR) );
 			String msg = "Change Set /Migrator/DatabaseChangelogError.xml::error::Niels Meijer failed.  Error:";
-			assertTrue("Expected log message="+msg, logEvents.get(0).getMessage().toString().contains(msg));
+			assertTrue("Expected log message="+msg, appender.toString().contains(msg));
 		} finally {
-			TestAppender.unregisterAppender(loggerName, appender);
-			Configurator.setLevel(loggerName, Level.DEBUG);
+			TestAppender.removeAppender(appender);
+			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+			Configurator.setLevel(liquibaseLoggerName, Level.INFO);
 		}
 	}
 }
