@@ -50,6 +50,8 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	 * 
 	 * When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
 	 * not on the main thread anymore, because the transaction must be suspended there.
+	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
+	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
 	public TransactionConnector(IThreadConnectableTransactionManager txManager) {
 		super();
