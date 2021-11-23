@@ -20,7 +20,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
 
+import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 
@@ -51,7 +53,6 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 		return classLoader.getResource(path, false);
 	}
 
-	@Override
 	public Set<InputStream> getResourcesAsStream(String path) throws IOException {
 		Set<InputStream> returnSet = new HashSet<>();
 
@@ -64,12 +65,26 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	}
 
 	@Override
-	public Set<String> list(String relativeTo, String path, boolean includeFiles, boolean includeDirectories, boolean recursive) throws IOException {
-		return null; //Always fetch the resource directly through the local ClassLoader
+	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
+		return null; //Used to find the xsd to validate against.
 	}
 
 	@Override
-	public ClassLoader toClassLoader() {
-		return classLoader;
+	public InputStream openStream(String relativeTo, String streamPath) throws IOException {
+		URL url = getResource(streamPath);
+		if(url != null) {
+			return url.openStream();
+		}
+		return null;
+	}
+
+	@Override
+	public SortedSet<String> list(String relativeTo, String path, boolean recursive, boolean includeFiles, boolean includeDirectories) throws IOException {
+		return null;
+	}
+
+	@Override
+	public SortedSet<String> describeLocations() {
+		return null;
 	}
 }

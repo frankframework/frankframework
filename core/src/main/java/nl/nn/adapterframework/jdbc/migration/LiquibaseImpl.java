@@ -28,11 +28,17 @@ import org.apache.logging.log4j.Logger;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
+import liquibase.Scope;
+import liquibase.changelog.ChangeLogHistoryServiceFactory;
 import liquibase.changelog.ChangeSet;
+import liquibase.changelog.DatabaseChangeLog;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.exception.LockException;
+import liquibase.executor.ExecutorService;
+import liquibase.lockservice.LockService;
+import liquibase.lockservice.LockServiceFactory;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -65,7 +71,36 @@ public class LiquibaseImpl {
 		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
-		this.liquibase.validate();
+		validate();
+	}
+
+	private void validate() throws LiquibaseException {
+		Database database = liquibase.getDatabase();
+
+		LockService lockService = LockServiceFactory.getInstance().getLockService(database);
+		lockService.waitForLock();
+
+		DatabaseChangeLog changeLog;
+
+		try {
+			changeLog = liquibase.getDatabaseChangeLog();
+
+			liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression);
+			ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database).generateDeploymentId();
+
+			changeLog.validate(database, contexts, labelExpression);
+		} finally {
+			try {
+				lockService.releaseLock();
+			} catch (LockException e) {
+				log.warn("unable to clean up Liquibase Lock", e);
+			}
+
+			LockServiceFactory.getInstance().resetAll();
+			ChangeLogHistoryServiceFactory.getInstance().resetAll();
+			Scope.getCurrentScope().getSingleton(ExecutorService.class).reset();
+			liquibase.setChangeExecListener(null);
+		}
 	}
 
 	private void log(String message) {
@@ -117,12 +152,9 @@ public class LiquibaseImpl {
 		return writer;
 	}
 
-	public void close() throws DatabaseException {
+	public void close() throws LiquibaseException {
 		if(liquibase != null) {
-			Database db = liquibase.getDatabase();
-			if(db != null) {
-				db.close();
-			}
+			liquibase.close();
 		}
 	}
 }
