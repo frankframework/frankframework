@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@ package nl.nn.adapterframework.extensions.graphviz;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class ResultHandler {
-	private final BlockingQueue<String> value = new ArrayBlockingQueue<String>(1);
+	private final BlockingQueue<String> value = new ArrayBlockingQueue<>(5);
 	private boolean ok;
 
 	public void setResult(String result) {
@@ -34,7 +35,7 @@ public class ResultHandler {
 
 	public String waitFor() throws Exception {
 		try {
-			final String v = value.take();
+			final String v = value.poll(10000, TimeUnit.MILLISECONDS);
 			if (ok) {
 				return v;
 			}
