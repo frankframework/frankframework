@@ -19,10 +19,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Options {
-	private static final Pattern
-			FORMAT = Pattern.compile("format:'(.*?)'"),
-			MEMORY = Pattern.compile("totalMemory:'(.*?)'"),
-			Y_INVERT = Pattern.compile("yInvert:(.*?)");
+	private static final Pattern FORMAT = Pattern.compile("format:'(.*?)'");
+	private static final Pattern MEMORY = Pattern.compile("totalMemory:'(.*?)'");
+	private static final Pattern Y_INVERT = Pattern.compile("yInvert:(.*?)");
 
 	private Format format;
 	private Integer totalMemory;
