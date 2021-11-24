@@ -23,7 +23,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.doc.SuppressFrankAttribute;
+import nl.nn.adapterframework.doc.SuppressAttribute;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class ValidateAttributeRuleTest extends Mockito {
@@ -318,7 +318,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 			deprecatedConfigWarningString = str;
 		}
 
-		@SuppressFrankAttribute
+		@SuppressAttribute
 		public void setTestSuppressAttribute(String test) {
 			testString = test;
 		}
