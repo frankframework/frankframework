@@ -19,19 +19,24 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.AdapterLifecycleWrapperBase;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 public class FlowDiagramAdapterWrapper extends AdapterLifecycleWrapperBase {
 	private FlowDiagramManager flowDiagramManager;
+	private boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
 	@Override
 	public void addAdapter(Adapter adapter) {
 		if (flowDiagramManager != null) {
 			try {
 				flowDiagramManager.generate(adapter);
-			} catch (IOException e) {
-				ConfigurationWarnings.add(adapter, log, "error generating flow diagram", e);
+			} catch (IOException e) { //Exception is already logged when loglevel equals debug (see FlowDiagramManager#generateFlowDiagram(String, String, File))
+				if(!suppressWarnings) {
+					ConfigurationWarnings.add(adapter, log, "error generating flow diagram", e);
+				}
 			}
 		}
 	}
