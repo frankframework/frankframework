@@ -165,13 +165,13 @@ public class GraphvizEngine {
 					Class<?> clazz = Class.forName(engines[i]);
 					log.debug("Trying Javascript engine [" + engines[i] + "] for Graphviz.");
 					JavascriptEngine<?> engine = ((JavascriptEngine<?>) clazz.newInstance());
-					ResultHandler resultHandler = new ResultHandler();
+					ResultHandler handler = new ResultHandler();
 
-					startEngine(engine, resultHandler, initScript, graphvisJsLibrary);
+					startEngine(engine, handler, initScript, graphvisJsLibrary);
 
 					log.info("Using Javascript engine [" + engines[i] + "] for Graphviz.");
 					jsEngine = engine;
-					this.resultHandler = resultHandler;
+					this.resultHandler = handler;
 				} catch (Exception e) {
 					log.error("Javascript engine [" + engines[i] + "] could not be initialized.", e);
 				}
