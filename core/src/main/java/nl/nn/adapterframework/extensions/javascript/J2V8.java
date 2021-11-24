@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.graphviz.ResultHandler;
+import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class J2V8 implements JavascriptEngine<V8> {
 

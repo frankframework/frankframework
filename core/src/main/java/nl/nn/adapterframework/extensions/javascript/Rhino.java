@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.javascript;
 import org.mozilla.javascript.*;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.flow.graphviz.ResultHandler;
+import nl.nn.adapterframework.util.flow.ResultHandler;
 import nl.nn.adapterframework.core.ISender;
 
 public class Rhino implements JavascriptEngine<Context> {

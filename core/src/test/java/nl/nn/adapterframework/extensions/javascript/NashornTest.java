@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.nn.adapterframework.util.flow.graphviz.ResultHandler;
+import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class NashornTest {
 	private Nashorn engine;
