@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package nl.nn.adapterframework.extensions.graphviz;
+package nl.nn.adapterframework.util.flow.graphviz;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

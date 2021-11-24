@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.extensions.graphviz;
+package nl.nn.adapterframework.util.flow.graphviz;
 
 import nl.nn.adapterframework.core.IbisException;
 
