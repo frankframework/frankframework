@@ -25,7 +25,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.flow.graphviz.Format;
 import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.util.flow.graphviz.GraphvizException;
 import nl.nn.adapterframework.util.flow.graphviz.Options;
 
 /**
@@ -63,7 +62,7 @@ public class JavaScriptFlowGenerator implements IFlowGenerator {
 			String flow = engine.execute(dot, options);
 
 			outputStream.write(flow.getBytes());
-		} catch (GraphvizException e) {
+		} catch (FlowGenerationException e) {
 			throw new IOException (e);
 		}
 	}

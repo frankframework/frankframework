@@ -33,15 +33,15 @@ public class ResultHandler {
 		value.add(error);
 	}
 
-	public String waitFor() throws Exception {
+	public String waitFor() throws FlowGenerationException {
 		try {
 			final String v = value.poll(10000, TimeUnit.MILLISECONDS);
 			if (ok) {
 				return v;
 			}
-			throw new Exception(v);
+			throw new FlowGenerationException(v);
 		} catch (InterruptedException e) {
-			throw new Exception("Waiting for result interrupted", e);
+			throw new FlowGenerationException("timeout while waiting for result", e);
 		}
 	}
 }

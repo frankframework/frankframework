@@ -27,6 +27,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.flow.FlowGenerationException;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 //TODO: consider moving this to a separate module
@@ -69,9 +70,9 @@ public class GraphvizEngine {
 	 * @param src dot file
 	 * @return {@link Format#SVG} string
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when a JavaScript engine error occurs
+	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
-	public String execute(String src) throws IOException, GraphvizException {
+	public String execute(String src) throws IOException, FlowGenerationException {
 		return execute(src, Options.create());
 	}
 
@@ -81,11 +82,11 @@ public class GraphvizEngine {
 	 * @param options see {@link Options}
 	 * @return string in specified {@link Format}
 	 * @throws IOException when VizJs files can't be found on the classpath
-	 * @throws GraphvizException when a JavaScript engine error occurs
+	 * @throws FlowGenerationException when a JavaScript engine error occurs
 	 */
-	public String execute(String src, Options options) throws IOException, GraphvizException {
+	public String execute(String src, Options options) throws IOException, FlowGenerationException {
 		if(StringUtils.isEmpty(src)) {
-			throw new GraphvizException("no dot-file provided");
+			throw new FlowGenerationException("no dot-file provided");
 		}
 
 		long start = 0;
@@ -191,12 +192,14 @@ public class GraphvizEngine {
 			log.info("Initialized Graphviz");
 		}
 
-		public String execute(String call) throws GraphvizException {
+		public String execute(String call) throws FlowGenerationException {
 			try {
 				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
+			} catch (FlowGenerationException e) {
+				throw e; //Dont wrap this one!
 			} catch (Throwable e) {
-				throw new GraphvizException(e);
+				throw new FlowGenerationException(e);
 			}
 		}
 
