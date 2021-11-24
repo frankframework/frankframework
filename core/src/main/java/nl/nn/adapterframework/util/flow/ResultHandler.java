@@ -35,13 +35,16 @@ public class ResultHandler {
 
 	public String waitFor() throws FlowGenerationException {
 		try {
-			final String v = value.poll(10000, TimeUnit.MILLISECONDS);
+			final String v = value.poll(5, TimeUnit.SECONDS); //Shouldn't take longer then 50 ms, but just to be sure..
+			if(v == null) {
+				throw new FlowGenerationException("Timeout exceeded");
+			}
 			if (ok) {
 				return v;
 			}
 			throw new FlowGenerationException(v);
 		} catch (InterruptedException e) {
-			throw new FlowGenerationException("timeout while waiting for result", e);
+			throw new FlowGenerationException("Waiting for result interrupted", e);
 		}
 	}
 }
