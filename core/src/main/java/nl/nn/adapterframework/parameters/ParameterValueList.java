@@ -85,16 +85,14 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return map.containsKey(name);
 	}
 
-	/** Performance intensive */
+	/** 
+	 * should not be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	@Deprecated
 	public ParameterValue remove(String name) {
 		ParameterValue pv = map.remove(name);
 		if(pv != null) {
 			list.remove(pv);
-		} else {
-			ParameterValue removeValue = findParameterValue(name);
-			if(removeValue != null) {
-				list.remove(removeValue);
-			}
 		}
 		return pv;
 	}
