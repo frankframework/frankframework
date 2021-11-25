@@ -64,7 +64,6 @@ public class LiquibaseImpl {
 
 	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile, InputStream file) throws LiquibaseException, SQLException, IOException {
 		this.configuration = configuration;
-		DatabaseConnection connection;
 		ResourceAccessor resourceAccessor;
 		if(file == null) {
 			resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
@@ -76,7 +75,8 @@ public class LiquibaseImpl {
 		} else {
 			resourceAccessor = new StreamResourceAccessor(file);
 		}
-		connection = new JdbcConnection(datasource.getConnection());
+
+		DatabaseConnection connection = new JdbcConnection(datasource.getConnection());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		validate();

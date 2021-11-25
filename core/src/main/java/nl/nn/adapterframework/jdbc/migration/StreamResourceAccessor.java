@@ -17,9 +17,9 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.SortedSet;
 
+import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 
 /**
@@ -34,25 +34,28 @@ public class StreamResourceAccessor implements ResourceAccessor {
 		super();
 		this.stream = stream;
 	}
-	
+
 	@Override
-	public Set<InputStream> getResourcesAsStream(String path) throws IOException {
+	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
+		return null; //Used to find the xsd to validate against.
+	}
+
+	@Override
+	public InputStream openStream(String relativeTo, String path) throws IOException {
 		if(path.endsWith(".xsd")) {
 			return null;
 		}
-		Set<InputStream> returnSet = new HashSet<>();
-		returnSet.add(stream);
-		return returnSet;
+
+		return stream;
 	}
 
 	@Override
-	public Set<String> list(String relativeTo, String path, boolean includeFiles, boolean includeDirectories, boolean recursive) throws IOException {
+	public SortedSet<String> list(String relativeTo, String path, boolean recursive, boolean includeFiles, boolean includeDirectories) throws IOException {
 		return null;
 	}
 
 	@Override
-	public ClassLoader toClassLoader() {
+	public SortedSet<String> describeLocations() {
 		return null;
 	}
-
 }
