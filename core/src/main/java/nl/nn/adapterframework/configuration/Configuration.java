@@ -41,6 +41,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -487,12 +488,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/** The entire (raw) configuration
 	 * @ff.noAttribute */
+	@ProtectedAttribute
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
 	/** The loaded (with resolved properties) configuration
 	 * @ff.noAttribute */
+	@ProtectedAttribute
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
 	}
