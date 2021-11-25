@@ -83,3 +83,11 @@ jobs:
       with:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
+
+    - name: Call [Compare Frank!Doc] workflow
+      uses: benc-uk/workflow-dispatch@v1
+      if: ${{ matrix.java == '8' && github.event_name == 'pull_request'}}
+      with:
+        workflow: Compare FrankDoc
+        token: ${{ secrets.PAT }}
+        inputs: '{"target": "${{ GITHUB_SHA }}"}'
