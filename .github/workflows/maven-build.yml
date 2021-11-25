@@ -90,4 +90,4 @@ jobs:
       with:
         workflow: Compare FrankDoc
         token: ${{ secrets.PAT }}
-        inputs: '{"target": "${{ GITHUB_SHA }}"}'
+        inputs: '{"target": "${{ github.event.pull_request.head.sha }}"}'
