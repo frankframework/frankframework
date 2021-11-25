@@ -6,6 +6,10 @@ webapp/
 webapp\
 docker/
 docker\
+.metadata/
+.metadata\
+.idea/
+.idea\
 /apt_generated
 \apt_generated
 MANIFEST.MF
@@ -53,3 +57,4 @@ org.eclipse.
 .bin
 .xquery
 .ldif
+.iml

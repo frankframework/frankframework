@@ -1,19 +1,4 @@
-/*
-   Copyright 2018 Nationale-Nederlanden
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
-package nl.nn.adapterframework.extensions.graphviz;
+package nl.nn.adapterframework.util.flow.graphviz;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
 import static org.junit.Assert.assertEquals;
@@ -30,6 +15,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.flow.FlowGenerationException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GraphvizEngineTest {
 
@@ -51,7 +37,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVG() throws IOException, GraphvizException {
+	public void happyFlowDot2SVG() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -63,7 +49,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG() throws IOException, GraphvizException {
+	public void happyFlowRender2SVG() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -76,7 +62,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVG_STANDALONE() throws IOException, GraphvizException {
+	public void happyFlowDot2SVG_STANDALONE() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -88,7 +74,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowRender2SVG_STANDALONE() throws IOException, GraphvizException {
+	public void happyFlowRender2SVG_STANDALONE() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -106,7 +92,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void happyFlowDot2SVGCustomOptions() throws IOException, GraphvizException {
+	public void happyFlowDot2SVGCustomOptions() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		String result = engine.execute(dot, Options.create().format(Format.SVG));
@@ -119,15 +105,15 @@ public class GraphvizEngineTest {
 	}
 	// This should be the last test case to run since it changes the graphviz version(prepend 'z' to method name)
 	@Test(expected = IOException.class)
-	public void zgetUnknownVizJsVersion() throws IOException, GraphvizException {
+	public void zgetUnknownVizJsVersion() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine("1.2.3");
 		assertNotNull(engine);
 		engine.execute(dot);
 		engine.close();
 	}
 
-	@Test(expected = GraphvizException.class)
-	public void getFaultyDot() throws IOException, GraphvizException {
+	@Test(expected = FlowGenerationException.class)
+	public void getFaultyDot() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 		engine.execute("i'm not a dot!");
@@ -135,7 +121,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void smallerFontSize() throws IOException, GraphvizException {
+	public void smallerFontSize() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 
@@ -151,7 +137,7 @@ public class GraphvizEngineTest {
 	}
 
 	@Test
-	public void largerFontSize() throws IOException, GraphvizException {
+	public void largerFontSize() throws Exception {
 		GraphvizEngine engine = new GraphvizEngine();
 		assertNotNull(engine);
 

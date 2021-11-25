@@ -15,13 +15,21 @@ limitations under the License.
 */
 package nl.nn.adapterframework.doc;
 
+import static java.lang.annotation.ElementType.METHOD;
+
 import java.lang.annotation.Documented;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+/**
+ * Ensures that the setter cannot be called when parsing a Frank Configuration.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FrankDocGroup {
-	String name();
-	int order() default Integer.MAX_VALUE;
+@Target({METHOD})
+@Inherited
+public @interface ProtectedAttribute {
+
 }
