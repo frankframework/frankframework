@@ -217,7 +217,7 @@ with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typica
     <JarScanner>
         <JarScanFilter defaultPluggabilityScan="false" />
     </JarScanner>
-- In case Eclipse is continuously downloading javadoc and source files, you need to upgrade your M2E installation.
+- In case Eclipse is continuously downloading javadoc and source files, you might need to upgrade your M2E installation.
 
 ### Let Eclipse check Javadoc comments
 
