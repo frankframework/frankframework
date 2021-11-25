@@ -23,6 +23,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
 public class ValidateAttributeRuleTest extends Mockito {
@@ -274,6 +275,20 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("TestEnum", readMethod.getReturnType().getSimpleName());
 	}
 
+	@Test
+	public void testSuppressAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+
+		attr.put("testStringWithoutGetter", "text");
+		attr.put("testSuppressAttribute", "text"); //Should fail
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
+	}
+
 	public enum TestEnum {
 		ONE, TWO;
 	}
@@ -301,6 +316,11 @@ public class ValidateAttributeRuleTest extends Mockito {
 		@Deprecated
 		public void setDeprecatedConfigWarningString(String str) {
 			deprecatedConfigWarningString = str;
+		}
+
+		@ProtectedAttribute
+		public void setTestSuppressAttribute(String test) {
+			testString = test;
 		}
 	}
 
