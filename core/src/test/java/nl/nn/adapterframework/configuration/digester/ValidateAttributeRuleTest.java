@@ -286,7 +286,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum is unable to set attribute [testSuppressAttribute] to value [text]", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
 	}
 
 	public enum TestEnum {
