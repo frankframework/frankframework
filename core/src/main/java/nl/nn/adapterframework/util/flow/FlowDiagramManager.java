@@ -292,6 +292,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		} catch (IOException e) {
 			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
 
+			if(destination.exists()) {
+				destination.delete();
+			}
+
 			throw e;
 		}
 
