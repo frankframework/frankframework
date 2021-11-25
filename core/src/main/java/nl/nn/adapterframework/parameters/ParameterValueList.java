@@ -15,9 +15,11 @@
 */
 package nl.nn.adapterframework.parameters;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,10 +35,12 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class ParameterValueList implements Iterable<ParameterValue> {
 
+	List<ParameterValue> list;
 	Map<String, ParameterValue> map;
 
 	public ParameterValueList() {
 		super();
+		list = new ArrayList<>();
 		map  = new LinkedHashMap<>();
 	}
 
@@ -54,22 +58,8 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		if(StringUtils.isEmpty(pv.getDefinition().getName())) {
 			throw new IllegalStateException("Parameter must have a name");
 		}
-		if(contains(pv.getDefinition().getName())) {
-			throw new IllegalStateException("Parameter name must be unique");
-		}
+		list.add(pv);
 		map.put(pv.getDefinition().getName(),pv);
-	}
-
-	@Deprecated
-	public ParameterValue getParameterValue(int i) {
-		int index = 0;
-		for(ParameterValue pv : this) {
-			if(i == index) {
-				return pv;
-			}
-			index++;
-		}
-		return null;
 	}
 
 	@Deprecated //Fix this in a separate PR
@@ -95,12 +85,16 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return map.containsKey(name);
 	}
 
+	/** 
+	 * should not be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	@Deprecated
 	public ParameterValue remove(String name) {
-		return map.remove(name);
-	}
-
-	public int size() {
-		return map.size();
+		ParameterValue pv = map.remove(name);
+		if(pv != null) {
+			list.remove(pv);
+		}
+		return pv;
 	}
 
 	private Map<String, ParameterValue> getParameterValueMap() {
@@ -108,9 +102,9 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	/**
-	 * Returns a Map of value objects
+	 * Returns a Map of value objects which may be a subset of the ParameterList when multiple parameters exist with the same name!
 	 */
-	public Map<String,Object> getValueMap() {
+	public Map<String, Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
@@ -121,8 +115,27 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return result;
 	}
 
+	/////// List implementations, can differ in size from Map implementation when multiple ParameterValues with the same name exist!
+
+	/**
+	 * @return The list size, should only be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	public int size() {
+		return list.size();
+	}
+
+	/**
+	 * @return The corresponding {@link ParameterValue}, should only be used in combination with {@link ParameterValueList#iterator()}!
+	 */
+	public ParameterValue getParameterValue(int i) {
+		return list.get(i);
+	}
+
+	/**
+	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
+	 */
 	@Override
 	public Iterator<ParameterValue> iterator() {
-		return map.values().iterator();
+		return list.iterator();
 	}
 }

@@ -52,4 +52,18 @@ public class ParameterValueListTest {
 			getDefinition().setName(name);
 		}
 	}
+
+	@Test
+	public void testDuplicateNames() throws Exception {
+		ParameterList list = new ParameterList();
+		list.add(new SimpleParameter("name", "dummy-1"));
+		list.add(new SimpleParameter("name", "dummy-2"));
+		list.add(new SimpleParameter("name", "dummy-3"));
+		list.configure();
+
+		assertEquals(3, list.size());
+
+		ParameterValueList pvl = SimpleParameter.getPVL(list);
+		assertEquals(3, pvl.size());
+	}
 }
