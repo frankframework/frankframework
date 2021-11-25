@@ -30,6 +30,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({METHOD})
 @Inherited
-public @interface SuppressAttribute {
+public @interface ProtectedAttribute {
 
 }
