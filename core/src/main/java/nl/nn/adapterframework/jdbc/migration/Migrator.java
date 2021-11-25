@@ -15,8 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
 
 import javax.naming.NamingException;
@@ -26,13 +24,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import liquibase.exception.LiquibaseException;
-import liquibase.exception.ValidationFailedException;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
@@ -49,23 +45,34 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since	7.0-B4
  *
  */
-public class Migrator implements IConfigurable, AutoCloseable {
+public abstract class Migrator implements IConfigurable, AutoCloseable {
 
-	private Logger log = LogUtil.getLogger(this);
+	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
 	private Configuration configuration;
 	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	private @Getter @Setter String name;
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-
-	private LiquibaseImpl instance;
+	private @Getter ClassLoader configurationClassLoader = null;
+	private @Getter String datasourceName;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(null, null);
+		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
+
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+		datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
+
+		configurationClassLoader = configuration.getClassLoader();
+		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+			throw new ConfigurationException("unable to initialize database migrator");
+		}
 	}
 
-	private DataSource getDatasource(String datasourceName) throws ConfigurationException {
+//	protected final URL getResource(String path) {
+//		return ((ClassLoaderBase) configurationClassLoader).getResource(path, false);
+//	}
+
+	protected final DataSource lookupMigratorDatasource() throws ConfigurationException {
 		DataSource datasource;
 		try {
 			datasource = dataSourceFactory.getDataSource(datasourceName);
@@ -77,70 +84,37 @@ public class Migrator implements IConfigurable, AutoCloseable {
 		return new TransactionAwareDataSourceProxy(datasource);
 	}
 
-	public synchronized void configure(InputStream file, String filename) throws ConfigurationException {
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
+	/**
+	 * Run the migration script against the database.
+	 */
+	public abstract void update() throws JdbcException;
+//		if(this.instance != null) {
+//			try {
+//				instance.update();
+//			} catch (JdbcException e) {
+//				ConfigurationWarnings.add(configuration, log, e.getMessage(), e);
+//			}
+//		}
 
-		String datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", defaultDatasourceName));
-		DataSource datasource = getDatasource(datasourceName);
-
-		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
-		if(filename != null) {
-			changeLogFile = filename;
-		}
-		ClassLoader classLoader = configuration.getClassLoader();
-		if(!(classLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
-			ConfigurationWarnings.add(this, log, "unable to initialize database migrator");
-			return;
-		}
-
-		try {
-			instance = new LiquibaseImpl(datasource, configuration, changeLogFile, file);
-		}
-		catch (ValidationFailedException e) {
-			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
-		}
-		catch (LiquibaseException e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
-		}
-		catch (IOException e) {
-			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
-		}
-		catch (Throwable e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
-		}
-	}
-
-	public void update() {
-		if(this.instance != null) {
-			try {
-				instance.update();
-			} catch (JdbcException e) {
-				ConfigurationWarnings.add(configuration, log, e.getMessage(), e);
-			}
-		}
-	}
-
-	public void getUpdateSql(Writer writer) throws JdbcException {
-		if(this.instance != null) {
-			try {
-				instance.getUpdateScript(writer);
-			} catch (Exception e) {
-				throw new JdbcException("unable to generate database migration script", e);
-			}
-		}
-	}
+	/**
+	 * Run the migration script and write the output to the {@link Writer}.
+	 */
+	public abstract void update(Writer writer) throws JdbcException;
 
 	@Override
-	public void close() {
-		if(this.instance != null) {
-			try {
-				instance.close();
-			} catch (Exception e) {
-				log.error("Failed to close the connection", e);
-			}
+	public final void close() {
+		try {
+			doClose();
+		} catch (Exception e) {
+			log.error("failed to close the connection", e);
 		}
 	}
+
+	protected final void logConfigurationMessage(String message) {
+		configuration.publishEvent(new ConfigurationMessageEvent(this, message));
+	}
+
+	protected abstract void doClose() throws Exception;
 
 	public boolean hasLiquibaseScript(Configuration config) {
 		AppConstants appConstants = AppConstants.getInstance(config.getClassLoader());
@@ -154,15 +128,15 @@ public class Migrator implements IConfigurable, AutoCloseable {
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public final void setApplicationContext(ApplicationContext applicationContext) {
 		if(!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("context not instanceof configuration");
 		}
 		this.configuration = (Configuration) applicationContext;
 	}
 
-	@Override
-	public ApplicationContext getApplicationContext() {
+	@Override //Can't lombok because the field name is configuration
+	public final ApplicationContext getApplicationContext() {
 		return configuration;
 	}
 

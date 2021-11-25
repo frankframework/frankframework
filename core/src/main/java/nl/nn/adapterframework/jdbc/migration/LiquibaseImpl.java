@@ -16,15 +16,12 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
-
-import org.apache.logging.log4j.Logger;
 
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -37,15 +34,16 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-
 import liquibase.exception.LockException;
+import liquibase.exception.ValidationFailedException;
 import liquibase.executor.ExecutorService;
 import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
-import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * LiquiBase implementation for IAF
@@ -54,32 +52,62 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since	7.0-B4
  *
  */
-public class LiquibaseImpl {
+public class LiquibaseImpl extends Migrator {
 
 	private Liquibase liquibase = null;
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
-	private Configuration configuration = null;
-	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile, InputStream file) throws LiquibaseException, SQLException, IOException {
-		this.configuration = configuration;
-		ResourceAccessor resourceAccessor;
-		if(file == null) {
-			resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
-			if(((LiquibaseResourceAccessor) resourceAccessor).getResource(changeLogFile) == null) {
-				String msg = "unable to find database changelog file [" + changeLogFile + "]";
-				msg += " classLoader [" + configuration.getClassLoader() + "]";
-				throw new IOException(msg);
-			}
-		} else {
-			resourceAccessor = new StreamResourceAccessor(file);
+	private String getChangeLogFile() throws IOException {
+		String changeLogFile = null;
+		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
+		changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+
+		return changeLogFile;
+	}
+
+	private ResourceAccessor getResourceAccessor() {
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
+//		if(resourceAccessor.getResource(changeLogFile) == null) {
+//			String msg = "unable to find database changelog file [" + changeLogFile + "]";
+//			msg += " classLoader [" + getConfigurationClassLoader() + "]";
+//			throw new IOException(msg);
+//		}
+//		
+//		resourceAccessor = new StreamResourceAccessor(file);
+
+		return resourceAccessor;
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		try {
+			String changeLogFile = getChangeLogFile();
+			ResourceAccessor resourceAccessor = getResourceAccessor();
+			DatabaseConnection connection = getDatabaseConnection();
+
+			this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
+			validate();
 		}
+		catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
+		}
+		catch (LiquibaseException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
+		}
+		catch (IOException e) {
+			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
+		}
+		catch (SQLException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
+		}
+	}
 
-		DatabaseConnection connection = new JdbcConnection(datasource.getConnection());
-
-		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
-		validate();
+	private DatabaseConnection getDatabaseConnection() throws SQLException, ConfigurationException {
+		DataSource datasource = lookupMigratorDatasource();
+		return new JdbcConnection(datasource.getConnection());
 	}
 
 	private void validate() throws LiquibaseException {
@@ -111,10 +139,7 @@ public class LiquibaseImpl {
 		}
 	}
 
-	private void log(String message) {
-		configuration.log(message);
-	}
-
+	@Override
 	public void update() throws JdbcException {
 		List<String> changes = new ArrayList<>();
 		try {
@@ -131,11 +156,11 @@ public class LiquibaseImpl {
 				tag(tag);
 
 				if(changes.size() > 1) {
-					log("LiquiBase applied ["+changes.size()+"] change(s) and added tag ["+tag+"]");
+					logConfigurationMessage("LiquiBase applied ["+changes.size()+"] change(s) and added tag ["+tag+"]");
 				}
 				else {
 					for (String change : changes) {
-						log(change + " tag ["+tag+"]");
+						logConfigurationMessage(change + " tag ["+tag+"]");
 					}
 				}
 			}
@@ -155,11 +180,17 @@ public class LiquibaseImpl {
 		liquibase.tag(tagName);
 	}
 
-	public void getUpdateScript(Writer writer) throws LiquibaseException {
-		liquibase.update(contexts, labelExpression, writer);
+	@Override
+	public void update(Writer writer) throws JdbcException {
+		try {
+			liquibase.update(contexts, labelExpression, writer);
+		} catch (Exception e) {
+			throw new JdbcException("unable to generate database migration script", e);
+		}
 	}
 
-	public void close() throws LiquibaseException {
+	@Override
+	protected void doClose() throws LiquibaseException {
 		if(liquibase != null) {
 			liquibase.close();
 		}
