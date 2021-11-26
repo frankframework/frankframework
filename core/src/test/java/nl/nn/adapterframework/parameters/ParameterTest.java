@@ -330,8 +330,8 @@ public class ParameterTest {
 
 	@Test
 	public void testParameterFromURLToDomdoc() throws Exception {
-		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/domdoc/input.xml");
-		
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml");
+
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", Message.asMessage(originalMessage));
 
