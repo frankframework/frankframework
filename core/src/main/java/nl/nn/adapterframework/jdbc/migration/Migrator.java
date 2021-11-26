@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.Writer;
+import java.net.URL;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -29,6 +30,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
@@ -68,9 +70,9 @@ public abstract class Migrator implements IConfigurable, AutoCloseable {
 		}
 	}
 
-//	protected final URL getResource(String path) {
-//		return ((ClassLoaderBase) configurationClassLoader).getResource(path, false);
-//	}
+	protected final URL getResource(String path) {
+		return ((ClassLoaderBase) configurationClassLoader).getResource(path, false);
+	}
 
 	protected final DataSource lookupMigratorDatasource() throws ConfigurationException {
 		DataSource datasource;
@@ -87,14 +89,15 @@ public abstract class Migrator implements IConfigurable, AutoCloseable {
 	/**
 	 * Run the migration script against the database.
 	 */
-	public abstract void update() throws JdbcException;
-//		if(this.instance != null) {
-//			try {
-//				instance.update();
-//			} catch (JdbcException e) {
-//				ConfigurationWarnings.add(configuration, log, e.getMessage(), e);
-//			}
-//		}
+	public void update() {
+		try {
+			doUpdate();
+		} catch (JdbcException e) {
+			ConfigurationWarnings.add(this, log, e.getMessage(), e);
+		}
+	}
+
+	protected abstract void doUpdate() throws JdbcException;
 
 	/**
 	 * Run the migration script and write the output to the {@link Writer}.
@@ -116,16 +119,7 @@ public abstract class Migrator implements IConfigurable, AutoCloseable {
 
 	protected abstract void doClose() throws Exception;
 
-	public boolean hasLiquibaseScript(Configuration config) {
-		AppConstants appConstants = AppConstants.getInstance(config.getClassLoader());
-		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
-		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(config.getClassLoader());
-		if(resourceAccessor.getResource(changeLogFile) == null) {
-			log.debug("No liquibase script ["+changeLogFile+"] found in the classpath of configuration ["+config.getName()+"]");
-			return false;
-		}
-		return true;
-	}
+	public abstract boolean isEnabled();
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {

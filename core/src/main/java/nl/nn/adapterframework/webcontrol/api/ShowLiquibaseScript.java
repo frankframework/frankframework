@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.jdbc.migration.LiquibaseImpl;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -58,7 +59,7 @@ public final class ShowLiquibaseScript extends Base {
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-				if(databaseMigrator.hasLiquibaseScript(config)) {
+				if(databaseMigrator.isEnabled()) {
 					configNames.add(config.getName());
 				}
 			}
@@ -80,7 +81,7 @@ public final class ShowLiquibaseScript extends Base {
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-				if(databaseMigrator.hasLiquibaseScript(config)) {
+				if(databaseMigrator.isEnabled()) {
 					configurations.add(config);
 				}
 			}
@@ -131,26 +132,26 @@ public final class ShowLiquibaseScript extends Base {
 
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
-		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
+		try(LiquibaseImpl databaseMigrator = config.getBean("jdbcMigrator", LiquibaseImpl.class)) {
 			if(file != null) {
 				String filename = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 				if (filename.endsWith(".xml")) {
 					databaseMigrator.configure(file, filename);
-					databaseMigrator.getUpdateSql(writer);
+					databaseMigrator.update(writer);
 				} else {
 					try(ZipInputStream stream = new ZipInputStream(file)){
 						ZipEntry entry;
 						while((entry = stream.getNextEntry()) != null) {
 							filename = entry.getName();
 							databaseMigrator.configure(StreamUtil.dontClose(stream), filename);
-							databaseMigrator.getUpdateSql(writer);
+							databaseMigrator.update(writer);
 						}
 					}
 				}
 			} else {
 				databaseMigrator.configure();
-				databaseMigrator.getUpdateSql(writer);
+				databaseMigrator.update(writer);
 			}
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);

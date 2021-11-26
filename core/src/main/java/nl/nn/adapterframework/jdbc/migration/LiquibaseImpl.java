@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -58,34 +59,36 @@ public class LiquibaseImpl extends Migrator {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private String getChangeLogFile() throws IOException {
-		String changeLogFile = null;
+	public String getChangeLogFile() throws IOException {
 		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
-		changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+
+		if(getResource(changeLogFile) == null) {
+			String msg = "unable to find database changelog file [" + changeLogFile + "]";
+			msg += " classLoader [" + getConfigurationClassLoader() + "]";
+			throw new IOException(msg);
+		}
 
 		return changeLogFile;
 	}
 
-	private ResourceAccessor getResourceAccessor() {
-		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
-//		if(resourceAccessor.getResource(changeLogFile) == null) {
-//			String msg = "unable to find database changelog file [" + changeLogFile + "]";
-//			msg += " classLoader [" + getConfigurationClassLoader() + "]";
-//			throw new IOException(msg);
-//		}
-//		
-//		resourceAccessor = new StreamResourceAccessor(file);
-
-		return resourceAccessor;
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
+		configure(null, null);
+	}
+
+	public void configure(InputStream file, String filename) throws ConfigurationException {
 		super.configure();
 
 		try {
 			String changeLogFile = getChangeLogFile();
-			ResourceAccessor resourceAccessor = getResourceAccessor();
+
+			ResourceAccessor resourceAccessor;
+			if(file == null) {
+				resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
+			} else {
+				resourceAccessor = new StreamResourceAccessor(file);
+			}
 			DatabaseConnection connection = getDatabaseConnection();
 
 			this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
@@ -140,7 +143,7 @@ public class LiquibaseImpl extends Migrator {
 	}
 
 	@Override
-	public void update() throws JdbcException {
+	public void doUpdate() throws JdbcException {
 		List<String> changes = new ArrayList<>();
 		try {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
@@ -193,6 +196,16 @@ public class LiquibaseImpl extends Migrator {
 	protected void doClose() throws LiquibaseException {
 		if(liquibase != null) {
 			liquibase.close();
+		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		try {
+			getChangeLogFile();
+			return true;
+		} catch (IOException e) {
+			return false;
 		}
 	}
 }
