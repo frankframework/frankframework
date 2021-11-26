@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since	7.0-B4
  *
  */
-public abstract class Migrator implements IConfigurable, AutoCloseable {
+public abstract class DatabaseMigratorBase implements IConfigurable, AutoCloseable {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
@@ -55,14 +55,15 @@ public abstract class Migrator implements IConfigurable, AutoCloseable {
 	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	private @Getter @Setter String name;
 	private @Getter ClassLoader configurationClassLoader = null;
-	private @Getter String datasourceName;
+	private @Getter @Setter String datasourceName;
 
 	@Override
 	public void configure() throws ConfigurationException {
-		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
 
-		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
+		if(datasourceName == null) {
+			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
+		}
 
 		configurationClassLoader = configuration.getClassLoader();
 		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!

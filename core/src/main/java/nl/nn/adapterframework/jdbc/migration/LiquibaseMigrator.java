@@ -53,7 +53,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since	7.0-B4
  *
  */
-public class LiquibaseImpl extends Migrator {
+public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	private Liquibase liquibase = null;
 	private Contexts contexts;

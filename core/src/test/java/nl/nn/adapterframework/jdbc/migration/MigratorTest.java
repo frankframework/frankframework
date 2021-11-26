@@ -17,7 +17,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
 	private TestConfiguration configuration;
-	private Migrator migrator = null;
+	private DatabaseMigratorBase migrator = null;
 	private String tableName="DUMMYTABLE";
 //	private String rootLoggerName="nl.nn.adapterframework";
 //	private String liquibaseLoggerName="liquibase";
@@ -46,8 +46,8 @@ public class MigratorTest extends JdbcTestBase {
 			JdbcUtil.executeStatement(connection, "DROP TABLE DATABASECHANGELOG");
 		}
 
-		migrator = getConfiguration().createBean(Migrator.class);
-		AppConstants.getInstance().setProperty("jdbc.migrator.dataSource", getDataSourceName());
+		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
+		migrator.setDatasourceName(getDataSourceName());
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class MigratorTest extends JdbcTestBase {
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
-		assertTrue(warning.contains("TestConfiguration [TestConfiguration] Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
+		assertTrue(warning.contains("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
 		assertTrue(warning.contains("Migration failed for change set Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
 		assertTrue("table ["+tableName+"] should exist", dbmsSupport.isTablePresent(connection, tableName));
