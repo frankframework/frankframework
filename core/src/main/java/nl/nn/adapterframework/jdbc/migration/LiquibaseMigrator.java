@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -41,7 +39,6 @@ import liquibase.executor.ExecutorService;
 import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -55,11 +52,10 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class LiquibaseMigrator extends DatabaseMigratorBase {
 
-	private Liquibase liquibase = null;
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	public String getChangeLogFile() throws IOException {
+	private String getChangeLogFile() throws IOException {
 		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
@@ -72,27 +68,28 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		return changeLogFile;
 	}
 
-	@Override
-	public void configure() throws ConfigurationException {
-		configure(null, null);
+	private Liquibase createMigrator(InputStream file) throws IOException, SQLException, LiquibaseException {
+		String changeLogFile = getChangeLogFile();
+
+		ResourceAccessor resourceAccessor;
+		if(file == null) {
+			resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
+		} else {
+			resourceAccessor = new StreamResourceAccessor(file);
+		}
+		DatabaseConnection connection = getDatabaseConnection();
+
+		return new Liquibase(changeLogFile, resourceAccessor, connection);
 	}
 
-	public void configure(InputStream file, String filename) throws ConfigurationException {
-		super.configure();
+	private DatabaseConnection getDatabaseConnection() throws SQLException {
+		return new JdbcConnection(lookupMigratorDatasource().getConnection());
+	}
 
+	@Override
+	public void validate() {
 		try {
-			String changeLogFile = getChangeLogFile();
-
-			ResourceAccessor resourceAccessor;
-			if(file == null) {
-				resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
-			} else {
-				resourceAccessor = new StreamResourceAccessor(file);
-			}
-			DatabaseConnection connection = getDatabaseConnection();
-
-			this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
-			validate();
+			doValidate();
 		}
 		catch (ValidationFailedException e) {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -108,44 +105,41 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		}
 	}
 
-	private DatabaseConnection getDatabaseConnection() throws SQLException, ConfigurationException {
-		DataSource datasource = lookupMigratorDatasource();
-		return new JdbcConnection(datasource.getConnection());
-	}
-
-	private void validate() throws LiquibaseException {
-		Database database = liquibase.getDatabase();
-
-		LockService lockService = LockServiceFactory.getInstance().getLockService(database);
-		lockService.waitForLock();
-
-		DatabaseChangeLog changeLog;
-
-		try {
-			changeLog = liquibase.getDatabaseChangeLog();
-
-			liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression);
-			ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database).generateDeploymentId();
-
-			changeLog.validate(database, contexts, labelExpression);
-		} finally {
+	private void doValidate() throws LiquibaseException, IOException, SQLException {
+		try (Liquibase liquibase = createMigrator(null)){
+			Database database = liquibase.getDatabase();
+	
+			LockService lockService = LockServiceFactory.getInstance().getLockService(database);
+			lockService.waitForLock();
+	
+			DatabaseChangeLog changeLog;
+	
 			try {
-				lockService.releaseLock();
-			} catch (LockException e) {
-				log.warn("unable to clean up Liquibase Lock", e);
+				changeLog = liquibase.getDatabaseChangeLog();
+	
+				liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression);
+				ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database).generateDeploymentId();
+	
+				changeLog.validate(database, contexts, labelExpression);
+			} finally {
+				try {
+					lockService.releaseLock();
+				} catch (LockException e) {
+					log.warn("unable to clean up Liquibase Lock", e);
+				}
+	
+				LockServiceFactory.getInstance().resetAll();
+				ChangeLogHistoryServiceFactory.getInstance().resetAll();
+				Scope.getCurrentScope().getSingleton(ExecutorService.class).reset();
+				liquibase.setChangeExecListener(null);
 			}
-
-			LockServiceFactory.getInstance().resetAll();
-			ChangeLogHistoryServiceFactory.getInstance().resetAll();
-			Scope.getCurrentScope().getSingleton(ExecutorService.class).reset();
-			liquibase.setChangeExecListener(null);
 		}
 	}
 
 	@Override
-	public void doUpdate() throws JdbcException {
+	public void update() {
 		List<String> changes = new ArrayList<>();
-		try {
+		try (Liquibase liquibase = createMigrator(null)) {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
 				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
@@ -156,7 +150,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 				ChangeSet lastChange = changeSets.get(changeSets.size()-1);
 				String tag = lastChange.getId() + ":" + lastChange.getAuthor();
-				tag(tag);
+				liquibase.tag(tag);
 
 				if(changes.size() > 1) {
 					logConfigurationMessage("LiquiBase applied ["+changes.size()+"] change(s) and added tag ["+tag+"]");
@@ -171,31 +165,16 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		catch (Exception e) {
 			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			throw new JdbcException(errorMsg, e);
+			ConfigurationWarnings.add(this, log, errorMsg, e);
 		}
 	}
 
-	public void rollback(String tagName) throws LiquibaseException {
-		liquibase.rollback(tagName, contexts);
-	}
-
-	public void tag(String tagName) throws LiquibaseException {
-		liquibase.tag(tagName);
-	}
-
 	@Override
-	public void update(Writer writer) throws JdbcException {
-		try {
-			liquibase.update(contexts, labelExpression, writer);
+	public void update(Writer writer, InputStream fromFile) throws JdbcException {
+		try (Liquibase migrator = createMigrator(fromFile)){
+			migrator.update(contexts, labelExpression, writer);
 		} catch (Exception e) {
 			throw new JdbcException("unable to generate database migration script", e);
-		}
-	}
-
-	@Override
-	protected void doClose() throws LiquibaseException {
-		if(liquibase != null) {
-			liquibase.close();
 		}
 	}
 

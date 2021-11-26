@@ -16,10 +16,10 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.After;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -42,33 +42,27 @@ public class MigratorTest extends JdbcTestBase {
 		return configuration;
 	}
 
-	@After
-	public void tearDown() {
-		if(migrator != null) {
-			migrator.close();
-		}
-	}
-
 	@Override
 	protected void prepareDatabase() throws Exception {
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
-		if (dbmsSupport.isTablePresent(connection, tableName)) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
-		}
-		if (dbmsSupport.isTablePresent(connection, "DATABASECHANGELOG")) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE DATABASECHANGELOG");
-		}
+		removeTableIfPresent(tableName);
+		removeTableIfPresent("DATABASECHANGELOG");
+		removeTableIfPresent("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
 		migrator.setDatasourceName(getDataSourceName());
 	}
 
+	private void removeTableIfPresent(String table) throws JdbcException {
+		if (dbmsSupport.isTablePresent(connection, table)) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE "+table);
+		}
+		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, table));
+	}
+
 	@Test
 	public void testSimpleChangelogFile() throws Exception {
-		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
-
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
-		migrator.configure();
 		migrator.update();
 
 		MessageKeeper messageKeeper = configuration.getMessageKeeper();
@@ -80,10 +74,7 @@ public class MigratorTest extends JdbcTestBase {
 
 	@Test
 	public void testFaultyChangelogFile() throws Exception {
-		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, tableName));
-
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
-		migrator.configure();
 		migrator.update();
 
 		ConfigurationWarnings warnings = configuration.getConfigurationWarnings();
@@ -103,11 +94,9 @@ public class MigratorTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		URL resource = MigratorTest.class.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
 		InputStream file = resource.openStream();
-		String filename = "ChangedDatabaseChangelog.xml";
 
-		migrator.configure(file, filename);
 		StringWriter writer = new StringWriter();
-		migrator.update(writer);
+		migrator.update(writer, file);
 
 		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes.sql");
 

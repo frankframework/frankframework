@@ -15,24 +15,25 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
+import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
+import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -40,47 +41,48 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Liquibase implementation for IAF. 
- * Please call close method explicitly to release the connection used by liquibase or instantiate this with try-with-resources.
+ * DatabaseMigration implementation for IAF. 
  * 
  * @author	Niels Meijer
  * @since	7.0-B4
  *
  */
-public abstract class DatabaseMigratorBase implements IConfigurable, AutoCloseable {
+public abstract class DatabaseMigratorBase implements IConfigurationAware, InitializingBean {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
 	private Configuration configuration;
 	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-	private @Getter @Setter String name;
+	private @Getter String name;
 	private @Getter ClassLoader configurationClassLoader = null;
-	private @Getter @Setter String datasourceName;
+	private @Setter String datasourceName;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void afterPropertiesSet() {
+		configurationClassLoader = configuration.getClassLoader();
+		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+			throw new IllegalStateException("unable to initialize database migrator");
+		}
+	}
 
+	public String getDatasourceName() {
 		if(datasourceName == null) {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
 		}
-
-		configurationClassLoader = configuration.getClassLoader();
-		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
-			throw new ConfigurationException("unable to initialize database migrator");
-		}
+		return datasourceName;
 	}
 
 	protected final URL getResource(String path) {
 		return ((ClassLoaderBase) configurationClassLoader).getResource(path, false);
 	}
 
-	protected final DataSource lookupMigratorDatasource() throws ConfigurationException {
+	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		DataSource datasource;
 		try {
 			datasource = dataSourceFactory.getDataSource(datasourceName);
 		} catch (NamingException e) {
-			throw new ConfigurationException("Could not find Datasource ["+datasourceName+"]", e);
+			throw new SQLException("cannot connect to datasource ["+datasourceName+"]", e);
 		}
 		log.debug("looked up Datasource ["+datasourceName+"] for JdbcMigrator ["+getName()+"]");
 
@@ -88,39 +90,30 @@ public abstract class DatabaseMigratorBase implements IConfigurable, AutoCloseab
 	}
 
 	/**
+	 * Validate the current already executed ChangeSets against the migration script
+	 */
+	public abstract void validate();
+
+	/**
 	 * Run the migration script against the database.
 	 */
-	public void update() {
-		try {
-			doUpdate();
-		} catch (JdbcException e) {
-			ConfigurationWarnings.add(this, log, e.getMessage(), e);
-		}
-	}
-
-	protected abstract void doUpdate() throws JdbcException;
+	public abstract void update() throws JdbcException;
 
 	/**
 	 * Run the migration script and write the output to the {@link Writer}.
 	 */
-	public abstract void update(Writer writer) throws JdbcException;
-
-	@Override
-	public final void close() {
-		try {
-			doClose();
-		} catch (Exception e) {
-			log.error("failed to close the connection", e);
-		}
+	public void update(Writer writer) throws JdbcException {
+		update(writer, null);
 	}
+
+	/**
+	 * Run the provided migration script (against the local database) and write the output to the {@link Writer}.
+	 */
+	public abstract void update(Writer writer, InputStream fromFile) throws JdbcException;
 
 	protected final void logConfigurationMessage(String message) {
 		configuration.publishEvent(new ConfigurationMessageEvent(this, message));
 	}
-
-	protected abstract void doClose() throws Exception;
-
-	public abstract boolean isEnabled();
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
@@ -135,4 +128,5 @@ public abstract class DatabaseMigratorBase implements IConfigurable, AutoCloseab
 		return configuration;
 	}
 
+	public abstract boolean isEnabled();
 }

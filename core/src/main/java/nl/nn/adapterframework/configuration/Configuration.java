@@ -285,9 +285,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	protected void runMigrator() {
 		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
-			try(DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class)) {
+			try {
+				DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
 				if(databaseMigrator.isEnabled()) {
-					databaseMigrator.configure();
+					databaseMigrator.validate();
 					databaseMigrator.update();
 				}
 			} catch (Exception e) {
