@@ -108,7 +108,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
 
-	private List<ParameterType> typeConversionExlusionList = Arrays.asList(ParameterType.STRING, ParameterType.XML, ParameterType.BINARY, ParameterType.BYTES, ParameterType.INPUTSTREAM, ParameterType.LIST, ParameterType.MAP);
+	private List<ParameterType> typeConversionExclusionList = Arrays.asList(ParameterType.STRING, ParameterType.XML, ParameterType.BINARY, ParameterType.BYTES, ParameterType.INPUTSTREAM, ParameterType.LIST, ParameterType.MAP);
 
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
@@ -492,7 +492,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		if(result !=null && !typeConversionExlusionList.contains(getType())) {
+		if(result !=null && !typeConversionExclusionList.contains(getType())) {
 			result = getTypeValue(result, namespaceAware);
 		}
 		if (result !=null) {
