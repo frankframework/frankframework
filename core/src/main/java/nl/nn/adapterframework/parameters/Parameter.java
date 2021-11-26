@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -46,9 +47,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
@@ -106,6 +107,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
+
+	private List<ParameterType> typeConversionExlusionList = Arrays.asList(ParameterType.STRING, ParameterType.XML, ParameterType.BINARY, ParameterType.BYTES, ParameterType.INPUTSTREAM, ParameterType.LIST, ParameterType.MAP);
 
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
@@ -488,80 +491,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					result = ((String)result).substring(0, getMaxLength());
 				}
 			}
-			switch(getType()) {
-				case NODE:
-					try {
-						if (transformerPoolRemoveNamespaces != null) {
-							result = transformerPoolRemoveNamespaces.transform((String)result, null);
-						}
-						result=XmlUtils.buildNode((String)result,namespaceAware);
-						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
-					}
-					break;
-				case DOMDOC:
-					try {
-						if (transformerPoolRemoveNamespaces != null) {
-							result = transformerPoolRemoveNamespaces.transform((String)result, null);
-						}
-						result=XmlUtils.buildDomDocument((String)result,namespaceAware);
-						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
-					}
-					break;
-				case DATE:
-				case DATETIME:
-				case TIMESTAMP:
-				case TIME:
-					log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
-					DateFormat df = new SimpleDateFormat(getFormatString());
-					try {
-						result = df.parseObject((String)result);
-					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
-					}
-					break;
-				case XMLDATETIME:
-					log.debug("Parameter ["+getName()+"] converting result ["+result+"] from xml dateTime to date" );
-					result = DateUtils.parseXmlDateTime((String)result);
-					break;
-				case NUMBER:
-					log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
-					DecimalFormat decimalFormat = new DecimalFormat();
-					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-					try {
-						Number n = decimalFormat.parse((String)result);
-						result = n;
-					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-					}
-					if (getMinLength()>=0 && result.toString().length()<getMinLength()) {
-						log.debug("Adding leading zeros to parameter ["+getName()+"]" );
-						result = StringUtils.leftPad(result.toString(), getMinLength(), '0');
-					}
-					break;
-				case INTEGER:
-					log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
-					try {
-						Integer i = Integer.parseInt((String)result);
-						result = i;
-					} catch (NumberFormatException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
-					}
-					break;
-				case BOOLEAN:
-					log.debug("Parameter ["+getName()+"] converting result ["+result+"] to boolean" );
-					try {
-						Boolean i = Boolean.parseBoolean((String)result);
-						result = i;
-					} catch (NumberFormatException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
-					}
-				default:
-					break;
-			}
+		}
+		if(result !=null && !typeConversionExlusionList.contains(getType())) {
+			result = getTypeValue(result, namespaceAware);
 		}
 		if (result !=null) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
@@ -575,6 +507,89 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		
 		return result; 
+	}
+
+	/** Converts raw data to configured parameter type */
+	private Object getTypeValue(Object message, boolean namespaceAware) throws ParameterException {
+		Object result = message;
+		if(!(result instanceof String)) {
+			try {
+				result = Message.asMessage(result).asString();
+			} catch (IOException e) {
+				throw new ParameterException("Could not convert parameter ["+getName()+"] to string", e);
+			}
+		}
+		switch(getType()) {
+			case NODE:
+				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
+					result=XmlUtils.buildNode((String)result,namespaceAware);
+					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
+				}
+				break;
+			case DOMDOC:
+				try {
+					if (transformerPoolRemoveNamespaces != null) {
+						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					}
+					result=XmlUtils.buildDomDocument((String)result,namespaceAware);
+					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
+				}
+				break;
+			case DATE:
+			case DATETIME:
+			case TIMESTAMP:
+			case TIME:
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
+				DateFormat df = new SimpleDateFormat(getFormatString());
+				try {
+					result = df.parseObject((String)result);
+				} catch (ParseException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
+				}
+				break;
+			case XMLDATETIME:
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] from xml dateTime to date" );
+				result = DateUtils.parseXmlDateTime((String)result);
+				break;
+			case NUMBER:
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+				DecimalFormat decimalFormat = new DecimalFormat();
+				decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					Number n = decimalFormat.parse((String)result);
+					result = n;
+				} catch (ParseException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+				}
+				if (getMinLength()>=0 && result.toString().length()<getMinLength()) {
+					log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+					result = StringUtils.leftPad(result.toString(), getMinLength(), '0');
+				}
+				break;
+			case INTEGER:
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
+				try {
+					Integer i = Integer.parseInt((String)result);
+					result = i;
+				} catch (NumberFormatException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
+				}
+				break;
+			case BOOLEAN:
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to boolean" );
+				Boolean i = Boolean.parseBoolean((String)result);
+				result = i;
+			default:
+				break;
+		}
+		return result;
 	}
 
 	private String hide(String string) {

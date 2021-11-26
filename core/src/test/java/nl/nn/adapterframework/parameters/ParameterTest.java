@@ -1,27 +1,27 @@
 package nl.nn.adapterframework.parameters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.junit.Rule;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ParameterTest {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void testPatternUsername() throws ConfigurationException, ParameterException {
@@ -114,13 +114,18 @@ public class ParameterTest {
 		p.setName("dummy");
 		p.setPattern("{unknown}");
 		p.configure();
-		
+
 		PipeLineSession session = new PipeLineSession();
-		
+
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		try {
+			p.getValue(alreadyResolvedParameters, null, session, false);
+			Assert.fail("supposed to throw an exception");
+		} catch(ParameterException e) {
+			assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
+		}
 		
-		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
-		p.getValue(alreadyResolvedParameters, null, session, false);
 	}
 
 	@Test
@@ -190,6 +195,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		System.err.println(result.getClass());
 		assertTrue(result instanceof InputStream);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
@@ -217,6 +223,150 @@ public class ParameterTest {
 
 		String stringResult = Message.asMessage(result).asString();
 		assertEquals("fiets bel appel", stringResult);
+	}
+	
+	@Test
+	public void testParameterXPathToValue() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("<dummy>a</dummy>");
+		p.setXpathExpression("/dummy");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertEquals("a", Message.asMessage(result).asString());
+	}
+	
+	@Test
+	public void testParameterNumberBooelan() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("a");
+		p.setType(ParameterType.BOOLEAN);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof Boolean);
+	}
+
+	@Test
+	public void testParameterNumberParseException() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("a");
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
+	}
+
+	@Test
+	public void testParameterInteger() throws Exception {
+		testParameterTypeHelper(ParameterType.INTEGER, Integer.class);
+	}
+	@Test
+	public void testParameterNumber() throws Exception {
+		testParameterTypeHelper(ParameterType.NUMBER, Number.class);
+	}
+
+	public <T> void testParameterTypeHelper(ParameterType type, Class<T> c) throws Exception {
+		Parameter p = new Parameter();
+		p.setName("integer");
+		p.setValue("8");
+		p.setType(type);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionkey", 8);
+		p = new Parameter();
+		p.setName("integer");
+		p.setSessionKey("sessionkey");
+		p.setType(type);
+		p.configure();
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+		session = new PipeLineSession();
+		session.put("sessionkey", "8");
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+		session = new PipeLineSession();
+		session.put("sessionkey", Message.asMessage(8));
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+		session = new PipeLineSession();
+		session.put("sessionkey", "8".getBytes());
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+		session = new PipeLineSession();
+		session.put("sessionkey", Message.asMessage("8".getBytes()));
+
+		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+
+	}
+
+	@Test
+	public void testParameterFromURLToDomdoc() throws Exception {
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/domdoc/input.xml");
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", Message.asMessage(originalMessage));
+
+		Parameter inputMessage = new Parameter();
+		inputMessage.setName("InputMessage");
+		inputMessage.setSessionKey("originalMessage");
+		inputMessage.setType(ParameterType.DOMDOC);
+		inputMessage.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertTrue(result instanceof Document);
+	}
+	
+	@Test
+	public void testParameterFrombytesToDomdoc() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", "<someValue/>".getBytes());
+
+		Parameter inputMessage = new Parameter();
+		inputMessage.setName("InputMessage");
+		inputMessage.setSessionKey("originalMessage");
+		inputMessage.setType(ParameterType.DOMDOC);
+		inputMessage.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertTrue(result instanceof Document);
+
 	}
 
 }
