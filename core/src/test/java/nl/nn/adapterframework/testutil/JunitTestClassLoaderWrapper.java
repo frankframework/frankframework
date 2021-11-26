@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.jdbc.migration;
+package nl.nn.adapterframework.testutil;
 
 import java.net.URL;
 
