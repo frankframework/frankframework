@@ -594,6 +594,23 @@
 			<version>1.69</version>
 		</dependency>
 
+		<!--
+			Webjars support, see also:
+				https://www.webjars.org/
+				https://www.webjars.org/documentation#servlet2
+				nl.nn.adapterframework.webcontrol.WebjarsServlet
+		-->
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-servlet-2.x</artifactId>
+			<version>1.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
+			<version>0.48</version>
+		</dependency>
+
 		<!-- Test scoped dependencies -->
 		<dependency>
 			<groupId>org.hamcrest</groupId>
