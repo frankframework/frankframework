@@ -31,10 +31,7 @@ Frank developers provide this information through XML files and properties
 files. The Frank!Framework parses these XML files into networks of
 Java objects that can provide the actual integration solution. The
 Frank!Framework also allows developers to work with a graphical
-user interface, the Frank!Flow. To understand this from a user perspective, please
-read the <a href="http://frank-manual.readthedocs.io">Frank!Manual. Another
-source of user documentation is the Frank!Doc, which you can download from the
-Frank!Framework's web console.</a>.
+user interface, the Frank!Flow.
 <p>
 The Frank!Framework is a Java application that provides a web interface.
 It runs on an application server. WeAreFrank! supports running the
@@ -42,30 +39,30 @@ Frank!Framework on Apache Tomcat, JBoss Application Server (recently renamed to 
 or WebSphere Application Server. The web interface is typically
 used by operators who are responsible for the proper operation
 of the integration solution, or as WeAreFrank! says: the Frank.
-The Frank!Console is described in the <a href="http://frank-manual.readthedocs.io">Frank!Manual</a>.
+WeAreFrank! also hosts the Frank!Framework for demonstration purposes.
+You can find it at <a href="https://ibis4example.ibissource.org">https://ibis4example.ibissource.org</a>.
+
+To understand the Frank!Framework from a user perspective, please
+read the <a href="http://frank-manual.readthedocs.io">Frank!Manual</a>. Another
+source of user documentation is the Frank!Doc, which you can download from the
+Frank!Framework's web console at <a href="https://ibis4example.ibissource.org">https://ibis4example.ibissource.org</a>.
+<p>
 
 <h1>Building blocks</h1>
 
-The building blocks are defined by Java interfaces in the package
+Most building blocks are defined by Java interfaces in the package
 {@link nl.nn.adapterframework.core}. All pipes implement
 interface {@link nl.nn.adapterframework.core.IPipe}. All
 listeners implement {@link nl.nn.adapterframework.core.IListener}.
-All receivers implement {@link nl.nn.adapterframework.core.IReceiver}.
+We have class {@link nl.nn.adapterframework.receivers.Receiver}.
 And all senders implement {@link nl.nn.adapterframework.core.ISender}.
-The implementation of {@link nl.nn.adapterframework.core.IReceiver}
-appears in class {@link nl.nn.adapterframework.receivers.GenericReceiver}.
-Some implementations of {@link nl.nn.adapterframework.core.IListener}
-also appear in that package. Many pipes are implemented in
-package {@link nl.nn.adapterframework.pipes} and many
-senders are implemented in {@link nl.nn.adapterframework.senders}.
-<p>
 There are two additional building blocks to hold groups of other
 building blocks, namely adapters and configurations. An adapter,
 implemented by {@link nl.nn.adapterframework.core.IAdapter},
 plays the role of a function. It holds one or more receivers that listen to input
 messages. Each adapter holds a network of pipes to transform
 incoming messages. Pipe type
-{@link nl.nn.adapterframework.pipes.GenericMessageSendingPipe}
+{@link nl.nn.adapterframework.pipes.SenderPipe}
 wraps a sender and routes its incoming messages to the sender.
 This way, adapters can produce output messages.
 <p>
@@ -90,7 +87,11 @@ should not be visible to other configurations. The same holds for custom
 Java classes that are part of a configuration.
 Class {@link nl.nn.adapterframework.configuration.IbisContext} achieves
 this by creating new {@link ClassLoader} instances. Each
-configuration is loaded using its own {@link ClassLoader}.
+configuration is loaded using its own {@link ClassLoader}. Furthermore, class
+{@link nl.nn.adapterframework.configuration.Configuration} implements
+Spring interface {@link org.springframework.context.ApplicationContext}.
+This way, each configuration has an independent network of objects that is reachable through Spring.
+
 <p>
 Properties are then read using class {@link nl.nn.adapterframework.util.AppConstants}.
 To understand what {@link nl.nn.adapterframework.util.AppConstants} is
@@ -102,30 +103,30 @@ file is included within the Frank!Framework.
 <p>
 Configurations are parsed using the
 <a href="https://commons.apache.org/proper/commons-digester/">Apache library commons-digester</a>.
-This library needs configuration files that reference building blocks by their
+This library processes input files that reference building blocks by their
 qualified Java class name, for example:
 <pre>{@code
 <listener className="nl.nn.adapterframework.receivers.JavaListener"
     name="TestMessageStoreSender"/>
 }</pre>
-Frank config that references Java classes as shown is said to have old-style syntax.
-WeAreFrank! has introduced a more friendly syntax that references building blocks
+Frank developers are allowed to write Frank configurations in that syntax, which we
+call "syntax 1". WeAreFrank! also supports a more friendly syntax that references building blocks
 by human-readable names, for example:
 <pre>{@code
 <JavaListener name="TestMessageStoreSender"/>
 }
 </pre>
-This is new-style syntax. The Frank!Framework applies an XSLT transformation
-to transform new-style syntax to old-style syntax before parsing with
-Apache commons-digester. The XSLT transformation is read from resource
-"/xml/xsl/canonicalize.xsl" on the classpath of the class loader of
-the configuration being read.
+This is syntax syntax 2. Parsing is done by method {@link nl.nn.adapterframework.configuration.ConfigurationDigester#digest()}.
+This logic uses a XML schema file <code>FrankConfig-compatibility.xsd</code> to transform syntax 2 to syntax 1.
+This file is produced by a doclet that we have implemented in the <a href="https://github.com/ibissource/frank-doc">Frank!Doc</a>
+project. Our Maven build attaches this file to our source code JAR to make it available at run-time.
 
 <h1>Web based</h1>
 
-
-
 <h1>Database</h1>
+
 <h1>Management</h1>
+
 <h1>Utilities</h1>
+
 </body>

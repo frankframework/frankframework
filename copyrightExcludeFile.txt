@@ -58,3 +58,4 @@ org.eclipse.
 .xquery
 .ldif
 .iml
+overview.html
