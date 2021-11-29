@@ -161,7 +161,7 @@ public class MigratorTest extends JdbcTestBase {
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
 			assertFalse(appender.contains(msg)); //Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = configuration.getBean("MessageEventListener", ConfigurationMessageEventListener.class);
+			ConfigurationMessageEventListener configurationMessages = configuration.getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
 		} finally {
 			TestAppender.removeAppender(appender);
