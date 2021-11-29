@@ -10,8 +10,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.w3c.dom.Document;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -22,6 +23,9 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ParameterTest {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void testPatternUsername() throws ConfigurationException, ParameterException {
@@ -119,13 +123,8 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 
-		try {
-			p.getValue(alreadyResolvedParameters, null, session, false);
-			Assert.fail("supposed to throw an exception");
-		} catch(ParameterException e) {
-			assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
-		}
-		
+		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
+		p.getValue(alreadyResolvedParameters, null, session, false);
 	}
 
 	@Test
@@ -195,7 +194,6 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		System.err.println(result.getClass());
 		assertTrue(result instanceof InputStream);
 
 		assertEquals(sessionMessage, Message.asMessage(result).asString());
