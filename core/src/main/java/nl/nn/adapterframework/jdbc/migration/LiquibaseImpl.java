@@ -16,6 +16,7 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,9 +31,11 @@ import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -52,17 +55,21 @@ public class LiquibaseImpl {
 	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile) throws LiquibaseException, SQLException, IOException {
+	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile, InputStream file) throws LiquibaseException, SQLException, IOException {
 		this.configuration = configuration;
-
-		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
-		if(resourceAccessor.getResource(changeLogFile) == null) {
-			String msg = "unable to find database changelog file [" + changeLogFile + "]";
-			msg += " classLoader [" + configuration.getClassLoader() + "]";
-			throw new IOException(msg);
+		DatabaseConnection connection;
+		ResourceAccessor resourceAccessor;
+		if(file == null) {
+			resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
+			if(((LiquibaseResourceAccessor) resourceAccessor).getResource(changeLogFile) == null) {
+				String msg = "unable to find database changelog file [" + changeLogFile + "]";
+				msg += " classLoader [" + configuration.getClassLoader() + "]";
+				throw new IOException(msg);
+			}
+		} else {
+			resourceAccessor = new StreamResourceAccessor(file);
 		}
-
-		JdbcConnection connection = new JdbcConnection(datasource.getConnection());
+		connection = new JdbcConnection(datasource.getConnection());
 
 		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
@@ -112,9 +119,8 @@ public class LiquibaseImpl {
 		liquibase.tag(tagName);
 	}
 
-	public Writer getUpdateScript(Writer writer) throws LiquibaseException {
+	public void getUpdateScript(Writer writer) throws LiquibaseException {
 		liquibase.update(contexts, labelExpression, writer);
-		return writer;
 	}
 
 	public void close() throws DatabaseException {

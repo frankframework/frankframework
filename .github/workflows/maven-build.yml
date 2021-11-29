@@ -83,3 +83,18 @@ jobs:
       with:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
+
+    - name: Print commit sha
+      shell: bash
+      env:
+        COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        echo "sha: $COMMIT_SHA"
+
+    - name: Call [Compare Frank!Doc] workflow
+      uses: benc-uk/workflow-dispatch@v1
+      if: ${{ matrix.java == '8' && github.event_name == 'pull_request_disabled'}}
+      with:
+        workflow: Compare FrankDoc
+        token: ${{ secrets.PAT }}
+        inputs: '{"target": "${{ github.event.pull_request.head.sha }}"}'

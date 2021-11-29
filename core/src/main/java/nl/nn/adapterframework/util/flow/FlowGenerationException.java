@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Nationale-Nederlanden
+Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,26 +13,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.extensions.graphviz;
+package nl.nn.adapterframework.util.flow;
 
 import nl.nn.adapterframework.core.IbisException;
 
 /**
- * GraphvizException when some Graphviz related error occurs
+ * FlowGenerationException when unable to generate a Flow Diagram
  * 
  * @author Niels Meijer
  *
  */
-public class GraphvizException extends IbisException {
-	public GraphvizException(String msg) {
+public class FlowGenerationException extends IbisException {
+
+	public FlowGenerationException(String msg) {
 		super(msg);
 	}
 
-	public GraphvizException(String msg, Throwable th) {
-		super(msg,th);
+	public FlowGenerationException(Throwable t) {
+		super(t);
 	}
 
-	public GraphvizException(Throwable e) {
-		super(e);
+	public FlowGenerationException(String msg, Throwable t) {
+		super(msg, t);
 	}
 }

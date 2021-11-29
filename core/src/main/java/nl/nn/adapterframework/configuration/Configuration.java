@@ -41,6 +41,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.jdbc.migration.Migrator;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
@@ -282,8 +283,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
 		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
 			try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
-				databaseMigrator.configure();
-				databaseMigrator.update();
+				if(databaseMigrator.hasLiquibaseScript(this)) {
+					databaseMigrator.configure();
+					databaseMigrator.update();
+				}
 			} catch (Exception e) {
 				log("unable to run JDBC migration", e);
 			}
@@ -482,12 +485,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	/** The entire (raw) configuration
 	 * @ff.noAttribute */
+	@ProtectedAttribute
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
 	/** The loaded (with resolved properties) configuration
 	 * @ff.noAttribute */
+	@ProtectedAttribute
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
 	}

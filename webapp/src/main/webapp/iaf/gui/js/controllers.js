@@ -2114,15 +2114,38 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('LiquibaseScriptCtrl', ['$scope', 'Api', '$location', function($scope, Api, $location) {
-	if($scope.configurations) {
-		$scope.form = {configuration: $scope.configurations[0].name};
-	}
-	$scope.generateSql=false;
+.controller('LiquibaseScriptCtrl', ['$scope', 'Api', 'Misc', function($scope, Api, Misc) {
+	$scope.file = null;
+	$scope.handleFile = function(files) {
+		if(files.length == 0) {
+			$scope.file = null;
+			return;
+		}
+		$scope.file = files[0]; //Can only parse 1 file!
+	};
+
+	Api.Get("jdbc/liquibase", function(data) {
+		$.extend($scope, data);
+		if($scope.configurationsWithLiquibaseScript && $scope.configurationsWithLiquibaseScript.length > 0) {
+			$scope.form = {configuration: $scope.configurationsWithLiquibaseScript[0]};
+		}
+	});
+
+	$scope.download = function() {
+		window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/download/");
+	};
+
+	$scope.generateSql = false;
 	$scope.submit = function(formData) {
 		if(!formData) formData = {};
+		var fd = new FormData();
 		$scope.generateSql=true;
-		Api.Post("jdbc/liquibase", JSON.stringify(formData), function(returnData) {
+		if($scope.file != null) {
+			fd.append("file", $scope.file);
+		}
+
+		fd.append("configuration", formData.configuration);
+		Api.Post("jdbc/liquibase", fd, function(returnData) {
 			$scope.error = "";
 			$scope.generateSql=false;
 			$.extend($scope, returnData);
