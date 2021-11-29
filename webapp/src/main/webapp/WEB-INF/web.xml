@@ -295,15 +295,15 @@
 		<role-name>IbisObserver</role-name>
 	</security-role>
 	<security-role>
-		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions too</description>
+		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions</description>
 		<role-name>IbisDataAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can do a full reload and test a pipeline, has all IbisDataAdmin permissions too</description>
+		<description>can do a full reload and has all IbisDataAdmin permissions</description>
 		<role-name>IbisAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
+		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
 		<role-name>IbisTester</role-name>
 	</security-role -->
 
