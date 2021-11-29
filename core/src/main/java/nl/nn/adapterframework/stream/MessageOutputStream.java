@@ -155,12 +155,22 @@ public class MessageOutputStream implements AutoCloseable {
 	@Override
 	public final void close() throws Exception {
 		try {
+			closeRequestStream();
+		} finally {
 			try {
-				closeRequestStream();
+				if (nextStream!=null) {
+					nextStream.close();
+				}
 			} finally {
 				try {
-					if (nextStream!=null) {
-						nextStream.close();
+					try {
+						if (targetThreadConnector!=null) {
+							targetThreadConnector.close();
+						}
+					} finally {
+						if (threadConnector!=null) {
+							threadConnector.close();
+						}
 					}
 				} finally {
 					try {
@@ -176,16 +186,6 @@ public class MessageOutputStream implements AutoCloseable {
 							});
 						}
 					}
-				}
-			}
-		} finally {
-			try {
-				if (targetThreadConnector!=null) {
-					targetThreadConnector.close();
-				}
-			} finally {
-				if (threadConnector!=null) {
-					threadConnector.close();
 				}
 			}
 		}

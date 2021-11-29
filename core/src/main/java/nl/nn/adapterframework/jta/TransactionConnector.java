@@ -16,8 +16,8 @@
 package nl.nn.adapterframework.jta;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import nl.nn.adapterframework.functional.ThrowingRunnable;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -36,54 +36,64 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TransactionConnector<T,R> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private IThreadConnectableTransactionManager<T,R> txManager;
+	private TransactionConnectorCoordinator<T,R> coordinator;
 	private Thread parentThread;
 	private Thread childThread;
-	private static ThreadLocal<Object> transactions=new ThreadLocal<>();
-	private static ThreadLocal<Object> resourceHolders=new ThreadLocal<>();
-	private T transaction;
-	private R resourceHolder;
+	private ThrowingRunnable<?> onEndThreadAction;
+	
 	private boolean childThreadTransactionSuspended;
 
+	private TransactionConnector(IThreadConnectableTransactionManager<T,R> txManager) {
+		super();
+		parentThread=Thread.currentThread();
+		if (txManager==null) {
+			throw new IllegalStateException("txManager is null");
+		}
+		coordinator = TransactionConnectorCoordinator.getInstance(txManager);
+		if (coordinator==null) {
+			log.debug("[{}] no active transaction in parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
+		} else {
+			log.debug("[{}] obtained TransactionConnectorCoordinator for parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
+		}
+	}
+
+	private TransactionConnector(TransactionConnectorCoordinator<T,R> coordinator) {
+		super();
+		parentThread=Thread.currentThread();
+		this.coordinator = coordinator;
+	}
+	
 	/**
-	 * Constructor, to be called from 'main' thread.
+	 * factory method, to be called from 'main' thread.
 	 * 
 	 * When a transaction connector has been set up, new transactional resources can only be introduced after beginChildThread() has been called,
 	 * not on the main thread anymore, because the transaction must be suspended there.
 	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
 	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
-	public TransactionConnector(IThreadConnectableTransactionManager txManager) {
-		super();
-		parentThread=Thread.currentThread();
+	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager) {
 		if (txManager==null) {
-			throw new IllegalStateException("txManager is null");
+			return null;
 		}
-		transaction = (T)transactions.get();
-		resourceHolder = (R)resourceHolders.get();
-		this.txManager = txManager;
-		if (transaction==null && TransactionSynchronizationManager.isSynchronizationActive()) {
-			log.debug("[{}] suspending transaction of parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
-			transaction = this.txManager.getCurrentTransaction();
-			resourceHolder = this.txManager.suspendTransaction(transaction);
-			// The transaction cannot be resumed here, because then the state will conflict with the resume in close().
-			transactions.set(transaction);
-			resourceHolders.set(resourceHolder);
-		} else {
-			log.debug("[{}] no active transaction in parent thread [{}]", ()->hashCode(), ()->parentThread.getName());
+		TransactionConnectorCoordinator<T,R> coordinator = TransactionConnectorCoordinator.getInstance(txManager);
+		if (coordinator == null) {
+			return null;
 		}
+		TransactionConnector<T,R> instance = new TransactionConnector<T,R>(coordinator);
+		coordinator.setLastInThread(instance);
+		return instance;
 	}
-
+	
 	/**
 	 * resume transaction, that was saved in parent thread, in the child thread.
 	 * After beginChildThread() has been called, new transactional resources cannot be enlisted in the parentThread, 
 	 * because the transaction context has been prepared to be transferred to the childThread.
 	 */
 	public void beginChildThread() {
-		if (transaction!=null) {
+		if (coordinator!=null) {
+			log.debug("[{}] beginChildThread() resuming transaction in child thread", ()->hashCode());
+			coordinator.resumeTransactionInChildThread(this);
 			childThread = Thread.currentThread();
-			log.debug("[{}] beginChildThread() resuming transaction of parent thread [{}] in child thread [{}]", ()->hashCode(), ()->parentThread.getName(), ()->childThread.getName());
-			txManager.resumeTransaction(transaction, resourceHolder);
 		} else {
 			log.debug("[{}] beginChildThread() no transaction to resume", ()->hashCode());
 		}
@@ -92,20 +102,28 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	/**
 	 * endThread() to be called from child thread in a finally clause
 	 */
+	@lombok.SneakyThrows
 	public void endChildThread() {
-		if (childThread==null || transaction==null) {
-			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction", ()->hashCode(), ()->Thread.currentThread().getName());
+		if (onEndThreadAction!=null) {
+			log.debug("[{}] endChildThread() in thread [{}], executing onEndThreadAction", ()->hashCode(), ()->Thread.currentThread().getName());
+			onEndThreadAction.run();
+		}
+		if (childThread==null || coordinator==null) {
+			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction or not the last in chain", ()->hashCode(), ()->Thread.currentThread().getName());
 			return;
 		}
 		Thread currentThread = Thread.currentThread();
 		if (currentThread != childThread) {
 			throw new IllegalStateException("["+hashCode()+"] endChildThread() must be called from childThread ["+childThread.getName()+"]");
 		}
-		log.debug("[{}] endChildThread() collecting current resources in thread [{}]", ()->hashCode(), ()->Thread.currentThread().getName());
-		resourceHolder = this.txManager.suspendTransaction(transaction);
-		childThreadTransactionSuspended = true;
+		log.debug("[{}] endChildThread() called in thread [{}]", ()->hashCode(), ()->Thread.currentThread().getName());
+		coordinator.suspendTransaction();
+		childThreadTransactionSuspended=true;
 	}
 
+	public <E extends Exception> void onEndThread(ThrowingRunnable<E> action) {
+		onEndThreadAction = action;
+	}
 	/**
 	 * close() to be called from parent thread, when child thread has ended.
 	 */
@@ -118,14 +136,9 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		if (childThread!=null && !childThreadTransactionSuspended) {
 			log.warn("childThread transaction was not suspended");
 		}
-		if (transaction!=null && transactions.get()!=null) {
-			log.debug("[{}] close() resuming transaction in thread [{}] after child thread ended", ()->hashCode(), ()->parentThread.getName());
-			txManager.resumeTransaction(transaction, resourceHolder);
-			transaction=null;
-			transactions.remove();
-			resourceHolders.remove();
-		} else {
-			log.debug("[{}] close() already called, or parentThread does not need resume", ()->hashCode());
+		if (coordinator!=null) {
+			log.debug("[{}] closing coordinator in thread [{}] after child thread [{}] ended", ()->hashCode(), ()->parentThread.getName(), ()->childThread==null?null:childThread.getName());
+			coordinator.close();
 		}
 	}
 
