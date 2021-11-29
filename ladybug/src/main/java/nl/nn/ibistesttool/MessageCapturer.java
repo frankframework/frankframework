@@ -48,12 +48,20 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		return StreamingType.NONE;
 	}
 
-	@Override
+	// do not set override annotation, to avoid Ladybug compatibility problems
 	public <T> T toWriter(T message, Writer writer) {
+		return toWriter(message, writer, null);
+	}
+
+	// do not set override annotation, to avoid Ladybug compatibility problems
+	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
 			try {
 				((Message)message).captureCharacterStream(writer, testTool.getMaxMessageLength());
 			} catch (Exception e) {
+				if (exceptionNotifier!=null) {
+					exceptionNotifier.accept(e);
+				}
 				log.warn("Could not capture characterstream", e);
 				try {
 					writer.close();
@@ -70,14 +78,29 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		return message;
 	}
 
-	@Override
+	// do not set override annotation, to avoid Ladybug compatibility problems
+	public <T> T toOutputStream(T message, OutputStream outputStream) {
+		return toOutputStream(message, outputStream, null, null);
+	}
+
+	// do not set override annotation, to avoid Ladybug compatibility problems
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier) {
+		return toOutputStream(message, outputStream, charsetNotifier, null);
+	}
+
+	// do not set override annotation, to avoid Ladybug compatibility problems
+	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message) {
 			Message m = (Message)message;
-			charsetNotifier.accept(m.getCharset());
+			if (charsetNotifier!=null) {
+				charsetNotifier.accept(m.getCharset());
+			}
 			try {
 				((Message)message).captureBinaryStream(outputStream, testTool.getMaxMessageLength());
 			} catch (Exception e) {
+				if (exceptionNotifier!=null) {
+					exceptionNotifier.accept(e);
+				}
 				log.warn("Could not capture binary stream", e);
 				try {
 					outputStream.close();
@@ -88,5 +111,6 @@ public class MessageCapturer implements nl.nn.testtool.MessageCapturer {
 		}
 		return message;
 	}
+
 
 }
