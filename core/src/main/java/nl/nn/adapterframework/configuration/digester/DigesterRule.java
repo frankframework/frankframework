@@ -59,6 +59,11 @@ public class DigesterRule {
 	 */
 	private @Getter @Setter String registerTextMethod;
 
+	/**
+	 * The class to use when creating the bean through Spring.
+	 */
+	private @Getter @Setter String beanClass;
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

@@ -490,7 +490,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	/** @ff.noAttribute */
-	@ProtectedAttribute
+//	@ProtectedAttribute(suppressWarning=true)
 	public void setFunction(Object ignoreMe) {
 		//Dummy method to avoid 'does not have an attribute [function] to set to value [dumpStatistics]' warnings
 	}

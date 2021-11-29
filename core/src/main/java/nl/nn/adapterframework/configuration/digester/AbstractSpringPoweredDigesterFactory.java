@@ -55,9 +55,10 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
+	private DigesterRule rule = null;
 
 	public AbstractSpringPoweredDigesterFactory() {
 		super();
@@ -160,7 +161,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
 	 * implemented by prefixing the element name with 'proto-'
 	 */
-	protected Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
+	private Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
 		if(applicationContext == null) {
 			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
 		}
@@ -177,7 +178,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             beanClass = null;
         } else {
             // Get all beans matching the className given
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            ClassLoader classLoader = applicationContext.getClassLoader();
             beanClass = Class.forName(className, true, classLoader);
 
             String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass);
@@ -216,6 +217,15 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
                 return createBeanAndAutoWire(beanClass);
             }
         }
+        if(beanClass == null) {
+        	String className3 = rule.getBeanClass();
+        	if(className3 != null) {
+	            ClassLoader classLoader = applicationContext.getClassLoader();
+	            Class<?> beanClass3 = Class.forName(className3, true, classLoader);
+	            String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass3);
+	            return createBeanAndAutoWire(beanClass3);
+        	}
+        }
 
         // Only accept prototype-beans!
         if (isPrototypesOnly() && !applicationContext.isPrototype(beanName)) {
@@ -245,4 +255,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		return map;
 	}
 
+	@Override
+	public final void setDigesterRule(DigesterRule rule) {
+		if(this.rule != null) {
+			throw new IllegalStateException();
+		}
+		this.rule = rule;
+	}
 }
