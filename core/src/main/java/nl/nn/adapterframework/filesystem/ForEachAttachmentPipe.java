@@ -24,7 +24,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -92,7 +92,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 	
 	@Override
-	protected IDataIterator<A> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<A> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		
 		FS ifs = getFileSystem();
 		
@@ -117,8 +117,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 			Map<String,Object> attachmentProperties = ifs.getAdditionalAttachmentProperties(item);
 			if (attachmentProperties!=null) {
 				XmlBuilder properties = new XmlBuilder("properties");
-				Set<String> excludes=getExcludeProperties();
-				Set<String> includes=getOnlyProperties();
+				Set<String> excludes=getExcludePropertiesSet();
+				Set<String> includes=getOnlyPropertiesSet();
 				if (excludes!=null || includes==null) {
 					for(Entry<String,Object>entry:attachmentProperties.entrySet()) {
 						if (excludes==null || !excludes.contains(entry.getKey())) {
@@ -173,7 +173,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
 	}
-	public Set<String> getOnlyProperties() {
+	public Set<String> getOnlyPropertiesSet() {
 		return onlyProperties;
 	}
 
@@ -184,7 +184,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		}
 		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
 	}
-	public Set<String> getExcludeProperties() {
+	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
 	}
 

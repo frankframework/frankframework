@@ -1,0 +1,46 @@
+<module>
+	<adapter name="ExchangeMail" >
+		<receiver name="ExchangeMail" active="${exchangemail.active}">
+			<listener
+				className="nl.nn.adapterframework.receivers.ExchangeMailListener"
+				url="${exchangemail.url}"
+				mailAddress="${exchangemail.mailAddress}"
+				authAlias="${exchangemail.authAlias}"
+				username="${exchangemail.username}"
+				password="${exchangemail.password}"
+				baseFolder="${exchangemail.baseFolder}"
+				inputFolder="${exchangemail.inputFolder}"
+				inProcessFolder="${exchangemail.inProcessFolder}"
+				processedFolder="${exchangemail.processedFolder}"
+				errorFolder="${exchangemail.errorFolder}"
+				createFolders="true"
+				disableFolderBrowsers="${exchangemail.disableFolderBrowsers}"
+			/>
+		</receiver>
+		<receiver name="ImapMail" active="${imapmail.active}">
+			<listener
+				className="nl.nn.adapterframework.receivers.ImapListener"
+				host="${imapmail.host}"
+				port="${imapmail.port}"
+				authAlias="${imapmail.authAlias}"
+				username="${imapmail.username}"
+				password="${imapmail.password}"
+				baseFolder="${imapmail.baseFolder}"
+				inputFolder="${imapmail.inputFolder}"
+				inProcessFolder="${imapmail.inProcessFolder}"
+				processedFolder="${imapmail.processedFolder}"
+				errorFolder="${imapmail.errorFolder}"
+				createFolders="true"
+				disableFolderBrowsers="${imapmail.disableFolderBrowsers}"
+			/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="Echo">
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

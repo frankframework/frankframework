@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
@@ -37,9 +37,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAMessage;
@@ -48,24 +49,13 @@ import com.ing.ifsa.IFSAQueueSender;
 import com.ing.ifsa.IFSAServerQueueSender;
 import com.ing.ifsa.IFSATextMessage;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Base class for IFSA 2.0/2.2 functions.
  * <br/>
- * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.</p>
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
- * </table>
+ * <p>Descender classes must set either Requester or Provider behaviour in their constructor.</p>
  * 
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
@@ -78,19 +68,21 @@ import com.ing.ifsa.IFSATextMessage;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-    protected Logger log = LogUtil.getLogger(this);
-    
- 	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
- 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
- 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
- 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
- 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
- 	
+public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
+	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
+	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
+	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+
 	private static Boolean useSelectorsStore=null; 
 
-    private int ackMode = -1;
-   
+	private int ackMode = -1;
+
 	private String name;
 	private String applicationId;
 	private String serviceId;
@@ -141,6 +133,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	/**
 	 * Checks if messageProtocol and serviceId (only for Requestors) are specified
 	 */
+	@Override
 	public void configure() throws ConfigurationException {
 
 		// perform some basic checks
@@ -327,10 +320,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		if (providerSelector==null && useSelectorsForProviders()) {
 			try {
 				providerSelector=""; // set default, also to avoid re-evaluation time and time again for lower ifsa-versions.
-				if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+				if (messageProtocol == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_RR;
 				}
-				if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+				if (messageProtocol == IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
 					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_FF;
 				}
 			} catch (Throwable t) {
@@ -402,7 +395,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		if (messageProtocol==null) {
 			return null;
 		} else {
-			return messageProtocol.getName();
+			return messageProtocol.getLabel();
 		}
     }
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
@@ -478,13 +471,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			}
 			String replyToQueueName="-"; 
 	        //Client side
-	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	        if (messageProtocol == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 	            // set reply-to address
 	            Queue replyTo=getMessagingSource().getClientReplyQueue(session);
 	            msg.setJMSReplyTo(replyTo);
 	            replyToQueueName=replyTo.getQueueName();
 	        }
-	        if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+	        if (messageProtocol == IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
 	         	// not applicable
 	        }
 			if (StringUtils.isNotEmpty(bifName)) {
@@ -557,23 +550,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 
     /**
-     * Method logs a warning when the newMessageProtocol is not FF or RR.
-     * <p>When the messageProtocol equals to FF, transacted is set to true</p>
-     * <p>Creation date: (08-05-2003 9:03:53)</p>
+     * Protocol of the IFSA-Service to be called.
+     * When the protocol equals to <code>FF</code>, transacted is set to true.
      * @see IfsaMessageProtocolEnum
-     * @param newMessageProtocol String
      */
     public void setMessageProtocol(String newMessageProtocol) {
-	    if (null==IfsaMessageProtocolEnum.getEnum(newMessageProtocol)) {
-        	throw new IllegalArgumentException(getLogPrefix()+
-                "illegal messageProtocol ["
-                    + newMessageProtocol
-                    + "] specified, it should be one of the values "
-                    + IfsaMessageProtocolEnum.getNames());
-
-        	}
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
-        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
+        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getLabel());
     }
  
 	public boolean isSessionsArePooled() {
@@ -591,16 +574,17 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
      * that should be present.
      */
     protected boolean isJmsTransacted() {
-		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.FIRE_AND_FORGET;
     }
     
+	@Override
 	public String toString() {
 	    String result = super.toString();
 	    ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("applicationId", applicationId);
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
-			ts.append("messageProtocol", messageProtocol.getName());
+			ts.append("messageProtocol", messageProtocol.getLabel());
 //			ts.append("transacted", isTransacted());
 			ts.append("jmsTransacted", isJmsTransacted());
 	    }
@@ -612,6 +596,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	
 	}
 
+	@Override
 	public String getPhysicalDestinationName() {
 	
 		String result = null;
@@ -659,7 +644,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return polishedServiceId;
 	}
 
-
+	/** the ApplicationID, in the form of "IFSA://<i>AppId</i>" */
 	public void setApplicationId(String newApplicationId) {
 		applicationId = newApplicationId;
 	}
@@ -675,19 +660,22 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return useSelectorsStore.booleanValue();
 	}
 
-
+	@Override
 	public void setName(String newName) {
 		name = newName;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	public long getTimeOut() {
-		return timeOut;
-	}
+	/** The receive timeout in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1
+	 * @ff.default 20000 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
+	}
+	public long getTimeOut() {
+		return timeOut;
 	}
 
 	public void setAckMode(int ackMode) {
@@ -696,6 +684,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public int getAckMode() {
 		return ackMode;
 	}
+
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
 		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {

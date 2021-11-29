@@ -1,0 +1,33 @@
+<configuration>
+	  <adapter name="MessageStoreSender">
+      <receiver name="testtool-MessageStoreSender">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-MessageStoreSender"/>
+      </receiver>
+		    <receiver name="MessageStoreSender">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="MessageStoreSender"/>
+		    </receiver>
+      <receiver name="testtool-MessageStoreSender-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-MessageStoreSender-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.jdbc.MessageStoreSender"
+                    slotId="TestMessageStoreSenderAndListener-Queue"
+                    sessionKeys="key1,key2">
+					          <param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
+				        </sender>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

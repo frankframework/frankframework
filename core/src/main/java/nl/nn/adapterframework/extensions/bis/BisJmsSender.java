@@ -23,7 +23,7 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -104,12 +104,12 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public String extractMessageBody(String rawMessageText, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
-		return rawMessageText;
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
+		return message;
 	}
 
 	@Override
-	public Message sendMessage(Message input, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, PipeLineSession session) throws SenderException, TimeOutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));

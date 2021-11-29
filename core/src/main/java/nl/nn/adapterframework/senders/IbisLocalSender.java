@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ package nl.nn.adapterframework.senders;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -51,7 +52,7 @@ import nl.nn.adapterframework.util.Misc;
  *  
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>
  *   <li>Do not set the attribute <code>serviceName</code></li>
  * </ul>
@@ -66,7 +67,7 @@ import nl.nn.adapterframework.util.Misc;
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
  * 
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
  *   <li>Do not set the attribute <code>javaListener</code></li>
  * </ul>
@@ -79,8 +80,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, ConfigurationAware {
-	
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+
 	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
@@ -109,6 +110,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
+
+		if(!(getApplicationContext() instanceof Configuration)) {
+			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
+		}
+		configuration = (Configuration) getApplicationContext();
 	}
 
 	@Override
@@ -151,56 +157,62 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
 		if (paramList!=null) {
 			try {
-				context = (HashMap) paramList.getValues(message, session).getValueMap();
+				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
-		} else {
-			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				context = new HashMap();
-			}
 		}
+		if (context==null) {
+			context = new HashMap<>();
+		}
+		String serviceIndication;
 		if (StringUtils.isNotEmpty(getServiceName())) {
+			serviceIndication="service ["+getServiceName()+"]";
 			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling service ["+getServiceName()+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			} 
 		} else {
 			String javaListener;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
-				javaListener = (String)session.get(getJavaListenerSessionKey());
+				try {
+					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
+				} catch (IOException e) {
+					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+				}
 			} else {
 				javaListener = getJavaListener();
 			}
+			serviceIndication="JavaListener ["+javaListener+"]";
 			try {
 				JavaListener listener= JavaListener.getListener(javaListener);
 				if (listener==null) {
@@ -213,48 +225,44 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in separate Thread");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
 						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
 					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in asynchronously");
+						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
 						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
 						result = message;
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling JavaListener ["+javaListener+"] in same Thread");
+					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling JavaListener ["+javaListener+"]",e);
+					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
-				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+javaListener+"]",e);
+				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
+		}
+		String exitState = (String)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
+			context.put("originalResult", result);
+			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
 		return result;
 	}
 
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-	
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.webservicelistener webservicelistener} that should be called", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -275,7 +283,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called", ""})
+	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
 	public void setJavaListenerSessionKey(String string) {
 		javaListenerSessionKey = string;
 	}
@@ -284,7 +292,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.javalistener javalistener} that should be called (will be ignored when javalistenersessionkey is set)", ""})
+	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
@@ -303,7 +311,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.javalistener javalistener} is opened", "true"})
+	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
 	public void setCheckDependency(boolean b) {
 		checkDependency = b;
 	}
@@ -312,7 +320,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. a value of -1 indicates to wait indefinitely", "60 s"})
+	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}
@@ -332,7 +340,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
-	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find javalistener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
+	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}

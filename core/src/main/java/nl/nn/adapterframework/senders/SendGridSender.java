@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,6 +39,7 @@ import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
@@ -54,6 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SendGridSender extends MailSenderBase {
 
+	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
 	private HttpSenderBase httpclient;
 
@@ -64,6 +66,7 @@ public class SendGridSender extends MailSenderBase {
 			throw new ConfigurationException("Please provide an API key");
 		}
 		httpclient = new HttpSender();
+		httpclient.setUrl(url);
 		httpclient.configure();
 	}
 
@@ -87,7 +90,7 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
 		Mail mail = null;
@@ -106,6 +109,7 @@ public class SendGridSender extends MailSenderBase {
 			Response response = sendGrid.api(request);
 			result = response.getBody();
 			log.debug("Mail send result" + result);
+			return result;
 		} catch (Exception e) {
 			throw new SenderException(
 					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
@@ -308,10 +312,14 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@IbisDoc({"23", "username used to obtain credentials for proxy authentication", ""})
-	public void setProxyUserName(String string) {
-		httpclient.setProxyUserName(string);
+	public void setProxyUsername(String string) {
+		httpclient.setProxyUsername(string);
 	}
-
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
+	}
 	@IbisDoc({"24", "password used to obtain credentials for proxy authentication", ""})
 	public void setProxyPassword(String string) {
 		httpclient.setProxyPassword(string);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -38,12 +38,7 @@ import nl.nn.adapterframework.util.PasswordHash;
  * the forward to be used (success or failure).
  *  
  * 
- * <b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"failure"</td><td>when hashSessionKey is used and password doesn't validate against the hash</td></tr>
- * </table>
+ * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
  * 
  * @author Jaco de Groot
  */
@@ -64,7 +59,7 @@ public class PasswordHashPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Object result;
 		PipeForward pipeForward;
 		String input;
@@ -78,17 +73,17 @@ public class PasswordHashPipe extends FixedForwardPipe {
 				if (getRoundsSessionKey() == null) {
 					result = PasswordHash.createHash(input.toCharArray(), getRounds());
 				} else {
-					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.get(getRoundsSessionKey()).toString()));
+					result = PasswordHash.createHash(input.toCharArray(), Integer.valueOf(session.getMessage(getRoundsSessionKey()).asString()));
 				}
-				pipeForward = getForward();
+				pipeForward = getSuccessForward();
 			} catch (Exception e) {
 				throw new PipeRunException(this, "Could not hash password", e);
 			}
 		} else {
 			try {
 				result = message;
-				if (PasswordHash.validatePassword(input, (String)session.get(getHashSessionKey()))) {
-					pipeForward = getForward();
+				if (PasswordHash.validatePassword(input, session.getMessage(getHashSessionKey()).asString())) {
+					pipeForward = getSuccessForward();
 				} else {
 					pipeForward = findForward(FAILURE_FORWARD_NAME);
 				}

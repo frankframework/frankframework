@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package nl.nn.adapterframework.pipes;
 
 import java.net.URL;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -87,36 +86,31 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "got exception searching for [" + getFileName() + "]", e);
+				throw new ConfigurationException("got exception searching for [" + getFileName() + "]", e);
 			}
 			if (resource == null) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "cannot find resource [" + getFileName() + "]");
+				throw new ConfigurationException("cannot find resource [" + getFileName() + "]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
-				throw new ConfigurationException(
-					getLogPrefix(null) + "got exception loading [" + getFileName() + "]", e);
+				throw new ConfigurationException("got exception loading [" + getFileName() + "]", e);
 			}
 		}
 		if ((StringUtils.isEmpty(fileInput)) && inputString == null) { 
 			// No input from file or input string. Only from session-keys?
-			throw new ConfigurationException(
-				getLogPrefix(null) + "has neither fileName nor inputString specified");
+			throw new ConfigurationException("has neither fileName nor inputString specified");
 		}
 		if (StringUtils.isEmpty(jsfunctionName)) { 
 			// Cannot run the code in factory without any function start point
-			throw new ConfigurationException(
-				getLogPrefix(null) + "JavaScript functionname not specified!");
+			throw new ConfigurationException("JavaScript functionname not specified!");
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		//INIT
 		String eol = System.getProperty("line.separator");
 		if (message==null || message.isEmpty()) {
@@ -134,7 +128,7 @@ public class RhinoPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
 			URL resource = null;
 			try {
-				resource = ClassUtils.getResourceURL(getConfigurationClassLoader(), getFileName());
+				resource = ClassUtils.getResourceURL(this, getFileName());
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception searching for ["+getFileName()+"]", e);
 			}
@@ -142,7 +136,7 @@ public class RhinoPipe extends FixedForwardPipe {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot find resource ["+getFileName()+"]");
 			}
 			try {
-				fileInput = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
+				fileInput = Misc.resourceToString(resource, Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"got exception loading ["+getFileName()+"]", e);
 			}
@@ -155,8 +149,7 @@ public class RhinoPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
 			}
 		}
@@ -206,10 +199,10 @@ public class RhinoPipe extends FixedForwardPipe {
 			stringResult =jsResult;
 		}
 		if (StringUtils.isEmpty(getSessionKey())) {
-			return new PipeRunResult(getForward(), stringResult);
+			return new PipeRunResult(getSuccessForward(), stringResult);
 		} else {
 			session.put(getSessionKey(), stringResult);
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 	}
 

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.http.rest.ApiEhcache;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
@@ -53,10 +54,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		super.configure();
 		String action = getAction();
 		if (action==null) {
-			throw new ConfigurationException(getLogPrefix(null)+"action must be set");
+			throw new ConfigurationException("action must be set");
 		}
 		if (!actions.contains(action)) {
-			throw new ConfigurationException(getLogPrefix(null)+"illegal value for action ["+action+"], must be one of " + actions.toString());
+			throw new ConfigurationException("illegal value for action ["+action+"], must be one of " + actions.toString());
 		}
 
 		boolean hasUriPatternParameter = false;
@@ -68,14 +69,14 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		if(getUriPattern() == null && !hasUriPatternParameter) {
-			throw new ConfigurationException(getLogPrefix(null)+"no uriPattern found!");
+			throw new ConfigurationException("no uriPattern found!");
 		}
 
 		cache = ApiCacheManager.getInstance();
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
@@ -87,9 +88,9 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			try {
 				pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
-					String uriPattern = (String)pvl.getValue("uriPattern");
-					if (uriPattern!=null) {
-						uriPatternSessionKey = uriPattern;
+					ParameterValue pv = pvl.get("uriPattern");
+					if (pv != null) {
+						uriPatternSessionKey = pv.asStringValue();
 					}
 				}
 			} catch (ParameterException e) {
@@ -143,10 +144,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			}
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 
-			return new PipeRunResult(getForward(), returnCode);
+			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
-			PipeForward pipeForward = findForward("exception");
+			PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			String msg;
 
 			if(cache == null)

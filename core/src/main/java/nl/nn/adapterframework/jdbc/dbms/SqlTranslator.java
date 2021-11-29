@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
@@ -42,6 +42,7 @@ public class SqlTranslator implements ISqlTranslator {
 
 	private Map<String,Pattern> sources;
 	private Map<String,String>  targets;
+	private String target;
 	
 	private boolean configured=false;
 
@@ -59,12 +60,13 @@ public class SqlTranslator implements ISqlTranslator {
 		} catch (Exception e) {
 			throw new JdbcException("cannot create SqlTranslator",e);
 		}
+		this.target = target;
 		configured = true;
 	}
 
 	@Override
 	public boolean canConvert(String from, String to) {
-		return configured;
+		return configured && to.equals(target);
 	}
 	
 	/**
@@ -118,17 +120,17 @@ public class SqlTranslator implements ISqlTranslator {
 		sources = new LinkedHashMap<>();
 		targets = new LinkedHashMap<>();
 
-		String sourceMatch=".source."+sourceDialect.replaceAll(" ", "_");
-		String targetMatch=".target."+targetDialect.replaceAll(" ", "_");
+		String sourceMatch=(".source."+sourceDialect.replaceAll(" ", "_")).toLowerCase();
+		String targetMatch=(".target."+targetDialect.replaceAll(" ", "_")).toLowerCase();
 
-		URL resourceUrl = ClassUtils.getResourceURL(Thread.currentThread().getContextClassLoader(), PATTERN_FILE);
+		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
 
 		try (BufferedReader reader = new BufferedReader(ClassUtils.urlToReader(resourceUrl))) {
 			String line= reader.readLine();
 			while (line!=null) {
 				int equalsPos = line.indexOf("=");
 				if (!line.startsWith("#") && equalsPos>=0) {
-					String key = line.substring(0,equalsPos).trim();
+					String key = line.substring(0,equalsPos).trim().toLowerCase();
 					String value = line.substring(equalsPos+1).trim();
 					if (log.isTraceEnabled()) log.trace("read key ["+key+"] value ["+value+"]");
 					int sourceMatchPos = key.indexOf(sourceMatch);

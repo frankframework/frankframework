@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 package nl.nn.adapterframework.senders;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -57,11 +56,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
-			if (sender instanceof ConfigurationAware) {
-				((ConfigurationAware)sender).setConfiguration(getConfiguration());
-			}
+		for (ISender sender: getSenders()) {
 			sender.configure();
 		}
 		super.configure();
@@ -70,27 +65,24 @@ public class SenderSeries extends SenderWrapperBase {
 
 	@Override
 	public void open() throws SenderException {
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			sender.open();
 		}
 		super.open();
 	}
 	@Override
 	public void close() throws SenderException {
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			sender.close();
 		}
 		super.close();
 	}
 
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
 			message = sender.sendMessage(message,session);
 			long t2 = System.currentTimeMillis();
@@ -104,19 +96,13 @@ public class SenderSeries extends SenderWrapperBase {
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		
 			if (sender instanceof HasStatistics) {
 				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 			}
 		}
 		//hski.closeGroup(senderData);
-	}
-
-	@Override
-	public String getLogPrefix() {
-		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
 	@Override
@@ -128,13 +114,18 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public void setSender(ISender sender) {
+	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. 
+	public final void setSender(ISender sender) {
+		registerSender(sender);
+	}
+	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
 	}
-	protected Iterator<ISender> getSenderIterator() {
-		return senderList.iterator();
+	
+	protected Iterable<ISender> getSenders() {
+		return senderList;
 	}
 	protected StatisticsKeeper getStatisticsKeeper(ISender sender) {
 		return statisticsMap.get(sender);

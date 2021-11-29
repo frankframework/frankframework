@@ -23,18 +23,20 @@ import org.junit.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
+import nl.nn.adapterframework.senders.MailSenderBase;
+import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
+import nl.nn.adapterframework.senders.MailSenderBase.EMail;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public abstract class MailSenderTestBase<S extends ISenderWithParameters> extends SenderTestBase<S> {
+public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
 
 	protected abstract String getTestRootFolder();
 
@@ -129,6 +131,45 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 	}
 
 	@Test
+	public void testExtract() throws Exception {
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+					+ "<recipient type=\"cc\">cc@address.org</recipient>"
+					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
+					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+					+ "<recipient type=\"bcc\">\"personalpart1\" &lt;addresspart1@address.org&gt;</recipient>"
+					+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<charset>UTF-8</charset>"
+				+ "<headers>"
+					+ "<header name=\"x-custom\">TEST</header>"
+					+ "<header name=\"does-this-work\">yes</header>"
+				+ "</headers>"
+			+ "</email>";
+		sender.configure();
+		MailSession mailSession = sender.extract(new Message(mailInput), session);
+		validateAddress(mailSession.getRecipientList().get(0),"to", "dummy","me@address.org");
+		validateAddress(mailSession.getRecipientList().get(1),"cc", null,"cc@address.org");
+		validateAddress(mailSession.getRecipientList().get(2),"bcc", null,"bcc@address.org");
+		validateAddress(mailSession.getRecipientList().get(3),"bcc", "name","i@address.org");
+		validateAddress(mailSession.getRecipientList().get(4),"bcc", "personalpart1","addresspart1@address.org");
+		validateAddress(mailSession.getRecipientList().get(5),"bcc", "personalpart2","addresspart2@address.org");
+		validateAddress(mailSession.getFrom(),"from", "Me, Myself and I","myself@address.org");
+	}
+	
+	public void validateAddress(EMail address, String expectedType, String expectedPersonal, String expectedAddress) {
+		assertEquals(expectedAddress, address.getAddress());
+		assertEquals(expectedPersonal, address.getName());
+		assertEquals(expectedType, address.getType());
+	}
+	
+	@Test
 	public void mailWithMultipleRecipients() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
@@ -136,6 +177,8 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 					+ "<recipient type=\"cc\">cc@address.org</recipient>"
 					+ "<recipient type=\"bcc\">bcc@address.org</recipient>"
 					+ "<recipient type=\"bcc\" name=\"name\">i@address.org</recipient>"
+					+ "<recipient type=\"bcc\" name=\"fulladdress\">personalpart1 &lt;addresspart1@address.org&gt;</recipient>"
+					+ "<recipient type=\"bcc\">personalpart2 &lt;addresspart2@address.org&gt;</recipient>"
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
@@ -545,12 +588,12 @@ public abstract class MailSenderTestBase<S extends ISenderWithParameters> extend
 					sender2.configure();
 					sender2.open();
 
-					IPipeLineSession session1 = new PipeLineSessionBase();
+					PipeLineSession session1 = new PipeLineSession();
 					sender2.sendMessage(new Message(mailInput), session1);
 					Session mailSession1 = (Session) session1.get("mailSession");
 					mailSession1.getProperties().setProperty("bounce", bounce);
 
-					IPipeLineSession session2 = new PipeLineSessionBase();
+					PipeLineSession session2 = new PipeLineSession();
 					sender2.sendMessage(new Message(mailInput), session2);
 					Session mailSession2 = (Session) session2.get("mailSession");
 					assertEquals("same session should be used", mailSession1, mailSession2);

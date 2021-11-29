@@ -35,14 +35,14 @@ public class LdapFindMembershipsPipeTest {
 	private LdapFindGroupMembershipsPipe pipe;
 	
 	@Before
-	public void setUp() {
+	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindGroupMembershipsPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME,null));
 		pipe.setLdapProviderURL(ldapProviderUrl);
 //		pipe.setHost(host);
 //		pipe.setPort(port);
 //		pipe.setUseSsl(useSSL);
-		pipe.setUserName(bindDN);
+		pipe.setUsername(bindDN);
 		pipe.setPassword(bindPassword);
 	}
 	
@@ -93,7 +93,7 @@ public class LdapFindMembershipsPipeTest {
 		
 		EhCache<Set<String>> cache = new EhCache<Set<String>>();
 		cache.setTimeToLiveSeconds(3600);
-		pipe.registerCache(cache);
+		pipe.setCache(cache);
 		pipe.configure();
 		pipe.start();
 		

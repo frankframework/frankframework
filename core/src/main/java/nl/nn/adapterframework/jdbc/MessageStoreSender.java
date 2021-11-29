@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -55,7 +56,7 @@ import nl.nn.adapterframework.stream.Message;
  * <code><pre>
 		&lt;sender
 			className="nl.nn.adapterframework.jdbc.MessageStoreSender"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 			>
@@ -64,34 +65,33 @@ import nl.nn.adapterframework.stream.Message;
 		&lt;!-- DummyTransactionalStorage to enable messagestore browser in the console (JdbcTransactionalStorage would store an extra record in the ibisstore) -->
 		&lt;messageLog
 			className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			type="M"
 		/>
 </pre></code>
  * 
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>messageId</td><td>string</td><td>messageId to check for duplicates, when this parameter isn't present the messageId it read from sessionKey messageId</td></tr>
- * </table>
- * </p>
+ * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
+@FrankDocGroup(name = "Senders")
+public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
+	public static final String PARAM_MESSAGEID = "messageId";
+
 	private ParameterList paramList = null;
 	private String sessionKeys = null;
-	private boolean onlyStoreWhenMessageIdUnique = true;
 
+	{ 
+		setOnlyStoreWhenMessageIdUnique(true);
+	}
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		if (paramList != null) {
 			paramList.configure();
 		}
 		setType(StorageType.MESSAGESTORAGE.getCode());
-		setOnlyStoreWhenMessageIdUnique(isOnlyStoreWhenMessageIdUnique());
 		super.configure();
 	}
 
@@ -114,28 +114,31 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Message messageToStore=message;
 			if (sessionKeys != null) {
-				List<String> list = new ArrayList<String>();
+				List<String> list = new ArrayList<>();
 				list.add(StringEscapeUtils.escapeCsv(message.asString()));
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
 					String sessionKey = (String)tokenizer.nextElement();
-					list.add(StringEscapeUtils.escapeCsv((String)session.get(sessionKey)));
+					Message msg = session.getMessage(sessionKey);
+					if(!msg.isEmpty()) {
+						list.add(StringEscapeUtils.escapeCsv(msg.asString()));
+					}
 				}
-				StrBuilder sb = new StrBuilder();
+				TextStringBuilder sb = new TextStringBuilder();
 				sb.appendWithSeparators(list, ",");
 				messageToStore = Message.asMessage(sb.toString());
 			}
 			// the messageId to be inserted in the messageStore defaults to the messageId of the session
 			String messageId = session.getMessageId(); 
 			String correlationID = messageId;
-			if (paramList != null && paramList.findParameter("messageId") != null) {
+			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = (String)paramList.getValues(message, session).getValue("messageId");
+					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}
@@ -146,7 +149,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		}
 	}
 
-	@IbisDoc({"comma separated list of sessionkey's to be stored together with the message. please note: corresponding {@link messagestorelistener} must have the same value for this attribute", ""})
+	@IbisDoc({"1", "Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessagestoreListener must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
@@ -155,15 +158,10 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 		return sessionKeys;
 	}
 
-	@IbisDoc({" ", "true"})
+	@IbisDoc({"2", "If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "true"})
 	@Override
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
-		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
-	}
-
-	@Override
-	public boolean isOnlyStoreWhenMessageIdUnique() {
-		return onlyStoreWhenMessageIdUnique;
+		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);
 	}
 
 }

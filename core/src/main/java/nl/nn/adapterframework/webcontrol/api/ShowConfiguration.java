@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@ package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,24 +39,27 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
@@ -72,7 +72,8 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 @Path("/")
 public final class ShowConfiguration extends Base {
-	@Context SecurityContext securityContext;
+
+	private String orderBy = AppConstants.getInstance().getProperty("iaf-api.configurations.orderby", "version").trim();
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -122,7 +123,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("FULLRELOAD", "", "", "", null, true);
+					getIbisManager().handleAction(IbisAction.FULLRELOAD, "", "", "", getUserPrincipalName(), true);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -162,21 +163,22 @@ public final class ShowConfiguration extends Base {
 
 		Configuration configuration = getIbisManager().getConfiguration(configurationName);
 
-		if(configuration == null){
+		if(configuration == null) {
 			throw new ApiException("Configuration not found!");
 		}
+		if(!configuration.isActive()) {
+			throw new ApiException("Configuration not active", configuration.getConfigurationException());
+		}
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<RunStateEnum, Integer>();
-		List<String> errors = new ArrayList<String>();
+		Map<String, Object> response = new HashMap<>();
+		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state.equals(RunStateEnum.STARTED)) {
-				Iterator<IReceiver> receiverIterator = adapter.getReceiverIterator();
-				while (receiverIterator.hasNext()) {
-					IReceiver receiver = receiverIterator.next();
+				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
 					if(!rState.equals(RunStateEnum.STARTED)) {
@@ -203,7 +205,7 @@ public final class ShowConfiguration extends Base {
 		if(stateCount.containsKey(RunStateEnum.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
-		if(errors.size() > 0)
+		if(!errors.isEmpty())
 			response.put("errors", errors);
 		response.put("status", status);
 
@@ -257,7 +259,7 @@ public final class ShowConfiguration extends Base {
 			Object value = entry.getValue();
 			if(key.equalsIgnoreCase("action")) {
 				if(value.equals("reload")) {
-					getIbisManager().handleAdapter("RELOAD", configurationName, "", "", null, false);
+					getIbisManager().handleAction(IbisAction.RELOAD, configurationName, "", "", getUserPrincipalName(), false);
 				}
 				response.entity("{\"status\":\"ok\"}");
 			}
@@ -307,12 +309,7 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Configuration not found!");
 		}
 
-		String version = null;
-		try {
-			version = URLDecoder.decode(encodedVersion, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new ApiException("unable to decode encodedVersion ["+encodedVersion+"] with charset [UTF-8]", e);
-		}
+		String version = Misc.urlDecode(encodedVersion);
 
 		try {
 			for (Entry<String, Object> entry : json.entrySet()) {
@@ -355,32 +352,34 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource");
-		boolean multiple_configs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activate_config  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
-		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
-		String user = ""; //Should not be NULL as it's an optional field.
-		Principal principal = securityContext.getUserPrincipal();
-		if(principal != null)
-			user = principal.getName();
-		user = resolveTypeFromMap(inputDataMap, "user", String.class, user);
+		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
+		if(StringUtils.isEmpty(user)) {
+			user = getUserPrincipalName();
+		}
 
 		fileName = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
+		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
-			if(multiple_configs) {
+			if(multipleConfigs) {
 				try {
-					ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activateConfig, automaticReload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activateConfig, automaticReload, fileName, file, user);
+				if(configName != null) {
+					result.put(configName, "loaded");
+				}
 			}
-
-			return Response.status(Response.Status.CREATED).build();
+			return Response.status(Response.Status.CREATED).entity(result).build();
 		} catch (Exception e) {
 			throw new ApiException("Failed to upload Configuration", e);
 		}
@@ -390,15 +389,15 @@ public final class ShowConfiguration extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/configurations/{configuration}/versions/{version}/download")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("realm") String jmsRealm) throws ApiException {
+	public Response downloadConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String version, @QueryParam("dataSourceName") String dataSourceName) throws ApiException {
 
 		if (StringUtils.isEmpty(version))
 			version = null;
-		if (StringUtils.isEmpty(jmsRealm))
-			jmsRealm = null;
+		if (StringUtils.isEmpty(dataSourceName))
+			dataSourceName = null;
 
 		try {
-			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, jmsRealm, version);
+			Map<String, Object> configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), configurationName, dataSourceName, version);
 			return Response
 					.status(Response.Status.OK)
 					.entity(configuration.get("CONFIG"))
@@ -426,36 +425,38 @@ public final class ShowConfiguration extends Base {
 	}
 
 
-	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String jmsRealm) {
+	private List<Map<String, Object>> getConfigsFromDatabase(String configurationName, String dataSourceName) {
 		List<Map<String, Object>> returnMap = new ArrayList<Map<String, Object>>();
 
-		if (StringUtils.isEmpty(jmsRealm)) {
-			jmsRealm = JmsRealmFactory.getInstance().getFirstDatasourceJmsRealm();
-			if (StringUtils.isEmpty(jmsRealm)) {
+		if (StringUtils.isEmpty(dataSourceName)) {
+			dataSourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+			if (StringUtils.isEmpty(dataSourceName)) {
 				return null;
 			}
 		}
 
-		FixedQuerySender qs = (FixedQuerySender) getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
-		qs.setJmsRealm(jmsRealm);
+		FixedQuerySender qs = getIbisContext().createBeanAutowireByName(FixedQuerySender.class);
+		qs.setDatasourceName(dataSourceName);
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		try {
 			qs.configure();
 			qs.open();
 			try (Connection conn = qs.getConnection()) {
-				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=? ORDER BY CRE_TYDST";
+				String query = "SELECT NAME, VERSION, FILENAME, RUSER, ACTIVECONFIG, AUTORELOAD, CRE_TYDST FROM IBISCONFIG WHERE NAME=?";
 				try (PreparedStatement stmt = conn.prepareStatement(query)) {
 					stmt.setString(1, configurationName);
 					try (ResultSet rs = stmt.executeQuery()) {
 						while (rs.next()) {
-							Map<String, Object> config = new HashMap<String, Object>();
+							Map<String, Object> config = new HashMap<>();
 							config.put("name", rs.getString(1));
 							config.put("version", rs.getString(2));
 							config.put("filename", rs.getString(3));
 							config.put("user", rs.getString(4));
 							config.put("active", rs.getBoolean(5));
 							config.put("autoreload", rs.getBoolean(6));
-							config.put("created", rs.getString(7));
+
+							Date creationDate = rs.getDate(7);
+							config.put("created", DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME));
 							returnMap.add(config);
 						}
 					}
@@ -466,6 +467,18 @@ public final class ShowConfiguration extends Base {
 		} finally {
 			qs.close();
 		}
+
+		returnMap.sort(new NameComparatorBase<Map<String, Object>>() {
+
+			@Override
+			public int compare(Map<String, Object> obj1, Map<String, Object> obj2) {
+				String filename1 = (String) obj1.get(orderBy);
+				String filename2 = (String) obj2.get(orderBy);
+
+				return -compareNames(filename1, filename2); //invert the results as we want the latest version first
+			}
+
+		});
 		return returnMap;
 	}
 }

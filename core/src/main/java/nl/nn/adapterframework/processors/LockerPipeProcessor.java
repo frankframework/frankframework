@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Locker;
 
@@ -30,7 +31,7 @@ import nl.nn.adapterframework.util.Locker;
 public class LockerPipeProcessor extends PipeProcessorBase {
 
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
 		IExtendedPipe extendedPipe = null;
 		Locker locker = null;
@@ -41,23 +42,24 @@ public class LockerPipeProcessor extends PipeProcessorBase {
 		}
 		if (locker != null) {
 			try {
-				objectId = locker.lock();
+				objectId = locker.acquire();
 			} catch (Exception e) {
-				throw new PipeRunException(pipe, "error while setting lock", e);
+				throw new PipeRunException(pipe, "error while trying to obtain lock ["+locker+"]", e);
 			}
-		}
-		if (objectId != null) {
+			if (objectId == null) {
+				throw new PipeRunException(pipe, "could not obtain lock ["+locker+"]");
+			} 
 			try {
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+				pipeRunResult = chain.apply(message);
 			} finally {
 				try {
-					locker.unlock(objectId);
+					locker.release(objectId);
 				} catch (Exception e) {
 					throw new PipeRunException(pipe, "error while removing lock", e);
 				}
 			}
 		} else {
-			pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+			pipeRunResult = chain.apply(message);
 		}
 		return pipeRunResult;
 	}

@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -12,17 +14,14 @@ import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
@@ -31,8 +30,6 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
 	
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
-
-	protected IPipeLineSession session;
 
 	protected abstract void setXpathExpression(String xpathExpression);
 	protected abstract void setStyleSheetName(String styleSheetName);
@@ -46,12 +43,12 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
  
 	
 	@Override
-	public void setup() throws ConfigurationException {
-		session = new PipeLineSessionBase();
+	public void setup() throws Exception {
+		session = new PipeLineSession();
 		super.setup();
 	}
 
-	protected void assertResultsAreCorrect(String expected, String actual, IPipeLineSession session) {
+	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
 		assertEquals(expected,actual);	
 	}
 	
@@ -125,8 +122,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	 */
 	@Test
 	public void testConfigWarnings() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		ConfigurationWarnings warnings = ConfigurationWarnings.getInstance();
-		warnings.clear(); 
+		ConfigurationWarnings warnings = getConfigurationWarnings();
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		setStyleSheetName(styleSheetName);
 		setXslt2(false);
@@ -310,7 +306,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
 		inputParameter.setValue(input);
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		setXpathExpression("$source/request/b");
 
@@ -340,7 +336,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void xpathAttrText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = "Euro € single quote ' double quote escaped \" ";
+		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 
 		setXpathExpression("request/g/@attr");
 		pipe.configure();
@@ -355,7 +351,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	@Test
 	public void xpathNodeXml() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
-		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; \">Euro € single quote ' double quote \"</g>";
+		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
 		setXpathExpression("request/g");
 		setOutputType("xml");

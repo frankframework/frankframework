@@ -1,21 +1,13 @@
 <module>
 	<adapter name="IbisDoc" active="${ibisDoc.active}">
-		<receiver
-			name="IbisDoc"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
-				name="IbisDoc"
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibisdoc"
 			/>
 		</receiver>
-		<receiver
-			name="IbisDoc"
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			>
+		<receiver>
 			<listener
-				name="IbisDoc"
 				className="nl.nn.adapterframework.http.RestListener"
 				uriPattern="ibisdoc"
 				method="GET"

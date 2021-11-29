@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -30,13 +30,13 @@ public class LdapFindMemberPipeTest {
 	private LdapFindMemberPipe pipe;
 	
 	@Before
-	public void setUp() {
+	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindMemberPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setHost(host);
 		pipe.setPort(port);
 		pipe.setUseSsl(useSSL);
-		pipe.setUserName(bindDN);
+		pipe.setUsername(bindDN);
 		pipe.setPassword(bindPassword);
 	}
 	
@@ -56,7 +56,7 @@ public class LdapFindMemberPipeTest {
 		pipe.configure();
 		pipe.start();
 		
-		PipeLineSessionBase session = new PipeLineSessionBase();
+		PipeLineSession session = new PipeLineSession();
 		String input = bindDN;
 		
 		PipeRunResult prr = pipe.doPipe(new Message(input), session);

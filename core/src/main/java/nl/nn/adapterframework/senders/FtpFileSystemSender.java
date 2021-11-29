@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.commons.net.ftp.FTPFile;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
+import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
 public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem> {
 
@@ -82,9 +85,18 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
+	@IbisDoc({"One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
+	@Deprecated
+	@ConfigurationWarning("use attribute ftpType instead")
 	public void setFtpTypeDescription(String ftpTypeDescription) {
 		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
+	}
+	@IbisDoc({"FTP protocol to use", "FTP"})
+	public void setFtpType(String value) {
+		getFileSystem().setFtpType(value);
+	}
+	public FtpType getFtpTypeEnum() {
+		return getFileSystem().getFtpTypeEnum();
 	}
 
 	@IbisDoc({"File type, one of ascii, binary", ""})
@@ -192,11 +204,6 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
 
-	@IbisDoc({"(ftps) enables the use of certificates on jdk 1.3.x. the sun reference implementation jsse 1.0.3 is included for convenience", "false"})
-	public void setJdk13Compatibility(boolean jdk13Compatibility) {
-		getFileSystem().setJdk13Compatibility(jdk13Compatibility);
-	}
-
 	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean verifyHostname) {
 		getFileSystem().setVerifyHostname(verifyHostname);
@@ -208,8 +215,18 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 	}
 
 	@IbisDoc({"(ftps) if true, the server returns data via another socket", "false"})
+	@Deprecated
+	@ConfigurationWarning("use attribute prot=\"P\" instead")
 	public void setProtP(boolean protP) {
 		getFileSystem().setProtP(protP);
+	}
+
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>", "C"})
+	public void setProt(String prot) {
+		getFileSystem().setProt(prot);
+	}
+	public Prot getProtEnum() {
+		return getFileSystem().getProtEnum();
 	}
 
 	@IbisDoc({"When true, keyboardinteractive is used to login", "false"})

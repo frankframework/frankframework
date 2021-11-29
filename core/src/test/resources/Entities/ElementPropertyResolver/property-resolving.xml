@@ -1,0 +1,7 @@
+<data name="${data}">
+	<data1 name="${data}" />
+	${entry2}
+	${element}${c}
+	${entry3}
+</data>
+<!-- it's important that `ent}${c`is between character 65 and 72 -> at the start of a new char[] buffer -->

@@ -20,26 +20,29 @@ import java.util.Set;
 
 import javax.xml.soap.SOAPConstants;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 
 
-public enum SoapVersion {
-	
-	SOAP11("1.1", SOAPConstants.URI_NS_SOAP_ENVELOPE,     "/xml/xsd/soap/envelope.xsd"),
-	SOAP12("1.2", SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "/xml/xsd/soap/envelope-1.2.xsd"),
-	NONE("none", null, null),
-	AUTO("auto", null, null);
+public enum SoapVersion implements DocumentedEnum {
 
-	public final String description;;
+	@EnumLabel("1.1") SOAP11(SOAPConstants.URI_NS_SOAP_ENVELOPE,     "/xml/xsd/soap/envelope.xsd"),
+	@EnumLabel("1.2") SOAP12(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE, "/xml/xsd/soap/envelope-1.2.xsd"),
+	/** No wrapping or unwrapping will be done */
+	@EnumLabel("none") NONE(null, null),
+	/** Try to auto-detect the value */
+	@EnumLabel("auto") AUTO(null, null);
+
 	public final String namespace;
 	public final String location;
-	
-	private SoapVersion(String description, String namespace, String location) {
-		this.description = description;
+
+	private SoapVersion(String namespace, String location) {
 		this.namespace = namespace;
 		this.location = location;
 	}
-	
+
 	public static SoapVersion getSoapVersion(String s) {
 		if (StringUtils.isEmpty(s)) {
 			return SOAP11;
@@ -68,6 +71,7 @@ public enum SoapVersion {
 		}
 		return result;
 	}
+
 	public String getSchemaLocation() {
 		switch (this) {
 		case SOAP11:
@@ -84,5 +88,4 @@ public enum SoapVersion {
 	public String toString() {
 		return namespace + " " + location;
 	}
-
 }

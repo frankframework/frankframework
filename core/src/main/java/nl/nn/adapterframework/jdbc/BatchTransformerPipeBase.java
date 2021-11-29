@@ -24,11 +24,11 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -44,11 +44,12 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
 	protected FixedQuerySender querySender;
 
+	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		querySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+		querySender = createBean(FixedQuerySender.class);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
@@ -90,16 +91,16 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		
 	}
 
-	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, IPipeLineSession session) throws SenderException;
+	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException;
 
 	@Override
-	protected BufferedReader getReader(String streamId, Message message, IPipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Message message, PipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
@@ -110,12 +111,17 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		}
 	}
 
+	public String getPhysicalDestinationName() {
+		return querySender.getPhysicalDestinationName();
+	}
+
 	@Override
 	public void addParameter(Parameter p) {
 		querySender.addParameter(p);
 	}
 
 
+	@IbisDocRef({"1", FIXEDQUERYSENDER})
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -123,6 +129,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getQuery();
 	}
 	
+	@IbisDocRef({"2", FIXEDQUERYSENDER})
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -130,13 +137,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getDatasourceName();
 	}
 
-	public String getPhysicalDestinationName() {
-		return querySender.getPhysicalDestinationName();
-	}
-
+	@IbisDocRef({"3", FIXEDQUERYSENDER})
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-	
 
 }

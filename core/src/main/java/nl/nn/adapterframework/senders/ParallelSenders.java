@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ConcurrencyThrottleSupport;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -33,6 +33,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -51,6 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ParallelSenders extends SenderSeries {
 
 	private int maxConcurrentThreads = 0;
+	private TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -62,16 +64,15 @@ public class ParallelSenders extends SenderSeries {
 			}
 			ConfigurationWarnings.add(this, log, "parameters ["+paramList+"] of ParallelSenders ["+getName()+"] are not available for use by nested Senders");
 		}
+		executor = createTaskExecutor();
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
-		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
-		TaskExecutor executor = createTaskExecutor();
+		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			guard.addResource();
 			// Create a new ParameterResolutionContext to be thread safe, see
 			// documentation on constructor of ParameterResolutionContext
@@ -84,7 +85,7 @@ public class ParallelSenders extends SenderSeries {
 			// messages of 1 MB concurrently to a pipeline which will process
 			// the message in parallel with 10 SenderWrappers (containing a
 			// XsltSender and IbisLocalSender).
-			
+
 			ParallelSenderExecutor pse = new ParallelSenderExecutor(sender, message, session, guard, getStatisticsKeeper(sender));
 			executorMap.put(sender, pse);
 
@@ -97,11 +98,10 @@ public class ParallelSenders extends SenderSeries {
 		}
 
 		XmlBuilder resultsXml = new XmlBuilder("results");
-		for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
-			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderClass", org.springframework.util.ClassUtils.getUserClass(sender).getSimpleName());
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
@@ -110,7 +110,7 @@ public class ParallelSenders extends SenderSeries {
 					resultXml.addAttribute("type", "null");
 				} else {
 					try {
-						resultXml.addAttribute("type", ClassUtils.nameOf(result.asObject()));
+						resultXml.addAttribute("type", ClassUtils.nameOf(result.getRequestClass()));
 						resultXml.setValue(XmlUtils.skipXmlDeclaration(result.asString()),false);
 					} catch (IOException e) {
 						throw new SenderException(getLogPrefix(),e);
@@ -129,16 +129,22 @@ public class ParallelSenders extends SenderSeries {
 	public void setSynchronous(boolean value) {
 		if (!isSynchronous()) {
 			super.setSynchronous(value); 
-		} 
+		}
 	}
 
 	protected TaskExecutor createTaskExecutor() {
-		ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) getConfiguration().getIbisManager().getIbisContext().getBean("concurrentTaskExecutor");
-		executor.setCorePoolSize(getMaxConcurrentThreads());
+		SimpleAsyncTaskExecutor executor = SpringUtils.createBean(getApplicationContext(), SimpleAsyncTaskExecutor.class);
+
+		if(getMaxConcurrentThreads() > 0) { //ConcurrencyLimit defaults to NONE so only this technically limits it!
+			executor.setConcurrencyLimit(getMaxConcurrentThreads());
+		} else {
+			executor.setConcurrencyLimit(ConcurrencyThrottleSupport.UNBOUNDED_CONCURRENCY);
+		}
+
 		return executor;
 	}
 
-	@IbisDoc({"sets and upper limit to the amount of concurrent threads that can be run simultaneously. use 0 to disable.", "0"})
+	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;

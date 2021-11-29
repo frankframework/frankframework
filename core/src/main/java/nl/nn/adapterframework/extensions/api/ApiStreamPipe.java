@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 Nationale-Nederlanden
+   Copyright 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -64,7 +63,7 @@ public class ApiStreamPipe extends StreamPipe {
 
 	@Override
 	protected String adjustFirstStringPart(String firstStringPart,
-			IPipeLineSession session) throws PipeRunException {
+			PipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";
 		} else {
@@ -93,10 +92,7 @@ public class ApiStreamPipe extends StreamPipe {
 				} else {
 					// TODO: create dummyQuerySender should be put in
 					// configure(), but gives an error
-					IbisContext ibisContext = getAdapter().getConfiguration()
-							.getIbisManager().getIbisContext();
-					dummyQuerySender = (FixedQuerySender) ibisContext
-							.createBeanAutowireByName(FixedQuerySender.class);
+					dummyQuerySender = createBean(FixedQuerySender.class);
 					dummyQuerySender.setJmsRealm(jmsRealm);
 					dummyQuerySender
 							.setQuery("SELECT count(*) FROM ALL_TABLES");
@@ -173,7 +169,7 @@ public class ApiStreamPipe extends StreamPipe {
 		String query = "SELECT MESSAGE FROM IBISSTORE WHERE MESSAGEKEY='" + messageKey + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return JdbcUtil.executeBlobQuery(conn, query);
+			return JdbcUtil.executeBlobQuery(dummyQuerySender.getDbmsSupport(), conn, query);
 		} finally {
 			if (conn != null) {
 				try {

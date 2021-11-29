@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package nl.nn.adapterframework.cache;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -33,9 +37,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author  Gerrit van Brakel
  * @since   4.11
  */
-public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
+public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigurationAware {
 	protected Logger log = LogUtil.getLogger(this);
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 
@@ -59,7 +64,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		if (StringUtils.isEmpty(getName())) {
-			setName(ownerName+"Cache");
+			setName(ownerName+"_cache");
 		}
 		if (!("xml".equals(getKeyXPathOutputType()) || "text".equals(getKeyXPathOutputType()))) {
 			throw new ConfigurationException(getLogPrefix()+"keyXPathOutputType ["+getKeyXPathOutputType()+"] must be either 'xml' or 'text'");
@@ -68,10 +73,10 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 			throw new ConfigurationException(getLogPrefix()+"valueXPathOutputType ["+getValueXPathOutputType()+"] must be either 'xml' or 'text'");
 		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
+			keyTp=TransformerPool.configureTransformer(getLogPrefix(), this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(getLogPrefix(), classLoader, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
+			valueTp=TransformerPool.configureTransformer(getLogPrefix(), this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
 		}
 	}
 	
@@ -81,7 +86,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	protected abstract V toValue(Message value);
 
 	@Override
-	public String transformKey(String input, IPipeLineSession session) {
+	public String transformKey(String input, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
 			input=(String)session.get(getKeyInputSessionKey());
 		}
@@ -103,7 +108,7 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 	}
 
 	@Override
-	public V transformValue(Message value, IPipeLineSession session) {
+	public V transformValue(Message value, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session!=null) {
 			value=Message.asMessage(session.get(getValueInputSessionKey()));
 		}
@@ -138,13 +143,16 @@ public abstract class CacheAdapterBase<V> implements ICacheAdapter<String,V> {
 		return removeElement(key);
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	@IbisDoc({"name of the cache, will be set from owner", ""})
+	@IbisDoc({"name of the cache, will be lowercased", "<code>&lt;ownerName&gt;</code>_cache"})
 	public void setName(String name) {
-		this.name=name;
+		if(StringUtils.isNotEmpty(name)) {
+			this.name=name.toLowerCase();
+		}
 	}
 
 	public String getLogPrefix() {

@@ -1,0 +1,24 @@
+POST / HTTP/1.1
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+Host: localhost:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
+Content-Length: 554
+
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="text"
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<soapenv:Fault>
+			<faultcode xsi:type = "xsd:string">soapenv:Client</faultcode>
+			<faultstring xsi:type = "xsd:string">much error</faultstring>
+		</soapenv:Fault>
+	</soapenv:Body>
+</soapenv:Envelope>
+-----------------------------9051914041544843365972754266--

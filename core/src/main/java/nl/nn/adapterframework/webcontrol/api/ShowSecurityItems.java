@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2020 Integration Partners B.V.
+Copyright 2016-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,16 +37,18 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,6 +82,7 @@ public final class ShowSecurityItems extends Base {
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("serverProps", addServerProps());
+		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return Response.status(Response.Status.CREATED).entity(returnMap).build();
 	}
@@ -91,16 +94,24 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appDDString = Misc.getApplicationDeploymentDescriptor();
-			appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-			appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-			appDDString = XmlUtils.removeNamespaces(appDDString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appDDString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (appDDString !=null) {
+				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+				appDDString = XmlUtils.removeNamespaces(appDDString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appDDString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
 		}
 		catch (Exception e) {
+			log.debug("cannot get deployment descriptor", e);
+			return null;
+		}
+		
+		if (xmlDoc==null) {
+			log.debug("could get deployment descriptor");
 			return null;
 		}
 
@@ -144,14 +155,21 @@ public final class ShowSecurityItems extends Base {
 
 		try {
 			appBndString = Misc.getDeployedApplicationBindings();
-			appBndString = XmlUtils.removeNamespaces(appBndString);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputSource inputSource = new InputSource(new StringReader(appBndString));
-			xmlDoc = dBuilder.parse(inputSource);
-			xmlDoc.getDocumentElement().normalize();
+			if (StringUtils.isNotEmpty(appBndString)) {
+				appBndString = XmlUtils.removeNamespaces(appBndString);
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(appBndString));
+				xmlDoc = dBuilder.parse(inputSource);
+				xmlDoc.getDocumentElement().normalize();
+			}
+		} catch (Exception e) {
+			log.debug("cannot get security role bindings", e);
+			return null;
 		}
-		catch (Exception e) {
+		
+		if (xmlDoc==null) {
+			log.debug("could get security role bindings");
 			return null;
 		}
 
@@ -219,10 +237,11 @@ public final class ShowSecurityItems extends Base {
 			DirectQuerySender qs = (DirectQuerySender) getIbisContext().createBeanAutowireByName(DirectQuerySender.class);
 			qs.setJmsRealm(jmsRealm);
 			try {
-				dsName = qs.getDataSourceNameToUse();
+				qs.configure();
+				dsName = qs.getDatasourceName();
 				dsInfo = qs.getDatasourceInfo();
-			} catch (JdbcException jdbce) {
-				// no datasource
+			} catch (JdbcException | ConfigurationException e) {
+				log.debug("no datasource ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 			}
 			if (StringUtils.isNotEmpty(dsName)) {
 				realm.put("name", jmsRealm);
@@ -242,8 +261,8 @@ public final class ShowSecurityItems extends Base {
 			try {
 				qcfName = js.getConnectionFactoryName();
 				qcfInfo = js.getConnectionFactoryInfo();
-			} catch (JmsException jmse) {
-				// no connectionFactory
+			} catch (JmsException e) {
+				log.debug("no connectionFactory ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
 			}
 			if (StringUtils.isNotEmpty(qcfName)) {
 				realm.put("name", jmsRealm);
@@ -359,23 +378,19 @@ public final class ShowSecurityItems extends Base {
 	private Map<String, Object> addServerProps() {
 		Map<String, Object> serverProps = new HashMap<String, Object>(2);
 
-		String totalTransactionLifetimeTimeout;
-		try {
-			totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
-		} catch (Exception e) {
-			totalTransactionLifetimeTimeout = "*** ERROR ***";
+		Integer totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
+		if(totalTransactionLifetimeTimeout == null) {
+			serverProps.put("totalTransactionLifetimeTimeout", "-");
+		} else {
+			serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
 		}
-		if(totalTransactionLifetimeTimeout == null) totalTransactionLifetimeTimeout = "-";
 
-		serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
-		String maximumTransactionTimeout;
-		try {
-			maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-		} catch (Exception e) {
-			maximumTransactionTimeout = "*** ERROR ***";
+		Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+		if(maximumTransactionTimeout == null) {
+			serverProps.put("maximumTransactionTimeout", "-");
+		} else {
+			serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
 		}
-		if(maximumTransactionTimeout == null) maximumTransactionTimeout = "-";
-		serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
 		return serverProps;
 	}
 }

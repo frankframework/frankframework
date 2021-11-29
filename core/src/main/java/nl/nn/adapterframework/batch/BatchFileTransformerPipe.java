@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -35,20 +36,6 @@ import nl.nn.adapterframework.util.FileUtils;
  * and RecordHandlingFlow elements. This is deprecated, however. Since 4.7 one should use &lt;manager&gt;,
  * &lt;recordHandler&gt;, &lt;resultHandler&gt; and &lt;flow&gt;
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
- * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
- * 			If no manager is specified, a default manager and flow are created. The default manager 
- * 			always uses the default flow. The default flow always uses the first registered recordHandler 
- * 			(if available) and the first registered resultHandler (if available).</td></tr>
- * <tr><td>{@link RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
- * <tr><td>{@link IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
- * <tr><td>{@link IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
- * </table>
- * </p>
- * 
- * 
  * For files containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
@@ -57,20 +44,20 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
-	private String move2dirAfterTransform;
-	private String move2dirAfterError;
-	private int numberOfBackups = 5;
-	private boolean overwrite = false;
-	private boolean delete = false;
+	private @Getter String move2dirAfterTransform;
+	private @Getter String move2dirAfterError;
+	private @Getter int numberOfBackups = 5;
+	private @Getter boolean overwrite = false;
+	private @Getter boolean delete = false;
 
 	@Override
-	protected String getStreamId(Message input, IPipeLineSession session) throws PipeRunException {
-		String filename	= (String)input.asObject();
+	protected String getStreamId(Message input, PipeLineSession session) {
+		String filename = (String)input.asObject();
 		File file = new File(filename);
 		return file.getName();
 	}
 	@Override
-	protected InputStream getInputStream(String streamId, Message input, IPipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Message input, PipeLineSession session) throws PipeRunException {
 		try {
 			String filename	= (String)input.asObject();
 			File file = new File(filename);
@@ -87,10 +74,10 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * Move the input file to a done directory when transformation is finished
 	 * and return the names of the generated files. 
 	 * 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, IPipeLineSession)
+	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
-	public PipeRunResult doPipe(Message input, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
@@ -120,50 +107,29 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	}
 
 	
-	/**
-	 * @param readyDir directory where input file is moved to in case of a succesful transformation
-	 */
-	@IbisDoc({"directory in which the transformed file(s) is stored", ""})
+	@IbisDoc({"1", "Directory in which the transformed file(s) is stored", ""})
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
-	public String getMove2dirAfterTransform() {
-		return move2dirAfterTransform;
-	}
 
-	/**
-	 * @param errorDir directory where input file is moved to in case of an error
-	 */
-	@IbisDoc({"directory to which the inputfile is moved in case an error occurs", ""})
+	@IbisDoc({"2", "Directory to which the inputfile is moved in case an error occurs", ""})
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
-	public String getMove2dirAfterError() {
-		return move2dirAfterError;
-	}
 
 
-	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
+	@IbisDoc({"3", "Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
-	public int getNumberOfBackups() {
-		return numberOfBackups;
-	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	@IbisDoc({"4", "If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
-	public boolean isOverwrite() {
-		return overwrite;
-	}
 
-	@IbisDoc({"when set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	@IbisDoc({"5", "If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
 	public void setDelete(boolean b) {
 		delete = b;
-	}
-	public boolean isDelete() {
-		return delete;
 	}
 }

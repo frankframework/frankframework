@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2019 Integration Partners B.V.
+Copyright 2016-2017, 2019, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -88,9 +89,17 @@ public final class ShowEnvironmentVariables extends Base {
 
 		while (enumeration.hasMoreElements()) {
 			String propName = (String) enumeration.nextElement();
-			String propValue = props.getProperty(propName);
-			if (propsToHide != null && propsToHide.contains(propName)) {
-				propValue = Misc.hide(propValue);
+			String propValue;
+			try {
+				propValue = props.getProperty(propName);
+				if (propsToHide != null && propsToHide.contains(propName)) {
+					propValue = Misc.hide(propValue);
+				}
+			} catch (Exception | StackOverflowError e) {
+				// catch StackOverflowErrors, to enable analysis of cyclic property definitions
+				String msg = "cannot get value of property ["+ propName+"]";
+				propValue = msg+" ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+				log.warn(msg, e);
 			}
 			properties.put(propName, propValue);
 		}

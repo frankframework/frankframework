@@ -21,8 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -30,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 5.0
  */
 public class SchemasProviderImpl implements SchemasProvider {
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private IScopeProvider scopeProvider = new TestScopeProvider();
     private final String id;
     private final String xsd;
 
@@ -49,23 +51,23 @@ public class SchemasProviderImpl implements SchemasProvider {
                 new Schema() {
                     @Override
                     public InputStream getInputStream() throws IOException {
-                        return ClassUtils.getResourceURL(classLoader, xsd).openStream();
+                        return ClassUtils.getResourceURL(scopeProvider, xsd).openStream();
                     }
                     @Override
                     public String getSystemId() {
-                        return ClassUtils.getResourceURL(classLoader, xsd).toExternalForm();
+                        return ClassUtils.getResourceURL(scopeProvider, xsd).toExternalForm();
                     }
                 }
         );
     }
 
     @Override
-    public String getSchemasId(IPipeLineSession session) throws PipeRunException {
+    public String getSchemasId(PipeLineSession session) throws PipeRunException {
     	return null;
     }
 
     @Override
-    public List<Schema> getSchemas(IPipeLineSession session) throws PipeRunException {
+    public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
     	return null;
     }
 }

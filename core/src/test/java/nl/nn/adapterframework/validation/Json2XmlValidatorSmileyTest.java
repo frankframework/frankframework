@@ -9,16 +9,13 @@ import org.xml.sax.SAXException;
 import junit.framework.TestCase;
 import nl.nn.adapterframework.align.Json2Xml;
 import nl.nn.adapterframework.align.Xml2Json;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
-import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.FilePipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class Json2XmlValidatorSmileyTest extends TestCase {
@@ -47,7 +44,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
-		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+		PipeLineSession pipeLineSession = new PipeLineSession();
 		PipeRunResult prr = json2xml.doPipe(new Message(json),pipeLineSession);
 		return prr.getResult().asString();
 	}
@@ -61,12 +58,12 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.setWarn(false);
 		json2xml.setSchema(xsd);
 		json2xml.setRoot("x");
-		json2xml.setOutputFormat(json2xml.FORMAT_JSON);
+		json2xml.setOutputFormat(DocumentFormat.JSON);
 		json2xml.setThrowException(true);
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();
 		json2xml.start();
-		IPipeLineSession pipeLineSession = new PipeLineSessionBase();
+		PipeLineSession pipeLineSession = new PipeLineSession();
 		PipeRunResult prr = json2xml.doPipe(new Message(xml),pipeLineSession);
 		return prr.getResult().asString();
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,33 +15,91 @@
 */
 package nl.nn.adapterframework.filesystem;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Spliterators;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Lombok;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.WildCardFilter;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemUtils {
 	protected static Logger log = LogUtil.getLogger(FileSystemUtils.class);
 
-	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		if (overwrite) {
-			F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(file));
-			if (fileSystem.exists(destinationFile)) {
-				log.debug("removing current destination file ["+fileSystem.getCanonicalName(destinationFile)+"]");
-				fileSystem.deleteFile(destinationFile);
-			}
-		} else {
-			if (numOfBackups>0) {
-				FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, destinationFolder, fileSystem.getName(file), numOfBackups);
+	/**
+	 * Check if a source file exists.
+	 */
+	public static <F> void checkSource(IBasicFileSystem<F> fileSystem, F source, FileSystemAction action) throws FileNotFoundException, FileSystemException {
+		if (!fileSystem.exists(source)) {
+			throw new FileNotFoundException("file to "+action.getLabel()+" ["+fileSystem.getName(source)+"], canonical name ["+fileSystem.getCanonicalName(source)+"], does not exist");
+		}
+	}
+	
+	/**
+	 * Prepares the destination of a file:
+	 * - if the file exists, checks overwrite, or performs rollover
+	 */
+	public static <F> void prepareDestination(IWritableFileSystem<F> fileSystem, F destination, boolean overwrite, int numOfBackups, FileSystemAction action) throws FileSystemException {
+		if (fileSystem.exists(destination)) {
+			if (overwrite) {
+				log.debug("removing current destination file ["+fileSystem.getCanonicalName(destination)+"]");
+				fileSystem.deleteFile(destination);
+			} else {
+				if (numOfBackups>0) {
+					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, destination, numOfBackups);
+				} else {
+					throw new FileSystemException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
+				}
 			}
 		}
 	}
 	
+	/**
+	 * Prepares the destination folder, e.g. for move or copy.
+	 */
+	public static <F> void prepareDestination(IBasicFileSystem<F> fileSystem, F source, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, FileSystemAction action) throws FileSystemException {
+		if (!fileSystem.folderExists(destinationFolder)) {
+			if (fileSystem.exists(fileSystem.toFile(destinationFolder))) {
+				throw new FileSystemException("destination ["+destinationFolder+"] exists but is not a folder");
+			}
+			if (createFolders) {
+				fileSystem.createFolder(destinationFolder);
+			} else {
+				throw new FileSystemException("destination folder ["+destinationFolder+"] does not exist");
+			}
+		}
+		if (fileSystem instanceof IWritableFileSystem) {
+			F destinationFile = fileSystem.toFile(destinationFolder, fileSystem.getName(source));
+			prepareDestination((IWritableFileSystem<F>)fileSystem, destinationFile, overwrite, numOfBackups, action);
+		}
+	}
+	
+	public static <F> F renameFile(IWritableFileSystem<F> fileSystem, F source, F destination, boolean overwrite, int numOfBackups) throws FileSystemException {
+		checkSource(fileSystem, source, FileSystemAction.RENAME);
+		prepareDestination(fileSystem, destination, overwrite, numOfBackups, FileSystemAction.RENAME);
+		F newFile = fileSystem.renameFile(source, destination);
+		if (newFile == null) {
+			throw new FileSystemException("cannot rename file [" + fileSystem.getName(source) + "] to [" + fileSystem.getName(destination) + "]");
+		}
+		return newFile;
+	}
+
 	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders);
+		checkSource(fileSystem, file, FileSystemAction.MOVE);
+		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.MOVE);
 		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
 		if (newFile == null) {
 			throw new FileSystemException("cannot move file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
@@ -50,7 +108,8 @@ public class FileSystemUtils {
 	}
 	
 	public static <F> F copyFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders) throws FileSystemException {
-		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders);
+		checkSource(fileSystem, file, FileSystemAction.COPY);
+		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.COPY);
 		F newFile = fileSystem.copyFile(file, destinationFolder, createFolders);
 		if (newFile == null) {
 			throw new FileSystemException("cannot copy file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
@@ -58,48 +117,129 @@ public class FileSystemUtils {
 		return newFile;
 	}
 
-	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, F file, int numberOfBackups) throws FileSystemException {
-		rolloverByNumber(fileSystem, null, fileSystem.getName(file), numberOfBackups);
-	}
 	
-	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, String folder, String filename, int numberOfBackups) throws FileSystemException {
-		F file = fileSystem.toFile(folder, filename);
+	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, F file, int numberOfBackups) throws FileSystemException {
 		if (!fileSystem.exists(file)) {
 			return;
 		}
+		String filename = fileSystem.getCanonicalName(file);
 		
+		String tmpFilename = filename+".tmp-"+Misc.createUUID();
+		F tmpFile = fileSystem.toFile(tmpFilename);
+		tmpFile = fileSystem.renameFile(file, tmpFile);
+
 		if (log.isDebugEnabled()) log.debug("Rotating files with a name starting with ["+filename+"] and keeping ["+numberOfBackups+"] backups");
-		F lastFile=fileSystem.toFile(folder, filename+"."+numberOfBackups);
+		F lastFile=fileSystem.toFile(filename+"."+numberOfBackups);
 		if (fileSystem.exists(lastFile)) {
-			if (log.isDebugEnabled()) log.debug("deleting file  ["+filename+"."+numberOfBackups+"]");
+			if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"."+numberOfBackups+"]");
 			fileSystem.deleteFile(lastFile);
 		}
 		
 		for(int i=numberOfBackups-1;i>0;i--) {
-			F source=fileSystem.toFile(folder, filename+"."+i);
+			String sourceFilename=filename+"."+i;
+			String destinationFilename=filename+"."+(i+1);
+			F source=fileSystem.toFile(sourceFilename);
+			F destination=fileSystem.toFile(destinationFilename);
+			
 			if (fileSystem.exists(source)) {
-				if (log.isDebugEnabled()) log.debug("moving file ["+filename+"."+i+"] to file ["+filename+"."+(i+1)+"]");
-				fileSystem.renameFile(source, filename+"."+(i+1), true);
+				if (log.isDebugEnabled()) log.debug("moving file ["+sourceFilename+"] to file ["+destinationFilename+"]");
+				destination = fileSystem.renameFile(source, destination);
 			} else {
-				if (log.isDebugEnabled()) log.debug("file ["+filename+"."+i+"] does not exist, no need to move");
+				if (log.isDebugEnabled()) log.debug("file ["+sourceFilename+"] does not exist, no need to move");
 			}
 		}
-		if (log.isDebugEnabled()) log.debug("moving file ["+filename+"] to file ["+filename+".1]");
-		fileSystem.renameFile(file, filename+".1", true);
+		String destinationFilename=filename+".1";
+		F destination=fileSystem.toFile(destinationFilename);
+		if (log.isDebugEnabled()) log.debug("moving file ["+tmpFilename+"] to file ["+destinationFilename+"]");
+		destination = fileSystem.renameFile(tmpFile, destination);
 	}
-	
+
 
 	public static <F> void rolloverBySize(IWritableFileSystem<F> fileSystem, F file, int rotateSize, int numberOfBackups) throws FileSystemException {
-		rolloverBySize(fileSystem, file, null, rotateSize, numberOfBackups);
-	}
-	
-	public static <F> void rolloverBySize(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateSize, int numberOfBackups) throws FileSystemException {
 		if (!fileSystem.exists(file)) {
 			return;
 		}
 		if (fileSystem.getFileSize(file) > rotateSize) {
-			rolloverByNumber(fileSystem, folder, fileSystem.getName(file), numberOfBackups);
+			rolloverByNumber(fileSystem, file, numberOfBackups);
 		}
+	}
+
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
+		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+
+			@Override
+			public void close() throws IOException {
+				if (iterable instanceof AutoCloseable) {
+					try {
+						((AutoCloseable)iterable).close();
+					} catch (IOException e) {
+						throw e;
+					} catch (Exception e) {
+						throw new IOException(e);
+					}
+				}
+			}
+
+			@Override
+			public Iterator<F> iterator() {
+				return iterable.iterator();
+			}
+			
+		};
+
+		return ds;
+	}
+	
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
+		return getDirectoryStream(iterator, (Supplier<IOException>)null);
+	}
+
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Runnable onClose) {
+		return getDirectoryStream(iterator, (Supplier<IOException>)() -> { 
+			if (onClose!=null) {
+				onClose.run();
+			}
+			return null;
+		});
+	}
+	
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, AutoCloseable resourceToCloseOnClose){
+		return getDirectoryStream(iterator, (Supplier<IOException>)() -> { 
+			if (resourceToCloseOnClose!=null) {
+				try {
+					resourceToCloseOnClose.close();
+					return null;
+				} catch (IOException e) {
+					return e;
+				} catch (Exception e) {
+					return new IOException(e);
+				}
+			}
+			return null;
+		});
+	}
+		
+	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
+		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+
+			@Override
+			public void close() throws IOException {
+				if (onClose!=null) {
+					IOException result = onClose.get();
+					if (result!=null) {
+						throw result;
+					}
+				}
+			}
+
+			@Override
+			public Iterator<F> iterator() {
+				return iterator;
+			}
+			
+		};
+
+		return ds;
 	}
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {
@@ -110,22 +250,88 @@ public class FileSystemUtils {
 		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
 			return;
 		}
-		String srcFilename = fileSystem.getName(file);
+		String srcFilename = fileSystem.getCanonicalName(file);
+		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
+		fileSystem.renameFile(file, tgtFilename);
 		
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
-		Iterator<F> it = fileSystem.listFiles(folder);
-		while(it.hasNext()) {
-			F f=it.next();
-			String filename=fileSystem.getName(f);
-			if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
-				if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"]");
-				fileSystem.deleteFile(f);
+		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
+			Iterator<F> it = ds.iterator();
+			while(it.hasNext()) {
+				F f=it.next();
+				String filename=fileSystem.getName(f);
+				if (filename!=null && filename.startsWith(srcFilename) && fileSystem.getModificationTime(f).getTime()<threshold) {
+					if (log.isDebugEnabled()) log.debug("deleting file ["+filename+"]");
+					fileSystem.deleteFile(f);
+				}
+			}
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
+	}
+
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard) throws FileSystemException, IOException {
+		DirectoryStream<F> ds = fileSystem.listFiles(folder);
+		if (ds==null) {
+			return null;
+		}
+		Iterator<F> it = ds.iterator();
+		if (it==null) {
+			return null;
+		}
+
+		WildCardFilter wildcardfilter =  StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);
+		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
+				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName((F) F))) 
+						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName((F) F))))
+				.onClose(() -> {
+					try {
+						ds.close();
+					} catch (IOException e) {
+						throw Lombok.sneakyThrow(e);
+					}
+				});
+	}
+
+	public static <F, FS extends IBasicFileSystem<F>> XmlBuilder getFileInfo(FS fileSystem, F f) throws FileSystemException {
+		XmlBuilder fileXml = new XmlBuilder("file");
+
+		String name = fileSystem.getName(f);
+		fileXml.addAttribute("name", name);
+		if (!".".equals(name) && !"..".equals(name)) {
+			long fileSize = fileSystem.getFileSize(f);
+			fileXml.addAttribute("size", "" + fileSize);
+			fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+			try {
+				fileXml.addAttribute("canonicalName", fileSystem.getCanonicalName(f));
+			} catch (Exception e) {
+				log.warn("cannot get canonicalName for file [" + name + "]", e);
+				fileXml.addAttribute("canonicalName", name);
+			}
+			// Get the modification date of the file
+			Date modificationDate = fileSystem.getModificationTime(f);
+			//add date
+			if (modificationDate != null) {
+				String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
+				fileXml.addAttribute("modificationDate", date);
+
+				// add the time
+				String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+				fileXml.addAttribute("modificationTime", time);
 			}
 		}
 
-		String tgtFilename = srcFilename+"."+DateUtils.format(fileSystem.getModificationTime(file), DateUtils.shortIsoFormat);
-		((IWritableFileSystem<F>)fileSystem).renameFile(file, tgtFilename, true);
+		Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
+		if(additionalParameters != null) {
+			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+				fileXml.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
+			}
+		}
+
+		return fileXml;
 	}
 
 }

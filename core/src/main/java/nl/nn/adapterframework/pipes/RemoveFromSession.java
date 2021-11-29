@@ -18,10 +18,10 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -29,11 +29,11 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
- * from the {@link IPipeLineSession pipeLineSession}.
+ * from the {@link PipeLineSession pipeLineSession}.
  *
  * @author Peter Leeuwenburgh
  *
- * @see IPipeLineSession
+ * @see PipeLineSession
  */
 
  public class RemoveFromSession  extends FixedForwardPipe {
@@ -59,7 +59,7 @@ import nl.nn.adapterframework.stream.Message;
     }
 	 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;
 	
 		String sessionKeys = getSessionKey();
@@ -97,7 +97,7 @@ import nl.nn.adapterframework.stream.Message;
 			}
 		}
 	
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	 

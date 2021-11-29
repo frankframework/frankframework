@@ -27,8 +27,8 @@ import javax.jms.JMSException;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
@@ -41,17 +41,16 @@ import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -62,24 +61,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCacheMode(String) cacheMode}</td><td>controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER</td><td>effectively: <ul>
- *   <li>in transacted receivers: CACHE_NONE</li>
- *   <li>in non transacted receivers: CACHE_CONSUMER</li>
- * </ul></td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receive timeout, in milliseconds</td><td>3000</td></tr>
- * </table>
+ * 
  * The following session keys are set for each message:
  * <ul>
  *   <li>id (the message id)</li>
@@ -126,7 +108,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 	private IListenerConnector jmsConnector;
 	private IMessageHandler<IFSAMessage> handler;
-	private IReceiver receiver;
+	private Receiver receiver;
 	private IbisExceptionListener exceptionListener;
 
 	public PushingIfsaProviderListener() {
@@ -211,7 +193,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 			    		    
 	    // on request-reply send the reply.
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+	    if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
 			javax.jms.Message originalRawMessage;
 			if (rawMessageOrWrapper instanceof javax.jms.Message) { 
 				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;
@@ -219,7 +201,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(IPipeLineSession.businessCorrelationIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				if (session==null) {
@@ -410,7 +392,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 //			}
 //		}
 	
-		PipeLineSessionBase.setListenerParameters(threadContext, id, BIFname, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
@@ -572,15 +554,20 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return listenerPort;
 	}
 
-    
-	public void setReceiver(IReceiver receiver) {
+
+	@Override
+	public void setReceiver(Receiver receiver) {
 		this.receiver = receiver;
 	}
-	public IReceiver getReceiver() {
+	@Override
+	public Receiver getReceiver() {
 		return receiver;
 	}
 
 
+	/**
+	 * Controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER	
+	 */
 	public void setCacheMode(String string) {
 		cacheMode = string;
 	}
@@ -588,6 +575,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return cacheMode;
 	}
 
+	@Override
 	public boolean isThreadCountReadable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -597,6 +585,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public boolean isThreadCountControllable() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -606,6 +595,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return false;
 	}
 
+	@Override
 	public int getCurrentThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -615,6 +605,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public int getMaxThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -624,6 +615,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		return -1;
 	}
 
+	@Override
 	public void increaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -632,6 +624,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public void decreaseThreadCount() {
 		if (jmsConnector instanceof IThreadCountControllable) {
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
@@ -640,6 +633,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 
+	@Override
 	public int getDeliveryCount(Object rawMessage) {
 		try {
 			javax.jms.Message message=(javax.jms.Message)rawMessage;

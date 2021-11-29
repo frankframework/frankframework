@@ -15,19 +15,20 @@
 */
 package nl.nn.adapterframework.extensions.sap.jco2;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipeLineExitHandler;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Manager for SAP Logical Units of Work (LUWs). 
@@ -40,15 +41,6 @@ import org.apache.commons.lang.StringUtils;
  * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with 
  * the action-attribute set apropriately.
  * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key under which information is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAction(String) action}</td><td>one of: begin, commit, rollback, release</td><td>&nbsp;</td></tr>
- * </table>
- * 
  * @author  Gerrit van Brakel
  * @since   4.6.0
  */
@@ -59,16 +51,16 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	public static final String ACTION_ROLLBACK="rollback";
 	public static final String ACTION_RELEASE="release";
 
-	private String luwHandleSessionKey;
-	private String action;
-	private String sapSystemName;
+	private @Getter String luwHandleSessionKey;
+	private @Getter String action;
+	private @Getter String sapSystemName;
 	
 	private SapSystem sapSystem;
 
 
 	@Override
-	public void configure(PipeLine pipeline) throws ConfigurationException {
-		super.configure(pipeline);
+	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getAction())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
@@ -81,7 +73,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 				ACTION_BEGIN+", "+ACTION_COMMIT+", "+ACTION_ROLLBACK+", "+ACTION_RELEASE+".");
 		}
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
-			pipeline.registerExitHandler(this);
+			getPipeLine().registerExitHandler(this);
 		}
 		if (StringUtils.isEmpty(getLuwHandleSessionKey())) {
 			throw new ConfigurationException("action should be specified, it must be one of: "+
@@ -94,7 +86,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 	}
 
 	@Override
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, IPipeLineSession session) throws PipeRunException {
+	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException {
 		SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
 	}
 
@@ -113,7 +105,7 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {
 			SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey(),true,getSapSystem(),false).begin();
 		} else
@@ -121,22 +113,21 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "commit: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
-			} else {
-				handle.commit();
 			}
+			handle.commit();
 		} else
 		if (getAction().equalsIgnoreCase(ACTION_ROLLBACK)) {
 			SapLUWHandle handle=SapLUWHandle.retrieveHandle(session,getLuwHandleSessionKey());
 			if (handle==null) {
 				throw new PipeRunException(this, "rollback: cannot find handle under sessionKey ["+getLuwHandleSessionKey()+"]");
-			} else {
-				handle.rollback();
 			}
-		} else
-		if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
-			SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
+			handle.rollback();
+		} else {
+			if (getAction().equalsIgnoreCase(ACTION_RELEASE)) {
+				SapLUWHandle.releaseHandle(session,getLuwHandleSessionKey());
+			}
 		} 
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 
@@ -148,27 +139,19 @@ public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHand
 
 
 
+	@IbisDoc({"1", "name of the SapSystem used by this object", ""})
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
-	public String getSapSystemName() {
-		return sapSystemName;
-	}
 
-
+	@IbisDoc({"2", "one of: begin, commit, rollback, release", ""})
 	public void setAction(String string) {
 		action = string;
 	}
-	public String getAction() {
-		return action;
-	}
 
+	@IbisDoc({"3", "session key under which information is stored", ""})
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
-	public String getLuwHandleSessionKey() {
-		return luwHandleSessionKey;
-	}
-
 
 }

@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 
 import javax.json.stream.JsonGenerator;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
 
@@ -120,6 +120,8 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			if (indentLevel>=0) indentLevel--;
 			newLine(sb, indentLevel);
 			sb.append("]");
+		} else if (item instanceof JsonElementContainer) {
+			toString(sb,((JsonElementContainer)item).getContent(), indentLevel);
 		} else {
 			throw new NotImplementedException("cannot handle class ["+item.getClass().getName()+"]");
 		}

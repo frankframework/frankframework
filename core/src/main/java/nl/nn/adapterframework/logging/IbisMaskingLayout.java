@@ -15,18 +15,22 @@
 */
 package nl.nn.adapterframework.logging;
 
-import nl.nn.adapterframework.util.Misc;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.impl.MutableLogEvent;
-import org.apache.logging.log4j.core.layout.AbstractStringLayout;
-import org.apache.logging.log4j.message.Message;
-import org.apache.logging.log4j.message.SimpleMessage;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.impl.MutableLogEvent;
+import org.apache.logging.log4j.core.layout.AbstractStringLayout;
+import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.util.StackLocatorUtil;
+
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * This is a wrapper for Log4j2 layouts.
@@ -72,8 +76,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	@Override
 	public final String toSerializable(LogEvent logEvent) {
-		MutableLogEvent event = convertToMutableLog4jEvent(logEvent);
-		Message msg = event.getMessage();
+		Message msg = logEvent.getMessage();
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
@@ -88,7 +91,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 			}
 		}
 
-		event.setMessage(new LogMessage(message, msg.getThrowable()));
+		Message logMessage = new LogMessage(message, msg.getThrowable());
+		LogEvent event = updateLogEventMessage(logEvent, logMessage);
 
 		return serializeEvent(event);
 	}
@@ -97,6 +101,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Wrapper around SimpleMessage so we can persist throwables, if any.
 	 */
 	private static class LogMessage extends SimpleMessage {
+		private static final long serialVersionUID = 3907571033273707664L;
+
 		private Throwable throwable;
 
 		public LogMessage(String message, Throwable throwable) {
@@ -110,10 +116,29 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		}
 	}
 
-	private MutableLogEvent convertToMutableLog4jEvent(final LogEvent event) {
-//		LogEvent e = (event instanceof Log4jLogEvent ? event : Log4jLogEvent.createMemento(event));
+	/**
+	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1179"
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1382"
+	 * 
+	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
+	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
+	 * 
+	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
+	 * This is done by taking a snapshot of the stack and walking it, @see {@link StackLocatorUtil#calcLocation(String)}).
+	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
+	 */
+	private LogEvent updateLogEventMessage(LogEvent event, Message message) {
+		if(event instanceof Log4jLogEvent) {
+			Log4jLogEvent.Builder builder = ((Log4jLogEvent) event).asBuilder();
+			builder.setMessage(message);
+			return builder.build();
+		}
+
+		//NB: this might trigger a source location lookup.
 		MutableLogEvent mutable = new MutableLogEvent();
 		mutable.initFrom(event);
+		mutable.setMessage(message);
 		return mutable;
 	}
 

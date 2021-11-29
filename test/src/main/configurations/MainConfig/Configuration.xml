@@ -1,11 +1,13 @@
 <!DOCTYPE configuration [
 	<!ENTITY Authentication SYSTEM "./ConfigurationAuthentication.xml">
+	<!ENTITY Batch SYSTEM "./ConfigurationBatch.xml">
 	<!ENTITY Cache SYSTEM "./ConfigurationCache.xml">
 	<!ENTITY Checksum SYSTEM "./ConfigurationChecksum.xml">
 	<!ENTITY Zip SYSTEM "./ConfigurationZip.xml">
 	<!ENTITY ErrorMessageFormatter SYSTEM "./ConfigurationErrorMessageFormatter.xml">
 	<!ENTITY ExceptionPipe SYSTEM "./ConfigurationExceptionPipe.xml">
-	<!ENTITY SkipEmptyTags SYSTEM "./ConfigurationSkipEmptyTags.xml">
+	<!ENTITY ExchangeMail SYSTEM "./ConfigurationExchangeMail.xml">
+	<!ENTITY Exits SYSTEM "./ConfigurationExits.xml">
 	<!ENTITY ReplacerPipe SYSTEM "./ConfigurationReplacerPipe.xml">
 	<!ENTITY ReplaceInputAndPreserve SYSTEM "./ConfigurationReplaceInputAndPreserve.xml">
 	<!ENTITY CompareStringPipe SYSTEM "./ConfigurationCompareStringPipe.xml">
@@ -13,6 +15,7 @@
 	<!ENTITY QuerySender SYSTEM "./ConfigurationQuerySender.xml">
 	<!ENTITY ClobAndBlob SYSTEM "./ConfigurationClobAndBlob.xml">
 	<!ENTITY BigClobAndBlob SYSTEM "./ConfigurationBigClobAndBlob.xml">
+	<!ENTITY MongoDbSender SYSTEM "./ConfigurationMongoDbSender.xml">
 	<!ENTITY BatchFileTransformerPipe SYSTEM "./ConfigurationBatchFileTransformerPipe.xml">
 	<!ENTITY IfsaRequesterSender SYSTEM "./ConfigurationIfsaRequesterSender.xml">
 	<!ENTITY LinkMethodMessageId SYSTEM "./ConfigurationLinkMethodMessageId.xml">
@@ -28,13 +31,14 @@
 	<!ENTITY CorrelationMessageId SYSTEM "./ConfigurationCorrelationMessageId.xml">
 	<!ENTITY XmlBuilderThreadSafety SYSTEM "./ConfigurationXmlBuilderThreadSafety.xml">
 	<!ENTITY DelayPipe SYSTEM "./ConfigurationDelayPipe.xml">
-	<!ENTITY GenericMessageSendingPipe SYSTEM "./ConfigurationGenericMessageSendingPipe.xml">
+	<!ENTITY SenderPipe SYSTEM "./ConfigurationSenderPipe.xml">
 	<!ENTITY XmlValidator SYSTEM "./ConfigurationXmlValidator.xml">
 	<!ENTITY SoapWrapperPipe SYSTEM "./ConfigurationSoapWrapperPipe.xml">
 	<!ENTITY EsbSoapWrapperPipe SYSTEM "./ConfigurationEsbSoapWrapperPipe.xml">
 	<!ENTITY ForEachChildElementPipe SYSTEM "./ConfigurationForEachChildElementPipe.xml">
 	<!ENTITY ResultSetIteratingPipe SYSTEM "./ConfigurationResultSetIteratingPipe.xml">
 	<!ENTITY InputOutputWrapper SYSTEM "./ConfigurationInputOutputWrapper.xml">
+	<!ENTITY OutputStreaming SYSTEM "./ConfigurationOutputStreaming.xml">
 	<!ENTITY EsbSoapValidator SYSTEM "./ConfigurationEsbSoapValidator.xml">
 	<!ENTITY WsdlGeneratorPipe SYSTEM "./ConfigurationWsdlGeneratorPipe.xml">
 	<!ENTITY FxF3 SYSTEM "./ConfigurationFxF3.xml">
@@ -50,20 +54,25 @@
 	<!ENTITY MemoryLeak SYSTEM "./ConfigurationMemoryLeak.xml">
 	<!ENTITY Javascript SYSTEM "./ConfigurationJavascript.xml">
 	<!ENTITY Parameters SYSTEM "./ConfigurationParameters.xml">
+	<!ENTITY Receivers SYSTEM "./ConfigurationReceivers.xml">
 	<!ENTITY MessageStore SYSTEM "./ConfigurationMessageStoreSenderAndListener.xml">
 	<!ENTITY MessageStorePeek SYSTEM "./ConfigurationMessageStoreSenderAndListenerPeek.xml">
 	<!ENTITY BlockEnabledSenders SYSTEM "./ConfigurationBlockEnabledSenders.xml">
-	<!ENTITY SoapValidator SYSTEM "./ConfigurationSoapValidator.xml">
+	<!ENTITY Validators SYSTEM "./ConfigurationValidators.xml">
+	<!ENTITY Streaming SYSTEM "./ConfigurationStreaming.xml">
 	<!ENTITY ApiWsdlGenerator SYSTEM "./ConfigurationApiWsdlGenerator.xml">
+	<!ENTITY Unzip SYSTEM "./ConfigurationUnzip.xml">
 ]>
 <configuration name="MainConfig">
 	&Authentication;
+	&Batch;
 	&Cache;
 	&Checksum;
 	&Zip;
 	&ErrorMessageFormatter;
 	&ExceptionPipe;
-	&SkipEmptyTags;
+	&ExchangeMail;
+	&Exits;
 	&ReplacerPipe;
 	&ReplaceInputAndPreserve;
 	&CompareStringPipe;
@@ -72,6 +81,7 @@
 	&ClobAndBlob;
 	&BigClobAndBlob;
 	&BatchFileTransformerPipe;
+	&MongoDbSender;
 	&IfsaRequesterSender;
 	&LinkMethodMessageId;
 	&ReturnedSessionKeys;
@@ -86,13 +96,14 @@
 	&CorrelationMessageId;
 	&XmlBuilderThreadSafety;
 	&DelayPipe;
-	&GenericMessageSendingPipe;
+	&SenderPipe;
 	&XmlValidator;
 	&SoapWrapperPipe;
 	&EsbSoapWrapperPipe;
 	&ForEachChildElementPipe;
 	&ResultSetIteratingPipe;
 	&InputOutputWrapper;
+	&OutputStreaming;
 	&EsbSoapValidator;
 	&WsdlGeneratorPipe;
 	&FxF3;
@@ -108,9 +119,12 @@
 	&MemoryLeak; 
 	&Javascript;
 	&Parameters;
+	&Receivers;
 	&MessageStore;
 	&MessageStorePeek;
 	&BlockEnabledSenders;
-	&SoapValidator;
+	&Validators;
+	&Streaming;
 	&ApiWsdlGenerator;
+	&Unzip;
 </configuration>

@@ -2,49 +2,11 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation=
-		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	>
 
 	<bean
-		name="btmTransactionManager"
-		class="bitronix.tm.TransactionManagerServices"
-		factory-method="getTransactionManager"
-		depends-on="btmConfig,defaultDataSource,defaultXAConnectionFactory"
-		destroy-method="shutdown"
-	/>
-
-	<bean
-		name="defaultXAConnectionFactory"
-		class="bitronix.tm.resource.jms.PoolingConnectionFactory"
-		init-method="init"
-		destroy-method="close"
-		>
-		<property name="uniqueName" value="${instance.name.lc}.defaultXAConnectionFactory"/>
-		<property name="maxPoolSize" value="100"/>
-		<property name="allowLocalTransactions" value="true"/>
-		<property name="XaConnectionFactory">
-			<ref bean="esbFFConnectionFactory"/>
-		</property>
-	</bean>
-
-	<bean name="proxiedConnectionFactories" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="jms/qcf_tibco_esb_ff">
-					<ref bean="defaultXAConnectionFactory"/>
-				</entry>
-				<entry key="jms/qcf_tibco_esb_rr">
-					<ref bean="esbRRConnectionFactory"/>
-				</entry>
-			</map>
-		</constructor-arg>
-	</bean>
-
-	<bean
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.OverwritePropertySourcePostProcessor"
 		autowire="byName"
 		>
 		<property name="propertyName" value="jms.createDestination"/>

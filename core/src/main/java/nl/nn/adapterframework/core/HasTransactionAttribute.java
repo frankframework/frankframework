@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,34 +15,47 @@
 */
 package nl.nn.adapterframework.core;
 
+import org.springframework.transaction.TransactionDefinition;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
+
 /**
  * The <code>HasTransactionAttribute</code> allows Pipes to declare transaction and isolation behavior.
  * The pipeline uses this to start a new transaction or suspend the current one when required.
- * Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. 
- * Possible values for transactionAttribute:
- *   <table border="1">
- *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
- *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
- * 											      <tr><td>T1</td>  <td>T2</td></tr>
- *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>none</td></tr>
- *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>T1</td></tr>
- *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
- * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table> 
  * 
  * @author  Gerrit van Brakel
  * @since   4.5
  */
 public interface HasTransactionAttribute {
 
-	public String getTransactionAttribute();
-	public int getTransactionAttributeNum();
+	@IbisDoc({"1", "The <code>transactionAttribute</code> declares transactional behavior of execution. It "
+			+ "applies both to database transactions and XA transactions."
+			+ "The pipeline uses this to start a new transaction or suspend the current one when required. "
+			+ "For developers: it is equal"
+			+ "to <a href=\"https://docs.oracle.com/javaee/7/tutorial/transactions003.htm\">EJB transaction attribute</a>. "
+			+ "Possible values for transactionAttribute:"
+			+ "  <table border=\"1\">"
+			+ "    <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Required</td>    <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">RequiresNew</td> <td>none</td><td>T2</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T2</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Mandatory</td>   <td>none</td><td>error</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">NotSupported</td><td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>none</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Supports</td>    <td>none</td><td>none</td></tr>"
+			+ " 										      <tr><td>T1</td>  <td>T1</td></tr>"
+			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
+			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
+			+ "  </table>", "Supports"})
+	public void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
+	public TransactionAttribute getTransactionAttribute();
 
+	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"}) //TODO use Integer and set to NULL by default
+	public void setTransactionTimeout(int i);
 	public int getTransactionTimeout();
+
+	public TransactionDefinition getTxDef();
 }

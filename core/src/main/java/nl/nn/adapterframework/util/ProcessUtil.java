@@ -26,8 +26,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
-import org.apache.commons.lang.StringUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -102,10 +101,10 @@ public class ProcessUtil {
 		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
 
 			@Override
-			protected void kill() {
+			protected void abort() {
 				process.destroy();
 			}
-			
+
 		};
 		tg.activateGuard(timeout) ;
 		try {

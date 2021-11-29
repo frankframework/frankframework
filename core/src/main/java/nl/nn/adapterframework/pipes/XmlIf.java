@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -32,8 +32,10 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Selects an exitState, based on the content of a sessionkey.
+ * Selects an exitState, based on xpath evaluation
  * 
+ * @ff.forward then The configured condition is met
+ * @ff.forward else The configured condition is not met
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -41,6 +43,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlIf extends AbstractPipe {
 
+	private String namespaceDefs = null;
 	private String sessionKey = null;
 	private String xpathExpression = null;
 	private String expressionValue = null;
@@ -56,26 +59,25 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
-	
-	String result = 
-		// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+getXsltVersion()+".0\">" +
-		"<xsl:output method=\"text\" omit-xml-declaration=\"yes\"/>" +
-		"<xsl:strip-space elements=\"*\"/>" +
-		"<xsl:template match=\"/\">" +
-		"<xsl:choose>" +
-		"<xsl:when test=\"" +xpathExpression + 
-			(StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'")+
-		"\">" +getThenForwardName()+"</xsl:when>"+
-		"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
-		"</xsl:choose>" +
-		"</xsl:template>" +
-		"</xsl:stylesheet>";
-		log.debug(getLogPrefix(null)+"created stylesheet ["+result+"]");
-		return result;
+		String nameSpaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
+
+		String result = 
+			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+getXsltVersion()+".0\">" +
+			"<xsl:output method=\"text\" omit-xml-declaration=\"yes\"/>" +
+			"<xsl:strip-space elements=\"*\"/>" +
+			"<xsl:template match=\"/\">" +
+			"<xsl:choose>" +
+			"<xsl:when "+nameSpaceClause+" test=\"" +xpathExpression + 
+				(StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'")+
+			"\">" +getThenForwardName()+"</xsl:when>"+
+			"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
+			"</xsl:choose>" +
+			"</xsl:template>" +
+			"</xsl:stylesheet>";
+			log.debug(getLogPrefix(null)+"created stylesheet ["+result+"]");
+			return result;
 	}
-
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -90,11 +92,11 @@ public class XmlIf extends AbstractPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = "";
 		PipeForward pipeForward = null;
 
-		String sInput;
+		String sInput = null;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (message==null || message.asObject()==null) {
 				sInput="";
@@ -107,7 +109,11 @@ public class XmlIf extends AbstractPipe {
 			}
 		} else {
 			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
-			sInput=(String) session.get(getSessionKey());
+			try {
+				sInput=session.getMessage(getSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve session key ["+getSessionKey()+"]", e);
+			}
 		}
 
 		// log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");
@@ -152,7 +158,6 @@ public class XmlIf extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
 		return new PipeRunResult(pipeForward, message);
 	}
-	
 
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
 	public void setSessionKey(String sessionKey){
@@ -186,7 +191,6 @@ public class XmlIf extends AbstractPipe {
 	public String getElseForwardName(){
 		return elseForwardName;
 	}
-	
 
 	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
 	public void setXpathExpression(String string) {
@@ -210,5 +214,13 @@ public class XmlIf extends AbstractPipe {
 	}
 	public int getXsltVersion() {
 		return xsltVersion;
+	}
+
+	@IbisDoc({"namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions.", ""})
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
 	}
 }

@@ -21,7 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.Adapter;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -44,14 +44,19 @@ public interface IbisManager extends ApplicationEventPublisherAware {
 
     Configuration getConfiguration(String configurationName);
 
-    /**
-     * Issue a command/action on the named adapter/receiver.
+	public enum IbisAction {
+		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
+	}
+
+	/**
+	 * Utility function to give commands to Adapters and Receivers
      * @param action
      * @param adapterName
      * @param receiverName
      * @param commandIssuedBy
      */
-    void handleAdapter(String action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
+    void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
+
     /**
      * Start an already configured Configuration
      */
@@ -66,11 +71,9 @@ public interface IbisManager extends ApplicationEventPublisherAware {
      */
     void shutdown();
 
-    public IAdapter getRegisteredAdapter(String name);
+    public Adapter getRegisteredAdapter(String name);
 
-    public List<String> getSortedStartedAdapterNames();
-
-    public List<IAdapter> getRegisteredAdapters();
+    public List<Adapter> getRegisteredAdapters();
 
     /**
      * Get the Spring Platform Transaction Manager, for use by

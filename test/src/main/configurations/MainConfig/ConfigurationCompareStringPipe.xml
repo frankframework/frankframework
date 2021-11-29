@@ -1,13 +1,13 @@
-<ibis>
+<module>
 	<adapter name="CompareStringPipe" description="Test the functioning of the CompareStringPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="CompareStringPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareStringPipe" serviceName="ibis4test-CompareStringPipe" />
 		</receiver>
 		<pipeline firstPipe="FillSessionKey2">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="FillSessionKey2" returnString="leeuw" storeResultInSessionKey="sessionKey2">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="FillSessionKey2" returnString="leeuw" storeResultInSessionKey="sessionKey2">
 				<forward name="success" path="Compare"/>
 			</pipe>
 			<pipe name="Compare" className="nl.nn.adapterframework.pipes.CompareStringPipe">
@@ -17,15 +17,15 @@
 				<forward name="greaterthan" path="greaterthanPipe"/>
 				<forward name="equals" path="equalsPipe"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="lessthanPipe" returnString="[LESS_THAN]">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="lessthanPipe" returnString="[LESS_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="greaterthanPipe" returnString="[GREATER_THAN]">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="greaterthanPipe" returnString="[GREATER_THAN]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.FixedResult" name="equalsPipe" returnString="[EQUALS]">
+			<pipe className="nl.nn.adapterframework.pipes.FixedResultPipe" name="equalsPipe" returnString="[EQUALS]">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

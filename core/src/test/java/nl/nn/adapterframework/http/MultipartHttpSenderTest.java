@@ -15,14 +15,13 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 
 import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -39,7 +38,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -53,7 +52,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -69,7 +68,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -83,7 +82,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -99,7 +98,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" "
 					+ "value=\"{json:true}\" size=\"72833\" "
@@ -113,7 +112,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartHttp3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -129,7 +128,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -144,7 +143,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -160,7 +159,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" filename=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -175,7 +174,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {
@@ -191,7 +190,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			String xmlMultipart = "<parts><part name=\"dummy\" "
 					+ "value=\"{json:true}\" size=\"72833\" "
@@ -206,7 +205,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartMtom3.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		} finally {

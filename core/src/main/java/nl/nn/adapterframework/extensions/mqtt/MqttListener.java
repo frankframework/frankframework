@@ -24,12 +24,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
-import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -59,17 +58,17 @@ import nl.nn.adapterframework.util.RunStateEnum;
 
 public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessage>, IPushingListener<MqttMessage>, MqttCallbackExtended {
 
-	private ReceiverBase<MqttMessage> receiver;
+	private Receiver<MqttMessage> receiver;
 	private IMessageHandler<MqttMessage> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
 
 	@Override
-	public void setReceiver(IReceiver<MqttMessage> receiver) {
-		this.receiver = (ReceiverBase<MqttMessage>)receiver;
+	public void setReceiver(Receiver<MqttMessage> receiver) {
+		this.receiver = receiver;
 	}
 
 	@Override
-	public IReceiver<MqttMessage> getReceiver() {
+	public Receiver<MqttMessage> getReceiver() {
 		return receiver;
 	}
 
@@ -86,12 +85,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnError(ReceiverBase.ONERROR_RECOVER);
-		// Don't recreate client when trying to recover
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.configure();
-			client.setCallback(this);
-		}
+		receiver.setOnError(Receiver.OnError.RECOVER);
+		// Recover will be triggered when connectionLost was called or listener 
+		// could not start in which case client is already disconnected.
+
+		super.configure();
+		client.setCallback(this);
 	}
 
 	@Override
@@ -100,18 +99,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 			super.open();
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new ListenerException("Could not subscribe to topic", e);
-		}
-	}
-
-	@Override
-	public void close() {
-		// Prevent log.warn() when trying to recover. Recover will be triggered
-		// when connectionLost was called or listener could not start in which
-		// case client is already disconnected.
-		if (!receiver.isRecover() && !receiver.isRecoverAdapter()) {
-			super.close();
 		}
 	}
 
@@ -136,7 +124,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		log.debug(message);
 		// Call receiver which will set status to error after which recover job
 		// will try to recover. Note that at configure time
-		// receiver.setOnError(ReceiverBase.ONERROR_RECOVER) was called. Also
+		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
 		// note that mqtt lib will also try to recover (when automaticReconnect
 		// is true) (see connectComplete also) which will probably recover
 		// earlier because of it's smaller interval. When no connection was

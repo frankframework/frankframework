@@ -1,7 +1,6 @@
-<ibis>
+<module>
 	<adapter name="XmlValidator" description="Test the functioning of the XmlValidator">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="XmlValidator">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-XmlValidator" />
 		</receiver>
@@ -10,7 +9,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				sessionKey="switch" />
+				forwardNameSessionKey="switch" />
 			<!-- schema -->
 			<pipe name="schema" className="nl.nn.adapterframework.pipes.XmlValidator"
 				schema="/XmlValidator/HandleCollectionDisbursementAccount/HandleCollectionDisbursementAccount3_v3.0.xsd"
@@ -125,4 +124,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

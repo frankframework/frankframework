@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -55,13 +55,13 @@ public class ChecksumPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getType())) {
-			throw new ConfigurationException(getLogPrefix(null)+"type must be specified");
+			throw new ConfigurationException("type must be specified");
 		}
 		if (!CHECKSUM_MD5.equals(getType()) && 
 			!CHECKSUM_SHA.equals(getType()) && 
 			!CHECKSUM_CRC32.equals(getType()) && 
 			!CHECKSUM_ADLER32.equals(getType())) {
-			throw new ConfigurationException(getLogPrefix(null)+"type ["+getType()+"] must be one of ["+
+			throw new ConfigurationException("type ["+getType()+"] must be one of ["+
 				CHECKSUM_MD5+","+
 				CHECKSUM_SHA+","+
 				CHECKSUM_CRC32+","+
@@ -132,7 +132,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
 			ChecksumGenerator cg=createChecksumGenerator();
@@ -153,7 +153,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 				cg.update(barr,barr.length);
 			}
 			result=cg.getResult();
-			return new PipeRunResult(getForward(),result);
+			return new PipeRunResult(getSuccessForward(),result);
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}

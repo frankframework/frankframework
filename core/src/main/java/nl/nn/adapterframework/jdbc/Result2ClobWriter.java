@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,12 +26,6 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 /**
  * {@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a CLOB.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
- * </table>
- * <p/>
- * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -40,7 +34,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 	@Override
 	protected Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException {
 		try {
-			return dbmsSupport.getClobUpdateHandle(rs, querySender.getClobColumn());
+			return dbmsSupport.getClobHandle(rs, querySender.getClobColumn());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -64,7 +58,7 @@ public class Result2ClobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"column that contains the clob to be updated", "1"})
+	@IbisDoc({"Column that contains the CLOB to be updated", "1"})
 	public void setClobColumn(int column) {
 		querySender.setClobColumn(column);
 	}

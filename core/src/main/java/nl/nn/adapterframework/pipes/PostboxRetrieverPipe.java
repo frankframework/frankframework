@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -44,16 +44,10 @@ import nl.nn.adapterframework.stream.Message;
  * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when the message was successfully sent</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
- * </table>
- * </p>
   * 
  * @author  John Dekker
  */
+@Deprecated
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
@@ -64,7 +58,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		super.configure();
 
 		if (getListener() == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
+				throw new ConfigurationException("no sender defined ");
 		}
 	}
 
@@ -97,7 +91,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String messageSelector;
 		try {
 			messageSelector = message.asString();
@@ -114,7 +108,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
 				
 			Message result = getListener().extractMessage(rawMessage, threadContext);
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} 
 		catch (Exception e) {
 			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);

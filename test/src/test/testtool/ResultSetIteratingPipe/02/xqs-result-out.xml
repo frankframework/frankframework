@@ -1,0 +1,54 @@
+<results>
+	<result item="1">
+		<result>
+			<fielddefinition>
+				<field name="TKEY" type="NUMERIC" columnDisplaySize="39"
+					precision="38" scale="0" isCurrency="true" columnTypeName="NUMBER"
+					columnClassName="java.math.BigDecimal" />
+				<field name="TCHAR" type="CHAR" columnDisplaySize="1"
+					precision="1" scale="0" isCurrency="false" columnTypeName="CHAR"
+					columnClassName="java.lang.String" />
+				<field name="TNUMBER" type="NUMERIC" columnDisplaySize="19"
+					precision="17" scale="5" isCurrency="true" columnTypeName="NUMBER"
+					columnClassName="java.math.BigDecimal" />
+			</fielddefinition>
+			<rowset>
+				<row number="0">
+					<field name="TKEY">58690</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="1">
+					<field name="TKEY">58691</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="2">
+					<field name="TKEY">58692</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="3">
+					<field name="TKEY">58693</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="4">
+					<field name="TKEY">58694</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="5">
+					<field name="TKEY">58695</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+				<row number="6">
+					<field name="TKEY">58696</field>
+					<field name="TCHAR">I</field>
+					<field name="TNUMBER">2</field>
+				</row>
+			</rowset>
+		</result>
+	</result>
+</results>

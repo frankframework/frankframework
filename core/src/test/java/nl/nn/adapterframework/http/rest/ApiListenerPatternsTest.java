@@ -30,49 +30,49 @@ import org.junit.runners.Parameterized.Parameters;
 public class ApiListenerPatternsTest {
 
 	private ApiListener listener;
-	private String expected;
-	private String uriPattern;
+	private String expectedUriPattern;
+	private String expectedCleanPattern;
 
-	@Parameters(name = "uriPattern[{0}] -> expected[{1}]")
+	@Parameters(name = "inputUriPattern[{0}] -> expectedUriPattern[{1}] -> expectedCleanPattern[{2}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{ "*", "*" },
-				{ "test", "test" },
-				{ "/test", "test" },
-				{ "/test/", "test" },
+				{ "*", "/*", "/*" },
+				{ "test", "/test", "/test" },
+				{ "/test", "/test", "/test" },
+				{ "/test/", "/test", "/test" },
 
-				{ "test/*", "test/*" },
-				{ "*/*", "*/*" },
-				{ "test/something", "test/something" },
-				{ "test/*/something", "test/*/something" },
-				{ "test/*/*", "test/*/*" },
-				{ "test/*/something/else", "test/*/something/else" },
-				{ "test/*/something/*", "test/*/something/*" },
+				{ "test/*", "/test/*", "/test/*" },
+				{ "*/*", "/*/*", "/*/*" },
+				{ "test/something", "/test/something", "/test/something" },
+				{ "test/*/something", "/test/*/something", "/test/*/something" },
+				{ "test/*/*", "/test/*/*", "/test/*/*" },
+				{ "test/*/something/else", "/test/*/something/else", "/test/*/something/else" },
+				{ "test/*/something/*", "/test/*/something/*", "/test/*/something/*" },
 
-				{ "/*/*/*", "*/*/*" },
+				{ "/*/*/*", "/*/*/*", "/*/*/*" },
 
-				{ "/text/{name}", "text/*" },
-				{ "/text/{name}/something", "text/*/something" },
-				{ "/text/{name}/{name2}", "text/*/*" },
+				{ "/text/{name}", "/text/{name}", "/text/*" },
+				{ "/text/{name}/something", "/text/{name}/something", "/text/*/something" },
+				{ "/text/{name}/{name2}", "/text/{name}/{name2}", "/text/*/*" },
 		});
 	}
 
-	public ApiListenerPatternsTest(String pattern, String expected) {
+	public ApiListenerPatternsTest(String pattern, String expectedUriPattern, String expectedCleanPattern) {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
 		listener.setMethod("put");
 		listener.setUriPattern(pattern);
-		this.uriPattern = pattern;
-		this.expected = expected;
+		this.expectedUriPattern = expectedUriPattern;
+		this.expectedCleanPattern = expectedCleanPattern;
 	}
 
 	@Test
 	public void testUriPattern() {
-		assertEquals(uriPattern, listener.getUriPattern());
+		assertEquals(expectedUriPattern, listener.getUriPattern());
 	}
 
 	@Test
 	public void testCleanPattern() {
-		assertEquals(expected, listener.getCleanPattern());
+		assertEquals(expectedCleanPattern, listener.getCleanPattern());
 	}
 }

@@ -126,7 +126,7 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.server.CmisSecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.util.AppConstants;
@@ -145,7 +145,7 @@ public class CmisUtils {
 	private static Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
-	public static void populateCmisAttributes(IPipeLineSession session) {
+	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
 		if(callContext != null) {
 			session.put(CMIS_VERSION_KEY, callContext.getCmisVersion());
@@ -414,12 +414,14 @@ public class CmisUtils {
 
 	private static XmlBuilder typeMutability2xml(TypeMutability typeMutability) {
 		XmlBuilder xmlBuilder = new XmlBuilder("typeMutability");
-		if(typeMutability.canCreate() != null)
-			xmlBuilder.addAttribute("create", typeMutability.canCreate());
-		if(typeMutability.canDelete() != null)
-			xmlBuilder.addAttribute("delete", typeMutability.canDelete());
-		if(typeMutability.canUpdate() != null)
-			xmlBuilder.addAttribute("update", typeMutability.canUpdate());
+		if(typeMutability != null) {
+			if(typeMutability.canCreate() != null)
+				xmlBuilder.addAttribute("create", typeMutability.canCreate());
+			if(typeMutability.canDelete() != null)
+				xmlBuilder.addAttribute("delete", typeMutability.canDelete());
+			if(typeMutability.canUpdate() != null)
+				xmlBuilder.addAttribute("update", typeMutability.canUpdate());
+		}
 		return xmlBuilder;
 	}
 
@@ -679,15 +681,23 @@ public class CmisUtils {
 			if(capabilities.isVersionSpecificFilingSupported() != null)
 				repositoryXml.addAttribute("supportsVersionSpecificFiling", capabilities.isVersionSpecificFilingSupported());
 
-			repositoryXml.addAttribute("aclCapability", capabilities.getAclCapability().name());
-			repositoryXml.addAttribute("changesCapability", capabilities.getChangesCapability().name());
-			repositoryXml.addAttribute("contentStreamUpdatesCapability", capabilities.getContentStreamUpdatesCapability().name());
+			if(capabilities.getAclCapability() != null)
+				repositoryXml.addAttribute("aclCapability", capabilities.getAclCapability().name());
+			if(capabilities.getChangesCapability() != null)
+				repositoryXml.addAttribute("changesCapability", capabilities.getChangesCapability().name());
+			if(capabilities.getContentStreamUpdatesCapability() != null)
+				repositoryXml.addAttribute("contentStreamUpdatesCapability", capabilities.getContentStreamUpdatesCapability().name());
+			if(capabilities.getJoinCapability() != null)
+				repositoryXml.addAttribute("joinCapability", capabilities.getJoinCapability().name());
+			if(capabilities.getOrderByCapability() != null)
+				repositoryXml.addAttribute("orderByCapability", capabilities.getOrderByCapability().name());
+			if(capabilities.getQueryCapability() != null)
+				repositoryXml.addAttribute("queryCapability", capabilities.getQueryCapability().name());
+			if(capabilities.getRenditionsCapability() != null)
+				repositoryXml.addAttribute("renditionsCapability", capabilities.getRenditionsCapability().name());
+
 			repositoryXml.addSubElement(CmisUtils.creatablePropertyTypes2xml(capabilities.getCreatablePropertyTypes()));
-			repositoryXml.addAttribute("joinCapability", capabilities.getJoinCapability().name());
 			repositoryXml.addSubElement(CmisUtils.newTypeSettableAttributes2xml(capabilities.getNewTypeSettableAttributes()));
-			repositoryXml.addAttribute("orderByCapability", capabilities.getOrderByCapability().name());
-			repositoryXml.addAttribute("queryCapability", capabilities.getQueryCapability().name());
-			repositoryXml.addAttribute("renditionsCapability", capabilities.getRenditionsCapability().name());
 		}
 		return repositoryXml;
 	}
@@ -706,32 +716,34 @@ public class CmisUtils {
 	private static XmlBuilder newTypeSettableAttributes2xml(NewTypeSettableAttributes newTypeSettableAttributes) {
 		XmlBuilder newTypeSettableAttributesXml = new XmlBuilder("newTypeSettableAttributes");
 
-		if(newTypeSettableAttributes.canSetControllableAcl() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetControllableAcl", newTypeSettableAttributes.canSetControllableAcl());
-		if(newTypeSettableAttributes.canSetControllablePolicy() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetControllablePolicy", newTypeSettableAttributes.canSetControllablePolicy());
-		if(newTypeSettableAttributes.canSetCreatable() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetCreatable", newTypeSettableAttributes.canSetCreatable());
-		if(newTypeSettableAttributes.canSetDescription() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetDescription", newTypeSettableAttributes.canSetDescription());
-		if(newTypeSettableAttributes.canSetDisplayName() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetDisplayName", newTypeSettableAttributes.canSetDisplayName());
-		if(newTypeSettableAttributes.canSetFileable() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetFileable", newTypeSettableAttributes.canSetFileable());
-		if(newTypeSettableAttributes.canSetFulltextIndexed() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetFulltextIndexed", newTypeSettableAttributes.canSetFulltextIndexed());
-		if(newTypeSettableAttributes.canSetId() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetId", newTypeSettableAttributes.canSetId());
-		if(newTypeSettableAttributes.canSetIncludedInSupertypeQuery() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetIncludedInSupertypeQuery", newTypeSettableAttributes.canSetIncludedInSupertypeQuery());
-		if(newTypeSettableAttributes.canSetLocalName() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetLocalName", newTypeSettableAttributes.canSetLocalName());
-		if(newTypeSettableAttributes.canSetLocalNamespace() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetLocalNamespace", newTypeSettableAttributes.canSetLocalNamespace());
-		if(newTypeSettableAttributes.canSetQueryable() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetQueryable", newTypeSettableAttributes.canSetQueryable());
-		if(newTypeSettableAttributes.canSetQueryName() != null)
-			newTypeSettableAttributesXml.addAttribute("canSetQueryName", newTypeSettableAttributes.canSetQueryName());
+		if(newTypeSettableAttributes != null) {
+			if(newTypeSettableAttributes.canSetControllableAcl() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetControllableAcl", newTypeSettableAttributes.canSetControllableAcl());
+			if(newTypeSettableAttributes.canSetControllablePolicy() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetControllablePolicy", newTypeSettableAttributes.canSetControllablePolicy());
+			if(newTypeSettableAttributes.canSetCreatable() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetCreatable", newTypeSettableAttributes.canSetCreatable());
+			if(newTypeSettableAttributes.canSetDescription() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetDescription", newTypeSettableAttributes.canSetDescription());
+			if(newTypeSettableAttributes.canSetDisplayName() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetDisplayName", newTypeSettableAttributes.canSetDisplayName());
+			if(newTypeSettableAttributes.canSetFileable() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetFileable", newTypeSettableAttributes.canSetFileable());
+			if(newTypeSettableAttributes.canSetFulltextIndexed() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetFulltextIndexed", newTypeSettableAttributes.canSetFulltextIndexed());
+			if(newTypeSettableAttributes.canSetId() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetId", newTypeSettableAttributes.canSetId());
+			if(newTypeSettableAttributes.canSetIncludedInSupertypeQuery() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetIncludedInSupertypeQuery", newTypeSettableAttributes.canSetIncludedInSupertypeQuery());
+			if(newTypeSettableAttributes.canSetLocalName() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetLocalName", newTypeSettableAttributes.canSetLocalName());
+			if(newTypeSettableAttributes.canSetLocalNamespace() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetLocalNamespace", newTypeSettableAttributes.canSetLocalNamespace());
+			if(newTypeSettableAttributes.canSetQueryable() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetQueryable", newTypeSettableAttributes.canSetQueryable());
+			if(newTypeSettableAttributes.canSetQueryName() != null)
+				newTypeSettableAttributesXml.addAttribute("canSetQueryName", newTypeSettableAttributes.canSetQueryName());
+		}
 
 		return newTypeSettableAttributesXml;
 	}
@@ -832,15 +844,24 @@ public class CmisUtils {
 		repositoryCapabilities.setIsPwcUpdatable(CmisUtils.parseBooleanAttr(repositoryCapabilitiesXml, "isPwcUpdatable"));
 		repositoryCapabilities.setSupportsUnfiling(CmisUtils.parseBooleanAttr(repositoryCapabilitiesXml, "supportsUnfiling"));
 		repositoryCapabilities.setSupportsVersionSpecificFiling(CmisUtils.parseBooleanAttr(repositoryCapabilitiesXml, "supportsVersionSpecificFiling"));
-		repositoryCapabilities.setCapabilityAcl(CapabilityAcl.valueOf(repositoryCapabilitiesXml.getAttribute("aclCapability")));
-		repositoryCapabilities.setCapabilityChanges(CapabilityChanges.valueOf(repositoryCapabilitiesXml.getAttribute("changesCapability")));
-		repositoryCapabilities.setCapabilityContentStreamUpdates(CapabilityContentStreamUpdates.valueOf(repositoryCapabilitiesXml.getAttribute("contentStreamUpdatesCapability")));
-		repositoryCapabilities.setCreatablePropertyTypes(CmisUtils.xml2creatablePropertyTypes(repositoryCapabilitiesXml));
-		repositoryCapabilities.setCapabilityJoin(CapabilityJoin.valueOf(repositoryCapabilitiesXml.getAttribute("joinCapability")));
 		repositoryCapabilities.setNewTypeSettableAttributes(CmisUtils.xml2newTypeSettableAttributes(repositoryCapabilitiesXml));
-		repositoryCapabilities.setCapabilityOrderBy(CapabilityOrderBy.valueOf(repositoryCapabilitiesXml.getAttribute("orderByCapability")));
-		repositoryCapabilities.setCapabilityQuery(CapabilityQuery.valueOf(repositoryCapabilitiesXml.getAttribute("queryCapability")));
-		repositoryCapabilities.setCapabilityRendition(CapabilityRenditions.valueOf(repositoryCapabilitiesXml.getAttribute("renditionsCapability")));
+		repositoryCapabilities.setCreatablePropertyTypes(CmisUtils.xml2creatablePropertyTypes(repositoryCapabilitiesXml));
+
+		//These enums don't have to be set, require a null check else Enum.valueOf will bom.
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("aclCapability")))
+			repositoryCapabilities.setCapabilityAcl(CapabilityAcl.valueOf(repositoryCapabilitiesXml.getAttribute("aclCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("changesCapability")))
+			repositoryCapabilities.setCapabilityChanges(CapabilityChanges.valueOf(repositoryCapabilitiesXml.getAttribute("changesCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("contentStreamUpdatesCapability")))
+			repositoryCapabilities.setCapabilityContentStreamUpdates(CapabilityContentStreamUpdates.valueOf(repositoryCapabilitiesXml.getAttribute("contentStreamUpdatesCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("joinCapability")))
+			repositoryCapabilities.setCapabilityJoin(CapabilityJoin.valueOf(repositoryCapabilitiesXml.getAttribute("joinCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("orderByCapability")))
+			repositoryCapabilities.setCapabilityOrderBy(CapabilityOrderBy.valueOf(repositoryCapabilitiesXml.getAttribute("orderByCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("queryCapability")))
+			repositoryCapabilities.setCapabilityQuery(CapabilityQuery.valueOf(repositoryCapabilitiesXml.getAttribute("queryCapability")));
+		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("renditionsCapability")))
+			repositoryCapabilities.setCapabilityRendition(CapabilityRenditions.valueOf(repositoryCapabilitiesXml.getAttribute("renditionsCapability")));
 
 		return repositoryCapabilities;
 	}
@@ -1040,7 +1061,7 @@ public class CmisUtils {
 		return cmisXml;
 	}
 
-	public static ObjectData xml2ObjectData(Element cmisElement, IPipeLineSession context) {
+	public static ObjectData xml2ObjectData(Element cmisElement, PipeLineSession context) {
 		ObjectDataImpl impl = new ObjectDataImpl();
 
 		// Handle allowable actions
@@ -1109,7 +1130,7 @@ public class CmisUtils {
 		return impl;
 	}
 
-	public static ObjectList xml2ObjectList(Element result, IPipeLineSession context) {
+	public static ObjectList xml2ObjectList(Element result, PipeLineSession context) {
 		ObjectListImpl objectList = new ObjectListImpl();
 		objectList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
 		objectList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));

@@ -17,13 +17,13 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.quartz.JobBuilder.newJob;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -84,14 +84,14 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
 			String correlationID = session==null ? "" : session.getMessageId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
+			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").getValue().toString();
+				jobName = values.getParameterValue("_jobname").asStringValue();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
 			return new Message(jobName);

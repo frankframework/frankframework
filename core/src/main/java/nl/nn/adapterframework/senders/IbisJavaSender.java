@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
  * 
  * <h4>configuring IbisJavaSender and JavaListener</h4>
  * <ul>
- *   <li>Define a GenericMessageSendingPipe with an IbisJavaSender</li>
+ *   <li>Define a SenderPipe with an IbisJavaSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
  * In the Adapter to be called:
@@ -89,7 +89,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -116,15 +116,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 			String serviceName;
 			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = (String)session.get(getServiceNameSessionKey());
+				serviceName = session.getMessage(getServiceNameSessionKey()).asString();
 			} else {
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : (String)session.get(IPipeLineSession.businessCorrelationIdKey);
+			String correlationID = session==null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
-				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session, null);
+				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
 			}
 		
 		} catch (ParameterException e) {
@@ -136,7 +136,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
 			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, session);
+				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}
 		return new Message(result);

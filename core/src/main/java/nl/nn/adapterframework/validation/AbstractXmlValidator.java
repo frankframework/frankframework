@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,21 +22,24 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
@@ -54,14 +57,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator {
+public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -71,8 +75,6 @@ public abstract class AbstractXmlValidator {
 	private boolean validateFile = false;
 	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	protected boolean warn = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.warn", true);
-	protected boolean needsInit = true;
-	protected boolean lazyInit = AppConstants.getInstance(configurationClassLoader).getBoolean("xmlValidator.lazyInit", false);
 
 	protected String logPrefix = "";
 	protected boolean addNamespaceToSchema = false;
@@ -84,6 +86,8 @@ public abstract class AbstractXmlValidator {
 	private String xmlSchemaVersion=null;
 	
 	protected SchemasProvider schemasProvider;
+
+	private boolean started = false;
 
 	/**
 	 * Configure the XmlValidator
@@ -97,24 +101,28 @@ public abstract class AbstractXmlValidator {
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
-		if (!lazyInit) {
-			init();
+	}
+
+	@Override
+	public String getName() {
+		return logPrefix;
+	}
+
+	public void start() throws ConfigurationException {
+		if(isStarted()) {
+			log.info("already started " + ClassUtils.nameOf(this));
+		}
+
+		started = true;
+	}
+
+	public void stop() {
+		if(started) {
+			started = false;
 		}
 	}
 
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			needsInit = false;
-		}
-	}
-
-	public void reset() {
-		if (!needsInit) {
-			needsInit = true;
-		}
-	}
-
-	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, IPipeLineSession session, String event, Throwable t) throws XmlValidatorException {
+	protected String handleFailures(XmlValidatorErrorHandler xmlValidatorErrorHandler, PipeLineSession session, String event, Throwable t) throws XmlValidatorException {
 		// A SAXParseException will already be reported by the parser to the
 		// XmlValidatorErrorHandler through the ErrorHandler interface.
 		if (t != null && !(t instanceof SAXParseException)) {
@@ -136,7 +144,7 @@ public abstract class AbstractXmlValidator {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
@@ -150,22 +158,22 @@ public abstract class AbstractXmlValidator {
 		return null;
 	}
 
-	public abstract ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
+	public abstract ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException;
 	public abstract List<XSModel> getXSModels();
 
 	/**
 	 * @param input   the XML string to validate
-	 * @param session a {@link IPipeLineSession pipeLineSession}
+	 * @param session a {@link PipeLineSession pipeLineSession}
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, IPipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, logPrefix, validatorHandler, null, context);
 	}
 
-	public String validate(Object input, IPipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -182,7 +190,7 @@ public abstract class AbstractXmlValidator {
 		return validate(is, validatorHandler, session, context);
 	}
 
-	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, IPipeLineSession session, ValidationContext context) throws XmlValidatorException {
+	public String validate(InputSource inputSource, ValidatorHandler validatorHandler, PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		try {
 			XmlUtils.parseXml(inputSource, validatorHandler, context.getErrorHandler());
 		} catch (IOException | SAXException e) {
@@ -200,7 +208,7 @@ public abstract class AbstractXmlValidator {
 	 * @return the result event, e.g. 'valid XML' or 'Invalid XML'
 	 * @throws XmlValidatorException, when configured to do so
 	 */
-	public String finalizeValidation(ValidationContext context, IPipeLineSession session, Throwable t) throws XmlValidatorException {
+	public String finalizeValidation(ValidationContext context, PipeLineSession session, Throwable t) throws XmlValidatorException {
 		if (t != null) {
 			return handleFailures(context.getErrorHandler(), session, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, t);
 		}
@@ -219,12 +227,9 @@ public abstract class AbstractXmlValidator {
 		this.schemasProvider = schemasProvider;
 	}
 
-	protected String getLogPrefix(IPipeLineSession session) {
+	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
-		if (this instanceof INamedObject) {
-			sb.append("[").append(((INamedObject) this).getName()).append("] ");
-		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}
@@ -267,7 +272,7 @@ public abstract class AbstractXmlValidator {
 	 * </p>
 	 * Defaults to <code>false</code>;
 	 */
-	@IbisDoc({"Perform addional memory intensive checks", "<code>false</code>"})
+	@IbisDoc({"Perform addional memory intensive checks", "false"})
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
@@ -275,7 +280,7 @@ public abstract class AbstractXmlValidator {
 		return fullSchemaChecking;
 	}
 
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "<code>false</code>"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "false"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -299,7 +304,7 @@ public abstract class AbstractXmlValidator {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "false"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -315,12 +320,12 @@ public abstract class AbstractXmlValidator {
 		return charset;
 	}
 
-	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
+	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -336,7 +341,7 @@ public abstract class AbstractXmlValidator {
 		return importedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -352,28 +357,20 @@ public abstract class AbstractXmlValidator {
 		return importedNamespacesToIgnore;
 	}
 
-	@IbisDoc({"Ignore namespaces in the input message which are unknown", "<code>true</code> when schema or nonamespaceschemalocation is used, <code>false</code> otherwise"})
+	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
-	public void setIgnoreUnknownNamespaces(boolean b) {
+	public void setIgnoreUnknownNamespaces(Boolean b) {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "false"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}
 	public boolean isIgnoreCaching() {
 		return ignoreCaching;
-	}
-
-	@IbisDoc({"If set, the value in appconstants is overwritten (for this validator only)", "<code>application default (false)</code>"})
-	public void setLazyInit(boolean lazyInit) {
-		this.lazyInit = lazyInit;
-	}
-	public boolean isLazyInit() {
-		return lazyInit;
 	}
 
 	@IbisDoc({"If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. ", "<code>1.1</code>"})
@@ -387,10 +384,7 @@ public abstract class AbstractXmlValidator {
 		return getXmlSchemaVersion()==null || "1.0".equals(getXmlSchemaVersion());
 	}
 
-	/**
-	 * This ClassLoader is set upon creation of the pipe, used to retrieve resources configured by the Ibis application.
-	 */
-	public ClassLoader getConfigurationClassLoader() {
-		return configurationClassLoader;
+	public boolean isStarted() {
+		return started;
 	}
 }

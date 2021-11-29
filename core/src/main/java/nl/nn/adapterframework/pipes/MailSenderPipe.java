@@ -42,14 +42,7 @@ import nl.nn.adapterframework.senders.MailSender;
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of a listener to listen to for replies, assuming these to arrive quickly!</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when the message was successfully sent and no listener was specified</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if a listener was specified.</td></tr>
- * </table>
- * </p>
+ * 
  * @author Johan Verrips
  */
 

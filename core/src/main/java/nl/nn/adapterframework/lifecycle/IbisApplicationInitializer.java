@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,20 +15,27 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating 
@@ -39,6 +46,7 @@ import nl.nn.adapterframework.util.AppConstants;
  *
  */
 public class IbisApplicationInitializer extends ContextLoaderListener {
+	private Logger log = LogUtil.getLogger(this);
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
@@ -49,15 +57,35 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setConfigLocation(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/webApplicationContext.xml");
+		applicationContext.setConfigLocations(getSpringConfigurationFiles());
 		applicationContext.setDisplayName("IbisApplicationInitializer");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", AppConstants.getInstance()));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
 
 		return applicationContext;
+	}
+
+	private String[] getSpringConfigurationFiles() {
+		List<String> springConfigurationFiles = new ArrayList<>();
+		springConfigurationFiles.add(SpringContextScope.ENVIRONMENT.getContextFile());
+
+		String file = AppConstants.getInstance().getProperty("ibistesttool.springConfigFile");
+		URL fileURL = this.getClass().getClassLoader().getResource(file);
+		if(fileURL == null) {
+			log.warn("unable to locate TestTool configuration ["+file+"]");
+		} else {
+			if(file.indexOf(":") == -1) {
+				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
+			}
+
+			log.info("loading TestTool configuration ["+file+"]");
+			springConfigurationFiles.add(file);
+		}
+
+		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
 	@Override
@@ -71,10 +99,15 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	 */
 	@Override
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
-		WebApplicationContext wac = super.initWebApplicationContext(servletContext);
-		SpringBus bus = (SpringBus) wac.getBean("cxf");
-		servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
-		return wac;
+		try {
+			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
+			SpringBus bus = (SpringBus) wac.getBean("cxf");
+			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+			return wac;
+		} catch (Exception e) {
+			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			throw e;
+		}
 	}
 
 	private void checkAndCorrectLegacyServerTypes(ServletContext servletContext) {
@@ -118,11 +151,12 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 		//has it explicitly been set? if not, set the property
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
 		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
 			servletContext.log("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+autoDeterminedApplicationServerType+"]");
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			servletContext.log("determined ApplicationServer ["+autoDeterminedApplicationServerType+"]");
+			servletContext.log("determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":""));
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 	}

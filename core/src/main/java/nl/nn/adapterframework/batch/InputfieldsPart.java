@@ -15,28 +15,17 @@
 */
 package nl.nn.adapterframework.batch;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.doc.FrankDocGroup;
+
 /**
  * @author  John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public class InputfieldsPart {
 
-	private String value;
-	private String description;
+	private @Getter @Setter String value;
+	private @Getter @Setter String description;
 	
-
-	public void setValue(String string) {
-		value = string;
-	}
-	public String getValue() {
-		return value;
-	}
-
-
-	public void setDescription(String string) {
-		description = string;
-	}
-	public String getDescription() {
-		return description;
-	}
-
 }

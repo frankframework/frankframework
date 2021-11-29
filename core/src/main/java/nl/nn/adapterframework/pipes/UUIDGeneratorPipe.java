@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -42,21 +42,18 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		super.configure();
 		String uType = getType();
 		if (uType == null) {
-			throw new ConfigurationException(
-				getLogPrefix(null) + "type must be set");
+			throw new ConfigurationException("type must be set");
 		}
 		if (!uType.equalsIgnoreCase("alphanumeric")
 			&& !uType.equalsIgnoreCase("numeric")) {
-			throw new ConfigurationException(
-				getLogPrefix(null)
-					+ "illegal value for type ["
+			throw new ConfigurationException("illegal value for type ["
 					+ uType
 					+ "], must be 'alphanumeric' or 'numeric'");
 		}
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String result = null;
 		if ("alphanumeric".equalsIgnoreCase(getType())) {
@@ -65,7 +62,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 			result = Misc.createNumericUUID();
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getType() {

@@ -26,6 +26,8 @@ public class StringResolverTest {
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
 		assertTrue("did not find any properties!", properties.size() > 0);
+		
+		System.setProperty("authAliases.expansion.allowed", "alias1,alias2");
 	}
 
 	@Test
@@ -54,7 +56,52 @@ public class StringResolverTest {
 
 	@Test
 	public void resolveComplexProperty() {
-		String result = StringResolver.substVars(properties.getProperty("testMultiResolve"), properties);
+		String result = StringResolver.substVars("${testMultiResolve}", properties);
 		assertEquals("one,two,three_value1value1,my_value2.value1,StageSpecifics_value1.value2.value1", result);
+	}
+
+	@Test
+	public void resolveCyclicProperty() {
+		String result = StringResolver.substVars("${cyclic}", properties);
+		assertEquals("prefix ${cyclic} suffix", result);
+	}
+
+	
+	@Test
+	public void resolveUsername() {
+		// N.B. the notation ${credential:alias1/username} will work too, for some implementations of CredentialProvider, but not for all!
+		String result = StringResolver.substVars("${credential:username:alias1}", properties);
+		assertEquals("username1", result);
+	}
+
+	@Test
+	public void resolvePassword1() {
+		// N.B. the notation ${credential:alias1/password} will work too, for some implementations of CredentialProvider, but not for all!
+		String result = StringResolver.substVars("${credential:password:alias1}", properties);
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void resolvePassword2() {
+		String result = StringResolver.substVars("${credential:alias1}", properties); // the 'credential:' prefix defaults to return the password
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void resolvePasswordOnlyAlias() {
+		String result = StringResolver.substVars("${credential:alias2}", properties);
+		assertEquals("passwordOnly", result);
+	}
+
+	@Test
+	public void resolvePasswordOnlyAlias2() {
+		String result = StringResolver.substVars("${credential:password:alias2}", properties);
+		assertEquals("passwordOnly", result);
+	}
+
+	@Test
+	public void resolvePasswordNotAllowed() {
+		String result = StringResolver.substVars("${credential:password:alias3}", properties);
+		assertEquals("!!not allowed to expand credential of authAlias [alias3]!!", result);
 	}
 }

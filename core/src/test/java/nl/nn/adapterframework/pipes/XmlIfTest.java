@@ -3,26 +3,20 @@ package nl.nn.adapterframework.pipes;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
 
-	@Mock
-	private IPipeLineSession session = new PipeLineSessionBase();
-
 	private String pipeForwardThen = "then";
 	private String pipeForwardElse = "else";
 
 	@Override
-	public XmlIf createPipe() {
+	public XmlIf createPipe() throws ConfigurationException {
 		XmlIf xmlIf = new XmlIf();
 
 		//Add default pipes
@@ -342,6 +336,69 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		pipe.start();
 
 		PipeRunResult prr = doPipe(pipe, "	<test1", session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void emptyNamespaceDefsTest() throws PipeRunException, ConfigurationException, PipeStartException {
+		exception.expectMessage("Undeclared namespace prefix");
+		String input = "&lt;root&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
+				"&lt;dummy&gt;true&lt;/dummy&gt;\n" + 
+				"&lt;/root&gt;";
+		String pipeName = "test1";
+		pipe.setThenForwardName(pipeName);
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestTrue() throws PipeRunException, ConfigurationException, PipeStartException {
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setThenForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestFalse() throws PipeRunException, ConfigurationException, PipeStartException {
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setElseForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 2)");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void namespaceDefsTestEmptyBooleanCheck() throws PipeRunException, ConfigurationException, PipeStartException {
+		exception.expect(ConfigurationException.class);
+		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
+		String pipeName = "test1";
+		pipe.setElseForwardName(pipeName);
+		pipe.registerForward(new PipeForward(pipeName,null));
+		pipe.setXpathExpression("xs:boolean()");
+		pipe.setNamespaceDefs("xs=http://www.w3.org/2001/XMLSchema");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
 		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 }

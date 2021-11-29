@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -25,21 +26,20 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.web.context.support.XmlWebApplicationContext;
+import org.springframework.util.ResourceUtils;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet} 
@@ -57,29 +57,27 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  *
  */
-public class IbisApplicationContext {
+public class IbisApplicationContext implements Closeable {
+	private Exception startupException;
+
 	public enum BootState {
-		FIRST_START,STARTING,STARTED,STOPPING,STOPPED,ERROR;
-		private Exception ex = null;
-		public BootState setException(Exception ex) {
-			this.ex = ex;
-			return this;
+		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
+
+		public boolean isIdle() {
+			return !this.equals(STARTING) || !this.equals(STOPPING);
 		}
-		public Exception getException() {
-			return ex;
-		}
-		public static BootState ERROR(Exception ex) {
-			return BootState.ERROR.setException(ex);
+		public boolean inError() {
+			return this.equals(ERROR);
 		}
 	}
 
 	private AbstractApplicationContext applicationContext;
 	private ApplicationContext parentContext = null;
 
-	public final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private Logger log = LogUtil.getLogger(this);
-	private BootState STATE = BootState.FIRST_START;
-	private Map<String, String> iafModules = new HashMap<String, String>();
+	private BootState state = BootState.FIRST_START;
+	private Map<String, String> iafModules = new HashMap<>();
 
 
 	public void setParentContext(ApplicationContext parentContext) {
@@ -97,8 +95,12 @@ public class IbisApplicationContext {
 	 */
 	protected void createApplicationContext() throws BeansException {
 		log.debug("creating Spring Application Context");
-		if(!STATE.equals(BootState.FIRST_START))
-			STATE = BootState.STARTING;
+		if(!state.equals(BootState.FIRST_START)) {
+			state = BootState.STARTING;
+		}
+		if(startupException != null) {
+			startupException = null;
+		}
 
 		long start = System.currentTimeMillis();
 
@@ -109,33 +111,28 @@ public class IbisApplicationContext {
 			if(parentContext != null) {
 				log.debug("found Spring rootContext ["+parentContext+"]");
 				applicationContext.setParent(parentContext);
-
-				// We need to set the SpringBus here, because on WebSphere the IbisApplicationInitalizer is ran from a different ClassLoader.
-				// This causes the WebServiceListeners register them selves on a different (newly created) SpringBus instead of the Ibis one.
-				SpringBus bus = (SpringBus) parentContext.getBean("cxf");
-				BusFactory.setDefaultBus(bus);
 			}
 			applicationContext.refresh();
 		} catch (BeansException be) {
-			STATE = BootState.ERROR(be);
+			state = BootState.ERROR;
+			startupException = be; //Save this in case we might need it later
 			throw be;
 		}
 
 		log.info("created "+applicationContext.getClass().getSimpleName()+" in " + (System.currentTimeMillis() - start) + " ms");
-		STATE = BootState.STARTED;
+		state = BootState.STARTED;
 	}
 
 	/**
-	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, SpringApplicationContext and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
 	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
-		List<String> springConfigurationFiles = new ArrayList<String>();
-		springConfigurationFiles.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
-		springConfigurationFiles.add(XmlWebApplicationContext.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+		List<String> springConfigurationFiles = new ArrayList<>();
+		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
@@ -147,7 +144,7 @@ public class IbisApplicationContext {
 				log.error("unable to locate Spring configuration file ["+file+"]");
 			} else {
 				if(file.indexOf(":") == -1) {
-					file = XmlWebApplicationContext.CLASSPATH_URL_PREFIX+"/"+file;
+					file = ResourceUtils.CLASSPATH_URL_PREFIX+"/"+file;
 				}
 
 				springConfigurationFiles.add(file);
@@ -162,22 +159,26 @@ public class IbisApplicationContext {
 	 * Creates the Spring Application Context when ran from the command line.
 	 * @throws BeansException when the Context fails to initialize
 	 */
-	private ClassPathXmlApplicationContext createClassPathApplicationContext() throws BeansException {
-		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
+	private ClassPathXmlApplicationContext createClassPathApplicationContext() {
+		ClassPathXmlApplicationContext classPathapplicationContext = new ClassPathXmlApplicationContext();
 
-		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
-		applicationContext.setConfigLocations(getSpringConfigurationFiles(applicationContext.getClassLoader()));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
+		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathapplicationContext.setId(instanceName);
+		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
-		return applicationContext;
+		return classPathapplicationContext;
 	}
 
 	/**
 	 * Destroys the Spring context
 	 */
-	protected void destroyApplicationContext() {
+	@Override
+	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
 			log.debug("destroying Ibis Application Context ["+oldContextName+"]");
@@ -189,33 +190,12 @@ public class IbisApplicationContext {
 		}
 	}
 
-	public Object getBean(String beanName) {
-		return applicationContext.getBean(beanName);
-	}
-
 	public <T> T getBean(String beanName, Class<T> beanClass) {
 		return applicationContext.getBean(beanName, beanClass);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T createBeanAutowireByName(Class<T> beanClass) {
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-	}
-
-	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {
-		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
-	}
-
-	public void initializeBean(Object existingBean, String beanName) {
-		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, beanName);
-	}
-
-	public String[] getBeanNamesForType(Class<?> beanClass) {
-		return applicationContext.getBeanNamesForType(beanClass);
-	}
-
-	public boolean isPrototype(String beanName) {
-		return applicationContext.isPrototype(beanName);
+		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
 	/**
@@ -224,7 +204,7 @@ public class IbisApplicationContext {
 	 * 
 	 * @return Spring XML Bean Factory or NULL
 	 */
-	public AbstractApplicationContext getApplicationContext() {
+	protected AbstractApplicationContext getApplicationContext() {
 		if(applicationContext == null)
 			createApplicationContext();
 
@@ -232,7 +212,14 @@ public class IbisApplicationContext {
 	}
 
 	public BootState getBootState() {
-		return STATE;
+		return state;
+	}
+
+	public Exception getStartupException() {
+		if(BootState.ERROR.equals(state)) {
+			return startupException;
+		}
+		return null;
 	}
 
 	/**
@@ -285,8 +272,7 @@ public class IbisApplicationContext {
 		URL pomProperties = classLoader.getResource(basePath+module+"/pom.properties");
 
 		if(pomProperties != null) {
-			try {
-				InputStream is = pomProperties.openStream();
+			try (InputStream is = pomProperties.openStream()) {
 				Properties props = new Properties();
 				props.load(is);
 				return (String) props.get("version");

@@ -1,10 +1,12 @@
 package nl.nn.adapterframework.filesystem;
 
-import org.apache.commons.net.ftp.FTPFile;
+import static org.junit.Assert.assertEquals;
 
-import nl.nn.adapterframework.filesystem.FileSystemTest;
-import nl.nn.adapterframework.filesystem.FtpFileSystem;
-import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
+import org.apache.commons.net.ftp.FTPFile;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import nl.nn.adapterframework.ftp.FTPFileRef;
 
 /**
  *  This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
@@ -13,10 +15,10 @@ import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
  */
 public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 
-	private String username = "test";
-	private String password = "test";
-	private String host = "10.0.0.190";
-	private String remoteDirectory = "";
+	private String username = "wearefrank";
+	private String password = "pass_123";
+	private String host = "localhost";
+	private String remoteDirectory = "/home/wearefrank/dir";
 	private int port = 21;
 
 	@Override
@@ -34,5 +36,38 @@ public class FtpFileSystemTest extends FileSystemTest<FTPFile, FtpFileSystem> {
 		fileSystem.setPort(port);
 
 		return fileSystem;
+	}
+
+	@Override
+	@Ignore
+	public void basicFileSystemTestCopyFile() throws Exception {
+		//Ignore this test as the copy action is not implemented/supported
+	}
+
+	@Test
+	public void testFTPFileRefSetRelative() {
+		assertEquals("test123", new FTPFileRef("test123").getName());
+		assertEquals("folder/test123", new FTPFileRef("folder/test123").getName());
+	}
+
+	@Test
+	public void testFTPFileRefSetFolder() {
+		FTPFileRef ref1 = new FTPFileRef("test123");
+		ref1.setFolder("folder");
+		assertEquals("folder/test123", ref1.getName());
+	}
+
+	@Test
+	public void testFTPFileRefRelativeWithSetFolder() {
+		FTPFileRef ref2 = new FTPFileRef("folder1/test123");
+		ref2.setFolder("folder2");
+		assertEquals("folder2/folder1/test123", ref2.getName());
+	}
+
+	@Test
+	public void testFTPFileRefWindowsSlash() {
+		FTPFileRef ref2 = new FTPFileRef("folder1\\test123");
+		ref2.setFolder("folder2");
+		assertEquals("folder2/folder1/test123", ref2.getName());
 	}
 }

@@ -19,7 +19,7 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -136,10 +136,17 @@ public class SaxElementBuilder implements AutoCloseable {
 		addElement(elementName, attributes, null);
 	}
 
+	public void addElement(String elementName, String value) throws SAXException {
+		addElement(elementName, null, value);
+	}
+
 	public void addElement(String elementName, Map<String,String> attributes, String value) throws SAXException {
 		startElement(elementName).addAttributes(attributes).addValue(value).endElement();
 	}
 
+	public void addElement(String elementName, String attributeName, String attributeValue, String value) throws SAXException {
+		startElement(elementName).addAttribute(attributeName, attributeValue).addValue(value).endElement();
+	}
 
 	@Override
 	public void close() throws SAXException {

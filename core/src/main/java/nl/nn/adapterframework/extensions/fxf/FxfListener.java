@@ -18,15 +18,16 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
-import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
@@ -43,19 +44,15 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>"FF"</td></tr>
- * <tr><td>{@link #setFxfFileSessionKey(String) fxfFileSessionKey}</td><td>name of the session key to store the name of the received file in</td><td>fxfFile</td></tr>
- * <tr><td>{@link #setMoveProcessedFile(boolean) moveProcessedFile}</td><td>when set to <code>true</code>, the received file if moved after being processed</td><td>true</td></tr>
- * <tr><td>{@link #setProcessedSiblingDirectory(String) processedSiblingDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed</td><td>"processed"</td></tr>
- * <tr><td>{@link #setCreateProcessedDirectory(boolean) createProcessedDirectory}</td><td>(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist</td><td>false</td></tr>
  * </table></p>
  * 
  * @author Peter Leeuwenburgh
  */
 public class FxfListener extends EsbJmsListener {
-	private String fxfFileSessionKey = "fxfFile";
-	private boolean moveProcessedFile = true;
-	private String processedSiblingDirectory = "processed";
-	private boolean createProcessedDirectory = false;
+	private @Getter String fxfFileSessionKey = "fxfFile";
+	private @Getter boolean moveProcessedFile = true;
+	private @Getter String processedSiblingDirectory = "processed";
+	private @Getter boolean createProcessedDirectory = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -78,7 +75,7 @@ public class FxfListener extends EsbJmsListener {
 		//TODO plr.getState() may return null when there is an error.
 		// The message will be placed in the errorstore due to this, 
 		// when solving the NPE this no longer happens
-		if (isMoveProcessedFile() && plr.getState().equalsIgnoreCase("success")) {
+		if (isMoveProcessedFile() && plr.isSuccessful()) {
 			File srcFile = null;
 			File dstFile = null;
 			try {
@@ -124,45 +121,32 @@ public class FxfListener extends EsbJmsListener {
 
 	private void warn(String msg, Throwable t) {
 		log.warn(msg, t);
-		IReceiver iReceiver = getReceiver();
-		if (iReceiver != null && iReceiver instanceof ReceiverBase) {
-			ReceiverBase rb = (ReceiverBase) iReceiver;
-			IAdapter iAdapter = rb.getAdapter();
+		Receiver receiver = getReceiver();
+		if (receiver != null) {
+			IAdapter iAdapter = receiver.getAdapter();
 			if (iAdapter != null) {
 				iAdapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
 			}
 		}
 	}
 
-	public String getFxfFileSessionKey() {
-		return fxfFileSessionKey;
-	}
-
+	@IbisDoc({"1", "name of the session key to store the name of the received file in", "fxfFile"})
 	public void setFxfFileSessionKey(String fxfFileSessionKey) {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"2", "If set to <code>true</code>, the received file is moved after being processed", "true"})
 	public void setMoveProcessedFile(boolean b) {
 		moveProcessedFile = b;
 	}
 
-	public boolean isMoveProcessedFile() {
-		return moveProcessedFile;
-	}
-
+	@IbisDoc({"3", "(only used when <code>moveProcessedFile=true</code>) <b>sibling</b> directory (related to the parent directory of the file to process) where files are stored after being processed", "processed"})
 	public void setProcessedSiblingDirectory(String processedSiblingDirectory) {
 		this.processedSiblingDirectory = processedSiblingDirectory;
 	}
 
-	public String getProcessedSiblingDirectory() {
-		return processedSiblingDirectory;
-	}
-
+	@IbisDoc({"4", "(only used when <code>moveProcessedFile=true</code>) when set to <code>true</code>, the directory to move processed files in is created if it does not exist", "false"})
 	public void setCreateProcessedDirectory(boolean b) {
 		createProcessedDirectory = b;
-	}
-
-	public boolean isCreateProcessedDirectory() {
-		return createProcessedDirectory;
 	}
 }

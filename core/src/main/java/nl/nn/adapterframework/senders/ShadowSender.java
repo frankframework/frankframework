@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Map;
 import org.springframework.core.task.TaskExecutor;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -40,11 +40,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Collection of Senders, that are executed all at the same time. Once the results are processed, all results will be sent to the resultSender, while the original sender will return it's result to the pipeline.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
- * </table>
- * </p>
  * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
 
  * @author  Niels Meijer
@@ -68,8 +63,7 @@ public class ShadowSender extends ParallelSenders {
 		if(resultSender == null)
 			throw new ConfigurationException("no resultSender defined");
 
-		for (Iterator<ISender> it = getSenderIterator();it.hasNext();) {
-			ISender sender = it.next();
+		for (ISender sender: getSenders()) {
 			if(sender.getName() != null && sender.getName().equalsIgnoreCase(getOriginalSender())) {
 				if(hasOriginalSender)
 					throw new ConfigurationException("originalSender can only be defined once");
@@ -102,7 +96,7 @@ public class ShadowSender extends ParallelSenders {
 	 * We override this from the parallel sender as we should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public Message doSendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new HashMap<ISender, ParallelSenderExecutor>();
 		TaskExecutor executor = createTaskExecutor();
@@ -206,8 +200,7 @@ public class ShadowSender extends ParallelSenders {
 	private List<ISender> getSenderList() {
 		if(senderList == null) {
 			senderList = new ArrayList<ISender>();
-			for (Iterator<ISender> it = getSenderIterator(); it.hasNext();) {
-				ISender sender = it.next();
+			for (ISender sender: getSenders()) {
 				if(sender.getName() == null || (!sender.getName().equals(getResultSender())))
 					senderList.add(sender);
 			}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2019 Nationale-Nederlanden
+   Copyright 2016 - 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	private Map<String, Object> configuration;
+	private String datasourceName = null;
 
 	public DatabaseClassLoader(ClassLoader parent) {
 		super(parent);
@@ -33,18 +34,18 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	}
 
 	@Override
-	protected Map<String, byte[]> loadResources() throws ConfigurationException {
+	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), null);
+			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
-			throw new ConfigurationException(getErrorMessage(), t);
+			throw new ClassLoaderException(getErrorMessage(), t);
 		}
 
 		if (configuration == null) {
-			throw new ConfigurationException(getErrorMessage());
+			throw new ClassLoaderException(getErrorMessage());
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
@@ -67,5 +68,20 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	public String getCreationDate() {
 		return (String) configuration.get("CREATED");
+	}
+
+	/**
+	 * @param datasourceName the Datasource to retrieve the configuration jar from
+	 */
+	public void setDatasourceName(String datasourceName) {
+		this.datasourceName = datasourceName;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder(super.toString());
+		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
+		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
+		return builder.toString();
 	}
 }

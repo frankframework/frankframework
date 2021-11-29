@@ -26,7 +26,7 @@ import net.bankid.merchant.library.Communicator;
 import net.bankid.merchant.library.Configuration;
 import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
@@ -77,7 +77,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Before
 	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL(this, "bankid-config.xml");
+		URL expectedUrl = ClassUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
 		DirectoryResponse response = mock(DirectoryResponse.class);
@@ -98,7 +98,7 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void randomMessage() throws SenderException, TimeOutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
-		IPipeLineSession session = null;
+		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();
 		//TODO compare
 	}
@@ -107,7 +107,7 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void normal() throws SenderException, TimeOutException, IOException {
 		String message = "<idin/>";
-		IPipeLineSession session = null;
+		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
@@ -116,7 +116,7 @@ public class IdinSenderTest extends Mockito {
 	@Test
 	public void issuersByCountry() throws SenderException, TimeOutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
-		IPipeLineSession session = null;
+		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}

@@ -28,9 +28,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -43,20 +44,10 @@ import nl.nn.adapterframework.util.FileUtils;
 /**
  * Pipe to zip or unzip a message or file.  
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>When no problems encountered</td></tr>
- * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
- * </table>
- * </p>
- * 
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends FixedForwardPipe {
-
-	private final static String EXCEPTIONFORWARD = "exception";
 
 	private boolean messageIsContent;
 	private boolean resultIsContent;
@@ -66,9 +57,18 @@ public class CompressPipe extends FixedForwardPipe {
 	private boolean compress;
 	private boolean convert2String;
 	private String fileFormat;
-	
+
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public void configure() throws ConfigurationException {
+		super.configure();
+
+		if(!resultIsContent && !messageIsContent && outputDirectory == null) {
+			throw new ConfigurationException("outputDirectory must be set");
+		}
+	}
+
+	@Override
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			Object result;
 			InputStream in;
@@ -160,13 +160,12 @@ public class CompressPipe extends FixedForwardPipe {
 					in.close();
 				}
 			}
-			return new PipeRunResult(getForward(), getResultMsg(result));
+			return new PipeRunResult(getSuccessForward(), getResultMsg(result));
 		} catch(Exception e) {
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0);
-				return new PipeRunResult(exceptionForward,resultmsg);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
 			}
 			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
 		}
@@ -181,7 +180,7 @@ public class CompressPipe extends FixedForwardPipe {
 		return result;
 	}
 	
-	private String getZipEntryName(Object input, IPipeLineSession session) throws ParameterException {
+	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
 		if (messageIsContent) {
 			return FileUtils.getFilename(getParameterList(), session, (File)null, zipEntryPattern);
 		}

@@ -1,42 +1,45 @@
 <manageDatabaseRLY>
-<completionInformation>
-<returnCode>OK</returnCode>
-</completionInformation>
-<results>
-<result item="1">
-<result>
-	<fielddefinition>
-		<field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TCHAR" precision="1" scale="0" type="CHAR"/>
-		<field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="TVARCHAR" precision="100" scale="0" type="VARCHAR"/>
-		<field columnClassName="java.math.BigDecimal" columnDisplaySize="22" columnTypeName="NUMBER" isCurrency="true" name="TNUMBER" precision="17" scale="5" type="NUMERIC"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="TCHAR">2</field>
-			<field name="TVARCHAR">success</field>
-			<field name="TNUMBER">IGNORE</field>
-		</row>
-		<row number="1">
-			<field name="TCHAR">X</field>
-			<field name="TVARCHAR" null="true"/>
-			<field name="TNUMBER">IGNORE</field>
-		</row>
-	</rowset>
-</result>
-</result>
-<result item="2">
-<result>
-	<fielddefinition>
-		<field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TYPE" precision="1" scale="0" type="CHAR"/>
-		<field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="SLOTID" precision="100" scale="0" type="VARCHAR"/>
-	</fielddefinition>
-	<rowset>
-		<row number="0">
-			<field name="TYPE">A</field>
-			<field name="SLOTID">IFSA://NLIBIS4TEST/JdbcQueryListener</field>
-		</row>
-	</rowset>
-</result>
-</result>
-</results>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="TCLOB" type="CLOB" columnDisplaySize="4000" precision="-1" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="oracle.jdbc.OracleClob"/>
+					<field name="TNUMBER" type="NUMERIC" columnDisplaySize="19" precision="17" scale="5" isCurrency="true" columnTypeName="NUMBER" columnClassName="java.math.BigDecimal"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TCHAR">2</field>
+						<field name="TCLOB">success</field>
+						<field name="TNUMBER">IGNORE</field>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+					<row number="1">
+						<field name="TCHAR">X</field>
+						<field name="TCLOB" null="true"/>
+						<field name="TNUMBER">IGNORE</field>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+		<result item="2">
+			<result>
+				<fielddefinition>
+					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR2" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TYPE">A</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/JdbcQueryListener</field>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
 </manageDatabaseRLY>

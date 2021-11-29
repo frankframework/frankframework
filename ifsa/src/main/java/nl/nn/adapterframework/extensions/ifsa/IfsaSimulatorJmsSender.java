@@ -16,10 +16,12 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
 
 import javax.jms.Destination;
@@ -276,7 +278,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		} else if (getMessageType().equalsIgnoreCase(FF_REQUEST)) {
 			p.setValue("8");
 		}
-		p.setType(Parameter.TYPE_INTEGER);
+		p.setType(ParameterType.INTEGER);
 		addParameter(p);
 
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
@@ -297,11 +299,11 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Destination getDestination(IPipeLineSession session) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(PipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
 			return (Destination) session.get("replyTo");
 		} else {
-			return super.getDestination(session);
+			return super.getDestination(session, pvl);
 		}
 	}
 

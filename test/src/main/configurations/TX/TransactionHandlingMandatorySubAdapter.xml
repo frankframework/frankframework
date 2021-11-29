@@ -4,7 +4,6 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -14,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingMandatory"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingMandatory"
 			/>
 		</receiver>
@@ -26,7 +24,7 @@
 
 			<!-- This should create (or reuse) it's transaction when calling this subadapter -->
 			<pipe name="Send transacted message to mandatory subadapter"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -43,7 +41,6 @@
 		description="First SubAdapter for Transaction Handling">
 	
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="Mandatory"
 		>
 			<listener 

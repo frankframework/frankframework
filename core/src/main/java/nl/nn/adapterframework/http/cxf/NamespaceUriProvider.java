@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.http.cxf;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import javax.xml.soap.SOAPBody;
@@ -23,14 +24,13 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.ServiceMode;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Node;
+
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Node;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Soap Provider that accepts any message and routes it to a listener with a corresponding TargetObjectNamespacURI.
@@ -41,7 +41,6 @@ import org.w3c.dom.Node;
 @ServiceMode(value=javax.xml.ws.Service.Mode.MESSAGE)
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends SOAPProviderBase {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private ServiceDispatcher sd = ServiceDispatcher.getInstance();
 
@@ -58,10 +57,14 @@ public class NamespaceUriProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	String processRequest(String correlationId, String message, IPipeLineSession pipelineSession) throws ListenerException {
+	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
 		log.debug("found namespace["+serviceName+"]");
-		return sd.dispatchRequest(serviceName, null, message, pipelineSession);
+		try {
+			return new Message(sd.dispatchRequest(serviceName, null, message.asString(), pipelineSession));
+		} catch (IOException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	public String findNamespaceUri() throws ListenerException {

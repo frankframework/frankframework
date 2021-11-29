@@ -1,0 +1,12 @@
+<result>
+  <items count="1">
+    <item>
+      <timestamp>Fri Feb 26 18:34:02 CET 2021</timestamp>
+      <messageId>ID:LPZWNL000040524-56906-1614359569635-3:22:26:1:1</messageId>
+      <correlationId>Test Tool correlation id</correlationId>
+      <message><![CDATA[<request destination="jms/i4testiaf_out">
+	<value>test</value>
+</request>]]></message>
+    </item>
+  </items>
+</result>

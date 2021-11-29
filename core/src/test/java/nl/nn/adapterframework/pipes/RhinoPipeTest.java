@@ -24,7 +24,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
 
     /**
-     * Method: doPipe(Object input, IPipeLineSession session)
+     * Method: doPipe(Object input, PipeLineSession session)
      */
     @Test
     public void testDoPipe() throws Exception {
@@ -48,7 +48,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeFailNoFilename() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] has neither fileName nor inputString specified");
+        exception.expectMessage("has neither fileName nor inputString specified");
         pipe.setjsfunctionName("giveNumber"); pipe.setjsfunctionArguments("2");
         pipe.configure();
         doPipe(pipe, "3", session);
@@ -58,7 +58,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeAsFunctionNotSpecified() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] JavaScript functionname not specified!");
+        exception.expectMessage("JavaScript functionname not specified!");
         pipe.setFileName(fileName);
         pipe.setjsfunctionArguments("2");
         pipe.configure();
@@ -68,7 +68,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
     }
     @Test
     public void testDoPipeFailAsWrongFileName() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] cannot find resource [random]");
+        exception.expectMessage("cannot find resource [random]");
         pipe.setFileName("random");
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("3");
@@ -80,7 +80,7 @@ public class RhinoPipeTest extends PipeTestBase<RhinoPipe> {
 
     @Test
     public void testDoPipeLookupAtRuntimeFailAsWrongFileName() throws Exception {
-        exception.expectMessage("Pipe [RhinoPipe under test] msgId [null] cannot find resource [wrong name]");
+        exception.expectMessage("msgId [null] cannot find resource [wrong name]");
         pipe.setFileName("wrong name");
         pipe.setjsfunctionName("giveNumber");
         pipe.setjsfunctionArguments("2");

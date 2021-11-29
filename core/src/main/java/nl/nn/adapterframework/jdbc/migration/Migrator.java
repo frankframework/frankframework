@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020 Integration Partners B.V.
+Copyright 2017, 2020, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,85 +15,155 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import liquibase.database.jvm.JdbcConnection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.jdbc.IDataSourceFactory;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * LiquiBase implementation for IAF
+ * Liquibase implementation for IAF. 
+ * Please call close method explicitly to release the connection used by liquibase or instantiate this with try-with-resources.
  * 
  * @author	Niels Meijer
  * @since	7.0-B4
  *
  */
-public class Migrator extends JdbcFacade {
+public class Migrator implements IConfigurable, AutoCloseable {
 
-	private IbisContext ibisContext;
+	private Logger log = LogUtil.getLogger(this);
+	private @Setter IDataSourceFactory dataSourceFactory = null;
+	private Configuration configuration;
+	private @Setter String defaultDatasourceName = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
+	private @Getter @Setter String name;
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
 	private LiquibaseImpl instance;
-
-	public Migrator() {
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(null, null, null);
+		configure(null, null);
 	}
 
-	public void configure(String configurationName) throws ConfigurationException {
-		configure(configurationName, null, null);
-	}
-
-	public void configure(String configurationName, ClassLoader classLoader) throws ConfigurationException {
-		configure(configurationName, classLoader, null);
-	}
-
-	public synchronized void configure(String configurationName, ClassLoader classLoader, String changeLogFile) throws ConfigurationException {
-		setName("JdbcMigrator for configuration["+configurationName+"]");
-
-		AppConstants appConstants = AppConstants.getInstance(classLoader);
-
-		if(changeLogFile == null)
-			changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
-
-		LiquibaseClassLoaderWrapper cl = new LiquibaseClassLoaderWrapper(classLoader);
-		if(cl.getResource(changeLogFile) == null) {
-			String msg = "unable to find database changelog file ["+changeLogFile+"]";
-			if(configurationName != null)
-				msg += " classLoader ["+ClassUtils.nameOf(classLoader)+"]";
-
-			log.debug(msg);
+	private DataSource getDatasource(String datasourceName) throws ConfigurationException {
+		DataSource datasource;
+		try {
+			datasource = dataSourceFactory.getDataSource(datasourceName);
+		} catch (NamingException e) {
+			throw new ConfigurationException("Could not find Datasource ["+datasourceName+"]", e);
 		}
-		else {
-			String dataSource = appConstants.getString("jdbc.migrator.dataSource", appConstants.getResolvedProperty("jdbc.datasource.default"));
-			setDatasourceName(dataSource);
+		log.debug("looked up Datasource ["+datasourceName+"] for JdbcMigrator ["+getName()+"]");
 
-			try {
-				JdbcConnection connection = new JdbcConnection(getConnection());
-				instance = new LiquibaseImpl(ibisContext, cl, connection, configurationName, changeLogFile);
-			}
-			catch (ValidationFailedException e) {
-				throw new ConfigurationException("liquibase validation failed", e);
-			}
-			catch (LiquibaseException e) {
-				throw new ConfigurationException("liquibase failed to initialize", e);
-			}
-			catch (Throwable e) {
-				throw new ConfigurationException("liquibase failed to initialize, error connecting to database ["+dataSource+"]", e);
-			}
-		}
+		return new TransactionAwareDataSourceProxy(datasource);
 	}
 
-	public void setIbisContext(IbisContext ibisContext) {
-		this.ibisContext = ibisContext;
+	public synchronized void configure(InputStream file, String filename) throws ConfigurationException {
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+		setName("JdbcMigrator for configuration ["+ configuration.getName() +"]");
+
+		String datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", defaultDatasourceName));
+		DataSource datasource = getDatasource(datasourceName);
+
+		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		if(filename != null) {
+			changeLogFile = filename;
+		}
+		ClassLoader classLoader = configuration.getClassLoader();
+		if(!(classLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
+			ConfigurationWarnings.add(this, log, "unable to initialize database migrator");
+			return;
+		}
+
+		try {
+			instance = new LiquibaseImpl(datasource, configuration, changeLogFile, file);
+		}
+		catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
+		}
+		catch (LiquibaseException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
+		}
+		catch (IOException e) {
+			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
+		}
+		catch (Throwable e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+datasourceName+"]", e);
+		}
 	}
 
 	public void update() {
-		if(this.instance != null)
-			instance.update();
+		if(this.instance != null) {
+			try {
+				instance.update();
+			} catch (JdbcException e) {
+				ConfigurationWarnings.add(configuration, log, e.getMessage(), e);
+			}
+		}
 	}
+
+	public void getUpdateSql(Writer writer) throws JdbcException {
+		if(this.instance != null) {
+			try {
+				instance.getUpdateScript(writer);
+			} catch (Exception e) {
+				throw new JdbcException("unable to generate database migration script", e);
+			}
+		}
+	}
+
+	@Override
+	public void close() {
+		if(this.instance != null) {
+			try {
+				instance.close();
+			} catch (Exception e) {
+				log.error("Failed to close the connection", e);
+			}
+		}
+	}
+
+	public boolean hasLiquibaseScript(Configuration config) {
+		AppConstants appConstants = AppConstants.getInstance(config.getClassLoader());
+		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
+		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(config.getClassLoader());
+		if(resourceAccessor.getResource(changeLogFile) == null) {
+			log.debug("No liquibase script ["+changeLogFile+"] found in the classpath of configuration ["+config.getName()+"]");
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		if(!(applicationContext instanceof Configuration)) {
+			throw new IllegalStateException("context not instanceof configuration");
+		}
+		this.configuration = (Configuration) applicationContext;
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return configuration;
+	}
+
 }

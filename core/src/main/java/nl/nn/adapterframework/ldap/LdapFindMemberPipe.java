@@ -25,9 +25,9 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.ldap.InitialLdapContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -49,7 +49,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 
 
 	@Override
-	public PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException {
 		String dnSearchIn_work;
 		String dnFind_work;
 		ParameterValueList pvl = null;
@@ -88,7 +88,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				return new PipeRunResult(notFoundForward, message);
 			}
 		}
-		return new PipeRunResult(getForward(), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {

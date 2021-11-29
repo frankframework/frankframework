@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -61,7 +59,7 @@ public final class ShowAdapterStatistics extends Base {
 
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
 
-		Adapter adapter = (Adapter)getIbisManager().getRegisteredAdapter(adapterName);
+		Adapter adapter = getIbisManager().getRegisteredAdapter(adapterName);
 
 		if(adapter == null){
 			throw new ApiException("Adapter not found!");
@@ -87,45 +85,29 @@ public final class ShowAdapterStatistics extends Base {
 		statisticsMap.put("hourly", hourslyStatistics);
 
 		List<Map<String, Object>> receivers = new ArrayList<Map<String, Object>>();
-		Iterator<?> recIt=adapter.getReceiverIterator();
-		if (recIt.hasNext()) {
-			while (recIt.hasNext()) {
-				IReceiver receiver=(IReceiver) recIt.next();
-				Map<String, Object> receiverMap = new HashMap<String, Object>();
+		for (Receiver<?> receiver: adapter.getReceivers()) {
+			Map<String, Object> receiverMap = new HashMap<String, Object>();
 
-				receiverMap.put("name", receiver.getName());
-				receiverMap.put("class", receiver.getClass().getName());
-				receiverMap.put("messagesReceived", receiver.getMessagesReceived());
-				receiverMap.put("messagesRetried", receiver.getMessagesRetried());
+			receiverMap.put("name", receiver.getName());
+			receiverMap.put("class", receiver.getClass().getName());
+			receiverMap.put("messagesReceived", receiver.getMessagesReceived());
+			receiverMap.put("messagesRetried", receiver.getMessagesRetried());
 
-				if (receiver instanceof IReceiverStatistics) {
-					IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
-					Iterator<?> statsIter;
-					statsIter = statReceiver.getProcessStatisticsIterator();
-					if (statsIter != null) {
-						ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
-//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
-						while(statsIter.hasNext()) {
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-						}
-						receiverMap.put("processing", procStatsMap);
-					}
-
-					statsIter = statReceiver.getIdleStatisticsIterator();
-					if (statsIter != null) {
-						ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
-						while(statsIter.hasNext()) {
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							idleStatsMap.add(statisticsKeeperToMapBuilder(pstat));
-						}
-						receiverMap.put("idle", idleStatsMap);
-					}
-
-					receivers.add(receiverMap);
-				}
+			ArrayList<Map<String, Object>> procStatsMap = new ArrayList<Map<String, Object>>();
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
+//			procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
+			for (StatisticsKeeper pstat: receiver.getProcessStatistics()) {
+				procStatsMap.add(statisticsKeeperToMapBuilder(pstat));
 			}
+			receiverMap.put("processing", procStatsMap);
+
+			ArrayList<Map<String, Object>> idleStatsMap = new ArrayList<Map<String, Object>>();
+			for (StatisticsKeeper istat: receiver.getIdleStatistics()) {
+				idleStatsMap.add(statisticsKeeperToMapBuilder(istat));
+			}
+			receiverMap.put("idle", idleStatsMap);
+
+			receivers.add(receiverMap);
 		}
 		statisticsMap.put("receivers", receivers);
 
@@ -138,7 +120,7 @@ public final class ShowAdapterStatistics extends Base {
 			statisticsMap.put("durationPerPipe", tmp.get("pipeStats"));
 			statisticsMap.put("sizePerPipe", tmp.get("sizeStats"));
 		} catch (SenderException e) {
-			log.error(e);
+			log.error("unable to parse pipeline statistics", e);
 		} finally {
 			handler.end(handle);
 		}

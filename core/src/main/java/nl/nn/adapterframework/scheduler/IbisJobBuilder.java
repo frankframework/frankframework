@@ -17,6 +17,7 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.job.DatabaseJob;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
@@ -76,7 +77,7 @@ public class IbisJobBuilder {
 		builder.setJobDef(jobDef);
 		builder.withDescription(jobDef.getDescription());
 
-		if(jobDef instanceof DatabaseJobDef) {
+		if(jobDef instanceof DatabaseJob) {
 			builder.setJobType(JobType.DATABASE);
 		}
 

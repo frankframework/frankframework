@@ -21,13 +21,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.Envelope;
@@ -50,8 +50,8 @@ public class SoapGenericProvider implements Provider {
 	private ServiceDispatcher sd=null;
 	//private SoapWrapper soapWrapper=null;
 
-	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext)
-		throws SOAPException {
+	@Override
+	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext) throws SOAPException {
 		if (log.isDebugEnabled()){
 			log.debug("Locate: dd=["+dd+"]+ targetObjectURI=[" +targetObjectURI+"]");
 			try {
@@ -83,10 +83,11 @@ public class SoapGenericProvider implements Provider {
 		reqContext.setProperty(TARGET_OBJECT_URI_KEY, targetObjectURI);
 	}
 	
+	@Override
 	public void invoke(SOAPContext reqContext, SOAPContext resContext) throws SOAPException {
 
-		 try {
-		 	String targetObjectURI = (String) reqContext.getProperty(TARGET_OBJECT_URI_KEY);
+		try {
+			String targetObjectURI = (String) reqContext.getProperty(TARGET_OBJECT_URI_KEY);
 			if (log.isDebugEnabled()){
 				log.debug("Invoking service for targetObjectURI=[" +targetObjectURI+"]");
 			}
@@ -95,24 +96,23 @@ public class SoapGenericProvider implements Provider {
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
 			HttpServletResponse httpResponse=(HttpServletResponse) reqContext.getProperty(Constants.BAG_HTTPSERVLETRESPONSE);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
-			Map messageContext= new HashMap();
-			messageContext.put(IPipeLineSession.securityHandlerKey, securityHandler);
+			Map<String,Object> messageContext= new HashMap<>();
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 			messageContext.put("httpListenerServletRequest", httpRequest);
 			messageContext.put("httpListenerServletResponse", httpResponse);
 			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
 			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
-		 }
-		 catch( Exception e ) {
-		 	//log.warn("GenericSoapProvider caught exception:",e);
+		} catch (Exception e) {
+			//log.warn("GenericSoapProvider caught exception:",e);
 			if ( e instanceof SOAPException ) {
 				throw (SOAPException ) e;
 			} 
 			SOAPException se=new SOAPException( Constants.FAULT_CODE_SERVER, "GenericSoapProvider caught exception");
 			se.initCause(e);
 			throw se;
-		 }
+		}
 	}
 	
 }

@@ -2,6 +2,7 @@ package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,11 +22,27 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
+
+	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
+	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
+		private Class<? extends Exception> exception;
+		RefType() {
+			this(null);
+		}
+		RefType(Class<? extends Exception> exception) {
+			this.exception = exception;
+		}
+		Class<? extends Exception> expectsException() {
+			return exception;
+		}
+	}
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
@@ -49,7 +66,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	
-	private void testUri(String baseType, String refType, ClassLoader cl, String base, String ref, String expected) throws TransformerException {
+	private void testUri(String baseType, String refType, IScopeProvider cl, String base, String ref, String expected) throws TransformerException {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(cl);
 
 		Source source = resolver.resolve(ref, base);
@@ -61,26 +78,25 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
-	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
-	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME }
-	
-	private ClassLoader getClassLoader(BaseType baseType) throws ConfigurationException, IOException {
+	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws Exception {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
-		return Thread.currentThread().getContextClassLoader();
+		return new TestScopeProvider();
 	}
-	
-	private String getBase(ClassLoader classLoader, BaseType baseType) throws ConfigurationException, IOException {
+
+	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
 		URL result=null;
 		switch (baseType) {
 		case LOCAL:
 			return "/ClassLoader/Xslt/root.xsl";
 		case BYTES:
-			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
+		case CLASSPATH:
+			return "classpath:ClassLoader/Xslt/root.xsl";
 		case FILE_SCHEME:
-			result = ClassUtils.getResourceURL(classLoader, "/ClassLoader/Xslt/root.xsl");
+			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
 		case NULL:
 			return null;
@@ -107,8 +123,10 @@ public class ClassLoaderURIResolverTest {
 			return "names.xsl";
 		case OVERRIDABLE:
 			return "/ClassLoader/overridablefile.xml";
+		case CLASSPATH:
+			return "classpath:/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
-			return ClassUtils.getResourceURL(this, "/ClassLoader/overridablefile.xml").toExternalForm();
+			return ClassUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
 		default:
 			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
 		}
@@ -125,6 +143,7 @@ public class ClassLoaderURIResolverTest {
 		case SAME_FOLDER: 
 			return null;
 		case OVERRIDABLE: 
+		case CLASSPATH:
 			if (baseType==BaseType.BYTES) {
 				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
 			}
@@ -137,21 +156,27 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	@Test
-	public void test() throws ConfigurationException, IOException, TransformerException {
-		ClassLoader classLoader = getClassLoader(baseType);
-		String baseUrl = getBase(classLoader, baseType);
-		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoader+"] BaseUrl ["+baseUrl+"]");
-		
+	public void test() throws Exception {
+		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
+		String baseUrl = getBase(classLoaderProvider, baseType);
+		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
+
 		String ref = getRef(baseType,refType);
 		String expected = getExpected(baseType,refType);
 		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");
 		if (ref!=null) {
-			testUri(baseType.name(), refType.name(), classLoader, baseUrl, ref, expected);
+			if(refType.expectsException() != null) {
+				assertThrows(refType.expectsException(), () -> {
+					testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
+				});
+			} else {
+				testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
+			}
 		}
 	}
 
-	
-	private ClassLoader getBytesClassLoader() throws IOException, ConfigurationException {
+
+	private IScopeProvider getBytesClassLoader() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -163,6 +188,6 @@ public class ClassLoaderURIResolverTest {
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
 		cl.configure(null, "");
-		return cl;
+		return TestScopeProvider.wrap(cl);
 	}
 }

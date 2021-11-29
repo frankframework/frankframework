@@ -60,6 +60,10 @@ function foist(callback) {
 function setLogLevel(level) {
 	angular.element(document.body).scope().setLogLevel(level);
 }
+//Detect if using any (older) version of Internet Explorer
+if(navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > -1) {
+	$("body").prepend("<h2 style='text-align: center; color: #fdc300;'><strong>Internet Explorer 11 and older do not support XHR requests, the Frank!Console might not load correctly!</strong><br/>Please open this website in MS Edge, Mozilla Firefox or Google Chrome.</h2>");
+}
 
 // Automatically minimalize menu when screen is less than 768px
 $(function() {
@@ -80,5 +84,26 @@ $(function() {
 		} else {
 			scroll2top.animate({"opacity": 0, "z-index": -1}, 50, "linear");
 		}
+	});
+
+	Prism.hooks.add('after-highlight', function (env) {
+		// works only for <code> wrapped inside <pre data-line-numbers> (not inline)
+		var pre = env.element.parentNode;
+		if (!pre || !/pre/i.test(pre.nodeName) || pre.className.indexOf('line-numbers') === -1) {
+			return;
+		}
+
+		var linesNum = (env.code.split('\n').length);
+		var lineNumbersWrapper;
+
+		let lines = new Array(linesNum);
+		//See https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
+		for (let i=0; i<linesNum; ++i) lines[i] = '<span id="L'+(i+1)+'"></span>';
+
+		lineNumbersWrapper = document.createElement('span');
+		lineNumbersWrapper.className = 'line-numbers-rows';
+		lineNumbersWrapper.innerHTML = lines.join("");
+
+		env.element.appendChild(lineNumbersWrapper);
 	});
 });

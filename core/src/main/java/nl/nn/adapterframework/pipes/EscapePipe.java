@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -28,12 +28,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
  * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
+ * 
  * @author Peter Leeuwenburgh
  */
 public class EscapePipe extends FixedForwardPipe {
@@ -49,16 +44,15 @@ public class EscapePipe extends FixedForwardPipe {
 		super.configure();
 		String dir = getDirection();
 		if (dir == null) {
-			throw new ConfigurationException(
-				getLogPrefix(null) + "direction must be set");
+			throw new ConfigurationException("direction must be set");
 		}
 		if (!dir.equalsIgnoreCase("encode")
 			&& !dir.equalsIgnoreCase("decode")
 				&& !dir.equalsIgnoreCase("cdata2text")) {
-			throw new ConfigurationException(getLogPrefix(null) + "illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
+			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
 		}
 		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot have only one of substringStart or substringEnd");
+			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
 			substringStart = XmlUtils.encodeChars(substringStart);
@@ -67,7 +61,7 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String input;
 		try {
@@ -112,7 +106,7 @@ public class EscapePipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public String getSubstringStart() {

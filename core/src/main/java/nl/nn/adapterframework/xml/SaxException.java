@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,13 +28,16 @@ public class SaxException extends SAXException {
 	}
 
 	public SaxException(Exception e) {
-		super(e);
-		initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
+		this(null, e);
 	}
 
 	public SaxException(String message, Exception e) {
 		super(message, e);
-		initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
+		try {
+			initCause(e); // this fixes stacktrace under IBM JDK, does nothing under standard JDK
+		} catch (Exception e2) { // Jboss throws 'IllegalStateException: Can't overwrite cause'
+			addSuppressed(e2);
+		}
 	}
 
 	public SaxException(String message) {

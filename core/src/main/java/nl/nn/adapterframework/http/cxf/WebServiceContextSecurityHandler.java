@@ -18,7 +18,7 @@ import java.security.Principal;
 
 import javax.xml.ws.WebServiceContext;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
 
 /**
@@ -34,11 +34,13 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 		this.webServiceContext = webServiceContext;
 	}
 
-	public boolean isUserInRole(String role, IPipeLineSession session) {
+	@Override
+	public boolean isUserInRole(String role, PipeLineSession session) {
 		return webServiceContext.isUserInRole(role);
 	}
 
-	public Principal getPrincipal(IPipeLineSession session){
+	@Override
+	public Principal getPrincipal(PipeLineSession session){
 		return webServiceContext.getUserPrincipal();
 	}
 }

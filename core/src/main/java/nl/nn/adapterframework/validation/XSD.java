@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,15 +37,17 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -57,7 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XSD implements Schema, Comparable<XSD> {
 	private static final Logger LOG = LogUtil.getLogger(XSD.class);
 
-	private ClassLoader classLoader;
+	private IScopeProvider scopeProvider;
 	private javax.wsdl.Definition wsdlDefinition;
 	private javax.wsdl.extensions.schema.Schema wsdlSchema;
 	private String resource;
@@ -154,11 +156,11 @@ public class XSD implements Schema, Comparable<XSD> {
 		return targetNamespace;
 	}
 
-	public void initNoNamespace(ClassLoader classLoader, String noNamespaceSchemaLocation) throws ConfigurationException {
+	public void initNoNamespace(IScopeProvider scopeProvider, String noNamespaceSchemaLocation) throws ConfigurationException {
 		this.noNamespaceSchemaLocation=noNamespaceSchemaLocation;
-		this.classLoader=classLoader;
+		this.scopeProvider=scopeProvider;
 		this.resource=noNamespaceSchemaLocation;
-		url = ClassUtils.getResourceURL(classLoader, noNamespaceSchemaLocation);
+		url = ClassUtils.getResourceURL(scopeProvider, noNamespaceSchemaLocation);
 		if (url == null) {
 			throw new ConfigurationException("Cannot find [" + noNamespaceSchemaLocation + "]");
 		}
@@ -167,12 +169,12 @@ public class XSD implements Schema, Comparable<XSD> {
 		init();
 	}
 
-	public void initNamespace(String namespace, ClassLoader classLoader, String resourceRef) throws ConfigurationException {
+	public void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
 		this.namespace=namespace;
-		this.classLoader=classLoader;
+		this.scopeProvider=scopeProvider;
 		resource=resourceRef;
 		resource = Misc.replace(resource, "%20", " ");
-		url = ClassUtils.getResourceURL(classLoader, resource);
+		url = ClassUtils.getResourceURL(scopeProvider, resource);
 		if (url == null) {
 			throw new ConfigurationException("Cannot find [" + resource + "]");
 		}
@@ -187,10 +189,10 @@ public class XSD implements Schema, Comparable<XSD> {
 		}
 		init();
 	}
-
-	public void initFromXsds(String namespace, ClassLoader classLoader, Set<XSD> sourceXsds) throws ConfigurationException {
+ 
+	public void initFromXsds(String namespace, IScopeProvider scopeProvider, Set<XSD> sourceXsds) throws ConfigurationException {
 		this.namespace=namespace;
-		this.classLoader=classLoader;
+		this.scopeProvider=scopeProvider;
 		resourceTarget = "[";
 		toString = "[";
 		boolean first = true;
@@ -215,7 +217,7 @@ public class XSD implements Schema, Comparable<XSD> {
 	private void init() throws ConfigurationException {
 		try {
 			InputStream in = getInputStream();
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			int elementDepth = 0;
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -375,7 +377,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			if (in == null) {
 				return null;
 			}
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
 				switch (e.getEventType()) {
@@ -441,7 +443,7 @@ public class XSD implements Schema, Comparable<XSD> {
 								x.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
 								x.setParentLocation(getResourceBase());
 								x.setRootXsd(false);
-								x.initNamespace(namespace, classLoader, getResourceBase() + schemaLocationAttribute.getValue());
+								x.initNamespace(namespace, scopeProvider, getResourceBase() + schemaLocationAttribute.getValue());
 								if (xsds.add(x)) {
 									x.getXsdsRecursive(xsds, ignoreRedefine);
 								}

@@ -19,9 +19,11 @@ import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -36,13 +38,18 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
 	public String getSchema(Connection conn) throws JdbcException {
 		return JdbcUtil.executeStringQuery(conn, "SELECT DATABASE()");
 	}
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 		String formattedDate = formatter.format(date);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}
@@ -52,6 +59,10 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "date_format("+columnName+",'%Y-%m-%d')";
 	}
 
+	@Override
+	public String getDateAndOffset(String dateValue, int daysOffset) {
+		return "DATE_ADD("+dateValue+ ", INTERVAL " + daysOffset + " DAY)";
+	}
 
 	@Override
 	public String getClobFieldType() {
@@ -81,25 +92,26 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED";
+			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR SHARE SKIP LOCKED"; // take shared lock, to be able to use 'skip locked'
 		} else {
 			throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
 		}
 	}
 
-	@Override
-	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
-		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
-		JdbcUtil.executeStatement(conn, "START TRANSACTION");
-		return new JdbcSession() {
-
-			@Override
-			public void close() throws Exception {
-				JdbcUtil.executeStatement(conn, "COMMIT");
-			}
-			
-		};
-	}
+	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
+//	@Override
+//	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
+//		JdbcUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+//		JdbcUtil.executeStatement(conn, "START TRANSACTION");
+//		return new JdbcSession() {
+//
+//			@Override
+//			public void close() throws Exception {
+//				JdbcUtil.executeStatement(conn, "COMMIT");
+//			}
+//			
+//		};
+//	}
 
 
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws JdbcException {
@@ -117,14 +129,11 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
 	@Override
-	public String emptyClobValue() {
-		return "";
-	}
-
-	@Override
-	public String emptyBlobValue() {
-		return "";
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
+		String query = ("DELETE FROM " + tableName 
+					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+					+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" LIMIT "+maxRows : ""));
+		return query;
 	}
 }

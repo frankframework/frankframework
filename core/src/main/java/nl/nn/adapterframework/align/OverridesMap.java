@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,6 +71,19 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 		return false;
 	}
 
+	@Override
+	public V getSubstitutionsFor(AlignmentContext context, String childName) {
+		if (!hasSubstitutionsFor(context, childName)) {
+			return null;
+		}
+		return getMatchingValue(context, childName);
+	}
+
+	@Override
+	public boolean hasOverride(AlignmentContext context) {
+		return getOverride(context)!=null;
+	}
+	
 	@Override
 	public V getOverride(AlignmentContext context) {
 		return getMatchingValue(context.getParent(), context.getLocalName());

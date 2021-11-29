@@ -19,6 +19,8 @@ import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.core.INamedObject;
+
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
@@ -70,5 +72,29 @@ public class MessageKeeper extends SizeLimitedVector {
 		}
 		add(msgToLog, MessageKeeperLevel.ERROR);
 		log.warn(msgToLog, t);
+	}
+
+	public void info(String msg) {
+		add(msg);
+	}
+
+	public void info(INamedObject namedObject, String msg) {
+		info(ClassUtils.nameOf(namedObject) + ": " + msg);
+	}
+
+	public void warn(String msg) {
+		add("WARNING: " + msg, MessageKeeperLevel.WARN);
+	}
+
+	public void warn(INamedObject namedObject, String msg) {
+		warn(ClassUtils.nameOf(namedObject) + ": " + msg);
+	}
+
+	public void error(String msg) {
+		add("ERROR: " + msg, MessageKeeperLevel.ERROR);
+	}
+
+	public void error(INamedObject namedObject, String msg) {
+		error(ClassUtils.nameOf(namedObject) + ": " + msg);
 	}
 }

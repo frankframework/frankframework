@@ -1,0 +1,6 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>NOT_OK</returnCode>
+		<reasonCode>%reasonCode</reasonCode>
+	</completionInformation>
+</manageFileSystemRLY>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,14 +17,19 @@ package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.validation.RootValidation;
+import nl.nn.adapterframework.validation.RootValidations;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD to the set of
@@ -46,6 +51,9 @@ public class SoapValidator extends Json2XmlValidator {
 	private String soapHeaderNamespace = "";
 	private SoapVersion soapVersion = SoapVersion.SOAP11;
 	private boolean allowPlainXml = false;
+	public static final String SOAP_ENVELOPE = "Envelope";
+	public static final String SOAP_BODY = "Body";
+	public static final String SOAP_HEADER = "Header";
 
 	protected boolean addSoapEnvelopeToSchemaLocation = true;
 
@@ -54,7 +62,7 @@ public class SoapValidator extends Json2XmlValidator {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
 			//super.setRoot("Envelope,"+soapBody);
-			addRequestRootValidation(Arrays.asList("Envelope,"+soapBody));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE+","+soapBody));
 		} else {
 			super.setRoot(getRoot());
 		}
@@ -65,19 +73,27 @@ public class SoapValidator extends Json2XmlValidator {
 			ConfigurationWarnings.add(this, log, "soapBody not specified");
 		}
 		if (!isAllowPlainXml()) {
-			addRequestRootValidation(Arrays.asList("Envelope", "Body", soapBody));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, soapBody));
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
-				addResponseRootValidation(Arrays.asList("Envelope", "Body", outputSoapBody));
+				addResponseRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_BODY, outputSoapBody));
 			}
-			addRequestRootValidation(Arrays.asList("Envelope", "Header", soapHeader));
+			addRequestRootValidation(new RootValidation(SOAP_ENVELOPE, SOAP_HEADER, soapHeader));
 			List<String> invalidRootNamespaces = new ArrayList<String>();
 			for (String namespace:soapVersion.getNamespaces()) {
 				invalidRootNamespaces.add(namespace);
 			}
-			addInvalidRootNamespaces(Arrays.asList("Envelope", "Body", soapBody), invalidRootNamespaces);
-			addInvalidRootNamespaces(Arrays.asList("Envelope", "Header", soapHeader), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_BODY, soapBody), invalidRootNamespaces);
+			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE, SOAP_HEADER, soapHeader), invalidRootNamespaces);
 		}
 		super.configure();
+	}
+
+	@Override
+	protected RootValidations createRootValidation(String messageRoot) {
+		if (isAllowPlainXml()) {
+			return new RootValidations(SOAP_ENVELOPE+","+messageRoot); // cannot test for messageRoot in SOAP message with current rootvalidation structure
+		} 
+		return new RootValidations(SOAP_ENVELOPE, SOAP_BODY, messageRoot);
 	}
 
 	@Override
@@ -85,6 +101,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return StringUtils.isNotEmpty(getOutputSoapBody());
 	}
 
+	@Deprecated
 	@Override
 	public void setSchema(String schema) {
 		throw new IllegalArgumentException("The schema attribute isn't supported");
@@ -107,7 +124,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@Override
 	public String getRoot() {
-		return "Envelope";
+		return SOAP_ENVELOPE;
 	}
 
 	@IbisDoc({ "always envelope (not allowed to change)", "envelope" })
@@ -116,7 +133,7 @@ public class SoapValidator extends Json2XmlValidator {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
 
-	@IbisDoc({"1", "name of the child element of the soap body. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
+	@IbisDoc({"1", "name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)", "" })
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
@@ -124,7 +141,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapBody;
 	}
 
-	@IbisDoc({"2", "identical to the <code>soapbody</code> attribute except that it's used for the output message instead of the input message. for more information see <a href=\"#note1\">note 1</a>", "" })
+	@IbisDoc({"2", "identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a>", "" })
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
 	}
@@ -132,7 +149,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return outputSoapBody;
 	}
 
-	@IbisDoc({"3", "name of the child element of the soap header. or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
+	@IbisDoc({"3", "name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
@@ -140,7 +157,7 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapHeader;
 	}
 
-	@IbisDoc({"4", "can be used when the soap header element exists multiple times", "" })
+	@IbisDoc({"4", "can be used when the SOAP header element exists multiple times", "" })
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
@@ -148,15 +165,15 @@ public class SoapValidator extends Json2XmlValidator {
 		return soapHeaderNamespace;
 	}
 
-	@IbisDoc({"5", "soap envelope xsd version to use: 1.1, 1.2 or any (both 1.1 and 1.2)", "1.1" })
+	@IbisDoc({"5", "SOAP envelope XSD version to use", "1.1" })
 	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = SoapVersion.getSoapVersion(soapVersion);
+		this.soapVersion = EnumUtils.parse(SoapVersion.class, soapVersion);
 	}
 	public SoapVersion getSoapVersionEnum() {
 		return soapVersion;
 	}
 
-	@IbisDoc({"6", "allow plain xml, without a SOAP Envelope, too", "false"})
+	@IbisDoc({"6", "allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages", "false"})
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
 	}

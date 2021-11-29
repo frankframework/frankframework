@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.validation;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +15,7 @@ import org.junit.runners.Parameterized;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
@@ -62,8 +61,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		} catch (InstantiationException e) {
 			throw new ConfigurationException(e);
 		}
-    	validator.setThrowException(true);
-    	validator.setFullSchemaChecking(true);
+		validator.setThrowException(true);
+		validator.setFullSchemaChecking(true);
 
 		instance=new Json2XmlValidator();
 		instance.registerForward(new PipeForward("success",null));
@@ -72,10 +71,9 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 	}
 
 	@Override
-	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeRunException {
+	public String validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) throws Exception {
 		init();
-        PipeLineSessionBase session = new PipeLineSessionBase();
+        PipeLineSession session = new PipeLineSession();
         //instance.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         instance.setSchemaLocation(schemaLocation);
         instance.setAddNamespaceToSchema(addNamespaceToSchema);
@@ -86,17 +84,24 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         instance.setTargetNamespace(rootNamespace);
         instance.registerForward(new PipeForward("failure",null));
         instance.registerForward(new PipeForward("parserError",null));
-        instance.configure(null);
         if (rootelement!=null) { 
         	instance.setRoot(rootelement);
         }
+        instance.configure();
+        instance.start();
         validator.setSchemasProvider(getSchemasProvider(schemaLocation, addNamespaceToSchema));
         validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);
         validator.configure("setup");
+        validator.start();
 
         String testXml=inputFile!=null?TestFileUtils.getTestFile(inputFile+".xml"):null;
         System.out.println("testXml ["+inputFile+".xml] contents ["+testXml+"]");
-        String xml2json = jsonPipe.doPipe(new Message(testXml),session).getResult().asString();
+        String xml2json=null; 
+        try {
+        	xml2json = jsonPipe.doPipe(new Message(testXml),session).getResult().asString();
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
         System.out.println("testXml ["+inputFile+".xml] to json ["+xml2json+"]");
         String testJson=inputFile!=null?TestFileUtils.getTestFile(inputFile+".json"):null;
         System.out.println("testJson ["+testJson+"]");
@@ -106,7 +111,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	String result = prr.getResult().asString();
         	System.out.println("result ["+ToStringBuilder.reflectionToString(prr)+"]");
         	String event;
-        	if (prr.getPipeForward().getName().equals("success")) {
+        	if (prr.isSuccessful()) {
         		event="valid XML";
         	} else {
             	if (prr.getPipeForward().getName().equals("failure")) {
@@ -117,20 +122,15 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	}
         	evaluateResult(event, session, null, expectedFailureReasons);
             try {
-    	        Set<List<String>> rootvalidations=null;
-    	        if (rootelement!=null) {
-    	        	List<String> rootvalidation=new ArrayList<String>();
-    	        	rootvalidation.add("Envelope");
-    	        	rootvalidation.add("Body");
-    	        	rootvalidation.add(rootelement);
-    	        	rootvalidations=new HashSet<List<String>>();
-    	        	rootvalidations.add(rootvalidation);
-    	        }
+    			RootValidations rootvalidations = null;
+    			if(rootelement != null) {
+    				rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+    			}
     	        String validationResult=validator.validate(result, session, "check result", rootvalidations, null);
     	        evaluateResult(validationResult, session, null, expectedFailureReasons);
     	        return result;
             } catch (Exception e) {
-            	fail("result XML must be valid");
+            	fail("result XML must be valid: "+ e.getMessage());
             }
 
     		return result;

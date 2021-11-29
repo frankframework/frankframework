@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -25,7 +25,7 @@ public abstract class StreamingSenderBase extends SenderWithParametersBase imple
 
 	@Override
 	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
-	public final Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		PipeRunResult result = sendMessage(message, session, null);
 		return result.getResult();
 	}

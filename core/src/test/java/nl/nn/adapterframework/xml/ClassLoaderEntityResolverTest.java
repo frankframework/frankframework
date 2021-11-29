@@ -13,19 +13,20 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.Misc;
 
 public class ClassLoaderEntityResolverTest {
 
 	private String publicId="fakePublicId";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	
+	private IScopeProvider localScopeProvider = new TestScopeProvider();
+
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		String systemId="AppConstants.properties"; // this file is known to be in the root of the classpath
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -34,9 +35,8 @@ public class ClassLoaderEntityResolverTest {
 	}
 
 	@Test
-	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
+	public void localClassPathFileOnRootOfClasspathAbsolute() throws Exception {
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		String systemId="/AppConstants.properties"; // this file is known to be in the root of the classpath
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -46,8 +46,7 @@ public class ClassLoaderEntityResolverTest {
 
 	@Test
 	public void localClassPathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localClassLoader);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		String systemId="/Xslt/importDocument/lookup.xml";
 		
@@ -57,7 +56,7 @@ public class ClassLoaderEntityResolverTest {
 
 	
 	@Test
-	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -69,7 +68,7 @@ public class ClassLoaderEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 
 		String systemId="/ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -78,7 +77,7 @@ public class ClassLoaderEntityResolverTest {
 	}
 
 	@Test
-	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPathAbsolute() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -90,7 +89,7 @@ public class ClassLoaderEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(cl);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 
 		String systemId="ClassLoader/Xslt/names.xsl";
 		InputSource inputSource = resolver.resolveEntity(publicId, systemId);
@@ -103,7 +102,7 @@ public class ClassLoaderEntityResolverTest {
 	 */
 	@Test
 	@Ignore("Fixed the original problem in XmlUtils.identityTransform(), that did not set a systemId for relative resolutions")
-	public void localClassPathFullPath() throws SAXException, IOException, ConfigurationException {
+	public void localClassPathFullPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		//Get the working directory
@@ -136,7 +135,7 @@ public class ClassLoaderEntityResolverTest {
 			}
 		};
 
-		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(dummyClassLoader);
+		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(dummyClassLoader));
 
 		try{
 			file.openStream();

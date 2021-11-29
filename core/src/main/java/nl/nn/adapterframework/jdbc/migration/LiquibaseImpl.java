@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 - 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,20 +15,30 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
+
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.LogUtil;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.changelog.ChangeSet;
+import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.resource.ResourceAccessor;
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
@@ -42,34 +52,42 @@ public class LiquibaseImpl {
 	private Liquibase liquibase = null;
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
-	private IbisContext ibisContext = null;
-	private String configurationName = null;
+	private Configuration configuration = null;
 	protected Logger log = LogUtil.getLogger(this);
 
-	public LiquibaseImpl(IbisContext ibisContext, ClassLoader classLoader, JdbcConnection connection, String configurationName, String changeLogFile) throws LiquibaseException {
-		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+	public LiquibaseImpl(DataSource datasource, Configuration configuration, String changeLogFile, InputStream file) throws LiquibaseException, SQLException, IOException {
+		this.configuration = configuration;
+		DatabaseConnection connection;
+		ResourceAccessor resourceAccessor;
+		if(file == null) {
+			resourceAccessor = new LiquibaseResourceAccessor(configuration.getClassLoader());
+			if(((LiquibaseResourceAccessor) resourceAccessor).getResource(changeLogFile) == null) {
+				String msg = "unable to find database changelog file [" + changeLogFile + "]";
+				msg += " classLoader [" + configuration.getClassLoader() + "]";
+				throw new IOException(msg);
+			}
+		} else {
+			resourceAccessor = new StreamResourceAccessor(file);
+		}
+		connection = new JdbcConnection(datasource.getConnection());
 
-		ClassLoaderResourceAccessor resourceOpener = new ClassLoaderResourceAccessor(classLoader);
-
-		this.liquibase = new Liquibase(changeLogFile, resourceOpener, connection);
+		this.liquibase = new Liquibase(changeLogFile, resourceAccessor, connection);
 		this.liquibase.validate();
 	}
 
 	private void log(String message) {
-		if(ibisContext != null) 
-			ibisContext.log(configurationName, null, message);
+		configuration.log(message);
 	}
 
-	public void update() {
-		List<String> changes = new ArrayList<String>();
+	public void update() throws JdbcException {
+		List<String> changes = new ArrayList<>();
 		try {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
 				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
 			}
 
-			if(changeSets.size() > 0) {
+			if(!changeSets.isEmpty()) {
 				liquibase.update(contexts);
 
 				ChangeSet lastChange = changeSets.get(changeSets.size()-1);
@@ -87,9 +105,9 @@ public class LiquibaseImpl {
 			}
 		}
 		catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update for configuration ["+configurationName+"]. Failed to execute ["+changes.size()+"] change(s): ";
+			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
 			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(log, errorMsg, e);
+			throw new JdbcException(errorMsg, e);
 		}
 	}
 
@@ -99,5 +117,18 @@ public class LiquibaseImpl {
 
 	public void tag(String tagName) throws LiquibaseException {
 		liquibase.tag(tagName);
+	}
+
+	public void getUpdateScript(Writer writer) throws LiquibaseException {
+		liquibase.update(contexts, labelExpression, writer);
+	}
+
+	public void close() throws DatabaseException {
+		if(liquibase != null) {
+			Database db = liquibase.getDatabase();
+			if(db != null) {
+				db.close();
+			}
+		}
 	}
 }

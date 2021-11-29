@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -30,19 +31,19 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
-	
+
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession ) throws PipeRunException {
-		checkMessageSize(message, pipeLine, pipe, true);
-		PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+		checkMessageSize(message.size(), pipeLine, pipe, true);
+		PipeRunResult pipeRunResult = chain.apply(message);
+
 		Message result = pipeRunResult.getResult();
-		checkMessageSize(result.asObject(), pipeLine, pipe, false);
+		checkMessageSize(result.size(), pipeLine, pipe, false);
 		return pipeRunResult;
 	}
 
-	private void checkMessageSize(Object message, PipeLine pipeLine, IPipe pipe, boolean input) {
-		if (message!=null && message instanceof String) {
-			int messageLength = message.toString().length();
+	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
+		if(messageLength > -1) {
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe aPipe = (AbstractPipe) pipe;
 				StatisticsKeeper sizeStat = null;
@@ -60,16 +61,14 @@ public class CheckMessageSizePipeProcessor extends PipeProcessorBase {
 				}
 			}
 
-			if (pipeLine.getMessageSizeWarnNum()>=0) {
-				if (messageLength>=pipeLine.getMessageSizeWarnNum()) {
-					String logMessage = "pipe [" + pipe.getName() + "] of adapter [" + pipeLine.getOwner().getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(pipeLine.getMessageSizeWarnNum()) + "]";
-					log.warn(logMessage);
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe pe = (IExtendedPipe)pipe;
-						pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-					}
+			if (pipeLine.getMessageSizeWarnNum() >= 0 && messageLength >= pipeLine.getMessageSizeWarnNum()) {
+				log.warn(String.format("pipe [%s] of adapter [%s], " + (input ? "input" : "result") + " message size [%s] exceeds [%s]", pipe.getName(), pipeLine.getOwner().getName(), Misc.toFileSize(messageLength), Misc.toFileSize(pipeLine.getMessageSizeWarnNum())));
+				if (pipe instanceof IExtendedPipe) {
+					IExtendedPipe pe = (IExtendedPipe)pipe;
+					pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
 				}
 			}
 		}
 	}
+
 }

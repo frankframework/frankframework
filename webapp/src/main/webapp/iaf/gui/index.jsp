@@ -1,4 +1,14 @@
 <%@ page import="nl.nn.adapterframework.util.AppConstants"%>
+<%
+// Calculate an unique hash (per framework version) to disable caching
+String time = ""+System.currentTimeMillis();
+String version = AppConstants.getInstance().getString("application.version", "");
+if(version.isEmpty()) {
+	version = time;
+} else if(version.contains("SNAPSHOT")) {
+	version = version + "-" + time; //Append time to disable cache
+}
+%>
 <!DOCTYPE html>
 <html ng-app="iaf.beheerconsole">
 
@@ -20,8 +30,9 @@
 	<link href="css/plugins/sweetalert/sweetalert.css" rel="stylesheet">
 	<link href="css/plugins/iCheck/custom.css" rel="stylesheet">
 	<link href="css/plugins/ladda/ladda-themeless.min.v1.0.5.css" rel="stylesheet">
+	<link href="css/plugins/prism.v1.25.0.min.css" rel="stylesheet">
 	<link href="css/plugins/toastr/toastr.min.css" rel="stylesheet">
-	<link id="loadBefore" href="css/style.css" rel="stylesheet">
+	<link id="loadBefore" href="css/style.css?v=<%=version%>" rel="stylesheet">
 	<link rel="shortcut icon" href="favicon.ico">
 </head>
 
@@ -44,12 +55,9 @@
 	</div>
 </div>
 
-<toaster-container toaster-options="{'time-out':5500, 'close-button': true}"></toaster-container>
+<toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container>
 
 <div ui-view style="display:none;" class="main"></div>
-
-<div general-data-protection-regulation></div>
-
 
 <script src="js/jquery/jquery-2.1.1.min.js"></script>
 <script src="js/plugins/jquery-ui/jquery-ui.js"></script>
@@ -57,8 +65,7 @@
 
 <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
-<script data-pace-options='{ "ajax": false }' src="js/plugins/pace/pace.min.js"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-111373008-1"></script>
+<script data-pace-options='{ "ajax": false }' src="js/plugins/pace/pace-v1.2.4.min.js"></script>
 
 <script src="js/main.js"></script>
 
@@ -77,17 +84,8 @@
 <script src="js/plugins/ladda/ladda.min.v1.0.5.js"></script>
 <script src="js/plugins/ladda/angular-ladda.min.v0.4.3.js"></script>
 <script src="js/plugins/toastr/toastr.min.js"></script>
+<script src="js/plugins/prismjs/prism.1.25.0.min.js"></script>
 
-<%
-// Calculate an unique hash (per framework version) to disable caching
-String time = ""+System.currentTimeMillis();
-String version = AppConstants.getInstance().getString("application.version", "");
-if(version.isEmpty()) {
-	version = time;
-} else if(version.contains("SNAPSHOT")) {
-	version = version + "-" + time; //Append time to disable cache
-}
-%>
 <script type="text/javascript">var ff_version="<%=version%>"</script>
 
 <script src="js/app.js?v=<%=version%>"></script>

@@ -1,46 +1,27 @@
-<ibis>
+<module>
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="Base64Pipe">
+		<receiver name="Base64Pipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Base64Pipe" />
 		</receiver>
-		<pipeline firstPipe="Read">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Read" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="bytes">
-				<forward name="success" path="Encode" />
-			</pipe>
+				actions="read" outputType="bytes"/>
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				convert2String="false" storeResultInSessionKey="base64">
-				<forward name="success" path="Transform" />
-			</pipe>
-			<pipe name="Transform" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="Base64Pipe/Transform.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
-				<param name="base64" sessionKey="base64" />
-				<forward name="success" path="Send" />
-			</pipe>
+				storeResultInSessionKey="base64"/>
 			<pipe name="Send"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-				storeResultInSessionKey="fileOut">
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				storeResultInSessionKey="fileOut" >
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="testtool-base64pipe" />
-				<forward name="success" path="Decode" />
 			</pipe>
 			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode" convert2String="false" getInputFromSessionKey="base64">
-				<forward name="success" path="Write" />
-			</pipe>
-			<pipe name="Write" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="write" fileNameSessionKey="fileOut">
-				<forward name="success" path="Info" />
-			</pipe>
-			<pipe name="Info" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="info">
-				<forward name="success" path="EXIT" />
-			</pipe>
+				direction="decode"/>
+			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

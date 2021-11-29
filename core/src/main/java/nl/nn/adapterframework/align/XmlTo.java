@@ -21,7 +21,7 @@ import java.util.Stack;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -136,7 +136,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		super.characters(ch, start, length);
 	}
 
-	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+	public static ValidatorHandler setupHandler(URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 
 		ValidatorHandler validatorHandler = XmlAligner.getValidatorHandler(schemaURL);
 
@@ -144,7 +144,12 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XmlAligner aligner = new XmlAligner(validatorHandler);
 		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
 		aligner.setContentHandler(xml2object);
-
+		
+		return validatorHandler;
+	} 
+	
+	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+		ValidatorHandler validatorHandler = setupHandler(schemaURL, documentContainer);
 		XmlUtils.parseXml(xml, validatorHandler);
 	}
 

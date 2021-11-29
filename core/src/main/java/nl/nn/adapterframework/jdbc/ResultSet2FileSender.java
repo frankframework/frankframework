@@ -25,11 +25,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -42,7 +45,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
-	private String fileNameSessionKey;
+	private String filenameSessionKey;
 	private String statusFieldType;
 	private boolean append = false;
 	private String maxRecordsSessionKey;
@@ -52,8 +55,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getFileNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"fileNameSessionKey must be specified");
+		if (StringUtils.isEmpty(getFilenameSessionKey())) {
+			throw new ConfigurationException(getLogPrefix()+"filenameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
 		if (StringUtils.isNotEmpty(sft)) {
@@ -65,44 +68,50 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	public Message sendMessage(QueryExecutionContext blockHandle, Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		int counter = 0;
-		ResultSet resultset=null;
-		String fileName = (String)session.get(getFileNameSessionKey());
+		String fileName = null;
+		try {
+			fileName = session.getMessage(getFilenameSessionKey()).asString();
+		} catch(IOException e) {
+			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
-			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
+			try {
+				maxRecords = Integer.parseInt(session.getMessage(getMaxRecordsSessionKey()).asString());
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
+			}
 		}
 
-		FileOutputStream fos=null;
-		try {
-			fos = new FileOutputStream(fileName, isAppend());
-			QueryExecutionContext queryExecutionContext = blockHandle;
+		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
 			PreparedStatement statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
-			resultset = statement.executeQuery();
-			boolean eor = false;
-			if (maxRecords==0) {
-				eor = true;
-			}
-			while (resultset.next() && !eor) {
-				counter++;
-				processResultSet(resultset, fos, counter);
-				if (maxRecords>=0 && counter>=maxRecords) {
-					ResultSetMetaData rsmd = resultset.getMetaData();
-					if (rsmd.getColumnCount() >= 3) {
-						String group = resultset.getString(3);
-						while (resultset.next() && !eor) {
-							String groupNext = resultset.getString(3);
-							if (groupNext.equals(group)) {
-								counter++;
-								processResultSet(resultset, fos, counter);
-							} else {
-								eor = true;
+			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
+			try (ResultSet resultset = statement.executeQuery()) {
+				boolean eor = false;
+				if (maxRecords==0) {
+					eor = true;
+				}
+				while (resultset.next() && !eor) {
+					counter++;
+					processResultSet(resultset, fos, counter);
+					if (maxRecords>=0 && counter>=maxRecords) {
+						ResultSetMetaData rsmd = resultset.getMetaData();
+						if (rsmd.getColumnCount() >= 3) {
+							String group = resultset.getString(3);
+							while (resultset.next() && !eor) {
+								String groupNext = resultset.getString(3);
+								if (groupNext.equals(group)) {
+									counter++;
+									processResultSet(resultset, fos, counter);
+								} else {
+									eor = true;
+								}
 							}
+						} else {
+							eor = true;
 						}
-					} else {
-						eor = true;
 					}
 				}
 			}
@@ -116,23 +125,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", sqle);
 		} catch (JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
-		} finally {
-			try {
-				if (fos!=null) {
-					fos.close();
-				}
-			} catch (IOException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing fileoutputstream", e));
-			}
-			try {
-				if (resultset!=null) {
-					resultset.close();
-				}
-			} catch (SQLException e) {
-				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset", e));
-			}
 		}
-		return new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>");
+		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
 	}
 
 	private void processResultSet (ResultSet resultset, FileOutputStream fos, int counter) throws SQLException, IOException {
@@ -159,12 +153,18 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		return statusFieldType;
 	}
 
-	@IbisDoc({"the session key that contains the name of the file to use", ""})
+	@Deprecated
+	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
 	public void setFileNameSessionKey(String filenameSessionKey) {
-		this.fileNameSessionKey = filenameSessionKey;
+		setFilenameSessionKey(filenameSessionKey);
 	}
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	
+	@IbisDoc({"the session key that contains the name of the file to use", ""})
+	public void setFilenameSessionKey(String filenameSessionKey) {
+		this.filenameSessionKey = filenameSessionKey;
+	}
+	public String getFilenameSessionKey() {
+		return filenameSessionKey;
 	}
 
 	@IbisDoc({"when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file", "false"})

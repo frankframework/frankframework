@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2020 WeAreFrank!
+   Copyright 2017-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
@@ -65,16 +65,17 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.logging.log4j.Logger;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -88,8 +89,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -165,12 +165,16 @@ import nl.nn.adapterframework.util.XmlUtils;
 //TODO: Fix javadoc!
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private String url;
 	private String urlParam = "url";
-	private String methodType = "GET";
-	private String charSet = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+
+	public enum HttpMethod {
+		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+	}
+	private @Getter HttpMethod httpMethod = HttpMethod.GET;
+
+	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
 	private String contentType = null;
 
@@ -184,10 +188,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private CloseableHttpClient httpClient;
 
 	/** SECURITY */
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String authDomain;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String authDomain;
 
 	/** PROXY **/
 	private String proxyHost;
@@ -335,18 +339,18 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			URL truststoreUrl = null;
 	
 			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getCertificate());
+				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
 				if (certificateUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
-				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(getConfigurationClassLoader(), getTruststore());
+				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
 				if (truststoreUrl == null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
-				log.info(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
 			}
 
 			HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
@@ -368,10 +372,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
-					SSLContext sslContext = AuthSSLConnectionSocket.createSSLContext(
+					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
 							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isVerifyHostname(), isIgnoreCertificateExpiredException(), getProtocol());
+							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
 					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
 					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
@@ -386,7 +390,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			if(sslSocketFactory != null)
 				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
 
-			credentials = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			if (!StringUtils.isEmpty(credentials.getUsername())) {
 				String uname;
@@ -408,7 +412,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
 				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
 
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
+				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
 					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
@@ -438,7 +442,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
-				Resource stylesheet = Resource.getResource(getConfigurationClassLoader(), getStyleSheetName());
+				Resource stylesheet = Resource.getResource(this, getStyleSheetName());
 				if (stylesheet == null) {
 					throw new ConfigurationException(getLogPrefix() + "cannot find stylesheet ["+getStyleSheetName()+"]");
 				}
@@ -534,12 +538,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
-			for(int i=0; i < parameters.size(); i++) {
-				if (skipParameter(paramList.get(i).getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
+			for(ParameterValue pv : parameters) {
+				if (skipParameter(pv.getName())) {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+pv.getName()+"]");
 					continue;
 				}
-				ParameterValue pv = parameters.getParameterValue(i);
 				try {
 					if (parametersAppended) {
 						path.append("&");
@@ -568,20 +571,20 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
 	 * It is important that the {@link HttpResponseHandler#getResponse() response} 
 	 * will be read or will be {@link HttpResponseHandler#close() closed}.
 	 * @param responseHandler {@link HttpResponseHandler} that contains the response information
-	 * @param session {@link IPipeLineSession} which may be null
+	 * @param session {@link PipeLineSession} which may be null
 	 * @return a string that will be passed to the pipeline
 	 */
-	protected abstract Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException;
+	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message message, IPipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -596,7 +599,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
+				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
 				uri = getURI(url);
 			} else {
 				uri = staticUri;
@@ -619,7 +622,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -655,10 +658,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
 
 				@Override
-				protected void kill() {
+				protected void abort() {
 					httpRequestBase.abort();
 				}
-				
+
 			};
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
@@ -783,12 +786,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return urlParam;
 	}
 
-	@IbisDoc({"3", "type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
-	public void setMethodType(String string) {
-		methodType = string;
-	}
-	public String getMethodType() {
-		return methodType.toUpperCase();
+	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
+	public void setMethodType(HttpMethod method) {
+		this.httpMethod = method;
 	}
 
 	/**
@@ -843,32 +843,25 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	@IbisDoc({"21", "username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String username) {
+		this.username = username;
 	}
-	public String getUserName() {
-		return userName;
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	@IbisDoc({"22", "password used in authentication to host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
 
 	@IbisDoc({"23", "domain used in authentication to host", " "})
 	public void setAuthDomain(String string) {
 		authDomain = string;
-	}
-	public String getAuthDomain() {
-		return authDomain;
 	}
 
 
@@ -897,10 +890,15 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	@IbisDoc({"33", "proxy username", " "})
-	public void setProxyUserName(String string) {
+	public void setProxyUsername(String string) {
 		proxyUserName = string;
 	}
-	public String getProxyUserName() {
+	@Deprecated
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
+	public void setProxyUserName(String string) {
+		setProxyUsername(string);
+	}
+	public String getProxyUsername() {
 		return proxyUserName;
 	}
 
@@ -1037,10 +1035,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * CertificateExpiredExceptions are ignored when set to true
+	 * @ff.default false
 	 */
-	@IbisDoc({"57", "when true, the certificateexpiredexception is ignored", "false"})
+	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}

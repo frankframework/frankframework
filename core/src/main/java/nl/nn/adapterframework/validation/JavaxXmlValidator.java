@@ -44,7 +44,7 @@ import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
 /**
@@ -77,21 +77,19 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		}
 		super.configure(logPrefix);
 	}
-	
+
 	@Override
-	protected void init() throws ConfigurationException {
-		if (needsInit) {
-			super.init();
-			String schemasId = null;
-			schemasId = schemasProvider.getSchemasId();
-			if (schemasId != null) {
-				getSchemaObject(schemasId, schemasProvider.getSchemas());
-			}
+	public void start() throws ConfigurationException {
+		super.start();
+		String schemasId = null;
+		schemasId = schemasProvider.getSchemasId();
+		if (schemasId != null) {
+			getSchemaObject(schemasId, schemasProvider.getSchemas());
 		}
 	}
 
 	@Override
-	public JavaxValidationContext createValidationContext(IPipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public JavaxValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 	
@@ -100,7 +98,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		Set<String> namespaceSet=new HashSet<String>();
 		List<XSModel> xsModels=null;
 
-		init();
+		start();
 		schemasId = schemasProvider.getSchemasId();
 		if (schemasId == null) {
 			schemasId = schemasProvider.getSchemasId(session);
@@ -131,7 +129,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public ValidatorHandler getValidatorHandler(IPipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
+	public ValidatorHandler getValidatorHandler(PipeLineSession session, ValidationContext context) throws ConfigurationException, PipeRunException {
 		Schema schema=getSchemaObject(context.getSchemasId(), schemasProvider.getSchemas(session));
 		return schema.newValidatorHandler();
 	}

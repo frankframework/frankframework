@@ -1,16 +1,18 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.util.Iterator;
+import java.util.stream.Stream;
+
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FS fileSystem;
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	protected abstract FS createFileSystem();
 
@@ -23,7 +25,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystem.open();
 	}
 	
-	public void testBackupByNumber(String folder) throws Exception {
+	public void testRolloverByNumber(String folder) throws Exception {
 		String filename = "backupTest" + FILE1;
 		String contents = "text content:";
 		int numOfBackups=3;
@@ -45,8 +47,10 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
 		assertFileExistsWithContents(folder, filename+"."+numOfFilesPresentAtStart, contents.trim()+(numOfFilesPresentAtStart));
 		
+		F file = fileSystem.toFile(folder, filename);
+
 		// execute rollover
-		FileSystemUtils.rolloverByNumber(fileSystem, folder, filename, numOfBackups);
+		FileSystemUtils.rolloverByNumber(fileSystem, file, numOfBackups);
 		
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
@@ -58,12 +62,12 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void testBackupByNumberInRoot() throws Exception {
-		testBackupByNumber(null);
+	public void testRolloverByNumberInRoot() throws Exception {
+		testRolloverByNumber(null);
 	}
 	@Test
-	public void testBackupByNumberInFolder() throws Exception {
-		testBackupByNumber("folder");
+	public void testRolloverByNumberInFolder() throws Exception {
+		testRolloverByNumber("folder");
 	}
 	
 	public void testRolloverBySize(String folder) throws Exception {
@@ -72,7 +76,9 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		int numOfBackups = 3;
 		int rotateSize = 8;
 		int numOfFilesPresentAtStart=5;
-		
+		if(folder !=null && !_folderExists(folder)) {
+			_createFolder(folder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(folder, filename);
 		}
@@ -83,7 +89,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		createFile(folder, filename,contents+"0");
 		
 		// test for rollover for the small file, it should do nothing now
-		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), folder, rotateSize, numOfBackups);
+		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
 
 		// assert that nothing has changed yet, because the file is smaller than the rotate size.
 		assertFileExistsWithContents(folder, filename, contents.trim()+"0");
@@ -93,9 +99,13 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		// create a bigger file
 		_deleteFile(folder, filename);
 		createFile(folder, filename,contents+contents+"0");
-		
+
+		for (int i=1;i<=numOfBackups;i++) {
+			assertFileExistsWithContents(folder, filename+"."+i, contents.trim()+(i));
+		}
+
 		// test rollover for bigger file
-		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), folder, rotateSize, numOfBackups);
+		FileSystemUtils.rolloverBySize(fileSystem, fileSystem.toFile(folder, filename), rotateSize, numOfBackups);
 		
 		// assert that the file has been backed up, and backups have been rotated
 		assertFileDoesNotExist(folder, filename);
@@ -126,13 +136,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -168,13 +180,15 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (_fileExists(filename)) {
 			_deleteFile(dstFolder, filename);
 		}
 
 		if (dstFolder!=null) {
-			if  (_folderExists(dstFolder)) {
+			if  (!_folderExists(dstFolder)) {
 				_createFolder(dstFolder);
 			}
 		}
@@ -203,14 +217,16 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void testMoveWithOverWrite() throws Exception {
+	public void testMoveWithOverwrite() throws Exception {
 		String filename = "backupTest" + FILE1;
 		String contents = "text content:";
 		String srcFolder = "srcFolder";
 		String dstFolder = "dstFolder";
 		int numOfBackups=3;
 		int numOfFilesPresentAtStart=5;
-		
+		if(!_folderExists(srcFolder)) {
+			_createFolder(srcFolder);
+		}
 		if (dstFolder!=null && !_folderExists(dstFolder)) {
 			_createFolder(dstFolder);
 		}
@@ -241,4 +257,27 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		}
 	}
 
+	@Test
+	public void testEmptyFilteredStream() throws Exception {
+		IBasicFileSystem<?> fs = new MockFileSystem() {
+			public DirectoryStream<?> listFiles(String folder) {
+				return new DirectoryStream() {
+
+					@Override
+					public void close() throws IOException {
+						// nothing needed
+					}
+
+					@Override
+					public Iterator iterator() {
+						return null;
+					}
+					
+				};
+			}
+		};
+		
+		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
+		assertTrue(stream==null || stream.count()==0);
+	}
 }

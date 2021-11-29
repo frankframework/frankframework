@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -51,7 +51,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	private String hideRegex = null;
 	private String hideMethod = "all";
-	
+
 	public JmsMessageBrowser() {
 		super();
 		setTransacted(true);
@@ -61,7 +61,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 		this();
 		this.selector=selector;
 	}
-	
+
 	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
@@ -245,7 +245,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 
-	@IbisDoc({"timeout for receiving a message from the queue", "3000 ms"})
+	@IbisDoc({"Timeout <i>in milliseconds</i> for receiving a message from the queue", "3000"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}

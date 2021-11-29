@@ -17,7 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.security.Principal;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 public class GetPrincipalPipe extends FixedForwardPipe {
 	
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException{
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
 		Principal principal=session.getPrincipal();
 		String principalName = "";
 		if (principal==null) {
@@ -45,6 +45,6 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 			}
 		}
 
-		return new PipeRunResult(getForward(),principalName);
+		return new PipeRunResult(getSuccessForward(),principalName);
 	}
 }

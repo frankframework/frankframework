@@ -5,8 +5,8 @@
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation=
 		"
-		http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd
-		http://www.springframework.org/schema/util classpath:xml/xsd/spring-util-3.2.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 		"
 	>
 
@@ -19,7 +19,16 @@
 		</property>
 	</bean>
 
-	<bean id="defaultDataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+	<bean
+		id="defaultDataSource"
+		factory-bean="dataSourceFactory"
+		factory-method="add"
+		>
+		<constructor-arg ref="dataSourceTxProxy" />
+		<constructor-arg value="${jdbc.datasource.default}" />
+	</bean>
+
+	<bean id="dataSourceTxProxy" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
 		<property name="targetDataSource">
 			<ref bean="h2DataSource"/>
 		</property>
@@ -28,16 +37,6 @@
 	<bean id="h2DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="org.h2.Driver"/>
 		<property name="url" value="jdbc:h2:mem:"/>
-	</bean>
-
-	<bean id="proxiedDataSources" class="java.util.HashMap">
-		<constructor-arg>
-			<map>
-				<entry key="${jdbc.datasource.default}">
-					<ref bean="defaultDataSource"/>
-				</entry>
-			</map>
-		</constructor-arg>
 	</bean>
 
 </beans>

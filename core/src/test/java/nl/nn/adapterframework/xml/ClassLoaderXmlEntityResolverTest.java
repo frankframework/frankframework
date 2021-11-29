@@ -1,21 +1,28 @@
 package nl.nn.adapterframework.xml;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.jar.JarFile;
 
 import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 public class ClassLoaderXmlEntityResolverTest {
 
+	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 	private String publicId="fakePublicId";
 	//private String base="/ClassLoader/zip/Xslt/names.xslt";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
@@ -32,8 +39,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	
 	@Test
 	public void localClassPathFileOnRootOfClasspath() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 		
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("AppConstants.properties");
 		
@@ -42,9 +48,8 @@ public class ClassLoaderXmlEntityResolverTest {
 	}
 
 	@Test
-	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+	public void localClassPathFileOnRootOfClasspathAbsolute() throws Exception {
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/AppConstants.properties");
 
@@ -54,8 +59,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	@Test
 	public void localClassPathAbsolute() throws SAXException, IOException {
-		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(localClassLoader);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/Xslt/importDocument/lookup.xml");
 		
@@ -65,7 +69,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	
 	@Test
-	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -77,7 +81,7 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(TestScopeProvider.wrap(cl));
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ClassLoader/Xslt/names.xsl");
 
@@ -86,7 +90,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	}
 
 	@Test
-	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException  {
+	public void bytesClassPathAbsolute() throws Exception  {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -98,12 +102,42 @@ public class ClassLoaderXmlEntityResolverTest {
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 
-		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(cl);
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(TestScopeProvider.wrap(cl));
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/ClassLoader/Xslt/names.xsl");
 
 		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
 		assertNotNull(inputSource);
+	}
+
+	@Ignore
+	@Test(expected = XNIException.class)
+	public void classLoaderXmlEntityResolverCanLoadLocalEntities() throws Exception {
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
+
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("UDTSchema.xsd");
+		URL url = this.getClass().getResource("/ClassLoader/request.xsd");
+		assertNotNull(url);
+		resourceIdentifier.setBaseSystemId(url.toExternalForm());
+
+		XMLInputSource inputSource = resolver.resolveEntity(resourceIdentifier);
+		assertNotNull(inputSource);
+	}
+
+	@Test
+	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
+		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
+
+		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ftp://share.host.org/UDTSchema.xsd");
+		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");
+		assertNotNull(url);
+		resourceIdentifier.setBaseSystemId(url.toExternalForm());
+
+		XNIException thrown = assertThrows(XNIException.class, () -> {
+			resolver.resolveEntity(resourceIdentifier);
+		});
+
+		assertThat(thrown.getMessage(), startsWith("Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] not allowed with protocol [ftp]"));
 	}
 
 	private class ResourceIdentifier implements XMLResourceIdentifier {

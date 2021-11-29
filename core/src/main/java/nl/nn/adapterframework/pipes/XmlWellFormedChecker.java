@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package nl.nn.adapterframework.pipes;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -31,18 +32,13 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
  * 
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case
+ * @ff.forward failure The document is not well formed.
+ * 
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
-public class XmlWellFormedChecker extends FixedForwardPipe {
+public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator {
 	private String root = null;
 
 	@Override
@@ -54,16 +50,21 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		return validate(message, session, getRoot());
+	}
+
+	@Override
+	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
-		if (XmlUtils.isWellFormed(input, getRoot())) {
+		if (XmlUtils.isWellFormed(input, messageRoot)) {
 			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
-			return new PipeRunResult(getForward(), message);
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 		throwEvent(AbstractXmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 		PipeForward forward = findForward("parserError");

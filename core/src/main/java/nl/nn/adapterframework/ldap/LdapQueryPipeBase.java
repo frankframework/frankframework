@@ -15,10 +15,12 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -40,9 +42,9 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	private boolean useSsl = false;
 	private String baseDN;
 
-	private String authAlias;
-	private String userName;
-	private String password;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
 
 	private String notFoundForwardName = "notFound";
 	private String exceptionForwardName = null;
@@ -56,14 +58,14 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		super.configure();
 		if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 			if (StringUtils.isNotEmpty(getHost()) || getPort()>0) {
-				throw new ConfigurationException(getLogPrefix(null) + "attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
+				throw new ConfigurationException("attributes 'host', 'port' and 'useSsl' cannot be used together with ldapProviderUrl");
 			}
 		} else {
 			if (StringUtils.isEmpty(getHost())) {
-				throw new ConfigurationException(getLogPrefix(null) + "either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
+				throw new ConfigurationException("either 'ldapProviderUrl' or 'host' (and possibly 'port' and 'useSsl') must be specified");
 			}
 		}
-		cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(getNotFoundForwardName())) {
 			notFoundForward = findForward(getNotFoundForwardName());
 		}
@@ -73,7 +75,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {
 			try {
 				return doPipeWithException(message, session);
@@ -86,7 +88,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		}
 	}
 
-	public abstract PipeRunResult doPipeWithException(Message message, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithException(Message message, PipeLineSession session) throws PipeRunException;
 
 	protected String retrieveUrl(String host, int port, String baseDN, boolean useSsl) {
 		String url; 
@@ -119,7 +121,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return host;
 	}
 
-	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified", ""})
+	@IbisDoc({"3", "Port of ldapProviderUrl. Only used when ldapProviderUrl not specified"})
 	public void setPort(int i) {
 		port = i;
 	}
@@ -149,26 +151,21 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	@IbisDoc({"7", "Username used to obtain credentials to connect to ldap server", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String string) {
+		username = string;
 	}
-	public String getUserName() {
-		return userName;
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	@IbisDoc({"8", "Password used to obtain credentials to connect to ldap server", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
-
 
 
 	public void setNotFoundForwardName(String string) {

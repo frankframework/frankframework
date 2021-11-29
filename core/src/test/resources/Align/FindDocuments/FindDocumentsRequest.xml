@@ -1,0 +1,8 @@
+<FindDocuments_Request>
+	<schemaName>NNPensioenen</schemaName>
+	<requestUserId>postman2</requestUserId>
+	<SearchAttributes>
+		<agreementNumber>12.12</agreementNumber>
+		<agreementNumber>33002118</agreementNumber>
+	</SearchAttributes>
+</FindDocuments_Request>

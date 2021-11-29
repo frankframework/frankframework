@@ -15,19 +15,19 @@
 */
 package nl.nn.ibistesttool;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.filter.View;
-import nl.nn.testtool.filter.Views;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.helpers.OptionConverter;
+import org.apache.logging.log4j.core.util.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.filter.View;
+import nl.nn.testtool.filter.Views;
 
 /**
  * @author Jaco de Groot
@@ -46,8 +46,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 			
 			boolean testToolEnabled=true;
-			AppConstants appConstants = AppConstants.getInstance();
-			String testToolEnabledProperty=appConstants.getProperty("testtool.enabled");
+			String testToolEnabledProperty=APP_CONSTANTS.getProperty("testtool.enabled");
 			if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
 				testToolEnabled="true".equalsIgnoreCase(testToolEnabledProperty);
 			} else {
@@ -55,7 +54,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 				if ("ACC".equals(stage) || "PRD".equals(stage)) {
 					testToolEnabled=false;
 				}
-				appConstants.setProperty("testtool.enabled", testToolEnabled);
+				APP_CONSTANTS.setProperty("testtool.enabled", testToolEnabled);
 			}
 			// notify other components of status of debugger
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
@@ -64,34 +63,27 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			}
 		}
 		if (bean instanceof nl.nn.testtool.storage.file.Storage) {
-			// TODO appConstants via set methode door spring i.p.v. AppConstants.getInstance()?
 			String maxFileSize = APP_CONSTANTS.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
-				long maximumFileSize = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
-				loggingStorage.setMaximumFileSize(maximumFileSize);
+				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
+				loggingStorage.setMaximumFileSize(maxFileSizeLong);
 			}
 			String maxBackupIndex = APP_CONSTANTS.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
 				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
-				int maximumBackupIndex = Integer.parseInt(maxBackupIndex);
-				loggingStorage.setMaximumBackupIndex(maximumBackupIndex);
+				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex);
+				loggingStorage.setMaximumBackupIndex(maxBackupIndexInt);
+			}
+			String freeSpaceMinimum = APP_CONSTANTS.getProperty("ibistesttool.freeSpaceMinimum");
+			if (freeSpaceMinimum != null) {
+				nl.nn.testtool.storage.file.Storage loggingStorage = (nl.nn.testtool.storage.file.Storage)bean;
+				long freeSpaceMinimumLong = OptionConverter.toFileSize(freeSpaceMinimum, -1);
+				loggingStorage.setFreeSpaceMinimum(freeSpaceMinimumLong);
 			}
 		}
-//		if (bean instanceof nl.nn.testtool.storage.diff.Storage) {
-//			// TODO niet dtap.stage maar een specifieke prop. gebruiken? op andere plekken in deze class ook?
-//			String stage = System.getResolvedProperty("dtap.stage");
-//			if ("LOC".equals(stage)) {
-//				AppConstants appConstants = AppConstants.getInstance();
-//				nl.nn.testtool.storage.diff.Storage runStorage = (nl.nn.testtool.storage.diff.Storage)bean;
-//				runStorage.setReportsFilename(appConstants.getResolvedProperty("rootRealPath") + "../TestTool/reports.xml");
-//werkt hier ook niet, deze ?singleton? bean wordt ook al aangemaakt voor tt servlet
-//				System.out.println("xxxxxxxxxx" + appConstants.getResolvedProperty("rootRealPath") + "../TestTool/reports.xml");//TODO remove
-//			}
-//		}
 		if (bean instanceof Views) {
-			AppConstants appConstants = AppConstants.getInstance();
-			String defaultView = appConstants.getResolvedProperty("ibistesttool.defaultView");
+			String defaultView = APP_CONSTANTS.getResolvedProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
 				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);

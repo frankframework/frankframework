@@ -1,21 +1,20 @@
 /*
-Copyright 2016-2018, 2020 WeAreFrank!
+   Copyright 2016-2021 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,20 +50,19 @@ import nl.nn.adapterframework.util.LogUtil;
 @IbisInitializer
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	private Logger secLog = LogUtil.getLogger("SEC");
 	private Logger log = LogUtil.getLogger(this);
-	private AppConstants appConstants = AppConstants.getInstance();
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	private final boolean IAF_API_ENABLED = appConstants.getBoolean("iaf-api.enabled", true);
-	private final String CORS_ALLOW_ORIGIN = appConstants.getString("iaf-api.cors.allowOrigin", ""); //Defaults to nothing
-	private final String CORS_EXPOSE_HEADERS = appConstants.getString("iaf-api.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private static final boolean IAF_API_ENABLED = APP_CONSTANTS.getBoolean("iaf-api.enabled", true);
+	private static final String CORS_ALLOW_ORIGIN = APP_CONSTANTS.getString("iaf-api.cors.allowOrigin", ""); //Defaults to nothing
+	private static final String CORS_EXPOSE_HEADERS = APP_CONSTANTS.getString("iaf-api.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
-	private final String CORS_ALLOW_METHODS = appConstants.getString("iaf-api.cors.allowMethods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+	private static final String CORS_ALLOW_METHODS = APP_CONSTANTS.getString("iaf-api.cors.allowMethods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
 
 	private List<String> allowedCorsDomains =  new ArrayList<String>();
-	private String mappingPrefix = "";
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
@@ -94,7 +92,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 	}
 
 	@Override
-	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
 		if(!IAF_API_ENABLED) {
 			return;
@@ -105,8 +103,9 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		/**
 		 * Log POST, PUT and DELETE requests
 		 */
-		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS"))
+		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
 			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
+		}
 
 		/**
 		 * Handle Cross-Origin Resource Sharing
@@ -137,7 +136,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 			}
 			else {
 				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+mappingPrefix+request.getPathInfo()+"] with origin["+origin+"] but was blocked due to CORS restrictions");
+				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+origin+"] but was blocked due to CORS restrictions");
 			}
 			//If we pass one of the valid domains, it can be used to spoof the connection
 		}
@@ -148,7 +147,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		 * Pass request down the chain, except for OPTIONS
 		 */
 		if (!method.equals("OPTIONS")) {
-			super.service(request, response);
+			super.invoke(request, response);
 		}
 	}
 
@@ -199,7 +198,6 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		return "iaf/api/*";
 	}
 
-	
 	@Override
 	public Map<String, String> getParameters() {
 		Map<String, String> parameters = new HashMap<>();

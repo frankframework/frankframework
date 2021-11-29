@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 WeAreFrank!
+Copyright 2017-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -24,26 +23,31 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * 
  * @author Niels Meijer
  *
  */
-public class ApiListener extends PushingListenerAdapter<String> implements HasPhysicalDestination, ReceiverAware<String> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<String> {
 
 	private String uriPattern;
 	private boolean updateEtag = true;
+	private String operationId;
 
-	private String method;
-	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
+	private HttpMethod method;
+	public enum HttpMethod {
+		GET,PUT,POST,PATCH,DELETE,OPTIONS;
+	}
 
 	private AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
 	private List<String> authenticationRoles = null;
@@ -53,10 +57,10 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	private ContentType producedContentType;
 	private String multipartBodyName = null;
 
-	private IReceiver<String> receiver;
+	private Receiver<String> receiver;
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
+	private String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
+	private String headerParams = null;
 	private String charset = null;
 
 	public enum AuthenticationMethods {
@@ -71,14 +75,12 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		if(StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
-		if(!getConsumes().equals("ANY")) {
-			if(getMethod().equals("GET"))
+		if(!getConsumesEnum().equals(MediaTypes.ANY)) {
+			if(getMethodEnum() == HttpMethod.GET)
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
-			if(getMethod().equals("DELETE"))
+			if(getMethodEnum() == HttpMethod.DELETE)
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
-		if(!methods.contains(getMethod()))
-			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
 		producedContentType = new ContentType(produces);
 		if(charset != null) {
@@ -88,9 +90,8 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@Override
 	public void open() throws ListenerException {
-		super.open();
-
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		super.open();
 	}
 
 	@Override
@@ -99,23 +100,24 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		ApiServiceDispatcher.getInstance().unregisterServiceClient(this);
 	}
 
-	public String processRequest(String correlationId, String message, IPipeLineSession requestContext) throws ListenerException {
-		String result = super.processRequest(correlationId, message, requestContext);
+	public Message processRequest(String correlationId, Message message, PipeLineSession requestContext) throws ListenerException {
+		Message result = super.processRequest(correlationId, message, requestContext);
 
 		//Return null when super.processRequest() returns an empty string
-		if(result != null && result.isEmpty())
+		if(Message.isEmpty(result)) {
 			return null;
-		else
-			return result;
+		}
+
+		return result;
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getCleanPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethodEnum();
 		if(!MediaTypes.ANY.equals(consumes))
-			destinationName += "; consumes: "+getConsumes();
+			destinationName += "; consumes: "+getConsumesEnum();
 		if(!MediaTypes.ANY.equals(produces))
-			destinationName += "; produces: "+getProduces();
+			destinationName += "; produces: "+getProducesEnum();
 
 		return destinationName;
 	}
@@ -128,12 +130,6 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		String pattern = getUriPattern();
 		if(StringUtils.isEmpty(pattern))
 			return null;
-
-		if(pattern.startsWith("/"))
-			pattern = pattern.substring(1);
-
-		if(pattern.endsWith("/"))
-			pattern = pattern.substring(0, pattern.length()-1);
 
 		return pattern.replaceAll("\\{.*?}", "*");
 	}
@@ -152,20 +148,35 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
 	}
 
-	public String getContentType() {
-		return producedContentType.getContentType();
+	public ContentType getContentType() {
+		return producedContentType;
 	}
 
-	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
+	@IbisDoc({"1", "HTTP method to listen to", ""})
 	public void setMethod(String method) {
-		this.method = method.toUpperCase();
+		try {
+			this.method = EnumUtils.parse(HttpMethod.class, method);
+			if(this.method == HttpMethod.OPTIONS) {
+				throw new IllegalArgumentException("method OPTIONS is default and should not be added manually");
+			}
+		} catch (IllegalArgumentException e) {
+			List<HttpMethod> enums = EnumUtils.getEnumList(HttpMethod.class);
+			enums.remove(HttpMethod.OPTIONS);
+			throw new IllegalArgumentException("unknown httpMethod value ["+method+"]. Must be one of "+ enums, e);
+		}
 	}
-	public String getMethod() {
+	public HttpMethod getMethodEnum() {
 		return method;
 	}
 
 	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
 	public void setUriPattern(String uriPattern) {
+		if(!uriPattern.startsWith("/"))
+			uriPattern = "/" + uriPattern;
+
+		if(uriPattern.endsWith("/"))
+			uriPattern = uriPattern.substring(0, uriPattern.length()-1);
+
 		this.uriPattern = uriPattern;
 	}
 	public String getUriPattern() {
@@ -174,30 +185,22 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 	@IbisDoc({"3", "the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
 	public void setConsumes(String value) {
-		String consumes = null;
-		if(StringUtils.isEmpty(value))
-			consumes = "ANY";
-		else
-			consumes = value.toUpperCase();
-
-		this.consumes = MediaTypes.valueOf(consumes);
+		if(StringUtils.isNotEmpty(value)) {
+			this.consumes = EnumUtils.parse(MediaTypes.class, value);
+		}
 	}
-	public String getConsumes() {
-		return consumes.name();
+	public MediaTypes getConsumesEnum() {
+		return consumes;
 	}
 
 	@IbisDoc({"4", "the specified contentType on response", "ANY"})
 	public void setProduces(String value) {
-		String produces = null;
-		if(StringUtils.isEmpty(value))
-			produces = "ANY";
-		else
-			produces = value.toUpperCase();
-
-		this.produces = MediaTypes.valueOf(produces);
+		if(StringUtils.isNotEmpty(value)) {
+			this.produces = EnumUtils.parse(MediaTypes.class, value);
+		}
 	}
-	public String getProduces() {
-		return produces.name();
+	public MediaTypes getProducesEnum() {
+		return produces;
 	}
 
 	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
@@ -221,20 +224,11 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	//TODO add authenticationType
 
 	@IbisDoc({"7", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
-	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
-		try {
-			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
-		}
+	public void setAuthenticationMethod(String authenticationMethod) {
+		this.authenticationMethod = EnumUtils.parse(AuthenticationMethods.class, authenticationMethod);
 	}
 
-	public AuthenticationMethods getAuthenticationMethod() {
-		if(authenticationMethod == null) {
-			authenticationMethod = AuthenticationMethods.NONE;
-		}
-
+	public AuthenticationMethods getAuthenticationMethodEnum() {
 		return this.authenticationMethod;
 	}
 
@@ -252,7 +246,7 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 
 		this.authenticationRoles = roles;
 	}
-	public List<String> getAuthenticationRoles() {
+	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
 	}
 
@@ -271,9 +265,24 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
-
 	public String getMessageIdHeader() {
 		return messageIdHeader;
+	}
+
+	@IbisDoc({"11", "Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema", ""})
+	public void setOperationId(String operationId) {
+		this.operationId = operationId;
+	}
+	public String getOperationId() {
+		return operationId;
+	}
+
+	@IbisDoc({"12", "Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.", ""})
+	public void setHeaderParams(String headerParams) {
+		this.headerParams = headerParams;
+	}
+	public String getHeaderParams() {
+		return headerParams;
 	}
 
 	@Override
@@ -281,20 +290,20 @@ public class ApiListener extends PushingListenerAdapter<String> implements HasPh
 		final StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
 		builder.append(" uriPattern["+getUriPattern()+"]");
-		builder.append(" produces["+getProduces()+"]");
-		builder.append(" consumes["+getConsumes()+"]");
+		builder.append(" produces["+getProducesEnum()+"]");
+		builder.append(" consumes["+getConsumesEnum()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();
 	}
 
 	@Override
-	public void setReceiver(IReceiver<String> receiver) {
+	public void setReceiver(Receiver<String> receiver) {
 		this.receiver = receiver;
 	}
 
 	@Override
-	public IReceiver<String> getReceiver() {
+	public Receiver<String> getReceiver() {
 		return receiver;
 	}
 }

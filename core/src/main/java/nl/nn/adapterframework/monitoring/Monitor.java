@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,73 +16,77 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author  Gerrit van Brakel
  * @since   4.9
+ * 
+ * @version 2.0
+ * @author Niels Meijer
  */
-public class Monitor {
+@FrankDocGroup(name = "Monitoring")
+public class Monitor implements IConfigurationAware, INamedObject, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private String name;
-	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
-	private boolean raised=false;
-	private Date stateChangeDt=null;
-	
+	private @Getter String name;
+	private EventTypeEnum type = EventTypeEnum.TECHNICAL;
+	private boolean raised = false;
+	private Date stateChangeDt = null;
+
 	private int additionalHitCount=0;
 	private Date lastHit=null;
-	
-	private SeverityEnum alarmSeverity=null;  
-	private EventThrowing alarmSource=null;  
 
-	
-	private MonitorManager owner=null;
+	private SeverityEnum alarmSeverity=null;
+	private EventThrowing alarmSource=null;
 
-	private List<Trigger> triggers = new ArrayList<Trigger>();
-	private Set<String> destinationSet=new HashSet<String>(); 
-	
-	public Monitor() {
-		super();
+
+	private MonitorManager manager = null;
+
+	private List<ITrigger> triggers = new ArrayList<>();
+	private Set<String> destinations = new HashSet<>(); 
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	public void configure() {
+		for(String destination : destinations) {
+			if(getManager().getDestination(destination) == null) {
+				throw new IllegalArgumentException("destination ["+destination+"] does not exist");
+			}
+		}
+
+		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
+		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
+			ITrigger trigger = it.next();
+			if(!trigger.isConfigured()) {
+				trigger.configure();
+				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
+			}
+		}
 	}
 
-	public void register(Object x) {
-		MonitorManager.getInstance().addMonitor(this);
-	}
-	
-	public void configure() throws ConfigurationException {
-		if (MonitorManager.traceReconfigure) {
-			if (log.isDebugEnabled())
-				log.debug("monitor ["+getName()+"] configuring triggers");
-		}
-		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
-			Trigger trigger = (Trigger)it.next();
-			trigger.configure();
-		}
-	}
-	
-	public void registerEventNotificationListener(Trigger trigger, List<String> eventCodes, Map<String, AdapterFilter> adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
-		if (MonitorManager.traceReconfigure) {
-			if (log.isDebugEnabled())
-				log.debug("monitor ["+getName()+"] registerEventNotificationListener for trigger");
-		}
-		getOwner().registerEventNotificationListener(trigger, eventCodes, adapterFilters, filterOnLowerLevelObjects, filterExclusive);
-	}
-	
 	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
 		boolean hit=alarm && (getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<=0);
 		boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
@@ -107,7 +111,7 @@ public class Monitor {
 			}
 		}
 		raised=alarm;
-		notifyReverseTrigger(alarm,source);
+		clearEvents(alarm);
 	}
 
 	public void changeMonitorState(Date date, EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
@@ -119,23 +123,22 @@ public class Monitor {
 			throw new MonitorException("severity cannot be null");
 		}
 		setStateChangeDt(date);
-		
-		for (Iterator<String> it=destinationSet.iterator();it.hasNext();) {
-			String key=(String)it.next();
-			IMonitorAdapter monitorAdapter = getOwner().getDestination(key);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+key+"]");
-			if (monitorAdapter!=null) {
+
+		for(String destination : destinations) {
+			IMonitorAdapter monitorAdapter = getManager().getDestination(destination);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+destination+"]");
+
+			if (monitorAdapter != null) {
 				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null); 
 			}
 		}
 	}
 
-
-	protected void notifyReverseTrigger(boolean alarm, EventThrowing source) {
-		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
-			Trigger trigger=(Trigger)it.next();
+	protected void clearEvents(boolean alarm) {
+		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
+			ITrigger trigger = it.next();
 			if (trigger.isAlarm()!=alarm) {
-				trigger.notificationOfReverseTrigger(source);
+				trigger.clearEvents();
 			}
 		}
 	}
@@ -161,141 +164,100 @@ public class Monitor {
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		for (Iterator<Trigger> it=triggers.iterator();it.hasNext();) {
-			Trigger trigger=(Trigger)it.next();
+		for (Iterator<ITrigger> it=triggers.iterator();it.hasNext();) {
+			ITrigger trigger=it.next();
 			trigger.toXml(monitor);
 		}
 		return monitor;
 	}
 
-
-	public boolean isDestination(String name) {
-		return destinationSet.contains(name);
-	}
 	public String getDestinationsAsString() {
-		//log.debug(getLogPrefix()+"calling getDestinationsAsString()");
 		String result=null;
-		for (Iterator<String> it=getDestinationSet().iterator();it.hasNext();) {
-			String item=(String)it.next();
+		for(String destination : getDestinationSet()) {
 			if (result==null) {
-				result=item;
+				result=destination;
 			} else {
-				result+=","+item;
+				result+=","+destination;
 			}
 		}
 		return result;
 	}
-	public String[] getDestinations() {
-		//log.debug(getLogPrefix()+"entering getDestinations()");
-		String[] result=new String[destinationSet.size()];
-		result=(String[])destinationSet.toArray(result);
-		return result;
-	}
+
+	//Digester setter
 	public void setDestinations(String newDestinations) {
-//		log.debug(getLogPrefix()+"entering setDestinations(String)");
-		destinationSet.clear();
+		destinations.clear();
 		StringTokenizer st=new StringTokenizer(newDestinations,",");
 		while (st.hasMoreTokens()) {
-			String token=st.nextToken();
-//			log.debug(getLogPrefix()+"adding destination ["+token+"]");
-			destinationSet.add(token);			
+			destinations.add(st.nextToken());
 		}
 	}
-	public void setDestinations(String[] newDestinations) {
-		if (newDestinations.length==1) {
-			log.debug("assuming single string, separated by commas");
-			destinationSet.clear();
-			StringTokenizer st=new StringTokenizer(newDestinations[0],",");
-			while (st.hasMoreTokens()) {
-				String token=st.nextToken();
-				log.debug(getLogPrefix()+"adding destination ["+token+"]");
-				destinationSet.add(token);			
-			}
-		} else {
-			log.debug(getLogPrefix()+"entering setDestinations(String[])");
-			Set<String> set=new HashSet<String>();
-			for (int i=0;i<newDestinations.length;i++) {
-				log.debug(getLogPrefix()+"adding destination ["+newDestinations[i]+"]");
-				set.add(newDestinations[i]); 
-			}
-			setDestinationSet(set);
-		}
-	}
+
 	public Set<String> getDestinationSet() {
-		return destinationSet;
+		return Collections.unmodifiableSet(destinations);
 	}
 	public void setDestinationSet(Set<String> newDestinations) {
 		if (newDestinations==null) {
-			log.debug(getLogPrefix()+"clearing destinations");
-			destinationSet.clear();
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"clearing destinations");
+			destinations.clear();
 		} else {
-			if (log.isDebugEnabled()) {
-				String destinations=null;
-				for (Iterator<String> it=newDestinations.iterator();it.hasNext();) {
-					if (destinations!=null) {
-						destinations+=","+(String)it.next();
-					} else {
-						destinations=(String)it.next();
-					}
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting destinations to ["+newDestinations+"]");
+			for(String destination : newDestinations) {
+				if(getManager().getDestination(destination) == null) {
+					throw new IllegalArgumentException("destination ["+destination+"] does not exist");
 				}
-				log.debug(getLogPrefix()+"setting destinations to ["+destinations+"]");
 			}
-//			log.debug("size before retain all ["+destinationSet.size()+"]" );
-			destinationSet.retainAll(newDestinations);
-//			log.debug("size after retain all ["+destinationSet.size()+"]" );
-			destinationSet.addAll(newDestinations);
-//			log.debug("size after add all ["+destinationSet.size()+"]" );
+
+			//Only proceed if all destinations exist
+			destinations.clear();
+			for(String destination : newDestinations) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"adding destination ["+destination+"]");
+				destinations.add(destination);
+			}
 		}
 	}
 
-	public void registerTrigger(Trigger trigger) {
-		trigger.setOwner(this);
+	public void registerTrigger(ITrigger trigger) {
+		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
 
-	public void registerAlarm(Trigger trigger) {
-		trigger.setAlarm(true);
-		registerTrigger(trigger);
-	}
-	public void registerClearing(Trigger trigger) {
-		trigger.setAlarm(false);
-		registerTrigger(trigger);
+	public void removeTrigger(ITrigger trigger) {
+		int index = triggers.indexOf(trigger);
+		if(index > -1) {
+			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			factory.destroyBean(trigger);
+			triggers.remove(trigger);
+		}
 	}
 
 	public String getLogPrefix() {
 		return "Monitor ["+getName()+"] ";
 	}
 
-	public void setOwner(MonitorManager manager) {
-		owner = manager;
+	public void setManager(MonitorManager manager) {
+		this.manager = manager;
 	}
-	public MonitorManager getOwner() {
-		return owner;
+	private MonitorManager getManager() {
+		return manager;
 	}
 
-	public List<Trigger> getTriggers() {
+	public List<ITrigger> getTriggers() {
 		return triggers;
 	}
-	public Trigger getTrigger(int index) {
-		return (Trigger)triggers.get(index);
+	public ITrigger getTrigger(int index) {
+		return triggers.get(index);
 	}
 
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
-	public String getName() {
-		return name;
-	}
 
 	public void setType(String eventType) {
-		setTypeEnum((EventTypeEnum)EventTypeEnum.getEnumMap().get(eventType));
+		setTypeEnum(EnumUtils.parse(EventTypeEnum.class, eventType));
 	}
 	public String getType() {
-		return type==null?null:type.getName();
+		return type==null?null:type.name();
 	}
 	public void setTypeEnum(EventTypeEnum enumeration) {
 		type = enumeration;
@@ -312,7 +274,7 @@ public class Monitor {
 	}
 
 	public String getAlarmSeverity() {
-		return alarmSeverity==null?null:alarmSeverity.getName();
+		return alarmSeverity==null?null:alarmSeverity.name();
 	}
 	public void setAlarmSeverityEnum(SeverityEnum enumeration) {
 		alarmSeverity = enumeration;
@@ -330,7 +292,7 @@ public class Monitor {
 
 	public void setStateChangeDt(Date date) {
 		stateChangeDt = date;
-		getOwner().registerStateChange(date);
+		getManager().registerStateChange(date);
 	}
 	public Date getStateChangeDt() {
 		return stateChangeDt;
@@ -362,5 +324,17 @@ public class Monitor {
 		return additionalHitCount;
 	}
 
+	/**
+	 * Destroy the monitor and all registered triggers
+	 */
+	@Override
+	public void destroy() {
+		log.info("removing monitor ["+this+"]");
+
+		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+		for (ITrigger trigger : triggers) {
+			factory.destroyBean(trigger);
+		}
+	}
 
 }

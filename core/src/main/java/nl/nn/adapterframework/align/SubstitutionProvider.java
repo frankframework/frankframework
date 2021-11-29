@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package nl.nn.adapterframework.align;
 public interface SubstitutionProvider<V> {
 
 	public boolean hasSubstitutionsFor(AlignmentContext context, String childName);
+	public V getSubstitutionsFor(AlignmentContext context, String childName);
+	public boolean hasOverride(AlignmentContext context);
 	public V getOverride(AlignmentContext context);
 	public V getDefault(AlignmentContext context);
 	 

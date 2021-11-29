@@ -1,9 +1,7 @@
 <module>
 	<adapter name="GetStartTimeStamp" active="${MemoryLeak.active}"
 		description="gets the start time stamp">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GetStartTimeStamp">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-GetStartTimeStamp" />
@@ -23,7 +21,7 @@
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
 				createDirectory="true"
-				fileName="startTimeStamp.txt"
+				filename="startTimeStamp.txt"
 				getInputFromSessionKey="systemDate">
 				<forward name="success" path="Echo" />
 			</pipe>
@@ -36,8 +34,7 @@
 	</adapter>
 	<adapter name="MemoryLeak" active="${MemoryLeak.active}"
 		description="Pass a message through 10 adapters">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakAdapterListener"
 				serviceName="ibis4test-MemoryLeak"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
@@ -47,7 +44,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener1"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -59,8 +56,7 @@
 	<adapter name="MemoryLeakSubAdapter1"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener1"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -70,7 +66,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener2"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -82,8 +78,7 @@
 	<adapter name="MemoryLeakSubAdapter2"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener2"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -92,7 +87,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener3"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -104,8 +99,7 @@
 	<adapter name="MemoryLeakSubAdapter3"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener3"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -114,7 +108,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener4"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -126,8 +120,7 @@
 	<adapter name="MemoryLeakSubAdapter4"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener4"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -136,7 +129,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener5"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -148,8 +141,7 @@
 	<adapter name="MemoryLeakSubAdapter5"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener5"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -158,7 +150,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener6"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -170,8 +162,7 @@
 	<adapter name="MemoryLeakSubAdapter6"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener6"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -180,7 +171,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener7"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -192,8 +183,7 @@
 	<adapter name="MemoryLeakSubAdapter7"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener7"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -202,7 +192,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener8"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -214,8 +204,7 @@
 	<adapter name="MemoryLeakSubAdapter8"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener8"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -224,7 +213,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender javaListener="MemoryLeakSubAdapterListener9"
 					className="nl.nn.adapterframework.senders.IbisLocalSender">
 					<param name="*" sessionKey="*" />
@@ -236,8 +225,7 @@
 	<adapter name="MemoryLeakSubAdapter9"
 		active="${MemoryLeak.active}"
 		description="Passes throug a message with a wildcard">
-		<receiver name="Java Receiver for Memory Leak Adapter"
-			className="nl.nn.adapterframework.receivers.GenericReceiver">
+		<receiver>
 			<listener name="MemoryLeakSubAdapterListener9"
 				className="nl.nn.adapterframework.receivers.JavaListener" />
 		</receiver>
@@ -246,7 +234,7 @@
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="Pass through"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.EchoSender">
 				</sender>
 				<forward name="success" path="READY" />
@@ -255,9 +243,7 @@
 	</adapter>
 	<adapter name="GetEndTimeStamp" active="${MemoryLeak.active}"
 		description="gets the end time stamp">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GetEndTimeStamp">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-GetEndTimeStamp" />
@@ -277,7 +263,7 @@
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				getInputFromSessionKey="systemDate"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="endTimeStamp.txt">
+				filename="endTimeStamp.txt">
 				<forward name="success" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
@@ -289,9 +275,7 @@
 	</adapter>
 	<adapter name="CompareDuration" active="${MemoryLeak.active}"
 		description="compares the actual duration with the expected duration if actual is longer than expected fails">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="CompareDuration">
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-CompareDuration" />
@@ -303,14 +287,14 @@
 			<pipe name="getStartTime" actions="read" 
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="startTimeStamp.txt"
+				filename="startTimeStamp.txt"
 				storeResultInSessionKey="startTime">
 				<forward name="success" path="getEndTime" />
 			</pipe>
 			<pipe name="getEndTime" actions="read"
 				className="nl.nn.adapterframework.pipes.FilePipe"
 				directory="${testdata.dir}/MemoryLeak"
-				fileName="endTimeStamp.txt"
+				filename="endTimeStamp.txt"
 				storeResultInSessionKey="endTime">
 				<forward name="success" path="StoreValues" />
 			</pipe>

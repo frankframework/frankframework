@@ -2,6 +2,7 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,16 +28,17 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.Misc;
 
 @RunWith(Parameterized.class)
-public class TestGetAction extends SenderBase<CmisSender>{
+public class TestGetAction extends SenderTestBase<CmisSender>{
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -49,7 +51,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	
 	private final static String GET_RESULT_FOR_INPUT= "dummy_stream";
 
-	private final static String GET_RESULT_TO_SERVLET= "";
+	private final static String GET_RESULT_TO_SERVLET= null;
 
 	private final static String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
 			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>"
@@ -97,7 +99,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 	}
 
 	@Override
-	public CmisSender createSender() throws ConfigurationException {
+	public CmisSender createSender() throws Exception {
 		CmisSender sender = spy(new CmisSender());
 
 		sender.setUrl("http://dummy.url");
@@ -107,7 +109,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		sender.setKeepSession(false);
 
 		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(IPipeLineSession.HTTP_RESPONSE_KEY, response);
+		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 		ServletOutputStream outputStream = mock(ServletOutputStream.class);
 		try {
 			doReturn(outputStream).when(response).getOutputStream();
@@ -122,7 +124,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 //		GENERIC cmis object
 		ObjectId objectId = mock(ObjectIdImpl.class);
 		doReturn(objectId).when(cmisSession).createObjectId(anyString());
-		CmisObject cmisObject = spy(new CmisTestObject());
+		CmisObject cmisObject = CmisTestObject.newInstance();
 		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class));
 		doReturn(cmisObject).when(cmisSession).getObject(any(ObjectId.class), any(OperationContext.class));
 
@@ -130,11 +132,7 @@ public class TestGetAction extends SenderBase<CmisSender>{
 		OperationContext operationContext = mock(OperationContextImpl.class);
 		doReturn(operationContext).when(cmisSession).createOperationContext();
 
-		try {
-			doReturn(cmisSession).when(sender).createCmisSession(any(ParameterValueList.class));
-		} catch (SenderException e) {
-			//Since we stub the entire session it won't throw exceptions
-		}
+		doReturn(cmisSession).when(sender).createCmisSession(any());
 
 		return sender;
 	}
@@ -170,17 +168,28 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
-			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
 			assertNull(stream);
 		}
+	}
+
+	@Test
+	public void sendMessageStreamResult() throws ConfigurationException, SenderException, TimeOutException, IOException {
+		sender.setBindingType(bindingType);
+		sender.setAction(action);
+		sender.configure();
+
+		Message actualResult = sender.sendMessage(input, session);
+		assertTrue(actualResult.asObject() instanceof InputStream);
+		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
 
 	@Test
@@ -190,12 +199,12 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
-			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) session.get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {
@@ -210,12 +219,12 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
-			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		InputStream stream = (InputStream) session.get(sender.getFileInputStreamSessionKey());
+		InputStream stream = (InputStream) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, Misc.streamToString(stream));
 		} else {
@@ -230,12 +239,12 @@ public class TestGetAction extends SenderBase<CmisSender>{
 
 		String actualResult = sender.sendMessage(input, session).asString();
 		if(!getProperties && !resultToServlet) {
-			assertEquals("", actualResult);
+			assertNull(actualResult);
 		} else {
-			assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) session.get(sender.getFileContentSessionKey());
+		String base64Content = (String) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
 		} else {

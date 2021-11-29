@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import nl.nn.adapterframework.extensions.aspose.services.util.StringsUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
@@ -38,16 +38,14 @@ class UniqueFileGenerator {
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
 	 * 
-	 * @param extension
-	 *            is allowed to be null.
-	 * @return
+	 * @param extension  is allowed to be null.
 	 */
 	public static File getUniqueFile(String directory, String prefix, String extension) {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);
 		String fileType;
-		if (StringsUtil.isBlank(extension)) {
+		if (StringUtils.isEmpty(extension)) {
 			fileType = "";
 		} else {
 			fileType = "." + extension;

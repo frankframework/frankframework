@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -28,13 +28,7 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  * 
- * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>
- * </table>
- * </p>
+ * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
  * 
  * @author Peter Leeuwenburgh
  */
@@ -44,7 +38,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	private int timeout = 30;
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = null;
 		if (getParameterList() != null) {
 			try {
@@ -64,7 +58,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
-			protected void kill() {
+			protected void abort() {
 				//The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
 				killPipe();
 			}
@@ -82,7 +76,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				log.error(msgString, e);
 				String msgCdataString = "<![CDATA[" + msgString + "]]>";
 				Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-				return new PipeRunResult(getForward(), errorMessage);
+				return new PipeRunResult(getSuccessForward(), errorMessage);
 			}
 		} finally {
 			if(tg.cancel()) {
@@ -96,7 +90,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 					log.error(msgString, e);
 					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
 					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-					return new PipeRunResult(getForward(), errorMessage);
+					return new PipeRunResult(getSuccessForward(), errorMessage);
 				}
 			}
 		}
@@ -105,7 +99,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	/**
 	 * doPipe wrapped around a TimeoutGuard
 	 */
-	public abstract PipeRunResult doPipeWithTimeoutGuarded(Message input, IPipeLineSession session) throws PipeRunException;
+	public abstract PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException;
 
 	/**
 	 * optional implementation to kill additional threads if the pipe may have created those.

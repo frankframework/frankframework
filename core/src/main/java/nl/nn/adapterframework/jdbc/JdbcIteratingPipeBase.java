@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,23 +18,23 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.pipes.StringIteratorPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.SpringUtils;
 
 
 /**
@@ -43,16 +43,26 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implements HasPhysicalDestination {
+public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
-		
+
+		@Override
+		public void configure() throws ConfigurationException {
+			//In case a query is specified, return the Adapter, else return true to suppress the SQL Injection warning
+			if(query!=null) {
+				super.configure(getAdapter());
+			} else {
+				super.configure(true);
+			}
+		}
+
 		@Override
 		protected String getQuery(Message message) throws SenderException {
 			if (query!=null) {
@@ -65,15 +75,15 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			this.query = query;
 		}
 	}
-	
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		SpringUtils.autowireByName(getApplicationContext(), querySender);
 		querySender.setName("source of "+getName());
 		querySender.configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		try {
@@ -90,11 +100,10 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.close();
 	}
 
-	protected abstract IDataIterator<String> getIterator(Connection conn, ResultSet rs) throws SenderException; 
+	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
-	@SuppressWarnings("finally")
 	@Override
-	protected IDataIterator<String> getIterator(Message message, IPipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
 		PreparedStatement statement=null;
 		ResultSet rs=null;
@@ -102,7 +111,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
 			statement=queryExecutionContext.getStatement();
-			JdbcUtil.applyParameters(statement, queryExecutionContext.getParameterList(), message, session);
+			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			rs = statement.executeQuery();
 			if (rs==null) {
 				throw new SenderException("resultset is null");
@@ -111,27 +120,18 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 				JdbcUtil.fullClose(connection, rs);
 				return null; // no results
 			}
-			return getIterator(connection, rs);
+			return getIterator(querySender.getDbmsSupport(), connection, rs);
 		} catch (Throwable t) {
 			try {
 				if (rs!=null) {
 					JdbcUtil.fullClose(connection, rs);
 				} else {
-					if (statement!=null) {
-						JdbcUtil.fullClose(connection, statement);
-					} else {
-						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e1) {
-								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
-							}
-						}
-					}
+					JdbcUtil.fullClose(connection, statement);
 				}
-			} finally {
-				throw new SenderException(getLogPrefix(session),t);
+			} catch (Throwable t2) {
+				t.addSuppressed(t2);
 			}
+			throw new SenderException(getLogPrefix(session), t);
 		}
 	}
 
@@ -140,19 +140,16 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 		querySender.addParameter(p);
 	}
 
-	public void setProxiedDataSources(Map<String,DataSource> proxiedDataSources) {
-		querySender.setProxiedDataSources(proxiedDataSources);
-	}
-
 	@Override
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Please use attribute dataSourceName instead")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-
 
 	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query", ""})
 	public void setQuery(String query) {
@@ -163,17 +160,35 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe<String> implem
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
-	public String getDatasourceName() {
-		return querySender.getDatasourceName();
-	}
 
 	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	public void setUseNamedParams(boolean b) {
+		querySender.setUseNamedParams(b);
+	}
+
+	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	public void setTrimSpaces(boolean b) {
+		querySender.setTrimSpaces(b);
+	}
+
+	@IbisDocRef({"5", FIXEDQUERYSENDER})
+	public void setSqlDialect(String string) {
+		querySender.setSqlDialect(string);
+	}
+	
+	@IbisDocRef({"6", FIXEDQUERYSENDER})
 	public void setLockRows(boolean b) {
 		querySender.setLockRows(b);
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	@IbisDocRef({"7", FIXEDQUERYSENDER})
 	public void setLockWait(int i) {
 		querySender.setLockWait(i);
 	}
+
+	@IbisDocRef({"8", FIXEDQUERYSENDER})
+	public void setAvoidLocking(boolean avoidLocking) {
+		querySender.setAvoidLocking(avoidLocking);
+	}
+
 }

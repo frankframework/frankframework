@@ -1,3 +1,18 @@
+/*
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package nl.nn.adapterframework.testtool;
 
 import java.io.BufferedReader;
@@ -33,6 +48,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletContext;
@@ -45,31 +61,33 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.dom4j.DocumentException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
@@ -82,6 +100,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -95,7 +114,7 @@ public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final int DEFAULT_TIMEOUT = 30000;
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
@@ -108,7 +127,12 @@ public class TestTool {
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
 	
-	private static int globalTimeout=DEFAULT_TIMEOUT;
+	/*
+	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
+	 * Those results cannot be saved to the inline expected value, however.
+	 */
+	private static final boolean allowReadlineSteps = false; 
+	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
@@ -138,6 +162,14 @@ public class TestTool {
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+		String paramGlobalTimeout = request.getParameter("timeout");
+		int timeout=globalTimeout;
+		if(paramGlobalTimeout != null) {
+			try {
+				timeout = Integer.parseInt(paramGlobalTimeout);
+			} catch(NumberFormatException e) {
+			}
+		}
 		String servletPath = request.getServletPath();
 		int i = servletPath.lastIndexOf('/');
 		String realPath = application.getRealPath(servletPath.substring(0, i));
@@ -145,7 +177,7 @@ public class TestTool {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -158,7 +190,7 @@ public class TestTool {
 	 */
 	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
-			String realPath, String paramScenariosRootDirectory,
+			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
@@ -214,8 +246,9 @@ public class TestTool {
 			} catch(NumberFormatException e) {
 			}
 		}
+
 		debugMessage("Write html form", writers);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 		debugMessage("Stop logging to logbuffer", writers);
 		if (writers!=null) {
 			writers.put("uselogbuffer", "stop");
@@ -281,7 +314,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
+								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -298,7 +331,7 @@ public class TestTool {
 										String step = (String)iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout);
 										if (stepPassed==RESULT_OK) {
 											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 										} else if (stepPassed==RESULT_AUTOSAVED) {
@@ -336,7 +369,7 @@ public class TestTool {
 					if (scenarioPassed==RESULT_OK) {
 						scenariosPassed++;
 						scenarioPassedMessage("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed (" + scenariosFailed + "/" + scenariosPassed + "/" + scenarioFiles.size() + ")", writers);
-						if (silent) {
+						if (silent && LOG_LEVEL_ORDER.indexOf("[" + logLevel + "]") <= LOG_LEVEL_ORDER.indexOf("[scenario passed/failed]")) {
 							try {
 								out.write("Scenario '" + shortName + " - " + properties.getProperty("scenario.description") + "' passed");
 							} catch (IOException e) {
@@ -420,7 +453,7 @@ public class TestTool {
 				}
 				writeHtml("<br/>", writers, false);
 				writeHtml("<br/>", writers, false);
-				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 				debugMessage("Stop logging to htmlbuffer", writers);
 				if (writers!=null) {
 					writers.put("usehtmlbuffer", "stop");
@@ -431,7 +464,7 @@ public class TestTool {
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map<String, Object> writers) {
+	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
@@ -533,6 +566,19 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// timeout box
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Default timeout (ms)</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>Log level</td>", writers, false);
@@ -573,6 +619,7 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// submit button
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>&nbsp;</td>", writers, false);
@@ -1164,7 +1211,7 @@ public class TestTool {
 			Enumeration<?> enumeration = properties.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String)enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write"))) {
+				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (allowReadlineSteps && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
 					if (!stepFound) {
 						steps.add(key);
 						stepFound = true;
@@ -1185,7 +1232,7 @@ public class TestTool {
 
 	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
 			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map<String, Object> writers) {
+			AppConstants appConstants, Map<String, Object> writers, int parameterTimeout) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		debugMessage("Get all queue names", writers);
 		List<String> jmsSenders = new ArrayList<String>();
@@ -1281,7 +1328,7 @@ public class TestTool {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationType("QUEUE");
+				jmsSender.setDestinationType(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1299,7 +1346,7 @@ public class TestTool {
 				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
 				if (deliveryMode != null) {
 					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					jmsSender.setDeliveryMode(deliveryMode);
+					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
 				if ("true".equals(persistent)) {
 					debugMessage("Set persistent to true", writers);
@@ -1311,6 +1358,11 @@ public class TestTool {
 				if (replyToName != null) {
 					debugMessage("Set replyToName to " + replyToName, writers);
 					jmsSender.setReplyToName(replyToName);
+				}
+				try {
+					jmsSender.configure();
+				} catch (ConfigurationException e) {
+					throw new RuntimeException(e);
 				}
 				Map<String, Object> jmsSenderInfo = new HashMap<String, Object>();
 				jmsSenderInfo.put("jmsSender", jmsSender);
@@ -1332,10 +1384,10 @@ public class TestTool {
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = globalTimeout;
+			int nTimeout = parameterTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {
@@ -1346,7 +1398,7 @@ public class TestTool {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationType("QUEUE");
+				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1373,6 +1425,11 @@ public class TestTool {
 				String setForceMessageIdAsCorrelationId = (String)properties.get(queueName + ".setForceMessageIdAsCorrelationId");
 				if ("true".equals(setForceMessageIdAsCorrelationId)) {
 					pullingJmsListener.setForceMessageIdAsCorrelationId(true);
+				}
+				try {
+					pullingJmsListener.configure();
+				} catch (ConfigurationException e) {
+					throw new RuntimeException(e);
 				}
 				Map<String, Object> jmsListenerInfo = new HashMap<String, Object>();
 				jmsListenerInfo.put("jmsListener", pullingJmsListener);
@@ -1411,7 +1468,7 @@ public class TestTool {
 					if (preDelete != null) {
 						FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						deleteQuerySender.setName("Test Tool pre delete query sender");
-						deleteQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						deleteQuerySender.setDatasourceName(datasourceName);
 						deleteQuerySender.setQueryType("delete");
 						deleteQuerySender.setQuery("delete from " + preDelete);
 						try {
@@ -1442,7 +1499,7 @@ public class TestTool {
 					if (prePostQuery != null) {
 						FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						prePostFixedQuerySender.setName("Test Tool query sender");
-						prePostFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						prePostFixedQuerySender.setDatasourceName(datasourceName);
 						//prePostFixedQuerySender.setUsername(username);
 						//prePostFixedQuerySender.setPassword(password);
 						prePostFixedQuerySender.setQueryType("select");
@@ -1465,8 +1522,8 @@ public class TestTool {
 						}
 						if (queues != null) {
 							try {
-								PipeLineSessionBase session = new PipeLineSessionBase();
-								session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+								PipeLineSession session = new PipeLineSession();
+								session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
@@ -1487,7 +1544,7 @@ public class TestTool {
 					if (readQuery != null) {
 						FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 						readQueryFixedQuerySender.setName("Test Tool query sender");
-						readQueryFixedQuerySender.setDatasourceName(appConstants.getResolvedProperty("jndiContextPrefix") + datasourceName);
+						readQueryFixedQuerySender.setDatasourceName(datasourceName);
 						//readQueryFixedQuerySender.setUsername(username);
 						//readQueryFixedQuerySender.setPassword(password);
 						
@@ -1593,8 +1650,10 @@ public class TestTool {
 			String url = (String)properties.get(name + ".url");
 			String userName = (String)properties.get(name + ".userName");
 			String password = (String)properties.get(name + ".password");
+			String authAlias = (String)properties.get(name + ".authAlias");
 			String soap = (String)properties.get(name + ".soap");
-			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
+			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
@@ -1603,14 +1662,14 @@ public class TestTool {
 				WebServiceSender webServiceSender = new WebServiceSender();
 				webServiceSender.setName("Test Tool WebServiceSender");
 				webServiceSender.setUrl(url);
-				webServiceSender.setUserName(userName);
+				webServiceSender.setUsername(userName);
 				webServiceSender.setPassword(password);
+				webServiceSender.setAuthAlias(authAlias);
 				if (soap != null) {
 					webServiceSender.setSoap(new Boolean(soap));
 				}
-				if (allowSelfSignedCertificates != null) {
-					webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-				}
+				webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+				webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
 				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 				if (serviceNamespaceURI != null) {
 					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
@@ -1657,18 +1716,16 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setRequestTimeOut(globalTimeout);
-				listenerMessageHandler.setResponseTimeOut(globalTimeout);
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				listenerMessageHandler.setTimeout(parameterTimeout);
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				WebServiceListener webServiceListener = new WebServiceListener();
@@ -1706,6 +1763,7 @@ public class TestTool {
 			String url = (String)properties.get(name + ".url");
 			String userName = (String)properties.get(name + ".userName");
 			String password = (String)properties.get(name + ".password");
+			String authAlias = (String)properties.get(name + ".authAlias");
 			String headerParams = (String)properties.get(name + ".headersParams");
 			String xhtmlString = (String)properties.get(name + ".xhtml");
 			String methodtype = (String)properties.get(name + ".methodType");
@@ -1713,13 +1771,15 @@ public class TestTool {
 			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
+ 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+ 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
 				errorMessage("Could not find url property for " + name, writers);
 			} else {
 				HttpSender httpSender = null;
-				IPipeLineSession session = null;
+				PipeLineSession session = null;
 				ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					// Use directoryClassLoader to make it possible to specify
@@ -1733,14 +1793,16 @@ public class TestTool {
 					httpSender = new HttpSender();
 					httpSender.setName("Test Tool HttpSender");
 					httpSender.setUrl(url);
-					httpSender.setUserName(userName);
+					httpSender.setUsername(userName);
 					httpSender.setPassword(password);
+					httpSender.setAuthAlias(authAlias);
 					httpSender.setHeadersParams(headerParams);
 					if (StringUtils.isNotEmpty(xhtmlString)) {
 						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
 					}
 					if (StringUtils.isNotEmpty(methodtype)) {
-						httpSender.setMethodType(methodtype);
+						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
+						httpSender.setMethodType(method);
 					}
 					if (StringUtils.isNotEmpty(paramsInUrlString)) {
 						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
@@ -1754,7 +1816,9 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
-					session = new PipeLineSessionBase();
+					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+					httpSender.setVerifyHostname(new Boolean(verifyHostname));
+					session = new PipeLineSession();
 					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 					while (parameterNameIterator.hasNext()) {
@@ -1763,6 +1827,10 @@ public class TestTool {
 						httpSender.addParameter(parameter);
 					}
 					httpSender.configure();
+				} catch(ClassLoaderException e) {
+					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, writers);
+					queues = null;
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 					closeQueues(queues, properties, writers);
@@ -1806,7 +1874,7 @@ public class TestTool {
 				IbisJavaSender ibisJavaSender = new IbisJavaSender();
 				ibisJavaSender.setName("Test Tool IbisJavaSender");
 				ibisJavaSender.setServiceName(serviceName);
-				IPipeLineSession session = new PipeLineSessionBase();
+				PipeLineSession session = new PipeLineSession();
 				Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 				Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
 				while (parameterNameIterator.hasNext()) {
@@ -1869,17 +1937,16 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				JavaListener javaListener = new JavaListener();
@@ -2143,8 +2210,8 @@ public class TestTool {
 						 * (see also executeFixedQuerySenderRead() )
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
-						PipeLineSessionBase session = new PipeLineSessionBase();
-						session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+						PipeLineSession session = new PipeLineSession();
+						session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 						String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
 							
@@ -2255,19 +2322,19 @@ public class TestTool {
 				debugMessage("Closed web service listener '" + queueName + "'", writers);
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2337,19 +2404,19 @@ public class TestTool {
 				}
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2499,7 +2566,7 @@ public class TestTool {
 		Map senderInfo = (Map)queues.get(queueName);
 		ISender sender = (ISender)senderInfo.get(senderType + "Sender");
 		Boolean convertExceptionToMessage = (Boolean)senderInfo.get("convertExceptionToMessage");
-		IPipeLineSession session = (IPipeLineSession)senderInfo.get("session");
+		PipeLineSession session = (PipeLineSession)senderInfo.get("session");
 		SenderThread senderThread = new SenderThread(sender, fileContent, session, convertExceptionToMessage.booleanValue());
 		senderThread.start();
 		senderInfo.put(senderType + "SenderThread", senderThread);
@@ -2667,7 +2734,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -2676,7 +2743,20 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+			ListenerMessage listenerMessage = null;
+			Long timeout = Long.parseLong(""+parameterTimeout);
+			try {
+				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+				debugMessage("Timeout set to '" + timeout + "'", writers);
+			} catch (Exception e) {
+			}
+			try {
+				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
+			} catch (TimeOutException e) {
+				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
+				return RESULT_ERROR;
+			}
+
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);
@@ -2725,8 +2805,8 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				PipeLineSessionBase session = new PipeLineSessionBase();
-				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				PipeLineSession session = new PipeLineSession();
+				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				String postResult = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
@@ -2746,8 +2826,8 @@ public class TestTool {
 		if (newRecordFound) {
 			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
-				PipeLineSessionBase session = new PipeLineSessionBase();
-				session.put(IPipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
+				PipeLineSession session = new PipeLineSession();
+				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeOutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2842,7 +2922,7 @@ public class TestTool {
 		return result;	
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -2856,14 +2936,22 @@ public class TestTool {
 		if ("".equals(fileName)) {
 			errorMessage("No file specified for step '" + step + "'", writers);
 		} else {
-			debugMessage("Read file " + fileName, writers);
-			fileContent = readFile(fileNameAbsolutePath, writers);
+			if (step.endsWith("readline") || step.endsWith("writeline")) {
+				fileContent = fileName;
+			} else {
+				if (fileName.endsWith("ignore")) {
+					debugMessage("creating dummy expected file for filename '"+fileName+"'", writers);
+					fileContent = "ignore";
+				} else {
+					debugMessage("Read file " + fileName, writers);
+					fileContent = readFile(fileNameAbsolutePath, writers);
+				}
+			}
 			if (fileContent == null) {
 				errorMessage("Could not read file '" + fileName + "'", writers);
 			} else {
-				if (step.endsWith(".read")) {
-					queueName = step.substring(i + 1, step.length() - 5);
-
+				queueName = step.substring(i + 1, step.lastIndexOf("."));
+				if (step.endsWith(".read") || (allowReadlineSteps && step.endsWith(".readline"))) {
 					if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeJmsListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);	
 					} else 	if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(queueName + ".className"))) {
@@ -2873,13 +2961,13 @@ public class TestTool {
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
@@ -2890,8 +2978,6 @@ public class TestTool {
 						errorMessage("Property '" + queueName + ".className' not found or not valid", writers);
 					}
 				} else {
-					queueName = step.substring(i + 1, step.length() - 6);
-
 					String resolveProperties = properties.getProperty("scenario.resolveProperties");
 
 					if( resolveProperties == null || !resolveProperties.equalsIgnoreCase("false") ){
@@ -2982,7 +3068,7 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
@@ -3004,7 +3090,7 @@ public class TestTool {
 		ProcessUtil.executeCommand(command);
 	}
 
-	private static File writeTempFile(String originalFileName, String content) throws IOException, DocumentException {
+	private static File writeTempFile(String originalFileName, String content) throws IOException {
 		String encoding = getEncoding(originalFileName, content);
 
 		String baseName = FileUtils.getBaseName(originalFileName);
@@ -3071,11 +3157,20 @@ public class TestTool {
 	}
 
 	public static int compareResult(String step, String stepDisplayName, String fileName, String expectedResult, String actualResult, Properties properties, Map<String, Object> writers, String queueName) {
+		if (fileName.endsWith("ignore")) {
+			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
+			return RESULT_OK;
+		}
 		int ok = RESULT_ERROR;
 		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
 		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
+
+		// Map all identifier based properties once
+		HashMap<String, HashMap<String, HashMap<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
+
+		/* numeric decodeUnzipContentBetweenKeys */
 		debugMessage("Check decodeUnzipContentBetweenKeys properties", writers);
 		boolean decodeUnzipContentBetweenKeysProcessed = false;
 		int i = 1;
@@ -3095,6 +3190,36 @@ public class TestTool {
 				decodeUnzipContentBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based decodeUnzipContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> decodeUnzipContentBetweenKeys = ignoreMap.get("decodeUnzipContentBetweenKeys");
+		
+		if (decodeUnzipContentBetweenKeys!=null) {
+			Iterator decodeUnzipContentBetweenKeysIt = decodeUnzipContentBetweenKeys.entrySet().iterator();
+			while (decodeUnzipContentBetweenKeysIt.hasNext()) {
+				Map.Entry decodeUnzipContentBetweenKeysEntry = (Map.Entry) decodeUnzipContentBetweenKeysIt.next();
+				HashMap<String, String> decodeUnzipContentBetweenKeysPair = (HashMap<String, String>) decodeUnzipContentBetweenKeysEntry.getValue();
+				String key1 = decodeUnzipContentBetweenKeysPair.get("key1");
+				String key2 = decodeUnzipContentBetweenKeysPair.get("key2");
+				boolean replaceNewlines = false;
+	
+				if ("true".equals(decodeUnzipContentBetweenKeysPair.get("replaceNewlines"))) {
+					replaceNewlines = true;
+				}
+				if (key1 != null && key2 != null) {
+					debugMessage("Decode and unzip content between key1 '" + key1 + "' and key2 '" + key2 + "' (replaceNewlines is " + replaceNewlines + ")", writers);
+					preparedExpectedResult = decodeUnzipContentBetweenKeys(preparedExpectedResult, key1, key2, replaceNewlines, writers);
+					preparedActualResult = decodeUnzipContentBetweenKeys(preparedActualResult, key1, key2, replaceNewlines, writers);
+					i++;
+				} else {
+					decodeUnzipContentBetweenKeysProcessed = true;
+				}
+	
+				decodeUnzipContentBetweenKeysIt.remove(); 
+			}
+		}
+
+		/* numeric canonicaliseFilePathContentBetweenKeys */
 		debugMessage("Check canonicaliseFilePathContentBetweenKeys properties", writers);
 		boolean canonicaliseFilePathContentBetweenKeysProcessed = false;
 		i = 1;
@@ -3110,6 +3235,63 @@ public class TestTool {
 				canonicaliseFilePathContentBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based canonicaliseFilePathContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> canonicaliseFilePathContentBetweenKeys = ignoreMap.get("canonicaliseFilePathContentBetweenKeys"); 
+		if (canonicaliseFilePathContentBetweenKeys!=null) {
+			Iterator canonicaliseFilePathContentBetweenKeysIt = canonicaliseFilePathContentBetweenKeys.entrySet().iterator();
+			while (canonicaliseFilePathContentBetweenKeysIt.hasNext()) {
+				Map.Entry canonicaliseFilePathContentBetweenKeysEntry = (Map.Entry) canonicaliseFilePathContentBetweenKeysIt.next();
+				HashMap<String, String> canonicaliseFilePathContentBetweenKeysPair = (HashMap<String, String>) canonicaliseFilePathContentBetweenKeysEntry.getValue();
+				
+				String key1 = canonicaliseFilePathContentBetweenKeysPair.get("key1");
+				String key2 = canonicaliseFilePathContentBetweenKeysPair.get("key2");
+				
+				debugMessage("Canonicalise filepath content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = canonicaliseFilePathContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = canonicaliseFilePathContentBetweenKeys(preparedActualResult, key1, key2, writers);
+
+				canonicaliseFilePathContentBetweenKeysIt.remove(); 
+			}
+		}
+
+		/* numeric formatDecimalContentBetweenKeys */
+		debugMessage("Check formatDecimalContentBetweenKeys properties", writers);
+		boolean formatDecimalContentBetweenKeysProcessed = false;
+		i = 1;
+		while (!formatDecimalContentBetweenKeysProcessed) {
+			String key1 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key1");
+			String key2 = properties.getProperty("formatDecimalContentBetweenKeys" + i + ".key2");
+			if (key1 != null && key2 != null) {
+				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+				preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+				i++;
+			} else {
+				formatDecimalContentBetweenKeysProcessed = true;
+			}
+		}
+
+		/* identifier based formatDecimalContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> formatDecimalContentBetweenKeys = ignoreMap.get("formatDecimalContentBetweenKeys"); 
+		if (formatDecimalContentBetweenKeys!=null) {
+			Iterator formatDecimalContentBetweenKeysIt = formatDecimalContentBetweenKeys.entrySet().iterator();
+			while (formatDecimalContentBetweenKeysIt.hasNext()) {
+				Map.Entry formatDecimalContentBetweenKeysEntry = (Map.Entry) formatDecimalContentBetweenKeysIt.next();
+				HashMap<String, String> formatDecimalContentBetweenKeysPair = (HashMap<String, String>) formatDecimalContentBetweenKeysEntry.getValue();
+
+				String key1 = formatDecimalContentBetweenKeysPair.get("key1");
+				String key2 = formatDecimalContentBetweenKeysPair.get("key2");
+				
+				debugMessage("Format decimal content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+					preparedExpectedResult = formatDecimalContentBetweenKeys(preparedExpectedResult, key1, key2, writers);
+					preparedActualResult = formatDecimalContentBetweenKeys(preparedActualResult, key1, key2, writers);
+
+				formatDecimalContentBetweenKeysIt.remove(); 
+			}
+		}
+
+		/* numeric ignoreRegularExpressionKey */
 		debugMessage("Check ignoreRegularExpressionKey properties", writers);
 		boolean ignoreRegularExpressionKeyProcessed = false;
 		i = 1;
@@ -3124,6 +3306,26 @@ public class TestTool {
 				ignoreRegularExpressionKeyProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreRegularExpressionKey */
+		HashMap<String, HashMap<String, String>> ignoreRegularExpressionKey = ignoreMap.get("ignoreRegularExpressionKey");
+		if (ignoreRegularExpressionKey!=null) {
+		Iterator ignoreRegularExpressionKeyIt = ignoreRegularExpressionKey.entrySet().iterator();
+			while (ignoreRegularExpressionKeyIt.hasNext()) {
+				Map.Entry ignoreRegularExpressionKeyEntry = (Map.Entry) ignoreRegularExpressionKeyIt.next();
+				HashMap<String, String> ignoreRegularExpressionKeyItPair = (HashMap<String, String>) ignoreRegularExpressionKeyEntry.getValue();
+				
+				String key = ignoreRegularExpressionKeyItPair.get("key");
+				
+				debugMessage("Ignore regular expression key '" + key + "'", writers);
+				preparedExpectedResult = ignoreRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = ignoreRegularExpression(preparedActualResult, key);
+
+				ignoreRegularExpressionKeyIt.remove(); 
+			}
+		}
+		
+		/* numeric removeRegularExpressionKey */
 		debugMessage("Check removeRegularExpressionKey properties", writers);
 		boolean removeRegularExpressionKeyProcessed = false;
 		i = 1;
@@ -3138,6 +3340,25 @@ public class TestTool {
 				removeRegularExpressionKeyProcessed = true;
 			}
 		}
+
+		/* identifier based removeRegularExpressionKey */
+		HashMap<String, HashMap<String, String>> removeRegularExpressionKey = ignoreMap.get("removeRegularExpressionKey");
+		if (removeRegularExpressionKey!=null) {
+			Iterator removeRegularExpressionKeyIt = removeRegularExpressionKey.entrySet().iterator();
+			while (removeRegularExpressionKeyIt.hasNext()) {
+				Map.Entry removeRegularExpressionKeyEntry = (Map.Entry) removeRegularExpressionKeyIt.next();
+				HashMap<String, String> removeRegularExpressionKeyPair = (HashMap<String, String>) removeRegularExpressionKeyEntry.getValue();
+				String key = removeRegularExpressionKeyPair.get("key");
+
+				debugMessage("Remove regular expression key '" + key + "'", writers);
+				preparedExpectedResult = removeRegularExpression(preparedExpectedResult, key);
+				preparedActualResult = removeRegularExpression(preparedActualResult, key);
+
+				removeRegularExpressionKeyIt.remove(); 
+			}
+		}
+		
+		/* numeric replaceRegularExpressionKeys */
 		debugMessage("Check replaceRegularExpressionKeys properties", writers);
 		boolean replaceRegularExpressionKeysProcessed = false;
 		i = 1;
@@ -3153,6 +3374,26 @@ public class TestTool {
 				replaceRegularExpressionKeysProcessed = true;
 			}
 		}
+
+		/* identifier based replaceRegularExpressionKeys */
+		HashMap<String, HashMap<String, String>> replaceRegularExpressionKeys = ignoreMap.get("replaceRegularExpressionKeys");
+		if (replaceRegularExpressionKeys!=null) {
+		Iterator replaceRegularExpressionKeysIt = replaceRegularExpressionKeys.entrySet().iterator();
+			while (replaceRegularExpressionKeysIt.hasNext()) {
+				Map.Entry replaceRegularExpressionKeysEntry = (Map.Entry) replaceRegularExpressionKeysIt.next();
+				HashMap<String, String> replaceRegularExpressionKeysPair = (HashMap<String, String>) replaceRegularExpressionKeysEntry.getValue();
+				String key1 = replaceRegularExpressionKeysPair.get("key1");
+				String key2 = replaceRegularExpressionKeysPair.get("key2");
+
+				debugMessage("Replace regular expression from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceRegularExpression(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceRegularExpression(preparedActualResult, key1, key2);
+
+				replaceRegularExpressionKeysIt.remove(); 
+			}
+		}
+		
+		/* numeric ignoreContentBetweenKeys */
 		debugMessage("Check ignoreContentBetweenKeys properties", writers);
 		boolean ignoreContentBetweenKeysProcessed = false;
 		i = 1;
@@ -3168,6 +3409,26 @@ public class TestTool {
 				ignoreContentBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> ignoreContentBetweenKeys = ignoreMap.get("ignoreContentBetweenKeys");
+		if (ignoreContentBetweenKeys!=null) {
+			Iterator ignoreContentBetweenKeysIt = ignoreContentBetweenKeys.entrySet().iterator();
+			while (ignoreContentBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreContentBetweenKeysEntry = (Map.Entry) ignoreContentBetweenKeysIt.next();
+				HashMap<String, String> ignoreContentBetweenKeysPair = (HashMap<String, String>) ignoreContentBetweenKeysEntry.getValue();
+				String key1 = ignoreContentBetweenKeysPair.get("key1");
+				String key2 = ignoreContentBetweenKeysPair.get("key2");
+
+				debugMessage("Ignore content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreContentBetweenKeys(preparedActualResult, key1, key2);
+
+				ignoreContentBetweenKeysIt.remove(); 
+			}
+		}
+		
+		/* numeric ignoreKeysAndContentBetweenKeys */
 		debugMessage("Check ignoreKeysAndContentBetweenKeys properties", writers);
 		boolean ignoreKeysAndContentBetweenKeysProcessed = false;
 		i = 1;
@@ -3183,6 +3444,26 @@ public class TestTool {
 				ignoreKeysAndContentBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreKeysAndContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> ignoreKeysAndContentBetweenKeys = ignoreMap.get("ignoreKeysAndContentBetweenKeys");
+		if (ignoreKeysAndContentBetweenKeys!=null) {
+			Iterator ignoreKeysAndContentBetweenKeysIt = ignoreKeysAndContentBetweenKeys.entrySet().iterator();
+			while (ignoreKeysAndContentBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreKeysAndContentBetweenKeysEntry = (Map.Entry) ignoreKeysAndContentBetweenKeysIt.next();
+				HashMap<String, String> ignoreKeysAndContentBetweenKeysPair = (HashMap<String, String>) ignoreKeysAndContentBetweenKeysEntry.getValue();
+				String key1 = ignoreKeysAndContentBetweenKeysPair.get("key1");
+				String key2 = ignoreKeysAndContentBetweenKeysPair.get("key2");
+
+				debugMessage("Ignore keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = ignoreKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = ignoreKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
+
+				ignoreKeysAndContentBetweenKeysIt.remove(); 
+			}
+		}
+		
+		/* numeric removeKeysAndContentBetweenKeys */
 		debugMessage("Check removeKeysAndContentBetweenKeys properties", writers);
 		boolean removeKeysAndContentBetweenKeysProcessed = false;
 		i = 1;
@@ -3198,6 +3479,26 @@ public class TestTool {
 				removeKeysAndContentBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based removeKeysAndContentBetweenKeys */
+		HashMap<String, HashMap<String, String>> removeKeysAndContentBetweenKeys = ignoreMap.get("removeKeysAndContentBetweenKeys");
+		if (removeKeysAndContentBetweenKeys!=null) {
+			Iterator removeKeysAndContentBetweenKeysIt = removeKeysAndContentBetweenKeys.entrySet().iterator();
+			while (removeKeysAndContentBetweenKeysIt.hasNext()) {
+				Map.Entry removeKeysAndContentBetweenKeysEntry = (Map.Entry) removeKeysAndContentBetweenKeysIt.next();
+				HashMap<String, String> removeKeysAndContentBetweenKeysPair = (HashMap<String, String>) removeKeysAndContentBetweenKeysEntry.getValue();
+				String key1 = removeKeysAndContentBetweenKeysPair.get("key1");
+				String key2 = removeKeysAndContentBetweenKeysPair.get("key2");
+	
+				debugMessage("Remove keys and content between key1 '" + key1 + "' and key2 '" + key2 + "'", writers);
+				preparedExpectedResult = removeKeysAndContentBetweenKeys(preparedExpectedResult, key1, key2);
+				preparedActualResult = removeKeysAndContentBetweenKeys(preparedActualResult, key1, key2);
+
+				removeKeysAndContentBetweenKeysIt.remove(); 
+			}
+		}
+
+		/* numeric ignoreKey */
 		debugMessage("Check ignoreKey properties", writers);
 		boolean ignoreKeyProcessed = false;
 		i = 1;
@@ -3212,6 +3513,25 @@ public class TestTool {
 				ignoreKeyProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreKey */
+		HashMap<String, HashMap<String, String>> ignoreKey = ignoreMap.get("ignoreKey");
+		if (ignoreKey!=null) {
+			Iterator ignoreKeyIt = ignoreKey.entrySet().iterator();
+			while (ignoreKeyIt.hasNext()) {
+				Map.Entry ignoreKeyEntry = (Map.Entry) ignoreKeyIt.next();
+				HashMap<String, String> ignoreKeyPair = (HashMap<String, String>) ignoreKeyEntry.getValue();
+				String key = ignoreKeyPair.get("value");
+				
+				debugMessage("Ignore key '" + key + "'", writers);
+				preparedExpectedResult = ignoreKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreKey(preparedActualResult, key);
+	
+				ignoreKeyIt.remove(); 
+			}
+		}
+
+		/* numeric removeKey */
 		debugMessage("Check removeKey properties", writers);
 		boolean removeKeyProcessed = false;
 		i = 1;
@@ -3226,6 +3546,25 @@ public class TestTool {
 				removeKeyProcessed = true;
 			}
 		}
+
+		/* identifier based removeKey */
+		HashMap<String, HashMap<String, String>> removeKey = ignoreMap.get("removeKey");
+		if (removeKey!=null) {
+			Iterator removeKeyIt = removeKey.entrySet().iterator();
+			while (removeKeyIt.hasNext()) {
+				Map.Entry removeKeyEntry = (Map.Entry) removeKeyIt.next();
+				HashMap<String, String> removeKeyPair = (HashMap<String, String>) removeKeyEntry.getValue();
+				String key = removeKeyPair.get("value");
+				
+				debugMessage("Remove key '" + key + "'", writers);
+				preparedExpectedResult = removeKey(preparedExpectedResult, key);
+				preparedActualResult = removeKey(preparedActualResult, key);
+
+				removeKeyIt.remove(); 
+			}
+		}
+
+		/* numeric replaceKey */
 		debugMessage("Check replaceKey properties", writers);
 		boolean replaceKeyProcessed = false;
 		i = 1;
@@ -3241,6 +3580,26 @@ public class TestTool {
 				replaceKeyProcessed = true;
 			}
 		}
+
+		/* identifier based replaceKey */
+		HashMap<String, HashMap<String, String>> replaceKey = ignoreMap.get("replaceKey");
+		if (replaceKey!=null) {
+			Iterator replaceKeyIt = replaceKey.entrySet().iterator();
+			while (replaceKeyIt.hasNext()) {
+				Map.Entry replaceKeyEntry = (Map.Entry) replaceKeyIt.next();
+				HashMap<String, String> replaceKeyPair = (HashMap<String, String>) replaceKeyEntry.getValue();
+				String key1 = replaceKeyPair.get("key1");
+				String key2 = replaceKeyPair.get("key2");
+				
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+	
+				replaceKeyIt.remove(); 
+			}
+		}
+		
+		/* numeric replaceEverywhereKey */
 		debugMessage("Check replaceEverywhereKey properties", writers);
 		boolean replaceEverywhereKeyProcessed = false;
 		i = 1;
@@ -3256,6 +3615,26 @@ public class TestTool {
 				replaceEverywhereKeyProcessed = true;
 			}
 		}
+
+		/* identifier based replaceEverywhereKey */
+		HashMap<String, HashMap<String, String>> replaceEverywhereKey = ignoreMap.get("replaceEverywhereKey");
+		if (replaceEverywhereKey!=null) {
+			Iterator replaceEverywhereKeyIt = replaceEverywhereKey.entrySet().iterator();
+			while (replaceEverywhereKeyIt.hasNext()) {
+				Map.Entry replaceEverywhereKeyEntry = (Map.Entry) replaceEverywhereKeyIt.next();
+				HashMap<String, String> replaceEverywhereKeyPair = (HashMap<String, String>) replaceEverywhereKeyEntry.getValue();
+				String key1 = replaceEverywhereKeyPair.get("key1");
+				String key2 = replaceEverywhereKeyPair.get("key2");
+
+				debugMessage("Replace key from '" + key1 + "' to '" + key2 + "'", writers);
+				preparedExpectedResult = replaceKey(preparedExpectedResult, key1, key2);
+				preparedActualResult = replaceKey(preparedActualResult, key1, key2);
+
+				replaceEverywhereKeyIt.remove(); 
+			}
+		}
+
+		/* numeric ignoreCurrentTimeBetweenKeys */
 		debugMessage("Check ignoreCurrentTimeBetweenKeys properties", writers);
 		boolean ignoreCurrentTimeBetweenKeysProcessed = false;
 		i = 1;
@@ -3279,6 +3658,35 @@ public class TestTool {
 				ignoreCurrentTimeBetweenKeysProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreCurrentTimeBetweenKeys */
+		HashMap<String, HashMap<String, String>> ignoreCurrentTimeBetweenKeys = ignoreMap.get("ignoreCurrentTimeBetweenKeys");
+		if (ignoreCurrentTimeBetweenKeys!=null) {
+			Iterator ignoreCurrentTimeBetweenKeysIt = ignoreCurrentTimeBetweenKeys.entrySet().iterator();
+			while (ignoreCurrentTimeBetweenKeysIt.hasNext()) {
+				Map.Entry ignoreCurrentTimeBetweenKeysEntry = (Map.Entry) ignoreCurrentTimeBetweenKeysIt.next();
+				HashMap<String, String> ignoreCurrentTimeBetweenKeysPair = (HashMap<String, String>) ignoreCurrentTimeBetweenKeysEntry.getValue();
+				String key1 = ignoreCurrentTimeBetweenKeysPair.get("key1");
+				String key2 = ignoreCurrentTimeBetweenKeysPair.get("key2");
+				String pattern = ignoreCurrentTimeBetweenKeysPair.get("pattern");
+				String margin = ignoreCurrentTimeBetweenKeysPair.get("margin");
+				boolean errorMessageOnRemainingString = true;
+
+				if ("false".equals(ignoreCurrentTimeBetweenKeysPair.get("errorMessageOnRemainingString"))) {
+					errorMessageOnRemainingString = false;
+				}
+
+				debugMessage("Ignore current time between key1 '" + key1 + "' and key2 '" + key2 + "' (errorMessageOnRemainingString is " + errorMessageOnRemainingString + ")", writers);
+				debugMessage("For result string", writers);
+				preparedActualResult = ignoreCurrentTimeBetweenKeys(preparedActualResult, key1, key2, pattern, margin, errorMessageOnRemainingString, false, writers);
+				debugMessage("For expected string", writers);
+				preparedExpectedResult = ignoreCurrentTimeBetweenKeys(preparedExpectedResult, key1, key2, pattern, margin, errorMessageOnRemainingString, true, writers);
+				
+				ignoreCurrentTimeBetweenKeysIt.remove(); 
+			}
+		}
+		
+		/* numeric ignoreContentBeforeKey */
 		debugMessage("Check ignoreContentBeforeKey properties", writers);
 		boolean ignoreContentBeforeKeyProcessed = false;
 		i = 1;
@@ -3296,6 +3704,32 @@ public class TestTool {
 				ignoreContentBeforeKeyProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreContentBeforeKey */
+		HashMap<String, HashMap<String, String>> ignoreContentBeforeKey = ignoreMap.get("ignoreContentBeforeKey");
+
+		// merge all without .key attribute as well
+		// TODO: ignoreContentBeforeKey.putAll(mapPropertiesByIdentifier("ignoreContentBeforeKey", properties, new ArrayList()));
+		if (ignoreContentBeforeKey!=null) {
+			Iterator ignoreContentBeforeKeyIt = ignoreContentBeforeKey.entrySet().iterator();
+			while (ignoreContentBeforeKeyIt.hasNext()) {
+				Map.Entry ignoreContentBeforeKeyEntry = (Map.Entry) ignoreContentBeforeKeyIt.next();
+				HashMap<String, String> ignoreContentBeforeKeyPair = (HashMap<String, String>) ignoreContentBeforeKeyEntry.getValue();
+				String key = ignoreContentBeforeKeyPair.get("key");
+	
+				if (key == null) {
+					key = ignoreContentBeforeKeyPair.get("value");
+				}
+	
+				debugMessage("Ignore content before key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
+				
+				ignoreContentBeforeKeyIt.remove(); 
+			}
+		}
+
+		/* numeric ignoreContentAfterKey */
 		debugMessage("Check ignoreContentAfterKey properties", writers);
 		boolean ignoreContentAfterKeyProcessed = false;
 		i = 1;
@@ -3313,6 +3747,31 @@ public class TestTool {
 				ignoreContentAfterKeyProcessed = true;
 			}
 		}
+
+		/* identifier based ignoreContentAfterKey */
+		HashMap<String, HashMap<String, String>> ignoreContentAfterKey = ignoreMap.get("ignoreContentAfterKey");
+
+		// merge all without .key attribute aswell
+		// TODO: ignoreContentAfterKey.putAll(mapPropertiesByIdentifier("ignoreContentAfterKey", properties, new ArrayList()));
+		if (ignoreContentAfterKey!=null) {
+			Iterator ignoreContentAfterKeyIt = ignoreContentAfterKey.entrySet().iterator();
+			while (ignoreContentAfterKeyIt.hasNext()) {
+				Map.Entry ignoreContentAfterKeyEntry = (Map.Entry) ignoreContentAfterKeyIt.next();
+				HashMap<String, String> ignoreContentAfterKeyPair = (HashMap<String, String>) ignoreContentAfterKeyEntry.getValue();
+				String key = ignoreContentAfterKeyPair.get("key");
+
+				if (key == null) {
+					key = ignoreContentAfterKeyPair.get("value");
+				}
+
+				debugMessage("Ignore content before key '" + key + "'", writers);
+				preparedExpectedResult = ignoreContentBeforeKey(preparedExpectedResult, key);
+				preparedActualResult = ignoreContentBeforeKey(preparedActualResult, key);
+				
+				ignoreContentAfterKeyIt.remove(); 
+			}
+		}
+		
 		debugMessage("Check ignoreContentAfterKey properties", writers);
 		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
@@ -3642,6 +4101,40 @@ public class TestTool {
 		return result;
 	}
 
+	public static String formatDecimalContentBetweenKeys(String string,
+		String key1, String key2, Map writers) {
+		String result = string;
+		int i = result.indexOf(key1);
+		while (i != -1 && result.length() > i + key1.length()) {
+			int j = result.indexOf(key2, i + key1.length());
+			if (j != -1) {
+				String doubleAsString = result.substring(i + key1.length(), j);
+				try {
+					double d = Double.parseDouble(doubleAsString);
+					result = result.substring(0, i) + key1 + format(d)
+							+ result.substring(j);
+					i = result.indexOf(key1, i + key1.length()
+							+ doubleAsString.length() + key2.length());
+				} catch (NumberFormatException e) {
+					i = -1;
+					errorMessage(
+							"Could not parse double value: " + e.getMessage(),
+							e, writers);
+				}
+			} else {
+				i = -1;
+			}
+		}
+		return result;
+	}
+
+	private static String format(double d) {
+		if (d == (long) d)
+			return String.format("%d", (long) d);
+		else
+			return String.format("%s", d);
+	}
+
 	public static String ignoreContentBeforeKey(String string, String key) {
 		int i = string.indexOf(key);
 		if (i == -1) {
@@ -3688,7 +4181,7 @@ public class TestTool {
 	 *  
 	 * @return A map with parameters
 	 */
-	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, IPipeLineSession session) {
+	private static Map<String, Object> createParametersMapFromParamProperties(Properties properties, String property, Map<String, Object> writers, boolean createParameterObjects, PipeLineSession session) {
 		debugMessage("Search parameters for property '" + property + "'", writers);
 		Map<String, Object> result = new HashMap<String, Object>();
 		boolean processed = false;
@@ -3889,5 +4382,116 @@ public class TestTool {
 			errorMessage("Could not read string '" + string + "': " + e.getMessage(), e, writers);
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * This method is used to provide a way to implement ignores based on an identifier.
+	 * For example: 
+	 * ignoreContentBetweenKeys.fieldA.key1=<field name="A">
+	 * ignoreContentBetweenKeys.fieldA.key2=</field>
+	 * 
+	 * @param properties Properties to be checked
+	 * 
+	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'> 
+	*/
+
+	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
+		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
+		
+		// Loop through all properties
+		while (enums.hasMoreElements()) {
+			// Extract key
+			String key = enums.nextElement();
+
+			// Extract ignore type
+			String ignore = key.split(Pattern.quote("."))[0];
+			ArrayList<String> attributes = findAttributesForIgnore(ignore);
+
+			if(attributes != null){
+				// Extract identifier
+				String id = key.split(Pattern.quote("."))[1];
+
+				// Find return map for ignore
+				HashMap<String, HashMap<String, String>> ignoreMap = returnMap.get(ignore);
+
+				// Create return map for ignore if not exist
+				if(ignoreMap == null) {
+					ignoreMap = new HashMap<String, HashMap<String, String>>();
+					returnMap.put(ignore, ignoreMap);
+				}
+
+				// Find return map for identifier
+				HashMap<String, String> idMap = ignoreMap.get(id);
+
+				// Create return map for identifier if not exist
+				if(idMap == null) {
+					idMap = new HashMap<String, String>();
+					ignoreMap.put(id, idMap);
+				}
+
+				// Check attributes are provided 
+				if(!attributes.isEmpty()){
+					// Loop through attributes to be searched for
+					for (String attribute : attributes) { 		      
+						if(key.endsWith("." + attribute)){
+							idMap.put(attribute, properties.getProperty(key));
+						}
+						else if(attribute.equals("")){
+							// in case of an empty string as attribute, assume it should read the value
+							// ie: ignoreKey.identifier=value
+							idMap.put("value", properties.getProperty(key));
+						}
+					}
+				}
+			}
+		}
+		
+		return returnMap; 
+	}
+
+	/**
+	 * This method is used to de-couple the need of providing a set of attributes when calling mapPropertiesByIdentifier().
+	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
+	 * 
+	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
+	 * 
+	 * @return ArrayList<String> attributes
+	*/
+	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
+		ArrayList<String> attributes = null;
+
+		switch (propertyName) {
+			case "decodeUnzipContentBetweenKeys":
+			  	attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "replaceNewlines"} ) );
+			  	break;
+			case "canonicaliseFilePathContentBetweenKeys":
+			case "replaceRegularExpressionKeys":
+			case "ignoreContentBetweenKeys":
+			case "ignoreKeysAndContentBetweenKeys":
+			case "removeKeysAndContentBetweenKeys":
+			case "replaceKey":
+			case "formatDecimalContentBetweenKeys":
+			case "replaceEverywhereKey":
+				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2"} ) );
+				break;
+			case "ignoreRegularExpressionKey":
+			case "removeRegularExpressionKey":
+			case "ignoreContentBeforeKey":
+			case "ignoreContentAfterKey":
+				attributes = new ArrayList( Arrays.asList( new String[]{"key"} ) );
+				break;
+			case "ignoreCurrentTimeBetweenKeys":
+				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "pattern", "margin", "errorMessageOnRemainingString"} ) );
+				break;
+			case "ignoreKey":
+			case "removeKey":
+				// in case of an empty string as attribute, assume it should read the value
+				// ie: ignoreKey.identifier=value
+				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""}));
+				break;
+		}
+
+		return attributes;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -36,59 +40,68 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
+	private IScopeProvider scopeProvider;
+	private List<String> allowedProtocols = ClassUtils.getAllowedProtocols();
 	
-	private ClassLoader classLoader;
-
-	public ClassLoaderURIResolver(ClassLoader classLoader) {
-		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with classloader ["+classLoader+"]");
-		this.classLoader = classLoader;
+	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
+		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
+		this.scopeProvider = scopeProvider;
 	}
 
 	public ClassLoaderURIResolver(Resource resource) {
-		this(resource.getClassLoader());
+		this(resource.getScopeProvider());
 	}
 
 	public Resource resolveToResource(String href, String base) throws TransformerException {
-		String ref1;
-		String ref2=null;
+		String absoluteOrRelativeRef;
+		String globalClasspathRef=null;
 		String protocol=null;
+
 		if (href.startsWith("/") || href.contains(":")) {
 			// href is absolute, search on the full classpath
-			ref1=href;
+			absoluteOrRelativeRef=href;
 			if (href.contains(":")) {
 				protocol=href.substring(0,href.indexOf(":"));
+			}
+			if (StringUtils.isNotEmpty(protocol)) { //if href contains a protocol, verify that it's allowed to look it up
+				if(allowedProtocols.isEmpty()) {
+					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
+				} else if(!allowedProtocols.contains(protocol)) {
+					throw new TransformerException("Cannot lookup resource ["+href+"] not allowed with protocol ["+protocol+"] allowedProtocols "+allowedProtocols.toString());
+				}
 			}
 		} else {
 			// href does not start with scheme/protocol, and does not start with a slash.
 			// It must be relative to the base, or if that not exists, on the root of the classpath
 			if (base != null && base.contains("/")) {
-				ref1 = base.substring(0, base.lastIndexOf("/") + 1) + href;
-				ref2 = href; // if ref1 fails, try href on the global classpath
+				absoluteOrRelativeRef = base.substring(0, base.lastIndexOf("/") + 1) + href;
+				globalClasspathRef = href; // if ref1 fails, try href on the global classpath
 				if (base.contains(":")) {
 					protocol=base.substring(0,base.indexOf(":"));
 				}
 			} else {
 				// cannot use base to prefix href
-				ref1=href;
+				absoluteOrRelativeRef=href;
 			}
 		}
 
-		String ref=ref1;
-		Resource resource = Resource.getResource(classLoader, ref, protocol);
-		if (resource==null && ref2!=null) {
-			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+ref2+"] protocol ["+protocol+"]");
-			ref=ref2;
-			resource = Resource.getResource(classLoader, ref, protocol);
+		String ref=absoluteOrRelativeRef;
+		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
+		if (resource==null && globalClasspathRef!=null) {
+			if (log.isDebugEnabled()) log.debug("Could not resolve href ["+href+"] base ["+base+"] as ["+ref+"], now trying ref2 ["+globalClasspathRef+"] protocol ["+protocol+"]");
+			ref=globalClasspathRef;
+			resource = Resource.getResource(scopeProvider, ref, null);
 		}
+
 		if (resource==null) {
-			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(ref2==null?"":" nor as ref ["+ref1+"]")+" protocol ["+protocol+"] classloader ["+classLoader+"]";
-			//log.warn(message);
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(globalClasspathRef==null?"":" nor as ref ["+absoluteOrRelativeRef+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
+			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
-		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"] in scope of ["+scopeProvider+"]");
 		return resource;
 	}
-	
+
 	@Override
 	public Source resolve(String href, String base) throws TransformerException {
 		Resource resource = resolveToResource(href, base);
@@ -99,6 +112,4 @@ public class ClassLoaderURIResolver implements URIResolver {
 			throw new TransformerException(e);
 		}
 	}
-
-	
 }

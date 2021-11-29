@@ -1,0 +1,2 @@
+DELETE https://dummy.url.com/ HTTP/1.1
+User-Agent: Mockito mock-agent

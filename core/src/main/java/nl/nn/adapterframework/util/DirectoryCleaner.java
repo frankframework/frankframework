@@ -18,8 +18,7 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 
 import nl.nn.adapterframework.doc.IbisDoc;
-import org.apache.commons.lang.StringUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 /**

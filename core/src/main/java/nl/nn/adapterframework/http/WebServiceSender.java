@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.net.URI;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -29,7 +29,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 
 /**
@@ -63,7 +63,7 @@ public class WebServiceSender extends HttpSender {
 
 	public WebServiceSender() {
 		super();
-		setMethodType("POST");
+		setMethodType(HttpMethod.POST);
 		setContentType("text/xml");
 	}
 
@@ -100,7 +100,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, IPipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {
@@ -116,12 +116,12 @@ public class WebServiceSender extends HttpSender {
 			soapActionURI=getSoapAction();
 		}
 
-		String soapmsg;
+		Message soapmsg;
 		try {
 			if (isSoap()) {
-				soapmsg = soapWrapper.putInEnvelope(message.asString(), getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
+				soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(), serviceNamespaceURI, null, getNamespaceDefs());
 			} else {
-				soapmsg = message.asString();
+				soapmsg = message;
 			}
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix()+"error reading message", e);
@@ -132,19 +132,20 @@ public class WebServiceSender extends HttpSender {
 		}
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
-		HttpRequestBase method = super.getMethod(uri, new Message(soapmsg), parameters, session);
+		HttpRequestBase method = super.getMethod(uri, soapmsg, parameters, session);
 		log.debug(getLogPrefix()+"setting SOAPAction header ["+soapActionURI+"]");
 		method.setHeader("SOAPAction", soapActionURI);
 		return method;
 	}
 
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, IPipeLineSession session) throws SenderException, IOException {
-		String httpResult = null;
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
+		Message httpResult = null;
 		try {
-			httpResult = super.extractResult(responseHandler, session).asString();
+			httpResult = super.extractResult(responseHandler, session);
+			httpResult.preserve();
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBodyAsString(responseHandler), e);
+			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e);
 			throw e;
 		}
 
@@ -153,16 +154,16 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			if (isSoap()) {
-				return new Message(soapWrapper.getBody(httpResult));
+				return soapWrapper.getBody(httpResult);
 			} else {
-				return new Message(httpResult);
+				return httpResult;
 			}
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
 		}
 	}
 
-	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
+	@IbisDoc({"when <code>true</code>, messages sent are put in a soap envelope and the soap envelope is removed from received messages (soap envelope will not be visible to the pipeline)", "true"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

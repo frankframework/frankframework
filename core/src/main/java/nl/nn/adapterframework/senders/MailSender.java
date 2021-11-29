@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,19 +30,19 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -95,21 +95,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p>
  * <b>Configuration:</b>
  * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUserId(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpUserid(String) userId}</td><td>userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSmtpPassword(String) password}</td><td>password of userId on the smtpHost</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>When this name is used, it will be followed by a number which is equal to the node's position</td><td>attachment</td></tr>
- * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
- * </table>
- * <p>
- * <table border="1">
  * <b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
@@ -140,7 +125,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class MailSender extends MailSenderBase {
 
-	private String smtpHost;
+	private @Getter String smtpHost;
+	
 	private Properties properties = new Properties();
 	private Session session = null;
 
@@ -200,17 +186,16 @@ public class MailSender extends MailSenderBase {
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSession mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session ["+session+"]");
-		sendEmail(session, mailSession);
+		return sendEmail(session, mailSession);
 	}
 
 	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
 		for (EMail recipient : emailList) {
-			String value = recipient.getAddress();
 			String type = recipient.getType();
 			Message.RecipientType recipientType;
 			if ("cc".equalsIgnoreCase(type)) {
@@ -220,7 +205,7 @@ public class MailSender extends MailSenderBase {
 			} else {
 				recipientType = Message.RecipientType.TO;
 			}
-			msg.addRecipient(recipientType, new InternetAddress(value, recipient.getName()));
+			msg.addRecipient(recipientType, recipient.getInternetAddress());
 			recipientsFound = true;
 			if (log.isDebugEnabled()) {
 				sb.append("[recipient [" + recipient + "]]");
@@ -305,7 +290,7 @@ public class MailSender extends MailSenderBase {
 	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
 		try {
-			msg.setFrom(new InternetAddress(mailSession.getFrom().getAddress(), mailSession.getFrom().getName()));
+			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while setting sender email", e);
 		}
@@ -365,7 +350,7 @@ public class MailSender extends MailSenderBase {
 
 		try {
 			msg.saveChanges();
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);
 		}
 
@@ -423,16 +408,9 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	/**
-	 * Name of the SMTP Host.
-	 */
-	@IbisDoc({ "name of the host by which the messages are to be send", "" })
+	@IbisDoc({ "Name of the SMTP-host by which the messages are to be send", "" })
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
-	}
-
-	public String getSmtpHost() {
-		return smtpHost;
 	}
 
 	public void setProperties(Properties properties) {

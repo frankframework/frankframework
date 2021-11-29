@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -67,6 +68,7 @@ import com.hierynomus.smbj.share.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -75,7 +77,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author alisihab
  *
  */
-public class Samba2FileSystem implements IWritableFileSystem<String> {
+public class Samba2FileSystem extends FileSystemBase<String> implements IWritableFileSystem<String> {
 
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -130,10 +132,12 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot connect to samba server", e);
 		}
+		super.open();
 	}
 
 	@Override
 	public void close() throws FileSystemException {
+		super.close();
 		try {
 			if(diskShare != null) {
 				diskShare.close();
@@ -230,8 +234,8 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 
 
 	@Override
-	public Iterator<String> listFiles(String folder) throws FileSystemException {
-		return new FilesIterator(folder, diskShare.list(folder));
+	public DirectoryStream<String> listFiles(String folder) throws FileSystemException {
+		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, diskShare.list(folder)));
 	}
 
 	@Override
@@ -284,59 +288,51 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public InputStream readFile(String filename) throws FileSystemException, IOException {
-		final File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		FilterInputStream fis = new FilterInputStream(is) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
-		return fis;
+	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
+		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), charset);
 	}
 
+	private class Samba2Message extends Message {
+		
+		public Samba2Message(File file, String charset) {
+			super(() -> {
+				InputStream is = file.getInputStream();
+				FilterInputStream fis = new FilterInputStream(is) {
+
+					boolean isOpen = true;
+					@Override
+					public void close() throws IOException {
+						if(isOpen) {
+							super.close();
+							isOpen=false;
+						}
+						file.close();
+					}
+				};
+				return fis;
+				
+			}, charset, file.getClass());
+		}
+	}
+
+	
 	@Override
 	public void deleteFile(String f) throws FileSystemException {
 		diskShare.rm(f);
 	}
 
 	@Override
-	public String renameFile(String f, String newName, boolean force) throws FileSystemException {
-		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			if (exists(newName) && !force) {
-				throw new FileSystemException("Cannot rename file. Destination file already exists.");
-			}
-			file.rename(newName, force);
+	public String renameFile(String source, String destination) throws FileSystemException {
+		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
+			file.rename(destination, true);
 		}
-		return newName;
-	}
-
-	protected String getDestinationFile(String f, String destinationFolder, boolean createFolder, String action) throws FileSystemException {
-		if (exists(destinationFolder)) {
-			if (!isFolder(destinationFolder)) {
-				throw new FileSystemException("Cannot "+action+" file. Destination ["+destinationFolder+"] is not a folder.");
-			}
-		} else {
-			if (createFolder) {
-				createFolder(destinationFolder);
-			} else {
-				throw new FileSystemException("Cannot "+action+" file. Destination folder ["+destinationFolder+"] does not exist.");
-			}
-		}
-		return destinationFolder+"\\"+f;
+		return destination;
 	}
 
 	@Override
 	public String moveFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = getDestinationFile(f, destinationFolder, createFolder, "move");
+			String destination = toFile(destinationFolder, f);
 			file.rename(destination, false);
 			return destination;
 		}
@@ -345,7 +341,7 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	@Override
 	public String copyFile(String f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		try (File file = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
-			String destination = getDestinationFile(f, destinationFolder, createFolder, "copy");
+			String destination = toFile(destinationFolder, f);
 			try (File destinationFile = getFile(f, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OVERWRITE)) {
 				file.remoteCopyTo(destinationFile);
 			} catch (TransportException | BufferException e) {
@@ -390,11 +386,15 @@ public class Samba2FileSystem implements IWritableFileSystem<String> {
 	}
 
 	@Override
-	public void removeFolder(String folder) throws FileSystemException {
+	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		if (!folderExists(folder)) {
 			throw new FileSystemException("Remove directory for [" + folder + "] has failed. Directory does not exist.");
 		} else {
-			diskShare.rmdir(folder, true);
+			try {
+				diskShare.rmdir(folder, removeNonEmptyFolder);
+			} catch(SMBApiException e) {
+				new FileSystemException("Remove directory for [" + folder + "] has failed.", e);
+			}
 		}
 	}
 

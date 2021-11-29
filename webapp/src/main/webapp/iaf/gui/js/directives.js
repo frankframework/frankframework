@@ -1,3 +1,10 @@
+function parseStateRef(ref, current) {
+	var preparsed = ref.match(/^\s*({[^}]*})\s*$/), parsed;
+	if (preparsed) ref = current + '(' + preparsed[1] + ')';
+	parsed = ref.replace(/\n/g, " ").match(/^([^(]+?)\s*(\((.*)\))?$/);
+	if (!parsed || parsed.length !== 4) throw new Error("Invalid state ref '" + ref + "'");
+	return { state: parsed[1], paramExpr: parsed[3] || null };
+}
 angular.module('iaf.beheerconsole')
 
 .directive('pageTitle', ['$rootScope', '$timeout', '$state', '$transitions', 'Debug', function($rootScope, $timeout, $state, $transitions, Debug) {
@@ -27,14 +34,64 @@ angular.module('iaf.beheerconsole')
 			time: '@'
 		},
 		link: function(scope, element, attributes) {
-			scope.$watch('::time', updateTime);
+			var watch = scope.$watch('time', updateTime);
 			function updateTime(time) {
+				if(!time) return;
+
 				if(isNaN(time))
 					time = new Date(time).getTime();
 				var toDate = new Date(time - appConstants.timeOffset);
 				element.text(dateFilter(toDate, appConstants["console.dateFormat"]));
+				watch();
 			}
 		}
+	};
+}])
+
+.directive('formatCode', ['$location', '$timeout', function($location, $timeout) {
+	return {
+		restrict: 'A',
+		link: function($scope, element, attributes) {
+			var code = document.createElement('code');
+			element.addClass("line-numbers");
+			element.addClass("language-markup");
+			element.append(code);
+
+			var watch = $scope.$watch(attributes.formatCode, function(text) {
+				if(text && text != '') {
+					angular.element(code).text(text);
+					Prism.highlightElement(code);
+
+					addOnClickEvent(code);
+
+					// If hash anchor has been set upon init
+					let hash = $location.hash();
+					let el = angular.element("#"+hash);
+					if(el) {
+						el.addClass("line-selected");
+						let lineNumber = Math.max(0, parseInt(hash.substr(1)) - 15);
+						$timeout(function() {
+							angular.element("#L"+lineNumber)[0].scrollIntoView();
+						}, 500);
+					}
+				}
+			});
+
+			function addOnClickEvent(root) {
+				let spanElements = $(root).children("span.line-numbers-rows").children("span");
+				spanElements.on("click", function() { //Update the anchor
+					let target = $(event.target);
+					target.parent().children(".line-selected").removeClass("line-selected");
+					let anchor = target.attr('id');
+					target.addClass("line-selected");
+					$location.hash(anchor);
+				});
+			}
+
+			element.on('$destroy', function() {
+				watch();
+			});
+		},
 	};
 }])
 
@@ -65,6 +122,47 @@ angular.module('iaf.beheerconsole')
 	};
 })
 
+.directive('uiLref', ['$state', '$location', '$timeout', function($state, $location, $timeout) {
+	return {
+		link: function(scope, element, attributes) {
+			var ref = parseStateRef(attributes.uiLref, $state.current.name);
+			var params;
+			if (ref.paramExpr) {
+				params = angular.copy(scope.$eval(ref.paramExpr));
+			}
+
+			var transition = null;
+			element.bind("click", function() {
+				if(transition) {
+					$timeout.cancel(transition);
+				}
+				var adapter = scope.adapter;
+				if(adapter) {
+					$timeout(function() {
+						$location.hash(adapter.name);
+					});
+				}
+				transition = $timeout(function() {
+					$state.go(ref.state, params);
+				}, 5);
+			});
+		}
+	};
+}])
+
+.directive('backButton', function() {
+	return {
+		restrict: 'A',
+		link: function(scope, element, attrs) {
+			element.bind('click', goBack);
+			function goBack() {
+				history.back();
+				scope.$apply();
+			}
+		}
+	}
+})
+
 .directive('timeSince', ['appConstants', '$interval', function(appConstants, $interval) {
 	return {
 		restrict: 'A',
@@ -73,6 +171,7 @@ angular.module('iaf.beheerconsole')
 		},
 		link: function(scope, element, attributes) {
 			function updateTime() {
+				if(!attributes.time) return;
 				var seconds = Math.round((new Date().getTime() - attributes.time + appConstants.timeOffset) / 1000);
 
 				var minutes = seconds / 60;
@@ -90,7 +189,7 @@ angular.module('iaf.beheerconsole')
 				if (days < 1) {
 					return element.text( hours + 'h');
 				}
-				days = Math.floor(days % 7);
+				days = Math.floor(days);
 				return element.text( days + 'd');
 			}
 
@@ -281,58 +380,6 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 })
-
-.directive('generalDataProtectionRegulation', ['$uibModal', 'GDPR', 'appConstants', '$rootScope', function($uibModal, GDPR, appConstants, $rootScope) {
-	return {
-		restrict: 'A',
-		require: 'icheck',
-		templateUrl: 'views/common/cookie.html',
-		controller: function ($scope) {
-			$scope.bottomNotification = false;
-			$scope.cookies = GDPR.defaults;
-
-			$rootScope.$on('appConstants', function() {
-				$scope.cookies = {
-						necessary: true,
-						personalization: appConstants.getBoolean("console.cookies.personalization", true),
-						analytical: appConstants.getBoolean("console.cookies.analytical", true),
-						functional: appConstants.getBoolean("console.cookies.functional", true)
-				};
-
-				$scope.bottomNotification = GDPR.showCookie();
-			});
-
-			$scope.savePreferences = function(cookies) {
-				GDPR.setSettings(cookies);
-				$scope.bottomNotification = false;
-			};
-			$scope.consentAllCookies = function() {
-				$scope.savePreferences({
-					necessary: true,
-					personalization: true,
-					analytical: true,
-					functional: true
-				});
-			};
-
-			$scope.openModal = function() {
-				$scope.bottomNotification = false;
-
-				$uibModal.open({
-					templateUrl: 'views/common/cookieModal.html',
-					size: 'lg',
-					backdrop: 'static',
-					controller: function($uibModalInstance) {
-						$scope.savePreferences = function(cookies) {
-							GDPR.setSettings(cookies);
-							$uibModalInstance.close();
-						};
-					}
-				});
-			};
-		}
-	};
-}])
 
 .directive('icheck', ['$timeout', '$parse', function($timeout, $parse) {
 	return {

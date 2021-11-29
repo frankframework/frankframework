@@ -1,0 +1,25 @@
+<configuration>
+	  <adapter name="DirectoryListener">
+      <receiver name="testtool-DirectoryListener">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-DirectoryListener"/>
+      </receiver>
+		    <receiver>
+			      <listener className="nl.nn.adapterframework.receivers.DirectoryListener"
+                   name="DirectoryListener"
+                   wildcard="*"/>
+		    </receiver>
+      <receiver name="testtool-DirectoryListener-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-DirectoryListener-1"/>
+      </receiver>
+		    <pipeline firstPipe="EchoPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

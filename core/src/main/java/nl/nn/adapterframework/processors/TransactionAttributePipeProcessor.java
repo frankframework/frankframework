@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
 */
 package nl.nn.adapterframework.processors;
 
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
-
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 /**
  * @author Jaco de Groot
@@ -39,26 +39,24 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private PlatformTransactionManager txManager;
 	
 	@Override
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, IPipeLineSession pipeLineSession) throws PipeRunException {
+	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		PipeRunResult pipeRunResult;
-		int txOption;
+		TransactionDefinition txDef;
 		int txTimeout=0;
 		if (pipe instanceof HasTransactionAttribute) {
 			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
-			txOption = taPipe.getTransactionAttributeNum();
+			txDef = taPipe.getTxDef();
 			txTimeout= taPipe.getTransactionTimeout();
 		} else {
-			txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
+			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS,txTimeout);
 		}
-		//TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
-		IbisTransaction itx = new IbisTransaction(txManager, SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout), "pipe [" + pipe.getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
+		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		try {
 			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
 			Throwable tCaught=null;
 			try {
 				tg.activateGuard(txTimeout);
-				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, message, pipeLineSession);
+				pipeRunResult = chain.apply(message);
 			} catch (Throwable t) {
 				tCaught=t;
 				throw tCaught;
@@ -66,14 +64,13 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 				if (tg.cancel()) {
 					if (tCaught==null) {
 						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
-					} else {
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-					}
+					} 
+					log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 				}
 			}
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
-			txStatus.setRollbackOnly();
+			itx.setRollbackOnly();
 			if (t instanceof Error) {
 				throw (Error)t;
 			} else if (t instanceof RuntimeException) {
@@ -84,7 +81,6 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
 			}
 		} finally {
-			//txManager.commit(txStatus);
 			itx.commit();
 		}
 		return pipeRunResult;

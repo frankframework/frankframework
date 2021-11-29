@@ -17,10 +17,10 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
@@ -28,10 +28,10 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
-public interface IResultHandler extends INamedObject {
+@FrankDocGroup(name = "Batch")
+public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
-	public void configure() throws ConfigurationException;
 	public void open() throws SenderException;
 	public void close() throws SenderException;
 	
@@ -40,17 +40,17 @@ public interface IResultHandler extends INamedObject {
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
-	void openDocument(IPipeLineSession session, String streamId) throws Exception;
-	void closeDocument(IPipeLineSession session, String streamId);
+	void openDocument(PipeLineSession session, String streamId) throws Exception;
+	void closeDocument(PipeLineSession session, String streamId);
 
 	/**
-	 * write a result ta record. 
+	 * write a result record. 
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(IPipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
+	void handleResult(PipeLineSession session, String streamId, String recordKey, String result) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -58,22 +58,22 @@ public interface IResultHandler extends INamedObject {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	Object finalizeResult(IPipeLineSession session, String streamId, boolean error) throws Exception;
+	String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void openRecordType(IPipeLineSession session, String streamId) throws Exception;
+	void openRecordType(PipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void closeRecordType(IPipeLineSession session, String streamId) throws Exception;
+	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 	
-	void openBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
-	void closeBlock(IPipeLineSession session, String streamId, String blockName) throws Exception;
+	void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
 
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
@@ -84,7 +84,7 @@ public interface IResultHandler extends INamedObject {
 	boolean hasPrefix();
 
 	/**
-	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(IPipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
+	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
 	 */
 	boolean isBlockByRecordType();
 	

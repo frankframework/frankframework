@@ -15,15 +15,15 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 
 import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.IPipeLineSession;
-import nl.nn.adapterframework.core.PipeLineSessionBase;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 
@@ -42,13 +42,13 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<hallo/>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.configure();
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWss.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -60,7 +60,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<hallo/>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setSoapAction(sender.getUrl());
 
@@ -68,7 +68,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssSoapAction.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -80,9 +80,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -98,7 +98,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssMultipart.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -110,9 +110,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -130,7 +130,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();;
-			assertEquals(getFile("simpleMockedWssMultipart2.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -142,9 +142,9 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>input</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
-			sender.setMethodType("POST");
+			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("request");
 
@@ -161,7 +161,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWssMtom.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
@@ -173,7 +173,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		Message input = new Message("<xml>hello world</xml>");
 
 		try {
-			IPipeLineSession pls = new PipeLineSessionBase(session);
+			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setParamsInUrl(false);
 			sender.setInputMessageParam("file");
@@ -191,7 +191,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.open();
 	
 			String result = sender.sendMessage(input, pls).asString();
-			assertEquals(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
+			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
 		}

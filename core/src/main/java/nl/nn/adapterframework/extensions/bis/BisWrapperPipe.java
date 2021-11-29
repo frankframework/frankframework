@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IPipeLineSession;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -224,13 +224,13 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "soapHeaderSessionKey is not allowed");
+			throw new ConfigurationException("soapHeaderSessionKey is not allowed");
 		}
 		if (StringUtils.isEmpty(getBisMessageHeaderSessionKey())) {
-			throw new ConfigurationException(getLogPrefix(null) + "messageHeaderSessionKey must be set");
+			throw new ConfigurationException("messageHeaderSessionKey must be set");
 		}
 		if (isAddOutputNamespace() && StringUtils.isEmpty(outputNamespace)) {
-			throw new ConfigurationException(getLogPrefix(null) + "outputNamespace must be set when addOutputnamespace=true");
+			throw new ConfigurationException("outputNamespace must be set when addOutputnamespace=true");
 		}
 		try {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
@@ -269,14 +269,8 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, IPipeLineSession session) throws PipeRunException {
-		String result;
-		String input;
-		try {
-			input = message.asString();
-		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
-		}
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		Message result;
 		try {
 			if ("wrap".equalsIgnoreCase(getDirection())) {
 				String originalBisMessageHeader = (String) session.get(getBisMessageHeaderSessionKey());
@@ -317,9 +311,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				String payload;
 				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
 					if (addOutputNamespaceTp != null) {
-						payload = addOutputNamespaceTp.transform(input, null, true);
+						payload = addOutputNamespaceTp.transform(message.asSource());
 					} else {
-						payload = input;
+						payload = message.asString();
 					}
 					payload = prepareReply(payload, isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				} else {
@@ -330,39 +324,39 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				}
 
-				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
+				result = wrapMessage(new Message(payload), isBisMessageHeaderInSoapBody() ? null : messageHeader, session);
 			} else {
-				String body = unwrapMessage(input, session);
-				if (StringUtils.isEmpty(body)) {
+				Message body = unwrapMessage(message, session);
+				if (Message.isEmpty(body)) {
 					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
-					String messageHeader = bisMessageHeaderTp.transform(input, null, true);
+					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
 						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
 					}
 				}
 				if (bisErrorTp != null) {
-					String bisError = bisErrorTp.transform(input, null, true);
+					String bisError = bisErrorTp.transform(message.asSource());
 					if (Boolean.valueOf(bisError).booleanValue()) {
 						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
-					result = bodyMessageTp.transform(input, null, true);
+					result = new Message(bodyMessageTp.transform(message.asSource()));
 				} else {
 					result = body;
 				}
 				if (removeOutputNamespacesTp != null) {
-					result = removeOutputNamespacesTp.transform(result, null, true);
+					result = new Message(removeOutputNamespacesTp.transform(result.asSource()));
 				}
 			}
 		} catch (Throwable t) {
 			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {

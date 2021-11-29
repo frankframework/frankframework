@@ -6,8 +6,8 @@
 	<xsl:param name="message"/>
 	<xsl:param name="mailaddresses"/>
 	<xsl:param name="result" />
-	
-	<xsl:variable name="from" select="$hostname"/>
+	<xsl:variable name="sender">no-reply@wearefrank.nl</xsl:variable>
+	<xsl:variable name="from" select="hostname"/>
 	<xsl:variable name="to" select="tokenize($mailaddresses,',')[1]"/>
 	<xsl:variable name="cc" select="substring-after($mailaddresses,',')"/>
 	
@@ -19,7 +19,7 @@
 					<recipient type="cc"><xsl:value-of select="."/></recipient>
 				</xsl:for-each>
 			</recipients>
-			<from><xsl:value-of select="$from"/></from>
+			<from><xsl:value-of select="$from"/>&lt;devopshelpdesk@wearefrank.nl&gt;</from>
 			<subject>
 				<xsl:value-of select="$result"/>
 				<xsl:value-of select="concat(' Larva run results on ', $hostname, ' (')"/>
