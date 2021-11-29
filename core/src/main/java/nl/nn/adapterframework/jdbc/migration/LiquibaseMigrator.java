@@ -177,14 +177,4 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new JdbcException("unable to generate database migration script", e);
 		}
 	}
-
-	@Override
-	public boolean isEnabled() {
-		try {
-			getChangeLogFile();
-			return true;
-		} catch (IOException e) {
-			return false;
-		}
-	}
 }

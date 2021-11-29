@@ -128,5 +128,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 		return configuration;
 	}
 
-	public abstract boolean isEnabled();
+	public boolean isEnabled() {
+		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false);
+	}
 }
