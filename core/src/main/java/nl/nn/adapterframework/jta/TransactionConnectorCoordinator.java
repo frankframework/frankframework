@@ -98,10 +98,10 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	 * Execute an action when the thread ends, if it is guarded by a TransactionConnector
 	 * @see FixedQuerySender#provideOutputStream
 	 */
-	public static <T, R, E extends Exception> boolean onEndThread(ThrowingRunnable<E> action) {
+	public static <T, R, E extends Exception> boolean onEndChildThread(ThrowingRunnable<E> action) {
 		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
 		if (coordinator!=null) {
-			coordinator.lastInThread.onEndThread(action);
+			coordinator.lastInThread.onEndChildThread(action);
 			return true;
 		}
 		return false;

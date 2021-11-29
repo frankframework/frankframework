@@ -671,7 +671,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
 					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-					TransactionConnectorCoordinator.onEndThread(()-> {
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
 						blobOutputStream.close(); 
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
@@ -687,7 +687,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 				if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
 					ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
-					TransactionConnectorCoordinator.onEndThread(()-> {
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
 						clobWriter.close();
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
