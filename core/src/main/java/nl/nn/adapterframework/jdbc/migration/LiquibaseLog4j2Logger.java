@@ -84,22 +84,22 @@ public class LiquibaseLog4j2Logger extends AbstractLogger {
 	}
 
 	@Override
-	public void fine(String message) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message));
-	}
-
-	@Override
-	public void fine(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message), e);
-	}
-
-	@Override
 	public void debug(String message) {
 		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message));
 	}
 
 	@Override
 	public void debug(String message, Throwable e) {
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message), e);
+	}
+
+	@Override
+	public void fine(String message) {
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message));
+	}
+
+	@Override
+	public void fine(String message, Throwable e) {
 		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message), e);
 	}
 }
