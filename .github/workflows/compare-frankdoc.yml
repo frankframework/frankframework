@@ -8,7 +8,6 @@ on:
       target:
         description: 'commit'
         required: true
-        default: ${{ github.event.pull_request.base.sha }}
 
 jobs:
   build:

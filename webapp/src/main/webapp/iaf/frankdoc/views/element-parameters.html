@@ -13,7 +13,7 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="parameter in element.parameters">
-				<td>{{ ::parameter.name }}</td>
+				<td ng-bind-html="::parameter.name"></td>
 				<td ng-bind-html="::parameter.description | javadoc:this"></td>
 			</tr>
 		</tbody>
