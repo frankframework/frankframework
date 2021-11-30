@@ -59,6 +59,10 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 
 	@Override
 	public void afterPropertiesSet() {
+		if(dataSourceFactory == null) {
+			throw new IllegalStateException("DataSourceFactory has not been autowired");
+		}
+
 		configurationClassLoader = configuration.getClassLoader();
 		if(!(configurationClassLoader instanceof ClassLoaderBase)) { //Though this should technically never happen.. you never know!
 			throw new IllegalStateException("unable to initialize database migrator");
@@ -80,11 +84,11 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		DataSource datasource;
 		try {
-			datasource = dataSourceFactory.getDataSource(datasourceName);
+			datasource = dataSourceFactory.getDataSource(getDatasourceName());
 		} catch (NamingException e) {
-			throw new SQLException("cannot connect to datasource ["+datasourceName+"]", e);
+			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
 		}
-		log.debug("looked up Datasource ["+datasourceName+"] for JdbcMigrator ["+getName()+"]");
+		log.debug("looked up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
 
 		return new TransactionAwareDataSourceProxy(datasource);
 	}
@@ -92,7 +96,7 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	/**
 	 * Validate the current already executed ChangeSets against the migration script
 	 */
-	public abstract void validate();
+	public abstract boolean validate();
 
 	/**
 	 * Run the migration script against the database.

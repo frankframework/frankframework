@@ -22,13 +22,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
+import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
+import liquibase.changelog.RanChangeSet;
 import liquibase.database.Database;
 import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
@@ -42,6 +46,7 @@ import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
@@ -52,6 +57,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class LiquibaseMigrator extends DatabaseMigratorBase {
 
+	protected Logger migrationLog = LogUtil.getLogger("liquibase.migrationLog");
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
@@ -87,9 +93,10 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	}
 
 	@Override
-	public void validate() {
+	public boolean validate() {
 		try {
 			doValidate();
+			return false;
 		}
 		catch (ValidationFailedException e) {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -103,31 +110,38 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		catch (SQLException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 		}
+		return false;
 	}
 
 	private void doValidate() throws LiquibaseException, IOException, SQLException {
-		try (Liquibase liquibase = createMigrator(null)){
+		try (Liquibase liquibase = createMigrator(null)) {
 			Database database = liquibase.getDatabase();
-	
+
+			List<RanChangeSet> alreadyExecutedChangeSets = database.getRanChangeSetList();
+			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
+				CheckSum checkSum = ranChangeSet.getLastCheckSum();
+				if(checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
+					migrationLog.warn("checksum ["+checkSum+"] for changeset ["+ranChangeSet+"] is outdated and will be updated");
+				}
+			}
+
 			LockService lockService = LockServiceFactory.getInstance().getLockService(database);
 			lockService.waitForLock();
-	
+
 			DatabaseChangeLog changeLog;
-	
+
 			try {
 				changeLog = liquibase.getDatabaseChangeLog();
-	
-				liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression);
-				ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database).generateDeploymentId();
-	
-				changeLog.validate(database, contexts, labelExpression);
+				liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression); //Validate old checksums and update if required
+
+				changeLog.validate(database, contexts, labelExpression); //Validate the new (updated) checksums
 			} finally {
 				try {
 					lockService.releaseLock();
 				} catch (LockException e) {
 					log.warn("unable to clean up Liquibase Lock", e);
 				}
-	
+
 				LockServiceFactory.getInstance().resetAll();
 				ChangeLogHistoryServiceFactory.getInstance().resetAll();
 				Scope.getCurrentScope().getSingleton(ExecutorService.class).reset();

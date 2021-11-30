@@ -287,8 +287,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
 		if(databaseMigrator.isEnabled()) {
 			try {
-				databaseMigrator.validate();
-				databaseMigrator.update();
+				if(databaseMigrator.validate()) {
+					databaseMigrator.update();
+				}
 			} catch (Exception e) {
 				log("unable to run JDBC migration", e);
 			}
