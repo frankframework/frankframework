@@ -96,7 +96,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	public boolean validate() {
 		try {
 			doValidate();
-			return false;
+			return true;
 		}
 		catch (ValidationFailedException e) {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
