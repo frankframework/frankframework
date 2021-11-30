@@ -42,7 +42,6 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -398,7 +397,7 @@ public class Message implements Serializable {
 		if (request instanceof String) {
 			return (String)request;
 		}
-		if(request instanceof Document) {
+		if(request instanceof Node) {
 			try {
 				request = XmlUtils.nodeToString((Node)request, true);
 			} catch (TransformerException e) {

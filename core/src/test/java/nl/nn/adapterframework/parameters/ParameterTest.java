@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -345,6 +346,27 @@ public class ParameterTest {
 		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
 
 		assertTrue(result instanceof Document);
+	}
+	
+	@Test
+	public void testParameterFromURLToNode() throws Exception {
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml");
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", Message.asMessage(originalMessage));
+
+		Parameter inputMessage = new Parameter();
+		inputMessage.setName("InputMessage");
+		inputMessage.setSessionKey("originalMessage");
+		inputMessage.setType(ParameterType.NODE);
+		inputMessage.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertTrue(result instanceof Node);
 	}
 	
 	@Test
