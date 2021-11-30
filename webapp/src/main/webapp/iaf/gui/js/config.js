@@ -26,6 +26,13 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			serie: true,
 			name: 'chartjs',
 			files: ['js/plugins/chartJs/Chart.min.js', 'js/plugins/chartJs/angular-chart.min.js', 'css/plugins/chartJs/Chart.min.css']
+		},
+		{
+			name: 'mermaid',
+			serie: true,
+			files: [
+				'js/plugins/mermaid/mermaid.min.js',
+			]
 		}],
 		// Set to true if you want to see what and when is dynamically loaded
 		debug: true
@@ -78,6 +85,11 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			filter: { value: 'started+stopped+warning', squash: true},
 			search: { value: '', squash: true},
 			adapter: { value: '', squash: true},
+		},
+		resolve: {
+			loadPlugin: function($ocLazyLoad) {
+				return $ocLazyLoad.load('mermaid');
+			},
 		},
 		//parent: "pages"
 	})

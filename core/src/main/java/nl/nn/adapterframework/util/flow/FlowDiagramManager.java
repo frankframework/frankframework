@@ -80,7 +80,6 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-//		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
 		Resource xsltSourceConfigDot = Resource.getResource(ADAPTER2DOT_XSLT);
 		transformerPoolAdapterDot = TransformerPool.getInstance(xsltSourceConfigDot, 2);
 		Resource xsltSourceConfigMermaid = Resource.getResource(ADAPTER2MERMAID_XSLT);

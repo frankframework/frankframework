@@ -434,7 +434,12 @@ angular.module('iaf.beheerconsole')
 
 	$scope.openFlowModal = function (adapter) {
 		$uibModal.open({
-			templateUrl: adapter,
+			templateUrl: 'views/mermaid.html',
+			resolve: {
+				adapterName: function() {
+					return adapter.name;
+				}
+			},
 			controller: 'FlowCtrl',
 		});
 	};
@@ -567,30 +572,12 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('FlowCtrl', ['$scope', '$uibModalInstance', '$uibModal', 'Api', '$timeout', function($scope, $uibModalInstance, $uibModal, Api, $timeout) {
-	$scope.error = false;
+.controller('FlowCtrl', ['$scope', '$uibModalInstance', 'adapterName', function($scope, $uibModalInstance, adapterName) {
+	$scope.adapterName = adapterName;
 
 	$scope.close = function () {
 		$uibModalInstance.close();
 	};
-
-	// $scope.openCookieModel = function () {
-	// 	$uibModalInstance.close(); //close the current model
-
-	// 	$timeout(function() {
-	// 		$uibModal.open({
-	// 			templateUrl: 'views/common/cookieModal.html',
-	// 			size: 'lg',
-	// 			backdrop: 'static',
-	// 			controller: 'CookieModalCtrl',
-	// 		});
-	// 	});
-	// }
-
-	$uibModalInstance.rendered.then(function () {
-		console.log("modal is rendered");
-		mermaid.init()
-	});
 }])
 
 .controller('errorController', ['$scope', 'Api', 'Debug', '$http', 'Misc', '$state', '$timeout', function($scope, Api, Debug, $http, Misc, $state, $timeout) {

@@ -219,6 +219,30 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
+.directive('mermaidView', ['$compile', '$http', 'Misc', function($compile, $http, Misc) {
+	return {
+		restrict: 'A',
+		scope: {
+			adaptername: '@'
+		},
+		link: function(scope, elem) {
+			let mermaidUrl = Misc.getServerPath() + "iaf/api/adapters/" + scope.adaptername + "/flow?flowType=mermaid";
+			$http.get(mermaidUrl).then(function(results) {
+				elem.html(results.data);
+				$compile(elem.contents())(scope);
+			});
+
+			scope.$watch(function() {
+				return elem.children().length;
+			}, function() {
+				scope.$evalAsync(function() {
+					mermaid.init();
+				});
+			});
+		},
+	};
+}])
+
 .directive('iboxToolsClose', ['$timeout', function($timeout) {
 	return {
 		restrict: 'A',
@@ -366,12 +390,6 @@ angular.module('iaf.beheerconsole')
 		}
 	};
 }])
-
-// .directive('ngMermaid', function() {
-// 	return {
-// 		restrict: 'E',
-// 	};
-// })
 
 .directive('ngMermaid', ['$timeout', function ($timeout) {
     var interval=2000,

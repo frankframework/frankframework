@@ -51,6 +51,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xpath.SourceTree;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -396,20 +397,23 @@ public final class ShowConfigurationStatus extends Base {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Path("/adapters/{name}/flow")
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("dot") boolean dot) throws ApiException {
+	public Response getAdapterFlow(@PathParam("name") String adapterName, @QueryParam("flowType") String flowType) throws ApiException {
 		Adapter adapter = getAdapter(adapterName);
-
-//Make changes here to generate mermaid
 
 		FlowDiagramManager flowDiagramManager = getFlowDiagramManager();
 
 		try {
 			ResponseBuilder response = Response.status(Response.Status.OK);
-			// if(dot) {
-			response.entity(flowDiagramManager.generateMermaid(adapter)).type(MediaType.TEXT_PLAIN);
-			// } else {
-			// 	response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
-			// }
+
+			if(flowType != null) {
+				if(flowType.equals("dot")) {
+					response.entity(flowDiagramManager.generateDot(adapter)).type(MediaType.TEXT_PLAIN);
+				} else if (flowType.equals("mermaid")) {
+					response.entity(flowDiagramManager.generateMermaid(adapter)).type(MediaType.TEXT_PLAIN);
+				}
+			} else {
+				response.entity(flowDiagramManager.get(adapter)).type("image/svg+xml");
+			}
 			return response.build();
 		} catch (SAXException | TransformerException | IOException e) {
 			throw new ApiException(e);
