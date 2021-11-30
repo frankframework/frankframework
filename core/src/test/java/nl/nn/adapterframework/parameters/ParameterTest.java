@@ -240,7 +240,7 @@ public class ParameterTest {
 	}
 	
 	@Test
-	public void testParameterNumberBooelan() throws Exception {
+	public void testParameterNumberBoolean() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("number");
 		p.setValue("a");
@@ -328,8 +328,44 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterFromURLToDomdoc() throws Exception {
-		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml");
+	public void testParameterFromURLToDomdocTypeNoNameSpace() throws Exception {
+		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, false, Document.class);
+	}
+	@Test
+	public void testParameterFromURLToDomdocTypeRemoveNameSpace() throws Exception {
+		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, true, Document.class);
+	}
+	@Test
+	public void testParameterFromURLToNodeTypeNoNameSpace() throws Exception {
+		testParameterFromURLToDomTypeHelper(ParameterType.NODE, false, Node.class);
+	}
+	@Test
+	public void testParameterFromURLToNodeTypeRemoveNameSpace() throws Exception {
+		testParameterFromURLToDomTypeHelper(ParameterType.NODE, true, Node.class);
+	}
+	public <T> void testParameterFromURLToDomTypeHelper(ParameterType type, boolean removeNamespaces, Class<T> c) throws Exception {
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("originalMessage", Message.asMessage(originalMessage));
+
+		Parameter inputMessage = new Parameter();
+		inputMessage.setName("InputMessage");
+		inputMessage.setSessionKey("originalMessage");
+		inputMessage.setType(type);
+		inputMessage.setRemoveNamespaces(removeNamespaces);
+		inputMessage.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+	}
+
+	@Test
+	public void testParameterFromURLToDomdocWithXpath() throws Exception {
+		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/MultiNamespace/in.xml");
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", Message.asMessage(originalMessage));
@@ -338,37 +374,17 @@ public class ParameterTest {
 		inputMessage.setName("InputMessage");
 		inputMessage.setSessionKey("originalMessage");
 		inputMessage.setType(ParameterType.DOMDOC);
+		inputMessage.setRemoveNamespaces(true);
+		inputMessage.setXpathExpression("block/XDOC[1]");
 		inputMessage.configure();
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-
+		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, true);
 		assertTrue(result instanceof Document);
 	}
-	
-	@Test
-	public void testParameterFromURLToNode() throws Exception {
-		URL originalMessage = TestFileUtils.getTestFileURL("/Xslt/AnyXml/in.xml");
 
-		PipeLineSession session = new PipeLineSession();
-		session.put("originalMessage", Message.asMessage(originalMessage));
-
-		Parameter inputMessage = new Parameter();
-		inputMessage.setName("InputMessage");
-		inputMessage.setSessionKey("originalMessage");
-		inputMessage.setType(ParameterType.NODE);
-		inputMessage.configure();
-
-		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
-		Message message = new Message("fakeMessage");
-
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-
-		assertTrue(result instanceof Node);
-	}
-	
 	@Test
 	public void testParameterFrombytesToDomdoc() throws Exception {
 		PipeLineSession session = new PipeLineSession();

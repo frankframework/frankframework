@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -1900,6 +1901,20 @@ public class XmlUtils {
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
+	}
+
+	public static byte[] nodeToByteArray(Node node) throws TransformerException {
+		return nodeToByteArray(node, true);
+	}
+	public static byte[] nodeToByteArray(Node node, boolean omitXmlDeclaration) throws TransformerException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		Transformer t = getTransformerFactory().newTransformer();
+		if (omitXmlDeclaration) {
+			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		}
+		Result outputTarget = new StreamResult(outputStream);
+		t.transform(new DOMSource(node), outputTarget);
+		return outputStream.toByteArray();
 	}
 
 	public static String cdataToText(String input) {

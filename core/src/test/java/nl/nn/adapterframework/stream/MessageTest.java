@@ -813,4 +813,34 @@ public class MessageTest {
 		Message message = null;
 		assertTrue(Message.isEmpty(message));
 	}
+	
+	@Test
+	public void testNodeAsInputStream() throws Exception {
+		Message message = Message.asMessage(XmlUtils.buildNode(testString));
+		testAsInputSource(message);
+	}
+	
+	@Test
+	public void testNodeAsReader() throws Exception {
+		Message message = Message.asMessage(XmlUtils.buildNode(testString));
+		testAsReader(message);
+	}
+	
+	@Test
+	public void testNodeAsByteArray() throws Exception {
+		Message message = Message.asMessage(XmlUtils.buildNode(testString));
+		testAsByteArray(message);
+	}
+	
+	@Test
+	public void testNodeAsInputSource() throws Exception {
+		Message message = Message.asMessage(XmlUtils.buildNode(testString));
+		testAsInputSource(message);
+	}
+	
+	@Test
+	public void testNodeAsString() throws Exception {
+		Message message = Message.asMessage(XmlUtils.buildNode(testString));
+		testAsString(message);
+	}
 }

@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -511,84 +512,94 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/** Converts raw data to configured parameter type */
 	private Object getTypeValue(Object message, boolean namespaceAware) throws ParameterException {
+		Message request = Message.asMessage(message);
 		Object result = message;
-		if(!(result instanceof String)) {
-			try {
-				result = Message.asMessage(result).asString();
-			} catch (IOException e) {
-				throw new ParameterException("Could not convert parameter ["+getName()+"] to string", e);
-			}
-		}
-		switch(getType()) {
-			case NODE:
-				try {
-					if (transformerPoolRemoveNamespaces != null) {
-						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+		try {
+			switch(getType()) {
+				case NODE:
+					try {
+						if (transformerPoolRemoveNamespaces != null) {
+							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+						}
+						Object requestObject = request.asObject();
+						if(requestObject instanceof Document) {
+							return ((Document)requestObject).getDocumentElement();
+						}
+						if(requestObject instanceof Node) {
+							return requestObject;
+						}
+						result=XmlUtils.buildNode(request.asString(), namespaceAware);
+						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
 					}
-					result=XmlUtils.buildNode((String)result,namespaceAware);
-					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
-				}
-				break;
-			case DOMDOC:
-				try {
-					if (transformerPoolRemoveNamespaces != null) {
-						result = transformerPoolRemoveNamespaces.transform((String)result, null);
+					break;
+				case DOMDOC:
+					try {
+						if (transformerPoolRemoveNamespaces != null) {
+							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+						}
+						Object requestObject = request.asObject();
+						if(requestObject instanceof Document) {
+							return requestObject;
+						}
+						result=XmlUtils.buildDomDocument(request.asString() ,namespaceAware);
+						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
 					}
-					result=XmlUtils.buildDomDocument((String)result,namespaceAware);
-					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
-				}
-				break;
-			case DATE:
-			case DATETIME:
-			case TIMESTAMP:
-			case TIME:
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
-				DateFormat df = new SimpleDateFormat(getFormatString());
-				try {
-					result = df.parseObject((String)result);
-				} catch (ParseException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
-				}
-				break;
-			case XMLDATETIME:
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] from xml dateTime to date" );
-				result = DateUtils.parseXmlDateTime((String)result);
-				break;
-			case NUMBER:
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
-				DecimalFormat decimalFormat = new DecimalFormat();
-				decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-				try {
-					Number n = decimalFormat.parse((String)result);
-					result = n;
-				} catch (ParseException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-				}
-				if (getMinLength()>=0 && result.toString().length()<getMinLength()) {
-					log.debug("Adding leading zeros to parameter ["+getName()+"]" );
-					result = StringUtils.leftPad(result.toString(), getMinLength(), '0');
-				}
-				break;
-			case INTEGER:
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
-				try {
-					Integer i = Integer.parseInt((String)result);
+					break;
+				case DATE:
+				case DATETIME:
+				case TIMESTAMP:
+				case TIME:
+					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to date using formatString ["+getFormatString()+"]" );
+					DateFormat df = new SimpleDateFormat(getFormatString());
+					try {
+						result = df.parseObject(request.asString());
+					} catch (ParseException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to Date using formatString ["+getFormatString()+"]",e);
+					}
+					break;
+				case XMLDATETIME:
+					log.debug("Parameter ["+getName()+"] converting result ["+request+"] from xml dateTime to date" );
+					result = DateUtils.parseXmlDateTime(request.asString());
+					break;
+				case NUMBER:
+					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+					DecimalFormat decimalFormat = new DecimalFormat();
+					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+					try {
+						Number n = decimalFormat.parse(request.asString());
+						result = n;
+					} catch (ParseException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+					}
+					if (getMinLength()>=0 && request.asString().length()<getMinLength()) {
+						log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+						result = StringUtils.leftPad(request.asString(), getMinLength(), '0');
+					}
+					break;
+				case INTEGER:
+					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to integer" );
+					try {
+						Integer i = Integer.parseInt(request.asString());
+						result = i;
+					} catch (NumberFormatException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to integer",e);
+					}
+					break;
+				case BOOLEAN:
+					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to boolean" );
+					Boolean i = Boolean.parseBoolean(request.asString());
 					result = i;
-				} catch (NumberFormatException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
-				}
-				break;
-			case BOOLEAN:
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to boolean" );
-				Boolean i = Boolean.parseBoolean((String)result);
-				result = i;
-			default:
-				break;
+				default:
+					break;
+			}
+		} catch(IOException e) {
+			throw new ParameterException("Could not convert parameter ["+getName()+"] to String", e);
 		}
+		
 		return result;
 	}
 
