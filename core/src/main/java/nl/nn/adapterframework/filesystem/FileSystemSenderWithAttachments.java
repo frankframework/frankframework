@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -44,7 +45,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
 	
-	public final String[] ACTIONS_FS_WITH_ATTACHMENTS= {"listAttachments"};
+	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
 	private boolean attachmentsAsSessionKeys=false;
 
@@ -53,10 +54,10 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 		addActions(Arrays.asList(ACTIONS_FS_WITH_ATTACHMENTS));
 		super.configure();
 	}
-	
+
 	@Override
 	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (!getAction().equalsIgnoreCase("listAttachments")) {
+		if (getAction()!=FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session, next);
 		} else {
 

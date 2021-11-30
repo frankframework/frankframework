@@ -55,6 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class SendGridSender extends MailSenderBase {
 
+	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
 	private HttpSenderBase httpclient;
 
@@ -65,6 +66,7 @@ public class SendGridSender extends MailSenderBase {
 			throw new ConfigurationException("Please provide an API key");
 		}
 		httpclient = new HttpSender();
+		httpclient.setUrl(url);
 		httpclient.configure();
 	}
 
@@ -88,7 +90,7 @@ public class SendGridSender extends MailSenderBase {
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSession mailSession) throws SenderException {
 		String result = null;
 
 		Mail mail = null;
@@ -107,6 +109,7 @@ public class SendGridSender extends MailSenderBase {
 			Response response = sendGrid.api(request);
 			result = response.getBody();
 			log.debug("Mail send result" + result);
+			return result;
 		} catch (Exception e) {
 			throw new SenderException(
 					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);

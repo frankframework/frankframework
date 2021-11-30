@@ -27,6 +27,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
@@ -46,7 +47,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl("relative/path");
 
 		sender.configure();
@@ -59,7 +60,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl(null);
 		Parameter urlParam = new Parameter();
 		urlParam.setName("url");
@@ -77,7 +78,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -98,7 +99,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void testCharset() throws Throwable {
 		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType("post");
+		sender.setMethodType(HttpMethod.POST);
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
@@ -155,7 +156,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -171,7 +172,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setEncodeMessages(true);
 
 		sender.configure();
@@ -188,7 +189,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET"); //Make sure its a GET request
+		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -205,7 +206,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("GET"); //Make sure its a GET request
+		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
 		sender.setContentType("application/json");
 		sender.setCharSet("ISO-8859-1");
 
@@ -224,7 +225,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		sender.configure();
 		sender.open();
@@ -240,7 +241,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("Post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 		sender.setEncodeMessages(true);
 
 		sender.configure();
@@ -258,7 +259,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -285,7 +286,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -311,7 +312,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType(HttpMethod.PUT); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
@@ -327,7 +328,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("patCH"); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType(HttpMethod.PATCH); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
@@ -353,7 +354,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -385,7 +386,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("helloWorld");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -402,7 +403,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 
 		sender.configure();
 		sender.open();
@@ -428,7 +429,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 		sender.setHeadersParams("custom-header, doesn-t-exist");
 
 		sender.configure();
@@ -455,7 +456,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
@@ -483,7 +484,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType("urlencoded");
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
@@ -501,7 +502,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -519,7 +520,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
 		sender.setPostType("binary");
 
@@ -539,7 +540,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/pdf");
 		sender.setPostType("binary");
 
@@ -557,7 +558,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("PUT");
+		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -575,7 +576,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("PUT");
+		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
 		sender.setPostType("binary");
 
@@ -593,7 +594,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -619,7 +620,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType("FORMDATA");
 		sender.setInputMessageParam("request");
 
@@ -645,7 +646,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -672,7 +673,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType("mtom");
 		sender.setInputMessageParam("request");
 
@@ -699,7 +700,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType("POST");
+		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -747,7 +748,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -773,7 +774,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -794,7 +795,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param1.setValue("ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
 		sender.addParameter(param1);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();
@@ -822,7 +823,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("");
 		sender.addParameter(param2);
 
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 
 		sender.configure();
 		sender.open();

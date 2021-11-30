@@ -47,15 +47,16 @@ public class ReloadSender extends SenderWithParametersBase {
 
 		String configName = null;
 		String activeVersion = null;
+		boolean forceReload = getForceReload();
 
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 				if(pvl.getParameterValue("name") != null)
-					configName = (String) pvl.getParameterValue("name").getValue();
+					configName = pvl.getParameterValue("name").asStringValue();
 				if(pvl.getParameterValue("forceReload") != null)
-					setForceReload(Boolean.parseBoolean((String)pvl.getParameterValue("forceReload").getValue()));
+					forceReload = pvl.getParameterValue("forceReload").asBooleanValue(false);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
@@ -69,8 +70,9 @@ public class ReloadSender extends SenderWithParametersBase {
 		}
 
 		try {
-			if(!getForceReload())
+			if(!forceReload) {
 				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
+			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
@@ -79,7 +81,7 @@ public class ReloadSender extends SenderWithParametersBase {
 
 		if (configuration != null) {
 			String latestVersion = configuration.getVersion();
-			if (getForceReload() || (latestVersion != null && !activeVersion.equals(latestVersion))) {
+			if (forceReload || (latestVersion != null && !activeVersion.equals(latestVersion))) {
 				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
 				return new Message("Reload " + configName + " succeeded");

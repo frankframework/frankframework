@@ -212,6 +212,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			getFolders().put(destinationFolderName,destFolder);
 		}
 		M destFile = (M)new MockFile(f.getName(),destFolder);
+		if (destFolder.getFiles().containsKey(f.getName())) {
+			throw new FileSystemException("file ["+f.getName()+"] does already exist in folder ["+destFolder+"]");
+		}
 		destFile.setAdditionalProperties(f.getAdditionalProperties());
 		destFile.setContents(f.getContents());
 		destFile.setLastModified(f.getLastModified());

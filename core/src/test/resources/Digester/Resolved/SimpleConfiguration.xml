@@ -10,7 +10,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage" active="${HelloWorld.job.active}"/>
+	<job name="HelloWorld" adapterName="HelloWorld" receiverName="HelloWorld" interval="0" function="sendMessage" active="${HelloWorld.job.active}" className="nl.nn.adapterframework.scheduler.job.Job"/>
 	<adapter name="HelloUniverse" active="${junit.active}">
 		<receiver name="HelloUniverse">
 			<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>

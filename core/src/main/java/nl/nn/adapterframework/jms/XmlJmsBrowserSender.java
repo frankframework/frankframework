@@ -20,13 +20,15 @@ import java.io.IOException;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -104,15 +106,15 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 		String jmsRealm = null;
 		String queueConnectionFactoryName = null;
 		String destinationName = null;
-		String destinationType = null;
+		DestinationType destinationType = null;
 		try {
 			queueBrowserElement = XmlUtils.buildElement(message.asString());
 			root = queueBrowserElement.getTagName();
 			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement, "jmsRealm");
 			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
-			destinationType = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType");
-		} catch (DomBuilderException | IOException e) {
+			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
+		} catch (Exception e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
 		}
 

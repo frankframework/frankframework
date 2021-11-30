@@ -5,7 +5,7 @@ import org.springframework.transaction.support.ResourceTransactionManager;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 public abstract class ConcurrentManagedTransactionTester extends ConcurrentActionTester {
 	

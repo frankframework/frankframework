@@ -17,18 +17,12 @@ package nl.nn.adapterframework.scheduler.job;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.statistics.HasStatistics;
 
 public class DumpStatisticsJob extends JobDef {
 
 	@Override
 	public void execute(IbisManager ibisManager) {
-		if(getFunctionEnum() == JobDefFunctions.DUMPSTATS) {
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
-		}
-		else if(getFunctionEnum() == JobDefFunctions.DUMPSTATSFULL) {
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-		}
+		ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
 	}
 }

@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.JobDefFunctions;
 import nl.nn.adapterframework.util.EnumUtils;
 
 public class IbisActionJob extends JobDef {
@@ -34,24 +33,35 @@ public class IbisActionJob extends JobDef {
 	private @Getter String configurationName;
 	private @Getter String adapterName;
 	private @Getter String receiverName;
-	private IbisAction action;
+	private Action jobAction;
+	private IbisAction ibisAction;
+
+	// Subset of the IbisAction enum as we do not want to expose all fields.
+	public enum Action {
+		STOPADAPTER,
+		STARTADAPTER,
+		STOPRECEIVER,
+		STARTRECEIVER;
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		action = EnumUtils.parse(IbisAction.class, "function", getFunction()); // Try and parse the JobDefFunction as an IbisAction
+
+		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", jobAction.name()); // Try and parse the JobDefFunction as an IbisAction
 
 		if (StringUtils.isEmpty(getAdapterName())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a adapterName must be specified");
+			throw new ConfigurationException("a adapterName must be specified");
 		}
 		Adapter adapter = adapterManager.getAdapter(getAdapterName());
 		if(adapter == null) { //Make sure the adapter is registered in this configuration
 			String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 			throw new ConfigurationException(msg);
 		}
-		if (getFunctionEnum().isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER)) {
+
+		if (jobAction == Action.STOPRECEIVER || jobAction == Action.STARTRECEIVER) {
 			if (StringUtils.isEmpty(getReceiverName())) {
-				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
+				throw new ConfigurationException("a receiverName must be specified");
 			}
 			if (adapter.getReceiverByName(getReceiverName()) == null) {
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
@@ -62,7 +72,11 @@ public class IbisActionJob extends JobDef {
 
 	@Override
 	public void execute(IbisManager ibisManager) {
-		ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+		ibisManager.handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
+	}
+
+	public void setAction(Action action) {
+		jobAction = action;
 	}
 
 	@IbisDoc({"Configuration on which job operates", ""})

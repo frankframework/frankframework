@@ -135,7 +135,7 @@ public class StringResolver {
 				if (username||password) {
 					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
 				}
-				if (username || mayExpandAuthAlias(key)) {
+				if (username || mayExpandAuthAlias(key, props1)) {
 					String defaultValue = delimStart + key+ delimStop;
 					CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
 					replacement = username ? cf.getUsername() : cf.getPassword();
@@ -216,10 +216,13 @@ public class StringResolver {
 		return stopPos;
 	}
 	
-	private static boolean mayExpandAuthAlias(String aliasName) {
+	private static boolean mayExpandAuthAlias(String aliasName, Map props1) {
 		if (authAliasesAllowedToExpand==null) {
 			Set<String> aliases = new HashSet<>();
 			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
+			if(StringResolver.needsResolution(property)) {
+				property = StringResolver.substVars(property, props1);
+			}
 			aliases.addAll(Arrays.asList(property.split(",")));
 			authAliasesAllowedToExpand = aliases;
 		}

@@ -76,7 +76,7 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 	 * @return className + name of the ISender
 	 */
 	protected String getLogPrefix() {
-		return ClassUtils.nameOf(this) +" ["+getName()+"] ";
+		return ClassUtils.nameOf(this) + " ";
 	}
 
 	@IbisDoc({"name of the sender", ""})

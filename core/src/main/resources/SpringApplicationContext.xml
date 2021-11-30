@@ -62,7 +62,7 @@
 
 	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
 
-	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.extensions.graphviz.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
+	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
 	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
@@ -119,7 +119,7 @@
 
 	<bean
 		id="txManagerProxy"
-		class="nl.nn.adapterframework.util.SpringTxManagerProxy"
+		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
 		>
 		<property name="realTxManagerBeanName">
 			<idref bean="txManagerReal"/>

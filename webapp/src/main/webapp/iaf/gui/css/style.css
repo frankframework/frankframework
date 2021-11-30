@@ -1233,6 +1233,23 @@ button.btn-invisible {
   right: 0;
 }
 
+/* PrismJS pre>code */
+.line-numbers .line-numbers-rows {
+  pointer-events: auto;
+  cursor: pointer;
+}
+pre[class*=language-] {
+  overflow-y: hidden;
+  margin-top: 2px;
+}
+span.line-selected {
+  background-color: #ccc;
+  text-shadow: none;
+}
+span.line-selected::before {
+  color: #333;
+}
+
 /* SCROLL TO TOP BUTTON */
 .scroll-to-top {
   opacity: 0;
@@ -1562,6 +1579,9 @@ a.list-group-item.active:focus {
   color: #8a6d3b;
   background-color: #fcf8e3;
   border-color: #faebcc;
+}
+.alert-warning > div.pointer:hover {
+  text-decoration: underline;
 }
 .alert-danger {
   color: #a94442;

@@ -43,13 +43,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Selects an exitState, based on either the content of the input message, by means
  * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>
- * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setStyleSheetName(String) styleSheetName} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
- * </table>
- * </p>
+ * @ff.forward "&lt;name of the root-element&gt;" default
+ * @ff.forward "&lt;result of transformation&gt;" when <code>styleSheetName</code> or <code>xpathExpression</code> is specified
+ * 
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {

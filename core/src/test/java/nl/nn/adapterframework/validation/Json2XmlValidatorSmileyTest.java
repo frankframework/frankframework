@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FilePipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class Json2XmlValidatorSmileyTest extends TestCase {
@@ -57,7 +58,7 @@ public class Json2XmlValidatorSmileyTest extends TestCase {
 		json2xml.setWarn(false);
 		json2xml.setSchema(xsd);
 		json2xml.setRoot("x");
-		json2xml.setOutputFormat(json2xml.FORMAT_JSON);
+		json2xml.setOutputFormat(DocumentFormat.JSON);
 		json2xml.setThrowException(true);
 		json2xml.registerForward(new PipeForward("success",null));
 		json2xml.configure();

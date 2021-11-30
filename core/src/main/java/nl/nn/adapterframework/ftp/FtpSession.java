@@ -790,7 +790,7 @@ public class FtpSession implements IConfigurable {
 	public void setFtpTypeDescription(String string) {
 		setFtpType(string);
 	}
-	@IbisDoc({"FTP protocol to use", "ftp"})
+	@IbisDoc({"FTP protocol to use", "FTP"})
 	public void setFtpType(String value) {
 		ftpType = EnumUtils.parse(FtpType.class, value);
 	}
@@ -1009,8 +1009,8 @@ public class FtpSession implements IConfigurable {
 	}
 
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * CertificateExpiredExceptions are ignored when set to true
+	 * @ff.default false
 	 */
 	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {

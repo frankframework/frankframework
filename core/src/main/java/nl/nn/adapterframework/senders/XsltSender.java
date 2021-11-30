@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IThreadCreator;
@@ -56,11 +57,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * Perform an XSLT transformation with a specified stylesheet or XPath-expression.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the sender will be applied to the created transformer</td></tr>
- * </table>
- * </p>
- *
+ * @ff.parameters any parameters defined on the sender will be applied to the created transformer
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -122,8 +120,8 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			if (parameterList!=null) {
 				for (int i=0; i<parameterList.size(); i++) {
 					Parameter parameter = parameterList.getParameter(i);
-					if (StringUtils.isNotEmpty(parameter.getType()) && "node".equalsIgnoreCase(parameter.getType())) {
-						throw new ConfigurationException(getLogPrefix() + "type \"node\" is not permitted in combination with XSLT 2.0, use type \"domdoc\"");
+					if (parameter.getType()==ParameterType.NODE) {
+						throw new ConfigurationException(getLogPrefix() + "type '"+ParameterType.NODE+" is not permitted in combination with XSLT 2.0, use type '"+ParameterType.DOMDOC+"'");
 					}
 				}
 			}

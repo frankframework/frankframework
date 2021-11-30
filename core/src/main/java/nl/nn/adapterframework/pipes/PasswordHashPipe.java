@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,12 +38,7 @@ import nl.nn.adapterframework.util.PasswordHash;
  * the forward to be used (success or failure).
  *  
  * 
- * <b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"failure"</td><td>when hashSessionKey is used and password doesn't validate against the hash</td></tr>
- * </table>
+ * @ff.forward failure when hashSessionKey is used and password doesn't validate against the hash
  * 
  * @author Jaco de Groot
  */

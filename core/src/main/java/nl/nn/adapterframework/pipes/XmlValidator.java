@@ -71,20 +71,16 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
-*<code>Pipe</code> that validates the input message against a XML-Schema.
-*
-* <table border="1">
-* <tr><th>state</th><th>condition</th></tr>
-* <tr><td>"success"</td><td>default</td></tr>
-* <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
-* </table>
-* <br>
-* 
-* @author Johan Verrips IOS
-* @author Jaco de Groot
-*/
+ *<code>Pipe</code> that validates the input message against a XML-Schema.
+ *
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
+ * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
+ * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
+ * 
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
+ */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
 
 	private String schemaLocation;

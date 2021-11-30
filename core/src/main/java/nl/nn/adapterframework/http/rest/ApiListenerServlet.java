@@ -1,17 +1,17 @@
 /*
-Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2021 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
@@ -378,7 +378,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					XmlBuilder headersXml = new XmlBuilder("headers");
-					String params[] = listener.getHeaderParams().split(",");
+					String[] params = listener.getHeaderParams().split(",");
 					for (String headerParam : params) {
 						if(IGNORE_HEADERS.contains(headerParam)) {
 							continue;
@@ -463,7 +463,12 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 					messageContext.put("multipartAttachments", attachments.toXML());
 				} else {
-					body = parseContentAsMessage(request.getInputStream(), request.getContentType());
+					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
+					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
+						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
+					} else {
+						body = Message.nullMessage();
+					}
 				}
 
 				/**

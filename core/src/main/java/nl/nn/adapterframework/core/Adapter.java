@@ -244,7 +244,7 @@ public class Adapter implements IAdapter, NamedBean {
 			receiver.configure();
 			getMessageKeeper().info(receiver, "successfully configured");
 		} catch (ConfigurationException e) {
-			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + " [" + receiver.getName() + "] " + e.getMessage());
+			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + ": " + e.getMessage());
 			throw e;
 		}
 	}

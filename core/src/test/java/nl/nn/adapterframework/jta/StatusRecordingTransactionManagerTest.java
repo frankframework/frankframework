@@ -150,9 +150,16 @@ public class StatusRecordingTransactionManagerTest {
 		String recordedTmUid = read("/a/b/c/"+TMUID_FILE);
 		assertEquals(tmUid, recordedTmUid);
 	}
-	
-	
-	
+
+	@Test
+	public void testTestReadWithWhitespace() {
+		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		String value = "fake tm uid";
+		String fullPathTmFile = folder.getRoot()+"/"+TMUID_FILE;
+		tm.write(fullPathTmFile, "\n "+value+" \n\n");
+		assertEquals(value, tm.read(fullPathTmFile));
+	}
+
 	public void assertStatus(String status, String tmUid) {
 		assertEquals(status, read(STATUS_FILE));
 		if (tmUid!=null) {
@@ -177,7 +184,7 @@ public class StatusRecordingTransactionManagerTest {
 			return null;
 		}
 		try (InputStream fis = Files.newInputStream(file)) {
-			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8);
+			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
 		} catch (Exception e) {
 			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
 		}

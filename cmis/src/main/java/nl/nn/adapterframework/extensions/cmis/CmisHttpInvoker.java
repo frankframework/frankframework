@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 			//Auth
 			if(session.get(SessionParameter.USER) != null)
-				sender.setUserName((String) session.get(SessionParameter.USER));
+				sender.setUsername((String) session.get(SessionParameter.USER));
 			if(session.get(SessionParameter.PASSWORD) != null)
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 

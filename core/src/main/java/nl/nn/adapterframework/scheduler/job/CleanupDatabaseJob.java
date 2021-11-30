@@ -34,6 +34,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -118,7 +119,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setQuery(query);
 				Parameter param = new Parameter();
 				param.setName("now");
-				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setType(ParameterType.TIMESTAMP);
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 				qs.configure();
@@ -155,7 +156,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 				Parameter param = new Parameter();
 				param.setName("now");
-				param.setType(Parameter.TYPE_TIMESTAMP);
+				param.setType(ParameterType.TIMESTAMP);
 				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 
@@ -196,7 +197,7 @@ public class CleanupDatabaseJob extends JobDef {
 		List<String> datasourceNames = new ArrayList<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
-			for (JobDef jobdef : configuration.getScheduledJobs()) {
+			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
 					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {

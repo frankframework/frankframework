@@ -186,10 +186,10 @@ public class MailSender extends MailSenderBase {
 	}
 
 	@Override
-	public void sendEmail(MailSession mailSession) throws SenderException {
+	public String sendEmail(MailSession mailSession) throws SenderException {
 		Session session = createSession();
 		log.debug("sending mail using session ["+session+"]");
-		sendEmail(session, mailSession);
+		return sendEmail(session, mailSession);
 	}
 
 	private void setRecipient(MailSession mailSession, MimeMessage msg, StringBuffer sb) throws UnsupportedEncodingException, MessagingException, SenderException {
@@ -350,7 +350,7 @@ public class MailSender extends MailSenderBase {
 
 		try {
 			msg.saveChanges();
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			throw new SenderException("Error occurred while composing email", e);
 		}
 

@@ -145,7 +145,7 @@ public class BtmJtaTransactionManagerTest {
 			return null;
 		}
 		try (InputStream fis = Files.newInputStream(file)) {
-			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8);
+			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
 		} catch (Exception e) {
 			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
 		}

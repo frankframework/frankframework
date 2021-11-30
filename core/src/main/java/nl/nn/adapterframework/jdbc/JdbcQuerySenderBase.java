@@ -54,6 +54,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -76,12 +77,6 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * <br/>
  * <h3>Note on using packages</h3>
  * The package processor makes some assumptions about the datatypes:
  * <ul>
@@ -93,6 +88,8 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * </p>
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
+ * 
+ * @ff.parameters all parameters present are applied to the statement to be executed
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
@@ -393,11 +390,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
-					if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
-						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + newParameterList.getParameter(i).getName() + "]");
-						try {
-							InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, message, session, true);
-							inputStream.close();
+					Parameter param = newParameterList.getParameter(i);
+					if (param.getType() == ParameterType.INPUTSTREAM) {
+						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
+						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
+							if(object instanceof AutoCloseable) {
+								((AutoCloseable)object).close();
+							}
+							else {
+								log.error("unable to auto-close parameter ["+param.getName()+"]");
+							}
 						} catch (Exception e) {
 							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
 						}

@@ -8,7 +8,7 @@
       <xs:sequence>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element ref="Adapter" minOccurs="0" maxOccurs="unbounded" />
-          <xs:element ref="Job" minOccurs="0" maxOccurs="unbounded" />
+          <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
           <xs:group ref="StatisticsHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
           <xs:element ref="JmsRealm" minOccurs="0" maxOccurs="unbounded" />
           <xs:element ref="Monitoring" minOccurs="0" maxOccurs="unbounded" />
@@ -129,14 +129,9 @@
         <xs:simpleType>
           <xs:union memberTypes="OnErrorAttributeValuesType variableRef">
             <xs:annotation>
-              <xs:documentation>One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously Default: continue</xs:documentation>
+              <xs:documentation>One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously Default: CONTINUE</xs:documentation>
             </xs:annotation>
           </xs:union>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="onErrorEnum">
-        <xs:simpleType>
-          <xs:union memberTypes="OnErrorAttributeValuesType variableRef" />
         </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="numThreads" type="frankInt">
@@ -255,21 +250,20 @@
           <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, every message read will be processed as if it is being retried, by setting a session variable 'retry' Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="transactionAttribute" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttributeNum" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Like &lt;code&gt;transactionAttribute&lt;/code&gt;, but the chosen option is represented with a number. The numbers mean:&lt;table&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;Required&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Supports&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;Mandatory&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;RequiresNew&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;NotSupported&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;Never&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: 1</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="transacted" type="frankBoolean" />
       <xs:attribute name="transactionTimeout" type="frankInt">
         <xs:annotation>
           <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="transactionAttribute">
+        <xs:simpleType>
+          <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef">
+            <xs:annotation>
+              <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
+            </xs:annotation>
+          </xs:union>
+        </xs:simpleType>
       </xs:attribute>
       <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="receiver" />
@@ -291,10 +285,10 @@
           <xs:documentation>Name of the parameter</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="type" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents of the first node (in combination with xslt or xpath).&lt;br/&gt;Please note that if there are child nodes, only the contents are returned, use &lt;code&gt;xml&lt;/code&gt; if the xml tags are required&lt;/li&gt;&lt;li&gt;&lt;code&gt;xml&lt;/code&gt;:  renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags&lt;/li&gt;&lt;li&gt;&lt;code&gt;node&lt;/code&gt;: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). &lt;br/&gt;Please note that the nodeset may contain multiple nodes, without a common root node. &lt;br/&gt;N.B. The result is the set of children of what you might expect it to be...&lt;/li&gt;&lt;li&gt;&lt;code&gt;domdoc&lt;/code&gt;: renders xml as a DOM document; similar to &lt;code&gt;node&lt;/code&gt; with the distinction that there is always a common root node (required for XSLT 2.0)&lt;/li&gt;&lt;li&gt;&lt;code&gt;date&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd&lt;/code&gt;. When applied as a JDBC parameter, the method setDate() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;time&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;HH:mm:ss&lt;/code&gt;. When applied as a JDBC parameter, the method setTime() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;datetime&lt;/code&gt;: converts the result to a Date, by default using formatString &lt;code&gt;yyyy-MM-dd HH:mm:ss&lt;/code&gt;. When applied as a JDBC parameter, the method setTimestamp() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;timestamp&lt;/code&gt;: similar to datetime, except for the formatString that is &lt;code&gt;yyyy-MM-dd HH:mm:ss.SSS&lt;/code&gt; by default&lt;/li&gt;&lt;li&gt;&lt;code&gt;xmldatetime&lt;/code&gt;: converts the result from a XML dateTime to a Date. When applied as a JDBC parameter, the method setTimestamp() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;number&lt;/code&gt;: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;integer&lt;/code&gt;: converts the result to an Integer&lt;/li&gt;&lt;li&gt;&lt;code&gt;inputstream&lt;/code&gt;: only applicable as a JDBC parameter, the method setBinaryStream() is used&lt;/li&gt;&lt;li&gt;&lt;code&gt;list&lt;/code&gt;: converts a List&amp;lt;String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
-        </xs:annotation>
+      <xs:attribute name="type">
+        <xs:simpleType>
+          <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
+        </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="value" type="xs:string">
         <xs:annotation>
@@ -408,7 +402,7 @@
       </xs:attribute>
       <xs:attribute name="hidden" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+          <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the value of the parameter will not be shown in the log (replaced by asterisks) Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute ref="active" />
@@ -469,21 +463,20 @@
           <xs:documentation>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="transactionAttribute" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttributeNum" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Like &lt;code&gt;transactionAttribute&lt;/code&gt;, but the chosen option is represented with a number. The numbers mean:&lt;table&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;Required&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Supports&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;Mandatory&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;RequiresNew&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;NotSupported&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;Never&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: 1</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="transacted" type="frankBoolean" />
       <xs:attribute name="transactionTimeout" type="frankInt">
         <xs:annotation>
           <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="transactionAttribute">
+        <xs:simpleType>
+          <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef">
+            <xs:annotation>
+              <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
+            </xs:annotation>
+          </xs:union>
+        </xs:simpleType>
       </xs:attribute>
       <xs:attribute ref="active" />
       <xs:attribute name="elementRole" type="xs:string" fixed="pipeline" />
@@ -557,20 +550,19 @@
           <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="transactionAttribute" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttributeNum" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Like &lt;code&gt;transactionAttribute&lt;/code&gt;, but the chosen option is represented with a number. The numbers mean:&lt;table&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;Required&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Supports&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;Mandatory&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;RequiresNew&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;NotSupported&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;Never&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: 1</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="lockWaitTimeout" type="frankInt">
         <xs:annotation>
           <xs:documentation>If &gt; 0: The time in s to wait before the INSERT statement to obtain the lock is canceled.  Default: 0</xs:documentation>
         </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="transactionAttribute">
+        <xs:simpleType>
+          <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef">
+            <xs:annotation>
+              <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
+            </xs:annotation>
+          </xs:union>
+        </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="datasourceName" type="xs:string">
         <xs:annotation>
@@ -780,71 +772,39 @@
       <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.OutputfieldsPart" use="prohibited" />
     </xs:complexType>
   </xs:element>
-  <xs:element name="Job">
+  <xs:element name="DirectoryCleaner">
     <xs:annotation>
-      <xs:documentation>nl.nn.adapterframework.scheduler.JobDef - Definition / configuration of scheduler jobs.</xs:documentation>
+      <xs:documentation>nl.nn.adapterframework.util.DirectoryCleaner - Cleans up a directory.</xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element ref="Locker" minOccurs="0" maxOccurs="1" />
-        </xs:choice>
-      </xs:sequence>
-      <xs:attribute name="jobGroup" type="xs:string" />
-      <xs:attribute name="name" type="xs:string">
+      <xs:attribute name="directory" type="xs:string">
         <xs:annotation>
-          <xs:documentation>Name of the job</xs:documentation>
+          <xs:documentation>directory to be cleaned up</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="description" type="xs:string">
+      <xs:attribute name="retention" type="xs:string">
         <xs:annotation>
-          <xs:documentation>(Optional) Description of the job</xs:documentation>
+          <xs:documentation>time (with suffix 'd', 'h', 'm' or 's' in milliseconds) that must have passed at least before a file will be deleted Default: 30d</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="cronExpression" type="xs:string">
+      <xs:attribute name="subdirectories" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>CRON expression that determines the frequency of execution</xs:documentation>
+          <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, files in subdirectories will be deleted, too Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="interval" type="frankInt">
+      <xs:attribute name="deleteEmptySubdirectories" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.</xs:documentation>
+          <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, empty subdirectories will be deleted, too Default: false</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="function">
-        <xs:simpleType>
-          <xs:union memberTypes="JobDefFunctionsAttributeValuesType variableRef" />
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="numThreads" type="frankInt">
+      <xs:attribute name="notExistWarn" type="frankBoolean">
         <xs:annotation>
-          <xs:documentation>the number of threads that may execute concurrently Default: 1</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="messageKeeperSize" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttribute" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transactionAttributeNum" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Like &lt;code&gt;transactionAttribute&lt;/code&gt;, but the chosen option is represented with a number. The numbers mean:&lt;table&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;Required&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Supports&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;Mandatory&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;RequiresNew&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;NotSupported&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;Never&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: 1</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="transacted" type="frankBoolean" />
-      <xs:attribute name="transactionTimeout" type="frankInt">
-        <xs:annotation>
-          <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
+          <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about not existing directories Default: true</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute ref="active" />
-      <xs:attribute name="elementRole" type="xs:string" fixed="job" />
-      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.JobDef" use="prohibited" />
+      <xs:attribute name="elementRole" type="xs:string" fixed="directoryCleaner" />
+      <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.DirectoryCleaner" use="prohibited" />
     </xs:complexType>
   </xs:element>
   <xs:element name="JmsRealm">
@@ -981,6 +941,26 @@
       <xs:group ref="ListenerElementGroupBase" />
     </xs:choice>
   </xs:group>
+  <xs:simpleType name="ParameterTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][tT][rR][iI][nN][gG]" />
+      <xs:pattern value="[xX][mM][lL]" />
+      <xs:pattern value="[nN][oO][dD][eE]" />
+      <xs:pattern value="[dD][oO][mM][dD][oO][cC]" />
+      <xs:pattern value="[dD][aA][tT][eE]" />
+      <xs:pattern value="[tT][iI][mM][eE]" />
+      <xs:pattern value="[dD][aA][tT][eE][tT][iI][mM][eE]" />
+      <xs:pattern value="[tT][iI][mM][eE][sS][tT][aA][mM][pP]" />
+      <xs:pattern value="[xX][mM][lL][dD][aA][tT][eE][tT][iI][mM][eE]" />
+      <xs:pattern value="[nN][uU][mM][bB][eE][rR]" />
+      <xs:pattern value="[iI][nN][tT][eE][gG][eE][rR]" />
+      <xs:pattern value="[bB][oO][oO][lL][eE][aA][nN]" />
+      <xs:pattern value="[iI][nN][pP][uU][tT][sS][tT][rR][eE][aA][mM]" />
+      <xs:pattern value="[bB][yY][tT][eE][sS]" />
+      <xs:pattern value="[lL][iI][sS][tT]" />
+      <xs:pattern value="[mM][aA][pP]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:group name="SenderElementGroup">
     <xs:choice>
       <xs:element name="Sender">
@@ -1776,7 +1756,7 @@ Collection of Senders, that are executed all at the same time.</xs:documentation
         <xs:annotation>
           <xs:documentation>ReloadSender - nl.nn.adapterframework.senders.ReloadSender used as Sender
 
-Performs a reload on database config .</xs:documentation>
+Performs a reload on database configuration.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2172,41 +2152,6 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>name of the bucket to access</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="destinationBucketName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the destination bucket name can be used for copy action</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="bucketRegion" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the bucket region for create action</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storageClass" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the storage class for copy action. If storage class is enabled must be specified</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="tier" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of tier for restore action</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="expirationInDays" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>the time, in days, between when an object is restored to thebucket and when it expires. Use &lt;code&gt;-1&lt;/code&gt; never expire Default: -1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storageClassEnabled" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>enables storage class for copy action Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="bucketCreationEnabled" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>enables creating bucket by upload and copy action if the bucket does not exist Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
       <xs:annotation>
         <xs:documentation>setting proxy host</xs:documentation>
@@ -2243,10 +2188,14 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="FileSystemSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="FileSystemSenderDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Possible values: list, info, read, readDelete, move, copy, delete, mkdir, rmdir, write, append, rename. If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
@@ -2285,7 +2234,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>for the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="base64" type="xs:string">
@@ -2312,7 +2261,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions write, and for action=append Default: false</xs:documentation>
+        <xs:documentation>If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -2321,6 +2270,26 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="FileSystemActionAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[lL][iI][sS][tT]" />
+      <xs:pattern value="[iI][nN][fF][oO]" />
+      <xs:pattern value="[rR][eE][aA][dD]" />
+      <xs:pattern value="[dD][oO][wW][nN][lL][oO][aA][dD]" />
+      <xs:pattern value="[rR][eE][aA][dD][dD][eE][lL][eE][tT][eE]" />
+      <xs:pattern value="[mM][oO][vV][eE]" />
+      <xs:pattern value="[cC][oO][pP][yY]" />
+      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
+      <xs:pattern value="[mM][kK][dD][iI][rR]" />
+      <xs:pattern value="[rR][mM][dD][iI][rR]" />
+      <xs:pattern value="[wW][rR][iI][tT][eE]" />
+      <xs:pattern value="[uU][pP][lL][oO][aA][dD]" />
+      <xs:pattern value="[aA][pP][pP][eE][nN][dD]" />
+      <xs:pattern value="[rR][eE][nN][aA][mM][eE]" />
+      <xs:pattern value="[fF][oO][rR][wW][aA][rR][dD]" />
+      <xs:pattern value="[lL][iI][sS][tT][aA][tT][tT][aA][cC][hH][mM][eE][nN][tT][sS]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="FileSystemSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="FileSystemSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
@@ -2391,11 +2360,6 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         </xs:union>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="deliveryModeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="priority" type="frankInt">
       <xs:annotation>
         <xs:documentation>Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4 Default: -1</xs:documentation>
@@ -2403,7 +2367,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="soap" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="encodingStyleURI" type="xs:string">
@@ -2428,7 +2392,7 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="replyTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Maximum time in ms to wait for a reply. 0 means no timeout. (only for synchronous=true) Default: 5000</xs:documentation>
+        <xs:documentation>(Only for synchronous=true). Maximum time in ms to wait for a reply. 0 means no timeout.  Default: 5000</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replySoapHeaderSessionKey" type="xs:string">
@@ -2436,14 +2400,18 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
         <xs:documentation>session key to store SOAP header of reply Default: replySoapHeader</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="linkMethod" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(Only used when synchronous='true' and and replytoname is set) either 'CORRELATIONID', 'CORRELATIONID_FROM_MESSAGE' or 'MESSAGEID'. Iindicates wether the server uses the correlationId from the pipeline, the correlationId from the message or the messageIid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>(Only used when synchronous='true' and and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>A list of JMS headers of the response to add to the pipelinesession</xs:documentation>
+        <xs:documentation>A list of JMS headers of the response to add to the PipeLineSession</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -2452,6 +2420,13 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       <xs:pattern value="[nN][oO][tT][__][sS][eE][tT]" />
       <xs:pattern value="[pP][eE][rR][sS][iI][sS][tT][eE][nN][tT]" />
       <xs:pattern value="[nN][oO][nN][__][pP][eE][rR][sS][iI][sS][tT][eE][nN][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LinkMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[mM][eE][sS][sS][aA][gG][eE][iI][dD]" />
+      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD]" />
+      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD][__][fF][rR][oO][mM][__][mM][eE][sS][sS][aA][gG][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:attributeGroup name="JmsSenderCumulativeAttributeGroup">
@@ -2471,14 +2446,9 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
       <xs:simpleType>
         <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Type of the messageing destination Default: queue</xs:documentation>
+            <xs:documentation>Type of the messageing destination Default: QUEUE</xs:documentation>
           </xs:annotation>
         </xs:union>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="destinationTypeEnum">
-      <xs:simpleType>
-        <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="ackMode" type="frankInt">
@@ -3164,12 +3134,114 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="EsbJmsSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="EsbJmsSenderDeclaredAttributeGroup">
-    <xs:attribute name="messageProtocol" type="xs:string" />
-    <xs:attribute name="timeOut" type="frankInt" />
+    <xs:attribute name="messageProtocol">
+      <xs:simpleType>
+        <xs:union memberTypes="MessageProtocolAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>protocol of ESB service to be called</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="timeOut" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>receiver timeout, in milliseconds
+ ff.default 20000 (20s)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="deliveryMode">
+      <xs:simpleType>
+        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Controls mode that messages are sent with Default: not set by application</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="replyTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>(Only for synchronous=true). Maximum time in ms to wait for a reply. 0 means no timeout.  Default: 5000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="synchronous" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAPAction string sent as message property</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="MessageProtocolAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[fF][fF]" />
+      <xs:pattern value="[rR][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="EsbJmsSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="EsbJmsSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
+    <xs:attribute name="destinationParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Parameter that is used, if specified and not empty, to determine the destination. Overrides the destination attribute</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replyToName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the queue the reply is expected on. This value is sent in the JMSReplyTo-header with the message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Value of the JMSType field Default: not set by application</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="priority" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Sets the priority that is used to deliver the message. Ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by JMS to 4 Default: -1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soap" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a soap envelope Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="encodingStyleURI" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP encoding style URI</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serviceNamespaceURI" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP service namespace URI</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapHeaderParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of parameter containing SOAP header Default: soapHeader</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replySoapHeaderSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>session key to store SOAP header of reply Default: replySoapHeader</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>(Only used when synchronous='true' and and &lt;code&gt;replyToName&lt;/code&gt; is set). Indicates whether the server uses the correlationId from the pipeline, the correlationId from the message or the messageid in the correlationId field of the reply. This requires the sender to have set the correlationId at the time of sending. Default: MESSAGEID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="responseHeadersToSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>A list of JMS headers of the response to add to the PipeLineSession</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ExchangeFolderSenderType">
     <xs:sequence>
@@ -3494,14 +3566,14 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="ftpTypeDescription" type="xs:string">
       <xs:annotation>
-        <xs:documentation>One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls) Default: ftp</xs:documentation>
+        <xs:documentation>One of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls) Default: FTP</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ftpType">
       <xs:simpleType>
         <xs:union memberTypes="FtpTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>FTP protocol to use Default: ftp</xs:documentation>
+            <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -3733,14 +3805,14 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="ftpTypeDescription" type="xs:string">
       <xs:annotation>
-        <xs:documentation>one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls) Default: ftp</xs:documentation>
+        <xs:documentation>one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls) Default: FTP</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ftpType">
       <xs:simpleType>
         <xs:union memberTypes="FtpTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls) Default: ftp</xs:documentation>
+            <xs:documentation>one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls) Default: FTP</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -5417,29 +5489,37 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="NetStorageSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="NetStorageSenderDeclaredAttributeGroup">
-    <xs:attribute name="hashAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>only works in combination with the &lt;code&gt;upload&lt;/code&gt; action. if set, and not specified as parameter, the sender will sign the file to be uploaded. possible values: md5, sha1, sha256. &lt;br/&gt;note: if the file input is a stream this will put the file in memory!</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="hashAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="HashAlgorithmAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Only works in combination with the UPLOAD action. If set, and not specified as parameter, the sender will sign the file to be uploaded.</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>possible values: delete, dir, download, du, mkdir, mtime, rename, rmdir, upload</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType_2 variableRef">
+          <xs:annotation>
+            <xs:documentation>NetStorage action to be used</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="actionVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>akamai currently only supports action version 1! Default: 1</xs:documentation>
+        <xs:documentation>At the time of writing, NetStorage only supports version 1 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="cpCode" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the cp code to be used</xs:documentation>
+        <xs:documentation>NetStorage CP Code of the storage group</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="url" type="xs:string">
       <xs:annotation>
-        <xs:documentation>the destination, aka akamai host. only the hostname is allowed; eq. xyz-nsu.akamaihd.net</xs:documentation>
+        <xs:documentation>URL or base of URL to be used</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="nonce" type="xs:string">
@@ -5459,15 +5539,35 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     </xs:attribute>
     <xs:attribute name="rootDir" type="xs:string">
       <xs:annotation>
-        <xs:documentation>&lt;i&gt;optional&lt;/i&gt; root directory</xs:documentation>
+        <xs:documentation>Root directory (appended to the url + cpCode)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>alias used to obtain credentials for nonce (username) and accesstoken (password)</xs:documentation>
+        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="HashAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[mM][dD][55]" />
+      <xs:pattern value="[sS][hH][aA][11]" />
+      <xs:pattern value="[sS][hH][aA][22][55][66]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ActionAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[dD][uU]" />
+      <xs:pattern value="[dD][iI][rR]" />
+      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
+      <xs:pattern value="[uU][pP][lL][oO][aA][dD]" />
+      <xs:pattern value="[mM][kK][dD][iI][rR]" />
+      <xs:pattern value="[rR][mM][dD][iI][rR]" />
+      <xs:pattern value="[rR][eE][nN][aA][mM][eE]" />
+      <xs:pattern value="[mM][tT][iI][mM][eE]" />
+      <xs:pattern value="[dD][oO][wW][nN][lL][oO][aA][dD]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="NetStorageSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="NetStorageSenderDeclaredAttributeGroup" />
     <xs:attribute name="urlParam" type="xs:string">
@@ -6183,7 +6283,11 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="TibcoSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="TibcoSenderDeclaredAttributeGroup">
-    <xs:attribute name="serverUrl" type="xs:string" />
+    <xs:attribute name="serverUrl" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL (hostname and port, separated by ':') of Tibco-Server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="TibcoSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="TibcoSenderDeclaredAttributeGroup" />
@@ -6446,13 +6550,28 @@ Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action
     <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="XfbSenderDeclaredAttributeGroup">
-    <xs:attribute name="script" type="xs:string" />
+    <xs:attribute name="script" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Full pathname to the XFB script to be executed to transfer the file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="ft" type="xs:string" />
     <xs:attribute name="flow" type="xs:string" />
     <xs:attribute name="appli" type="xs:string" />
     <xs:attribute name="noname" type="xs:string" />
-    <xs:attribute name="copy" type="frankBoolean" />
-    <xs:attribute name="copyPrefix" type="xs:string" />
+    <xs:attribute name="copy" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script. 
+ Reasons to copy the file:
+ - XFB will rename the file (prefix it with FXB_) and delete it.
+ - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="copyPrefix" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Prefix for the name of the copied or original filename. When the name of the original file starts with this prefix, it is removed. Otherwise this prefix is added to the filename of the copied file.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="XfbSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="XfbSenderDeclaredAttributeGroup" />
@@ -6957,23 +7076,6 @@ JMSListener re-implemented as a pushing listener rather than a pulling listener.
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="PushingListenerAdapterListener">
-        <xs:annotation>
-          <xs:documentation>PushingListenerAdapterListener - nl.nn.adapterframework.http.PushingListenerAdapter used as Listener
-
-Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- to receive messages from Servlets.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="PushingListenerAdapterType">
-              <xs:attribute ref="active" />
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
-              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.PushingListenerAdapter" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="RestListener">
         <xs:annotation>
           <xs:documentation>RestListener - nl.nn.adapterframework.http.RestListener used as Listener
@@ -7201,9 +7303,6 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
     <xs:attributeGroup ref="ApiListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="PushingListenerAdapterType">
-    <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
-  </xs:complexType>
   <xs:attributeGroup name="PushingListenerAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -7256,9 +7355,8 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
   <xs:attributeGroup name="JmsListenerBaseDeclaredAttributeGroup">
     <xs:attribute name="forceMessageIdAsCorrelationId" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
- correlation id of the reply. When you set ForceMessageIdAsCorrelationId to &lt;code&gt;true&lt;/code&gt;,
- the messageID set in the correlationID of the reply.</xs:documentation>
+        <xs:documentation>By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply. 
+ When set to &lt;code&gt;true&lt;/code&gt;, the messageID is used as Correlation-ID of the reply.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="commitOnState" type="xs:string">
@@ -7722,7 +7820,7 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
       <xs:simpleType>
         <xs:union memberTypes="FtpTypeAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>FTP protocol to use Default: ftp</xs:documentation>
+            <xs:documentation>FTP protocol to use Default: FTP</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -8278,9 +8376,8 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
       <xs:simpleType>
         <xs:union memberTypes="IfsaMessageProtocolEnumAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Method logs a warning when the newMessageProtocol is not FF or RR.
- &lt;p&gt;When the messageProtocol equals to FF, transacted is set to true&lt;/p&gt;
- &lt;p&gt;Creation date: (08-05-2003 9:03:53)&lt;/p&gt;</xs:documentation>
+            <xs:documentation>Protocol of the IFSA-Service to be called.
+ When the protocol equals to &lt;code&gt;FF&lt;/code&gt;, transacted is set to true.</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -8292,7 +8389,11 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
     </xs:attribute>
     <xs:attribute name="applicationId" type="xs:string" />
     <xs:attribute name="name" type="xs:string" />
-    <xs:attribute name="timeOut" type="frankInt" />
+    <xs:attribute name="timeOut" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The receive timeout in milliseconds</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="ackMode" type="frankInt" />
     <xs:attribute name="acknowledgeMode" type="xs:string" />
   </xs:attributeGroup>
@@ -8324,7 +8425,11 @@ Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushing
  the Listener name, Adapter name and the Receiver name.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="cacheMode" type="xs:string" />
+    <xs:attribute name="cacheMode" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="PushingIfsaProviderListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="PushingIfsaProviderListenerDeclaredAttributeGroup" />
@@ -9311,7 +9416,7 @@ Collection of Senders, that are executed all at the same time.</xs:documentation
         <xs:annotation>
           <xs:documentation>ReloadErrorSender - nl.nn.adapterframework.senders.ReloadSender used as ErrorSender
 
-Performs a reload on database config .</xs:documentation>
+Performs a reload on database configuration.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9880,6 +9985,16 @@ Send messages to the ibisstore to have them processed exactly-once by another
       <xs:pattern value="[cC][lL][oO][sS][eE]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="TransactionAttributeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][eE][qQ][uU][iI][rR][eE][dD]" />
+      <xs:pattern value="[sS][uU][pP][pP][oO][rR][tT][sS]" />
+      <xs:pattern value="[mM][aA][nN][dD][aA][tT][oO][rR][yY]" />
+      <xs:pattern value="[rR][eE][qQ][uU][iI][rR][eE][sS][nN][eE][wW]" />
+      <xs:pattern value="[nN][oO][tT][sS][uU][pP][pP][oO][rR][tT][eE][dD]" />
+      <xs:pattern value="[nN][eE][vV][eE][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:group name="ErrorMessageFormatterElementGroup">
     <xs:choice>
       <xs:element name="ErrorMessageFormatter">
@@ -9964,8 +10079,7 @@ ErrorMessageFormatter that returns a soap fault message.</xs:documentation>
         <xs:annotation>
           <xs:documentation>XslErrorMessageFormatter - nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter used as ErrorMessageFormatter
 
-Applies a XSLT-stylesheet to the standard error generated by
- {@link ErrorMessageFormatter}.</xs:documentation>
+Applies a XSLT-stylesheet to the standard error generated by an {@link ErrorMessageFormatter}.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10087,8 +10201,7 @@ Extension to WsdlXmlValidator for API Management.</xs:documentation>
         <xs:annotation>
           <xs:documentation>EsbSoapInputValidator - nl.nn.adapterframework.extensions.esb.EsbSoapValidator used as InputValidator
 
-XmlValidator that will automatically add the SOAP envelope XSD and the ESB
- XSD (e.g.</xs:documentation>
+XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10329,21 +10442,20 @@ XmlValidator that will read the XSD's to use from a WSDL.</xs:documentation>
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="TransactionAttributesDeclaredAttributeGroup">
-    <xs:attribute name="transactionAttribute" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transactionAttributeNum" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Like &lt;code&gt;transactionAttribute&lt;/code&gt;, but the chosen option is represented with a number. The numbers mean:&lt;table&gt;&lt;tr&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;Required&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;Supports&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;Mandatory&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;RequiresNew&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;NotSupported&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;Never&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt; Default: 1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="transacted" type="frankBoolean" />
     <xs:attribute name="transactionTimeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="transactionAttribute">
+      <xs:simpleType>
+        <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.The pipeline uses this to start a new transaction or suspend the current one when required. For developers: it is equalto &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;. Possible values for transactionAttribute:  &lt;table border="1"&gt;    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt; 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;  &lt;/table&gt; Default: Supports</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:complexType name="WsdlXmlValidatorType">
@@ -10562,10 +10674,14 @@ XmlValidator that will read the XSD's to use from a WSDL.</xs:documentation>
         <xs:documentation>Only for json input: namespace of the resulting xml. Need only be specified when the namespace of root name is ambiguous in the schema</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="outputFormat" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default format of the result. Either 'xml' or 'json' Default: xml</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="outputFormat">
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>Default format of the result. Default: XML</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="outputFormatSessionKey" type="xs:string">
       <xs:annotation>
@@ -10574,7 +10690,7 @@ XmlValidator that will read the XSD's to use from a WSDL.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="inputFormatSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key to store the inputformat in, to be able to set the outputformat when autoForamat=true. Default: Json2XmlValidator.inputformat +&lt;name of the pipe&gt;</xs:documentation>
+        <xs:documentation>Session key to store the inputformat in, to be able to set the outputformat when autoFormat=true. Can also be used to pass the value of an HTTP Accept header, to obtain a properly formatted response Default: Json2XmlValidator.inputformat +&lt;name of the pipe&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="autoFormat" type="frankBoolean">
@@ -10885,8 +11001,7 @@ Extension to WsdlXmlValidator for API Management.</xs:documentation>
         <xs:annotation>
           <xs:documentation>EsbSoapOutputValidator - nl.nn.adapterframework.extensions.esb.EsbSoapValidator used as OutputValidator
 
-XmlValidator that will automatically add the SOAP envelope XSD and the ESB
- XSD (e.g.</xs:documentation>
+XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -11292,7 +11407,7 @@ Pipe to wrap or unwrap a message from/into a SOAP Envelope.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="addOutputNamespace" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>(only used when &lt;code&gt;direction=wrap&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;outputNamespace&lt;/code&gt; is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion') Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>(only used when &lt;code&gt;direction=wrap&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;outputNamespace&lt;/code&gt; is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion') Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="retrievePhysicalDestination" type="frankBoolean">
@@ -11336,7 +11451,7 @@ Pipe to wrap or unwrap a message from/into a SOAP Envelope.</xs:documentation>
   <xs:attributeGroup name="FxfWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="flowId" type="xs:string">
       <xs:annotation>
-        <xs:documentation>specifies the id of the transfer flow</xs:documentation>
+        <xs:documentation>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="flowOutFolder" type="xs:string">
@@ -11346,7 +11461,7 @@ Pipe to wrap or unwrap a message from/into a SOAP Envelope.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="transformFilename" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>when &lt;code&gt;true&lt;/code&gt; and direction=wrap, the folder the output folder &lt;code&gt;flowOutFolder&lt;/code&gt; will be constructed as &lt;code&gt;/opt/data/FXF/&amp;lt;instanceNameLowerCase&amp;gt;/&amp;lt;flowId&amp;gt;/out/&lt;/code&gt;  Default: true</xs:documentation>
+        <xs:documentation>when &lt;code&gt;true&lt;/code&gt; and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="soapBodySessionKey" type="xs:string" />
@@ -12611,7 +12726,7 @@ Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Se
         <xs:annotation>
           <xs:documentation>BlobLineIteratingPipe - nl.nn.adapterframework.jdbc.BlobLineIteratingPipe used as Pipe
 
-Pipe that iterates over the lines in a blob.</xs:documentation>
+Pipe that iterates over the lines in a BLOB.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12675,7 +12790,7 @@ Pipe for deleting files.</xs:documentation>
         <xs:annotation>
           <xs:documentation>ClobLineIteratingPipe - nl.nn.adapterframework.jdbc.ClobLineIteratingPipe used as Pipe
 
-Pipe that iterates over the lines in a clob.</xs:documentation>
+Pipe that iterates over the lines in a CLOB.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12691,7 +12806,7 @@ Pipe that iterates over the lines in a clob.</xs:documentation>
         <xs:annotation>
           <xs:documentation>CompareIntegerPipe - nl.nn.adapterframework.pipes.CompareIntegerPipe used as Pipe
 
-Pipe that compares the two integer values read from {@link Parameter the parameters} &lt;code&gt;operand1&lt;/code&gt; and &lt;code&gt;operand2&lt;/code&gt;.</xs:documentation>
+Pipe that compares the two integer values.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12881,8 +12996,7 @@ Returns simply the input message.</xs:documentation>
         <xs:annotation>
           <xs:documentation>EsbSoapValidatorPipe - nl.nn.adapterframework.extensions.esb.EsbSoapValidator used as Pipe
 
-XmlValidator that will automatically add the SOAP envelope XSD and the ESB
- XSD (e.g.</xs:documentation>
+XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12978,15 +13092,7 @@ Sends a message to a Sender for each line of the file that the input message ref
         <xs:annotation>
           <xs:documentation>FilePipe - nl.nn.adapterframework.pipes.FilePipe used as Pipe
 
-&lt;p&gt;See {@link FileHandler}&lt;/p&gt;
- 
- &lt;p&gt;&lt;b&gt;Exits:&lt;/b&gt;
- &lt;table border="1"&gt;
- &lt;tr&gt;&lt;th&gt;state&lt;/th&gt;&lt;th&gt;condition&lt;/th&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"success"&lt;/td&gt;&lt;td&gt;default&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"exception"&lt;/td&gt;&lt;td&gt;if an error occurred&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;
- &lt;/p&gt;</xs:documentation>
+&lt;p&gt;See {@link FileHandler}&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13398,14 +13504,7 @@ Transforms between ascii and an XML representation.</xs:documentation>
         <xs:annotation>
           <xs:documentation>LadybugPipe - nl.nn.ibistesttool.LadybugPipe used as Pipe
 
-Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
-
- &lt;p&gt;&lt;b&gt;Exits:&lt;/b&gt;
- &lt;table border="1"&gt;
- &lt;tr&gt;&lt;th&gt;state&lt;/th&gt;&lt;th&gt;condition&lt;/th&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"success"&lt;/td&gt;&lt;td&gt;no errors and all tests passed&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"failure"&lt;/td&gt;&lt;td&gt;errors or failed tests&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;</xs:documentation>
+Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13434,13 +13533,7 @@ Call Larva Test Tool
  &lt;tr&gt;&lt;td&gt;{@link #setWriteToSystemOut(boolean) writeToSystemOut}&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;false&lt;/td&gt;&lt;/tr&gt;
  &lt;tr&gt;&lt;td&gt;{@link #setTimeout(int) timeout}&lt;/td&gt;&lt;td&gt;the larva timeout&lt;/td&gt;30000&lt;/tr&gt;
  &lt;/table&gt;
- &lt;/p&gt;
- &lt;p&gt;&lt;b&gt;Exits:&lt;/b&gt;
- &lt;table border="1"&gt;
- &lt;tr&gt;&lt;th&gt;state&lt;/th&gt;&lt;th&gt;condition&lt;/th&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"success"&lt;/td&gt;&lt;td&gt;no errors and all scenarios passed&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;"fail"&lt;/td&gt;&lt;td&gt;errors or failed scenarios&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;</xs:documentation>
+ &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -13655,7 +13748,7 @@ Puts the input in the PipeLineSession, under the key specified by
         <xs:annotation>
           <xs:documentation>PutParametersInSessionPipe - nl.nn.adapterframework.pipes.PutParametersInSession used as Pipe
 
-Puts each parameter value in the PipeLineSession, under the key specified by the parameter name.</xs:documentation>
+Stores parameter values in the PipeLineSession.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14482,7 +14575,7 @@ Pipe that creates a ZipStream.</xs:documentation>
       <xs:simpleType>
         <xs:union memberTypes="DirectionAttributeValuesType variableRef">
           <xs:annotation>
-            <xs:documentation>Either &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; Default: encode</xs:documentation>
+            <xs:documentation>Either &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; Default: ENCODE</xs:documentation>
           </xs:annotation>
         </xs:union>
       </xs:simpleType>
@@ -14805,10 +14898,14 @@ Pipe that creates a ZipStream.</xs:documentation>
         <xs:documentation>name of the pipe</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="linkMethod" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. Default: correlationid</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="linkMethod">
+      <xs:simpleType>
+        <xs:union memberTypes="LinkMethodAttributeValuesType_2 variableRef">
+          <xs:annotation>
+            <xs:documentation>For asynchronous communication, the server side may either use the messageID or the correlationID in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener. Default: CORRELATIONID</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="correlationIDStyleSheet" type="xs:string">
       <xs:annotation>
@@ -14942,6 +15039,12 @@ Pipe that creates a ZipStream.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="LinkMethodAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[mM][eE][sS][sS][aA][gG][eE][iI][dD]" />
+      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="MessageSendingPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="MessageSendingPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeDeclaredAttributeGroup" />
@@ -15426,11 +15529,31 @@ Pipe that creates a ZipStream.</xs:documentation>
     <xs:attributeGroup ref="CoolGenWrapperPipeCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="CoolGenWrapperPipeDeclaredAttributeGroup">
-    <xs:attribute name="clientId" type="xs:string" />
-    <xs:attribute name="clientPassword" type="xs:string" />
-    <xs:attribute name="preProcStylesheetName" type="xs:string" />
-    <xs:attribute name="postProcStylesheetName" type="xs:string" />
-    <xs:attribute name="proxyInputSchema" type="xs:string" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>CICS userId of account perform operation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="clientPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password corresponding with userId</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="preProcStylesheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional URL of XSLT-stylesheet to apply to message before calling proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="postProcStylesheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional URL of XSLT-stylesheet to apply to result of proxy</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="proxyInputSchema" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional URL of XML-Schema of proxy input message. If specified it is used to validate the input message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="proxyClassName" type="xs:string" />
   </xs:attributeGroup>
   <xs:attributeGroup name="CoolGenWrapperPipeCumulativeAttributeGroup">
@@ -15777,10 +15900,14 @@ Pipe that creates a ZipStream.</xs:documentation>
     <xs:attributeGroup ref="FileSystemPipeCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="FileSystemPipeDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Possible values: list, info, read, readDelete, move, copy, delete, mkdir, rmdir, write, append, rename. If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="FileSystemActionAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>If parameter [action] is set, then the attribute action value will be overridden with the value of the parameter.</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
@@ -15819,7 +15946,7 @@ Pipe that creates a ZipStream.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="numberOfBackups" type="frankInt">
       <xs:annotation>
-        <xs:documentation>for action=write, and for action=append with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
+        <xs:documentation>for the actions write and append, with rotateSize&gt;0: the number of backup files that is kept. The inputFolder must point to the directory where the file resides Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="base64" type="xs:string">
@@ -15846,7 +15973,7 @@ Pipe that creates a ZipStream.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="writeLineSeparator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions write, and for action=append Default: false</xs:documentation>
+        <xs:documentation>If set to true then the system specific line separator will be appended to the file after executing the action. Works with actions write and append Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -16300,10 +16427,14 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
         <xs:documentation>Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef">
+          <xs:annotation>
+            <xs:documentation>&lt;ul&gt;&lt;li&gt;&lt;code&gt;string&lt;/code&gt;: renders the contents&lt;/li&gt;&lt;li&gt;&lt;code&gt;map&lt;/code&gt;: converts a Map&amp;lt;String, String&amp;gt; object to a xml-string (&amp;lt;items&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;item name='...'&amp;gt;...&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;)&lt;/li&gt;&lt;/ul&gt; Default: string</xs:documentation>
+          </xs:annotation>
+        </xs:union>
+      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="GetFromSessionCumulativeAttributeGroup">
@@ -17366,10 +17497,10 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
     <xs:attributeGroup ref="PdfPipeCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="PdfPipeDeclaredAttributeGroup">
-    <xs:attribute name="action" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>action to be processed by pdf pipe possible values:{combine, convert} Default: null</xs:documentation>
-      </xs:annotation>
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentActionAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="mainDocumentSessionKey" type="xs:string">
       <xs:annotation>
@@ -17390,7 +17521,7 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
     <xs:attribute name="unpackCommonFontsArchive" type="frankBoolean" />
     <xs:attribute name="charset" type="xs:string">
       <xs:annotation>
-        <xs:documentation>charset to be used to encode the given input string Default: UTF-8</xs:documentation>
+        <xs:documentation>charset to be used to decode the given input message in case the input is not binary but character stream Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="license" type="xs:string">
@@ -17409,6 +17540,12 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+  <xs:simpleType name="DocumentActionAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[cC][oO][nN][vV][eE][rR][tT]" />
+      <xs:pattern value="[cC][oO][mM][bB][iI][nN][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attributeGroup name="PdfPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PdfPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
@@ -17567,16 +17704,59 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
     <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
   </xs:complexType>
   <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
-    <xs:attribute name="rekenBoxName" type="xs:string" />
-    <xs:attribute name="runPath" type="xs:string" />
-    <xs:attribute name="templateDir" type="xs:string" />
-    <xs:attribute name="inputOutputDirectory" type="xs:string" />
-    <xs:attribute name="commandLineType" type="xs:string" />
-    <xs:attribute name="executableExtension" type="xs:string" />
-    <xs:attribute name="cleanup" type="frankBoolean" />
-    <xs:attribute name="rekenboxSessionKey" type="xs:string" />
-    <xs:attribute name="dataFilenamePrefix" type="xs:string" />
-    <xs:attribute name="maxRequestNumber" type="frankInt" />
+    <xs:attribute name="rekenBoxName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="runPath" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory on server where rekenbox-executable can be found</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="templateDir" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Rekenbox template directory on server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="inputOutputDirectory" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Directory on server where input and output files are (temporarily) stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="commandLineType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Format of commandline of rekenbox. Possible values
+ "straight": rekenbox is called like: rekenbox.exe inputFileName outputFileName templateDir
+ "switches": rekenbox is called like: rekenbox.exe /IinputFileName /UoutputFileName /PtemplateDir
+ "redirected": rekenbox is called like: rekenbox.exe inputFileName templateDir &gt; outputFileName; (This method has not been fully tested)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="executableExtension" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Extension of rekenbox-executable</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cleanup" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, input and output files are removed after the call to the rekenbox is finished</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rekenboxSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key in pipeLineSession to store rekenbox name in</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="dataFilenamePrefix" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>First part of filenames that communicate requests and replies to rekenbox</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxRequestNumber" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Maximal number that will be concatenated to dataFilenamePrefix</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="RekenBoxCallerCumulativeAttributeGroup">
     <xs:attributeGroup ref="RekenBoxCallerDeclaredAttributeGroup" />
@@ -18460,23 +18640,420 @@ A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listen
     <xs:attributeGroup ref="ZipWriterPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:simpleType name="JobDefFunctionsAttributeValuesType">
+  <xs:group name="JobElementGroup">
+    <xs:choice>
+      <xs:element name="Job">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="DirectoryCleaner" />
+              <xs:element ref="Locker" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attribute ref="active" />
+          <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.scheduler.job.Job" />
+          <xs:anyAttribute processContents="skip" />
+        </xs:complexType>
+      </xs:element>
+      <xs:group ref="JobElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="JobElementGroupBase">
+    <xs:choice>
+      <xs:element name="CheckReloadJob">
+        <xs:annotation>
+          <xs:documentation>CheckReloadJob - nl.nn.adapterframework.scheduler.job.CheckReloadJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CheckReloadJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CheckReloadJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CleanupDatabaseJob">
+        <xs:annotation>
+          <xs:documentation>CleanupDatabaseJob - nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CleanupDatabaseJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CleanupFileSystemJob">
+        <xs:annotation>
+          <xs:documentation>CleanupFileSystemJob - nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CleanupFileSystemJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DatabaseJob">
+        <xs:annotation>
+          <xs:documentation>DatabaseJob - nl.nn.adapterframework.scheduler.job.DatabaseJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DatabaseJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DatabaseJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DumpFullStatisticsJob">
+        <xs:annotation>
+          <xs:documentation>DumpFullStatisticsJob - nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DumpFullStatisticsJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DumpStatisticsJob">
+        <xs:annotation>
+          <xs:documentation>DumpStatisticsJob - nl.nn.adapterframework.scheduler.job.DumpStatisticsJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DumpStatisticsJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.DumpStatisticsJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ExecuteQueryJob">
+        <xs:annotation>
+          <xs:documentation>ExecuteQueryJob - nl.nn.adapterframework.scheduler.job.ExecuteQueryJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ExecuteQueryJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.ExecuteQueryJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="IbisActionJob">
+        <xs:annotation>
+          <xs:documentation>IbisActionJob - nl.nn.adapterframework.scheduler.job.IbisActionJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IbisActionJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.IbisActionJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="LoadDatabaseSchedulesJob">
+        <xs:annotation>
+          <xs:documentation>LoadDatabaseSchedulesJob - nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob used as Job
+
+1.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="LoadDatabaseSchedulesJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RecoverAdaptersJob">
+        <xs:annotation>
+          <xs:documentation>RecoverAdaptersJob - nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="RecoverAdaptersJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendMessageJob">
+        <xs:annotation>
+          <xs:documentation>SendMessageJob - nl.nn.adapterframework.scheduler.job.SendMessageJob used as Job</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SendMessageJobType">
+              <xs:attribute ref="active" />
+              <xs:attribute name="elementRole" type="xs:string" fixed="job" />
+              <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.SendMessageJob" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="CheckReloadJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="JobDefDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="Locker" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="JobDefDeclaredAttributeGroup">
+    <xs:attribute name="jobGroup" type="xs:string" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the job</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Optional) Description of the job</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cronExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>CRON expression that determines the frequency of execution.
+ Can &lt;code&gt;not&lt;/code&gt; be used in combination with Interval.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="interval" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Triggers the Job at the specified number of milliseconds. Keep cronExpression empty in order to use interval.
+ Value &lt;code&gt;0&lt;/code&gt; may be used to run once at startup of the application.
+ A value of 0 in combination with function 'sendMessage' will set dependencyTimeout on the IbisLocalSender to -1 to keep waiting indefinitely instead of 60 seconds for the adapter to start.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numThreads" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>the number of threads that may execute concurrently Default: 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageKeeperSize" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>number of message displayed in ibisconsole Default: 10</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JobDefCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JobDefDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CleanupDatabaseJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="CleanupDatabaseJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="CleanupDatabaseJobDeclaredAttributeGroup">
+    <xs:attribute name="queryTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CleanupDatabaseJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CleanupDatabaseJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CleanupFileSystemJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="CleanupFileSystemJobCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:group name="CleanupFileSystemJobDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element ref="DirectoryCleaner" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="CleanupFileSystemJobCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="CleanupFileSystemJobDeclaredChildGroup" />
+      <xs:group ref="JobDefDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="DatabaseJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="DatabaseJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="DatabaseJobDeclaredAttributeGroup">
+    <xs:attribute name="adapterName" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DatabaseJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DatabaseJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SendMessageJobCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SendMessageJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SendMessageJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="SendMessageJobDeclaredAttributeGroup">
+    <xs:attribute name="javaListener" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JavaListener to send the message to</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="receiverName" type="xs:string" />
+    <xs:attribute name="message" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>message to be send into the pipeline</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SendMessageJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SendMessageJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="DumpFullStatisticsJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="DumpStatisticsJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="ExecuteQueryJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="ExecuteQueryJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="ExecuteQueryJobDeclaredAttributeGroup">
+    <xs:attribute name="query" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The SQL query text to be executed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used Default: ${jdbc.datasource.default}</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="queryTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ExecuteQueryJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="ExecuteQueryJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="IbisActionJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="IbisActionJobCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
+    <xs:attribute name="action">
+      <xs:simpleType>
+        <xs:union memberTypes="ActionAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="configurationName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Configuration on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="adapterName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Adapter on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="receiverName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Receiver on which job operates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="ActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][tT][oO][pP][aA][dD][aA][pP][tT][eE][rR]" />
       <xs:pattern value="[sS][tT][aA][rR][tT][aA][dD][aA][pP][tT][eE][rR]" />
       <xs:pattern value="[sS][tT][oO][pP][rR][eE][cC][eE][iI][vV][eE][rR]" />
       <xs:pattern value="[sS][tT][aA][rR][tT][rR][eE][cC][eE][iI][vV][eE][rR]" />
-      <xs:pattern value="[sS][eE][nN][dD][mM][eE][sS][sS][aA][gG][eE]" />
-      <xs:pattern value="[eE][xX][eE][cC][uU][tT][eE][qQ][uU][eE][rR][yY]" />
-      <xs:pattern value="[dD][uU][mM][pP][sS][tT][aA][tT][iI][sS][tT][iI][cC][sS]" />
-      <xs:pattern value="[dD][uU][mM][pP][sS][tT][aA][tT][iI][sS][tT][iI][cC][sS][fF][uU][lL][lL]" />
-      <xs:pattern value="[cC][lL][eE][aA][nN][uU][pP][dD][aA][tT][aA][bB][aA][sS][eE]" />
-      <xs:pattern value="[cC][lL][eE][aA][nN][uU][pP][fF][iI][lL][eE][sS][yY][sS][tT][eE][mM]" />
-      <xs:pattern value="[rR][eE][cC][oO][vV][eE][rR][aA][dD][aA][pP][tT][eE][rR][sS]" />
-      <xs:pattern value="[cC][hH][eE][cC][kK][rR][eE][lL][oO][aA][dD]" />
-      <xs:pattern value="[lL][oO][aA][dD][dD][aA][tT][aA][bB][aA][sS][eE][sS][cC][hH][eE][dD][uU][lL][eE][sS]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attributeGroup name="IbisActionJobCumulativeAttributeGroup">
+    <xs:attributeGroup ref="IbisActionJobDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="LoadDatabaseSchedulesJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
+  <xs:complexType name="RecoverAdaptersJobType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JobDefDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
+  </xs:complexType>
   <xs:group name="StatisticsHandlerElementGroup">
     <xs:choice>
       <xs:element name="StatisticsHandler">

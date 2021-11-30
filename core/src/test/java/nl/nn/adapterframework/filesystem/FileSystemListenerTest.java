@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -20,6 +21,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.stream.Message;
@@ -194,6 +196,28 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	}
 
 	@Test
+	public void fileListenerTestMoveToInProcessMustFailIfFileAlreadyExistsInInProcessFolder() throws Exception {
+		String inProcessFolder = "inProcessFolder";
+		String filename="rawMessageFile";
+		_createFolder(inProcessFolder);
+		waitForActionToFinish();
+		createFile(null, filename, "fakeNewFileContents");
+		createFile(inProcessFolder, filename, "fakeExistingFileContents");
+		waitForActionToFinish();
+		
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+inProcessFolder);
+		fileSystemListener.configure();
+		fileSystemListener.open();
+		
+		assertThrows(ListenerException.class, ()-> {
+			F rawMessage=fileSystemListener.getRawMessage(threadContext);
+			fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test");
+			assertNull(rawMessage);
+		});
+	}
+
+	@Test
 	public void fileListenerTestGetRawMessageWithInProcessTimeSensitive() throws Exception {
 		String folderName = "inProcessFolder";
 
@@ -339,7 +363,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
 		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
-		
+
 		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
 		
 		

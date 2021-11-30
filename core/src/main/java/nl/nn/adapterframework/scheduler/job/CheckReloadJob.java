@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class CheckReloadJob extends JobDef {
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
 
 	@Override
 	public void execute(IbisManager ibisManager) {
@@ -81,7 +81,7 @@ public class CheckReloadJob extends JobDef {
 				}
 			}
 		} catch (Exception e) {
-			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
+			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
 		} finally {
 			qs.close();
 		}
@@ -96,7 +96,7 @@ public class CheckReloadJob extends JobDef {
 			// load new (activated) configs
 			List<String> dbConfigNames = null;
 			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), true);
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext());
 			} catch (ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}

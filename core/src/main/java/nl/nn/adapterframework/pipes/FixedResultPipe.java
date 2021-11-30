@@ -56,6 +56,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * 
  * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
+ *
+ * @ff.forward filenotfound the configured file was not found
+ *
  * 
  * @author Johan Verrips
  */
@@ -152,8 +155,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String replaceFrom;
 				if (isReplaceFixedParams()) {
 					replaceFrom=pv.getDefinition().getName();
@@ -164,7 +166,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
+		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}

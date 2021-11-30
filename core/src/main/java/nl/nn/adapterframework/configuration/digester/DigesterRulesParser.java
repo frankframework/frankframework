@@ -31,6 +31,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
+/**
+ * @author Niels Meijer
+ */
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;

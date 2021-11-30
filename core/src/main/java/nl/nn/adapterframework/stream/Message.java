@@ -48,6 +48,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -147,7 +148,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * @Deprecated Please avoid the use of the raw object.
+	 * @deprecated Please avoid the use of the raw object.
 	 */
 	@Deprecated
 	public Object asObject() {
@@ -175,7 +176,7 @@ public class Message implements Serializable {
 	 */
 	public void close() throws Exception {
 		try {
-			if (request instanceof InputStream || request instanceof Reader) {
+			if (request instanceof AutoCloseable) {
 				((AutoCloseable)request).close();
 				request = null;
 			}
@@ -199,7 +200,11 @@ public class Message implements Serializable {
 		resourcesToClose.add(resource);
 	}
 	
-	public void closeOnCloseOf(PipeLineSession session) {
+	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
+		closeOnCloseOf(session, ClassUtils.nameOf(requester));
+	}
+	
+	public void closeOnCloseOf(PipeLineSession session, String requester) {
 		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
@@ -216,7 +221,7 @@ public class Message implements Serializable {
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
-		session.scheduleCloseOnSessionExit(this);
+		session.scheduleCloseOnSessionExit(this, request.toString()+" requested by "+requester);
 	}
 	
 	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
