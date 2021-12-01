@@ -35,7 +35,7 @@ public class JobFactory extends GenericFactory {
 	public Object createObject(Map<String, String> attrs) throws Exception {
 		String className = attrs.get("className");
 		if(StringUtils.isEmpty(className) || className.equals(Job.class.getCanonicalName())) { //Default empty, filled when using new pre-parsing
-			String function = attrs.remove("function");
+			String function = attrs.get("function");
 			if(StringUtils.isEmpty(function)) {
 				throw new IllegalArgumentException("function may not be empty");
 			}

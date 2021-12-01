@@ -35,6 +35,8 @@ import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
@@ -132,6 +134,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			if(StringUtils.isNotEmpty(name)) {
 				BeanUtils.setProperty(top, "name", name);
 			}
+		}
+		if(top instanceof IJob && !(top instanceof Job)) {
+			map.remove("function");
 		}
 
 		handleBean();
