@@ -42,10 +42,4 @@
 	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
 <!-- 	<bean name="applicationEventMulticaster" class="nl.nn.adapterframework.lifecycle.FrankEventMulticaster" /> -->
 
-<!-- 	<bean -->
-<!-- 		name="proto-statisticsHandlers" -->
-<!-- 		class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection" -->
-<!-- 		autowire="byName" -->
-<!-- 		scope="prototype" -->
-<!-- 	/> -->
 </beans>

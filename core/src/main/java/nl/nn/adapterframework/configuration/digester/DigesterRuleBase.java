@@ -135,6 +135,9 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 				BeanUtils.setProperty(top, "name", name);
 			}
 		}
+
+		//Unfortunately since we are directly instantiating the correct job, functions are no longer required by the digesters attribute handler.
+		//They are however still required for the JobFactory to determine the correct job class. This avoids ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job)) {
 			map.remove("function");
 		}
