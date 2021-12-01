@@ -165,7 +165,6 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 		if (className == null) { //See if a bean class has been defined
 			String beanName = getSuggestedBeanName();
-			System.out.println("getBean [" + beanName + "]");
 			if (!isPrototypesOnly() && !applicationContext.isSingleton(beanName)) {
 				throw new IllegalStateException("bean ["+beanName+"] must be of type singleton");
 			}
