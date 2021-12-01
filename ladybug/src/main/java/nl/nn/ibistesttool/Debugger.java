@@ -164,6 +164,11 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
+	public void cancelThread(Object sourceObject, String threadId, String correlationId) {
+		testTool.close(correlationId, threadId); 
+	}
+
+	@Override
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input) {
 		return testTool.threadStartpoint(correlationId, threadId, sourceObject.getClass().getName(), getCheckpointNameForThread(), input);
 	}

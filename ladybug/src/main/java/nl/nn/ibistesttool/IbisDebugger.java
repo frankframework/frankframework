@@ -49,6 +49,7 @@ public interface IbisDebugger {
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable);
 
 	public void createThread(Object sourceObject, String threadId, String correlationId);
+	public void cancelThread(Object sourceObject, String threadId, String correlationId);
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input);
 	public Object endThread(Object sourceObject, String correlationId, Object output);
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable);

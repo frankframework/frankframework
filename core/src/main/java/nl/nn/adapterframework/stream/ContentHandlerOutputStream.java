@@ -85,6 +85,12 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 			}
 		} catch (InterruptedException e) {
 			log.warn("thread interrupted", e);
+		} finally {
+			try {
+				threadConnector.close();
+			} catch (Exception e) {
+				throw new IOException("Cannot close ThreadConnector", e);
+			}
 		}
 	}
 

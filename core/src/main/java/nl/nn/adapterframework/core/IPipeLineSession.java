@@ -15,12 +15,6 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
 import java.security.Principal;
 import java.util.Map;
 
@@ -79,7 +73,7 @@ public interface IPipeLineSession extends Map<String,Object>, AutoCloseable {
 
 	
 	public void scheduleCloseOnSessionExit(Message message);
-	public void scheduleCloseOnSessionExit(Writer writer);
+	public void scheduleCloseOnSessionExit(AutoCloseable writer);
 	public boolean isScheduledForCloseOnExit(Message message);
 	public void unscheduleCloseOnSessionExit(Message message);
 	
