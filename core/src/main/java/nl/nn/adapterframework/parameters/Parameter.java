@@ -23,7 +23,6 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -109,8 +108,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
 
-	private List<ParameterType> typeConversionExclusionList = Arrays.asList(ParameterType.STRING, ParameterType.XML, ParameterType.BINARY, ParameterType.BYTES, ParameterType.INPUTSTREAM, ParameterType.LIST, ParameterType.MAP);
-
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
@@ -158,40 +155,40 @@ public class Parameter implements IConfigurable, IWithParameters {
 		 * that can be used as such when passed as xslt-parameter (only for XSLT 1.0).
 		 * Please note that the nodeset may contain multiple nodes, without a common root node.
 		 * N.B. The result is the set of children of what you might expect it to be... */
-		NODE,
+		NODE(true),
 
 		/** Renders XML as a DOM document; similar to <code>node</code>
 			with the distinction that there is always a common root node (required for XSLT 2.0) */
-		DOMDOC,
+		DOMDOC(true),
 
 		/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>.
 		 * When applied as a JDBC parameter, the method setDate() is used */
-		DATE,
+		DATE(true),
 
 		/** Converts the result to a Date, by default using formatString <code>HH:mm:ss</code>.
 		 * When applied as a JDBC parameter, the method setTime() is used */
-		TIME,
+		TIME(true),
 
 		/** Converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>.
 		 * When applied as a JDBC parameter, the method setTimestamp() is used */
-		DATETIME,
+		DATETIME(true),
 
 		/** Similar to <code>DATETIME</code>, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
-		TIMESTAMP,
+		TIMESTAMP(true),
 
 		/** Converts the result from a XML formatted dateTime to a Date.
 		 * When applied as a JDBC parameter, the method setTimestamp() is used */
-		XMLDATETIME,
+		XMLDATETIME(true),
 
 		/** Converts the result to a Number, using decimalSeparator and groupingSeparator.
 		 * When applied as a JDBC parameter, the method setDouble() is used */
-		NUMBER,
+		NUMBER(true),
 
 		/** Converts the result to an Integer */
-		INTEGER,
+		INTEGER(true),
 
 		/** Converts the result to a Boolean */
-		BOOLEAN,
+		BOOLEAN(true),
 
 		/** Only applicable as a JDBC parameter, the method setBinaryStream() is used */
 		@ConfigurationWarning("use type [BINARY] instead")
@@ -209,6 +206,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 		/** Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		MAP;
+
+		public boolean requiresTypeConversion=false;
+
+		private ParameterType() {}
+
+		private ParameterType(boolean requiresTypeConverion) {
+			this.requiresTypeConversion = requiresTypeConverion;
+		}
 
 	}
 
@@ -493,7 +498,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		if(result !=null && !typeConversionExclusionList.contains(getType())) {
+		if(result !=null && getType().requiresTypeConversion) {
 			result = getTypeValue(result, namespaceAware);
 		}
 		if (result !=null) {
