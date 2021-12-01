@@ -22,6 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Getter;
@@ -34,11 +35,12 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFactoryAware {
+public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, BeanFactoryAware {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 	
 	private @Setter BeanFactory beanFactory;
 	private @Setter @Getter String realTxManagerBeanName;
+	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
 	private PlatformTransactionManager realTxManager;
 
 	private boolean trace=false;
@@ -92,5 +94,34 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 		return realTxManager;
 	}
 
+	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
+		if (threadConnectableProxy==null) {
+			PlatformTransactionManager realTxManager = getRealTxManager();
+			if (realTxManager instanceof IThreadConnectableTransactionManager) {
+				threadConnectableProxy = (IThreadConnectableTransactionManager)realTxManager;
+			} else if (realTxManager instanceof JtaTransactionManager) {
+				threadConnectableProxy = new ThreadConnectableJtaTransactionManager((JtaTransactionManager)realTxManager);
+			} else {
+				throw new IllegalStateException("Don't know how to make ["+realTxManager.getClass().getTypeName()+"] thread connectable");
+			}
+		}
+		return threadConnectableProxy;
+	}
+	
+	@Override
+	public Object getCurrentTransaction() throws TransactionException {
+		return getThreadConnectableProxy().getCurrentTransaction();
+	}
 
+	@Override
+	public Object suspendTransaction(Object transaction) {
+		return getThreadConnectableProxy().suspendTransaction(transaction);
+	}
+
+	@Override
+	public void resumeTransaction(Object transaction, Object resources) {
+		getThreadConnectableProxy().resumeTransaction(transaction, resources);	
+	}
+
+	
 }

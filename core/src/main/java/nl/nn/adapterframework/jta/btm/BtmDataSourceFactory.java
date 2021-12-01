@@ -42,6 +42,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 	}
 
 	@Override
+	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
 	public void destroy() throws Exception {
 		objects.values().stream().filter(ds -> ds instanceof PoolingDataSource).forEach(ds -> ((PoolingDataSource)ds).close());
 	}

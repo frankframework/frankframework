@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -18,6 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import bitronix.tm.resource.jdbc.PoolingDataSource;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -27,6 +29,7 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -36,8 +39,10 @@ public abstract class JdbcTestBase {
 	private final static String IBISSTORE_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
+	protected static TransactionManagerType transactionManagerType = TransactionManagerType.BTM;
+	
 	protected Liquibase liquibase;
-	protected static URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
+	protected static URLDataSourceFactory dataSourceFactory = createDataSourceFactory(transactionManagerType);
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
 
@@ -52,12 +57,26 @@ public abstract class JdbcTestBase {
 		return dataSourceFactory.getAvailableDataSources();
 	}
 
+	public enum TransactionManagerType {
+		DATASOURCE, BTM, NARAYANA
+	}
+	
 	@Before
 	public void setup() throws Exception {
-		if(dataSource instanceof DriverManagerDataSource) {
-			Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
-			productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
-			testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		switch (transactionManagerType) {
+			case DATASOURCE:
+				Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
+				productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+				testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+				break;
+			case BTM:
+				productKey = ((PoolingDataSource)dataSource).getUniqueName();
+				break;
+			case NARAYANA:
+				//return new NarayanaXADataSourceFactory();
+				throw new NotImplementedException("Narayana DataSource wrapper not yet implemented");
+			default:
+				throw new IllegalArgumentException("Don't know how to setup() for transactionManagerType ["+transactionManagerType+"]");
 		}
 
 		connection = dataSource.getConnection();
@@ -72,6 +91,21 @@ public abstract class JdbcTestBase {
 	public void teardown() throws Exception {
 		if(liquibase != null) {
 			liquibase.dropAll();
+		}
+		dataSourceFactory.destroy();
+	}
+	
+	public static URLDataSourceFactory createDataSourceFactory(TransactionManagerType transactionManagerType) {
+		switch (transactionManagerType) {
+		case DATASOURCE:
+			return new URLDataSourceFactory();
+		case BTM:
+			return new BTMXADataSourceFactory();
+		case NARAYANA:
+			//return new NarayanaXADataSourceFactory();
+			throw new NotImplementedException("NarayanaXADataSourceFactory not yet implemented");
+		default:
+			throw new IllegalArgumentException("Don't know how to create DataSourceFactory for transactionManagerType ["+transactionManagerType+"]");
 		}
 	}
 	
@@ -112,19 +146,20 @@ public abstract class JdbcTestBase {
 
 	@AfterClass
 	public static void stopDatabase() throws Exception {
-		try {
-			IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
-			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-				connection.createStatement().execute("DROP TABLE TEMP");
+		if (!connection.isClosed()) {
+			try {
+				IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
+				if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+					connection.createStatement().execute("DROP TABLE TEMP");
+				}
+			} finally {
+				connection.close();
 			}
-		} finally {
-			connection.close();
 		}
 	}
 	
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
-		
 	}
 	
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
@@ -134,9 +169,8 @@ public abstract class JdbcTestBase {
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
 				return  connection.prepareStatement(context.getQuery());
-			} else {
-				return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-			}
+			} 
+			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}	
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;

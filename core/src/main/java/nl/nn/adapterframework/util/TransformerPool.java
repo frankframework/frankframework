@@ -51,15 +51,13 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 import nl.nn.adapterframework.xml.NonResolvingURIResolver;
 import nl.nn.adapterframework.xml.TransformerFilter;
@@ -539,8 +537,8 @@ public class TransformerPool {
 	}
 
 	
-	public TransformerFilter getTransformerFilter(INamedObject owner, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) throws TransformerConfigurationException {
-		return new TransformerFilter(owner, getTransformerHandler(), threadLifeCycleEventListener, session, expectChildThreads, handler);
+	public TransformerFilter getTransformerFilter(ThreadConnector threadConnector, ContentHandler handler) throws TransformerConfigurationException {
+		return new TransformerFilter(threadConnector, getTransformerHandler(), handler);
 	}
 	
 	public static List<String> getTransformerPoolsKeys() {
