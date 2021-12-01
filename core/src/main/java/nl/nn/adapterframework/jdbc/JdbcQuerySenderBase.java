@@ -685,7 +685,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
 						@Override
 						public void afterClose() throws SQLException {
-							connection.close();
+							if (!connection.isClosed()) {
+								connection.close();
+							}
 							log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
 						}
 					};
@@ -701,7 +703,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
 						@Override
 						public void afterClose() throws SQLException {
-							connection.close();
+							if (!connection.isClosed()) {
+								connection.close();
+							}
 							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
 						}
 					};
