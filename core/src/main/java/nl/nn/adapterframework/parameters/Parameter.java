@@ -533,7 +533,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if(requestObject instanceof Node) {
 							return requestObject;
 						}
-						result=XmlUtils.buildNode(request.asString(), namespaceAware);
+						result=XmlUtils.buildDomDocument(request.asReader(), namespaceAware).getDocumentElement();
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
@@ -548,7 +548,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if(requestObject instanceof Document) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asString() ,namespaceAware);
+						result=XmlUtils.buildDomDocument(request.asReader(), namespaceAware);
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
@@ -574,15 +574,16 @@ public class Parameter implements IConfigurable, IWithParameters {
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+					String stringRequest = request.asString();
 					try {
-						Number n = decimalFormat.parse(request.asString());
+						Number n = decimalFormat.parse(stringRequest);
 						result = n;
 					} catch (ParseException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 					}
-					if (getMinLength()>=0 && request.asString().length()<getMinLength()) {
+					if (getMinLength()>=0 && stringRequest.length()<getMinLength()) {
 						log.debug("Adding leading zeros to parameter ["+getName()+"]" );
-						result = StringUtils.leftPad(request.asString(), getMinLength(), '0');
+						result = StringUtils.leftPad(stringRequest, getMinLength(), '0');
 					}
 					break;
 				case INTEGER:
