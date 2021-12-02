@@ -27,6 +27,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -488,7 +489,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return statsKeeper;
 	}
 
-	/** @ff.noAttribute */
+	@ProtectedAttribute
 	public void setFunction(Object ignoreMe) {
 		//Dummy method to avoid 'does not have an attribute [function] to set to value [dumpStatistics]' warnings
 	}
