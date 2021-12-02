@@ -559,50 +559,29 @@ public class XmlUtils {
 		}
 		return xmlReader;
 	}
-	
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware)
-		throws DomBuilderException {
-			return buildDomDocument(in, namespaceAware, false);
-		}
+	public static Document buildDomDocument(Reader in, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(in, namespaceAware, false);
+	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static Document buildDomDocument(InputSource src, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(src, namespaceAware, false);
+	}
+
+	public static Document buildDomDocument(InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		Document document;
-		InputSource src;
-
 		try {
-//			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-////				Sax2Dom sax2dom = new Sax2Dom();
-////				XMLReader reader=getXMLReader(namespaceAware, resolveExternalEntities);
-////				reader.setContentHandler(sax2dom);
-////				reader.setDTDHandler(sax2dom);
-////				reader.setErrorHandler(sax2dom);
-////				InputSource source = new InputSource(in);
-////				reader.parse(source);
-////				return sax2dom.getDOM();
-//				TransformerPool tp = getRemoveNamespacesTransformerPool(false, false);
-//				Source source = new StreamSource(in);
-//				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-//				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//				DocumentBuilder builder = factory.newDocumentBuilder();
-//				document=builder.newDocument();
-//				Result result = new DOMResult(document);
-//				tp.transform(source, result, null);
-//				
-//			} else {
-				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-				DocumentBuilder builder = factory.newDocumentBuilder();
-					if (!resolveExternalEntities) {
-						builder.setEntityResolver(new NonResolvingExternalEntityResolver());
-					}
-					src = new InputSource(in);
-					document = builder.parse(src);
-//			}
+			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			if (!resolveExternalEntities) {
+				builder.setEntityResolver(new NonResolvingExternalEntityResolver());
+			}
+			document = builder.parse(src);
 		} catch (SAXParseException e) {
 			throw new DomBuilderException(e);
 		} catch (ParserConfigurationException e) {
@@ -611,16 +590,16 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		} catch (SAXException e) {
 			throw new DomBuilderException(e);
-//		} catch (ConfigurationException e) {
-//			throw new DomBuilderException(e);
-//		} catch (TransformerException e) {
-//			throw new DomBuilderException(e);
 		}
 		if (document == null) {
 			throw new DomBuilderException("Parsed Document is null");
 		}
 		return document;
 	}
+	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		return buildDomDocument(new InputSource(in), namespaceAware, resolveExternalEntities);
+	}
+
 	/**
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)

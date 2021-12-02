@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Rule;
@@ -255,6 +257,34 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testParameterMap() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("map");
+		p.setSessionKey("sessionKey");
+		p.setXpathExpression("items/item");
+		p.setType(ParameterType.MAP);
+		p.configure();
+
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("item", "value");
+		map.put("item2", "value2");
+		map.put("item3", "value3");
+		map.put("item4", "value4");
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey", map);
+		
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof String);
+
+		String stringResult = Message.asMessage(result).asString();
+		assertEquals("value value2 value4 value3", stringResult);
+	}
+
+	@Test
 	public void testParameterNumberParseException() throws Exception {
 		Parameter p = new Parameter();
 		p.setName("number");
@@ -325,6 +355,95 @@ public class ParameterTest {
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
 		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
 
+	}
+
+	@Test
+	public void testNumberWithLeftPadding() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("8");
+		p.setMinLength(10);
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue("Expecting to be String but was:"+result.getClass(), result instanceof String);
+		assertEquals("0000000008", (String) result);
+	}
+
+	@Test
+	public void testNumberWithLeftPaddingAndMinExclusive() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("3");
+		p.setMinLength(10);
+		p.setMinInclusive("5");
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("0000000005", (String) result);
+	}
+	
+	@Test
+	public void testNumberWithLeftPaddingAndMaxExclusive() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("8");
+		p.setMinLength(10);
+		p.setMaxInclusive("5");
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("0000000005", (String) result);
+	}
+	
+	@Test
+	public void testNumberWithLeftPaddingAndMaxExclusiveNotExceeding() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("3");
+		p.setMinLength(10);
+		p.setMaxInclusive("5");
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("0000000003", (String) result);
+	}
+
+	@Test
+	public void testNumberWithLeftPaddingAndMinExclusiveNotExceeding() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setValue("5");
+		p.setMinLength(10);
+		p.setMinInclusive("3");
+		p.setType(ParameterType.NUMBER);
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertTrue(result instanceof String);
+		assertEquals("0000000005", (String) result);
 	}
 
 	@Test

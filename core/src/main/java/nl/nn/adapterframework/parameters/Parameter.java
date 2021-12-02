@@ -201,10 +201,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		/** Forces the parameter value to be treated as binary data (eg. when using a SQL BLOB field). */
 		BINARY,
 
-		/** Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		/** (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		LIST,
 
-		/** Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		MAP;
 
 		public boolean requiresTypeConversion=false;
@@ -374,6 +374,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
 					String sourceString;
 					Object sourceObject = session.get(requestedSessionKey);
+					// larva can produce the sourceObject as list or map
 					if (getType()==ParameterType.LIST	&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
@@ -501,7 +502,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if(result !=null && getType().requiresTypeConversion) {
 			result = getTypeValue(result, namespaceAware);
 		}
-		if (result !=null) {
+		if (result !=null && result instanceof Number) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
 				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusiveString()+"]" );
 				result = minInclusive;
@@ -511,7 +512,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 				result = maxInclusive;
 			}
 		}
-		
+		if (getType()==ParameterType.NUMBER && getMinLength()>=0 && (result+"").length()<getMinLength()) {
+			log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+			result = StringUtils.leftPad(result+"", getMinLength(), '0');
+		}
 		return result; 
 	}
 
@@ -533,7 +537,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if(requestObject instanceof Node) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asReader(), namespaceAware).getDocumentElement();
+						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware).getDocumentElement();
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
@@ -548,7 +552,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if(requestObject instanceof Document) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asReader(), namespaceAware);
+						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware);
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
@@ -574,16 +578,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
-					String stringRequest = request.asString();
 					try {
-						Number n = decimalFormat.parse(stringRequest);
+						Number n = decimalFormat.parse(request.asString());
 						result = n;
 					} catch (ParseException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-					}
-					if (getMinLength()>=0 && stringRequest.length()<getMinLength()) {
-						log.debug("Adding leading zeros to parameter ["+getName()+"]" );
-						result = StringUtils.leftPad(stringRequest, getMinLength(), '0');
 					}
 					break;
 				case INTEGER:
