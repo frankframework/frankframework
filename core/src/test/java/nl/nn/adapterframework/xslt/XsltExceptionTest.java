@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -34,22 +36,23 @@ public class XsltExceptionTest {
 				super.startElement(uri, localName, qName, atts);
 			}
 		};
-		
-		TransformerFilter transformer = tp.getTransformerFilter(null, null, null, expectChildThreads, filter);
-		
-		try {
-			try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer)) {
-				seb.addElement("elem");
-				seb.addElement("error");
-				for(int i=0; i<tailCount; i++) {
+		try (ThreadConnector threadConnector = expectChildThreads ? new ThreadConnector(null, null, null, (PipeLineSession)null) : null) {
+			TransformerFilter transformer = tp.getTransformerFilter(threadConnector, filter);
+			
+			try {
+				try (SaxDocumentBuilder seb = new SaxDocumentBuilder("root", transformer)) {
 					seb.addElement("elem");
+					seb.addElement("error");
+					for(int i=0; i<tailCount; i++) {
+						seb.addElement("elem");
+					}
 				}
+				fail("Expected exception to be caught while processing");
+			} catch (Exception e) {
+				System.out.println("Expected exception: "+e.getMessage());
 			}
-			fail("Expected exception");
-		} catch (Exception e) {
-			System.out.println("Expected exception: "+e.getMessage());
+			System.out.println(writer);
 		}
-		System.out.println(writer);
 	}
 	
 	@Test

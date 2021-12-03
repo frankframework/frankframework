@@ -53,6 +53,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
+import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -553,24 +554,23 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 			return new PipeRunResult(null, new Message(result));
-		} else {
-			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-				// Create XML and give the maxlength as a parameter
-				DB2XMLWriter db2xml = new DB2XMLWriter();
-				db2xml.setNullValue(getNullValue());
-				db2xml.setTrimSpaces(isTrimSpaces());
-				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
-				db2xml.setDecompressBlobs(isBlobsCompressed());
-				db2xml.setGetBlobSmart(isBlobSmartGet());
-				ContentHandler handler = target.asContentHandler();
-				if (isPrettyPrint()) {
-					handler = new PrettyPrintFilter(handler);
-				}
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
-				return target.getPipeRunResult();
-			} catch (Exception e) {
-				throw new JdbcException(e);
+		}
+		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+			// Create XML and give the maxlength as a parameter
+			DB2XMLWriter db2xml = new DB2XMLWriter();
+			db2xml.setNullValue(getNullValue());
+			db2xml.setTrimSpaces(isTrimSpaces());
+			if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+			db2xml.setDecompressBlobs(isBlobsCompressed());
+			db2xml.setGetBlobSmart(isBlobSmartGet());
+			ContentHandler handler = target.asContentHandler();
+			if (isPrettyPrint()) {
+				handler = new PrettyPrintFilter(handler);
 			}
+			db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
+			return target.getPipeRunResult();
+		} catch (Exception e) {
+			throw new JdbcException(e);
 		}
 	}
 	
@@ -660,43 +660,61 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		final Connection connection;
-		QueryExecutionContext queryExecutionContext;
-		try {
-			connection = getConnectionWithTimeout(getTimeout());
-			queryExecutionContext = getQueryExecutionContext(connection, null, session);
-		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
-			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-		}
-		try {
-			PreparedStatement statement=queryExecutionContext.getStatement();
-			if (queryExecutionContext.getParameterList() != null) {
-				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+		return TransactionConnectorCoordinator.doInUnsuspendedTransationContext(()-> {
+			final Connection connection;
+			QueryExecutionContext queryExecutionContext;
+			try {
+				connection = getConnectionWithTimeout(getTimeout());
+				queryExecutionContext = getQueryExecutionContext(connection, null, session);
+			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
+				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
-			if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
-				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-				return new MessageOutputStream(this, blobOutputStream, next) {
-					@Override
-					public void afterClose() throws SQLException {
+			try {
+				PreparedStatement statement=queryExecutionContext.getStatement();
+				if (queryExecutionContext.getParameterList() != null) {
+					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+				}
+				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
+					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
+						blobOutputStream.close(); 
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-					}
-				};
-			}
-			if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
-				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
-				return new MessageOutputStream(this, clobWriter, next) {
-					@Override
-					public void afterClose() throws SQLException {
+					});
+					return new MessageOutputStream(this, blobOutputStream, next) {
+						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
+						@Override
+						public void afterClose() throws SQLException {
+							if (!connection.isClosed()) {
+								connection.close();
+							}
+							log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
+						}
+					};
+				}
+				if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
+					ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
+						clobWriter.close();
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-					}
-				};
-			} 
-			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-		} catch (JdbcException | SQLException | IOException | ParameterException e) {
-			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-		}
+					});
+					return new MessageOutputStream(this, clobWriter, next) {
+						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
+						@Override
+						public void afterClose() throws SQLException {
+							if (!connection.isClosed()) {
+								connection.close();
+							}
+							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
+						}
+					};
+				} 
+				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			} catch (JdbcException | SQLException | IOException | ParameterException e) {
+				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
+			}
+		});
 	}
 
 	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{

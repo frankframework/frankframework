@@ -1087,7 +1087,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return xhtml;
 	}
 
-	@IbisDoc({"66", ">(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
