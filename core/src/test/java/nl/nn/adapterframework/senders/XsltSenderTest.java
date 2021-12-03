@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
@@ -81,7 +82,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	@Test
 	public void testComplexXslt1Xpath() throws SenderException, TimeOutException, ConfigurationException, IOException {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
-		sender.setOutputType("txt");
+		sender.setOutputType(OutputType.TEXT);
 		sender.setXsltVersion(1);
 		sender.configure();
 		sender.open();

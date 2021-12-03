@@ -50,7 +50,9 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
@@ -68,22 +70,23 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
-	public final String DEFAULT_OUTPUT_METHOD="xml";
+	public final OutputType DEFAULT_OUTPUT_METHOD=OutputType.XML;
+	public final OutputType DEFAULT_XPATH_OUTPUT_METHOD=OutputType.TEXT;
 	public final boolean DEFAULT_INDENT=false; // some existing ibises expect default for indent to be false 
 	public final boolean DEFAULT_OMIT_XML_DECLARATION=false; 
 	
-	private String styleSheetName;
-	private String styleSheetNameSessionKey=null;
-	private String xpathExpression=null;
-	private String namespaceDefs = null; 
-	private String outputType=null;
-	private Boolean omitXmlDeclaration;
-	private Boolean indentXml=null; 
-	private boolean removeNamespaces=false;
-	private boolean skipEmptyTags=false;
-	private int xsltVersion=0; // set to 0 for auto detect.
-	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	private boolean debugInput = false;
+	private @Getter String styleSheetName;
+	private @Getter String styleSheetNameSessionKey=null;
+	private @Getter String xpathExpression=null;
+	private @Getter String namespaceDefs = null; 
+	private @Getter OutputType outputType=null;
+	private @Getter Boolean omitXmlDeclaration;
+	private @Getter Boolean indentXml=null; 
+	private @Getter boolean removeNamespaces=false;
+	private @Getter boolean skipEmptyTags=false;
+	private @Getter int xsltVersion=0; // set to 0 for auto detect.
+	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private @Getter boolean debugInput = false;
 	
 	private TransformerPool transformerPool;
 	
@@ -107,7 +110,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap(transformerPoolMapSize));
 		
 		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
-			setOutputType("text");
+			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
 		}
 		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			Boolean omitXmlDeclaration = getOmitXmlDeclaration();
@@ -205,13 +208,16 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				}
 			}
 			
-			String outputType = getOutputType();
+			OutputType outputType = getOutputType();
 			if (log.isTraceEnabled()) log.trace("Configured outputmethod ["+outputType+"]");
-			if (StringUtils.isEmpty(outputType)) {
-				outputType = poolToUse.getOutputMethod();
-				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+outputType+"]");
+			if (outputType == null) {
+				String parsedOutputType = poolToUse.getOutputMethod();
+				if (StringUtils.isNotEmpty(parsedOutputType)) {
+					outputType = EnumUtils.parse(OutputType.class, parsedOutputType);
+				}
+				if (log.isTraceEnabled()) log.trace("Detected outputmethod ["+parsedOutputType+"]");
 			}
-			if (StringUtils.isEmpty(outputType)) {
+			if (outputType == null) {
 				outputType = DEFAULT_OUTPUT_METHOD;
 				if (log.isTraceEnabled()) log.trace("Default outputmethod ["+outputType+"]");
 			}
@@ -235,7 +241,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			} else {
 				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
 				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration ["+omitXmlDeclaration+"]");
-				if ("xml".equals(outputType)) {
+				if (outputType == OutputType.XML) {
 					if (omitXmlDeclaration==null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
 						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration ["+omitXmlDeclaration+"]");
@@ -323,104 +329,65 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
-	public String getStyleSheetName() {
-		return styleSheetName;
-	}
 
 	@IbisDoc({"2", "Session key to retrieve stylesheet location. Overrides stylesheetName or xpathExpression attribute", ""})
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		styleSheetNameSessionKey = newSessionKey;
-	}
-	public String getStyleSheetNameSessionKey() {
-		return styleSheetNameSessionKey;
 	}
 
 	@IbisDoc({"3", "Size of cache of stylesheets retrieved from styleSheetNameSessionKey", "100"})
 	public void setStyleSheetCacheSize(int size) {
 		transformerPoolMapSize = size;
 	}
-	public int getStyleSheetCacheSize() {
-		return transformerPoolMapSize;
-	}
 	
 	@IbisDoc({"4", "Alternatively: xpath-expression to create stylesheet from", ""})
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
-	}
-	public String getXpathExpression() {
-		return xpathExpression;
 	}
 
 	@IbisDoc({"5", "omit the xml declaration on top of the output. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setOmitXmlDeclaration(Boolean b) {
 		omitXmlDeclaration = b;
 	}
-	public Boolean getOmitXmlDeclaration() { // can return null too
-		return omitXmlDeclaration;
-	}
 
 	@IbisDoc({"6", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
-	public String getNamespaceDefs() {
-		return namespaceDefs;
-	}
 
-	@IbisDoc({"7", "For xpathExpression only: either 'text' or 'xml'.", "text"})
-	public void setOutputType(String string) {
+	@IbisDoc({"7", "For xpathExpression only", "text"})
+	public void setOutputType(OutputType string) {
 		outputType = string;
-	}
-	public String getOutputType() {
-		return outputType;
 	}
 
 	@IbisDoc({"8", "when set <code>true</code>, result is pretty-printed. When not set, the value specified in the stylesheet is followed", "false, if not set in stylesheet"})
 	public void setIndentXml(Boolean b) {
 		indentXml = b;
 	}
-	public Boolean getIndentXml() { // can return null too
-		return indentXml;
-	}
 
 	@IbisDoc({"9", "when set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
-	}
-	public boolean isRemoveNamespaces() {
-		return removeNamespaces;
 	}
 
 	@IbisDoc({"10", "when set <code>true</code> empty tags in the output are removed after transformation", "false"})
 	public void setSkipEmptyTags(boolean b) {
 		skipEmptyTags = b;
 	}
-	public boolean isSkipEmptyTags() {
-		return skipEmptyTags;
-	}
 
 	@IbisDoc({"11", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-	public int getXsltVersion() {
-		return xsltVersion;
 	}
 
 	@IbisDoc({"12", "", "true"})
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}
-	public boolean isNamespaceAware() {
-		return namespaceAware;
-	}
 
 	@IbisDoc({"13", "when set <code>true</code> the input is written to the log file, at DEBUG level", "false"})
 	public void setDebugInput(boolean debugInput) {
 		this.debugInput = debugInput;
-	}
-	public boolean isDebugInput() {
-		return debugInput;
 	}
 
 	@IbisDoc({"14", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})

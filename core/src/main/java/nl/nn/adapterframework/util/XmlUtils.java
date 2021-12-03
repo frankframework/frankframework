@@ -99,6 +99,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
@@ -558,7 +559,6 @@ public class XmlUtils {
 		}
 		return xmlReader;
 	}
-	
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
@@ -799,11 +799,11 @@ public class XmlUtils {
 		return new String(source,offset,length,charset);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		List<String> paramNames = null;
 		if (params!=null) {
 			paramNames = new ArrayList<String>();
@@ -824,21 +824,21 @@ public class XmlUtils {
 
 
 	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(XPathExpression,"text");
+		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
 	}
 
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, true);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
@@ -871,7 +871,7 @@ public class XmlUtils {
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -882,7 +882,7 @@ public class XmlUtils {
 			ignoreNamespaces = false;
 
 		final String copyMethod;
-		if ("xml".equals(outputMethod)) {
+		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
 		} else {
 			copyMethod = "value-of";
@@ -903,7 +903,7 @@ public class XmlUtils {
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
+			"<xsl:output method=\""+(outputMethod == OutputType.XML ? "xml":"text")+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
 			(ignoreNamespaces ?
@@ -930,11 +930,11 @@ public class XmlUtils {
 		return xsl;
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, false);
 	}
 
-	public static String createXPathEvaluatorSource(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(null, XPathExpression, outputMethod);
 	}
 
@@ -944,12 +944,12 @@ public class XmlUtils {
 		return createTransformer(createXPathEvaluatorSource(XPathExpression));
 	}
 
-	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod)
+	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, OutputType outputMethod)
 		throws TransformerConfigurationException {
 		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
 	}
 
-	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static Transformer createXPathEvaluator(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluator(null, XPathExpression, outputMethod);
 	}
 
