@@ -96,7 +96,7 @@ public class TransformerPool {
 		XML;
 		
 		public String getOutputMethod() {
-			return toString().toLowerCase();
+			return name().toLowerCase();
 		}
 	}
 
