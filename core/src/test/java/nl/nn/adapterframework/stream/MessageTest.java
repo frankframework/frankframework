@@ -902,5 +902,4 @@ public class MessageTest {
 		Message message = null;
 		assertTrue(Message.isEmpty(message));
 	}
-	
 }

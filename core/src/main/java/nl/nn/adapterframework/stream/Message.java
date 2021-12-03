@@ -353,7 +353,10 @@ public class Message implements Serializable {
 			return (new InputSource(new StringReader((String) request)));
 		}
 		log.debug("returning as InputSource");
-		return (new InputSource(asReader()));
+		if (isBinary()) {
+			return new InputSource(asInputStream());
+		}
+		return new InputSource(asReader());
 	}
 
 	/**
@@ -448,28 +451,6 @@ public class Message implements Serializable {
 		return (getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString();
 	}
 
-//	public static Message asMessage(Message request) {
-//		return request;
-//	}
-//	public static Message asMessage(String request) {
-//		return new Message(request);
-//	}
-//	public static Message asMessage(byte[] request) {
-//		return new Message(request);
-//	}
-//	public static Message asMessage(Reader request) {
-//		return new Message(request);
-//	}
-//	public static Message asMessage(InputStream request) {
-//		return new Message(request);
-//	}
-//	public static Message asMessage(URL request) {
-//		return new UrlMessage(request);
-//	}
-//	public static Message asMessage(Path request) {
-//		return new PathMessage(request);
-//	}
-	
 	public static Message asMessage(Object object) {
 		if (object instanceof Message) {
 			return (Message) object;

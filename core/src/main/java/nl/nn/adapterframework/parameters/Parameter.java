@@ -210,9 +210,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 		/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		MAP;
 
-		public boolean requiresTypeConversion=false;
+		public final boolean requiresTypeConversion;
 
-		private ParameterType() {}
+		private ParameterType() {
+			this(false);
+		}
 
 		private ParameterType(boolean requiresTypeConverion) {
 			this.requiresTypeConversion = requiresTypeConverion;
@@ -364,7 +366,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
-					//String sourceString;
 					Object sourceObject = session.get(requestedSessionKey);
 					if (getType()==ParameterType.LIST && sourceObject instanceof List) {
 						// larva can produce the sourceObject as list
@@ -763,8 +764,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		sessionKey = string;
 	}
 
-	@IbisDoc({"5", "Instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression applied to the input message to extract the name of "+ 
-		"the <code>sessionkey</code>", ""})
+	@IbisDoc({"5", "Instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression applied to the input message to extract the name of the session-variable.", ""})
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
