@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
@@ -22,7 +23,7 @@ public class XsltExceptionTest {
 		
 		String xpathExpression="*/*";
 		int xsltVersion = 1;
-		TransformerPool tp = TransformerPool.configureTransformer0(null, null, null, xpathExpression, null, "xml", false, null, xsltVersion);
+		TransformerPool tp = TransformerPool.configureTransformer0(null, null, null, xpathExpression, null, OutputType.XML, false, null, xsltVersion);
 		
 		XmlWriter writer = new XmlWriter();
 		
