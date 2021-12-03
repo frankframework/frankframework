@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,14 +37,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base class for functions that call SAP.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
- * </table>
- * </p>
  * 
+ * @ff.parameter sapSystemName  points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty
+
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
