@@ -20,9 +20,16 @@ import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
+import nl.nn.adapterframework.pipes.PutInSession;
+import nl.nn.adapterframework.processors.CorePipeLineProcessor;
+import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ParameterTest {
@@ -116,6 +123,38 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testPatternUsedAsSourceForTransformation() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setPattern("<root><username>{username}</username></root>");
+		p.setXpathExpression("root/username");
+		p.setUsername("fakeUsername");
+		p.configure();
+		
+		
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeUsername", p.getValue(alreadyResolvedParameters, null, session, false));
+	}
+
+	@Test
+	public void testEmptyPatternUsedAsSourceForTransformation() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setPattern("{username}");
+		p.setXpathExpression("root/username");
+		p.setDefaultValue("fakeDefault");
+		p.configure();
+		
+		
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeDefault", p.getValue(alreadyResolvedParameters, null, session, false));
+	}
+
+	@Test
 	public void testPatternUnknownSessionVariableOrParameter() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
@@ -131,7 +170,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testPatternMessage() throws ConfigurationException, ParameterException {
+	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
 		p.configure();
@@ -240,7 +279,58 @@ public class ParameterTest {
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
 		assertEquals("a", Message.asMessage(result).asString());
 	}
-	
+
+	@Test
+	public void testParameterXPathToMessage() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setXpathExpression("/dummy");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("<dummy>a</dummy>");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		assertEquals("a", Message.asMessage(result).asString());
+	}
+
+	@Test
+	public void testParameterXPathUnknownSessionKey() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setSessionKey("unknownSessionKey");
+		p.setXpathExpression("/dummy");
+		p.setDefaultValue("fakeDefault");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		PipeLineSession session = new PipeLineSession();
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertEquals("fakeDefault", Message.asMessage(result).asString());
+	}
+
+	@Test
+	public void testParameterXPathEmptySessionKey() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("number");
+		p.setSessionKey("emptySessionKey");
+		p.setXpathExpression("/dummy");
+		p.setDefaultValue("fakeDefault");
+		p.configure();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("emptySessionKey", "");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertEquals("fakeDefault", Message.asMessage(result).asString());
+	}
+
 	@Test
 	public void testParameterNumberBoolean() throws Exception {
 		Parameter p = new Parameter();
@@ -524,4 +614,61 @@ public class ParameterTest {
 
 	}
 
+	@Test
+	// Test for #2256 PutParametersInSession with xpathExpression with type=domdoc results in "Content is not allowed in prolog"
+	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
+		try (TestConfiguration configuration = new TestConfiguration()) {
+			PipeLine pipeline = configuration.createBean(PipeLine.class);
+			String firstPipe = "PutInSession under test";
+			String secondPipe = "PutInSession next pipe";
+			
+			String testMessage = "<Test>\n" + 
+					"	<Child><name>X</name></Child>\n" + 
+					"	<Child><name>Y</name></Child>\n" + 
+					"	<Child><name>Z</name></Child>\n" + 
+					"</Test>";
+
+			String testMessageChild1 = "<Child><name>X</name></Child>";
+
+			PutInSession pipe = configuration.createBean(PutInSession.class);
+			pipe.setName(firstPipe);
+			pipe.setPipeLine(pipeline);
+			Parameter p = new Parameter();
+			p.setName("xmlMessageChild");
+			p.setXpathExpression("Test/Child[1]");
+			p.setType(ParameterType.DOMDOC);
+			pipe.addParameter(p);
+			pipeline.addPipe(pipe);
+	
+			PutInSession pipe2 = configuration.createBean(PutInSession.class);
+			pipe2.setName(secondPipe);
+			pipe2.setPipeLine(pipeline);
+			Parameter p2 = new Parameter();
+			p2.setName("xmlMessageChild2");
+			p2.setSessionKey("xmlMessageChild");
+			p2.setXpathExpression("Child/name/text()");
+			pipe2.addParameter(p2);
+			pipeline.addPipe(pipe2);
+	
+			PipeLineExit exit = new PipeLineExit();
+			exit.setPath("exit");
+			exit.setState("success");
+			pipeline.registerPipeLineExit(exit);
+			pipeline.configure();
+	
+			CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
+			CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
+			cpp.setPipeProcessor(pipeProcessor);
+			PipeLineSession session = configuration.createBean(PipeLineSession.class);
+			pipeline.setOwner(pipe);
+			PipeLineResult pipeRunResult=cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
+	
+			assertEquals("success", pipeRunResult.getState());
+			assertEquals(testMessage, pipeRunResult.getResult().asString());
+			
+			assertEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
+			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
+		}
+	}
+	
 }

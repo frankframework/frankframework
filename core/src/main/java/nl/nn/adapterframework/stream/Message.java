@@ -61,8 +61,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
 
-	private static final long serialVersionUID = 437863352486501445L;
-
 	protected transient Logger log = LogUtil.getLogger(this);
 
 	private Object request;
@@ -115,6 +113,10 @@ public class Message implements Serializable {
 		this((Object)request, null);
 	}
 
+	public Message(Node request) {
+		this((Object)request, null);
+	}
+
 	public static Message nullMessage() {
 		return new Message((Object)null, null);
 	}
@@ -163,7 +165,7 @@ public class Message implements Serializable {
 	}
 	
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[];
+		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node;
 	}
 
 	/**
@@ -276,7 +278,7 @@ public class Message implements Serializable {
 		}
 		if(request instanceof Node) {
 			log.debug("returning Node as Reader");
-			return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream());
+			return new StringReader(asString());
 		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
@@ -351,7 +353,7 @@ public class Message implements Serializable {
 			return (new InputSource(new StringReader((String) request)));
 		}
 		log.debug("returning as InputSource");
-		return (new InputSource(asInputStream()));
+		return (new InputSource(asReader()));
 	}
 
 	/**
@@ -421,7 +423,7 @@ public class Message implements Serializable {
 		}
 		if(request instanceof Node) {
 			try {
-				request = XmlUtils.nodeToString((Node)request, true);
+				return XmlUtils.nodeToString((Node)request, true);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node to String", e);
 			}
@@ -446,6 +448,28 @@ public class Message implements Serializable {
 		return (getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString();
 	}
 
+//	public static Message asMessage(Message request) {
+//		return request;
+//	}
+//	public static Message asMessage(String request) {
+//		return new Message(request);
+//	}
+//	public static Message asMessage(byte[] request) {
+//		return new Message(request);
+//	}
+//	public static Message asMessage(Reader request) {
+//		return new Message(request);
+//	}
+//	public static Message asMessage(InputStream request) {
+//		return new Message(request);
+//	}
+//	public static Message asMessage(URL request) {
+//		return new UrlMessage(request);
+//	}
+//	public static Message asMessage(Path request) {
+//		return new PathMessage(request);
+//	}
+	
 	public static Message asMessage(Object object) {
 		if (object instanceof Message) {
 			return (Message) object;

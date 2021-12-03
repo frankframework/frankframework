@@ -43,6 +43,8 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -643,6 +645,93 @@ public class MessageTest {
 	}
 
 
+	
+	@Test
+	public void testDocumentAsInputStream() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testAsInputStream(adapter);
+	}
+
+	@Test
+	public void testDocumentAsReader() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testDocumentAsInputSource() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testDocumentAsByteArray() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testDocumentAsString() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testDocumentToString() throws Exception {
+		Document source = XmlUtils.buildDomDocument(new StringReader(testString));
+		Message adapter = new Message(source);
+		testToString(adapter,source.getClass());
+	}
+
+
+	@Test
+	public void testNodeAsInputStream() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testAsInputStream(adapter);
+	}
+
+	@Test
+	public void testNodeAsReader() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testAsReader(adapter);
+	}
+
+	@Test
+	public void testNodeAsInputSource() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testAsInputSource(adapter);
+	}
+
+	@Test
+	public void testNodeAsByteArray() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testAsByteArray(adapter);
+	}
+
+	@Test
+	public void testNodeAsString() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testAsString(adapter);
+	}
+
+	@Test
+	public void testNodeToString() throws Exception {
+		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
+		Message adapter = new Message(source);
+		testToString(adapter,source.getClass());
+	}
+
+
 	@Test
 	public void testSerializeWithString() throws Exception {
 		String source = testString;
@@ -814,33 +903,4 @@ public class MessageTest {
 		assertTrue(Message.isEmpty(message));
 	}
 	
-	@Test
-	public void testNodeAsInputStream() throws Exception {
-		Message message = Message.asMessage(XmlUtils.buildNode(testString));
-		testAsInputSource(message);
-	}
-	
-	@Test
-	public void testNodeAsReader() throws Exception {
-		Message message = Message.asMessage(XmlUtils.buildNode(testString));
-		testAsReader(message);
-	}
-	
-	@Test
-	public void testNodeAsByteArray() throws Exception {
-		Message message = Message.asMessage(XmlUtils.buildNode(testString));
-		testAsByteArray(message);
-	}
-	
-	@Test
-	public void testNodeAsInputSource() throws Exception {
-		Message message = Message.asMessage(XmlUtils.buildNode(testString));
-		testAsInputSource(message);
-	}
-	
-	@Test
-	public void testNodeAsString() throws Exception {
-		Message message = Message.asMessage(XmlUtils.buildNode(testString));
-		testAsString(message);
-	}
 }

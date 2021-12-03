@@ -45,64 +45,6 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws ConfigurationException, PipeRunException {
-		TestConfiguration configuration = new TestConfiguration();
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-		String pipeForwardName = "PutInSession next pipe";
-
-		PutInSession pipe = configuration.createBean(PutInSession.class);
-		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipe.setPipeLine(pipeline);
-		Parameter p = new Parameter();
-		p.setName("xmlMessageChild");
-		p.setXpathExpression("Test/Child[1]");
-		p.setType(ParameterType.DOMDOC);
-		pipe.addParameter(p);
-		pipe.registerForward(new PipeForward("success", pipeForwardName));
-		pipeline.addPipe(pipe);
-
-		PutInSession pipe2 = configuration.createBean(PutInSession.class);
-		pipe2.setName(pipeForwardName);
-		pipe2.setPipeLine(pipeline);
-		Parameter p2 = new Parameter();
-		p2.setName("xmlMessageChild2");
-		p2.setSessionKey("xmlMessageChild");
-		p2.setXpathExpression("Child/name/text()");
-		pipe2.addParameter(p2);
-		pipeline.addPipe(pipe2);
-
-		PipeLineExit exit = new PipeLineExit();
-		exit.setPath("exit");
-		exit.setState("success");
-		pipeline.registerPipeLineExit(exit);
-		pipeline.configure();
-
-		CorePipeLineProcessor cpp = configuration.createBean(CorePipeLineProcessor.class);
-		CorePipeProcessor pipeProcessor = configuration.createBean(CorePipeProcessor.class);
-		cpp.setPipeProcessor(pipeProcessor);
-		PipeLineSession session = configuration.createBean(PipeLineSession.class);
-		pipeline.setOwner(pipe);
-		PipeLineResult pipeRunResult=cpp.processPipeLine(pipeline, "messageId", new Message("<Test>\n" + 
-				"	<Child><name>X</name></Child>\n" + 
-				"	<Child><name>Y</name></Child>\n" + 
-				"	<Child><name>Z</name></Child>\n" + 
-				"</Test>"), session, pipe.getClass().getSimpleName()+" under test");
-
-		String state=pipeRunResult.getState();
-		
-		assertEquals("success", state);
-		String param2 = null;
-		try {
-			 param2 = session.getMessage("xmlMessageChild2").asString();
-		} catch (IOException e) {
-		}
-
-		assertEquals("X", param2);
-		configuration.close();
-		configuration = null;
-	}
-	
-	@Test
 	public void testFixedForwardPipesWithNoForwardShouldDefaultToNextPipe() throws ConfigurationException {
 		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
