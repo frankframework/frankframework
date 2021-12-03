@@ -67,12 +67,6 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		if (StringUtils.isEmpty(getName())) {
 			setName(ownerName+"_cache");
 		}
-		if (!("xml".equals(getKeyXPathOutputType()) || "text".equals(getKeyXPathOutputType()))) {
-			throw new ConfigurationException(getLogPrefix()+"keyXPathOutputType ["+getKeyXPathOutputType()+"] must be either 'xml' or 'text'");
-		}
-		if (!("xml".equals(getValueXPathOutputType()) || "text".equals(getValueXPathOutputType()))) {
-			throw new ConfigurationException(getLogPrefix()+"valueXPathOutputType ["+getValueXPathOutputType()+"] must be either 'xml' or 'text'");
-		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
 			keyTp=TransformerPool.configureTransformer(getLogPrefix(), this, getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
 		}
