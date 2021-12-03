@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.hamcrest.core.StringEndsWith;
@@ -13,12 +12,8 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.extensions.esb.DirectWrapperPipe;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.pipes.PutInSession;
-import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;

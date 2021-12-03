@@ -425,6 +425,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if (StringUtils.isNotEmpty(transformResult)) {
 							result = transformResult;
 						}
+						break;
 					}
 				}
 			} catch (Exception e) {
