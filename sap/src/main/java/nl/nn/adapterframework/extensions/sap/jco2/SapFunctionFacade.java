@@ -38,6 +38,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  *
@@ -134,7 +135,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 				if (tp==null) {
 					try {
 //						log.debug("creating evaluator for parameter ["+paramName+"]");
-						tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramName,"xml"));
+						tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramName,OutputType.XML));
 						extractors.put(paramName,tp);
 					} catch (Exception e) {
 						throw new SapException("exception creating Extractor for  ["+paramName+"]", e);
@@ -160,7 +161,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 			if (tp==null) {
 				try {
 //					log.debug("creating evaluator for parameter ["+paramName+"]");
-					tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramsName,"xml"));
+					tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("/*/"+paramsName,OutputType.XML));
 					extractors.put(paramsName,tp);
 				} catch (Exception e) {
 					throw new SapException("exception creating Extractor for  ["+paramsName+"]", e);
