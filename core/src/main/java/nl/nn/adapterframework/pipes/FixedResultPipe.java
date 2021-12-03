@@ -47,17 +47,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
- * </table>
- * </p>
- * 
  * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
  *
- * @ff.forward filenotfound the configured file was not found
+ * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
  *
  * 
  * @author Johan Verrips
