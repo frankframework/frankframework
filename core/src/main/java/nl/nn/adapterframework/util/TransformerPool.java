@@ -94,6 +94,10 @@ public class TransformerPool {
 	public enum OutputType {
 		TEXT,
 		XML;
+		
+		public String getOutputMethod() {
+			return toString().toLowerCase();
+		}
 	}
 
 	private static class TransformerPoolKey {
