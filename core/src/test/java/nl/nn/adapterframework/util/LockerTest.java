@@ -23,6 +23,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
@@ -44,14 +45,17 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker = new Locker();
 		locker.setDatasourceName(getDataSourceName());
 		locker.setDataSourceFactory(dataSourceFactory);
+		locker.setDbmsSupportFactory(new DbmsSupportFactory());
 		locker.setFirstDelay(0);
 	}
 
 	@After
-	public void teardown() throws JdbcException {
+	@Override
+	public void teardown() throws Exception {
 		if (tableCreated) {
 			JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
 		}
+		super.teardown();
 	}
 
 	@Test
@@ -307,7 +311,6 @@ public class LockerTest extends TransactionManagerTestBase {
 
 		locker.setTxManager(txManager);
 		locker.setTransactionAttribute(TransactionAttribute.REQUIRED);
-		locker.setDbmsSupport(dbmsSupport);
 		locker.setObjectId("myLocker");
 		locker.configure();
 

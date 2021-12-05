@@ -300,7 +300,7 @@
 	</bean>
 
 	<bean
-		id="dbmsSupportFactoryDefault"
+		name="dbmsSupportFactory"
 		class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"
 		>
 		<property name="dbmsSupportMap">
