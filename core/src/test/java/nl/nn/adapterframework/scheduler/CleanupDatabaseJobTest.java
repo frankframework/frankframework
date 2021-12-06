@@ -78,7 +78,6 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	@Test
 	public void testCleanupDatabaseJobMaxRowsZero() throws Exception {
 		jobDef.setName(cleanupJobName);
-		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
 		prepareInsertQuery(1);
@@ -94,7 +93,6 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	@Test
 	public void testCleanupDatabaseJob() throws Exception {
 		jobDef.setName(cleanupJobName);
-		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
 
@@ -154,7 +152,6 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	@Test
 	public void testCleanupDatabaseJobMaxRowsOne() throws Exception {
 		jobDef.setName(cleanupJobName);
-		jobDef.setFunction(JobDefFunctions.CLEANUPDB.getLabel());
 		jobDef.configure();
 		configuration.registerScheduledJob(jobDef);
 

@@ -14,8 +14,8 @@ import java.util.TimerTask;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.ResourceTransactionManager;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
@@ -353,7 +353,7 @@ public class LockerTest extends TransactionManagerTestBase {
 
 		private Connection conn;
 
-		public LockerTester(ResourceTransactionManager txManager) {
+		public LockerTester(PlatformTransactionManager txManager) {
 			super(txManager);
 		}
 

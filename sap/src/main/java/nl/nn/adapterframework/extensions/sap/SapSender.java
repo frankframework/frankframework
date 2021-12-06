@@ -15,8 +15,5 @@
 */
 package nl.nn.adapterframework.extensions.sap;
 
-/**
- * Use JCO3 by default
- */
 public class SapSender extends nl.nn.adapterframework.extensions.sap.jco3.SapSender {
 }

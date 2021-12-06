@@ -37,6 +37,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 
 /**
@@ -201,8 +202,8 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	}
 
 	@IbisDocRef({"7", XSLTSENDER})
-	public void setOutputType(String string) {
-		sender.setOutputType(string);
+	public void setOutputType(OutputType outputType) {
+		sender.setOutputType(outputType);
 	}
 
 	@IbisDocRef({"8", XSLTSENDER})
