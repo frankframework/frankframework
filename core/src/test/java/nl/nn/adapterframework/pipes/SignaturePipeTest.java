@@ -18,6 +18,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.PkiUtil;
@@ -91,7 +92,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	@Test
 	public void testVerifyOK() throws Exception {
-		pipe.setAction("verify");
+		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
@@ -114,7 +115,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	@Test
 	public void testVerifyNotOK() throws Exception {
-		pipe.setAction("verify");
+		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
@@ -136,7 +137,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	@Test
 	public void testVerifyOKPEM() throws Exception {
-		pipe.setAction("verify");
+		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.crt");
 		pipe.setKeystoreType("pem");
 		

@@ -71,8 +71,8 @@ import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.ftp.FtpSender;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
@@ -414,37 +414,14 @@ public final class ShowConfigurationStatus extends Base {
 		}
 	}
 
-	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
-		String certificate = s.getCertificate();
+	private Map<String, Object> addCertificateInfo(HttpSenderBase s) {
+		String certificate = s.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
 		Map<String, Object> certElem = new HashMap<String, Object>(4);
 		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
-		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
-		if (certificateUrl == null) {
-			certElem.put("url", null);
-			certElem.put("info", "*** ERROR ***");
-		} else {
-			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getKeystoreType();
-			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
-		}
-		return certElem;
-	}
-
-	private Map<String, Object> addCertificateInfo(HttpSender s) {
-		String certificate = s.getCertificate();
-		if (certificate == null || StringUtils.isEmpty(certificate))
-			return null;
-
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
-		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
+		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
 		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
 		if (certificateUrl == null) {
@@ -452,7 +429,7 @@ public final class ShowConfigurationStatus extends Base {
 			certElem.put("info", "*** ERROR ***");
 		} else {
 			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
+			String certificatePassword = s.getKeystorePassword();
 			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
 			String keystoreType = s.getKeystoreType();
 			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
@@ -538,12 +515,6 @@ public final class ShowConfigurationStatus extends Base {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
-				if (sender instanceof WebServiceSender) {
-					WebServiceSender s = (WebServiceSender) sender;
-					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
-						pipesInfo.put("certificate", certInfo);
-				}
 				if (sender instanceof HttpSender) {
 					HttpSender s = (HttpSender) sender;
 					Map<String, Object> certInfo = addCertificateInfo(s);

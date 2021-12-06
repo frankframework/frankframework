@@ -96,9 +96,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
  * 
- * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
- * 
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
  * <pre>
@@ -159,6 +156,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the corresponding certificate. 
  * </p>
  * 
+ * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
+ * 
  * @author	Niels Meijer
  * @since	7.0
  */
@@ -194,36 +193,42 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String authDomain;
 
 	/** PROXY **/
-	private String proxyHost;
-	private int    proxyPort=80;
-	private String proxyAuthAlias;
-	private String proxyUserName;
-	private String proxyPassword;
-	private String proxyRealm=null;
+	private @Getter String proxyHost;
+	private @Getter int    proxyPort=80;
+	private @Getter String proxyAuthAlias;
+	private @Getter String proxyUsername;
+	private @Getter String proxyPassword;
+	private @Getter String proxyRealm=null;
 
 	/** SSL **/
-	private String certificate;
-	private String certificateAuthAlias;
-	private String certificatePassword;
-	private String keystoreType="pkcs12";
-	private String keyManagerAlgorithm=null;
-	private String truststore=null;
-	private String truststoreAuthAlias;
-	private String truststorePassword=null;
-	private String truststoreType="jks";
-	private String trustManagerAlgorithm=null;
-	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname=true;
-	private boolean ignoreCertificateExpiredException=false;
+//	private @Getter String certificate;
+//	private @Getter String certificateAuthAlias;
+//	private @Getter String certificatePassword;
+	private @Getter String keystore;
+	private @Getter String keystoreType="pkcs12";
+	private @Getter String keystoreAuthAlias;
+	private @Getter String keystorePassword;
+	private @Getter String keyAuthAlias;
+	private @Getter String keyPassword;
+	private @Getter String keyManagerAlgorithm=null;
+	private @Getter String truststore=null;
+	private @Getter String truststoreAuthAlias;
+	private @Getter String truststorePassword=null;
+	private @Getter String truststoreType="jks";
+	private @Getter String trustManagerAlgorithm=null;
+	private @Getter boolean allowSelfSignedCertificates = false;
+	private @Getter boolean verifyHostname=true;
+	private @Getter boolean ignoreCertificateExpiredException=false;
 
-	private String headersParams="";
-	private boolean followRedirects=true;
-	private boolean staleChecking=true;
-	private int staleTimeout = 5000;
-	private boolean xhtml=false;
-	private String styleSheetName=null;
-	private String protocol=null;
-	private String resultStatusCodeSessionKey;
+	private @Getter String headersParams="";
+	private @Getter boolean followRedirects=true;
+	private @Getter boolean staleChecking=true;
+	private @Getter int staleTimeout = 5000;
+	private @Getter boolean xhtml=false;
+	private @Getter String styleSheetName=null;
+	private @Getter String protocol=null;
+	private @Getter String resultStatusCodeSessionKey;
+	
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private boolean disableCookies = false;
 
@@ -335,15 +340,15 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				staticUri = getURI(getUrl());
 			}
 
-			URL certificateUrl = null;
+			URL keystoreUrl = null;
 			URL truststoreUrl = null;
 	
-			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
-				if (certificateUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
+			if (!StringUtils.isEmpty(getKeystore())) {
+				keystoreUrl = ClassUtils.getResourceURL(this, getKeystore());
+				if (keystoreUrl == null) {
+					throw new ConfigurationException(getLogPrefix()+"cannot find URL for keystore resource ["+getKeystore()+"]");
 				}
-				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved keystore-URL to ["+keystoreUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
 				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
@@ -367,13 +372,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
 			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
 
-			if (certificateUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
+			if (keystoreUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
 				try {
-					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
+					CredentialFactory keystoreCf = new CredentialFactory(getKeystoreAuthAlias(), null, getKeystorePassword());
+					CredentialFactory keyCf = keystoreCf;
+					if (StringUtils.isNotEmpty(getKeyAuthAlias()) || StringUtils.isNotEmpty(getKeyPassword())) {
+						keyCf = new CredentialFactory(getKeyAuthAlias(), null, getKeyPassword());
+					}
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
 					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
+							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), keyCf.getPassword(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
 							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
@@ -387,9 +396,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			// This method will be overwritten by the connectionManager when connectionPooling is enabled!
 			// Can still be null when no default or an invalid system sslSocketFactory has been defined
-			if(sslSocketFactory != null)
+			if(sslSocketFactory != null) {
 				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-
+			}
+			
 			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			if (!StringUtils.isEmpty(credentials.getUsername())) {
@@ -869,55 +879,35 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
 	@IbisDoc({"31", "proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
-	}
-	public int getProxyPort() {
-		return proxyPort;
 	}
 
 	@IbisDoc({"32", "alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
 	@IbisDoc({"33", "proxy username", " "})
 	public void setProxyUsername(String string) {
-		proxyUserName = string;
+		proxyUsername = string;
 	}
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	public String getProxyUsername() {
-		return proxyUserName;
-	}
 
 	@IbisDoc({"34", "proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
 
 	@IbisDoc({"35", "proxy realm", " "})
 	public void setProxyRealm(String string) {
-		proxyRealm = string;
-	}
-	public String getProxyRealm() {
-		if(StringUtils.isEmpty(proxyRealm))
-			return null;
-		return proxyRealm;
+		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
 
 	/**
@@ -937,44 +927,53 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
-		certificate = string;
+		setKeystore(string);
 	}
-	public String getCertificate() {
-		return certificate;
-	}
-
-	@IbisDoc({"41", "alias used to obtain certificate password", ""})
-	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
-	}
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
+	@IbisDoc({"40", "resource url to keystore to be used for authentication", ""})
+	public void setKeystore(String string) {
+		keystore = string;
 	}
 
-	@IbisDoc({"42", "certificate password", " "})
-	public void setCertificatePassword(String string) {
-		certificatePassword = string;
-	}
-	public String getCertificatePassword() {
-		return certificatePassword;
-	}
-
-	@IbisDoc({"43", "", "pkcs12"})
+	@IbisDoc({"41", "pkcs or pem", "pkcs12"})
 	public void setKeystoreType(String string) {
 		keystoreType = string;
 	}
-	public String getKeystoreType() {
-		return keystoreType;
+
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
+	public void setCertificateAuthAlias(String string) {
+		setKeystoreAuthAlias(string);
+	}
+	@IbisDoc({"42", "alias used to obtain keystore password", ""})
+	public void setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
+	public void setCertificatePassword(String string) {
+		setKeystorePassword(string);
+	}
+	@IbisDoc({"42", "keystore password", " "})
+	public void setKeystorePassword(String string) {
+		keystorePassword = string;
+	}
+	
 	@IbisDoc({"44", "", " "})
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
+
+	@IbisDoc({"46", "alias used to obtain private key password", ""})
+	public void setKeystoreAliasAuthAlias(String string) {
+		keyAuthAlias = string;
+	}
+	@IbisDoc({"47", "private key password", " "})
+	public void setKeystoreAliasPassword(String string) {
+		keyPassword = string;
 	}
 
 
@@ -982,56 +981,35 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setTruststore(String string) {
 		truststore = string;
 	}
-	public String getTruststore() {
-		return truststore;
-	}
 
 	@IbisDoc({"51", "alias used to obtain truststore password", ""})
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
-	}
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
 	}
 
 	@IbisDoc({"52", "truststore password", " "})
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
-	public String getTruststorePassword() {
-		return truststorePassword;
-	}
 
 	@IbisDoc({"53", "type of truststore", "jks"})
 	public void setTruststoreType(String string) {
 		truststoreType = string;
-	}
-	public String getTruststoreType() {
-		return truststoreType;
 	}
 
 	@IbisDoc({"54", "", " "})
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
 
 	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
 
 	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
-	}
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
 	}
 
 	/**
@@ -1042,72 +1020,45 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
-	}
 	
 	
 	@IbisDoc({"60", "comma separated list of parameter names which should be set as http headers", ""})
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
-	public String getHeadersParams() {
-		return headersParams;
-	}
 	
 	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
-	}
-	public boolean isFollowRedirects() {
-		return followRedirects;
 	}
 	
 	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
 	
 	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
-	}
-	public int getStaleTimeout() {
-		return staleTimeout;
 	}
 
 	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
-	public boolean isXhtml() {
-		return xhtml;
-	}
 
 	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
-	}
-	public String getStyleSheetName() {
-		return styleSheetName;
 	}
 
 	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
-	public String getProtocol() {
-		return protocol;
-	}
 
 	@IbisDoc({"68", "if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
-	}
-	public String getResultStatusCodeSessionKey() {
-		return resultStatusCodeSessionKey;
 	}
 }

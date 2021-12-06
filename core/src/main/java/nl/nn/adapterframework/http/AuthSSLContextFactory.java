@@ -47,6 +47,7 @@ public class AuthSSLContextFactory {
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
+	protected String keyPassword = null;
 	protected String keyManagerAlgorithm = null;
 	protected URL truststoreUrl = null;
 	protected String truststorePassword = null;
@@ -58,22 +59,22 @@ public class AuthSSLContextFactory {
 	protected SSLContext sslContext = null;
 
 	public static SSLContext createSSLContext(
-			URL keystoreUrl, String keystorePassword, String keystoreType, String keyManagerAlgorithm, 
+			URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm, 
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) throws GeneralSecurityException, IOException {
-		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
+		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, protocol);
 		return socket.getSSLContext();
 	}
 
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyManagerAlgorithm, 
+	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm, 
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException) {
-		this(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
+		this(keystoreUrl, keystorePassword, keystoreType, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, null);
 	}
 
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyManagerAlgorithm, 
+	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm,
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) {
 
@@ -81,6 +82,7 @@ public class AuthSSLContextFactory {
 		this.keystorePassword = keystorePassword;
 		this.keystoreType = keystoreType;
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
+		this.keyPassword = keyPassword;
 
 		this.truststoreUrl = truststoreUrl;
 		this.truststorePassword = truststorePassword;
@@ -100,14 +102,14 @@ public class AuthSSLContextFactory {
 		TrustManager[] trustmanagers = null;
 		if (keystoreUrl != null) {
 			KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Certificate chain");
-			keymanagers = PkiUtil.createKeyManagers(keystore, keystorePassword, keyManagerAlgorithm);
+			keymanagers = PkiUtil.createKeyManagers(keystore, keyPassword, keyManagerAlgorithm);
 		}
 		if (truststoreUrl != null) {
-			KeyStore keystore = PkiUtil.createKeyStore(truststoreUrl, truststorePassword, truststoreType, "Trusted Certificate");
-			trustmanagers = PkiUtil.createTrustManagers(keystore, trustManagerAlgorithm);
+			KeyStore truststore = PkiUtil.createKeyStore(truststoreUrl, truststorePassword, truststoreType, "Trusted Certificate");
+			trustmanagers = PkiUtil.createTrustManagers(truststore, trustManagerAlgorithm);
 			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
-					new AuthSslTrustManager(keystore, trustmanagers)
+					new AuthSslTrustManager(truststore, trustmanagers)
 				};
 			}
 		} else if (allowSelfSignedCertificates) {

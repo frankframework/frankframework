@@ -152,8 +152,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * </p>
  *
- * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers 
- *
  * @author Niels Meijer
  * @since 7.0
  * @version 2.0

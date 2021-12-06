@@ -388,6 +388,7 @@ public class FtpSession implements IConfigurable {
 		return client;
 	}
 
+	//TODO: replace with AuthSSLContextFactory.createSSLContext()
 	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException, ConfigurationException {
 		URL certificateUrl = null;
 		URL truststoreUrl = null;
@@ -414,7 +415,7 @@ public class FtpSession implements IConfigurable {
 				CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
 				sslContext = AuthSSLContextFactory.createSSLContext(
-						certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
+						certificateUrl, certificateCf.getPassword(), getKeystoreType(), certificateCf.getPassword(), getKeyManagerAlgorithm(),
 						truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
 						isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getFtpTypeEnum().getProtocol());
 
