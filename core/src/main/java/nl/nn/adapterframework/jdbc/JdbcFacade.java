@@ -217,24 +217,25 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	 */
 	@Override
 	public String getPhysicalDestinationName() {
-		String result="unknown";
 		try {
+			//Try to minimise the amount of DB connections
 			if(getDatasource() instanceof DbAwareDataSource) {
 				return ((DbAwareDataSource) getDatasource()).getDestinationName();
 			}
 
-//			try (Connection connection = getConnection()) {
-//				DatabaseMetaData metadata = connection.getMetaData();
-//				result = metadata.getURL();
-//	
-//				String catalog=null;
-//				catalog=connection.getCatalog();
-//				result += catalog!=null ? ("/"+catalog):"";
-//			}
+			try (Connection connection = getConnection()) {
+				DatabaseMetaData metadata = connection.getMetaData();
+				String result = metadata.getURL();
+	
+				String catalog=null;
+				catalog=connection.getCatalog();
+				result += catalog!=null ? ("/"+catalog):"";
+				return result;
+			}
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
 		}
-		return result;
+		return "unknown";
 	}
 
 	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})

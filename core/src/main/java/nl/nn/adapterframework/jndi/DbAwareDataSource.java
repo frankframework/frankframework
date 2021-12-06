@@ -28,6 +28,10 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import nl.nn.adapterframework.util.LogUtil;
 
+/**
+ * DataSource that is aware of the database metadata.
+ * Fetches the metadata once and caches them.
+ */
 public class DbAwareDataSource extends DelegatingDataSource {
 	private Logger log = LogUtil.getLogger(this);
 	private Map<String, String> metadata;
@@ -47,6 +51,9 @@ public class DbAwareDataSource extends DelegatingDataSource {
 		return metadata;
 	}
 
+	/**
+	 * Should only be called once, either on the first {@link #getConnection()} or when explicitly requested {@link #getMetaData()}.
+	 */
 	private void populate(Connection connection) throws SQLException {
 		metadata = new HashMap<>();
 		DatabaseMetaData md = connection.getMetaData();
