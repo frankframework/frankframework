@@ -399,7 +399,7 @@ public class Message implements Serializable {
 		}
 		if (request instanceof Node) {
 			try {
-				log.debug("returning Node as byte[]");
+				log.warn("returning Node as byte[]; consider to avoid using Node or Document here to reduce memory footprint");
 				return XmlUtils.nodeToByteArray((Node) request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert Node to byte[]", e);
@@ -426,6 +426,7 @@ public class Message implements Serializable {
 		}
 		if(request instanceof Node) {
 			try {
+				log.warn("returning Node as String; consider to avoid using Node or Document here to reduce memory footprint");
 				return XmlUtils.nodeToString((Node)request, true);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node to String", e);
