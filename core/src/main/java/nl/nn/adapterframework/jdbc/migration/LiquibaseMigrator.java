@@ -29,6 +29,7 @@ import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
 import liquibase.change.CheckSum;
+import liquibase.changelog.ChangeLogHistoryService;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
 import liquibase.changelog.ChangeSet;
 import liquibase.changelog.DatabaseChangeLog;
@@ -117,6 +118,9 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		try (Liquibase liquibase = createMigrator(null)) {
 			Database database = liquibase.getDatabase();
 
+			LockService lockService = LockServiceFactory.getInstance().getLockService(database);
+			lockService.waitForLock();
+
 			List<RanChangeSet> alreadyExecutedChangeSets = database.getRanChangeSetList();
 			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
@@ -125,14 +129,13 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 				}
 			}
 
-			LockService lockService = LockServiceFactory.getInstance().getLockService(database);
-			lockService.waitForLock();
-
 			DatabaseChangeLog changeLog;
-
 			try {
 				changeLog = liquibase.getDatabaseChangeLog();
-				liquibase.checkLiquibaseTables(true, changeLog, contexts, labelExpression); //Validate old checksums and update if required
+				ChangeLogHistoryService changeLogHistoryService = ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database);
+				changeLogHistoryService.init();
+				changeLogHistoryService.upgradeChecksums(changeLog, contexts, labelExpression); //Validate old checksums and update if required
+				changeLogHistoryService.reset();
 
 				changeLog.validate(database, contexts, labelExpression); //Validate the new (updated) checksums
 			} finally {

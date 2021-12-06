@@ -30,7 +30,7 @@ public class StreamResourceAccessor implements ResourceAccessor {
 
 	private InputStream stream;
 	
-	public StreamResourceAccessor(InputStream stream) throws IOException {
+	public StreamResourceAccessor(InputStream stream) {
 		super();
 		this.stream = stream;
 	}
