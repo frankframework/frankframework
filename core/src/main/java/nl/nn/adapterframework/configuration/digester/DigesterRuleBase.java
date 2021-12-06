@@ -136,8 +136,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			}
 		}
 
-		//Unfortunately since we are directly instantiating the correct job, functions are no longer required by the digesters attribute handler.
-		//They are however still required for the JobFactory to determine the correct job class. This avoids ConfigurationWarnings.
+		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
+		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
 		if(top instanceof IJob && !(top instanceof Job)) {
 			map.remove("function");
 		}
