@@ -43,9 +43,9 @@ import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
-import nl.nn.credentialprovider.util.Misc;
 
 
 /**

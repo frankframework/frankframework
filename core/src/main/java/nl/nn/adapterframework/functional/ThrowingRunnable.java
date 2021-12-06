@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,20 +13,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap.jco2;
+package nl.nn.adapterframework.functional;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
-
-import com.sap.mw.jco.JCO;
-import com.sap.mw.idoc.IDoc;
-
-/**
- * The interface clients (users) of a SAP function must implement.
- *
- * @author  Gerrit van Brakel
- */
-public interface SapFunctionHandler {
-
-	public void processFunctionCall(JCO.Function function) throws SapException;
-	public void processIDoc(IDoc.Document idoc) throws SapException;
+@FunctionalInterface
+public interface ThrowingRunnable<E extends Exception> {
+	void run() throws E;
 }

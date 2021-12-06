@@ -393,7 +393,18 @@ public class JdbcUtil {
 		} else {
 			result = out;
 		}
-		return result;	
+		return result;
+	}
+
+	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
+		OutputStream result;
+		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
+		if (compressBlob) {
+			result = new DeflaterOutputStream(out, true);
+		} else {
+			result = out;
+		}
+		return result;
 	}
 
 	public static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {

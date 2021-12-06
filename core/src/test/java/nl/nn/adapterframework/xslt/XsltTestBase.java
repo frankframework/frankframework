@@ -26,6 +26,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
 	
@@ -39,7 +40,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
-	protected abstract void setOutputType(String outputType);
+	protected abstract void setOutputType(OutputType outputType);
  
 	
 	@Override
@@ -354,7 +355,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
 		setXpathExpression("request/g");
-		setOutputType("xml");
+		setOutputType(OutputType.XML);
 		pipe.configure();
 		pipe.start();
 

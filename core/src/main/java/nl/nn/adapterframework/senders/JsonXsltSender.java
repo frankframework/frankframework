@@ -32,6 +32,7 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlHandler;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlReader;
 import nl.nn.adapterframework.util.XmlJsonWriter;
@@ -62,20 +63,21 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-		ContentHandler handler = createHandler(null, session, target);
+		ContentHandler handler = createHandler(null, threadConnector, session, target);
 		JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, session);
+		return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, PipeLineSession session, MessageOutputStream target) throws StreamingException {
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, MessageOutputStream target) throws StreamingException {
 		if (!isJsonResult()) {
-			return super.createHandler(input, session, target);
+			return super.createHandler(input, threadConnector, session, target);
 		}
 		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener,session);
-		ContentHandler handler = super.createHandler(input, session, prev);
+		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
+		ContentHandler handler = super.createHandler(input, threadConnector, session, prev);
 		if (getXmlDebugger()!=null) {
 			handler = getXmlDebugger().inspectXml(session, "XML to be converted to JSON", handler);
 		}
