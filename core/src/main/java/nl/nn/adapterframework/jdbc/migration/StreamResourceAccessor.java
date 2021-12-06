@@ -35,9 +35,15 @@ public class StreamResourceAccessor implements ResourceAccessor {
 		this.stream = stream;
 	}
 
+	/** 
+	 * This method is primarily used by Liquibase to get the xsd 
+	 * (http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd) to validate against.
+	 * Since the XSD is in the jar file and we do not want to override it, simply return null.
+	 * Then the default XSD in the Liquibase jar will be used.
+	 */
 	@Override
 	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
-		return null; //Used to find the xsd to validate against.
+		return null;
 	}
 
 	@Override

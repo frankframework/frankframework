@@ -15,7 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.sql.SQLException;
@@ -62,20 +62,20 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private String getChangeLogFile() throws IOException {
+	private String getChangeLogFile() throws FileNotFoundException {
 		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
 		if(getResource(changeLogFile) == null) {
 			String msg = "unable to find database changelog file [" + changeLogFile + "]";
 			msg += " classLoader [" + getConfigurationClassLoader() + "]";
-			throw new IOException(msg);
+			throw new FileNotFoundException(msg);
 		}
 
 		return changeLogFile;
 	}
 
-	private Liquibase createMigrator(InputStream file) throws IOException, SQLException, LiquibaseException {
+	private Liquibase createMigrator(InputStream file) throws FileNotFoundException, SQLException, LiquibaseException {
 		String changeLogFile = getChangeLogFile();
 
 		ResourceAccessor resourceAccessor;
@@ -105,7 +105,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
 		}
-		catch (IOException e) {
+		catch (FileNotFoundException e) {
 			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
 		}
 		catch (SQLException e) {
@@ -114,7 +114,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		return false;
 	}
 
-	private void doValidate() throws LiquibaseException, IOException, SQLException {
+	private void doValidate() throws LiquibaseException, FileNotFoundException, SQLException {
 		try (Liquibase liquibase = createMigrator(null)) {
 			Database database = liquibase.getDatabase();
 
