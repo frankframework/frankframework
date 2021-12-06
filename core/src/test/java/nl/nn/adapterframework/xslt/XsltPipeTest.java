@@ -8,6 +8,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.XsltPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
@@ -47,7 +48,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
-	protected void setOutputType(String outputType) {
+	protected void setOutputType(OutputType outputType) {
 		pipe.setOutputType(outputType);
 	}
 

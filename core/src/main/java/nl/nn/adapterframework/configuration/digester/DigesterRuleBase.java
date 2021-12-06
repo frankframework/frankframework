@@ -35,6 +35,8 @@ import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
@@ -132,6 +134,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			if(StringUtils.isNotEmpty(name)) {
 				BeanUtils.setProperty(top, "name", name);
 			}
+		}
+
+		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
+		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
+		if(top instanceof IJob && !(top instanceof Job)) {
+			map.remove("function");
 		}
 
 		handleBean();

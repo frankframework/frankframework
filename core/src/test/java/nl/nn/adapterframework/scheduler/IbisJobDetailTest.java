@@ -24,13 +24,11 @@ public class IbisJobDetailTest {
 
 		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);
 		jobDef1.setName("fakeName");
-		jobDef1.setFunction("StopAdapter");
 		jobDef1.setJavaListener("fakeListener");
 		configuration.registerScheduledJob(jobDef1);
 
 		jobDef2 = SpringUtils.createBean(configuration, SendMessageJob.class);
 		jobDef2.setName("fakeName2");
-		jobDef2.setFunction("StopAdapter");
 		jobDef2.setJavaListener("fakeListener");
 		configuration.registerScheduledJob(jobDef2);
 }
