@@ -17,7 +17,8 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import liquibase.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;

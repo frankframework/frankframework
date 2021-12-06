@@ -109,4 +109,13 @@ public class TestAppender extends AbstractAppender {
 		}
 		return sb.toString();
 	}
+
+	public boolean contains(String msg) {
+		for (String log : getLogLines()) {
+			if(log.contains(msg)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

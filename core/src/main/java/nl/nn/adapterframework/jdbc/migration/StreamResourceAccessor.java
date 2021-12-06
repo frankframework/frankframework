@@ -17,9 +17,9 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.SortedSet;
 
+import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
 
 /**
@@ -30,29 +30,38 @@ public class StreamResourceAccessor implements ResourceAccessor {
 
 	private InputStream stream;
 	
-	public StreamResourceAccessor(InputStream stream) throws IOException {
+	public StreamResourceAccessor(InputStream stream) {
 		super();
 		this.stream = stream;
 	}
-	
+
+	/** 
+	 * This method is primarily used by Liquibase to get the xsd 
+	 * (http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd) to validate against.
+	 * Since the XSD is in the jar file and we do not want to override it, simply return null.
+	 * Then the default XSD in the Liquibase jar will be used.
+	 */
 	@Override
-	public Set<InputStream> getResourcesAsStream(String path) throws IOException {
+	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
+		return null;
+	}
+
+	@Override
+	public InputStream openStream(String relativeTo, String path) throws IOException {
 		if(path.endsWith(".xsd")) {
 			return null;
 		}
-		Set<InputStream> returnSet = new HashSet<>();
-		returnSet.add(stream);
-		return returnSet;
+
+		return stream;
 	}
 
 	@Override
-	public Set<String> list(String relativeTo, String path, boolean includeFiles, boolean includeDirectories, boolean recursive) throws IOException {
+	public SortedSet<String> list(String relativeTo, String path, boolean recursive, boolean includeFiles, boolean includeDirectories) throws IOException {
 		return null;
 	}
 
 	@Override
-	public ClassLoader toClassLoader() {
+	public SortedSet<String> describeLocations() {
 		return null;
 	}
-
 }
