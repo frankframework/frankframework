@@ -100,7 +100,6 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	@Override
 	public abstract boolean isSynchronous() ;
-	public abstract void setSender(ISender sender);
 
 
 	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})

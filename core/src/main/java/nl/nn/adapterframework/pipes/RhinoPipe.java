@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
  * 
- * @ff.parameters Any parameters defined on the pipe will be Concatenated into one string and added to input
+ * @ff.parameters Any parameters defined on the pipe will be concatenated into one string and added to the input
  * 
  * @author Barry Jacobs
  * @deprecated Please use {@link JavascriptSender} instead
