@@ -47,14 +47,12 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 	}
 
 	private IDbmsSupport compute(DataSource datasource) {
-		System.out.println("computing datasource: "+ datasource);
 		try {
 			if(datasource instanceof DbAwareDataSource) {
 				Map<String, String> md = ((DbAwareDataSource) datasource).getMetaData();
 				return getDbmsSupport(md.get("product"), md.get("product-version"));
 			}
 
-			System.out.println("using connection");
 			try(Connection connection = datasource.getConnection()) {
 				return getDbmsSupport(connection);
 			}

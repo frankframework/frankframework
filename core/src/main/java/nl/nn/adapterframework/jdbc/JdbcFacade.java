@@ -117,8 +117,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 			String dsinfo = datasource.toString();
 			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
-
-//			datasource = new TransactionAwareDataSourceProxy(datasource);
 		}
 		return datasource;
 	}
