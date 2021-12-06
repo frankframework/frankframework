@@ -263,13 +263,15 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 		}
 
-		if (getParameterList().findParameter("userName") != null) {
-			ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
-		}
-		
-		// Legacy; check if the session should be created runtime (and thus for each call)
-		if(getParameterList() != null && (getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null ) || getParameterList().findParameter("userName") != null ) {
-			runtimeSession = true;
+		if (getParameterList() != null) {
+			if (getParameterList().findParameter("userName") != null) {
+				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
+			}
+			
+			// Legacy; check if the session should be created runtime (and thus for each call)
+			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
+				runtimeSession = true;
+			}
 		}
 		if(!isKeepSession()) {
 			runtimeSession = true;
