@@ -75,7 +75,6 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	/** specification of sender to send messages with */
-	@Override
 	public void setSender(ISender sender) {
 		this.sender=sender;
 	}

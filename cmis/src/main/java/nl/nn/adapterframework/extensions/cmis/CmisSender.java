@@ -85,16 +85,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *
  * <p>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
- * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
- * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
- * </table>
- * </p>
- *
- * <p>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
@@ -208,6 +198,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table>
  * </p>
  *
+ * @ff.parameter authAlias overrides authAlias specified by the attribute <code>authAlias</code>
+ * @ff.parameter username overrides username specified by the attribute <code>username</code>
+ * @ff.parameter password overrides password specified by the attribute <code>password</code>
+ *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
@@ -269,9 +263,15 @@ public class CmisSender extends SenderWithParametersBase {
 			throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 		}
 
-		// Legacy; check if the session should be created runtime (and thus for each call)
-		if(getParameterList() != null && (getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("userName") != null )) {
-			runtimeSession = true;
+		if (getParameterList() != null) {
+			if (getParameterList().findParameter("userName") != null) {
+				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
+			}
+			
+			// Legacy; check if the session should be created runtime (and thus for each call)
+			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
+				runtimeSession = true;
+			}
 		}
 		if(!isKeepSession()) {
 			runtimeSession = true;
@@ -291,7 +291,10 @@ public class CmisSender extends SenderWithParametersBase {
 			if (pv != null) {
 				authAlias_work = pv.asStringValue();
 			}
-			pv = pvl.getParameterValue("userName");
+			pv = pvl.getParameterValue("username");
+			if (pv == null) {
+				pv = pvl.getParameterValue("userName");
+			}
 			if (pv != null) {
 				username_work = pv.asStringValue();
 			}
