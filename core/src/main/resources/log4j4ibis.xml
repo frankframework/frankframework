@@ -99,7 +99,11 @@
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
 
-		
+		<Logger name="liquibase.migrationLog" level="INFO">
+			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="config"/>
+		</Logger>
+
 		<Logger name="GALM" additivity="false" level="INFO">
 			<AppenderRef ref="galm"/>
 		</Logger>

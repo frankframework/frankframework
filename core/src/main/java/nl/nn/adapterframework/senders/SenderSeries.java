@@ -20,9 +20,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -34,12 +36,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 /**
  * Series of Senders, that are executed one after another.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input</td></tr>
- * </table>
- * </p>
- * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -47,7 +43,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	private List<ISender> senderList = new LinkedList<ISender>();
 	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
-	private boolean synchronous=true;
+	private @Getter @Setter boolean synchronous=true;
 
 	@Override
 	protected boolean isSenderConfigured() {
@@ -105,19 +101,8 @@ public class SenderSeries extends SenderWrapperBase {
 		//hski.closeGroup(senderData);
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return synchronous;
-	}
-	public void setSynchronous(boolean value) {
-		synchronous = value;
-	}
 
-	@Override
-	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. 
-	public final void setSender(ISender sender) {
-		registerSender(sender);
-	}
+	/** one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. */
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added

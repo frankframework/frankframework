@@ -95,7 +95,7 @@ public final class BrowseJdbcTable extends Base {
 			if(key.equalsIgnoreCase("maxRow")) {
 				if(entry.getValue() != "") {
 					maxRow = Integer.parseInt(entry.getValue().toString());
-					maxRow = Math.min(Math.max(maxRow, 1), 100);
+					maxRow = Math.max(maxRow, 1);
 				}
 			}
 		}

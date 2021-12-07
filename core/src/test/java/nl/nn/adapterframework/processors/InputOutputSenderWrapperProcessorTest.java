@@ -48,7 +48,7 @@ public class InputOutputSenderWrapperProcessorTest {
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
@@ -57,7 +57,7 @@ public class InputOutputSenderWrapperProcessorTest {
 					throw new SenderException(e);
 				}
 			}});
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
