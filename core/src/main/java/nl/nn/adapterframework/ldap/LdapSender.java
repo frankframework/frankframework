@@ -64,15 +64,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Returns the set of attributes in an XML format. Examples are shown below.
  * 
  * 
- * 
- * <p>
- * <b>Parameters:</b>
- * <table border="1">
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>entryName</td><td>Represents entryName (RDN) of interest.</td></tr>
- * <tr><td>filterExpression</td><td>Filter expression (handy with searching - see RFC2254).</td></tr>
- * <tr><td>principal</td><td>Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).</td></tr>
- * <tr><td>credentials</td><td>See parameter principal. It's advised to set attribute hidden to true for parameter credentials.</td></tr>
+ * @ff.parameter entryName Represents entryName (RDN) of interest.
+ * @ff.parameter filterExpression Filter expression (handy with searching - see RFC2254).
+ * @ff.parameter principal Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).
+ * @ff.parameter credentials See parameter principal. It's advised to set attribute hidden to true for parameter credentials.
  * </table>
  * </p>
  * 

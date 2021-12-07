@@ -22,7 +22,7 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 				Properties properties = new Properties();
 				properties.put(TransactionalDriver.XADataSource, xaDataSource);
 				properties.setProperty(TransactionalDriver.poolConnections, "true");
-				properties.setProperty(TransactionalDriver.maxConnections, "50");
+				properties.setProperty(TransactionalDriver.maxConnections, "100");
 				return ConnectionManager.create(null, properties);
 			}
 
