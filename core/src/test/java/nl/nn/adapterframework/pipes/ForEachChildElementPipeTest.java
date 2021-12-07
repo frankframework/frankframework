@@ -1069,7 +1069,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		}
 
 		private void print(String string) {
-			log.debug("in-> "+string);
+			log.debug("in["+sc.hitCount.get("in")+"]-> "+string);
 			sc.mark("in");
 		}
 
