@@ -193,7 +193,7 @@
 			<url-pattern>/iaf/gui/</url-pattern>
 			<url-pattern>/iaf/gui/*</url-pattern>
 			<http-method>GET</http-method>
-			<http-method>POST</http-method><!-- required for Azure AD IdP initiated login -->
+			<http-method>POST</http-method>
 		</web-resource-collection>
 		<auth-constraint>
 			<description></description>
