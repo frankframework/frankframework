@@ -39,12 +39,9 @@ public class MigratorTest extends JdbcTestBase {
 	@Override
 	protected void prepareDatabase() throws Exception {
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
-		if (dbmsSupport.isTablePresent(connection, tableName)) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
-		}
-		if (dbmsSupport.isTablePresent(connection, "DATABASECHANGELOG")) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE DATABASECHANGELOG");
-		}
+		dropTable(tableName);
+		dropTable("DATABASECHANGELOG");
+		dropTable("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(Migrator.class);
 		AppConstants.getInstance().setProperty("jdbc.migrator.dataSource", getDataSourceName());

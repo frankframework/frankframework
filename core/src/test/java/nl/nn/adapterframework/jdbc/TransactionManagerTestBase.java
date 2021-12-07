@@ -31,7 +31,6 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		setupTransactionManagerAndDataSource();
 	}
 
-	
 	@Override
 	@After
 	public void teardown() throws Exception {
@@ -67,6 +66,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
 		txManager = dataSourceTransactionManager;
 		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
+		txManagedDataSource = (dataSource);
 	}
 	
 	private void setupJtaTransactionManagerAndDataSource() {
@@ -80,6 +80,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
 		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
 		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
+		txManagedDataSource = (dataSource);
 	}
 
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {

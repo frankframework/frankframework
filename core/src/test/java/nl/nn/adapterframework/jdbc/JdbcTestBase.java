@@ -1,15 +1,19 @@
 package nl.nn.adapterframework.jdbc;
 
+import static nl.nn.adapterframework.jdbc.JdbcTestBase.connection;
+import static org.junit.Assert.fail;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,10 +30,12 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
+import nl.nn.adapterframework.testutil.NarayanaXADataSourceFactory;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -39,28 +45,57 @@ public abstract class JdbcTestBase {
 	private final static String IBISSTORE_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
-	protected static TransactionManagerType transactionManagerType = TransactionManagerType.BTM;
-	
 	protected Liquibase liquibase;
-	protected static URLDataSourceFactory dataSourceFactory = createDataSourceFactory(transactionManagerType);
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
 
-	protected static Connection connection; // only to be used for setup and teardown like actions
+	private static Connection connection; // only to be used for setup and teardown like actions
 
 	@Parameterized.Parameter(0)
+	public TransactionManagerType transactionManagerType;
+	@Parameterized.Parameter(1)
 	public DataSource dataSource;
-	protected IDbmsSupport dbmsSupport;
 
-	@Parameters(name= "{index}: {0}")
-	public static Iterable<DataSource> data() {
-		return dataSourceFactory.getAvailableDataSources();
+	private @Getter IDbmsSupport dbmsSupport;
+
+	@Parameters(name= "{0}: {1}")
+	public static List<Object[]> data() {
+		TransactionManagerType[] tmt = TransactionManagerType.values();
+		Object[][] matrix = new Object[tmt.length][];
+
+		int index = 0;
+		for(TransactionManagerType type : TransactionManagerType.values()) {
+			List<DataSource> datasources = type.getAvailableDataSources();
+			for(DataSource ds : datasources) {
+				matrix[index] = new Object[] {type, ds};
+			}
+			index++;
+		}
+
+		return Arrays.asList(matrix);
 	}
 
 	public enum TransactionManagerType {
-		DATASOURCE, BTM, NARAYANA
+		DATASOURCE(URLDataSourceFactory.class), 
+		BTM(BTMXADataSourceFactory.class), 
+		NARAYANA(NarayanaXADataSourceFactory.class);
+
+		private @Getter URLDataSourceFactory dataSourceFactory;
+
+		private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
+			try {
+				dataSourceFactory = clazz.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
+
+		public List<DataSource> getAvailableDataSources() {
+			return getDataSourceFactory().getAvailableDataSources();
+		}
 	}
-	
+
 	@Before
 	public void setup() throws Exception {
 		switch (transactionManagerType) {
@@ -73,8 +108,8 @@ public abstract class JdbcTestBase {
 				productKey = ((PoolingDataSource)dataSource).getUniqueName();
 				break;
 			case NARAYANA:
-				//return new NarayanaXADataSourceFactory();
-				throw new NotImplementedException("Narayana DataSource wrapper not yet implemented");
+				productKey = dataSource.toString();
+				break;
 			default:
 				throw new IllegalArgumentException("Don't know how to setup() for transactionManagerType ["+transactionManagerType+"]");
 		}
@@ -92,29 +127,21 @@ public abstract class JdbcTestBase {
 		if(liquibase != null) {
 			liquibase.dropAll();
 		}
-		dataSourceFactory.destroy();
+//		dataSourceFactory.destroy();
 	}
-	
-	public static URLDataSourceFactory createDataSourceFactory(TransactionManagerType transactionManagerType) {
-		switch (transactionManagerType) {
-		case DATASOURCE:
-			return new URLDataSourceFactory();
-		case BTM:
-			return new BTMXADataSourceFactory();
-		case NARAYANA:
-			//return new NarayanaXADataSourceFactory();
-			throw new NotImplementedException("NarayanaXADataSourceFactory not yet implemented");
-		default:
-			throw new IllegalArgumentException("Don't know how to create DataSourceFactory for transactionManagerType ["+transactionManagerType+"]");
+
+//	protected void createDbTable() throws Exception {
+//		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
+//		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
+//		liquibase.update(new Contexts());
+//	}
+
+	public void dropTable(String tableName) throws JdbcException {
+		if (dbmsSupport.isTablePresent(connection, tableName)) {
+			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
 		}
 	}
-	
-	protected void createDbTable() throws Exception {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
-		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
-		liquibase.update(new Contexts());
-	}
-	
+
 	protected void prepareDatabase() throws Exception {
 		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
