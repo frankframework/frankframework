@@ -28,14 +28,13 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="JOBDEFTEST";
+	private final String tableName="IBISSTORE";
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		System.setProperty("tableName", tableName);
-		createDbTable();
+		createIbisStoreTable();
 
 		configuration = new TestConfiguration();
 		Adapter adapter = setupAdapter(); 
@@ -63,7 +62,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
 		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_Ibisstore_4_JobDefTest");
+		storage.setSequenceName("SEQ_"+tableName);
 		storage.setDatasourceName(getDataSourceName());
 
 		MessageSendingPipe pipe = new MessageSendingPipe();

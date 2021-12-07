@@ -23,7 +23,7 @@ import nl.nn.adapterframework.stream.Message;
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	private JdbcTransactionalStorage<Message> storage;
-	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
+	private final String tableName = "IBISSTORE";
 	private final String messageField = "MESSAGE";
 	private final String keyField = "MESSAGEKEY";
 
@@ -36,11 +36,10 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 		storage.setMessageField(messageField);
 		storage.setKeyField(keyField);
 		storage.setCheckTable(false);
-		storage.setDatasourceName(getDataSourceName());
-		storage.setDataSourceFactory(dataSourceFactory);
+		autowire(storage);
 		storage.setSequenceName("SEQ_"+tableName);
 		System.setProperty("tableName", tableName);
-		createDbTable();
+		createIbisStoreTable();
 	}
 
 	@Test

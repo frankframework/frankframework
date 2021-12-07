@@ -23,9 +23,8 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
-	private String tableName="MESSAGEBROWSINGFILTERTEST";
-	
-	
+	private String tableName="IBISSTORE";
+
 	@Override
 	@Before
 	public void setup() throws Exception {
@@ -35,10 +34,8 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
 		storage.setSequenceName("SEQ_"+tableName);
-		storage.setDatasourceName(getDataSourceName());
-		storage.setDataSourceFactory(dataSourceFactory);
-		System.setProperty("tableName", tableName);
-		createDbTable();
+		autowire(storage);
+		createIbisStoreTable();
 
 		listener = new JavaListener();
 	}

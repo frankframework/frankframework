@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.jdbc;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.junit.After;
@@ -17,6 +19,7 @@ import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
 import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
+import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
 
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
@@ -46,30 +49,33 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 			}
 		}
 	}
-	protected void setupTransactionManagerAndDataSource() {
+	protected void setupTransactionManagerAndDataSource() throws Exception {
 		switch (transactionManagerType) {
 			case DATASOURCE:
-				setupDatasourceTransactionManagerAndDataSource();
+				setupDatasource();
 				break;
 			case BTM:
-				setupJtaTransactionManagerAndDataSource();
+				setupBTM();
+				break;
+			case NARAYANA:
+				setupNarayana();
 				break;
 			default:
 				throw new IllegalArgumentException("Don't know how to setupTransactionManagerAndDataSource() for transactionManagerType ["+transactionManagerType+"]");
 		}
 	}
 
-	private void setupDatasourceTransactionManagerAndDataSource() {
+	private void setupDatasource() {
 		// setup a TransactionManager like in springTOMCAT.xml
 		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager;
 		dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
 		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
 		txManager = dataSourceTransactionManager;
-		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
+//		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
 		txManagedDataSource = (dataSource);
 	}
-	
-	private void setupJtaTransactionManagerAndDataSource() {
+
+	private void setupBTM() {
 		// setup a TransactionManager like in springTOMCAT.xml with BTM
 		Configuration configuration = TransactionManagerServices.getConfiguration();
 		configuration.setLogPart1Filename("target/btm1.log");
@@ -79,7 +85,25 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		configuration.setDefaultTransactionTimeout(5);
 		BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
 		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
-		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
+//		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
+		txManagedDataSource = (dataSource);
+	}
+
+	private void setupNarayana() throws Exception {
+		// setup a TransactionManager like in springTOMCAT.xml with NARAYANA
+		NarayanaConfigurationBean configuration = new NarayanaConfigurationBean();
+		Properties properties = new Properties();
+		properties.put("JDBCEnvironmentBean.isolationLevel", "2");
+		properties.put("ObjectStoreEnvironmentBean.objectStoreDir", "target/narayana");
+		properties.put("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", "target/narayana");
+		properties.put("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", "target/narayana");
+		configuration.setProperties(properties);
+		configuration.afterPropertiesSet();
+
+		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
+		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
+		txManager = dataSourceTransactionManager;
+//		txManagedDataSource = new TransactionAwareDataSourceProxy(dataSource);
 		txManagedDataSource = (dataSource);
 	}
 

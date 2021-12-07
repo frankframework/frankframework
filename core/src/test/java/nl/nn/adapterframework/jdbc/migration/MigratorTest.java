@@ -21,7 +21,6 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.ConfigurationMessageEventListener;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -29,7 +28,6 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends JdbcTestBase {
@@ -57,13 +55,6 @@ public class MigratorTest extends JdbcTestBase {
 		migrator.setDatasourceName(getDataSourceName());
 	}
 
-	private void removeTableIfPresent(String table) throws JdbcException {
-		if (dbmsSupport.isTablePresent(connection, table)) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+table);
-		}
-		assertFalse("table ["+tableName+"] should not exist prior to the test", dbmsSupport.isTablePresent(connection, table));
-	}
-
 	@Test
 	public void testSimpleChangelogFile() throws Exception {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
@@ -73,7 +64,7 @@ public class MigratorTest extends JdbcTestBase {
 		assertNotNull("no message logged to the messageKeeper", messageKeeper);
 		assertEquals(2, messageKeeper.size()); //Configuration startup message + liquibase update
 		assertEquals("Configuration [TestConfiguration] LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]", messageKeeper.getMessage(1).getMessageText());
-		assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
+		assertFalse("table ["+tableName+"] should not exist", isTablePresent(tableName));
 	}
 
 	@Test
@@ -88,7 +79,7 @@ public class MigratorTest extends JdbcTestBase {
 		assertTrue(warning.contains("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); //Test ObjectName + Error
 		assertTrue(warning.contains("Migration failed for change set Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); //Test liquibase exception
 		//H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
-		assertTrue("table ["+tableName+"] should exist", dbmsSupport.isTablePresent(connection, tableName));
+		assertTrue("table ["+tableName+"] should exist", isTablePresent(tableName));
 	}
 
 	@Test

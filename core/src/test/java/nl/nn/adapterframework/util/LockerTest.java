@@ -31,31 +31,16 @@ public class LockerTest extends TransactionManagerTestBase {
 
 	private Locker locker;
 
-	private boolean tableCreated = false;
-
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
-			createDbTable();
-			tableCreated = true;
-		}
+
+		createIbisStoreTable();
 
 		locker = new Locker();
-		locker.setDatasourceName(getDataSourceName());
-		locker.setDataSourceFactory(dataSourceFactory);
-		locker.setDbmsSupportFactory(new DbmsSupportFactory());
+		autowire(locker);
 		locker.setFirstDelay(0);
-	}
-
-	@After
-	@Override
-	public void teardown() throws Exception {
-		if (tableCreated) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
-		}
-		super.teardown();
 	}
 
 	@Test
@@ -337,18 +322,6 @@ public class LockerTest extends TransactionManagerTestBase {
 		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
-	@Override
-	protected void createDbTable() throws JdbcException {
-		JdbcUtil.executeStatement(connection,
-				"CREATE TABLE IBISLOCK(" + 
-				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
-				"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " + 
-				"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " + 
-				"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " + 
-				"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
-	}
-	
-	
 	private class LockerTester extends ConcurrentManagedTransactionTester {
 
 		private Connection conn;

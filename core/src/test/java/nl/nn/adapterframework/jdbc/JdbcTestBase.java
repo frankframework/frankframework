@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
-import static nl.nn.adapterframework.jdbc.JdbcTestBase.connection;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
@@ -42,21 +42,23 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
-	private final static String IBISSTORE_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
+	private final static String IBISSTORE_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
 
-	private static Connection connection; // only to be used for setup and teardown like actions
+	/** SIGH, DON'T USE THIS!! */
+	@Deprecated protected static Connection connection; // only to be used for setup and teardown like actions
 
 	@Parameterized.Parameter(0)
-	public TransactionManagerType transactionManagerType;
+	public @Getter TransactionManagerType transactionManagerType;
 	@Parameterized.Parameter(1)
 	public DataSource dataSource;
 
-	private @Getter IDbmsSupport dbmsSupport;
+	private @Getter DbmsSupportFactory dbmsSupportFactory = new DbmsSupportFactory();
+	public @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
 	public static List<Object[]> data() {
@@ -116,8 +118,7 @@ public abstract class JdbcTestBase {
 
 		connection = dataSource.getConnection();
 
-		DbmsSupportFactory factory = new DbmsSupportFactory();
-		dbmsSupport = factory.getDbmsSupport(connection);
+		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
 		prepareDatabase();
 	}
@@ -127,37 +128,53 @@ public abstract class JdbcTestBase {
 		if(liquibase != null) {
 			liquibase.dropAll();
 		}
-//		dataSourceFactory.destroy();
 	}
 
-//	protected void createDbTable() throws Exception {
-//		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
-//		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
-//		liquibase.update(new Contexts());
-//	}
+	protected void createIbisStoreTable() throws Exception {
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
+		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
+		liquibase.update(new Contexts());
+	}
 
-	public void dropTable(String tableName) throws JdbcException {
-		if (dbmsSupport.isTablePresent(connection, tableName)) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
+	public boolean isTablePresent(String tableName) throws Exception {
+		try(Connection connection = getConnection()) {
+			return dbmsSupport.isTablePresent(connection, tableName);
+		}
+	}
+
+	public void dropTable(String tableName) throws Exception {
+		try(Connection connection = getConnection()) {
+			if (dbmsSupport.isTablePresent(connection, tableName)) {
+				JdbcUtil.executeStatement(connection, "DROP TABLE "+tableName);
+			}
+			assertFalse("table ["+tableName+"] should not exist", dbmsSupport.isTablePresent(connection, tableName));
 		}
 	}
 
 	protected void prepareDatabase() throws Exception {
-		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-			JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
+		try(Connection connection = getConnection()) {
+			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");
+				SQLWarning warnings = connection.getWarnings();
+				if(warnings != null) {
+					log.warn(JdbcUtil.warningsToString(warnings));
+				}
+			}
+			JdbcUtil.executeStatement(connection, 
+					"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
+					"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
+					"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
 			SQLWarning warnings = connection.getWarnings();
 			if(warnings != null) {
 				log.warn(JdbcUtil.warningsToString(warnings));
 			}
 		}
-		JdbcUtil.executeStatement(connection, 
-				"CREATE TABLE TEMP(TKEY "+dbmsSupport.getNumericKeyFieldType()+ " PRIMARY KEY, TVARCHAR "+dbmsSupport.getTextFieldType()+"(100), TINT INT, TNUMBER NUMERIC(10,5), " +
-				"TDATE DATE, TDATETIME "+dbmsSupport.getTimestampFieldType()+", TBOOLEAN "+dbmsSupport.getBooleanFieldType()+", "+ 
-				"TCLOB "+dbmsSupport.getClobFieldType()+", TBLOB "+dbmsSupport.getBlobFieldType()+")");
-		SQLWarning warnings = connection.getWarnings();
-		if(warnings != null) {
-			log.warn(JdbcUtil.warningsToString(warnings));
-		}
+	}
+
+	protected void autowire(JdbcFacade jdbcFacade) {
+		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
+		jdbcFacade.setDatasourceName(getDataSourceName());
+		jdbcFacade.setDbmsSupportFactory(dbmsSupportFactory);
 	}
 
 	public String getDataSourceName() {
@@ -173,7 +190,7 @@ public abstract class JdbcTestBase {
 
 	@AfterClass
 	public static void stopDatabase() throws Exception {
-		if (!connection.isClosed()) {
+		if (connection != null && !connection.isClosed()) {
 			try {
 				IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
 				if (dbmsSupport.isTablePresent(connection, "TEMP")) {
