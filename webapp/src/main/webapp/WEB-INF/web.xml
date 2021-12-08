@@ -187,11 +187,9 @@
 
 	<!-- security-constraint>
 		<web-resource-collection>
-			<web-resource-name>GUI</web-resource-name>
+			<web-resource-name>GUI login</web-resource-name>
 			<description></description>
-			<url-pattern>/iaf/gui</url-pattern>
-			<url-pattern>/iaf/gui/</url-pattern>
-			<url-pattern>/iaf/gui/*</url-pattern>
+			<url-pattern>/iaf/login.html</url-pattern>
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
 		</web-resource-collection>
