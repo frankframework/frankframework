@@ -42,9 +42,6 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	@Before
 	@Override
 	public void setup() throws Exception {
-		//everything fails when using XA transactions
-		assumeTrue(getTransactionManagerType() == TransactionManagerType.DATASOURCE);
-
 		super.setup();
 
 		listener = new JdbcTableListener();

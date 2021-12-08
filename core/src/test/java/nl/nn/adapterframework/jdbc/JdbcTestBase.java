@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -16,7 +17,6 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,6 +32,7 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.jdbc.TransactionManagerTestBase.TransactionManagerType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
@@ -49,8 +50,8 @@ public abstract class JdbcTestBase {
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
 
-	/** SIGH, DON'T USE THIS!! */
-	@Deprecated protected static Connection connection; // only to be used for setup and teardown like actions
+	/** Only to be used for setup and teardown like actions */
+	protected Connection connection;
 
 	@Parameterized.Parameter(0)
 	public @Getter TransactionManagerType transactionManagerType;
@@ -58,63 +59,28 @@ public abstract class JdbcTestBase {
 	public DataSource dataSource;
 
 	private @Getter DbmsSupportFactory dbmsSupportFactory = new DbmsSupportFactory();
-	public @Getter IDbmsSupport dbmsSupport;
+	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
-	public static List<Object[]> data() {
-		TransactionManagerType[] tmt = TransactionManagerType.values();
-		Object[][] matrix = new Object[tmt.length][];
+	public static Collection data() {
+		TransactionManagerType type = TransactionManagerType.DATASOURCE;
+		List<DataSource> datasources = type.getAvailableDataSources();
+		Object[][] matrix = new Object[datasources.size()][];
 
-		int index = 0;
-		for(TransactionManagerType type : TransactionManagerType.values()) {
-			List<DataSource> datasources = type.getAvailableDataSources();
-			for(DataSource ds : datasources) {
-				matrix[index] = new Object[] {type, ds};
-			}
-			index++;
+		int i = 0;
+		for(DataSource ds : datasources) {
+			matrix[i] = new Object[] {type, ds};
+			i++;
 		}
 
 		return Arrays.asList(matrix);
 	}
 
-	public enum TransactionManagerType {
-		DATASOURCE(URLDataSourceFactory.class), 
-		BTM(BTMXADataSourceFactory.class), 
-		NARAYANA(NarayanaXADataSourceFactory.class);
-
-		private @Getter URLDataSourceFactory dataSourceFactory;
-
-		private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
-			try {
-				dataSourceFactory = clazz.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}
-
-		public List<DataSource> getAvailableDataSources() {
-			return getDataSourceFactory().getAvailableDataSources();
-		}
-	}
-
 	@Before
 	public void setup() throws Exception {
-		switch (transactionManagerType) {
-			case DATASOURCE:
-				Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
-				productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
-				testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
-				break;
-			case BTM:
-				productKey = ((PoolingDataSource)dataSource).getUniqueName();
-				break;
-			case NARAYANA:
-				productKey = dataSource.toString();
-				break;
-			default:
-				throw new IllegalArgumentException("Don't know how to setup() for transactionManagerType ["+transactionManagerType+"]");
-		}
+		Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
+		productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 
 		connection = dataSource.getConnection();
 
@@ -127,6 +93,17 @@ public abstract class JdbcTestBase {
 	public void teardown() throws Exception {
 		if(liquibase != null) {
 			liquibase.dropAll();
+		}
+
+		if (connection != null && !connection.isClosed()) {
+			try {
+				IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
+				if (dbmsSupport.isTablePresent(connection, "TEMP")) {
+					connection.createStatement().execute("DROP TABLE TEMP");
+				}
+			} finally {
+				connection.close();
+			}
 		}
 	}
 
@@ -171,9 +148,10 @@ public abstract class JdbcTestBase {
 		}
 	}
 
+	/** Populates all database related fields that are normally wired through Spring */
 	protected void autowire(JdbcFacade jdbcFacade) {
-		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
 		jdbcFacade.setDatasourceName(getDataSourceName());
+		jdbcFacade.setDataSourceFactory(transactionManagerType.getDataSourceFactory());
 		jdbcFacade.setDbmsSupportFactory(dbmsSupportFactory);
 	}
 
@@ -188,24 +166,15 @@ public abstract class JdbcTestBase {
 		return dataSource.getConnection();
 	}
 
-	@AfterClass
-	public static void stopDatabase() throws Exception {
-		if (connection != null && !connection.isClosed()) {
-			try {
-				IDbmsSupport dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
-				if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-					connection.createStatement().execute("DROP TABLE TEMP");
-				}
-			} finally {
-				connection.close();
-			}
-		}
-	}
-	
+//	@AfterClass
+//	public static void stopDatabase() throws Exception {
+//		
+//	}
+
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
 	}
-	
+
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
 		dbmsSupport.convertQuery(context, "Oracle");
@@ -219,6 +188,5 @@ public abstract class JdbcTestBase {
 		JdbcUtil.executeStatement(connection, context.getQuery());
 		return null;
 	}
-	
 
 }

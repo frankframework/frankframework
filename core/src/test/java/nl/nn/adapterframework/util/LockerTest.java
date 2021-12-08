@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -23,7 +22,6 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
@@ -243,7 +241,7 @@ public class LockerTest extends TransactionManagerTestBase {
 
 			try {
 				try {
-					try (Connection conn = txManagedDataSource.getConnection()) {
+					try (Connection conn = getConnection()) {
 						
 						waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
 						insertDone.acquire();		// and wait that to be finished
@@ -333,7 +331,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		@Override
 		public void initAction() throws Exception {
 			super.initAction();
-			conn = txManagedDataSource.getConnection();
+			conn = getConnection();
 		}
 		
 		@Override
