@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,7 +22,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import bitronix.tm.resource.jdbc.PoolingDataSource;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -35,11 +33,10 @@ import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase.TransactionManagerType;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
-import nl.nn.adapterframework.testutil.NarayanaXADataSourceFactory;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
+
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
@@ -82,10 +79,6 @@ public abstract class JdbcTestBase {
 		productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 
-		connection = dataSource.getConnection();
-
-		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
-
 		prepareDatabase();
 	}
 
@@ -110,6 +103,7 @@ public abstract class JdbcTestBase {
 	protected void createIbisStoreTable() throws Exception {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
 		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
+		liquibase.dropAll();
 		liquibase.update(new Contexts());
 	}
 
@@ -129,6 +123,9 @@ public abstract class JdbcTestBase {
 	}
 
 	protected void prepareDatabase() throws Exception {
+		connection = getConnection();
+		dbmsSupport = dbmsSupportFactory.getDbmsSupport(connection);
+
 		try(Connection connection = getConnection()) {
 			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
 				JdbcUtil.executeStatement(connection, "DROP TABLE TEMP");

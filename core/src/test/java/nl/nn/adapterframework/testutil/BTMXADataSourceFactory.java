@@ -3,9 +3,21 @@ package nl.nn.adapterframework.testutil;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import bitronix.tm.Configuration;
+import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 
 public class BTMXADataSourceFactory extends URLXADataSourceFactory {
+
+	static {
+		Configuration configuration = TransactionManagerServices.getConfiguration();
+		configuration.setLogPart1Filename("target/btm1.log");
+		configuration.setLogPart2Filename("target/btm2.log");
+		configuration.setSkipCorruptedLogs(true);
+		configuration.setGracefulShutdownInterval(3);
+		configuration.setDefaultTransactionTimeout(5);
+		TransactionManagerServices.getTransactionManager(); //Create the TX once
+	}
 
 	@Override
 	protected DataSource augmentXADataSource(XADataSource xaDataSource, String product) {

@@ -16,6 +16,7 @@ import javax.transaction.SystemException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -26,13 +27,20 @@ import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
 
 public class BtmJtaTransactionManagerTest {
-	
+
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
-	
+
 	private BtmJtaTransactionManager delegateTransactionManager;
 	private TemporaryFolder folder;
-	
+
+	@BeforeClass
+	public static void ensureBTMisNotActive() {
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			TransactionManagerServices.getTransactionManager().shutdown();
+		}
+	}
+
 	@Before
 	public void setup() throws IOException {
 		folder = new TemporaryFolder();

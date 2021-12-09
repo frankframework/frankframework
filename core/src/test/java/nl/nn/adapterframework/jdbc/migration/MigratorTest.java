@@ -34,8 +34,6 @@ public class MigratorTest extends JdbcTestBase {
 	private TestConfiguration configuration;
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
-//	private String rootLoggerName="nl.nn.adapterframework";
-//	private String liquibaseLoggerName="liquibase";
 
 	private TestConfiguration getConfiguration() {
 		if(configuration == null) {
@@ -46,12 +44,14 @@ public class MigratorTest extends JdbcTestBase {
 
 	@Override
 	protected void prepareDatabase() throws Exception {
+		super.prepareDatabase();
 		//Ignore programmatic creation of Temp table, run Liquibase instead!
 		dropTable(tableName);
 		dropTable("DATABASECHANGELOG");
 		dropTable("DATABASECHANGELOGLOCK");
 
 		migrator = getConfiguration().createBean(LiquibaseMigrator.class);
+		migrator.setDataSourceFactory(getTransactionManagerType().getDataSourceFactory());
 		migrator.setDatasourceName(getDataSourceName());
 	}
 

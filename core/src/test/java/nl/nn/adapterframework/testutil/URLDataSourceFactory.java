@@ -49,7 +49,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
 			@Override
 			public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
-				return "DataSource ["+product+"] url [" + getUrl()+"]";
+				return product;
 			}
 		};
 

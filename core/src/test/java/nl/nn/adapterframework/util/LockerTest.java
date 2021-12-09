@@ -18,7 +18,6 @@ import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
@@ -312,12 +311,12 @@ public class LockerTest extends TransactionManagerTestBase {
 
 	}
 
-	public void cleanupLocks() throws JdbcException {
-		JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
+	public void cleanupLocks() throws Exception {
+		JdbcUtil.executeStatement(getConnection(), "DELETE FROM IBISLOCK");
 	}
 
-	public int getRowCount() throws JdbcException {
-		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+	public int getRowCount() throws Exception {
+		return JdbcUtil.executeIntQuery(getConnection(), "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
 	private class LockerTester extends ConcurrentManagedTransactionTester {
