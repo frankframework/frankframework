@@ -1053,7 +1053,7 @@ angular.module('iaf.beheerconsole')
 								fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
 									if (res.type === "opaqueredirect") {
 										// if the request ended in a redirect that failed, then login
-										login_url = Misc.getServerPath() + 'iaf/login.html';
+										login_url = Misc.getServerPath() + 'iaf/';
 										window.location.href = login_url;
 									}
 								});
