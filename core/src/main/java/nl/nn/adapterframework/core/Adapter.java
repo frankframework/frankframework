@@ -176,7 +176,7 @@ public class Adapter implements IAdapter, NamedBean {
 			throw new ConfigurationException(msg);
 		}
 
-		if(!pipeline.isConfigurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
+		if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
 			try {
 				pipeline.setAdapter(this);
 				pipeline.configure();

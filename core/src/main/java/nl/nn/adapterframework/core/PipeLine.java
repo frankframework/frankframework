@@ -87,6 +87,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	public final static String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
+	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
+	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
+	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
+
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter String commitOnState = "success"; // exit state on which receiver will commit XA transactions
@@ -95,41 +100,32 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
-	private @Setter PipeLineProcessor pipeLineProcessor;
+	private @Getter IValidator inputValidator  = null;
+	private @Getter IValidator outputValidator = null;
+	private @Getter IWrapperPipe inputWrapper    = null;
+	private @Getter IWrapperPipe outputWrapper   = null;
+	private @Getter Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
+	private Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
+	private @Getter Locker locker;
+	private @Getter ICache<String,String> cache;
+
+	private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
+	private @Getter List<IPipe> pipes	  = new ArrayList<IPipe>();
 
 	private @Getter Adapter adapter;    // for transaction managing
 	private @Getter INamedObject owner; // for logging purposes
+	private @Setter PipeLineProcessor pipeLineProcessor;
 
 	private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>(); // needless synchronization?
 	private Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<String, StatisticsKeeper>();
 	private @Getter StatisticsKeeper requestSizeStats;
 	private Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<String, StatisticsKeeper>();
 
-	private Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
-
-
-	public final static String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
-	public final static String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
-	public final static String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
-	public final static String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
-
-	private @Getter IValidator inputValidator  = null;
-	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper    = null;
-	private @Getter IWrapperPipe outputWrapper   = null;
-	private @Getter Locker locker;
-	private @Getter ICache<String,String> cache;
-
-	private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
-	private @Getter List<IPipe> pipes	  = new ArrayList<IPipe>();
-	// set of exits paths with their state
-	private @Getter Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
-
 
 	private @Getter List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 
-	private @Getter boolean configurationSucceeded = false;
+	private boolean configurationSucceeded = false;
 
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
@@ -322,6 +318,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+"pipe ["+pipe.getName()+"] successfully configured: ["+pipe.toString()+"]");
 		}
+	}
+
+	public boolean configurationSucceeded() {
+		return configurationSucceeded;
 	}
 
 	public PipeLineExit findExitByState(String state) {
