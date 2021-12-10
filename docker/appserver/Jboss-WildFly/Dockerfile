@@ -7,3 +7,6 @@ COPY target/dependencies/ibis-adapterframework-ear.ear ${JBOSS_HOME}/standalone/
 
 # copy JDBC and JMS drivers
 COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/lib/
+
+# Insert fake module.xml for jdk.unsupported
+COPY module.xml ${JBOSS_HOME}/modules/system/layers/base/jdk/unsupported/main/

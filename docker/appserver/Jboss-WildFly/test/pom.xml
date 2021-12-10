@@ -26,12 +26,6 @@
 			<classifier>full-configuration</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>scenarios</classifier>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-all</artifactId>
 			<version>5.6.0</version>
