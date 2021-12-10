@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.jdbc;
 
-import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -17,13 +15,11 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
-import lombok.Getter;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
 import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
-import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
-import nl.nn.adapterframework.testutil.NarayanaXADataSourceFactory;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
@@ -93,27 +89,6 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 				break;
 			default:
 				productKey = dataSource.toString();
-		}
-	}
-
-	public enum TransactionManagerType {
-		DATASOURCE(URLDataSourceFactory.class), 
-		BTM(BTMXADataSourceFactory.class), 
-		NARAYANA(NarayanaXADataSourceFactory.class);
-
-		private @Getter URLDataSourceFactory dataSourceFactory;
-
-		private TransactionManagerType(Class<? extends URLDataSourceFactory> clazz) {
-			try {
-				dataSourceFactory = clazz.newInstance();
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}
-
-		public List<DataSource> getAvailableDataSources() {
-			return getDataSourceFactory().getAvailableDataSources();
 		}
 	}
 
