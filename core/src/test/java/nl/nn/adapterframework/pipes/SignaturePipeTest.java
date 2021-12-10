@@ -15,8 +15,10 @@ import javax.net.ssl.X509KeyManager;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
@@ -75,6 +77,49 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
+	}
+	
+	@Test
+	public void testMultipasswordKeystoreAuthAlias() throws Exception {
+		pipe.setKeystore("/Signature/ks_multipassword.pfx");
+		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystoreAlias("1");
+		pipe.setKeystoreAliasAuthAlias("key1");
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(new Message(testMessage));
+
+		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertEquals(testSignature, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void testMultipasswordKeystoreAuthAliasFail() throws Exception {
+		pipe.setKeystore("/Signature/ks_multipassword.pfx");
+		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystoreAlias("1");
+
+		exception.expect(PipeStartException.class);
+		exception.expectMessage("cannot get Private Key for signing in alias [1]");
+		configureAndStartPipe();
+
+	}
+
+	@Test
+	public void testMultientryKeystore() throws Exception {
+		pipe.setKeystore("/Signature/ks_multientry.pfx");
+		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystoreAlias("2nd");
+		pipe.setKeystoreAliasAuthAlias("key2");
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(new Message(testMessage));
+
+		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertEquals(testSignature, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+
 	}
 
 	@Test

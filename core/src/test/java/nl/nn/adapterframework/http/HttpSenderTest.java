@@ -831,4 +831,49 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		String result = sender.sendMessage(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
 	}
+
+	@Test
+	public void testMultiPasswordKeystore() throws Throwable { // keystore and the key pair have different password
+		String pfxCertificate = "/Signature/ks_multipassword.pfx";
+
+		HttpSender sender = getSender();
+		sender.setKeystore(pfxCertificate);
+		sender.setKeystoreAuthAlias("ks_alias");
+		sender.setKeystoreAliasAuthAlias("key1");
+
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+
+	}
+
+	@Test
+	public void testTrySamePasswordForMultiPasswordKeystore() throws Throwable { // keystore and the key pair have different password
+		String pfxCertificate = "/Signature/ks_multipassword.pfx";
+
+		HttpSender sender = getSender();
+		sender.setKeystore(pfxCertificate);
+		sender.setKeystoreAuthAlias("ks_alias");
+
+		sender.setMethodType(HttpMethod.GET);
+		exception.expect(ConfigurationException.class);
+		exception.expectMessage("bad key");
+		sender.configure();
+
+	}
+	
+	@Test
+	public void testMultiEntryandPasswordKeystore() throws Throwable { // keystore and the key pairs have different password
+		String pfxCertificate = "/Signature/ks_multientry.pfx";
+
+		HttpSender sender = getSender();
+		sender.setKeystore(pfxCertificate);
+		sender.setKeystoreAuthAlias("ks_alias");
+		sender.setKeystoreAliasAuthAlias("key1");
+
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+
+	}
 }

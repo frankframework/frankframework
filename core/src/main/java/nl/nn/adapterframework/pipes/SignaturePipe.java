@@ -137,12 +137,13 @@ public class SignaturePipe extends FixedForwardPipe {
 					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
 				} else {
 					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCredentialFactory.getPassword(), keyManagerAlgorithm);
-					if (keymanagers==null || keymanagers.length==0) {
-						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
-					}
-					X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
-					privateKey = keyManager.getPrivateKey(getKeystoreAlias());
+//					
+//					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCredentialFactory.getPassword(), keyManagerAlgorithm);
+//					if (keymanagers==null || keymanagers.length==0) {
+//						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
+//					}
+//					X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
+					privateKey = (PrivateKey) keystore.getKey(getKeystoreAlias(), keystoreAliasCredentialFactory.getPassword().toCharArray());
 				}
 				if (privateKey==null) {
 					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]");
@@ -282,7 +283,7 @@ public class SignaturePipe extends FixedForwardPipe {
 	 * @ff default same as <code>keystoreAuthAlias</code>
 	 */
 	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAuthAlias = string;
+		keystoreAliasAuthAlias = string;
 	}
 
 	/** KeystoreAlias password 
