@@ -28,13 +28,14 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="IBISSTORE";
+	private final String tableName="JOBDEFTEST";
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		createIbisStoreTable();
+		System.setProperty("tableName", tableName);
+		runMigrator(TEST_CHANGESET_PATH);
 
 		configuration = new TestConfiguration();
 		Adapter adapter = setupAdapter(); 

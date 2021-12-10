@@ -62,7 +62,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(Connection connection) {
+	public IDbmsSupport getDbmsSupport(Connection connection) throws SQLException {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
 			String name = md.getDatabaseProductName();

@@ -16,6 +16,7 @@ public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 		configuration.setSkipCorruptedLogs(true);
 		configuration.setGracefulShutdownInterval(3);
 		configuration.setDefaultTransactionTimeout(5);
+		configuration.setDisableJmx(true);
 		TransactionManagerServices.getTransactionManager(); //Create the TX once
 	}
 

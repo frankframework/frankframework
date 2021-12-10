@@ -11,7 +11,9 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -27,17 +29,44 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 public class LockerTest extends TransactionManagerTestBase {
 
 	private Locker locker;
+	private boolean tableCreated = false;
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
 
-		createIbisStoreTable();
+		createDbTableIfNotExists();//cannot run migrator as the ibislock table name is not configurable
 
 		locker = new Locker();
 		autowire(locker);
 		locker.setFirstDelay(0);
+	}
+
+	private void createDbTableIfNotExists() throws Exception {
+		try(Connection connection = getConnection()) {
+			if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
+				JdbcUtil.executeStatement(connection,
+					"CREATE TABLE IBISLOCK(" + 
+					"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
+					"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " + 
+					"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " + 
+					"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " + 
+					"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
+				tableCreated = true;
+			}
+		}
+	}
+
+	@After
+	@Override
+	public void teardown() throws Exception {
+		if (tableCreated) {
+			try(Connection connection = getConnection()) {
+				JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
+			}
+		}
+		super.teardown();
 	}
 
 	@Test
@@ -312,11 +341,15 @@ public class LockerTest extends TransactionManagerTestBase {
 	}
 
 	public void cleanupLocks() throws Exception {
-		JdbcUtil.executeStatement(getConnection(), "DELETE FROM IBISLOCK");
+		try(Connection connection = getConnection()) {
+			JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
+		}
 	}
 
 	public int getRowCount() throws Exception {
-		return JdbcUtil.executeIntQuery(getConnection(), "SELECT COUNT(*) FROM IBISLOCK");
+		try(Connection connection = getConnection()) {
+			return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+		}
 	}
 
 	private class LockerTester extends ConcurrentManagedTransactionTester {

@@ -9,9 +9,6 @@ import static org.junit.Assume.assumeTrue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +22,6 @@ import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
-import oracle.jdbc.pool.OracleDataSource;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
 

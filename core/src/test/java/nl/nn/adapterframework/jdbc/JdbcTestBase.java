@@ -40,7 +40,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
-	private final static String IBISSTORE_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
+	protected final static String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
+	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
 	protected Liquibase liquibase;
@@ -86,6 +87,7 @@ public abstract class JdbcTestBase {
 	public void teardown() throws Exception {
 		if(liquibase != null) {
 			liquibase.dropAll();
+			liquibase.close();
 		}
 
 		if (connection != null && !connection.isClosed()) {
@@ -100,9 +102,10 @@ public abstract class JdbcTestBase {
 		}
 	}
 
-	protected void createIbisStoreTable() throws Exception {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(getConnection()));
-		liquibase = new Liquibase(IBISSTORE_CHANGESET_PATH, new ClassLoaderResourceAccessor(), db);
+	//IBISSTORE_CHANGESET_PATH
+	protected void runMigrator(String changeLogFile) throws Exception {
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
 		liquibase.dropAll();
 		liquibase.update(new Contexts());
 	}
@@ -124,7 +127,7 @@ public abstract class JdbcTestBase {
 
 	protected void prepareDatabase() throws Exception {
 		connection = getConnection();
-		dbmsSupport = dbmsSupportFactory.getDbmsSupport(connection);
+		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 
 		try(Connection connection = getConnection()) {
 			if (dbmsSupport.isTablePresent(connection, "TEMP")) {
@@ -157,6 +160,7 @@ public abstract class JdbcTestBase {
 	}
 
 	/**
+	 * <b>Make sure to close this!</b>
 	 * @return a new Connection each time this method is called
 	 */
 	public Connection getConnection() throws SQLException {
