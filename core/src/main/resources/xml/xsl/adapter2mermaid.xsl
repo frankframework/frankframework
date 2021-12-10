@@ -2,8 +2,10 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
 	<xsl:output method="text" indent="yes" omit-xml-declaration="yes"/>
 
-	<xsl:variable name="errorForwards" select="('exception','failure','fail','timeout','illegalResult','presumedTimeout','interrupt','parserError','outputParserError','outputFailure')"/>
 	<xsl:variable name="adapterCount" select="count(//adapter)"/>
+	<xsl:variable name="pipeTypes" select="document('pipeTypes.xml')/root"/>
+	<xsl:variable name="defaultStyle">normal</xsl:variable>
+	<xsl:variable name="errorForwards" select="('exception','failure','fail','timeout','illegalResult','presumedTimeout','interrupt','parserError','outputParserError','outputFailure')"/>
 
 	<xsl:template match="/">
 		<!-- Create the Mermaid graph in 2 steps
@@ -14,9 +16,46 @@
 		</xsl:variable>
 
 		<xsl:text>graph&#10;</xsl:text>
-		<xsl:text>	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
-		<xsl:apply-templates select="$preproccessedAdapter" mode="convertElements"/>
-		<xsl:apply-templates select="$preproccessedAdapter//forward" mode="convertForwards"/>
+		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
+		<xsl:text>	classDef normal fill:#fff,stroke-width:2px,stroke:#4FD365;&#10;</xsl:text>
+		<xsl:text>	classDef errorOutline stroke:#D13030;&#10;</xsl:text>
+		<xsl:text>	classDef endpoint fill:#48C0B7;&#10;</xsl:text>
+		<xsl:text>	classDef validator fill:#D6FBD1;&#10;</xsl:text>
+		<xsl:text>	classDef wrapper fill:#CBF4FC;&#10;</xsl:text>
+		<xsl:text>	classDef router fill:#F8C243;&#10;</xsl:text>
+		<xsl:text>	classDef iterator fill:#E479D1;&#10;</xsl:text>
+		<xsl:text>	classDef translator fill:#3EABE4;&#10;</xsl:text>
+		<xsl:variable name="elements" select="$preproccessedConfiguration//(receiver|inputValidator|inputWrapper|pipe|outputWrapper|outputValidator|exit)"/>
+		<xsl:for-each-group select="$elements" group-by="@style">
+			<xsl:text>	class </xsl:text>
+			<xsl:value-of select="current-group()/@elementID" separator=","/>
+			<xsl:text> </xsl:text>
+			<xsl:value-of select="current-grouping-key()"/>
+			<xsl:text>;&#10;</xsl:text>
+		</xsl:for-each-group>
+		<xsl:variable name="forwards" select="$preproccessedConfiguration//forward"/>
+		<xsl:apply-templates select="$forwards" mode="convertForwards"/>
+		<xsl:variable name="forwardNums">
+			<xsl:for-each select="$forwards">
+				<xsl:element name="forward">
+					<xsl:copy-of select="@errorHandling"/>
+					<xsl:attribute name="pos" select="position() - 1"/>
+				</xsl:element>
+			</xsl:for-each>
+		</xsl:variable>
+		<xsl:for-each-group select="$forwardNums/forward" group-by="@errorHandling">
+			<xsl:text>	linkStyle </xsl:text>
+			<xsl:value-of select="current-group()/@pos" separator=","/>
+			<xsl:choose>
+				<xsl:when test="xs:boolean(current-grouping-key())">
+					<xsl:text> stroke:#D13030,fill:none;</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text> stroke:#4FD365,fill:none;</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:text>&#10;</xsl:text>
+		</xsl:for-each-group>
 	</xsl:template>
 
 	<xsl:template match="*" mode="preprocess">
@@ -64,6 +103,7 @@
 				<xsl:attribute name="name" select="'success'"/>
 				<xsl:attribute name="path" select="$targetID"/>
 				<xsl:attribute name="targetID" select="$targetID"/>
+				<xsl:attribute name="errorHandling" select="'false'"/>
 			</xsl:element>
 		</xsl:copy>
 	</xsl:template>
@@ -105,6 +145,7 @@
 					<xsl:apply-templates select="ancestor::pipeline/outputValidator" mode="#current">
 						<xsl:with-param name="exit" select="."/>
 					</xsl:apply-templates>
+					<xsl:apply-templates select="." mode="#current"/>
 				</xsl:for-each>
 			</xsl:variable>
 
@@ -113,8 +154,6 @@
 					<xsl:copy-of select="$pipelineWithExplicitForwards/*"/>
 				</xsl:with-param>
 			</xsl:apply-templates>
-
-			<xsl:apply-templates select="$usedExits" mode="#current"/>
 		</xsl:copy>
 	</xsl:template>
 	
@@ -159,6 +198,7 @@
 
 		<xsl:copy>
 			<xsl:attribute name="elementID" select="concat(generate-id(), '-', $exit/@path)"/>
+			<xsl:call-template name="stylePipe"/>
 			<xsl:attribute name="name" select="'OutputWrapper'"/>
 			<xsl:apply-templates select="*|@*" mode="#current"/>
 			<!-- Add success forward -->
@@ -184,6 +224,7 @@
 
 		<xsl:copy>
 			<xsl:attribute name="elementID" select="concat(generate-id(), '-', $exit/@path)"/>
+			<xsl:call-template name="stylePipe"/>
 			<xsl:attribute name="name" select="'OutputValidator'"/>
 			<xsl:apply-templates select="*|@*" mode="#current"/>
 			<xsl:apply-templates select="../global-forwards/forward[not(@name = current()/forward/@name)]" mode="#current"/>
@@ -302,8 +343,8 @@
 	<xsl:template match="forward" mode="preprocess">
 		<xsl:param name="pipeline" select="ancestor::pipeline"/>
 		<xsl:copy>
+			<xsl:attribute name="elementID" select="generate-id()"/>
 			<xsl:variable name="target" select="$pipeline/(pipe[@name=current()/@path]|exits/exit[@path=current()/@path])[1]"/>
-
 			<!-- When the forward is an exit, link it to the corresponding outputWrapper or outputValidator -->
 			<xsl:choose>
 				<xsl:when test="local-name($target)='exit'">
@@ -362,7 +403,7 @@
 			</xsl:for-each>
 		</xsl:variable>
 
-		<!-- When processing the pipes via forwards, loops might result in pipes being duplicated, so deduplicate them and only keep the earliest occurence -->
+		<!-- When processing the pipes via forwards, loops might result in pipes being duplicated, so sort them by errorHandling only keep the first of that-->
 		<xsl:choose>
 			<xsl:when test="$finalProcessing">
 				<xsl:for-each-group select="$processedPipes/*" group-by="@elementID">
@@ -381,6 +422,7 @@
 
 	<xsl:template name="defaultCopyActions">
 		<xsl:attribute name="elementID" select="generate-id()"/>
+		<xsl:call-template name="stylePipe"/>
 		<xsl:apply-templates select="*|@*" mode="#current"/>
 	</xsl:template>
 	
@@ -391,7 +433,13 @@
 
 	<xsl:template name="switchPipeCopyActions">
 		<xsl:attribute name="elementID" select="generate-id()"/>
+		<xsl:call-template name="stylePipe"/>
 		<xsl:apply-templates select="*[local-name() != 'forward']|@*" mode="#current"/>
+	</xsl:template>
+
+	<xsl:template name="stylePipe">
+		<xsl:variable name="pipeType" select="($pipeTypes/*[name()=(current()/@className,current()/local-name())]|$defaultStyle)[1]"/>
+		<xsl:attribute name="style" select="$pipeType"/>
 	</xsl:template>
 	
 	<xsl:template name="createForward">
@@ -411,7 +459,7 @@
 	</xsl:template>
 
 	<xsl:template match="*|@*|text()" mode="convertElements">
-		<xsl:apply-templates select="*|@*|text()" mode="#current"/>
+		<xsl:apply-templates select="*" mode="#current"/>
 	</xsl:template>
 
 	<xsl:template match="adapter" mode="convertElements">
@@ -435,8 +483,7 @@
 		<xsl:text>{{Receiver</xsl:text>
 		<xsl:text>&lt;br/></xsl:text>
 		<xsl:value-of select="tokenize(listener/@className, '\.')[last()]"/>
-		<xsl:text>}}</xsl:text>
-		<xsl:text>&#10;</xsl:text>
+		<xsl:text>}}:::normal&#10;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="inputValidator" mode="convertElements">
@@ -444,52 +491,34 @@
 		<xsl:value-of select="@elementID"/>
 		<xsl:text>([InputValidator&lt;br/></xsl:text>
 		<xsl:value-of select="tokenize(@className, '\.')[last()]"/>
-		<xsl:text>])</xsl:text>
-		<xsl:text>&#10;</xsl:text>
+		<xsl:text>]):::normal&#10;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="outputValidator" mode="convertElements">
-		<xsl:if test="xs:boolean(@errorHandling)">
-			<xsl:text>	style </xsl:text>
-			<xsl:value-of select="@elementID"/>
-			<xsl:text> stroke-dasharray: 4 4</xsl:text>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:text>([OutputValidator&lt;br/></xsl:text>
 		<xsl:value-of select="tokenize(@className, '\.')[last()]"/>
 		<xsl:text>])</xsl:text>
+		<xsl:apply-templates select="@errorHandling"/>
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="inputWrapper" mode="convertElements">
-		<xsl:if test="xs:boolean(@errorHandling)">
-			<xsl:text>	style </xsl:text>
-			<xsl:value-of select="@elementID"/>
-			<xsl:text> stroke-dasharray: 4 4</xsl:text>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:text>([InputWrapper&lt;br/></xsl:text>
 		<xsl:value-of select="tokenize(@className, '\.')[last()]"/>
-		<xsl:text>])</xsl:text>
-		<xsl:text>&#10;</xsl:text>
+		<xsl:text>]):::normal&#10;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="outputWrapper" mode="convertElements">
-		<xsl:if test="xs:boolean(@errorHandling)">
-			<xsl:text>	style </xsl:text>
-			<xsl:value-of select="@elementID"/>
-			<xsl:text> stroke-dasharray: 4 4</xsl:text>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:text>([OutputWrapper&lt;br/></xsl:text>
 		<xsl:value-of select="tokenize(@className, '\.')[last()]"/>
 		<xsl:text>])</xsl:text>
+		<xsl:apply-templates select="@errorHandling"/>
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 
@@ -499,12 +528,6 @@
 											or@className='nl.nn.adapterframework.pipes.CompareStringPipe'
 											or@className='nl.nn.adapterframework.pipes.FilenameSwitch'
 											or@className='nl.nn.adapterframework.pipes.XmlIf'"/>
-		<xsl:if test="xs:boolean(@errorHandling)">
-			<xsl:text>	style </xsl:text>
-			<xsl:value-of select="@elementID"/>
-			<xsl:text> stroke-dasharray: 4 4</xsl:text>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="if ($isSwitch) then ('{') else ('(')"/>
@@ -519,6 +542,7 @@
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:value-of select="if ($isSwitch) then ('}') else (')')"/>
+		<xsl:apply-templates select="@errorHandling"/>
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 
@@ -532,19 +556,32 @@
 			<xsl:value-of select="@code"/>
 		</xsl:if>
 		<xsl:text>}}</xsl:text>
+		<xsl:apply-templates select="@errorHandling"/>
 		<xsl:text>&#10;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="@errorHandling">
+		<xsl:text>:::</xsl:text>
+		<xsl:choose>
+			<xsl:when test="xs:boolean(.)">
+				<xsl:text>errorOutline</xsl:text>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>normal</xsl:text>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
-		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' -. ') else (' --> |')"/>
+		<xsl:text> --> |</xsl:text>
 		<xsl:value-of select="@name"/>
 		<xsl:if test="exists(@customText)">
 			<xsl:text>&lt;br/></xsl:text>
 			<xsl:value-of select="@customText"/>
 		</xsl:if>
-		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' .-> ') else ('| ')"/>
+		<xsl:text>| </xsl:text>
 		<xsl:value-of select="@targetID"/>
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
