@@ -43,8 +43,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive messages as a web-service.
+ * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
+ * See <a href="https://en.wikipedia.org/wiki/SOAP">Wikipedia</a>. The structure of the SOAP messages
+ * is expressed in a WSDL (Web Services Description Language) document. For each WebServiceListener, a WSDL document is generated
+ * that can be found in the Frank!Console, main menu item "Webservices".  
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot

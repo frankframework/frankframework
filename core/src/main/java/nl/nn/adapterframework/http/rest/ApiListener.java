@@ -34,6 +34,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 
 /**
+ * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * See <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">Wikipedia</a>. The structure of the REST messages is described
+ * by an OpenAPI specification. The Frank!Framework generates an OpenAPI specification for each configuration that contains
+ * ApiListener instances. You can
+ * find it in the Frank!Console under main menu item "Webservices". 
  * 
  * @author Niels Meijer
  *
