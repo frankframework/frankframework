@@ -67,7 +67,7 @@ jobs:
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: mvn -B -V -e -T1 package -P${{env.PROFILES}}
+      run: mvn -B -V -T1 package -P${{env.PROFILES}}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
@@ -77,6 +77,12 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
+    - name: Store Test Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Surefire
+        path: ${{ github.workspace }}/target/surefire-reports/*
 
     - name: Store FrankDoc XSD
       uses: actions/upload-artifact@v2
