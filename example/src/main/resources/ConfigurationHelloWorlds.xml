@@ -3,7 +3,9 @@
 		<receiver name="HelloWorlds" >
 			<listener
 				name="HelloWorlds"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="hello-worlds"
+				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="CheckInputIsXml">
