@@ -157,7 +157,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 		log.info("starting all autostart-configured adapters in AdapterManager ["+this+"]");
 		for (Adapter adapter : getAdapterList()) {
-			if (adapter.isConfigurationSucceeded() && adapter.isAutoStart()) {
+			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
 				log.info("Starting adapter [" + adapter.getName() + "]");
 				adapter.startRunning();
 			}

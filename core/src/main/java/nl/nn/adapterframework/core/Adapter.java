@@ -145,7 +145,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private RunStateManager runState = new RunStateManager();
-	private @Getter boolean configurationSucceeded = false;
+	private boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
@@ -238,6 +238,10 @@ public class Adapter implements IAdapter, NamedBean {
 			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + ": " + e.getMessage());
 			throw e;
 		}
+	}
+
+	public boolean configurationSucceeded() {
+		return configurationSucceeded;
 	}
 
 	/** 
