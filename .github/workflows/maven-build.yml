@@ -79,6 +79,7 @@ jobs:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
     - name: Store Test Results
+      if: failure()
       uses: actions/upload-artifact@v2
       with:
         name: Surefire
