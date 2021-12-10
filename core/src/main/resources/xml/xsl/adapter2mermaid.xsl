@@ -8,8 +8,7 @@
 	<xsl:template match="/">
 		<!-- Create the Mermaid graph in 2 steps
 			- First preprocess adapters, putting pipes in the correct order, explicitly adding implicit forwards and preprocess input and output validators and wrappers
-			- Then convert the adapter to mermaid code
-		-->
+			- Then convert the adapter to mermaid code-->
 		<xsl:variable name="preproccessedAdapter">
 			<xsl:apply-templates select="*" mode="preprocess"/>
 		</xsl:variable>
@@ -18,7 +17,6 @@
 		<xsl:text>	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedAdapter" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedAdapter//forward" mode="convertForwards"/>
-<!--		<xsl:copy-of select="$preproccessedAdapter"/>-->
 	</xsl:template>
 
 	<xsl:template match="*" mode="preprocess">
@@ -367,7 +365,6 @@
 		<!-- When processing the pipes via forwards, loops might result in pipes being duplicated, so deduplicate them and only keep the earliest occurence -->
 		<xsl:choose>
 			<xsl:when test="$finalProcessing">
-<!--				<test1>-->
 				<xsl:for-each-group select="$processedPipes/*" group-by="@elementID">
 					<xsl:variable name="sorted">
 						<xsl:for-each select="current-group()">
@@ -375,20 +372,8 @@
 							<xsl:copy-of select="."/>
 						</xsl:for-each>
 					</xsl:variable>
-<!--					<xsl:sort select="@iterationDepth"/>-->
 					<xsl:copy-of select="$sorted/*[1]"/>
 				</xsl:for-each-group>
-<!--				</test1>-->
-<!--				<test>-->
-<!--					<xsl:for-each select="$processedPipes/*">-->
-<!--						<xsl:sort select="@errorHandling"/>-->
-<!--						<xsl:sort select="@iterationDepth"/>-->
-<!--						<xsl:copy-of select="."/>-->
-<!--					</xsl:for-each>-->
-<!--				</test>-->
-
-				<!-- The process of following forwards skips orphaned pipes, but still show those TBD -->
-
 			</xsl:when>
 			<xsl:otherwise><xsl:copy-of select="$processedPipes"/></xsl:otherwise>
 		</xsl:choose>
@@ -522,10 +507,7 @@
 		</xsl:if>
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
-		<xsl:choose>
-			<xsl:when test="$isSwitch">{</xsl:when>
-			<xsl:otherwise>(</xsl:otherwise>
-		</xsl:choose>
+		<xsl:value-of select="if ($isSwitch) then ('{') else ('(')"/>
 		<xsl:value-of select="@name"/>
 		<xsl:text>&lt;br/></xsl:text>
 		<xsl:choose>
@@ -536,10 +518,7 @@
 				<xsl:value-of select="tokenize(@className, '\.')[last()]"/>
 			</xsl:otherwise>
 		</xsl:choose>
-		<xsl:choose>
-			<xsl:when test="$isSwitch">}</xsl:when>
-			<xsl:otherwise>)</xsl:otherwise>
-		</xsl:choose>
+		<xsl:value-of select="if ($isSwitch) then ('}') else (')')"/>
 		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 
