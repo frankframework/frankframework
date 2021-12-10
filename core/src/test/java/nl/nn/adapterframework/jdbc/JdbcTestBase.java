@@ -167,11 +167,6 @@ public abstract class JdbcTestBase {
 		return dataSource.getConnection();
 	}
 
-//	@AfterClass
-//	public static void stopDatabase() throws Exception {
-//		
-//	}
-
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
 		return executeTranslatedQuery(connection, query, queryType, false);
 	}
