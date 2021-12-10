@@ -150,8 +150,8 @@ public class FtpSender extends SenderWithParametersBase {
 	public void setFtpType(String string) {
 		ftpSession.setFtpType(string);
 	}
-	public FtpType getFtpTypeEnum() {
-		return ftpSession.getFtpTypeEnum();
+	public FtpType getFtpType() {
+		return ftpSession.getFtpType();
 	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})

@@ -209,6 +209,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
 	private @Getter String keyAuthAlias;
+	private @Getter String keyAlias;
 	private @Getter String keyPassword;
 	private @Getter String keyManagerAlgorithm=null;
 	private @Getter String truststore=null;
@@ -382,7 +383,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
 					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), keyCf.getPassword(), getKeyManagerAlgorithm(),
+							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), getKeyAlias(), keyCf.getPassword(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
 							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
@@ -976,6 +977,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		keyPassword = string;
 	}
 
+	public void setKeyAlias(String string) {
+		keyAlias = string;
+	}
 
 	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
 	public void setTruststore(String string) {

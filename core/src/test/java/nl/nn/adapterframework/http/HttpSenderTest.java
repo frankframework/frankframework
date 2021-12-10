@@ -895,4 +895,20 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 
 	}
+	
+	@Test
+	public void testMultiEntryandDifferentPassword2ndAlias() throws Throwable {
+
+		String pfxCertificate = "/Signature/ks_multientry_differentpassword.pfx";
+
+		HttpSender sender = getSender();
+		sender.setKeystore(pfxCertificate);
+		sender.setKeystoreAuthAlias("ks_alias");
+		sender.setKeyAlias("2nd");
+		sender.setKeystoreAliasAuthAlias("key2");
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.configure();
+
+	}
 }

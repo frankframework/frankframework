@@ -95,8 +95,8 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 	public void setFtpType(String value) {
 		getFileSystem().setFtpType(value);
 	}
-	public FtpType getFtpTypeEnum() {
-		return getFileSystem().getFtpTypeEnum();
+	public FtpType getFtpType() {
+		return getFileSystem().getFtpType();
 	}
 
 	@IbisDoc({"File type, one of ascii, binary", ""})

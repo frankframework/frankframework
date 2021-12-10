@@ -32,6 +32,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -47,6 +48,7 @@ public class AuthSSLContextFactory {
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
+	protected String keyAlias = null;
 	protected String keyPassword = null;
 	protected String keyManagerAlgorithm = null;
 	protected URL truststoreUrl = null;
@@ -59,22 +61,22 @@ public class AuthSSLContextFactory {
 	protected SSLContext sslContext = null;
 
 	public static SSLContext createSSLContext(
-			URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm, 
+			URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm, 
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) throws GeneralSecurityException, IOException {
-		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
+		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyAlias, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, protocol);
 		return socket.getSSLContext();
 	}
 
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm, 
+	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm, 
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException) {
-		this(keystoreUrl, keystorePassword, keystoreType, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
+		this(keystoreUrl, keystorePassword, keystoreType, keyAlias, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
 				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, null);
 	}
 
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyPassword, String keyManagerAlgorithm,
+	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm,
 			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) {
 
@@ -82,6 +84,7 @@ public class AuthSSLContextFactory {
 		this.keystorePassword = keystorePassword;
 		this.keystoreType = keystoreType;
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
+		this.keyAlias = keyAlias;
 		this.keyPassword = keyPassword;
 
 		this.truststoreUrl = truststoreUrl;
@@ -102,7 +105,11 @@ public class AuthSSLContextFactory {
 		TrustManager[] trustmanagers = null;
 		if (keystoreUrl != null) {
 			KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Certificate chain");
-			keymanagers = PkiUtil.createKeyManagers(keystore, keyPassword, keyManagerAlgorithm);
+			if(keyAlias != null) {
+				keymanagers = new KeyManager[] { KeyManagerUtils.createClientKeyManager(keystore, keyAlias, keyPassword)};
+			} else {
+				keymanagers = PkiUtil.createKeyManagers(keystore, keyPassword, keyManagerAlgorithm);
+			}
 		}
 		if (truststoreUrl != null) {
 			KeyStore truststore = PkiUtil.createKeyStore(truststoreUrl, truststorePassword, truststoreType, "Trusted Certificate");
