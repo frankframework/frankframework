@@ -108,7 +108,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter boolean replaceNullMessage = false;
 	private @Getter String errorState = "ERROR";
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
-	private @Getter Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
+	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
 	private @Getter String targetDesignDocument;
 
@@ -183,7 +183,7 @@ public class Adapter implements IAdapter, NamedBean {
 			throw new ConfigurationException(msg);
 		}
 
-		if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
+		if(!pipeline.isConfigurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
 			try {
 				pipeline.setAdapter(this);
 				pipeline.configure();
