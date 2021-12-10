@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 package nl.nn.adapterframework.processors;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-
-import java.io.IOException;
-
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -40,13 +37,6 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 		}
 		if (message == null) {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] received null message");
-		}
-		if (pipeLine.isPreserveInputMessage()) {
-			try {
-				message.preserve();
-			} catch (IOException e) {
-				throw new PipeRunException(null, "Cannot preserve input message", e);
-			}
 		}
 		// store message and messageId in the pipeLineSession
 		pipeLineSession.put(PipeLineSession.originalMessageKey, message);

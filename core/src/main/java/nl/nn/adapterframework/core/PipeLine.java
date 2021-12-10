@@ -90,7 +90,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter String commitOnState = "success"; // exit state on which receiver will commit XA transactions
-	private @Getter boolean preserveInputMessage;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
@@ -720,14 +719,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		commitOnState = string;
 	}
 
-	/** 
-	 * Ensure that the input message can be used multiple times in the pipeline. Not necessary to set when the input message is used multiple times in the first pipe.
-	 * @ff.default false
-	 */
-	public void setPreserveInputMessage(boolean preserveInputMessage) {
-		this.preserveInputMessage = preserveInputMessage;
-	}
-	
 	/** 
 	 * If set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces
 	 * @ff.default false
