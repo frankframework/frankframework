@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.testutil;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
@@ -26,7 +24,8 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 					return product;
 				}
 			};
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | InvocationTargetException e) {
+		} catch (Exception e) {
+			log.info("ignoring DataSource, cannot complete setup", e);
 			e.printStackTrace();
 			return null;
 		}
