@@ -25,7 +25,6 @@ import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	protected IThreadConnectableTransactionManager txManager;
-	private DataSource txManagedDataSource;
 
 /*
 	@Parameters(name= "{0}")
@@ -89,6 +88,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 				break;
 			default:
 				productKey = dataSource.toString();
+				break;
 		}
 	}
 
