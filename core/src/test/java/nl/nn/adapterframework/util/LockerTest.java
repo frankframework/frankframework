@@ -13,7 +13,6 @@ import java.util.TimerTask;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -36,7 +35,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	public void setup() throws Exception {
 		super.setup();
 
-		createDbTableIfNotExists();//cannot run migrator as the ibislock table name is not configurable
+		createDbTableIfNotExists(); //cannot run migrator as the ibislock table name is not configurable
 
 		locker = new Locker();
 		autowire(locker);
@@ -44,17 +43,15 @@ public class LockerTest extends TransactionManagerTestBase {
 	}
 
 	private void createDbTableIfNotExists() throws Exception {
-		try(Connection connection = getConnection()) {
-			if (!dbmsSupport.isTablePresent(connection, "IBISLOCK")) {
-				JdbcUtil.executeStatement(connection,
-					"CREATE TABLE IBISLOCK(" + 
-					"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
-					"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " + 
-					"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " + 
-					"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " + 
-					"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
-				tableCreated = true;
-			}
+		if (!isTablePresent("IBISLOCK")) {
+			JdbcUtil.executeStatement(connection,
+				"CREATE TABLE IBISLOCK(" + 
+				"OBJECTID "+dbmsSupport.getTextFieldType()+"(100) NOT NULL PRIMARY KEY, " + 
+				"TYPE "+dbmsSupport.getTextFieldType()+"(1) NULL, " + 
+				"HOST "+dbmsSupport.getTextFieldType()+"(100) NULL, " + 
+				"CREATIONDATE "+dbmsSupport.getTimestampFieldType()+" NULL, " + 
+				"EXPIRYDATE "+dbmsSupport.getTimestampFieldType()+" NULL)");
+			tableCreated = true;
 		}
 	}
 
@@ -62,9 +59,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	@Override
 	public void teardown() throws Exception {
 		if (tableCreated) {
-			try(Connection connection = getConnection()) {
-				JdbcUtil.executeStatement(connection, "DROP TABLE IBISLOCK"); // drop the table if it was created, to avoid interference with Liquibase
-			}
+			dropTable("IBISLOCK");// drop the table if it was created, to avoid interference with Liquibase
 		}
 		super.teardown();
 	}
@@ -79,7 +74,6 @@ public class LockerTest extends TransactionManagerTestBase {
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
-		
 	}
 
 	@Test
@@ -92,7 +86,7 @@ public class LockerTest extends TransactionManagerTestBase {
 
 		assertNotNull(objectId);
 		assertEquals(1, getRowCount());
-		
+
 		objectId = locker.acquire();
 		assertNull("Should not be possible to obtain the lock a second time", objectId);
 	}
@@ -246,7 +240,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
 		locker.configure();
-		
+
 		TimeoutGuard testTimeout = new TimeoutGuard(10,"Testtimeout");
 		try {
 			Semaphore waitBeforeInsert = new Semaphore();
@@ -259,54 +253,49 @@ public class LockerTest extends TransactionManagerTestBase {
 			other.setWaitAfterAction(waitBeforeCommit);
 
 			other.start();
-			
+
 			IbisTransaction mainItx = null;
 			if (txManager!=null) {
 				TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
-				
+
 				mainItx = new IbisTransaction(txManager, txdef, "locker ");
 			}
 
-			try {
-				try {
-					try (Connection conn = getConnection()) {
-						
-						waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
-						insertDone.acquire();		// and wait that to be finished
-	
-						try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')")) {
-		
-							try {
-								Timer timer = new Timer("let other thread commit after one second");
-								timer.schedule(new TimerTask() {
-													@Override
-													public void run() {
-														waitBeforeCommit.release();
-													}
-												}, 1000L);
-								stmt.executeUpdate();
-								log.debug("lock inserted");
-								fail("should not be possible to do a second insert");
-							} catch (SQLException e) {
-								if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
-									log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
-								} else {
-									fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
-								}
-							}
+			try (Connection conn = getConnection()) {
+				waitBeforeInsert.release(); // now this thread has started its transaction, let the other thread do its insert
+				insertDone.acquire();		// and wait that to be finished
+
+				try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')")) {
+
+					try {
+						Timer timer = new Timer("let other thread commit after one second");
+						timer.schedule(new TimerTask() {
+											@Override
+											public void run() {
+												waitBeforeCommit.release();
+											}
+										}, 1000L);
+						stmt.executeUpdate();
+						log.debug("lock inserted");
+						fail("should not be possible to do a second insert");
+					} catch (SQLException e) {
+						if (locker.getDbmsSupport().isConstraintViolation(e) || e.getMessage().toLowerCase().contains("timeout")) {
+							log.debug("Caught expected UniqueConstraintViolation or Timeout ("+e.getClass().getName()+"): "+e.getMessage());
+						} else {
+							fail("Expected UniqueConstraintViolation, but was: ("+e.getClass().getName()+"): "+e.getMessage());
 						}
-						
-						waitBeforeCommit.release();
-					}
-				} finally {
-					if(mainItx != null) {
-						mainItx.commit();
 					}
 				}
+
+				waitBeforeCommit.release();
 			} catch (Exception e) {
 				log.warn("exception for second insert: "+e.getMessage(), e);
+			} finally {
+				if(mainItx != null) {
+					mainItx.commit();
+				}
 			}
-			
+
 		} finally {
 			if (testTimeout.cancel()) {
 				fail("test timed out");
@@ -341,15 +330,11 @@ public class LockerTest extends TransactionManagerTestBase {
 	}
 
 	public void cleanupLocks() throws Exception {
-		try(Connection connection = getConnection()) {
-			JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
-		}
+		JdbcUtil.executeStatement(connection, "DELETE FROM IBISLOCK");
 	}
 
 	public int getRowCount() throws Exception {
-		try(Connection connection = getConnection()) {
-			return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
-		}
+		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
 	private class LockerTester extends ConcurrentManagedTransactionTester {

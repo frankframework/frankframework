@@ -139,6 +139,7 @@ public class MigratorTest extends JdbcTestBase {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {
+			Configurator.reconfigure();
 			TestAppender.addToRootLogger(appender);
 			migrator.validate();
 			assertTrue(appender.contains("Successfully acquired change log lock")); //Validate Liquibase logs on INFO level
@@ -146,11 +147,12 @@ public class MigratorTest extends JdbcTestBase {
 			Configurator.setRootLevel(Level.DEBUG); //Capture all loggers (at debug level)
 			Configurator.setLevel("nl.nn", Level.WARN); //Exclude Frank!Framework loggers
 			Configurator.setLevel("liquibase", Level.WARN); //Set all Liquibase loggers to WARN
+			appender.clearLogs();
 
 			migrator.update();
 
 			String msg = "LiquiBase applied [2] change(s) and added tag [two:Niels Meijer]";
-			assertFalse(appender.contains(msg)); //Validate Liquibase doesn't log
+			assertFalse("expected message not to be logged but found ["+appender.getLogLines()+"]", appender.contains(msg)); //Validate Liquibase doesn't log
 
 			ConfigurationMessageEventListener configurationMessages = configuration.getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
 			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
