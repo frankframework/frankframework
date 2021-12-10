@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
@@ -48,6 +49,7 @@ import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -56,6 +58,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.credentialprovider.util.ClassUtils;
 
 /**
  * 
@@ -74,7 +77,8 @@ public class ApiListenerServlet extends HttpServletBase {
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-
+	private final static String JWT_VALIDATION_URL = AppConstants.getInstance().getString("jwt.validation.url", null); 
+	
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
 
@@ -165,7 +169,21 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+			String authorizationHeader = request.getHeader("Authorization");
+			if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) { // assumes that the jwt token is provided via authorization header
+				URL url = null;
+				if(JWT_VALIDATION_URL.startsWith("http://") || JWT_VALIDATION_URL.startsWith("https://")) {
+					url = new URL(JWT_VALIDATION_URL);
+				} else {
+					url = ClassUtils.getResourceURL(JWT_VALIDATION_URL);
+				}
+
+				JwtSecurityHandler securityHandler = new JwtSecurityHandler(request, authorizationHeader, url, remoteUser);
+				messageContext.setSecurityHandler(securityHandler);
+				messageContext.put("ClaimsSet", securityHandler.getClaimsJson());
+			} else {
+				messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+			}
 			messageContext.put("HttpMethod", method);
 	
 			try {
