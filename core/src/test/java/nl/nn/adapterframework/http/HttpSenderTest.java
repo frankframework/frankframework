@@ -861,10 +861,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 
 	}
-	
+
 	@Test
-	public void testMultiEntryandPasswordKeystore() throws Throwable { // keystore and the key pairs have different password
-		String pfxCertificate = "/Signature/ks_multientry.pfx";
+	public void testMultiEntryandSamePasswordKeystore() throws Throwable { // keystore and the key pairs have different password
+		String pfxCertificate = "/Signature/ks_multientry_samepassword.pfx";
 
 		HttpSender sender = getSender();
 		sender.setKeystore(pfxCertificate);
@@ -873,6 +873,25 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 
+		sender.configure();
+
+	}
+
+	@Test
+	public void testMultiEntryandDifferentPasswordKeystore() throws Throwable {
+		// It would be difficult to provide password for each alias in a keystore 
+		//which has multiple aliases each with different password
+
+		String pfxCertificate = "/Signature/ks_multientry_differentpassword.pfx";
+
+		HttpSender sender = getSender();
+		sender.setKeystore(pfxCertificate);
+		sender.setKeystoreAuthAlias("ks_alias");
+		sender.setKeystoreAliasAuthAlias("key1");
+
+		sender.setMethodType(HttpMethod.GET);
+		exception.expect(ConfigurationException.class);
+		exception.expectMessage("bad key");
 		sender.configure();
 
 	}

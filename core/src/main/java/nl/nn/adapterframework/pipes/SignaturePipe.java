@@ -33,9 +33,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
@@ -137,13 +135,15 @@ public class SignaturePipe extends FixedForwardPipe {
 					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
 				} else {
 					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-//					
-//					KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCredentialFactory.getPassword(), keyManagerAlgorithm);
-//					if (keymanagers==null || keymanagers.length==0) {
-//						throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
-//					}
-//					X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 					privateKey = (PrivateKey) keystore.getKey(getKeystoreAlias(), keystoreAliasCredentialFactory.getPassword().toCharArray());
+
+//						KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCredentialFactory.getPassword(), keyManagerAlgorithm);
+//						if (keymanagers==null || keymanagers.length==0) {
+//							throw new PipeStartException("No keymanager found for keystore ["+keystoreUrl+"]");
+//						}
+//						X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
+//						privateKey = keyManager.getPrivateKey(keystoreAlias);
+//					}
 				}
 				if (privateKey==null) {
 					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]");

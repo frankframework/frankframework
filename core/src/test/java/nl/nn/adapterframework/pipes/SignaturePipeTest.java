@@ -15,7 +15,6 @@ import javax.net.ssl.X509KeyManager;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -107,8 +106,24 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
+	public void testMultiEntryandSamePassword() throws Exception {
+		pipe.setKeystore("/Signature/ks_multientry_samepassword.pfx");
+		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystoreAlias("1");
+		pipe.setKeystoreAliasAuthAlias("key1");
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(new Message(testMessage));
+
+		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertEquals(testSignature, prr.getResult().asString());
+		assertEquals("success", prr.getPipeForward().getName());
+
+	}
+
+	@Test
 	public void testMultientryKeystore() throws Exception {
-		pipe.setKeystore("/Signature/ks_multientry.pfx");
+		pipe.setKeystore("/Signature/ks_multientry_differentpassword.pfx");
 		pipe.setKeystoreAuthAlias("ks_alias");
 		pipe.setKeystoreAlias("2nd");
 		pipe.setKeystoreAliasAuthAlias("key2");
