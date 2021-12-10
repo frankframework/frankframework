@@ -750,11 +750,11 @@ public class FtpSession implements IConfigurable {
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
 	public void setFtpTypeDescription(String string) {
-		setFtpType(string);
+		setFtpType(EnumUtils.parse(FtpType.class, string));
 	}
 	@IbisDoc({"FTP protocol to use", "FTP"})
-	public void setFtpType(String value) {
-		ftpType = EnumUtils.parse(FtpType.class, value);
+	public void setFtpType(FtpType value) {
+		ftpType = value;
 	}
 
 	@IbisDoc({"file type, one of ascii, binary", ""})

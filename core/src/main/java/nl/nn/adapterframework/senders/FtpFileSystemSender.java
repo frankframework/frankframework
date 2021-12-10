@@ -92,7 +92,7 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
 	}
 	@IbisDoc({"FTP protocol to use", "FTP"})
-	public void setFtpType(String value) {
+	public void setFtpType(FtpType value) {
 		getFileSystem().setFtpType(value);
 	}
 	public FtpType getFtpType() {

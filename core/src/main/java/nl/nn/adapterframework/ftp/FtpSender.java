@@ -25,6 +25,7 @@ import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * FTP client voor het versturen van files via FTP.
@@ -144,10 +145,10 @@ public class FtpSender extends SenderWithParametersBase {
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
 	public void setFtpTypeDescription(String string) {
-		setFtpType(string);
+		setFtpType(EnumUtils.parse(FtpType.class, string));
 	}
 	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
-	public void setFtpType(String string) {
+	public void setFtpType(FtpType string) {
 		ftpSession.setFtpType(string);
 	}
 	public FtpType getFtpType() {
