@@ -41,7 +41,7 @@ public class RecoverAdaptersJob extends JobDef {
 			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
 				log.debug("trying to recover adapter [" + adapter.getName() + "]");
 
-				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
+				if (!adapter.isConfigurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
 					try {
 						adapter.configure();
 					} catch (ConfigurationException e) {
@@ -50,7 +50,7 @@ public class RecoverAdaptersJob extends JobDef {
 					} 
 				}
 
-				if (adapter.configurationSucceeded()) {
+				if (adapter.isConfigurationSucceeded()) {
 					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 				}
 

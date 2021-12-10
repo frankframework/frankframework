@@ -513,7 +513,7 @@ public final class ShowConfigurationStatus extends Base {
 	}
 
 	private ArrayList<Object> mapAdapterPipes(Adapter adapter) {
-		if(!adapter.configurationSucceeded())
+		if(!adapter.isConfigurationSucceeded())
 			return null;
 
 		PipeLine pipeline = adapter.getPipeLine();
@@ -755,7 +755,7 @@ public final class ShowConfigurationStatus extends Base {
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 
-		adapterInfo.put("configured", adapter.configurationSucceeded());
+		adapterInfo.put("configured", adapter.isConfigurationSucceeded());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
 		if(lastMessage != null) {
