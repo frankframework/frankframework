@@ -85,6 +85,7 @@
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<classifier>full-configuration</classifier>
+									<destFileName>configurations.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>

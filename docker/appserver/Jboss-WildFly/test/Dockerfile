@@ -9,8 +9,7 @@ COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/deployments/
 COPY src/configurations/standalone_${SERVER_TYPE}${STANDALONE_VERSION}.xml ${JBOSS_HOME}/standalone/configuration/standalone.xml
 
 # copy configuration, properties and testscenarios
-COPY target/dependencies/frank/configuration/*-resources.jar ${JBOSS_HOME}/standalone/lib/ext/
-COPY target/dependencies/frank/configuration/*-configurations.jar ${JBOSS_HOME}/standalone/lib/ext/
+COPY target/dependencies/frank/configuration/configurations.jar ${JBOSS_HOME}/standalone/lib/ext/
 COPY target/dependencies/frank/testtool /opt/frank/testtool
 
 
