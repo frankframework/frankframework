@@ -79,11 +79,11 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 	
 	@Test
-	public void testMultipasswordKeystoreAuthAlias() throws Exception {
+	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
 		pipe.setKeystore("/Signature/ks_multipassword.pfx");
-		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
-		pipe.setKeystoreAliasAuthAlias("key1");
+		pipe.setKeystoreAliasPassword("test");
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
@@ -94,9 +94,9 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testMultipasswordKeystoreAuthAliasFail() throws Exception {
+	public void tryUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
 		pipe.setKeystore("/Signature/ks_multipassword.pfx");
-		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
 
 		exception.expect(PipeStartException.class);
@@ -106,11 +106,11 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testMultiEntryandSamePassword() throws Exception {
+	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception {
 		pipe.setKeystore("/Signature/ks_multientry_samepassword.pfx");
-		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
-		pipe.setKeystoreAliasAuthAlias("key1");
+		pipe.setKeystoreAliasPassword("test");
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
@@ -122,11 +122,11 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testMultientryKeystore() throws Exception {
+	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Exception {
 		pipe.setKeystore("/Signature/ks_multientry_differentpassword.pfx");
-		pipe.setKeystoreAuthAlias("ks_alias");
+		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("2nd");
-		pipe.setKeystoreAliasAuthAlias("key2");
+		pipe.setKeystoreAliasPassword("test2");
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));

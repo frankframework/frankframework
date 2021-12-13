@@ -165,22 +165,22 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private String url;
-	private String urlParam = "url";
+	private @Getter String url;
+	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
 		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
 	}
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
-	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType fullContentType = null;
-	private String contentType = null;
+	private @Getter String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter ContentType fullContentType = null;
+	private @Getter String contentType = null;
 
 	/** CONNECTION POOL **/
-	private int timeout = 10000;
-	private int maxConnections = 10;
-	private int maxExecuteRetries = 1;
+	private @Getter int timeout = 10000;
+	private @Getter int maxConnections = 10;
+	private @Getter int maxExecuteRetries = 1;
 	private SSLConnectionSocketFactory sslSocketFactory = null;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
@@ -209,7 +209,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
 	private @Getter String keyAuthAlias;
-	private @Getter String keyAlias;
+	private @Getter String keystoreAlias;
 	private @Getter String keyPassword;
 	private @Getter String keyManagerAlgorithm=null;
 	private @Getter String truststore=null;
@@ -383,7 +383,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 
 					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), getKeyAlias(), keyCf.getPassword(), getKeyManagerAlgorithm(),
+							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), getKeystoreAlias(), keyCf.getPassword(), getKeyManagerAlgorithm(),
 							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
 							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
 
@@ -785,16 +785,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setUrl(String string) {
 		url = string;
 	}
-	public String getUrl() {
-		return url;
-	}
 
 	@IbisDoc({"2", "parameter that is used to obtain url; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
-	}
-	public String getUrlParam() {
-		return urlParam;
 	}
 
 	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
@@ -809,46 +803,26 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setContentType(String string) {
 		contentType = string;
 	}
-	public String getContentType() {
-		return contentType;
-	}
-	public ContentType getFullContentType() {
-		return fullContentType;
-	}
 
 	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
-	}
-	public String getCharSet() {
-		return charSet;
 	}
 
 	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-	public int getTimeout() {
-		return timeout;
-	}
 
 	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
-	}
-	public int getMaxConnections() {
-		return maxConnections;
 	}
 
 	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
-	}
-
-
 
 	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
@@ -976,9 +950,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setKeystoreAliasPassword(String string) {
 		keyPassword = string;
 	}
-
-	public void setKeyAlias(String string) {
-		keyAlias = string;
+	/** alias in keystore */
+	public void setKeystoreAlias(String string) {
+		keystoreAlias = string;
 	}
 
 	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})

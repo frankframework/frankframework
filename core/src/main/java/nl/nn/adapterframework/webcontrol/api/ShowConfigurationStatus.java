@@ -515,8 +515,8 @@ public final class ShowConfigurationStatus extends Base {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
-				if (sender instanceof HttpSender) {
-					HttpSender s = (HttpSender) sender;
+				if (sender instanceof HttpSenderBase) {
+					HttpSenderBase s = (HttpSenderBase) sender;
 					Map<String, Object> certInfo = addCertificateInfo(s);
 					if(certInfo != null)
 						pipesInfo.put("certificate", certInfo);
