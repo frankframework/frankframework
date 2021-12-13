@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc.dbms;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
  */
 public interface IDbmsSupportFactory {
 
@@ -29,7 +28,7 @@ public interface IDbmsSupportFactory {
 	final int DBMS_DB2=3;
 	final int DBMS_H2=4;
 	final int DBMS_MYSQL=5;
-	
-	IDbmsSupport getDbmsSupport(Connection conn);
+
+	IDbmsSupport getDbmsSupport(DataSource datasource);
 
 }

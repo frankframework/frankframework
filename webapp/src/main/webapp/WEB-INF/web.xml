@@ -187,6 +187,28 @@
 
 	<!-- security-constraint>
 		<web-resource-collection>
+			<web-resource-name>GUI login</web-resource-name>
+			<description></description>
+			<url-pattern>/iaf/</url-pattern>
+			<url-pattern>/iaf/index.jsp</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<description></description>
+			<role-name>IbisObserver</role-name>
+			<role-name>IbisAdmin</role-name>
+			<role-name>IbisDataAdmin</role-name>
+			<role-name>IbisTester</role-name>
+			<role-name>IbisWebService</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+
+	<security-constraint>
+		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
 			<url-pattern>/iaf/api/*</url-pattern>

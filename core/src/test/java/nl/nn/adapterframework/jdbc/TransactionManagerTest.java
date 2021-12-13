@@ -28,7 +28,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 		
-		try (Connection txManagedConnection = txManagedDataSource.getConnection()) {
+		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
 //			checkNumberOfLines(0);			
@@ -46,15 +46,15 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 		
-		try (Connection txManagedConnection = txManagedDataSource.getConnection()) {
+		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
-//			checkNumberOfLines(0);			
+//			checkNumberOfLines(0);
 		}
 //		checkNumberOfLines(0);
 
 		txManager.rollback(txStatus);
-		
+
 		checkNumberOfLines(0);
 	}
 }

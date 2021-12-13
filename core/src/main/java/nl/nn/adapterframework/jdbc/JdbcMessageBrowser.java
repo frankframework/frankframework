@@ -40,6 +40,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -110,6 +111,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	public void copyFacadeSettings(JdbcFacade facade) throws JdbcException {
 		if (facade!=null) {
+			SpringUtils.autowireByName(facade.getApplicationContext(), this);
 			datasource=facade.getDatasource();
 			setAuthAlias(facade.getAuthAlias());
 			setUsername(facade.getUsername());
@@ -122,7 +124,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		return datasource!=null ? datasource : super.getDatasource();
 	}
 
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
