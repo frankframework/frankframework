@@ -15,6 +15,7 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -25,6 +26,7 @@ import org.springframework.util.StreamUtils;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
+import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
 
 public class BtmJtaTransactionManagerTest {
 
@@ -39,6 +41,11 @@ public class BtmJtaTransactionManagerTest {
 		if(TransactionManagerServices.isTransactionManagerRunning()) {
 			TransactionManagerServices.getTransactionManager().shutdown();
 		}
+	}
+
+	@AfterClass
+	public static void reinstatePreviousTM() {
+		BTMXADataSourceFactory.createBtmTransactionManager();
 	}
 
 	@Before
