@@ -5,10 +5,19 @@ Ibis AdapterFramework release notes
 [JavaDocs](https://javadoc.ibissource.org/latest/)
 
 
+7.6.2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+
+- Fix gui log error message when more then x files (#2426)
+- Ladybug report keeps in progress while adapter is finished (#2496)
+- Remove Rownum max value upper limit when using Browse Tables (#2515)
+- Update log4j2 (CVE-2021-44228) (#2527)
+
 
 7.6.1
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
+[Commits](https://github.com/ibissource/iaf/compare/v7.6...v7.6.1)
 
 - Do not close zip archive during processing (#2109)
 - Fix log statements with throwables (#2135)
