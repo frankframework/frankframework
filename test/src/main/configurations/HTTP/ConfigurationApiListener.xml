@@ -87,6 +87,23 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="ApiListener_MultiOriginalMessage">
+		<receiver>
+			<listener
+				name="MultipleUseOfOriginalMessage"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="multiOriginalMessage"
+				method="post"
+			/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="first"  className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" />
+			<pipe name="second" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" getInputFromSessionKey="originalMessage" />
+		</pipeline>
+	</adapter>
 
 	<adapter name="CallApiListener">
 		<receiver>
@@ -105,7 +122,7 @@
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
 				>
-					<param name="url_param" value="" /> <!-- use pipeline input -->
+					<param name="url_param" xpathExpression="*/@uri" /> <!-- use pipeline input -->
 				</sender>
 			</pipe>
 

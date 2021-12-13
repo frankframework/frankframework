@@ -75,4 +75,10 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 		}
 		return attributeValue;
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+	}
+
 }

@@ -159,6 +159,12 @@ public class XmlIf extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
+
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
