@@ -11,7 +11,7 @@
 		<!-- Create the Mermaid graph in 2 steps
 			- First preprocess adapters, putting pipes in the correct order, explicitly adding implicit forwards and preprocess input and output validators and wrappers
 			- Then convert the adapter to mermaid code-->
-		<xsl:variable name="preproccessedAdapter">
+		<xsl:variable name="preproccessedConfiguration">
 			<xsl:apply-templates select="*" mode="preprocess"/>
 		</xsl:variable>
 
