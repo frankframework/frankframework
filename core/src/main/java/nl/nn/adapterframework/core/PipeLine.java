@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
@@ -126,6 +127,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 
 	private boolean configurationSucceeded = false;
+	private boolean inputMessageConsumedMultipleTimes=false;
 
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
@@ -258,6 +260,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
+		
+		for(IPipe p:pipes) {
+			if (p.consumesSessionVariable("originalMessage")) {
+				inputMessageConsumedMultipleTimes = true;
+				break;
+			}
+		}
 
 		super.configure();
 		log.debug(getLogPrefix()+"successfully configured");
@@ -433,6 +442,14 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public PipeLineResult process(String messageId, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
+		} else {
+			if (inputMessageConsumedMultipleTimes) {
+				try {
+					message.preserve();
+				} catch (IOException e) {
+					throw new PipeRunException(null, "Cannot preserve inputMessage", e);
+				}
+			}
 		}
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
 	}
