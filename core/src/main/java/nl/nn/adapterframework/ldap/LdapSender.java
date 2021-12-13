@@ -144,12 +144,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *	&lt;/entries&gt;
  * </pre></code> <br/>
  *
- * <h2>upgrading from earlier versions (pre 4.6)</h2>
- * <ul>
- *   <li>In earlier versions, the entryName was taken from the first parameter. To upgrade, call your first parameter 'entryName'</li> 
- *   <li>In earlier versions, the filterExpression was taken from the first parameter. To upgrade, call your second parameter 'filterExpression'</li> 
- * </ul>
- *  
  * @ff.parameter entryName Represents entryName (RDN) of interest.
  * @ff.parameter filterExpression Filter expression (handy with searching - see RFC2254).
  * @ff.parameter principal Will overwrite jndiAuthAlias, principal and credential attributes together with parameter credentials which is expected to be present too. This will also have the effect of usePooling being set to false and the LDAP connection being made at runtime only (skipped at configuration time).
