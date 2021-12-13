@@ -166,7 +166,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	}
 	
 	private void runQuery(String query) throws SQLException {
-		try (Connection con = txManagedDataSource.getConnection()) {
+		try (Connection con = getConnection()) {
 			try (PreparedStatement stmt = con.prepareStatement(query)) {
 				TimeoutGuard guard = new TimeoutGuard(3, "run child thread"){
 
@@ -194,7 +194,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	}
 	
 	private int runSelectQuery(String query) throws SQLException {
-		try (Connection con = txManagedDataSource.getConnection()) {
+		try (Connection con = getConnection()) {
 			try (PreparedStatement stmt = con.prepareStatement(query)) {
 				try (ResultSet rs = stmt.executeQuery()) {
 					rs.next();

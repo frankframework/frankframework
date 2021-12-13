@@ -486,15 +486,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		this.ibisManager = ibisManager;
 	}
 
-	/** The entire (raw) configuration
-	 * @ff.noAttribute */
+	/** The entire (raw) configuration */
 	@ProtectedAttribute
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
-	/** The loaded (with resolved properties) configuration
-	 * @ff.noAttribute */
+	/** The loaded (with resolved properties) configuration */
 	@ProtectedAttribute
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Date;
 
@@ -24,8 +25,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
 	private String tableName="MESSAGEBROWSINGFILTERTEST";
-	
-	
+
 	@Override
 	@Before
 	public void setup() throws Exception {
@@ -35,10 +35,9 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
 		storage.setSequenceName("SEQ_"+tableName);
-		storage.setDatasourceName(getDataSourceName());
-		storage.setDataSourceFactory(dataSourceFactory);
+		autowire(storage);
 		System.setProperty("tableName", tableName);
-		createDbTable();
+		runMigrator(TEST_CHANGESET_PATH);
 
 		listener = new JavaListener();
 	}
@@ -93,10 +92,13 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label')");
 		}
 
-		PreparedStatement stmt = getConnection().prepareStatement(sb.toString());
-		stmt.execute();
+		try(Connection connection = getConnection()) {
+			try(PreparedStatement stmt = getConnection().prepareStatement(sb.toString())) {
+				stmt.execute();
+			}
+		}
 	}
-	
+
 	@Test
 	public void testTypeFilter() throws Exception {
 		filter.setTypeMask("L");
