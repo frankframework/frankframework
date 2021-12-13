@@ -90,10 +90,10 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 					} else {
 						try {
 							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]");
-							return (IDbmsSupport) ClassUtils.newInstance(dbmsSupportClass);
+							return (IDbmsSupport)ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
 							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]",e);
-						} 
+						}
 					}
 				}
 			}

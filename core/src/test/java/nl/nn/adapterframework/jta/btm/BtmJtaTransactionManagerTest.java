@@ -59,8 +59,8 @@ public class BtmJtaTransactionManagerTest {
 		BtmJtaTransactionManager result = new BtmJtaTransactionManager();
 		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
 		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
-		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/target/btm1.tlog");
-		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/target/btm2.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart1Filename(folder.getRoot()+"/btm1.tlog");
+		TransactionManagerServices.getConfiguration().setLogPart2Filename(folder.getRoot()+"/btm2.tlog");
 		delegateTransactionManager = result;
 		return result;
 	}
