@@ -51,7 +51,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.XSD;
 
@@ -148,6 +147,10 @@ public class WsdlGenerator {
             throw new IllegalArgumentException("Adapter has no name");
         }
         inputValidator = (IXmlValidator)pipeLine.getInputValidator();
+        if(inputValidator == null) {
+            throw new IllegalStateException("No inputvalidator provided");
+        }
+
         if (inputValidator.getConfigurationException() != null) {
             if (inputValidator.getConfigurationException().getMessage() != null) {
                 throw new IllegalStateException(inputValidator.getConfigurationException().getMessage());
@@ -510,7 +513,7 @@ public class WsdlGenerator {
     public void wsdl(OutputStream out, String servlet) throws XMLStreamException, IOException, ConfigurationException,  NamingException {
         XMLStreamWriter w = WsdlGeneratorUtils.getWriter(out, isIndent());
 
-        w.writeStartDocument(XmlUtils.STREAM_FACTORY_ENCODING, "1.0");
+        w.writeStartDocument(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, "1.0");
         w.setPrefix(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
         w.setPrefix(XSD_NAMESPACE_PREFIX, XSD_NAMESPACE);
         w.setPrefix(wsdlSoapPrefix, wsdlSoapNamespace);
@@ -546,8 +549,8 @@ public class WsdlGenerator {
             binding(w);
             service(w, servlet);
         }
-        w.writeEndDocument();
         warnings(w);
+        w.writeEndDocument();
         w.close();
     }
 
@@ -844,7 +847,7 @@ public class WsdlGenerator {
                         w.writeEndElement();
                     }
                     w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
-                        w.writeAttribute("destination", listener.getDestinationTypeEnum().name().toLowerCase());
+                        w.writeAttribute("destination", listener.getDestinationType().name().toLowerCase());
                         String queueName = listener.getPhysicalDestinationShortName();
                         if (queueName == null) {
                             queueName = "queueName-for-"
@@ -912,25 +915,17 @@ public class WsdlGenerator {
         }
     }
 
-    protected PipeLine getPipeLine() {
-        return pipeLine;
-    }
-
     protected String getRoot(IXmlValidator xmlValidator) {
         return getRoot(xmlValidator, false);
     }
 
     protected String getRoot(IXmlValidator xmlValidator, boolean outputMode) {
-    	return xmlValidator.getMessageRoot();
-//        if (xmlValidator instanceof SoapValidator) {
-//        	if (outputMode) {
-//            	return ((SoapValidator)xmlValidator).getOutputSoapBody();
-//        	} else {
-//            	return ((SoapValidator)xmlValidator).getSoapBody();
-//        	}
-//        } else {
-//            return xmlValidator.getRoot();
-//        }
+    	String rootSpecification = xmlValidator.getMessageRoot();
+    	if (StringUtils.isNotEmpty(rootSpecification) && rootSpecification.indexOf(',')>=0) {
+    		log.warn("validator [{}] is configured with multiple root elements [{}] in mode [{}]; will use only first", xmlValidator.getName(), rootSpecification, outputMode?"response":"request");
+    		rootSpecification = rootSpecification.split(",")[0].trim();
+    	}
+    	return rootSpecification;
     }
 
     protected QName getRootElement(Set<XSD> xsds, String root) {

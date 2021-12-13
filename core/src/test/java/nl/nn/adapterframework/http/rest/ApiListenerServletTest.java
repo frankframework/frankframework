@@ -22,9 +22,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,8 +40,11 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -56,6 +61,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiListenerServletTest extends Mockito {
@@ -141,8 +147,22 @@ public class ApiListenerServletTest extends Mockito {
 		log.info("created ApiListener "+listener.toString());
 	}
 
+	private HttpServletRequest createRequest(String uriPattern, Methods method) {
+		return createRequest(uriPattern, method, null, null);
+	}
+
 	private HttpServletRequest createRequest(String uriPattern, Methods method, String content) {
 		return createRequest(uriPattern, method, content, null);
+	}
+
+	private HttpServletRequest createRequest(String uriPattern, Methods method, HttpEntity entity) throws IOException {
+		ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
+		entity.writeTo(requestContent);
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Content-Type", entity.getContentType().getValue());
+		headers.put("Content-Length", entity.getContentLength()+"");
+
+		return createRequest(uriPattern, method, new String(requestContent.toByteArray()), headers);
 	}
 
 	private MockHttpServletRequest createRequest(String uriPattern, Methods method, String content, Map<String, String> headers) {
@@ -180,10 +200,12 @@ public class ApiListenerServletTest extends Mockito {
 			}
 		}
 
-		if(!method.equals(Methods.GET) && content != null)
-			request.setContent(content.getBytes());
-		else
-			request.setContent("".getBytes()); //Empty content
+		if(!method.equals(Methods.GET)) {
+			if(content != null)
+				request.setContent(content.getBytes());
+			else
+				request.setContent("".getBytes()); //Empty content
+		}
 
 		return request;
 	}
@@ -200,7 +222,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void noUri() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("test", Methods.GET);
 
-		Response result = service(createRequest(null, Methods.GET, null));
+		Response result = service(createRequest(null, Methods.GET));
 		assertEquals(400, result.getStatus());
 	}
 
@@ -208,7 +230,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void uriNotFound() throws ServletException, IOException, ListenerException, ConfigurationException {
 		addListener("test", Methods.GET);
 
-		Response result = service(createRequest("/not-test", Methods.GET, null));
+		Response result = service(createRequest("/not-test", Methods.GET));
 		assertEquals(404, result.getStatus());
 	}
 
@@ -217,7 +239,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/test";
 		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest(uri, Methods.PUT, null));
+		Response result = service(createRequest(uri, Methods.PUT));
 		assertEquals(405, result.getStatus());
 		assertNull(result.getErrorMessage());
 	}
@@ -227,7 +249,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/test1";
 		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest(uri, Methods.GET, null));
+		Response result = service(createRequest(uri, Methods.GET));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -238,7 +260,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/test2";
 		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest(uri, Methods.GET, null));
+		Response result = service(createRequest(uri, Methods.GET));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
@@ -249,7 +271,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/preflight/";
 		addListener(uri, Methods.GET);
 
-		Response result = service(createRequest(uri, Methods.OPTIONS, null));
+		Response result = service(createRequest(uri, Methods.OPTIONS));
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString()); //Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
@@ -369,12 +391,53 @@ public class ApiListenerServletTest extends Mockito {
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Accept", "application/json");
-		headers.put("content-type", "application/json");
+		headers.put("content-type", "application/json; charset=UTF-8");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(200, result.getStatus());
 		assertEquals("{}", result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentISO8859() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContent";
+		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON);
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to ISO_8859_1
+
+		URL url1 = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file1");
+
+		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		builder.addBinaryBody("file2", url2.openStream(), ContentType.APPLICATION_OCTET_STREAM, "file2");
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=ISO-8859-1"));
+		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); //Parsed as UTF-8
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void listenerMultipartContentUTF8() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContentCharset";
+		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON);
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertEquals("<hello>€ è</hello>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -693,12 +756,12 @@ public class ApiListenerServletTest extends Mockito {
 	private class MessageHandler implements IMessageHandler<Message> {
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, Message message, Map<String, Object> context, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 			fail("method should not be called");
 		}
 
@@ -707,17 +770,6 @@ public class ApiListenerServletTest extends Mockito {
 			fail("method should not be called");
 		}
 
-		@Override
-		public Message processRequest(IListener<Message> origin, Message rawMessage, Message message) throws ListenerException {
-			fail("wrong processRequest method called");
-			return message;
-		}
-
-		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message) throws ListenerException {
-			fail("wrong processRequest method called");
-			return message;
-		}
 
 		@Override
 		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context) throws ListenerException {
@@ -727,14 +779,7 @@ public class ApiListenerServletTest extends Mockito {
 			session = context;
 			if(session.containsKey("response-content")) {
 				return Message.asMessage(session.get("response-content"));
-			} else {
-				return message;
 			}
-		}
-
-		@Override
-		public Message processRequest(IListener<Message> origin, String correlationId, Message rawMessage, Message message, Map<String, Object> context, long waitingTime) throws ListenerException {
-			fail("wrong processRequest method called");
 			return message;
 		}
 

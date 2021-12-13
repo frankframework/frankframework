@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ftp;
 import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -28,24 +29,16 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Pipe for retreiving files via (s)ftp. The path of the created local file is returned.
- *
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a file has been retrieved</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown retrieving the file. The result passed to the next pipe is the input of the pipe</td></tr>
- * </table>
- * </p>
  * 
  * @author John Dekker
  * @since   4.4
  */
+@Deprecated
+@ConfigurationWarning("Please replace with FtpFileSystemListener")
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	private FtpSession ftpSession;
 
-	private final static String EXCEPTIONFORWARD = "exception";
-	
 	private String localFilenamePattern=null;
 	private String localDirectory=null;;
 	private String remoteDirectory=null;
@@ -55,7 +48,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
 	}
-	
+
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
@@ -65,6 +59,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.configure();
 	}
 	
+	@Override
 	public void stop() {
 		super.stop();
 		try {		
@@ -77,6 +72,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	/** 
 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
+	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
 		try {
@@ -90,11 +86,11 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			if (deleteAfterGet) {
 				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
 			} 
-			return new PipeRunResult(getForward(), localFilename);
+			return new PipeRunResult(getSuccessForward(), localFilename);
 		}
 		catch(Exception e) {
 			String msg="Error while getting file [" + remoteDirectory + "/" + orgFilename+"]";
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn(msg, e);
 				return new PipeRunResult(exceptionForward, message);

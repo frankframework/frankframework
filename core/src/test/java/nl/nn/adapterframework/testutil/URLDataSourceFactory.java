@@ -1,0 +1,88 @@
+package nl.nn.adapterframework.testutil;
+
+import static org.junit.Assert.fail;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+
+public class URLDataSourceFactory extends JndiDataSourceFactory {
+	public static final String PRODUCT_KEY = "product";
+	public static final String TEST_PEEK_KEY = "testPeek";
+	private static final int DB_LOGIN_TIMEOUT = 1;
+
+	private static final Object[][] TEST_DATASOURCES = {
+			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
+			{ "H2",         "jdbc:h2:mem:test;LOCK_TIMEOUT=1000", null, null, false, "org.h2.jdbcx.JdbcDataSource" },
+			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:ORCLCDB", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" }, 
+			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" }, 
+			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" }, 
+			//{ "MariaDB",   "jdbc:mariadb://localhost:3306/testiaf", 				"testiaf_user", "testiaf_user00", false }, // can have only one entry per product key
+			{ "MariaDB",   "jdbc:mysql://localhost:3306/testiaf?sslMode=DISABLED&disableMariaDbDriver=true&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", false, "com.mysql.cj.jdbc.MysqlXADataSource" }, 
+			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true, "org.postgresql.xa.PGXADataSource" }
+		};
+
+	public URLDataSourceFactory() {
+		DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
+		for (Object[] datasource: TEST_DATASOURCES) {
+			String product = (String)datasource[0];
+			String url = (String)datasource[1];
+			String userId = (String)datasource[2];
+			String password = (String)datasource[3];
+			boolean testPeek = (boolean)datasource[4];
+			String xaImplClassName = (String)datasource[5];
+
+			add(createDataSource(product, url, userId, password, testPeek, xaImplClassName), product);
+		}
+	}
+
+	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
+			@Override
+			public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
+				return product;
+			}
+		};
+
+		Properties properties = new Properties();
+		properties.setProperty(PRODUCT_KEY, product);
+		properties.setProperty(TEST_PEEK_KEY, ""+testPeek);
+		dataSource.setConnectionProperties(properties);
+		return dataSource;
+	}
+
+	@Override
+	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
+		if(!objects.containsKey(jndiName)) {
+			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
+		}
+
+		return super.get(jndiName, jndiEnvironment);
+	}
+
+	public List<DataSource> getAvailableDataSources() {
+		List<DataSource> availableDatasources = new ArrayList<>();
+		for(String dataSourceName : getDataSourceNames()) {
+			try {
+				DataSource dataSource = getDataSource(dataSourceName);
+				try(Connection connection = dataSource.getConnection()) {
+					availableDatasources.add(dataSource);
+				} catch (Exception e) {
+					log.warn("Cannot connect to ["+dataSourceName+"], skipping:"+e.getMessage());
+				}
+			} catch (NamingException e) {
+				fail(this.getClass().getSimpleName() +" should not look for DataSources in the JNDI");
+			}
+		}
+		return availableDatasources;
+	}
+}

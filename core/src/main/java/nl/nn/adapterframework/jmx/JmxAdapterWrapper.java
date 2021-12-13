@@ -28,7 +28,6 @@ import javax.management.RuntimeOperationsException;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jmx.export.MBeanExporter;
 
@@ -116,7 +115,6 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 		return Collections.emptySet();
 	}
 
-	@Autowired
 	@Qualifier("MBeanManager")
 	public void setMBeanManager(MBeanExporter mBeanManager) {
 		this.mBeanManager = mBeanManager;

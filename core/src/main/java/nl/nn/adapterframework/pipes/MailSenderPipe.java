@@ -37,18 +37,6 @@ import nl.nn.adapterframework.senders.MailSender;
  * &lt;message&gt;&lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;&lt;/message&gt;
  * </pre></code><br/>
  *
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of a listener to listen to for replies, assuming these to arrive quickly!</td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when the message was successfully sent and no listener was specified</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if a listener was specified.</td></tr>
- * </table>
- * </p>
  * @author Johan Verrips
  */
 

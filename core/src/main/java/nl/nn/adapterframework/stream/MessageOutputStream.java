@@ -23,6 +23,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +33,10 @@ import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -44,7 +47,7 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageOutputStream implements AutoCloseable {
-	protected Logger log = LogUtil.getLogger(this);
+	protected static Logger log = LogUtil.getLogger(MessageOutputStream.class);
 	
 	private INamedObject owner;
 	protected Object requestStream;
@@ -54,13 +57,15 @@ public class MessageOutputStream implements AutoCloseable {
 	private MessageOutputStream nextStream;
 	private MessageOutputStream tail;
 	
+	private Set<AutoCloseable> resourcesToClose;
 	
-	private ThreadConnector threadConnector;
+	private ThreadConnector<?> threadConnector;
+	private ThreadConnector<?> targetThreadConnector;
 	
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
 		tail=this;
-		setForward(new PipeForward("success", next==null?null:next.getName()));
+		setForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, next==null?null:next.getName()));
 	}
 	protected MessageOutputStream(INamedObject owner, MessageOutputStream nextStream) {
 		this.owner=owner;
@@ -85,26 +90,30 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
+	// this constructor for testing only
+	<T> MessageOutputStream(ContentHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
-	public MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 	
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
+	// this constructor for testing only
+	<T> MessageOutputStream(JsonEventHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
-	public MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 
 
@@ -135,7 +144,14 @@ public class MessageOutputStream implements AutoCloseable {
 	public void afterClose() throws Exception {
 		// can be overridden when necessary
 	}
- 	
+	
+	public void closeOnClose(AutoCloseable resource) {
+		if (resourcesToClose==null) {
+			resourcesToClose = new LinkedHashSet<>();
+		}
+		resourcesToClose.add(resource);
+	}
+	
 	@Override
 	public final void close() throws Exception {
 		try {
@@ -146,7 +162,31 @@ public class MessageOutputStream implements AutoCloseable {
 					nextStream.close();
 				}
 			} finally {
-				afterClose();
+				try {
+					try {
+						if (targetThreadConnector!=null) {
+							targetThreadConnector.close();
+						}
+					} finally {
+						if (threadConnector!=null) {
+							threadConnector.close();
+						}
+					}
+				} finally {
+					try {
+						afterClose();
+					} finally {
+						if (resourcesToClose!=null) {
+							resourcesToClose.forEach(r -> {
+								try {
+									r.close();
+								} catch (Exception e) {
+									log.warn("Could not close resource", e);
+								}
+							});
+						}
+					}
+				}
 			}
 		}
 	}
@@ -273,6 +313,7 @@ public class MessageOutputStream implements AutoCloseable {
 	@SuppressWarnings("resource")
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		closeOnClose(writer);
 		if (requestStream instanceof Writer) {
 			requestStream = StreamUtil.captureWriter((Writer)requestStream, writer, maxSize);
 			return;
@@ -303,6 +344,7 @@ public class MessageOutputStream implements AutoCloseable {
 	@SuppressWarnings("resource")
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
+		closeOnClose(outputStream);
 		if (requestStream instanceof OutputStream) {
 			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
 			return;
@@ -324,7 +366,7 @@ public class MessageOutputStream implements AutoCloseable {
 	
 	/**
 	 * Response message, e.g. the filename, of the {IOutputStreamTarget target}
-	 * after processing the stream. It is the responsability of the
+	 * after processing the stream. It is the responsibility of the
 	 * {@link MessageOutputStream target} to set this message.
 	 */
 	public void setResponse(Message response) {
@@ -358,16 +400,18 @@ public class MessageOutputStream implements AutoCloseable {
 	 */
 	public static MessageOutputStream getTargetStream(INamedObject owner, PipeLineSession session, IForwardTarget next) throws StreamingException {
 		IOutputStreamingSupport nextProvider=null;
-		if (next!=null && next instanceof IOutputStreamingSupport) {
+		if (next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;
 			if (next instanceof StreamingPipe && !((StreamingPipe)next).isStreamingActive()) {
 				nextProvider=null;
 			}
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
-		if (target==null) {
-			target=new MessageOutputStreamCap(owner, next);
+		if (target!=null) {
+			log.debug("OutputStream for {} [{}] is provided by {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName(), ()->next.getClass().getSimpleName(), ()->next.getName());
+			return target;
 		}
-		return target;
+		log.debug("providing MessageOutputStreamCap for {} [{}]", ()->owner.getClass().getSimpleName(), ()->owner.getName());
+		return new MessageOutputStreamCap(owner, next);
 	}
 }

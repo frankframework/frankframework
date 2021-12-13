@@ -37,26 +37,12 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Pipe for transforming a stream with records. Records in the stream must be separated
- * with new line characters.
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link InputStreamReaderFactory} just converts using the specified characterset</td></tr>
- * <tr><td>{@link IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line.
- * 			If no manager is specified, a default manager and flow are created. The default manager 
- * 			always uses the default flow. The default flow always uses the first registered recordHandler 
- * 			(if available) and the first registered resultHandler (if available).</td></tr>
- * <tr><td>{@link RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
- * <tr><td>{@link IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
- * <tr><td>{@link IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
- * </table>
- * </p>
+ * Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
  * 
  * For file containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
@@ -79,7 +65,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
 	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
 	
-	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
+	private IReaderFactory readerFactory=new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getMessageId();
@@ -142,16 +128,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 		for (String recordHandlerName: registeredRecordHandlers.keySet()) {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			if(handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 		for (String resultHandlerName: registeredResultHandlers.keySet()) {
 			IResultHandler handler = getResultHandler(resultHandlerName);
-			if (handler instanceof ConfigurationAware) {
-				((ConfigurationAware)handler).setConfiguration(getAdapter().getConfiguration());
-			}
 			handler.configure();
 		}
 	}
@@ -307,7 +287,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 			}
 		}
-		return new PipeRunResult(getForward(),transformationResult);
+		return new PipeRunResult(getSuccessForward(),transformationResult);
 	}
 
 	private List<String> getBlockStack(PipeLineSession session, IResultHandler handler, String streamId, boolean create) {
@@ -574,10 +554,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return charset;
 	}
 
-	public void setReaderFactory(IInputStreamReaderFactory factory) {
+	/** Factory for the <code>reader</code>. The default implementation {@link InputStreamReaderFactory} converts using the specified character set. */
+	public void setReaderFactory(IReaderFactory factory) {
 		readerFactory = factory;
 	}
-	public IInputStreamReaderFactory getReaderFactory() {
+	public IReaderFactory getReaderFactory() {
 		return readerFactory;
 	}
 }

@@ -29,18 +29,18 @@ import org.xml.sax.Attributes;
  * @since   4.8
  */
 public class ListenerFactory extends GenericFactory {
-    public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
-    protected static final String CORRELATED_LISTENER_CLASSNAME = "nl.nn.adapterframework.jms.PullingJmsListener";
+	public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
+	protected static final String CORRELATED_LISTENER_CLASSNAME = "nl.nn.adapterframework.jms.PullingJmsListener";
 
 	@Override
-    protected Map copyAttrsToMap(Attributes attrs) {
-		Map map = super.copyAttrsToMap(attrs);
+	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
+		Map<String, String> map = super.copyAttrsToMap(attrs);
 		String className = attrs.getValue("className");
 		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
 			if (log.isDebugEnabled()) {
 				log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '" + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
 			}
-			map.put("className",CORRELATED_LISTENER_CLASSNAME);
+			map.put("className", CORRELATED_LISTENER_CLASSNAME);
 		}
 		return map;
 	}

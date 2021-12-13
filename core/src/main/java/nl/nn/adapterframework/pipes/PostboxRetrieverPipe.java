@@ -44,15 +44,10 @@ import nl.nn.adapterframework.stream.Message;
  * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>
  * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when the message was successfully sent</td></tr>
- * </table>
- * </p>
   * 
  * @author  John Dekker
  */
+@Deprecated
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
@@ -113,7 +108,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
 				
 			Message result = getListener().extractMessage(rawMessage, threadContext);
-			return new PipeRunResult(getForward(), result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} 
 		catch (Exception e) {
 			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);

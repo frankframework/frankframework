@@ -57,6 +57,7 @@ import com.sun.mail.imap.IMAPMessage;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -325,7 +326,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public nl.nn.adapterframework.stream.Message readFile(Message f) throws FileSystemException, IOException {
+	public nl.nn.adapterframework.stream.Message readFile(Message f, String charset) throws FileSystemException, IOException {
 		try {
 			Object content = f.getContent();
 			if (content instanceof MimeMultipart) {
@@ -333,17 +334,17 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new PartMessage(bodyPart, charset);
 					}
 				}
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text")) {
-						return new nl.nn.adapterframework.stream.Message(bodyPart.getInputStream());
+						return new PartMessage(bodyPart, charset);
 					}
 				}
 			}
-			return new nl.nn.adapterframework.stream.Message(f.getInputStream());
+			return new PartMessage(f, charset);
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}
@@ -357,7 +358,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				return null;
 			}
 			Multipart multiPart = (Multipart) f.getContent();
-			Iterator<MimeBodyPart> result = new Iterator<MimeBodyPart>() {
+			return new Iterator<MimeBodyPart>() {
 
 				MimeBodyPart part = null;
 				int i = 0;
@@ -372,7 +373,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 							part = null;
 						}
 					} catch (MessagingException e) {
-						log.warn(e);
+						log.warn("unable to find part", e);
 					}
 				}
 
@@ -391,7 +392,6 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				}
 
 			};
-			return result;
 		} catch (MessagingException | IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -584,10 +584,13 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 
 	@Override
 	public nl.nn.adapterframework.stream.Message getMimeContent(Message emailMessage) throws FileSystemException {
-		try {
-			return new nl.nn.adapterframework.stream.Message(((IMAPMessage) emailMessage).getMimeStream());
-		} catch (MessagingException e) {
-			throw new FileSystemException(e);
+		return new MimeContentMessage((IMAPMessage) emailMessage);
+	}
+
+	private class MimeContentMessage extends nl.nn.adapterframework.stream.Message {
+		
+		public MimeContentMessage(IMAPMessage imapMessage) {
+			super(() -> imapMessage.getMimeStream(), null, imapMessage.getClass());
 		}
 	}
 

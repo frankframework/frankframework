@@ -19,7 +19,7 @@
 		<repository>
 			<id>AsposeJavaAPI</id>
 			<name>Aspose Java API</name>
-			<url>http://repository.aspose.com/repo/</url>
+			<url>https://repository.aspose.com/repo/</url>
 		</repository>
 	</repositories>
 
@@ -28,18 +28,15 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- Libraries -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
 		</dependency>
 
 		<!-- Tika library -->
@@ -260,6 +257,14 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+			<classifier>tests</classifier>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
@@ -267,22 +272,13 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.testautomationguru.pdfutil</groupId>
-			<artifactId>pdf-util</artifactId>
-			<version>0.0.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-			<classifier>tests</classifier>
-			<type>test-jar</type>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.24</version>
 			<scope>test</scope>
-			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>

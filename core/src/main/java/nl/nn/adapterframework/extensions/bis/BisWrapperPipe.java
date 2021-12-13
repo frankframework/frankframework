@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
@@ -236,7 +237,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
 				String bodyMessageNd = StringUtils.isNotEmpty(getInputNamespaceDefs()) ? soapNamespaceDefs + "\n" + getInputNamespaceDefs() : soapNamespaceDefs;
 				String bodyMessageXe = StringUtils.isNotEmpty(getInputXPath()) ? soapBodyXPath + "/" + getInputXPath() : soapBodyXPath + "/*";
-				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, "xml"));
+				bodyMessageTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, OutputType.XML));
 			}
 			String bisMessageHeaderNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			String bisMessageHeaderXe;
@@ -245,9 +246,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				bisMessageHeaderXe = soapHeaderXPath + "/" + bisMessageHeaderXPath;
 			}
-			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, "xml"));
-			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, "text"));
-			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, "text"));
+			bisMessageHeaderTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisMessageHeaderNd, bisMessageHeaderXe, OutputType.XML));
+			bisMessageHeaderConversationIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderConversationIdXPath, OutputType.TEXT));
+			bisMessageHeaderExternalRefToMessageIdTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisNamespaceDefs, bisMessageHeaderExternalRefToMessageIdXPath, OutputType.TEXT));
 
 			String bisErrorNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
 			if (isBisResultInPayload()) {
@@ -256,7 +257,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				bisErrorXe = soapBodyXPath + "/" + bisErrorXPath;
 			}
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
-			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
+			bisErrorTp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, OutputType.TEXT));
 			if (isRemoveOutputNamespaces()) {
 				removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
@@ -356,7 +357,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
 
 		}
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	private String prepareMessageHeader(String originalMessageHeader, String conversationId, String externalRefToMessageId) throws SAXException, IOException, TransformerException {

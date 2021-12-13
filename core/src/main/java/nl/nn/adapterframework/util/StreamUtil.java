@@ -49,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Functions to read and write from one stream to another.
@@ -64,26 +65,38 @@ public class StreamUtil {
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
 	
+	@Deprecated
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
 		} 
 		if (target instanceof String) {
-			String filename=(String)target;
-			if (StringUtils.isEmpty(filename)) {
-				throw new IOException("target string cannot be empty but must contain a filename");
-			}
-			try {
-				return new FileOutputStream(filename);
-			} catch (FileNotFoundException e) {
-				FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
-				fnfe.initCause(e);
-				throw fnfe;
+			return getFileOutputStream((String)target);
+			
+		}
+		if (target instanceof Message) {
+			if(((Message) target).asObject() instanceof String) {
+				return getFileOutputStream(((Message)target).asString());
 			}
 		}
 		return null;
 	}
 
+	@Deprecated
+	private static OutputStream getFileOutputStream(String filename) throws IOException {
+		if (StringUtils.isEmpty(filename)) {
+			throw new IOException("target string cannot be empty but must contain a filename");
+		}
+		try {
+			return new FileOutputStream(filename);
+		} catch (FileNotFoundException e) {
+			FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
+			fnfe.initCause(e);
+			throw fnfe;
+		}
+	}
+
+	@Deprecated
 	public static Writer getWriter(Object target) throws IOException {
 		if (target instanceof HttpServletResponse) {
 			return ((HttpServletResponse)target).getWriter();
@@ -91,6 +104,7 @@ public class StreamUtil {
 		if (target instanceof Writer) {
 			return (Writer)target;
 		}
+		
 		return null;
 	}
 	

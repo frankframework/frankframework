@@ -81,7 +81,7 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "failed to generate password",e);
 			}
 
-		return new PipeRunResult(getForward(),result);
+		return new PipeRunResult(getSuccessForward(),result);
 	}
 
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){

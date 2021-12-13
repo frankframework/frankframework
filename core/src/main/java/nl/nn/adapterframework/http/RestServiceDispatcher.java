@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -42,17 +42,12 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
-import nl.nn.adapterframework.pipes.CreateRestViewPipe;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -69,13 +64,8 @@ public class RestServiceDispatcher  {
 	private final String KEY_LISTENER="listener";
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
-	private final String SVG_FILE_NO_IMAGE_AVAILABLE = "/IAF_WebControl/GenerateFlowDiagram/svg/no_image_available.svg";
 
-	private static AppConstants appConstants = AppConstants.getInstance();
-	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
-	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
-
-	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
+	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
@@ -101,8 +91,8 @@ public class RestServiceDispatcher  {
 		}
 
 		String matchingPattern=null;
-		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=(String)it.next();
+		for (Iterator<String> it=patternClients.keySet().iterator();it.hasNext();) {
+			String uriPattern=it.next();
 			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
 			if (lookupUriPattern.equals(uriPattern)) {
 				matchingPattern=uriPattern;
@@ -112,23 +102,23 @@ public class RestServiceDispatcher  {
 		return matchingPattern;
 	}
 	
-	public Map getMethodConfig(String matchingPattern, String method) {
-		Map methodConfig;
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
+	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
+		Map<String,Object> methodConfig;
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
 		
-		methodConfig = (Map)patternEntry.get(method);
+		methodConfig = patternEntry.get(method);
 		if (methodConfig==null) {
-			methodConfig = (Map)patternEntry.get(WILDCARD);
+			methodConfig = patternEntry.get(WILDCARD);
 		}
 		return methodConfig;
 	}
 	
-	public List getAvailableMethods(String matchingPattern) {
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
-		Iterator it = patternEntry.entrySet().iterator();
-		List methods = new ArrayList<String>();
+	public List<String> getAvailableMethods(String matchingPattern) {
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
+		Iterator<Entry<String,Map<String,Object>>> it = patternEntry.entrySet().iterator();
+		List<String> methods = new ArrayList<>();
 		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry)it.next();
+			Entry<String,Map<String,Object>> pair = it.next();
 			methods.add(pair.getKey());
 		}
 		return methods;
@@ -146,25 +136,10 @@ public class RestServiceDispatcher  {
 		
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
-			if (uri != null && (uri.equals("/showFlowDiagram")
-					|| uri.startsWith("/showFlowDiagram/"))) {
-				log.info("no REST listener configured for uri ["+uri+"], so using 'no image available'");
-				noImageAvailable(httpServletResponse);
-				return "";
-			}
-			if (uri != null && STRUTS_CONSOLE_ENABLED && (uri.equals("/showConfigurationStatus") || uri.startsWith("/showConfigurationStatus/")) ) {
-				log.info("no REST listener configured for uri [" + uri + "], if REST listener does exist then trying to restart");
-				if (RestListenerUtils.restartShowConfigurationStatus(servletContext)) {
-					httpServletResponse.setHeader("REFRESH", "0");
-					return "";
-				} else {
-					return retrieveNoIbisContext(httpServletRequest, servletContext);
-				}
-			}
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
-		Map methodConfig = getMethodConfig(matchingPattern, method);
+		Map<String,Object> methodConfig = getMethodConfig(matchingPattern, method);
 		
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
@@ -322,51 +297,6 @@ public class RestServiceDispatcher  {
 			}
 		}
 	}
-
-	private void noImageAvailable(HttpServletResponse httpServletResponse)
-			throws ListenerException {
-		URL svgSource = ClassUtils.getResourceURL(SVG_FILE_NO_IMAGE_AVAILABLE);
-		if (svgSource == null) {
-			throw new ListenerException("cannot find resource ["
-					+ SVG_FILE_NO_IMAGE_AVAILABLE + "]");
-		}
-		try {
-			httpServletResponse.setContentType("image/svg+xml");
-			InputStream inputStream = null;
-			try {
-				inputStream = svgSource.openStream();
-				Misc.streamToStream(inputStream,
-						httpServletResponse.getOutputStream());
-			} finally {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			}
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String retrieveNoIbisContext(HttpServletRequest httpServletRequest, ServletContext servletContext) throws ListenerException {
-		try {
-			CreateRestViewPipe pipe = new CreateRestViewPipe();
-			pipe.setStyleSheetName("xml/xsl/web/noIbisContext.xsl");
-			//pipe.setXslt2(true);
-			PipeForward pipeForward = new PipeForward();
-			pipeForward.setName("success");
-			pipe.registerForward(pipeForward);
-			pipe.configure();
-			pipe.start();
-			PipeLineSession session = new PipeLineSession();
-			session.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
-			session.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
-			String result = pipe.doPipe(Message.asMessage("<dummy/>"), session).getResult().asString();
-			pipe.stop();
-			return result;
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-	}
 	
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
 			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
@@ -374,21 +304,18 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
-		if (patternEntry==null) {
-			patternEntry=new HashMap();
-			patternClients.put(uriPattern, patternEntry);
-		}
-		Map listenerConfig = (Map)patternEntry.get(method);
-		if (listenerConfig!=null) { 
+		patternClients.computeIfAbsent(uriPattern, p -> new HashMap<>());
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry.computeIfAbsent(method, m -> {
+			Map<String,Object> listenerConfig = new HashMap<>();
+			listenerConfig.put(KEY_LISTENER, listener);
+			listenerConfig.put("validateEtag", validateEtag);
+			if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
+			if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
+			return listenerConfig;
+		})==null) {
 			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
-		}
-		listenerConfig = new HashMap();
-		patternEntry.put(method,listenerConfig);
-		listenerConfig.put(KEY_LISTENER, listener);
-		listenerConfig.put("validateEtag", validateEtag);
-		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
-		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
+		}			
 	}
 
 	public void unregisterServiceClient(String uriPattern) {
@@ -396,7 +323,7 @@ public class RestServiceDispatcher  {
 		patternClients.remove(uriPattern);
 	}
 
-	public Set getUriPatterns() {
+	public Set<String> getUriPatterns() {
 		return patternClients.keySet();
 	}
 

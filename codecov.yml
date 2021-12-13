@@ -3,8 +3,17 @@ comment: false
 coverage:
   precision: 2
   round: nearest
-  range: 50..75
+  range: "50..75"
   status:
+    patch:
+      default:
+        target: 65%
+        informational: false
     project:
       default:
+        threshold: 0.5%
+        target: 80%
         informational: true
+
+github_checks:
+  annotations: false

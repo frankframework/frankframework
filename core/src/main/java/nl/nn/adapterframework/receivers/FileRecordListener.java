@@ -27,8 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -55,6 +57,7 @@ import nl.nn.adapterframework.util.WildCardFilter;
 public class FileRecordListener implements IPullingListener {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String inputDirectory;
@@ -351,7 +354,7 @@ public class FileRecordListener implements IPullingListener {
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 */
-	@IbisDoc({"set the time to delay when no records are to be processed and this class has to look for the arrival of a new file", "1000 [ms]"})
+	@IbisDoc({"The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file", "1000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

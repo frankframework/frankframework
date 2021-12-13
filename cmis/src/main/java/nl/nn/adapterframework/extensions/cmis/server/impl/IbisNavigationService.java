@@ -35,6 +35,11 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.NavigationService;
 import org.w3c.dom.Element;
 
+/**
+ * Wrapper that delegates when a matching CmisEvent is present.
+ * 
+ * @author Niels
+ */
 public class IbisNavigationService implements NavigationService {
 
 	private NavigationService navigationService;
@@ -91,7 +96,6 @@ public class IbisNavigationService implements NavigationService {
 			Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getDescendants(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
@@ -101,7 +105,6 @@ public class IbisNavigationService implements NavigationService {
 			Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getFolderTree(repositoryId, folderId, depth, filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, extension);
 	}
 
@@ -110,15 +113,12 @@ public class IbisNavigationService implements NavigationService {
 			String objectId, String filter, Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			Boolean includeRelativePathSegment, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getObjectParents(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includeRelativePathSegment, extension);
 	}
 
 	@Override
-	public ObjectData getFolderParent(String repositoryId, String folderId,
-			String filter, ExtensionsData extension) {
-		// TODO Auto-generated method stub
-		return null;
+	public ObjectData getFolderParent(String repositoryId, String folderId, String filter, ExtensionsData extension) {
+		return navigationService.getFolderParent(repositoryId, folderId, filter, extension);
 	}
 
 	@Override
@@ -126,7 +126,6 @@ public class IbisNavigationService implements NavigationService {
 			String filter, String orderBy, Boolean includeAllowableActions,
 			IncludeRelationships includeRelationships, String renditionFilter,
 			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
-		// TODO Auto-generated method stub
 		return navigationService.getCheckedOutDocs(repositoryId, folderId, filter, orderBy, includeAllowableActions, includeRelationships, renditionFilter, maxItems, skipCount, extension);
 	}
 }

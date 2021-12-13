@@ -245,7 +245,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 
-	@IbisDoc({"timeout for receiving a message from the queue", "3000 ms"})
+	@IbisDoc({"Timeout <i>in milliseconds</i> for receiving a message from the queue", "3000"})
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}

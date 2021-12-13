@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class ClassLoaderManager {
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
-	private Map<String, ClassLoader> classLoaders = new TreeMap<String, ClassLoader>();
+	private Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IbisContext ibisContext;
@@ -52,14 +52,14 @@ public class ClassLoaderManager {
 		this.ibisContext = ibisContext;
 	}
 
-	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ConfigurationException {
+	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ClassLoaderException {
 		return createClassloader(configurationName, classLoaderType, classPathClassLoader);
 	}
 
-	private ClassLoader createClassloader(String configurationName, String classLoaderType, ClassLoader parentClassLoader) throws ConfigurationException {
+	private ClassLoader createClassloader(String configurationName, String classLoaderType, ClassLoader parentClassLoader) throws ClassLoaderException {
 		//It is possible that no ClassLoader has been defined, use default ClassLoader
 		if(classLoaderType == null || classLoaderType.isEmpty())
-			throw new ConfigurationException("classLoaderType cannot be empty");
+			throw new ClassLoaderException("classLoaderType cannot be empty");
 
 		String className = classLoaderType;
 		if(classLoaderType.indexOf(".") == -1)
@@ -74,7 +74,7 @@ public class ClassLoaderManager {
 			classLoader = (ClassLoader) con.newInstance(new Object[] {parentClassLoader});
 		}
 		catch (Exception e) {
-			throw new ConfigurationException("invalid classLoaderType ["+className+"]", e);
+			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
 		}
 		LOG.debug("successfully instantiated classloader ["+ClassUtils.nameOf(classLoader)+"] with parent classloader ["+ClassUtils.nameOf(parentClassLoader)+"]");
 
@@ -100,24 +100,24 @@ public class ClassLoaderManager {
 				try {
 					method.invoke(loader, castValue);
 				} catch (Exception e) {
-					throw new ConfigurationException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
+					throw new ClassLoaderException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
 				}
 			}
 
 			try {
 				loader.configure(ibisContext, configurationName);
 			}
-			catch (ConfigurationException ce) {
+			catch (ClassLoaderException ce) {
 				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
 				switch(loader.getReportLevel()) {
 					case DEBUG:
 						LOG.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(configurationName, null, msg, MessageKeeperLevel.INFO, ce);
+						ibisContext.log(msg, MessageKeeperLevel.INFO, ce);
 						break;
 					case WARN:
-						ConfigurationWarnings.addGlobalWarning(LOG, msg, ce);
+						ApplicationWarnings.add(LOG, msg, ce);
 						break;
 					case ERROR:
 					default:
@@ -147,13 +147,13 @@ public class ClassLoaderManager {
 		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 
-	private ClassLoader init(String configurationName, String classLoaderType) throws ConfigurationException {
+	private ClassLoader init(String configurationName, String classLoaderType) throws ClassLoaderException {
 		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
 	}
 
-	private ClassLoader init(String configurationName, String classLoaderType, String parentConfig) throws ConfigurationException {
+	private ClassLoader init(String configurationName, String classLoaderType, String parentConfig) throws ClassLoaderException {
 		if(contains(configurationName))
-			throw new ConfigurationException("unable to add configuration with duplicate name ["+configurationName+"]");
+			throw new ClassLoaderException("unable to add configuration with duplicate name ["+configurationName+"]");
 
 		if(StringUtils.isEmpty(classLoaderType)) {
 			classLoaderType = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
@@ -167,7 +167,7 @@ public class ClassLoaderManager {
 		ClassLoader classLoader;
 		if(StringUtils.isNotEmpty(parentConfig)) {
 			if(!contains(parentConfig))
-				throw new ConfigurationException("failed to locate parent configuration ["+parentConfig+"]");
+				throw new ClassLoaderException("failed to locate parent configuration ["+parentConfig+"]");
 
 			classLoader = createClassloader(configurationName, classLoaderType, get(parentConfig));
 			LOG.debug("created a new classLoader ["+ClassUtils.nameOf(classLoader)+"] with parentConfig ["+parentConfig+"]");
@@ -184,7 +184,7 @@ public class ClassLoaderManager {
 		classLoaders.put(configurationName, classLoader);
 		if (classLoaders.size() > MAX_CLASSLOADER_ITEMS) {
 			String msg = "Number of ClassLoader instances exceeds [" + MAX_CLASSLOADER_ITEMS + "]. Too many ClassLoader instances can cause an OutOfMemoryError";
-			ConfigurationWarnings.addGlobalWarning(LOG, msg);
+			ApplicationWarnings.add(LOG, msg);
 		}
 		return classLoader;
 	}
@@ -193,9 +193,9 @@ public class ClassLoaderManager {
 	 * Returns the ClassLoader for a specific configuration.
 	 * @param configurationName to get the ClassLoader for
 	 * @return ClassLoader or null on error
-	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public ClassLoader get(String configurationName) throws ConfigurationException {
+	public ClassLoader get(String configurationName) throws ClassLoaderException {
 		return get(configurationName, null);
 	}
 
@@ -204,9 +204,13 @@ public class ClassLoaderManager {
 	 * @param configurationName to get the ClassLoader for
 	 * @param classLoaderType null or type of ClassLoader to load
 	 * @return ClassLoader or null on error
-	 * @throws ConfigurationException when a ClassLoader failed to initialize
+	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public ClassLoader get(String configurationName, String classLoaderType) throws ConfigurationException {
+	public ClassLoader get(String configurationName, String classLoaderType) throws ClassLoaderException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		LOG.debug("get configuration ClassLoader ["+configurationName+"]");
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader == null) {
@@ -219,7 +223,11 @@ public class ClassLoaderManager {
 	 * Reloads a configuration if it exists. Does not create a new one!
 	 * See {@link #reload(ClassLoader)} for more information
 	 */
-	public void reload(String configurationName) throws ConfigurationException {
+	public void reload(String configurationName) throws ClassLoaderException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader != null) {
 			reload(classLoader);
@@ -237,9 +245,13 @@ public class ClassLoaderManager {
 	 * loader class (BasePathClassLoader when a base path is
 	 * used).
 	 */
-	public void reload(ClassLoader classLoader) throws ConfigurationException {
+	public void reload(ClassLoader classLoader) throws ClassLoaderException {
+		if(ibisContext == null) {
+			throw new IllegalStateException("shutting down");
+		}
+
 		if (classLoader == null)
-			throw new ConfigurationException("classloader cannot be null");
+			throw new ClassLoaderException("classloader cannot be null");
 
 		if (classLoader instanceof IConfigurationClassLoader) {
 			((IConfigurationClassLoader) classLoader).reload();
@@ -256,6 +268,8 @@ public class ClassLoaderManager {
 	 * Removes all created ClassLoaders
 	 */
 	public void shutdown() {
+		ibisContext = null; //Remove ibisContext reference
+
 		for (Iterator<String> iterator = classLoaders.keySet().iterator(); iterator.hasNext();) {
 			String configurationClassLoader = iterator.next();
 			ClassLoader classLoader = classLoaders.get(configurationClassLoader);

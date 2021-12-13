@@ -1,0 +1,29 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+	<changeSet id="one" author="Niels Meijer">
+		<comment>Create DUMMYTABLE</comment>
+		<createTable tableName="DUMMYTABLE">
+			<column name="TKEY" type="BIGINT" />
+			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="error" author="Niels Meijer">
+		<createTable tableName="DUMMYTABLE">
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+
+	<!-- should not fail again -->
+	<changeSet id="error2" author="Niels Meijer">
+		<createTable tableName="DUMMYTABLE">
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+
+</databaseChangeLog>

@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -68,7 +68,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	private boolean recursiveSearch = true;
 	
 	private LdapClient ldapClient;
-	private ICacheAdapter<String, Set<String>> cache;
+	private ICache<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -135,7 +135,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 				attribute.setValue(membership,true);
 				attributes.addSubElement(attribute);
 			}
-			return new PipeRunResult(getForward(), result.toXML());
+			return new PipeRunResult(getSuccessForward(), result.toXML());
 		} catch (NamingException e) {
 			throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
 		}
@@ -143,11 +143,11 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 
 
 	@Override
-	public void setCache(ICacheAdapter<String, Set<String>> cache) {
+	public void setCache(ICache<String, Set<String>> cache) {
 		this.cache=cache;
 	}
 	@Override
-	public ICacheAdapter<String, Set<String>> getCache() {
+	public ICache<String, Set<String>> getCache() {
 		return cache;
 	}
 

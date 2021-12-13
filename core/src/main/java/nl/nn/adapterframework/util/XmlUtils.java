@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -27,14 +28,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,6 +43,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -61,6 +62,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -69,11 +73,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import org.dom4j.tree.DefaultDocument;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -101,10 +100,14 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
+import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -152,41 +155,20 @@ public class XmlUtils {
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
-	public static final XMLEventFactory EVENT_FACTORY;
-	public static final XMLInputFactory INPUT_FACTORY;
-	public static final XMLOutputFactory OUTPUT_FACTORY;
-	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY;
-	public static final String STREAM_FACTORY_ENCODING  = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
+	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
+	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
 	static {
-		// Use the Sun Java Streaming XML Parser (SJSXP) as StAX implementation
-		// on all Application Servers. Don't leave it up to the newFactory
-		// method of javax.xml.stream.XMLOutputFactory which for example on
-		// WAS 8.5 with classloader parent first will result in
-		// com.ibm.xml.xlxp2.api.stax.XMLOutputFactoryImpl being used while
-		// with parent last it will use com.ctc.wstx.sw.RepairingNsStreamWriter
-		// from woodstox-core-asl-4.2.0.jar. At the time of testing the
-		// woodstox-core-asl-4.2.0.jar and sjsxp-1.0.2.jar were part of the
-		// webapp which both provide META-INF/services/javax.xml.stream.*. On
-		// Tomcat the sjsxp was used by newFactory while on WAS 8.5 with parent
-		// last woodstox was used (giving "Response already committed" error
-		// when a WSDL was generated).
-		EVENT_FACTORY = new com.sun.xml.stream.events.ZephyrEventFactory();
-		INPUT_FACTORY = new com.sun.xml.stream.ZephyrParserFactory();
-		OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
-		REPAIR_NAMESPACES_OUTPUT_FACTORY = new com.sun.xml.stream.ZephyrWriterFactory();
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
-	public XmlUtils() {
-		super();
-	}
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt, key, omitXmlDeclaration, indent, 0);
 	}
-	
 
 	private static TransformerPool getUtilityTransformerPool(String xslt, String key, boolean omitXmlDeclaration, boolean indent, int xsltVersion) throws ConfigurationException {
 		String fullKey=key+"-"+omitXmlDeclaration+"-"+indent;
@@ -528,7 +510,7 @@ public class XmlUtils {
 	public static void parseXml(InputSource inputSource, ContentHandler handler) throws IOException, SAXException {
 		parseXml(inputSource, handler, null);
 	}
-	
+
 	public static void parseXml(InputSource inputSource, ContentHandler handler, ErrorHandler errorHandler) throws IOException, SAXException {
 		XMLReader xmlReader;
 		try {
@@ -578,50 +560,29 @@ public class XmlUtils {
 		}
 		return xmlReader;
 	}
-	
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware)
-		throws DomBuilderException {
-			return buildDomDocument(in, namespaceAware, false);
-		}
+	public static Document buildDomDocument(Reader in, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(in, namespaceAware, false);
+	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static Document buildDomDocument(InputSource src, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(src, namespaceAware, false);
+	}
+
+	public static Document buildDomDocument(InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		Document document;
-		InputSource src;
-
 		try {
-//			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-////				Sax2Dom sax2dom = new Sax2Dom();
-////				XMLReader reader=getXMLReader(namespaceAware, resolveExternalEntities);
-////				reader.setContentHandler(sax2dom);
-////				reader.setDTDHandler(sax2dom);
-////				reader.setErrorHandler(sax2dom);
-////				InputSource source = new InputSource(in);
-////				reader.parse(source);
-////				return sax2dom.getDOM();
-//				TransformerPool tp = getRemoveNamespacesTransformerPool(false, false);
-//				Source source = new StreamSource(in);
-//				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-//				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//				DocumentBuilder builder = factory.newDocumentBuilder();
-//				document=builder.newDocument();
-//				Result result = new DOMResult(document);
-//				tp.transform(source, result, null);
-//				
-//			} else {
-				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-				DocumentBuilder builder = factory.newDocumentBuilder();
-					if (!resolveExternalEntities) {
-						builder.setEntityResolver(new NonResolvingExternalEntityResolver());
-					}
-					src = new InputSource(in);
-					document = builder.parse(src);
-//			}
+			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			if (!resolveExternalEntities) {
+				builder.setEntityResolver(new NonResolvingExternalEntityResolver());
+			}
+			document = builder.parse(src);
 		} catch (SAXParseException e) {
 			throw new DomBuilderException(e);
 		} catch (ParserConfigurationException e) {
@@ -630,16 +591,16 @@ public class XmlUtils {
 			throw new DomBuilderException(e);
 		} catch (SAXException e) {
 			throw new DomBuilderException(e);
-//		} catch (ConfigurationException e) {
-//			throw new DomBuilderException(e);
-//		} catch (TransformerException e) {
-//			throw new DomBuilderException(e);
 		}
 		if (document == null) {
 			throw new DomBuilderException("Parsed Document is null");
 		}
 		return document;
 	}
+	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		return buildDomDocument(new InputSource(in), namespaceAware, resolveExternalEntities);
+	}
+
 	/**
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)
@@ -819,11 +780,11 @@ public class XmlUtils {
 		return new String(source,offset,length,charset);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, String outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		List<String> paramNames = null;
 		if (params!=null) {
 			paramNames = new ArrayList<String>();
@@ -844,21 +805,21 @@ public class XmlUtils {
 
 
 	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
-		return createXPathEvaluatorSource(XPathExpression,"text");
+		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
 	}
 
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, true);
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, paramNames, stripSpace, false, null, 0);
 	}
 
@@ -891,7 +852,7 @@ public class XmlUtils {
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 * TODO when xslt version equals 1, namespaces are ignored by default, setting 'ignoreNamespaces' to true will generate a non-xslt1-parsable xslt
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod, boolean includeXmlDeclaration, List<String> paramNames, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -902,7 +863,7 @@ public class XmlUtils {
 			ignoreNamespaces = false;
 
 		final String copyMethod;
-		if ("xml".equals(outputMethod)) {
+		if (outputMethod == OutputType.XML) {
 			copyMethod = "copy-of";
 		} else {
 			copyMethod = "value-of";
@@ -923,7 +884,7 @@ public class XmlUtils {
 		String xsl =
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
+			"<xsl:output method=\""+outputMethod.getOutputMethod()+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
 			paramsString +
 			(ignoreNamespaces ?
@@ -950,11 +911,11 @@ public class XmlUtils {
 		return xsl;
 	}
 
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, false);
 	}
 
-	public static String createXPathEvaluatorSource(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluatorSource(null, XPathExpression, outputMethod);
 	}
 
@@ -964,12 +925,12 @@ public class XmlUtils {
 		return createTransformer(createXPathEvaluatorSource(XPathExpression));
 	}
 
-	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod)
+	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, OutputType outputMethod)
 		throws TransformerConfigurationException {
 		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
 	}
 
-	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static Transformer createXPathEvaluator(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
 		return createXPathEvaluator(null, XPathExpression, outputMethod);
 	}
 
@@ -1135,7 +1096,7 @@ public class XmlUtils {
 	}
 
 	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
-		SAXParserFactory factory = new org.apache.xerces.jaxp.SAXParserFactoryImpl();
+		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
 	}
@@ -1637,8 +1598,12 @@ public class XmlUtils {
 		for (String paramName:parameters.keySet()) {
 			Object value = parameters.get(paramName);
 			if (value != null) {
-				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[]) {
-					value = Message.asString(value);
+				if (value instanceof Reader || value instanceof InputStream || value instanceof byte[] || value instanceof Message) {
+					try {
+						value = Message.asString(value);
+					} catch (IOException e) {
+						throw new IOException("Cannot get value of parameter ["+paramName+"]", e);
+					}
 				}
 				t.setParameter(paramName, value);
 				log.debug("setting parameter [" + paramName+ "] on transformer from class ["+value.getClass().getTypeName()+"]");
@@ -1664,8 +1629,7 @@ public class XmlUtils {
 	}
 
 
-	public static String transformXml(Transformer t, Source s)
-		throws TransformerException, IOException {
+	public static String transformXml(Transformer t, Source s) throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(getBufSize());
 		transformXml(t,s,out);
@@ -1693,12 +1657,9 @@ public class XmlUtils {
 	}
 
 	static public boolean isWellFormed(Message input, String root) {
-		Set<List<String>> rootValidations = null;
+		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
-			List<String> path = new ArrayList<String>();
-			path.add(root);
-			rootValidations = new HashSet<List<String>>();
-			rootValidations.add(path);
+			rootValidations = new RootValidations(root);
 		}
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
 		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
@@ -1712,21 +1673,8 @@ public class XmlUtils {
 		return true;
 	}
 
-	/**
-	 * Performs an Identity-transform, with resolving entities with the content files in the classpath
-	 * @return String (the complete and resolved xml)
-	 */
-	static public String identityTransform(Resource resource) throws  IOException, SAXException {
-		XmlWriter writer = new XmlWriter();
-		parseXml(resource, writer);
-		return writer.toString();
-	}
-
-
-	public static Set<Entry<String,String>> getVersionInfo() {
+	public static Map<String, String> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
-		
-		map.put("XML tools:",null);
 
 		SAXParserFactory spFactory = getSAXParserFactory();
 		map.put("SAXParserFactory-class", spFactory.getClass().getName());
@@ -1740,30 +1688,41 @@ public class XmlUtils {
 		TransformerFactory tFactory2 = getTransformerFactory(2);
 		map.put("TransformerFactory2-class", tFactory2.getClass().getName());
 
+		XMLEventFactory xmlEventFactory = XMLEventFactory.newInstance();
+		map.put("XMLEventFactory-class", xmlEventFactory.getClass().getName());
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		map.put("XMLInputFactory-class", xmlInputFactory.getClass().getName());
-		
-		map.put("XML tool version info:", null);
+		XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+		map.put("XMLOutputFactory-class", xmlOutputFactory.getClass().getName());
+
+		try {
+			MessageFactory messageFactory = MessageFactory.newInstance();
+			map.put("MessageFactory-class", messageFactory.getClass().getName());
+		} catch (SOAPException e) {
+			log.warn("unable to create MessageFactory", e);
+			map.put("MessageFactory-class", "unable to create MessageFactory (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
+		}
+
 		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
 		} catch (Throwable t) {
-			log.warn("Could not get Xerces version", t);
-			map.put("Xerces-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Xerces version", t);
+			map.put("Xerces-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
 		try {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
 			map.put("Xalan-Version", xalanVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Xalan version", t);
-			map.put("Xalan-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Xalan version", t);
+			map.put("Xalan-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
 			map.put("Saxon-Version", saxonVersion);
 		} catch (Throwable t) {
-			log.warn("Could not get Saxon version", t);
-			map.put("Saxon-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Saxon version", t);
+			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 		try {
 			if (xmlInputFactory instanceof WstxInputFactory) {
@@ -1772,17 +1731,11 @@ public class XmlUtils {
 				map.put("Woodstox-Version", woodstoxVersion);
 			}
 		} catch (Throwable t) {
-			log.warn("Could not get Woodstox version", t);
-			map.put("Woodstox-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+			log.warn("could not get Woodstox version", t);
+			map.put("Woodstox-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
 		}
 
-//		try {
-//			map.put("XmlCommons-Version", org.apache.xmlcommons.Version.getVersion());
-//		} catch (Throwable t) {
-//			map.put("XmlCommons-Version","not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
-//		}
-
-		return map.entrySet();
+		return map;
 	}
 
 	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {
@@ -1809,7 +1762,7 @@ public class XmlUtils {
 			TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to remove namespaces", e);
 			return null;
 		}
 	}
@@ -1819,7 +1772,7 @@ public class XmlUtils {
 			TransformerPool tp = getGetRootNamespaceTransformerPool();
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to find root-namespace", e);
 			return null;
 		}
 	}
@@ -1829,7 +1782,7 @@ public class XmlUtils {
 			TransformerPool tp = getAddRootNamespaceTransformerPool(namespace,true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to add root-namespace", e);
 			return null;
 		}
 	}
@@ -1839,7 +1792,7 @@ public class XmlUtils {
 			TransformerPool tp = getRemoveUnusedNamespacesTransformerPool(true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to remove unused namespaces", e);
 			return null;
 		}
 	}
@@ -1849,7 +1802,7 @@ public class XmlUtils {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transform(input,null);
 		} catch (Exception e) {
-			log.warn(e);
+			log.warn("unable to execute xpath expression ["+xpath+"]", e);
 			return null;
 		}
 	}
@@ -1903,17 +1856,17 @@ public class XmlUtils {
 		}
 	}
 
-	public static String canonicalize(String input) throws DocumentException, IOException {
-		if (StringUtils.isEmpty(input)) {
-			return null;
+	public static String canonicalize(String input) throws IOException {
+		XmlWriter xmlWriter = new XmlWriter();
+		xmlWriter.setIncludeComments(false);
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		handler = new CanonicalizeFilter(handler);
+		try {
+			XmlUtils.parseXml(input, handler);
+			return xmlWriter.toString();
+		} catch (SAXException e) {
+			throw new IOException("ERROR: could not canonicalize ["+input+"]",e);
 		}
-		org.dom4j.Document doc = DocumentHelper.parseText(input);
-		StringWriter sw = new StringWriter();
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		format.setExpandEmptyElements(true);
-		XMLWriter xw = new XMLWriter(sw, format);
-		xw.write(doc);
-		return sw.toString();
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
@@ -1928,6 +1881,20 @@ public class XmlUtils {
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
+	}
+
+	public static byte[] nodeToByteArray(Node node) throws TransformerException {
+		return nodeToByteArray(node, true);
+	}
+	public static byte[] nodeToByteArray(Node node, boolean omitXmlDeclaration) throws TransformerException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		Transformer t = getTransformerFactory().newTransformer();
+		if (omitXmlDeclaration) {
+			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		}
+		Result outputTarget = new StreamResult(outputStream);
+		t.transform(new DOMSource(node), outputTarget);
+		return outputStream.toByteArray();
 	}
 
 	public static String cdataToText(String input) {
@@ -1994,16 +1961,6 @@ public class XmlUtils {
 		return true;
 	}
 
-	public static String getAdapterSite(Object document) throws SAXException, IOException, TransformerException {
-		String input;
-		if (document instanceof DefaultDocument) {
-			DefaultDocument defaultDocument = (DefaultDocument) document;
-			input = defaultDocument.asXML();
-		} else {
-			input = document.toString();
-		}
-		return getAdapterSite(input, null);
-	}
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
 		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
@@ -2129,4 +2086,18 @@ public class XmlUtils {
 			return new org.apache.xpath.jaxp.XPathFactoryImpl();
 		}
 	}
+
+
+	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaURL); 
+		return schema.newValidatorHandler();
+	}
+
+	public static ValidatorHandler getValidatorHandler(Source schemaSource) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaSource); 
+		return schema.newValidatorHandler();
+	}
+
 }

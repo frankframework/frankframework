@@ -1,0 +1,30 @@
+<module>
+	<adapter name="Streaming Test">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-Streaming" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="first"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="*/*" outputType="xml" >
+			</pipe>
+			<pipe name="firstandahalf"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="*/*" outputType="xml" >
+			</pipe>
+			<pipe name="second"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="*/*" outputType="xml"
+				storeResultInSessionKey="resultFromSecond" preserveInput="true">
+			</pipe>
+			<EchoPipe name="echo">
+				<forward name="success" path="READY" />
+			</EchoPipe>
+			
+		</pipeline>
+	</adapter>
+</module>

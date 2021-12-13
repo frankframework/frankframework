@@ -30,13 +30,13 @@ public class LdapFindMemberPipeTest {
 	private LdapFindMemberPipe pipe;
 	
 	@Before
-	public void setUp() {
+	public void setUp() throws ConfigurationException {
 		pipe = new LdapFindMemberPipe();
-		pipe.registerForward(new PipeForward("success",null));
+		pipe.registerForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, null));
 		pipe.setHost(host);
 		pipe.setPort(port);
 		pipe.setUseSsl(useSSL);
-		pipe.setUserName(bindDN);
+		pipe.setUsername(bindDN);
 		pipe.setPassword(bindPassword);
 	}
 	

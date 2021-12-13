@@ -76,7 +76,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "XPathExpressionException", e);
 		}
 
-		return new PipeRunResult(getForward(), stringWriter.getBuffer().toString());
+		return new PipeRunResult(getSuccessForward(), stringWriter.getBuffer().toString());
 	}
 
 	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, DomBuilderException, XPathExpressionException {

@@ -55,8 +55,10 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 import nl.nn.adapterframework.cache.EhCache;
+import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -67,14 +69,6 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 /**
  * Xerces based XML validator.
  *
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"notValid"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @author Johan Verrips IOS
  * @author Jaco de Groot
@@ -131,7 +125,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				cache.open();
 			} catch (ConfigurationException e) {
 				cache = null;
-				ConfigurationWarnings.addGlobalWarning(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
+				ApplicationWarnings.add(log, "Could not configure EhCache for XercesXmlValidator (xmlValidator.maxInitialised will be ignored)", e);
 			}
 		}
 	}
@@ -203,7 +197,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		MyErrorHandler errorHandler = new MyErrorHandler();
+		MyErrorHandler errorHandler = new MyErrorHandler(this);
 		errorHandler.warn = warn;
 		preparser.setErrorHandler(errorHandler);
 		for (Schema schema : schemas) {
@@ -265,7 +259,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public XercesValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public XercesValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
 
@@ -452,11 +446,16 @@ class PreparseResult {
 class MyErrorHandler implements XMLErrorHandler {
 	protected Logger log = LogUtil.getLogger(this);
 	protected boolean warn = true;
+	private IConfigurationAware source;
+
+	public MyErrorHandler(IConfigurationAware source) {
+		this.source = source;
+	}
 
 	@Override
 	public void warning(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
@@ -468,14 +467,14 @@ class MyErrorHandler implements XMLErrorHandler {
 			throw e;
 		}
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 	}
 
 	@Override
 	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
 		if (warn) {
-			ConfigurationWarnings.add(null, log, e.getMessage());
+			ConfigurationWarnings.add(source, log, e.getMessage());
 		}
 		throw new XNIException(e);
 	}

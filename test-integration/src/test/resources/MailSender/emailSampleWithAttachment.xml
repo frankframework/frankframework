@@ -1,0 +1,15 @@
+<email>
+	<recipients>
+		<recipient type="to">dummy@dummy.dummy</recipient>
+	</recipients>
+	<from name="name">dummy@dummy.dummey</from>
+	<subject>mail sender en sendgridsender uit het ibis4email project</subject>
+	<message>message</message>
+	<threadTopic>subject</threadTopic>
+	<messageType>text/plain</messageType><!-- Optional -->
+	<messageBase64>false</messageBase64><!-- Optional -->
+	<charset>UTF-8</charset><!-- Optional -->
+	<attachments>
+		<attachment name="filename1" type="text/plain">This is the first attachment</attachment>
+	</attachments><!-- Optional -->
+</email>

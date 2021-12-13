@@ -1,0 +1,26 @@
+<configuration>
+	<adapter name="SenderSeries">
+		<receiver name="SenderSeries">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="SenderSeries"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender className="nl.nn.adapterframework.senders.SenderSeries">
+					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

@@ -211,12 +211,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException);
 					} finally {
 						releaseSession(session);
 					}
 				} else {
-					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException); 
+					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException); 
 				}
 			} else {
 				if (getSender()==null) {
@@ -256,7 +256,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 					}
 				} else {
 					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAckModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
+					if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 						log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
 						((TextMessage)rawMessageOrWrapper).acknowledge();
 					}

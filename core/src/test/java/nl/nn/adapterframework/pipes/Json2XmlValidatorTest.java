@@ -5,17 +5,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -28,7 +31,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Test
 	public void testNoNamespaceXml2Json() throws Exception {
 		pipe.setName("Response_To_Json");
-		pipe.setOutputFormat("json");
+		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
 //		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
@@ -71,7 +74,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Test
 	public void testWithNamespace() throws Exception {
 		pipe.setName("Response_To_Json");
-		pipe.setOutputFormat("json");
+		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
 //		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
@@ -87,11 +90,51 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, prr.getResult().asString());
 	}
 
+
+	public String setupAcceptHeaderTest(String acceptHeaderValue) throws Exception {
+		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setInputFormatSessionKey("AcceptHeader");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setResponseRoot("BusinessPartner");
+
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		session.put("AcceptHeader", acceptHeaderValue);
+		
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+
+		doPipe(pipe, input,session); // first run the request validation ...
+		
+		IValidator validator = pipe.getResponseValidator();
+		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
+
+		return prr_response.getResult().asString();
+		
+	}
+	
+	@Test
+	public void testAcceptHeaderTextJson() throws Exception {
+		String actual = setupAcceptHeaderTest("text/Json");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testAcceptHeaderTextXML() throws Exception {
+		String actual = setupAcceptHeaderTest("text/Xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		assertEquals(expected, actual);
+	}
+
+	
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");
 		pipe.setRoot("Root");
-		pipe.setOutputFormat("xml");
+		pipe.setOutputFormat(DocumentFormat.XML);
 		pipe.setSchema("/Validation/Parameters/simple.xsd");
 		pipe.setThrowException(true);
 		Parameter param = new Parameter();
@@ -233,11 +276,102 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		param4.setSessionKey("IntValueList");
 		pipe.addParameter(param4);
 		
+		Parameter param5 = new Parameter();
+		param5.setName("stringElem3");
+		List<String> stringElem3elements = Arrays.asList("aa","bb");
+		session.put("stringElem3elements", stringElem3elements);
+		param5.setSessionKey("stringElem3elements");
+		pipe.addParameter(param5);
+		
 		pipe.configure();
 		pipe.start();
 		
 		String input    = "{ \"stringArray\" : [ \"xx\", \"yy\" ] }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/allOptions.xml");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testMultivaluedParametersFindDocuments() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/FindDocuments/findDocuments.xsd");
+		pipe.setRoot("FindDocuments_Request");
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("schemaName");
+		param1.setValue("NNPensioenen");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("requestUserId");
+		param2.setValue("postman2");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("SearchAttributes/agreementNumber");
+		param3.setSessionKey("agreementNumbers");
+		pipe.addParameter(param3);
+		
+		pipe.configure();
+		pipe.start();
+		
+		List<String> agreementNumbers = new ArrayList<>();
+		agreementNumbers.add("12.12");
+		agreementNumbers.add("33002118");
+		
+		session.put("agreementNumbers", agreementNumbers);
+		
+		String input    = "{}";
+		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
+		
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+		
+		String actualXml = Message.asString(prr.getResult());
+		
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testMultivaluedParametersFindDocumentsDeepSearch() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/FindDocuments/findDocuments.xsd");
+		pipe.setRoot("FindDocuments_Request");
+		pipe.setDeepSearch(true);
+		pipe.setThrowException(true);
+		
+		Parameter param1 = new Parameter();
+		param1.setName("schemaName");
+		param1.setValue("NNPensioenen");
+		pipe.addParameter(param1);
+
+		Parameter param2 = new Parameter();
+		param2.setName("requestUserId");
+		param2.setValue("postman2");
+		pipe.addParameter(param2);
+
+		Parameter param3 = new Parameter();
+		param3.setName("agreementNumber");
+		param3.setSessionKey("agreementNumbers");
+		pipe.addParameter(param3);
+		
+		pipe.configure();
+		pipe.start();
+		
+		List<String> agreementNumbers = new ArrayList<>();
+		agreementNumbers.add("12.12");
+		agreementNumbers.add("33002118");
+		
+		session.put("agreementNumbers", agreementNumbers);
+		
+		String input    = "{}";
+		String expected = TestFileUtils.getTestFile("/Align/FindDocuments/FindDocumentsRequest.xml");
 		
 
 		PipeRunResult prr = doPipe(pipe, input,session);
@@ -301,7 +435,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
-	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
+	public void testStoreRootElement(DocumentFormat outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
 		pipe.setSchema("/Align/Abc/abc.xsd");
 		pipe.setRootElementSessionKey("rootElement");
@@ -311,7 +445,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		}
 
 		pipe.registerForward(new PipeForward("failure",null));
-		pipe.registerForward(new PipeForward("exception",null));
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME,null));
 		
 		pipe.configure();
 		pipe.start();
@@ -329,26 +463,26 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testStoreRootElementXml2Json() throws Exception {
-		testStoreRootElement("json","abc.xml",false);
+		testStoreRootElement(DocumentFormat.JSON,"abc.xml",false);
 	}
 	@Test
 	public void testStoreRootElementJson2XmlFull() throws Exception {
-		testStoreRootElement("xml","abc-full.json",false);
+		testStoreRootElement(DocumentFormat.XML,"abc-full.json",false);
 	}
 	@Test
 	public void testStoreRootElementJson2XmlCompact() throws Exception {
-		testStoreRootElement("xml","abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.XML,"abc-compact.json",true);
 	}
 	@Test
 	public void testStoreRootElementJson2JsonFull() throws Exception {
-		testStoreRootElement("json","abc-full.json",false);
+		testStoreRootElement(DocumentFormat.JSON,"abc-full.json",false);
 	}
 	@Test
 	public void testStoreRootElementJson2JsonCompact() throws Exception {
-		testStoreRootElement("json","abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.JSON,"abc-compact.json",true);
 	}
 	@Test
 	public void testStoreRootElementXml2Xml() throws Exception {
-		testStoreRootElement("xml","abc.xml",false);
+		testStoreRootElement(DocumentFormat.XML,"abc.xml",false);
 	}
 }

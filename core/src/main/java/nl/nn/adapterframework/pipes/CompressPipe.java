@@ -44,20 +44,10 @@ import nl.nn.adapterframework.util.FileUtils;
 /**
  * Pipe to zip or unzip a message or file.  
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>When no problems encountered</td></tr>
- * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
- * </table>
- * </p>
- * 
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends FixedForwardPipe {
-
-	private final static String EXCEPTIONFORWARD = "exception";
 
 	private boolean messageIsContent;
 	private boolean resultIsContent;
@@ -170,9 +160,9 @@ public class CompressPipe extends FixedForwardPipe {
 					in.close();
 				}
 			}
-			return new PipeRunResult(getForward(), getResultMsg(result));
+			return new PipeRunResult(getSuccessForward(), getResultMsg(result));
 		} catch(Exception e) {
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
 				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
 				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));

@@ -4,7 +4,6 @@
 		description="Adapter for testing transaction handling, multiple adapters are being called with different transaction attributes"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionTimeout="2"
 			transactionAttribute="Required"
 		>
@@ -14,7 +13,6 @@
 				serviceName="ibis4test-TransactionHandlingRequiredSubAdapterException"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				jmsRealm="jdbc" 
 				slotId="${applicationId}/GenericReceiverTransactionHandlingRequiredSubAdapterException"
 			/>
 		</receiver>
@@ -27,7 +25,7 @@
 
 			<!-- This subadapter throws an exception -->
 			<pipe name="Send transacted message to required subadapter with exception"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
@@ -39,8 +37,8 @@
 			</pipe>
 
 			<!-- This should rollback -->
-			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" jmsRealm="jdbc" />
+			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -51,7 +49,6 @@
 		description="First SubAdapter for Transaction Handling"
 	>
 		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
 			transactionAttribute="Required"
 		>
 			<listener 

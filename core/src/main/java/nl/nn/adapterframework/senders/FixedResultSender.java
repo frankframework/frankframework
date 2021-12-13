@@ -42,19 +42,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * FixedResultSender, same behaviour as {@link nl.nn.adapterframework.pipes.FixedResultPipe FixedResultPipe}, but now as a ISender.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr>
- *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence
- * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
- *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
- * </tr>
- * </table>
- * </p>
+ * 
+ * @ff.parameters Any parameters defined on the sender will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file fileName will be replaced by its corresponding value-of-parameter. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}.
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -105,8 +95,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 				throw new SenderException("exception extracting parameters",e);
 			}
 			if (pvl!=null) {
-				for (int i=0; i<pvl.size(); i++) {
-					ParameterValue pv = pvl.getParameterValue(i);
+				for(ParameterValue pv : pvl) {
 					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 				}
 			}

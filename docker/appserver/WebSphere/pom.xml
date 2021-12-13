@@ -68,6 +68,11 @@
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.2.3</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -90,7 +95,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>full-configuration,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -104,14 +109,8 @@
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>configurations</classifier>
+									<classifier>full-configuration</classifier>
 									<destFileName>configurations.jar</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>resources</classifier>
-									<destFileName>resources.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
@@ -138,22 +137,25 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>			
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assembly/dockerAssembly.xml</descriptor>
-					</descriptors>
-				</configuration>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
 						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>resources</goal>
 						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<filtering>true</filtering>
+									<directory>src/scripts</directory>
+								</resource>
+							</resources>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -168,11 +170,6 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
-								<exec executable="docker-compose">
-									<arg value="down"/>
-									<arg value="--volumes"/>
-									<arg value="--remove-orphans"/>
-								</exec>
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>

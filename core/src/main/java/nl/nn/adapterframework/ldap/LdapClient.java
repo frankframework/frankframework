@@ -45,7 +45,7 @@ import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -110,7 +110,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     };
 
 	private Hashtable<String,Object> jndiEnv=null;
-	private ICacheAdapter<String,Set<String>> attributeCache=null;
+	private ICache<String,Set<String>> attributeCache=null;
 
     static{
     	//set JVM custom properties from Ldap.properties only once
@@ -158,11 +158,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	}
    
 	@Override
-	public void setCache(ICacheAdapter<String,Set<String>> cache) {
+	public void setCache(ICache<String,Set<String>> cache) {
 		attributeCache=cache;
 	}
 	@Override
-	public ICacheAdapter<String,Set<String>> getCache() {
+	public ICache<String,Set<String>> getCache() {
 		return attributeCache;
 	}
 

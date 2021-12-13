@@ -40,14 +40,14 @@ public class DelayPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)+"delay interrupted", e);
 		}
 		log.info(getLogPrefix(session)+"ends waiting for " + getDelayTime() + " ms.");
-		return new PipeRunResult(getForward(),message);
+		return new PipeRunResult(getSuccessForward(),message);
 	}
 
 
 	/**
 	 * the time the thread will be put to sleep.
 	 */
-	@IbisDoc({"the time the thread will be put to sleep", "5000 [ms]"})
+	@IbisDoc({"The time <i>in milliseconds</i> the thread will be put to sleep", "5000"})
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}

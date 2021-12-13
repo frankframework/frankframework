@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,27 +15,11 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.amazonaws.services.s3.internal.BucketNameUtils;
 import com.amazonaws.services.s3.model.S3Object;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.AmazonS3FileSystem;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.Message;
 
 /**
  * Sender to work with Amazon S3. 
@@ -50,88 +34,93 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSystem> {
 
-	private List<String> specificActions = Arrays.asList("createBucket", "deleteBucket", "copy", "restore");
-
+//	private List<FileSystemAction> specificActions = Arrays.asList(FileSystemAction.CREATEBUCKET,FileSystemAction.DELETEBUCKET,FileSystemAction.RESTORE,FileSystemAction.COPYS3OBJECT);
+	
 	public AmazonS3Sender() {
 		setFileSystem(new AmazonS3FileSystem());
-		addActions(specificActions);
+//		addActions(specificActions);
 	}
 
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
+//	@Override
+//	public void configure() throws ConfigurationException {
+//		super.configure();
+//		if (getActionEnum()==FileSystemAction.CREATEBUCKET && getFileSystem().isForceGlobalBucketAccessEnabled() 
+//				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
+//						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
+//			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
+//					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
+//		}
+//		if (getActionEnum()==FileSystemAction.COPY) {
+//			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
+//					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
+//				throw new ConfigurationException(
+//						" invalid or empty destinationBucketName [" + getFileSystem().getDestinationBucketName()
+//								+ "] please visit AWS to see correct bucket naming");
+//			if (getParameterList().findParameter("destinationFileName") == null)
+//				throw new ConfigurationException(" destinationFileName parameter requires to be present to perform ["
+//						+ getActionEnum() + "] action");
+//			if (getFileSystem().isStorageClassEnabled() && (StringUtils.isEmpty(getFileSystem().getStorageClass())
+//					|| !AmazonS3FileSystem.STORAGE_CLASSES.contains(getFileSystem().getStorageClass())))
+//				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
+//						+ "] please use following supported storage classes "
+//						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
+//		} 
+//		else if (getActionEnum()==FileSystemAction.RESTORE && (StringUtils.isEmpty(getFileSystem().getTier())
+//				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
+//			throw new ConfigurationException(
+//					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
+//							+ AmazonS3FileSystem.TIERS.toString());
+//		}
+//	}
 
-		if (getAction().equalsIgnoreCase("createBucket") && getFileSystem().isForceGlobalBucketAccessEnabled() 
-				&& (StringUtils.isEmpty(getFileSystem().getBucketRegion())
-						|| !AmazonS3FileSystem.AVAILABLE_REGIONS.contains(getFileSystem().getBucketRegion()))) {
-			throw new ConfigurationException(" invalid bucketRegion [" + getFileSystem().getBucketRegion()
-					+ "] please use following supported regions " + AmazonS3FileSystem.AVAILABLE_REGIONS.toString());
-		}
-		else if (getAction().equalsIgnoreCase("copy")) {
-			if (StringUtils.isEmpty(getFileSystem().getDestinationBucketName())
-					|| !BucketNameUtils.isValidV2BucketName(getFileSystem().getDestinationBucketName()))
-				throw new ConfigurationException(
-						" invalid or empty destinationBucketName [" + getFileSystem().getDestinationBucketName()
-								+ "] please visit AWS to see correct bucket naming");
-			if (getParameterList().findParameter("destinationFileName") == null)
-				throw new ConfigurationException(" destinationFileName parameter requires to be present to perform ["
-						+ getAction() + "] action");
-			if (getFileSystem().isStorageClassEnabled() && (StringUtils.isEmpty(getFileSystem().getStorageClass())
-					|| !AmazonS3FileSystem.STORAGE_CLASSES.contains(getFileSystem().getStorageClass())))
-				throw new ConfigurationException(" invalid storage class [" + getFileSystem().getStorageClass()
-						+ "] please use following supported storage classes "
-						+ AmazonS3FileSystem.STORAGE_CLASSES.toString());
-		} else if (getAction().equalsIgnoreCase("restore") && (StringUtils.isEmpty(getFileSystem().getTier())
-				|| !AmazonS3FileSystem.TIERS.contains(getFileSystem().getTier()))) {
-			throw new ConfigurationException(
-					" invalid tier when restoring an object from Amazon S3 Glacier, please use one of the following supported tiers: "
-							+ AmazonS3FileSystem.TIERS.toString());
-		}
-	}
+//	@Override
+//	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+//
+//		String result = null;
+//		String fileName;
+//		try {
+//			fileName = message.asString();
+//		} catch (IOException e) {
+//			throw new SenderException(e);
+//		}
+//
+//		ParameterValueList pvl = null;
+//		if (getParameterList() != null) {
+//			try {
+//				pvl = getParameterList().getValues(message, session);
+//			} catch (ParameterException e) {
+//				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
+//			}
+//		}
 
-	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
-		if (!specificActions.contains(getAction())) {
-			return super.sendMessage(message, session, next);
-		}
+//		switch(getActionEnum()) {
+//			case CREATEBUCKET: 
+//				result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
+//				break;
+//			case DELETEBUCKET:
+//				result = getFileSystem().deleteBucket();
+//				break;
+//			case COPY:
+//				if (pvl.getParameterValue("destinationFileName") != null) {
+//					if (pvl.getParameterValue("destinationFileName").getValue() != null) {
+//						String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
+//						result = getFileSystem().copyObject(fileName, destinationFileName);
+//					} else {
+//						throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
+//					}
+//				} else {
+//					throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
+//				}
+//				break;
+//			case RESTORE:
+//				result = getFileSystem().restoreObject(fileName);
+//				break;
+//			default:
+//				return super.sendMessage(message, session, next);
+//		}
 
-		String result = null;
-		String fileName;
-		try {
-			fileName = message.asString();
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
-
-		ParameterValueList pvl = null;
-		if (paramList != null) {
-			try {
-				pvl = paramList.getValues(message, session);
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix() + "Sender [" + getName() + "] caught exception evaluating parameters", e);
-			}
-		}
-
-		if (getAction().equalsIgnoreCase("createBucket")) { //createBucket block
-			result = getFileSystem().createBucket(getFileSystem().getBucketName(), getFileSystem().isBucketExistsThrowException());
-		} else if (getAction().equalsIgnoreCase("deleteBucket")) { //deleteBucket block
-			result = getFileSystem().deleteBucket();
-		} else if (getAction().equalsIgnoreCase("copy")) { //copy file block
-			if (pvl.getParameterValue("destinationFileName") != null) {
-				if (pvl.getParameterValue("destinationFileName").getValue() != null) {
-					String destinationFileName = pvl.getParameterValue("destinationFileName").getValue().toString();
-					result = getFileSystem().copyObject(fileName, destinationFileName);
-				} else {
-					throw new SenderException(getLogPrefix() + " no value in destinationFileName parameter found, please assing value to the parameter to perfom [copy] action");
-				}
-			} else {
-				throw new SenderException(getLogPrefix() + " no destinationFileName parameter found, it must be used to perform [copy] action");
-			}
-		} else if (getAction().equalsIgnoreCase("restore")) { //restore block
-			result = getFileSystem().restoreObject(fileName);
-		}
-		return new PipeRunResult(null, result);
-	}
+//		return super.sendMessage(message, session, next);
+//	}
 	
 	@IbisDoc({ "access key to access to the AWS resources owned by the account", "" })
 	public void setAccessKey(String accessKey) {
@@ -168,40 +157,40 @@ public class AmazonS3Sender extends FileSystemSender<S3Object, AmazonS3FileSyste
 		getFileSystem().setBucketName(bucketName);
 	}
 	
-	@IbisDoc({ "name of the destination bucket name can be used for copy action", "" }) 
-	public void setDestinationBucketName(String destinationBucketName) {
-		getFileSystem().setDestinationBucketName(destinationBucketName);
-	}
+//	@IbisDoc({ "name of the destination bucket name can be used for copy action", "" }) 
+//	public void setDestinationBucketName(String destinationBucketName) {
+//		getFileSystem().setDestinationBucketName(destinationBucketName);
+//	}
 
-	@IbisDoc({ "name of the bucket region for create action", "" }) 
-	public void setBucketRegion(String bucketRegion) {
-		getFileSystem().setBucketRegion(bucketRegion);
-	}
+//	@IbisDoc({ "name of the bucket region for create action", "" }) 
+//	public void setBucketRegion(String bucketRegion) {
+//		getFileSystem().setBucketRegion(bucketRegion);
+//	}
 
-	@IbisDoc({ "name of the storage class for copy action. If storage class is enabled must be specified", "" }) 
-	public void setStorageClass(String storageClass) {
-		getFileSystem().setStorageClass(storageClass);
-	}
+//	@IbisDoc({ "name of the storage class for copy action. If storage class is enabled must be specified", "" }) 
+//	public void setStorageClass(String storageClass) {
+//		getFileSystem().setStorageClass(storageClass);
+//	}
 	
-	@IbisDoc({ "name of tier for restore action", "" }) 
-	public void setTier(String tier) {
-		getFileSystem().setTier(tier);
-	}
+//	@IbisDoc({ "name of tier for restore action", "" }) 
+//	public void setTier(String tier) {
+//		getFileSystem().setTier(tier);
+//	}
 
-	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires", "" }) 
-	public void setExpirationInDays(int expirationInDays) {
-		getFileSystem().setExpirationInDays(expirationInDays);
-	}
+//	@IbisDoc({ "the time, in days, between when an object is restored to thebucket and when it expires. Use <code>-1</code> never expire", "-1" }) 
+//	public void setExpirationInDays(int expirationInDays) {
+//		getFileSystem().setExpirationInDays(expirationInDays);
+//	}
 	
-	@IbisDoc({ "enables storage class for copy action", "false" }) 
-	public void setStorageClassEnabled(boolean storageClassEnabled) {
-		getFileSystem().setStorageClassEnabled(storageClassEnabled);
-	}
+//	@IbisDoc({ "enables storage class for copy action", "false" }) 
+//	public void setStorageClassEnabled(boolean storageClassEnabled) {
+//		getFileSystem().setStorageClassEnabled(storageClassEnabled);
+//	}
 
-	@IbisDoc({ "enables creating bucket by upload and copy action if the bucket does not exist", "false" }) 
-	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
-		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
-	}
+//	@IbisDoc({ "enables creating bucket by upload and copy action if the bucket does not exist", "false" }) 
+//	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
+//		getFileSystem().setBucketCreationEnabled(bucketCreationEnabled);
+//	}
 	
 	@IbisDoc({ "setting proxy host", "" })
 	public void setProxyHost(String proxyHost) {

@@ -1,6 +1,6 @@
-<ibis>
+<module>
 	<adapter name="ReplaceInputAndPreserve" description="Test the functioning of the attributes getInputFromSessionKey, getInputFromFixedValue, preserveInput and storeResultInSessionKey">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="ReplaceInputAndPreserve">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReplaceInputAndPreserve" />
 		</receiver>
 		<pipeline>
@@ -35,4 +35,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

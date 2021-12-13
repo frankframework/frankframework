@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,6 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author  John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -159,7 +161,7 @@ public final class RecordHandlingFlow {
 	}
 
 
-	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "<code>true</code>"})
+	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
 	public void setAutoCloseBlock(boolean b) {
 		autoCloseBlock = b;
 	}

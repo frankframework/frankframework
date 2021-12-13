@@ -20,6 +20,7 @@ import java.util.List;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
@@ -27,6 +28,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * 
  * @author  John Dekker
  */
+@FrankDocGroup(name = "Batch")
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);

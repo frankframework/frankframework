@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -63,7 +64,7 @@ public class SvnUtils {
 			httpSender.setVerifyHostname(false);
 			httpSender.setIgnoreCertificateExpiredException(true);
 			httpSender.setXhtml(true);
-			httpSender.setMethodType("HEAD");
+			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
 			httpSender.open();
 			String result = httpSender.sendMessage(new Message(""), null).asString();
@@ -84,7 +85,7 @@ public class SvnUtils {
 			httpSender.setVerifyHostname(false);
 			httpSender.setIgnoreCertificateExpiredException(true);
 			httpSender.setXhtml(true);
-			httpSender.setMethodType("REPORT");
+			httpSender.setMethodType(HttpMethod.REPORT);
 			httpSender.configure();
 			httpSender.open();
 
@@ -94,9 +95,6 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			httpSender.setMethodType("REPORT");
-			httpSender.configure();
-			httpSender.open();
 			String result = httpSender.sendMessage(new Message(logReportRequest), null).asString();
 			return result;
 		} finally {

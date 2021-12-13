@@ -9,7 +9,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.bson.types.ObjectId;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
@@ -78,6 +77,18 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	}
 
 	@Test
+	public void testInsertOneNoObjectId() throws Exception {
+		sender.setAction("InsertOne");
+		sender.setCollection("Students");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"KarelV\", \"class_id\": \"first\", \"grades\": [ 4, 5, 6] }");
+		System.out.println(result.asString());
+		assertThat(result.asString(),StringContains.containsString("\"insertedId\":"));
+	}
+
+	@Test
 	public void testInsertMany() throws Exception {
 		sender.setAction("InsertMany");
 		sender.setCollection("Students");
@@ -100,7 +111,20 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
 		System.out.println("FindOne: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
+		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+	}
+
+	@Test
+	public void testFindOneXml() throws Exception {
+		sender.setAction("FindOne");
+		sender.setCollection("Students");
+		sender.setOutputFormat("xml");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindOne: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno>"));
 	}
 
 	@Test
@@ -112,7 +136,20 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
 //		System.out.println("FindMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
+		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
+	}
+
+	@Test
+	public void testFindManyXml() throws Exception {
+		sender.setAction("FindMany");
+		sender.setCollection("Students");
+		sender.setOutputFormat("xml");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindManyXml: ["+result.asString()+"]");
+		assertThat(result.asString(),StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><scores><item>4</item><item>4</item><item>3</item></scores><seatno>10</seatno></item><item>"));
 	}
 
 	@Test
@@ -128,7 +165,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 		Message result = sendMessage("{ \"student_id\": \"?{searchTarget}\" }");
 //		System.out.println("FindMany: ["+result.asString()+"]");
-		assertThat(result.asString(),StringContains.containsString("\"student_id\": \"Evert\", \"class_id\": \"1c\""));
+		assertThat(result.asString(),StringContains.containsString("\"student_id\":\"Evert\",\"class_id\":\"1c\""));
 	}
 
 	@Test
@@ -210,7 +247,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	public JsonObject createStudent(String studentId, String classId, Integer... grades) {
 		JsonObjectBuilder builder = Json.createObjectBuilder();
-		builder.add("_id", new ObjectId().toString());
 		builder.add("student_id", studentId).add("class_id", classId);
 		builder.add("scores", getScores(grades));
 		JsonObject doc = builder.build();

@@ -17,29 +17,25 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.jndi.DbAwareDataSource;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -74,13 +70,11 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
-	
-	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
+
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
-	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
@@ -120,18 +114,18 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");
 			}
-			String dsinfo=getDatasourceInfo();
-			if (dsinfo==null) {
-				dsinfo=datasource.toString();
-			}
+
+			String dsinfo = datasource.toString();
 			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
-			datasource = new TransactionAwareDataSourceProxy(datasource);
 		}
 		return datasource;
 	}
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
+		if(getDatasource() instanceof DbAwareDataSource) {
+			return getDatasource().toString();
+		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
@@ -140,15 +134,6 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			String driverVersion=md.getDriverVersion();
 			String url=md.getURL();
 			String user=md.getUserName();
-			if (getDatabaseType() == Dbms.DB2 && "WAS".equals(applicationServerType) && md.getResultSetHoldability() != ResultSet.HOLD_CURSORS_OVER_COMMIT) {
-				// For (some?) combinations of WebShere and DB2 this seems to be
-				// the default and result in the following exception when (for
-				// example?) a ResultSetIteratingPipe is calling next() on the
-				// ResultSet after it's sender has called a pipeline which
-				// contains a SenderPipe using transactionAttribute="NotSupported":
-				//   com.ibm.websphere.ce.cm.ObjectClosedException: DSRA9110E: ResultSet is closed.
-				ConfigurationWarnings.add(this, log, "The database's default holdability for ResultSet objects is " + md.getResultSetHoldability() + " instead of " + ResultSet.HOLD_CURSORS_OVER_COMMIT + " (ResultSet.HOLD_CURSORS_OVER_COMMIT)");
-			}
 			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] product version ["+productVersion+"] driver ["+driver+"] driver version ["+driverVersion+"]";
 		} catch (SQLException e) {
 			log.warn("Exception determining databaseinfo",e);
@@ -156,65 +141,21 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return dsinfo;
 	}
 
-	public Dbms getDatabaseType() {
-		IDbmsSupport dbms=getDbmsSupport();
-		return dbms != null ? dbms.getDbms() : Dbms.NONE; 
-	}
-
-	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
-		if (dbmsSupportFactoryDefault==null) {
-			dbmsSupportFactoryDefault=new DbmsSupportFactory();
-		}
-		return dbmsSupportFactoryDefault;
-	}
-	public void setDbmsSupportFactoryDefault(IDbmsSupportFactory dbmsSupportFactory) {
-		this.dbmsSupportFactoryDefault=dbmsSupportFactory;
-	}
-	
-	public IDbmsSupportFactory getDbmsSupportFactory() {
-		if (dbmsSupportFactory==null) {
-			dbmsSupportFactory=getDbmsSupportFactoryDefault();
-		}
-		return dbmsSupportFactory;
-	}
 	public void setDbmsSupportFactory(IDbmsSupportFactory dbmsSupportFactory) {
 		this.dbmsSupportFactory=dbmsSupportFactory;
 	}
 
-	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
-		this.dbmsSupport=dbmsSupport;
-	}
-
 	public IDbmsSupport getDbmsSupport() {
 		if (dbmsSupport==null) {
-			Connection conn=null;
 			try {
-				conn=getConnection();
-			} catch (Exception e) {
-				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
+				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+			} catch (JdbcException e) {
+				throw new IllegalStateException("cannot obtain connection to determine dbmssupport", e);
 			}
-			try {
-				dbmsSupport=getDbmsSupportFactory().getDbmsSupport(conn);
-				if (dbmsSupport==null) {
-					log.warn(getLogPrefix()+"Could not determine database type from connection");
-				} else {
-					log.debug(getLogPrefix()+"determined database connection of type ["+dbmsSupport.getDbmsName()+"]");
-				}
-			} finally {
-				try {
-					if (conn!=null) { 
-						conn.close();
-					}
-				} catch (SQLException e1) {
-					log.warn("exception closing connection for dbmssupport",e1);
-				}
-			}
-		}
-		if (dbmsSupport==null) {
-			dbmsSupport=new GenericDbmsSupport();
 		}
 		return dbmsSupport;
 	}
+
 	/**
 	 * Obtains a connection to the datasource. 
 	 */
@@ -259,6 +200,16 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		hski.handleStatisticsKeeper(data, connectionStatistics);
 	}
 
+	@Override
+	@Deprecated
+	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	public void setJmsRealm(String jmsRealmName) {
+		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
+		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
+			throw new IllegalStateException("JmsRealm ["+jmsRealmName+"] not found");
+		}
+	}
+
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 * 
@@ -266,18 +217,25 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	 */
 	@Override
 	public String getPhysicalDestinationName() {
-		String result="unknown";
-		try (Connection connection = getConnection()) {
-			DatabaseMetaData metadata = connection.getMetaData();
-			result = metadata.getURL();
+		try {
+			//Try to minimise the amount of DB connections
+			if(getDatasource() instanceof DbAwareDataSource) {
+				return ((DbAwareDataSource) getDatasource()).getDestinationName();
+			}
 
-			String catalog=null;
-			catalog=connection.getCatalog();
-			result += catalog!=null ? ("/"+catalog):"";
+			try (Connection connection = getConnection()) {
+				DatabaseMetaData metadata = connection.getMetaData();
+				String result = metadata.getURL();
+	
+				String catalog=null;
+				catalog=connection.getCatalog();
+				result += catalog!=null ? ("/"+catalog):"";
+				return result;
+			}
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
 		}
-		return result;
+		return "unknown";
 	}
 
 	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})

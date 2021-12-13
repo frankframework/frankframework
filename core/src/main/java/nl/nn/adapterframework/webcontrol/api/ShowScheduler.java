@@ -1,22 +1,21 @@
 /*
-Copyright 2016-2020 WeAreFrank!
+   Copyright 2016-2020 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.io.StringReader;
-import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -38,10 +37,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
@@ -68,11 +65,11 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
-import nl.nn.adapterframework.scheduler.DatabaseJobDef;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.scheduler.job.DatabaseJob;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Locker;
@@ -88,7 +85,6 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 @Path("/")
 public final class ShowScheduler extends Base {
-	private @Context SecurityContext securityContext;
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -227,11 +223,14 @@ public final class ShowScheduler extends Base {
 		jobData.put("properties", getJobData(jobMap));
 
 		if(expanded) {
-			JobDef jobDef = (JobDef) jobMap.get(ConfiguredJob.JOBDEF_KEY);
-			jobData.put("adapter", jobDef.getAdapterName());
-			jobData.put("receiver", jobDef.getReceiverName());
-			jobData.put("message", jobDef.getMessage());
-			
+			IJob jobDef = (IJob) jobMap.get(ConfiguredJob.JOBDEF_KEY);
+			if(jobDef instanceof DatabaseJob) {
+				DatabaseJob dbJob = (DatabaseJob) jobDef;
+				jobData.put("adapter", dbJob.getAdapterName());
+				jobData.put("listener", dbJob.getJavaListener());
+				jobData.put("message", dbJob.getMessage());
+			}
+
 			Locker locker = jobDef.getLocker();
 			if(locker != null) {
 				jobData.put("locker", true);
@@ -314,7 +313,7 @@ public final class ShowScheduler extends Base {
 	private List<Map<String, Object>> getJobMessages(JobDetail jobDetail) throws ApiException {
 		List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
 
-		JobDef jobdef = (JobDef) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
+		IJob jobdef = (IJob) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
 		for (int t=0; t < jobdef.getMessageKeeper().size(); t++) {
 			Map<String, Object> message = new HashMap<String, Object>(3);
 			MessageKeeperMessage job = jobdef.getMessageKeeper().getMessage(t);
@@ -386,15 +385,16 @@ public final class ShowScheduler extends Base {
 		return Response.status(Response.Status.OK).build();
 	}
 
-	private Scheduler getScheduler() {
-		DefaultIbisManager manager = (DefaultIbisManager) getIbisManager();
-		SchedulerHelper sh = manager.getSchedulerHelper();
+	private SchedulerHelper getSchedulerHelper() {
+		return getIbisContext().getBean("schedulerHelper", SchedulerHelper.class);
+	}
 
+	private Scheduler getScheduler() {
 		try {
-			return sh.getScheduler();
+			return getSchedulerHelper().getScheduler();
 		}
 		catch (SchedulerException e) {
-			throw new ApiException("Cannot find scheduler", e); 
+			throw new ApiException("Cannot find scheduler", e);
 		}
 	}
 
@@ -430,7 +430,7 @@ public final class ShowScheduler extends Base {
 				scheduler.pauseJob(jobKey);
 			}
 			else if("resume".equals(action)) {
-				SchedulerHelper sh = ((DefaultIbisManager) getIbisManager()).getSchedulerHelper();
+				SchedulerHelper sh = getSchedulerHelper();
 				JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 				// TODO this part can be more generic in case multiple triggers 
 				// can be configurable
@@ -546,15 +546,15 @@ public final class ShowScheduler extends Base {
 		String message = resolveStringFromMap(inputDataMap, "message");
 
 		String description = resolveStringFromMap(inputDataMap, "description");
-		
-		SchedulerHelper sh = manager.getSchedulerHelper();
+
+		SchedulerHelper sh = getSchedulerHelper();
 
 		//First try to create the schedule and run it on the local ibis before storing it in the database
-		DatabaseJobDef jobdef = SpringUtils.createBean(applicationContext, DatabaseJobDef.class);
+		DatabaseJob jobdef = SpringUtils.createBean(applicationContext, DatabaseJob.class);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
 		jobdef.setAdapterName(adapterName);
-		jobdef.setReceiverName(listenerName);
+		jobdef.setJavaListener(listenerName);
 		jobdef.setJobGroup(jobGroup);
 		jobdef.setMessage(message);
 		jobdef.setDescription(description);
@@ -587,11 +587,6 @@ public final class ShowScheduler extends Base {
 				throw new ApiException("Error creating FixedQuerySender bean to store job in database", e);
 			}
 
-			String user = null;
-			Principal principal = securityContext.getUserPrincipal();
-			if(principal != null)
-				user = principal.getName();
-
 			try {
 				qs.open();
 				try (Connection conn = qs.getConnection()) {
@@ -618,7 +613,7 @@ public final class ShowScheduler extends Base {
 						stmt.setString(8, description);
 						stmt.setBoolean(9, hasLocker);
 						stmt.setString(10, lockKey);
-						stmt.setString(11, user);
+						stmt.setString(11, getUserPrincipalName());
 		
 						success = stmt.executeUpdate() > 0;
 					}

@@ -28,17 +28,22 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 
 	@Override
 	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		PoolingDataSource result = new PoolingDataSource();
-		result.setUniqueName(dataSourceName);
-		result.setMaxPoolSize(100);
-		result.setAllowLocalTransactions(true);
-		result.setXaDataSource((XADataSource)dataSource);
-		result.init();
-		return result;
+		if (dataSource instanceof XADataSource) {
+			PoolingDataSource result = new PoolingDataSource();
+			result.setUniqueName(dataSourceName);
+			result.setMaxPoolSize(100);
+			result.setAllowLocalTransactions(true);
+			result.setXaDataSource((XADataSource)dataSource);
+			result.init();
+			return result;
+		}
+		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
+		return (DataSource)dataSource;
 	}
 
 	@Override
+	// implementation is necessary, because PoolingDataSource does not implement AutoCloseable
 	public void destroy() throws Exception {
-		objects.values().forEach(ds -> ((PoolingDataSource)ds).close());
+		objects.values().stream().filter(ds -> ds instanceof PoolingDataSource).forEach(ds -> ((PoolingDataSource)ds).close());
 	}
 }

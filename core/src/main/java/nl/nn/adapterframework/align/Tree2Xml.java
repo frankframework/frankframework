@@ -75,7 +75,14 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	protected N getSubstitutedChild(N node, String childName) {
 		return node;
 	}
-	
+	protected String getOverride(XSElementDeclaration elementDeclaration, N node) {
+		Object text = sp.getOverride(getContext());
+		if (text instanceof String) {
+			return (String)text;
+		}
+		return text.toString();
+	}
+
 	@Override
 	public final Iterable<N> getChildrenByName(N node, XSElementDeclaration childElementDeclaration) throws SAXException {
 		String childName=childElementDeclaration.getName();
@@ -93,12 +100,10 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String nodeName=elementDeclaration.getName();
 		Object text;
 		if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] currently parsed element ["+getContext().getLocalName()+"]");
-		if (sp!=null && (text=sp.getOverride(getContext()))!=null) {
-			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] override found ["+text+"]");
-			if (text instanceof String) {
-				return (String)text;
-			}
-			return text.toString();
+		if (sp!=null && sp.hasOverride(getContext())) {
+			String result = getOverride(elementDeclaration, node);
+			if (log.isTraceEnabled()) log.trace("node ["+nodeName+"] override found ["+result+"]");
+			return result;
 		}
 		String result=getNodeText(elementDeclaration, node);
 		if (sp!=null && StringUtils.isEmpty(result) && (text=sp.getDefault(getContext()))!=null) {

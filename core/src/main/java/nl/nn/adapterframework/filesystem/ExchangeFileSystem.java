@@ -342,7 +342,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			if (findResults.getTotalCount() == 0) {
 				releaseConnection(exchangeService);
-				return FileSystemUtils.getDirectoryStream((Iterator)null);
+				return FileSystemUtils.getDirectoryStream((Iterator<EmailMessage>)null);
 			} else {
 				Iterator<Item> itemIterator = findResults.getItems().iterator();
 				return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
@@ -380,7 +380,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	
 	@Override
-	public Message readFile(EmailMessage f) throws FileSystemException, IOException {
+	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
 		EmailMessage emailMessage;
 		PropertySet ps = new PropertySet(EmailMessageSchema.Subject);
 //		ps = new PropertySet(EmailMessageSchema.DateTimeReceived,
@@ -403,7 +403,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			if (isReadMimeContents()) {
 				MimeContent mc = emailMessage.getMimeContent();
-				return new Message(mc.getContent());
+				return new Message(mc.getContent(), charset);
 			}
 			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
 		} catch (Exception e) {
@@ -632,7 +632,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (a instanceof ItemAttachment) {
 			ItemAttachment itemAttachment=(ItemAttachment)a;
 			EmailMessage attachmentItem = (EmailMessage)itemAttachment.getItem();
-			return readFile(attachmentItem);
+			return readFile(attachmentItem, null); // we don't know the charset here, leave it null for now
 		}
 		if (content==null) {
 			log.warn("content of attachment is null");
@@ -942,7 +942,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return proxyHost;
 	}
 
-	@IbisDoc({"14", "proxy port", ""})
+	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}

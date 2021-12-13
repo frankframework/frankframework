@@ -9,10 +9,9 @@ import static org.junit.Assume.assumeTrue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import lombok.Getter;
@@ -23,7 +22,6 @@ import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
-import oracle.jdbc.pool.OracleDataSource;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
 
@@ -36,31 +34,14 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 * less expensive than setting locks on the database to have a more secure peek.
 	 */
 	private boolean testNegativePeekWhileGet = false;
-	
-	public JdbcTableListenerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
-		listener = new JdbcTableListener() {
 
-			@Override
-			public Connection getConnection() throws JdbcException {
-				try {
-					return getDbConnection();
-				} catch (SQLException e) {
-					throw new JdbcException(e);
-				}
-			}
+	@Before
+	@Override
+	public void setup() throws Exception {
+		super.setup();
 
-			@Override
-			protected DataSource getDatasource() throws JdbcException {
-				try {
-					return new OracleDataSource(); // just return one, to have one.
-				} catch (SQLException e) {
-					throw new JdbcException(e);
-				} 
-			}
-			
-		};
-		listener.setDatasourceName("dummy");
+		listener = new JdbcTableListener();
+		autowire(listener);
 		listener.setTableName("TEMP");
 		listener.setKeyField("TKEY");
 		listener.setStatusField("TINT");
@@ -69,10 +50,15 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		listener.setStatusValueError("3");
 	}
 
-	public Connection getDbConnection() throws SQLException {
-		return getConnection();
+	@After
+	@Override
+	public void teardown() throws Exception {
+		if(listener != null) {
+			listener.close();
+		}
+		super.teardown();
 	}
-	
+
 	@Test
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
@@ -162,7 +148,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -197,7 +183,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 					waitBeforeUpdate.release();
 					updateDone.acquire();
 				}
-				rawMessage1 = listener.changeProcessState(conn, "10", ProcessState.ERROR);
+				rawMessage1 = listener.changeProcessState(conn, "10", ProcessState.ERROR, "test");
 				if (mainThreadFirst) {
 					waitBeforeUpdate.release();
 				} else {
@@ -271,7 +257,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -292,7 +278,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			Object rawMessage1 = listener.getRawMessage(connection1, null);
 			assertEquals("10",rawMessage1);
-			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS)!=null) {
+			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			}
 
@@ -317,7 +303,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
 			assertEquals("10",rawMessage);
-			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS)!=null) {
+			if (useStatusInProcess=listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
 			} else {
 				connection1.rollback();
@@ -325,7 +311,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 
 		if (useStatusInProcess) {
-			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE);
+			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, "test");
 		}
 		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM TEMP WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);

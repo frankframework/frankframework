@@ -22,21 +22,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips IOS
  * @author Jaco de Groot
  */
-public abstract class AbstractXmlValidator implements IScopeProvider {
+public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected static Logger log = LogUtil.getLogger(AbstractXmlValidator.class);
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
@@ -64,6 +65,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
 
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean throwException = false;
 	private boolean fullSchemaChecking = false;
@@ -99,6 +101,11 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	 */
 	public void configure(String logPrefix) throws ConfigurationException {
 		this.logPrefix = logPrefix;
+	}
+
+	@Override
+	public String getName() {
+		return logPrefix;
 	}
 
 	public void start() throws ConfigurationException {
@@ -137,7 +144,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
@@ -160,7 +167,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, PipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, logPrefix, validatorHandler, null, context);
@@ -223,9 +230,6 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
-		if (this instanceof INamedObject) {
-			sb.append("[").append(((INamedObject) this).getName()).append("] ");
-		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}
@@ -268,7 +272,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 	 * </p>
 	 * Defaults to <code>false</code>;
 	 */
-	@IbisDoc({"Perform addional memory intensive checks", "<code>false</code>"})
+	@IbisDoc({"Perform addional memory intensive checks", "false"})
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
@@ -276,7 +280,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return fullSchemaChecking;
 	}
 
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "<code>false</code>"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "false"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -300,7 +304,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "false"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -316,12 +320,12 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return charset;
 	}
 
-	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
+	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -337,7 +341,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return importedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -353,7 +357,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		return importedNamespacesToIgnore;
 	}
 
-	@IbisDoc({"Ignore namespaces in the input message which are unknown", "<code>true</code> when schema or nonamespaceschemalocation is used, <code>false</code> otherwise"})
+	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
@@ -361,7 +365,7 @@ public abstract class AbstractXmlValidator implements IScopeProvider {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
+	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "false"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}

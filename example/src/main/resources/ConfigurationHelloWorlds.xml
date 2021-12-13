@@ -44,7 +44,7 @@
 			</pipe>
 			<pipe
 				name="CreateNewMessage"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="&lt;tests>&lt;test>1&lt;/test>&lt;/tests>"
 				>
 				<forward name="success" path="HelloWorlds"/>
@@ -68,8 +68,7 @@
 	<scheduler>
 		<job
 			name="HelloWorlds"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
+			javaListener ="HelloWorlds"
 			cronExpression="0 55 2 * * ?"
 			function="sendMessage"
 			active="${HelloWorlds.active}"

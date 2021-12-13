@@ -26,21 +26,15 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * </p>
- * 
  * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
+ * 
+ * @ff.parameters All parameters present are applied to the query to be executed.
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
@@ -65,7 +59,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
 				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey());
 	}

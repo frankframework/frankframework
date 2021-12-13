@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -36,13 +37,10 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IDualModeValidator;
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -52,6 +50,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -66,7 +66,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.processors.PipeProcessor;
-import nl.nn.adapterframework.senders.ConfigurationAware;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -81,64 +80,24 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sends a message using a {@link ISender sender} and optionally receives a reply from the same sender, or
  * from a {@link ICorrelatedPullingListener listener}.
- *
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
- * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuditTrailNamespaceDefs(String) auditTrailNamespaceDefs}</td><td>namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuditTrailSessionKey(String) auditTrailSessionKey}</td><td>Key of a PipeLineSession-variable. If specified, the value of the PipeLineSession variable is used as audit trail (instead of the default "no audit trail")</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideRegex(String) hideRegex}</td><td>Next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setHideMethod(String) hideMethod}</td><td>(only used when hideRegex is not empty and only applies to error/logstore) either <code>all</code> or <code>firstHalf</code>. When <code>firstHalf</code> only the first half of the string is masked, otherwise (<code>all</code>) the entire string is masked</td><td>"all"</td></tr>
- * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOutOnResult(String) timeOutOnResult}</td><td>when not empty, a TimeOutException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setExceptionOnResult(String) exceptionOnResult}</td><td>when not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryXPath</code>)</td><td>0</td></tr>
- * <tr><td>{@link #setRetryMinInterval(int) retryMinInterval}</td><td>The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code></td><td>1</td></tr>
- * <tr><td>{@link #setRetryMaxInterval(int) retryMaxInterval}</td><td>The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made</td><td>600</td></tr>
- * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseInputForExtract(boolean) useInputForExtract}</td><td>when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationID and label (instead of the wrapped input)</td><td>true</td></tr>
- * <tr><td>{@link #setStreamResultToServlet(boolean) streamResultToServlet}</td><td>if set, the result is first base64 decoded and then streamed to the HttpServletResponse object</td><td>false</td></tr>
- * <tr><td>{@link #setPresumedTimeOutInterval(int) presumedTimeOutInterval}</td><td>when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. A value of -1 indicates to never presume timeouts</td><td>10 s</td></tr> 
- * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
- * </table>
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender,
- * if this is a {@link ISenderWithParameters ISenderWithParameters}.
- * When a parameter with the name stubFilename is present, it will <u>not</u> be handed to the sender 
+ *  * 
+ * @ff.parameters any parameters defined on the pipe will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ * @ff.parameter  stubFilename will <u>not</u> be handed to the sender 
  * and it is used at runtime instead of the stubFilename specified by the attribute. A lookup of the 
  * file for this stubFilename will be done at runtime, while the file for the stubFilename specified 
- * as an attribute will be done at configuration time.</td></tr>
- * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
- * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
- * <tr><td><code>inputWrapper</code></td><td>specification of Pipe to wrap input messages (before validating)</td></tr>
- * <tr><td><code>outputWrapper</code></td><td>specification of Pipe to wrap output messages (after validating)</td></tr>
- * <tr><td>{@link ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
- * </table>
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified. If "timeout" and <code>resultOnTimeOut</code> are not specified, "exception" is used in such a case</td></tr>
- * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
- * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
- * </table>
- * </p>
+ * as an attribute will be done at configuration time.
+
+ * @ff.forward timeout
+ * @ff.forward illegalResult
+ * @ff.forward presumedTimeout
+ * @ff.forward interrupt
+ * 
  * @author  Gerrit van Brakel
  */
 
@@ -150,9 +109,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
 	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
-	private final static String SUCCESS_FORWARD = "success";
 	private final static String TIMEOUT_FORWARD = "timeout";
-	private final static String EXCEPTION_FORWARD = "exception";
 	private final static String ILLEGAL_RESULT_FORWARD = "illegalResult";
 	private final static String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
 	private final static String INTERRUPT_FORWARD = "interrupt";
@@ -162,42 +119,42 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
 
-	private String linkMethod = "CORRELATIONID";
+	private @Getter LinkMethod linkMethod = LinkMethod.CORRELATIONID;
 
-	private String correlationIDStyleSheet;
-	private String correlationIDXPath;
-	private String correlationIDNamespaceDefs;
-	private String correlationIDSessionKey = null;
-	private String labelStyleSheet;
-	private String labelXPath;
-	private String labelNamespaceDefs;
-	private String auditTrailSessionKey = null;
-	private String auditTrailXPath;
-	private String auditTrailNamespaceDefs;
-	private boolean useInputForExtract = true;
-	private String hideMethod = "all";
+	private @Getter String correlationIDStyleSheet;
+	private @Getter String correlationIDXPath;
+	private @Getter String correlationIDNamespaceDefs;
+	private @Getter String correlationIDSessionKey = null;
+	private @Getter String labelStyleSheet;
+	private @Getter String labelXPath;
+	private @Getter String labelNamespaceDefs;
+	private @Getter String auditTrailSessionKey = null;
+	private @Getter String auditTrailXPath;
+	private @Getter String auditTrailNamespaceDefs;
+	private @Getter boolean useInputForExtract = true;
+	private @Getter String hideMethod = "all";
 
-	private boolean checkXmlWellFormed = false;
-	private String checkRootTag;
+	private @Getter boolean checkXmlWellFormed = false;
+	private @Getter String checkRootTag;
 
-	private String resultOnTimeOut;
-	private int maxRetries=0;
-	private int retryMinInterval=1;
-	private int retryMaxInterval=1;
-	private String retryXPath;
-	private String retryNamespaceDefs;
-	private int presumedTimeOutInterval=10;
+	private @Getter String resultOnTimeOut;
+	private @Getter int maxRetries=0;
+	private @Getter int retryMinInterval=1;
+	private @Getter int retryMaxInterval=1;
+	private @Getter String retryXPath;
+	private @Getter String retryNamespaceDefs;
+	private @Getter int presumedTimeOutInterval=10;
 
 
-	private boolean streamResultToServlet=false;
+	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter String stubFilename;
-	private String timeOutOnResult;
-	private String exceptionOnResult;
+	private @Getter String timeOutOnResult;
+	private @Getter String exceptionOnResult;
 
-	private ISender sender = null;
-	private ICorrelatedPullingListener listener = null;
-	private ITransactionalStorage messageLog=null;
+	private @Getter ISender sender = null;
+	private @Getter ICorrelatedPullingListener listener = null;
+	private @Getter ITransactionalStorage messageLog=null;
 
 	private String returnString; // contains contents of stubUrl	
 	private TransformerPool auditTrailTp=null;
@@ -216,10 +173,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public final static String MESSAGE_LOG_NAME_PREFIX="- ";
 	public final static String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
-	private IValidator inputValidator=null;
-	private IValidator outputValidator=null;
-	private IWrapperPipe inputWrapper=null;
-	private IWrapperPipe outputWrapper=null;
+	private @Getter IValidator inputValidator=null;
+	private @Getter IValidator outputValidator=null;
+	private @Getter IWrapperPipe inputWrapper=null;
+	private @Getter IWrapperPipe outputWrapper=null;
 	
 	private boolean timeoutPending=false;
 
@@ -227,26 +184,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	private boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
 
 
-	private PipeProcessor pipeProcessor;
-	private ListenerProcessor listenerProcessor;
+	private @Setter PipeProcessor pipeProcessor;
+	private @Setter ListenerProcessor listenerProcessor;
 
-
-	protected void propagateName() {
-		ISender sender=getSender();
-		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
-			sender.setName(getName() + "-sender");
-		}
-		ICorrelatedPullingListener listener=getListener();
-		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
-			listener.setName(getName() + "-replylistener");
-		}
-	}
-
-	@IbisDoc({"name of the pipe", ""})
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		propagateName();
+	public enum LinkMethod {
+		MESSAGEID, CORRELATIONID
 	}
 
 	/**
@@ -289,19 +231,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 
 			try {
-				if (getSender() instanceof ConfigurationAware) {
-					IAdapter adapter=getAdapter();
-					if (adapter!=null) {
-						((ConfigurationAware)getSender()).setConfiguration(getAdapter().getConfiguration());
-					} else {
-						log.debug("No Adapter to set Configuration from");
-					}
-				}
-				//In order to suppress 'XmlQuerySender is used one or more times' config warnings
+				//In order to be able to suppress 'xxxSender may cause potential SQL injections!' config warnings
 				if(sender instanceof DirectQuerySender) {
-					String msg = "has a ["+ClassUtils.nameOf(DirectQuerySender.class)+"]. This may cause potential SQL injections!";
-					ConfigurationWarnings.add(this, log, msg, SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, getAdapter());
-					((DirectQuerySender) getSender()).configure(true);
+					((DirectQuerySender) getSender()).configure(getAdapter());
 				} else {
 					getSender().configure();
 				}
@@ -324,10 +256,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
 			}
-			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
-				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
-				throw new ConfigurationException("Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
-			}	
 
 			if (!(getHideMethod().equalsIgnoreCase("all"))
 					&& (!(getHideMethod().equalsIgnoreCase("firstHalf")))) {
@@ -364,7 +292,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog==null) {
 			if (StringUtils.isEmpty(getStubFilename()) && !getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) { // sender is asynchronous and not a local sender, but has no messageLog
-				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter(), getConfigurationClassLoader());
+				boolean suppressIntegrityCheckWarning = ConfigurationWarnings.isSuppressed(SuppressKeys.INTEGRITY_CHECK_SUPPRESS_KEY, getAdapter());
 				if (!suppressIntegrityCheckWarning) {
 					boolean legacyCheckMessageLog = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("messageLog.check", true);
 					if (!legacyCheckMessageLog) {
@@ -392,17 +320,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					getAdapter().getMessageKeeper().add(msg);
 			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
+				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),OutputType.TEXT,false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
+			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,OutputType.TEXT,false,null);
 		}
 
 		IValidator inputValidator = getInputValidator();
@@ -413,19 +341,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (inputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			inputValidator.registerForward(pf);
 			configure(inputValidator);
 		}
 		if (outputValidator!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			outputValidator.registerForward(pf);
 			configure(outputValidator);
 		}
 		if (getInputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getInputWrapper().registerForward(pf);
 			if (getInputWrapper() instanceof EsbSoapWrapperPipe) {
 				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getInputWrapper();
@@ -436,7 +364,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		if (getOutputWrapper()!=null) {
 			PipeForward pf = new PipeForward();
-			pf.setName(SUCCESS_FORWARD);
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 			getOutputWrapper().registerForward(pf);
 			configure(getOutputWrapper());
 		}
@@ -448,15 +376,29 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 	// configure wrappers/validators
 	private void configure(IPipe pipe) throws ConfigurationException {
-		if (pipe instanceof IExtendedPipe) {
-			if(getPipeLine() == null) {
-				throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe) +" ["+pipe.getName()+"]");
-			}
-
-			((IExtendedPipe) pipe).configure(getPipeLine());
-		} else {
-			pipe.configure();
+		if(getPipeLine() == null) {
+			throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe));
 		}
+
+		getPipeLine().configure(pipe);
+	}
+
+	protected void propagateName() {
+		ISender sender=getSender();
+		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
+			sender.setName(getName() + "-sender");
+		}
+		ICorrelatedPullingListener listener=getListener();
+		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
+			listener.setName(getName() + "-replylistener");
+		}
+	}
+
+	@IbisDoc({"name of the pipe", ""})
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		propagateName();
 	}
 
 //	/**
@@ -475,7 +417,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 //	}
 //	
 //	@Override
-//	public boolean canProvideOutputStream() {
+//	public protected canProvideOutputStream() {
 //		return super.canProvideOutputStream() 
 //				&& (!senderAffectsStreamProvidingCapability() || 
 //					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
@@ -501,23 +443,19 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public boolean canProvideOutputStream() {
+	protected boolean canProvideOutputStream() {
 		return super.canProvideOutputStream() && 
 				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
 				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
 	}
 
 	@Override
-	public boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null &&
-				!isStreamResultToServlet();
+	protected boolean canStreamToNextPipe() {
+		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet();
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
+	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream result=null;
 		if (sender instanceof IOutputStreamingSupport) {
 			// TODO insert output validator
@@ -543,7 +481,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		String correlationID = session==null?null:session.getMessageId();
  		Message originalMessage = null;
  		Message result = null;
-		PipeForward forward = getForward();
+		PipeForward forward = getSuccessForward();
 
 		if (messageLog!=null) {
 			preserve(input, session);
@@ -555,13 +493,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
-			} else {
-				input = wrapResult.getResult();
-				if (messageLog!=null) {
-					preserve(input, session);
-				}
+			}
+			input = wrapResult.getResult();
+			if (messageLog!=null) {
+				preserve(input, session);
 			}
 			log.debug(getLogPrefix(session)+"input after wrapping ("+ClassUtils.nameOf(input)+") [" + input.toString() + "]");
 		}
@@ -570,7 +507,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			preserve(input, session);
 			log.debug(getLogPrefix(session)+"validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
 		}
@@ -670,7 +607,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
-					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
+					if (getLinkMethod() == LinkMethod.MESSAGEID) {
 						correlationID = sendResult.getResult().asString();
 						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
@@ -688,7 +625,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						}
 					} else {
 						if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
-							messageTrail = (String)(session.get(getAuditTrailSessionKey()));
+							messageTrail = session.getMessage(getAuditTrailSessionKey()).asString();
 						}
 					}
 					String storedMessageID=messageID;
@@ -697,7 +634,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					}
 					if (correlationIDTp!=null) {
 						if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
-							String sourceString = (String)(session.get(getCorrelationIDSessionKey()));
+							String sourceString = session.getMessage(getCorrelationIDSessionKey()).asString();
 							correlationID=correlationIDTp.transform(sourceString,null);
 						} else {
 							if (isUseInputForExtract()) {
@@ -748,9 +685,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				log.warn(getLogPrefix(session) + "timeout occured");
 				if (timeoutForward==null) {
 					if (StringUtils.isEmpty(getResultOnTimeOut())) {
-						timeoutForward=findForward(EXCEPTION_FORWARD);
+						timeoutForward=findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 					} else {
-						timeoutForward=getForward();
+						timeoutForward=getSuccessForward();
 					}
 				}
 				if (timeoutForward!=null) {
@@ -766,7 +703,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
-				PipeForward exceptionForward = findForward(EXCEPTION_FORWARD);
+				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 				if (exceptionForward!=null) {
 					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
 					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input,session.getMessageId(),0));
@@ -788,7 +725,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
 		}
@@ -798,7 +735,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (wrapResult==null) {
 				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
 			}
-			if (!wrapResult.getPipeForward().getName().equals(SUCCESS_FORWARD)) {
+			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
 			} 
 			result = wrapResult.getResult();
@@ -810,7 +747,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			
 			try {
 				InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);
-				String contentType = (String) session.get("contentType");
+				String contentType = session.getMessage("contentType").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
 					RestListenerUtils.setResponseContentType(session, contentType);
 				}
@@ -819,9 +756,8 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
 			}
 			return new PipeRunResult(forward, "");
-		} else {
-			return new PipeRunResult(forward, result);
 		}
+		return new PipeRunResult(forward, result);
 	}
 
 	private boolean validResult(Object result) throws IOException {
@@ -856,7 +792,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 			}
 			try {
-				if (sender instanceof IStreamingSender && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
+				if (sender instanceof IStreamingSender && canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet()) {
 					sendResult =  ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
 				} else {
 					// sendResult has a messageID for async senders, the result for sync senders
@@ -864,7 +800,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					sendResult = new PipeRunResult(null,result);
 				}
 			} catch (SenderException se) {
-				exitState = EXCEPTION_FORWARD;
+				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 				throw se;
 			} catch (TimeOutException toe) {
 				exitState = TIMEOUT_FORWARD;
@@ -882,13 +818,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
-					exitState = EXCEPTION_FORWARD;
+					exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 					throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 				}
 			}
 		} finally {
 			if (exitState==null) {
-				exitState = SUCCESS_FORWARD;
+				exitState = PipeLineExit.EXIT_STATE_SUCCESS;
 			}
 			PipeLine pipeline = getPipeLine();
 			if  (pipeline!=null) {
@@ -1029,10 +965,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public boolean hasSizeStatistics() {
 		if (!super.hasSizeStatistics()) {
 			return getSender().isSynchronous();
-		} else {
-			return super.hasSizeStatistics();
 		}
+		return super.hasSizeStatistics();
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || getSender().consumesSessionVariable(sessionKey);
+	}
+
 
 
 	@IbisDoc({"10", "The sender that should send the message"})
@@ -1040,82 +981,51 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		this.sender = sender;
 		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
 	}
-	@Override
-	public ISender getSender() {
-		return sender;
-	}
 
 	@IbisDoc({"20", "Listener for responses on the request sent"})
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
 		log.debug("pipe [" + getName() + "] registered listener [" + listener.toString() + "]");
 	}
-	public ICorrelatedPullingListener getListener() {
-		return listener;
-	}
 
-	@IbisDoc({"30"})
+	@IbisDoc({"30", "log of all messages sent"})
 	public void setMessageLog(ITransactionalStorage messageLog) {
-		if (messageLog.isActive()) {
-			this.messageLog = messageLog;
-			messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
-			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId(getName());
-			}
-			if (StringUtils.isEmpty(messageLog.getType())) {
-				messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
-			}
+		this.messageLog = messageLog;
+		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
+		if (StringUtils.isEmpty(messageLog.getSlotId())) {
+			messageLog.setSlotId(getName());
+		}
+		if (StringUtils.isEmpty(messageLog.getType())) {
+			messageLog.setType(IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode());
 		}
 	}
-	public ITransactionalStorage getMessageLog() {
-		return messageLog;
-	}
 
-	@IbisDoc({"40"})
+	@IbisDoc({"40", "specification of Pipe to validate request messages, or request and response message if configured as mixed mode validator"})
 	public void setInputValidator(IValidator inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
-	public IValidator getInputValidator() {
-		return inputValidator;
-	}
 
-	@IbisDoc({"50"})
+	@IbisDoc({"50", "specification of Pipe to validate response messages"})
 	public void setOutputValidator(IValidator outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
 	}
-	public IValidator getOutputValidator() {
-		return outputValidator;
-	}
 
-	@IbisDoc({"60"})
+	@IbisDoc({"60", "specification of Pipe to wrap or unwrap request messages"})
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
 	}
-	public IWrapperPipe getInputWrapper() {
-		return inputWrapper;
-	}
 
-	@IbisDoc({"70"})
+	@IbisDoc({"70", "specification of Pipe to wrap or unwrap response messages"})
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;
 	}
-	public IWrapperPipe getOutputWrapper() {
-		return outputWrapper;
-	}
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
-
-	public void setListenerProcessor(ListenerProcessor listenerProcessor) {
-		this.listenerProcessor = listenerProcessor;
-	}
 
 
 
@@ -1135,13 +1045,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 * 
 	 * @param method either MESSAGEID or CORRELATIONID
 	 */
-	@IbisDoc({"1", "either MESSAGEID or CORRELATIONID. For asynchronous communication, the server side may either use the messageID or the correlationID "
-		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "correlationid"})
-	public void setLinkMethod(String method) {
+	@IbisDoc({"1", "For asynchronous communication, the server side may either use the messageID or the correlationID "
+		+ "in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.", "CORRELATIONID"})
+	public void setLinkMethod(LinkMethod method) {
 		linkMethod = method;
-	}
-	public String getLinkMethod() {
-		return linkMethod;
 	}
 
 
@@ -1149,32 +1056,20 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
-	public String getCorrelationIDStyleSheet() {
-		return correlationIDStyleSheet;
-	}
 
 	@IbisDoc({"3", "xpath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
-	}
-	public String getCorrelationIDXPath() {
-		return correlationIDXPath;
 	}
 
 	@IbisDoc({"4", "namespace defintions for correlationidxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
-	public String getCorrelationIDNamespaceDefs() {
-		return correlationIDNamespaceDefs;
-	}
 
 	@IbisDoc({"5", "key of a pipelinesession-variable. is specified, the value of the pipelinesession variable is used as input for the xpathexpression or stylesheet, instead of the current input message", ""})
 	public void setCorrelationIDSessionKey(String string) {
 		correlationIDSessionKey = string;
-	}
-	public String getCorrelationIDSessionKey() {
-		return correlationIDSessionKey;
 	}
 
 	
@@ -1182,24 +1077,15 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
-	public String getLabelStyleSheet() {
-		return labelStyleSheet;
-	}
 	
 	@IbisDoc({"7", "xpath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
-	public String getLabelXPath() {
-		return labelXPath;
-	}
 
 	@IbisDoc({"8", "namespace defintions for labelxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
 		this.labelNamespaceDefs = labelXNamespaceDefs;
-	}
-	public String getLabelNamespaceDefs() {
-		return labelNamespaceDefs;
 	}
 	
 
@@ -1207,34 +1093,22 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setAuditTrailXPath(String string) {
 		auditTrailXPath = string;
 	}
-	public String getAuditTrailXPath() {
-		return auditTrailXPath;
-	}
 
 	@IbisDoc({"10", "namespace defintions for audittrailxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
-	}
-	public String getAuditTrailNamespaceDefs() {
-		return auditTrailNamespaceDefs;
 	}
 
 	@IbisDoc({"11", "key of a pipelinesession-variable. if specified, the value of the pipelinesession variable is used as audit trail (instead of the default 'no audit trail)", ""})
 	public void setAuditTrailSessionKey(String string) {
 		auditTrailSessionKey = string;
 	}
-	public String getAuditTrailSessionKey() {
-		return auditTrailSessionKey;
-	}
 
 	@IbisDoc({"12", "when set <code>true</code>, the input of a pipe is used to extract audit trail, correlationid and label (instead of the wrapped input)", "true"})
 	public void setUseInputForExtract(boolean b) {
 		useInputForExtract = b;
 	}
-	public boolean isUseInputForExtract() {
-		return useInputForExtract;
-	}
-	
+
 	@Override
 	@IbisDoc({"13", "next to common usage in {@link AbstractPipe}, also strings in the error/logstore are masked", ""})
 	public void setHideRegex(String hideRegex) {
@@ -1245,26 +1119,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setHideMethod(String hideMethod) {
 		this.hideMethod = hideMethod;
 	}
-	public String getHideMethod() {
-		return hideMethod;
-	}
 
-	
-	
+
+
 	@IbisDoc({"15", "when set <code>true</code>, the xml well-formedness of the result is checked", "false"})
 	public void setCheckXmlWellFormed(boolean b) {
 		checkXmlWellFormed = b;
-	}
-	public boolean isCheckXmlWellFormed() {
-		return checkXmlWellFormed;
 	}
 
 	@IbisDoc({"16", "when set, besides the xml well-formedness the root element of the result is checked to be equal to the value set", ""})
 	public void setCheckRootTag(String s) {
 		checkRootTag = s;
-	}
-	public String getCheckRootTag() {
-		return checkRootTag;
 	}
 
 
@@ -1279,65 +1144,42 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setResultOnTimeOut(String newResultOnTimeOut) {
 		resultOnTimeOut = newResultOnTimeOut;
 	}
-	public String getResultOnTimeOut() {
-		return resultOnTimeOut;
-	}
 
 	@IbisDoc({"18", "the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryxpath</code>)", "0"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
-	}
-	public int getMaxRetries() {
-		return maxRetries;
 	}
 
 	@IbisDoc({"19", "the starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. each next retry this interval is doubled with a upper limit of <code>retrymaxinterval</code>", "1"})
 	public void setRetryMinInterval(int i) {
 		retryMinInterval = i;
 	}
-	public int getRetryMinInterval() {
-		return retryMinInterval;
-	}
 
 	@IbisDoc({"20", "the maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made", "600"})
 	public void setRetryMaxInterval(int i) {
 		retryMaxInterval = i;
-	}
-	public int getRetryMaxInterval() {
-		return retryMaxInterval;
 	}
 
 	@IbisDoc({"21", "xpath expression evaluated on each technical successful reply. retry is done if condition returns true", ""})
 	public void setRetryXPath(String string) {
 		retryXPath = string;
 	}
-	public String getRetryXPath() {
-		return retryXPath;
-	}
 
 	@IbisDoc({"22", "namespace defintions for retryxpath. must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
 		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
-	public String getRetryNamespaceDefs() {
-		return retryNamespaceDefs;
-	}
 
-	@IbisDoc({"23", "when the previous call was a timeout, the maximum time (in seconds) after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10 s"})
+	@IbisDoc({"23", "when the previous call was a timeout, the maximum time <i>in seconds</i> after this timeout to presume the current call is also a timeout. a value of -1 indicates to never presume timeouts", "10"})
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
 	}
-	public int getPresumedTimeOutInterval() {
-		return presumedTimeOutInterval;
-	}
 
-	
+	@Deprecated
+	@ConfigurationWarning("Please use a base64pipe to decode the message and send the result to the pipeline exit")
 	@IbisDoc({"24", "if set, the result is first base64 decoded and then streamed to the httpservletresponse object", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
-	}
-	public boolean isStreamResultToServlet() {
-		return streamResultToServlet;
 	}
 
 	@Deprecated
@@ -1355,16 +1197,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;
 	}
-	public String getTimeOutOnResult() {
-		return timeOutOnResult;
-	}
 
 	@IbisDoc({"27", "when not empty, a piperunexception is thrown when the result equals this value (for testing purposes only)", ""})
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
-	}
-	public String getExceptionOnResult() {
-		return exceptionOnResult;
 	}
 
 }

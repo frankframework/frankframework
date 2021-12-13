@@ -3,13 +3,13 @@ FROM iaf-as-tomcat AS iaf-example-tomcat
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
-# copy database and jms configuration
-COPY src/scripts/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf.xml
+# copy war
+COPY target/dependencies/ibis-adapterframework-example.war /usr/local/tomcat/webapps/iaf-example.war
 
 # copy configuration, properties and testscenarios
-COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/
-COPY target/dependencies/frank/configuration/*-configurations.jar /opt/frank/configurations/
-COPY target/dependencies/frank/testtool /opt/frank/testtool
+#COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/
+#COPY target/dependencies/frank/configuration/*-configurations.jar /opt/frank/configurations/
+#COPY target/dependencies/frank/testtool /opt/frank/testtool
 
 # Set permissions after copy, to improve startup time
 RUN /setPermissions.sh

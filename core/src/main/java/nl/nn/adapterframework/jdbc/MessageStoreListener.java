@@ -23,13 +23,13 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -41,14 +41,14 @@ import nl.nn.adapterframework.stream.Message;
 		&lt;listener
 			name="MyListener"
 			className="nl.nn.adapterframework.jdbc.MessageStoreListener"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 			sessionKeys="key1,key2"
 		/>
 		&lt;!-- On error the message is moved to the errorStorage. And when moveToMessageLog="true" also to the messageLog (after manual resend the messageLog doesn't change). -->
 		&lt;errorStorage
 			className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-			jmsRealm="jdbc"
+			datasourceName="${jdbc.datasource.default}"
 			slotId="${instance.name}/ServiceName"
 		/>
  * </pre></code>
@@ -56,10 +56,10 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author Jaco de Groot
  */
-public class MessageStoreListener extends JdbcTableListener {
-	private String slotId;
-	private String sessionKeys = null;
-	private boolean moveToMessageLog = true;
+public class MessageStoreListener<M> extends JdbcTableListener<M> {
+	private @Getter String slotId;
+	private @Getter String sessionKeys = null;
+	private @Getter boolean moveToMessageLog = true;
 
 	private List<String> sessionKeysList;
 
@@ -71,6 +71,7 @@ public class MessageStoreListener extends JdbcTableListener {
 		setBlobSmartGet(true);
 		setStatusField("TYPE");
 		setTimestampField("MESSAGEDATE");
+		setCommentField("COMMENTS");
 		setStatusValueAvailable(IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
 		setStatusValueProcessed(IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode());
 		setStatusValueError(IMessageBrowser.StorageType.ERRORSTORAGE.getCode());
@@ -88,7 +89,7 @@ public class MessageStoreListener extends JdbcTableListener {
 			}
 		}
 		if (isMoveToMessageLog()) {
-			String setClause = "COMMENTS = '" + Receiver.RCV_MESSAGE_LOG_COMMENTS + "', EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
+			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
 		} else {
 			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
@@ -98,8 +99,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 
 	@Override
-	public Object getRawMessage(Map<String,Object> threadContext) throws ListenerException {
-		Object rawMessage = super.getRawMessage(threadContext);
+	public M getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+		M rawMessage = super.getRawMessage(threadContext);
 		if (rawMessage != null && sessionKeys != null) {
 			MessageWrapper<?> messageWrapper = (MessageWrapper<?>)rawMessage;
 			try {
@@ -117,10 +118,9 @@ public class MessageStoreListener extends JdbcTableListener {
 		return rawMessage;
 	}
 
-	protected IMessageBrowser<Object> augmentMessageBrowser(IMessageBrowser<Object> browser) {
+	protected IMessageBrowser<M> augmentMessageBrowser(IMessageBrowser<M> browser) {
 		if (browser!=null && browser instanceof JdbcTableMessageBrowser) {
 			JdbcTableMessageBrowser<Object> jtmb = (JdbcTableMessageBrowser<Object>)browser;
-			jtmb.setCommentField("COMMENTS");
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -128,8 +128,8 @@ public class MessageStoreListener extends JdbcTableListener {
 	}
 	
 	@Override
-	public IMessageBrowser<Object> getMessageBrowser(ProcessState state) {
-		IMessageBrowser<Object> browser = super.getMessageBrowser(state);
+	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
+		IMessageBrowser<M> browser = super.getMessageBrowser(state);
 		if (browser!=null) {
 			return augmentMessageBrowser(browser);
 		}
@@ -141,30 +141,20 @@ public class MessageStoreListener extends JdbcTableListener {
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
-	public String getSlotId() {
-		return slotId;
-	}
 
 	@IbisDoc({"2", "Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessagestoreSender} must have the same value for this attribute", ""})
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
-	}
-	public String getSessionKeys() {
-		return sessionKeys;
 	}
 
 	@IbisDoc({"3", "Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set false, messages are deleted after being processed", "true"})
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
 	}
-	public boolean isMoveToMessageLog() {
-		return moveToMessageLog;
-	}
 
 	@Override
-	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality or the Receiver cannot be set to Required or RequiresNew.", ""})
+	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality, the Receiver cannot be set to Required or RequiresNew, or to support programmatic retry.", ""})
 	public void setStatusValueInProcess(String string) {
 		super.setStatusValueInProcess(string);
 	}
-
 }

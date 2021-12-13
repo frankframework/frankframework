@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2020 WeAreFrank!
+Copyright 2017-2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -32,6 +31,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * 
@@ -44,8 +44,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private boolean updateEtag = true;
 	private String operationId;
 
-	private String method;
-	private List<String> methods = Arrays.asList("GET", "PUT", "POST", "DELETE");
+	private HttpMethod method;
+	public enum HttpMethod {
+		GET,PUT,POST,PATCH,DELETE,OPTIONS;
+	}
 
 	private AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
 	private List<String> authenticationRoles = null;
@@ -57,10 +59,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private Receiver<String> receiver;
 
-	private ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private String messageIdHeader = AppConstants.getInstance(configurationClassLoader).getString("apiListener.messageIdHeader", "Message-Id");
+	private String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", "Message-Id");
 	private String headerParams = null;
-//	private String cookieParams = null;
 	private String charset = null;
 
 	public enum AuthenticationMethods {
@@ -76,13 +76,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			throw new ConfigurationException("uriPattern cannot be empty");
 
 		if(!getConsumesEnum().equals(MediaTypes.ANY)) {
-			if(getMethod().equals("GET"))
+			if(getMethodEnum() == HttpMethod.GET)
 				throw new ConfigurationException("cannot set consumes attribute when using method [GET]");
-			if(getMethod().equals("DELETE"))
+			if(getMethodEnum() == HttpMethod.DELETE)
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
-		if(!methods.contains(getMethod()))
-			throw new ConfigurationException("Method ["+method+"] not yet implemented, supported methods are "+methods.toString()+"");
 
 		producedContentType = new ContentType(produces);
 		if(charset != null) {
@@ -92,9 +90,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public void open() throws ListenerException {
-		super.open();
-
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		super.open();
 	}
 
 	@Override
@@ -116,11 +113,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethod();
+		String destinationName = "uriPattern: "+getUriPattern()+"; method: "+getMethodEnum();
 		if(!MediaTypes.ANY.equals(consumes))
-			destinationName += "; consumes: "+getConsumesEnum().name();
+			destinationName += "; consumes: "+getConsumesEnum();
 		if(!MediaTypes.ANY.equals(produces))
-			destinationName += "; produces: "+getProducesEnum().name();
+			destinationName += "; produces: "+getProducesEnum();
 
 		return destinationName;
 	}
@@ -151,15 +148,24 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces.equals(MediaTypes.ANY) || acceptHeader.contains("*/*") || acceptHeader.contains(produces.getContentType());
 	}
 
-	public String getContentType() {
-		return producedContentType.getContentType();
+	public ContentType getContentType() {
+		return producedContentType;
 	}
 
-	@IbisDoc({"1", "HTTP method eq. GET POST PUT DELETE", ""})
+	@IbisDoc({"1", "HTTP method to listen to", ""})
 	public void setMethod(String method) {
-		this.method = method.toUpperCase();
+		try {
+			this.method = EnumUtils.parse(HttpMethod.class, method);
+			if(this.method == HttpMethod.OPTIONS) {
+				throw new IllegalArgumentException("method OPTIONS is default and should not be added manually");
+			}
+		} catch (IllegalArgumentException e) {
+			List<HttpMethod> enums = EnumUtils.getEnumList(HttpMethod.class);
+			enums.remove(HttpMethod.OPTIONS);
+			throw new IllegalArgumentException("unknown httpMethod value ["+method+"]. Must be one of "+ enums, e);
+		}
 	}
-	public String getMethod() {
+	public HttpMethod getMethodEnum() {
 		return method;
 	}
 
@@ -179,13 +185,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@IbisDoc({"3", "the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
 	public void setConsumes(String value) {
-		String consumes = null;
-		if(StringUtils.isEmpty(value))
-			consumes = "ANY";
-		else
-			consumes = value.toUpperCase();
-
-		this.consumes = MediaTypes.valueOf(consumes);
+		if(StringUtils.isNotEmpty(value)) {
+			this.consumes = EnumUtils.parse(MediaTypes.class, value);
+		}
 	}
 	public MediaTypes getConsumesEnum() {
 		return consumes;
@@ -193,13 +195,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	@IbisDoc({"4", "the specified contentType on response", "ANY"})
 	public void setProduces(String value) {
-		String produces = null;
-		if(StringUtils.isEmpty(value))
-			produces = "ANY";
-		else
-			produces = value.toUpperCase();
-
-		this.produces = MediaTypes.valueOf(produces);
+		if(StringUtils.isNotEmpty(value)) {
+			this.produces = EnumUtils.parse(MediaTypes.class, value);
+		}
 	}
 	public MediaTypes getProducesEnum() {
 		return produces;
@@ -226,20 +224,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	//TODO add authenticationType
 
 	@IbisDoc({"7", "enables security for this listener, must be one of [NONE, COOKIE, HEADER, AUTHROLE]. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
-	public void setAuthenticationMethod(String authenticationMethod) throws ConfigurationException {
-		try {
-			this.authenticationMethod = AuthenticationMethods.valueOf(authenticationMethod);
-		}
-		catch (IllegalArgumentException iae) {
-			throw new ConfigurationException("Unknown authenticationMethod ["+authenticationMethod+"]. Must be one of "+ Arrays.asList(AuthenticationMethods.values()));
-		}
+	public void setAuthenticationMethod(String authenticationMethod) {
+		this.authenticationMethod = EnumUtils.parse(AuthenticationMethods.class, authenticationMethod);
 	}
 
 	public AuthenticationMethods getAuthenticationMethodEnum() {
-		if(authenticationMethod == null) {
-			authenticationMethod = AuthenticationMethods.NONE;
-		}
-
 		return this.authenticationMethod;
 	}
 
@@ -296,21 +285,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return headerParams;
 	}
 
-//	@IbisDoc({"13", "Comma separated list of parameters passed as cookie.", ""})
-//	public void setCookieParams(String cookieParams) {
-//		this.cookieParams = cookieParams;
-//	}
-//	public String getCookieParams() {
-//		return cookieParams;
-//	}
-
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
 		builder.append(" uriPattern["+getUriPattern()+"]");
-		builder.append(" produces["+getProducesEnum().name()+"]");
-		builder.append(" consumes["+getConsumesEnum().name()+"]");
+		builder.append(" produces["+getProducesEnum()+"]");
+		builder.append(" consumes["+getConsumesEnum()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
 		builder.append(" updateEtag["+getUpdateEtag()+"]");
 		return builder.toString();

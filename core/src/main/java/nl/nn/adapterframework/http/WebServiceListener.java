@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -97,7 +96,11 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 
-		if(cxfBus == null) {
+		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
+		if(bus instanceof SpringBus) {
+			cxfBus = (SpringBus) bus;
+			log.debug("found CXF SpringBus id ["+bus.getId()+"]");
+		} else {
 			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 		}
 	}
@@ -200,7 +203,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
+	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "true"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}
@@ -268,16 +271,5 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 	private static String getAddressDefaultValue(String name) {
 		return "/" + name;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		Bus bus = applicationContext.getBean("cxf", Bus.class);
-		if(bus instanceof SpringBus) {
-			cxfBus = (SpringBus) bus;
-			log.info("found CXF SpringBus id ["+bus.getId()+"]");
-		} else {
-			throw new IllegalStateException("CXF bus ["+bus+"] not instance of [SpringBus]");
-		}
 	}
 }

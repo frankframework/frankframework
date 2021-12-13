@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -111,8 +112,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
 	}
 
-	public void testReadFile(F file, String expectedContents) throws IOException, FileSystemException {
-		Message in = fileSystem.readFile(file);
+	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {
+		Message in = fileSystem.readFile(file, charset);
 		String actual = in.asString();
 		// test
 		equalsCheck(expectedContents.trim(), actual.trim());
@@ -133,9 +134,45 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F file = fileSystem.toFile(filename);
 		// test
-		testReadFile(file, contents);
+		testReadFile(file, contents, null);
 	}
 
+	@Test
+	public void basicFileSystemTestReadSpecialChars() throws Exception {
+		String filename = "readSpecial" + FILE1;
+		String contents = "€ $ & ^ % @ < é ë ó ú à è";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		testReadFile(file, contents, "UTF-8");
+	}
+	
+	@Test
+	public void basicFileSystemTestReadSpecialCharsFails() throws Exception {
+		String filename = "readSpecialChars" + FILE1;
+		String contents = "€ é";
+		String expected = "â¬ Ã©";
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		testReadFile(file, expected, "ISO-8859-1");
+	}
+	
 	@Test
 	public void basicFileSystemTestGetName() throws Exception {
 		String filename = "readName" + FILE1;
@@ -219,6 +256,34 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			// an exception will do too, to signal that the file cannot be moved again.
 			log.debug("exception caught after trying to move file: "+e.getMessage());
 		}
+	}
+
+	@Test
+	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
+		String filename = "fileTobeMoved.txt";
+		String srcContents = "fakeSourceContents";
+		String dstContents = "fakeDestinationContents";
+		String srcFolder = "srcFolder";
+		String dstFolder = "dstFolder";
+		
+		fileSystem.configure();
+		fileSystem.open();
+
+		_createFolder(srcFolder);
+		createFile(srcFolder,filename, srcContents);
+		_createFolder(dstFolder);
+		createFile(dstFolder,filename, dstContents);
+		waitForActionToFinish();
+		
+		assertFileExistsWithContents(srcFolder, filename, srcContents);
+		assertFileExistsWithContents(dstFolder, filename, dstContents);
+		
+		F f = fileSystem.toFile(srcFolder, filename);
+		F f2 = fileSystem.toFile(srcFolder, filename);
+
+		assertThrows(FileSystemException.class, ()->{
+			fileSystem.moveFile(f, dstFolder, false);
+		});
 	}
 
 	@Test

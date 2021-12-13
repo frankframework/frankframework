@@ -64,7 +64,7 @@ public class PipeLineSessionDebugger implements MethodHandler {
 		if (value != oldValue && value instanceof Message) {
 			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
 			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			((Message)value).closeOnCloseOf(pipeLineSession);
+			((Message)value).closeOnCloseOf(pipeLineSession, this.getClass().getTypeName());
 		}
 		return pipeLineSession.put(name, value);
 	}

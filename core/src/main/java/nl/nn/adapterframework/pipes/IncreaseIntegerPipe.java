@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -32,12 +34,8 @@ import nl.nn.adapterframework.stream.Message;
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
  * 
- * <p>
- * <table border="1">
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr>
- * <tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value. Can be set from the attribute or the parameter 'increment'</td><td>1</td></tr>
- * </table>
- * </p>
+ * @ff.parameter increment integer value to be added to the session variable
+ * 
  * @author Richard Punt / Gerrit van Brakel
  */
 public class IncreaseIntegerPipe extends FixedForwardPipe {
@@ -57,9 +55,13 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
-		String sessionKeyString = (String) session.get(sessionKey);
+		String sessionKeyString;
+		try {
+			sessionKeyString = session.getMessage(sessionKey).asString();
+		} catch (IOException e1) {
+			throw new PipeRunException(this, getLogPrefix(session) + "unable to determine sessionkey from pipeline session");
+		}
 		Integer sessionKeyInteger = Integer.valueOf(sessionKeyString);
-
 		int incrementBy = increment;
 		ParameterList pl = getParameterList();
 		if(pl != null && pl.size() > 0) {
@@ -76,10 +78,16 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		session.put(sessionKey, sessionKeyInteger.intValue() + incrementBy + "");
 
 		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix(session)+"stored ["+session.get(sessionKey)+"] in pipeLineSession under key ["+getSessionKey()+"]");
+			log.debug(getLogPrefix(session)+"stored ["+sessionKeyString+"] in pipeLineSession under key ["+getSessionKey()+"]");
 		}
-		return new PipeRunResult(findForward("success"), message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
 
 	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
 	public void setSessionKey(String string) {

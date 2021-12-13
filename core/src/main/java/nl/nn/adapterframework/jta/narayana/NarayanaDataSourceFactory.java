@@ -19,8 +19,6 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -30,13 +28,15 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
-		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
-
-		return new NarayanaDataSource((DataSource) dataSource);
+		if (dataSource instanceof XADataSource) {
+			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
+			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			return new NarayanaDataSource((DataSource) dataSource);
+		}
+		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
+		return (DataSource) dataSource;
 	}
 
-	@Autowired
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {
 		this.recoveryManager = recoveryManager;
 	}

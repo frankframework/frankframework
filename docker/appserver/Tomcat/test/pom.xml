@@ -12,6 +12,15 @@
 		<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
+	
+	<properties>
+		<config.tag>test</config.tag>
+		<config.groupid>org.ibissource</config.groupid>
+		<config.project>ibis-adapterframework-${config.tag}</config.project>
+		<config.project.version>${iaf.version}</config.project.version>
+	</properties>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -20,33 +29,10 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>context</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>resources</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>configurations</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>scenarios</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.6.0</version>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
+			<type>war</type>
 		</dependency>
 	</dependencies>
 
@@ -73,66 +59,6 @@
 							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
-					<execution>
-						<id>copy-configuration</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>configurations</classifier>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>resources</classifier>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
-							<stripVersion>true</stripVersion>
-							<excludeTransitive>true</excludeTransitive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-context</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>context</classifier>
-								</artifactItem>
-							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/context</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-tests</id>
-						<phase>package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>scenarios</classifier>
-								</artifactItem>
-							</artifactItems>
-							<excludeTransitive>true</excludeTransitive>
-							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -149,7 +75,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-test-tomcat"/>
+									<arg value="iaf-${config.tag}-tomcat"/>
 									<arg value="."/>
 								</exec>
 							</target>

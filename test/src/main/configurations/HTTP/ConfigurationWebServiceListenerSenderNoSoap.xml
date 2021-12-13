@@ -1,7 +1,7 @@
 <module>
 	<adapter name="WebServiceListenerNoSoap" description="Test the functioning of the WebServiceListener">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="WebServiceListenerNoSoap">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="urn:wsns" soap="false" />
+		<receiver>
+			<listener className="nl.nn.adapterframework.http.WebServiceListener" name="urn:wsns" serviceNamespaceURI="urn:wsns" soap="false" />
 		</receiver>
 		<pipeline firstPipe="unwrap">
 			<exits>
@@ -19,7 +19,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="WebServiceSenderNoSoap" description="Test the functioning of the WebServiceSender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="WebServiceSenderNoSoap">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-WebServiceSenderNoSoap" />
 		</receiver>
 		<pipeline firstPipe="wrap">
@@ -29,8 +29,15 @@
 			<pipe name="wrap" className="nl.nn.adapterframework.soap.SoapWrapperPipe" serviceNamespace="urn:wsns">
 				<forward name="success" path="Send2WS" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" name="Send2WS">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" soap="false" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2" />
+			<pipe className="nl.nn.adapterframework.pipes.SenderPipe" name="Send2WS">
+				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+					soap="false"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
+					namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

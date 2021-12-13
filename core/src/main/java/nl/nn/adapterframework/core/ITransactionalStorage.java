@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
  * @author  Gerrit van Brakel
  * @since   4.1
 */
+@FrankDocGroup(order = 50, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
 	public static final int MAXCOMMENTLEN=1000;
@@ -67,8 +69,4 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	@IbisDoc({"2", "Possible values are E (error store), M (message store), L (message log for pipe) or A (message log for receiver). Receiver will always set type to E for errorStorage and always set type to A for messageLog. SenderPipe will set type to L for messageLog (when type isn't specified). See {@link MessagestoreSender} for type M", "E for errorstorage on receiver, A for messageLog on receiver and L for messageLog on Pipe"})
 	public void setType(String string);
 	public String getType();
-	
-	public boolean isActive();
-	
-
 }

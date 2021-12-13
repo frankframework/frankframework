@@ -15,30 +15,17 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester3.AbstractObjectCreationFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
-import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -67,11 +54,10 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @since   4.8
  *
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
-
-	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+	private DigesterRule rule = null;
 
 	public AbstractSpringPoweredDigesterFactory() {
 		super();
@@ -152,6 +138,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * before creating the object from the Spring factory.
 	 */
 	protected Object createObject(Map<String, String> attrs) throws Exception {
+		String classname = attrs.get("classname");
+		if(StringUtils.isNotEmpty(classname)) {
+			throw new IllegalStateException("invalid attribute [classname]. Did you mean [className]?");
+		}
+
 		String className = attrs.get("className");
 		if (log.isDebugEnabled()) {
 			log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
@@ -160,215 +151,33 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 					+ "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
 		}
 
-		Object currObj = createBeanFromClassName(className);
+		if(className == null) {
+			className = rule.getBeanClass();
+		}
 
-		checkDeprecation(currObj);
-		checkAttributes(currObj, attrs);
-		return currObj;
+		return createBeanFromClassName(className);
 	}
 
-	/**
-	 * Make sure you get the raw (un-proxied) class and check for deprecation annotations.
-	 */
-	private void checkDeprecation(Object currObj) {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEPRECATION_SUPPRESS_KEY, null, classLoader)) {
-			Class<?> clazz = ClassUtils.getUserClass(currObj);
-			ConfigurationWarning warning = AnnotationUtils.findAnnotation(clazz, ConfigurationWarning.class);
-			if(warning != null) {
-				String msg = getObjectName(currObj, null);
-				if(AnnotationUtils.findAnnotation(clazz, Deprecated.class) != null) {
-					msg += " is deprecated";
-				}
-				if(StringUtils.isNotEmpty(warning.value())) {
-					msg += ": " + warning.value();
-				}
-				//Only print it once per deprecated class
-				ConfigurationWarnings.addGlobalWarning(log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, classLoader);
-			}
-		}
-	}
-
-	protected void checkAttributes(Object currObj, Map<String, String> attrs) throws Exception {
-		String beanName = attrs.get("name");
-		for (Iterator<String> it = attrs.keySet().iterator(); it.hasNext();) {
-			String attributeName = it.next();
-			String value = attrs.get(attributeName);
-			checkAttribute(currObj, beanName, attributeName, value, attrs);
-		}
-	}
-
-	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value, Map<String, String> attrs) throws Exception {
-		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
-		if (pd!=null) {
-			Method rm = PropertyUtils.getReadMethod(pd);
-			if (rm!=null) {
-				try {
-					Object dv = rm.invoke(currObj, new Object[0]);
-					if (currObj instanceof HasSpecialDefaultValues) {
-						dv = ((HasSpecialDefaultValues)currObj).getSpecialDefaultValue(attributeName, dv, attrs);
-					}
-					if (dv!=null) {
-						if (dv instanceof String) {
-							if (value.equals(dv)) {
-								addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-							}
-						} else {
-							if (value.length()==0) {
-								addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] with type ["+dv.getClass().getName()+"] has no value");
-							} else {
-								if (dv instanceof Boolean) {
-									if (Boolean.valueOf(value).equals(dv)) {
-										addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-									}
-								} else {
-									if (dv instanceof Integer) {
-										try {
-											if (Integer.valueOf(value).equals(dv)) {
-												addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-											}
-										} catch (NumberFormatException e) {
-											addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
-										}
-									} else {
-										if (dv instanceof Long) {
-											try {
-												if (Long.valueOf(value).equals(dv)) {
-													addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-												}
-											} catch (NumberFormatException e) {
-												addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Long: "+e.getMessage());
-											}
-										} else {
-											log.warn("Unknown returning type [" + rm.getReturnType() + "] for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
-										}
-									}
-								}
-							}
-						}
-					}
-				} catch (Throwable t) {
-					log.warn("Error on getting default for object [" + getObjectName(currObj, beanName) + "] with method [" + rm.getName() + "]", t);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns the name of the object. In case a Spring proxy is being used, 
-	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
-	 * ClassUtils.getUserClass() makes sure the original class will be returned.
-	 */
-	private String getObjectName(Object o, String name) {
-		String result = ClassUtils.getUserClass(o).getSimpleName();
-		if (name==null && o instanceof INamedObject) {
-			name=((INamedObject)o).getName();
-		}
-		if (name!=null) {
-			result+=" ["+name+"]";
-		}
-		return result;
-	}
-
-	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if(!ConfigurationWarnings.isSuppressed(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, null, classLoader)) {
-			String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
-			if (!configWarnings.containsDefaultValueException(mergedKey)) {
-				addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
-			}
-		}
-	}
-
-	private void addConfigWarning(Object currObj, String name, String message) {
-		Locator loc = getDigester().getDocumentLocator();
-		if(currObj instanceof INamedObject && ((INamedObject) currObj).getName() != null) { //name setting may not have been called yet
-			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+message;
-			ConfigurationWarnings.add((INamedObject) currObj, log, msg);
-		} else { 
-			String msg = "line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
-			ConfigurationWarnings.add(null, log, msg);
-		}
-	}
-
-	/**
-	 * Given a class-name, create a bean. The classname-parameter can be
-	 * <code>null</code>, in which case the bean is created using the
-	 * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
-	 * implemented by prefixing the element name with 'proto-'
-	 */
-	protected Object createBeanFromClassName(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
+	private Object createBeanFromClassName(String className) throws ClassNotFoundException {
 		if(applicationContext == null) {
 			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
 		}
 
-        String beanName;
-        Class<?> beanClass;
-
-        // No explicit className given; get bean from Spring Factory
-        if (className == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("createBeanFromClassName(): className is null");
-            }
-            beanName = getSuggestedBeanName();
-            beanClass = null;
-        } else {
-            // Get all beans matching the className given
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            beanClass = Class.forName(className, true, classLoader);
-
-            String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass);
-            if (matchingBeans.length == 1) {
-                // Only 1 bean of this type, so create it
-                beanName = matchingBeans[0];
-                if (log.isDebugEnabled()) {
-                    log.debug("createBeanFromClassName(): only bean ["+beanName+"] matches class ["+beanClass.getName()+"]");
-                }
-            } else if (matchingBeans.length > 1) {
-                // multiple beans; find if there's one with the
-                // same name as from 'getBeanName'.
-                beanName = getSuggestedBeanName();
-                if (log.isDebugEnabled()) {
-                    log.debug("createBeanFromClassName(): multiple beans match class ["+beanClass.getName()+"], using suggested ["+beanName+"]");
-                }
-            } else {
-                // No beans matching the type.
-                // Create instance, and if the instance implements
-                // Spring's BeanFactoryAware interface, use it to
-                // set BeanFactory attribute on this Bean.
-                if (log.isDebugEnabled()) {
-                    log.debug("createBeanFromClassName(): no beans match class ["+beanClass.getName()+"]");
-                }
-//               	try {
-//	               	Object o=ibisContext.getBean(getSuggestedBeanName(), beanClass);
-//	               	if (o!=null) {
-//	                   	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): found bean ["+o+"] by suggested name ["+getSuggestedBeanName()+"] match class ["+beanClass.getName()+"]");
-//	               		return o;
-//	               	}
-//               	} catch (NoSuchBeanDefinitionException e) {
-//                  	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): no bean ["+getSuggestedBeanName()+"] found for class ["+beanClass.getName()+"]: "+e.getMessage());
-//               	} catch (BeanNotOfRequiredTypeException e) {
-//                  	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): bean ["+getSuggestedBeanName()+"] found for class ["+beanClass.getName()+"]: "+e.getMessage());
-//               	}
-                return createBeanAndAutoWire(beanClass);
-            }
-        }
-
-        // Only accept prototype-beans!
-        if (isPrototypesOnly() && !applicationContext.isPrototype(beanName)) {
-            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
-                + beanName + "] of class [" + className + "] is not.");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");
-        }
-        return applicationContext.getBean(beanName, beanClass);
-    }
-
-	protected <T> T createBeanAndAutoWire(Class<T> beanClass) throws InstantiationException, IllegalAccessException {
-		if (log.isDebugEnabled()) {
-			log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory ["+applicationContext.getDisplayName()+"] for auto-wiring support.");
+		if (className == null) { //See if a bean class has been defined
+			String beanName = getSuggestedBeanName();
+			if (!isPrototypesOnly() && !applicationContext.isSingleton(beanName)) {
+				throw new IllegalStateException("bean ["+beanName+"] must be of type singleton");
+			}
+			return applicationContext.getBean(beanName);
 		}
+
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		Class<?> beanClass = Class.forName(className, true, classLoader);
+		return createBeanAndAutoWire(beanClass);
+	}
+
+	protected <T> T createBeanAndAutoWire(Class<T> beanClass) {
+		if (log.isDebugEnabled()) log.debug("instantiating bean class ["+beanClass.getName()+"] directly using Spring Factory ["+applicationContext.getDisplayName()+"]");
 
 		return SpringUtils.createBean(applicationContext, beanClass); //Autowire and initialize the bean through Spring
 	}
@@ -382,4 +191,11 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		return map;
 	}
 
+	@Override
+	public final void setDigesterRule(DigesterRule rule) {
+		if(this.rule != null) {
+			throw new IllegalStateException("cannot override factory rule ["+this.rule+"]");
+		}
+		this.rule = rule;
+	}
 }

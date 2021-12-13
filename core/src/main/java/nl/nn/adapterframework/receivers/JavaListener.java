@@ -25,8 +25,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -52,6 +54,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private String name;
 	private String serviceName;
@@ -279,7 +282,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		return throwException;
 	}
 	
-	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "<code>false</code>"})
+	@IbisDoc({"5", "If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

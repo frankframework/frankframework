@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,65 +15,70 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import java.net.URL;
+import java.util.function.Consumer;
 
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
-	private Logger log = LogUtil.getLogger(this);
 	private ScriptEngine engine;
 	private String alias;
+	private ScriptContext localEngineScope;
 
 	@Override
-	public void setScriptAlias(String alias) {
-		if (StringUtils.isEmpty(alias))
-			return;
-		if (engine == null) {
-			this.alias = alias;
-		} else {
-			executeScript(alias  + " = this;");
-		}
+	public void setGlobalAlias(String alias) {
+		this.alias = alias;
 	}
 
 	@Override
-	public void startRuntime() {
+	public void startRuntime() throws JavascriptException {
 		ScriptEngineManager engineManager = new ScriptEngineManager();
-		engine = engineManager.getEngineByName("nashorn");
+		if (StringUtils.isNotEmpty(alias)) {
+			engineManager.put(alias, "this"); // Register alias as 'this' in the Global Scope.
+		}
 
-		if (StringUtils.isNotEmpty(alias))
-			executeScript(alias + " = this;");
-
-		executeScript("load('classpath:net/arnx/nashorn/lib/promise.js')");
-	}
-
-	@Override
-	public void executeScript(String script) {
 		try {
-			engine.eval(script);
-		} catch (NullPointerException | ScriptException e) {
-			log.error("Error executing the script[" + script + "]", e);
+			engine = engineManager.getEngineByName("nashorn");
+			localEngineScope = engine.getContext();
+
+			//Add PromiseJS polyfill
+			URL promise = ClassUtils.getResourceURL("net/arnx/nashorn/lib/promise.js");
+			executeScript(Misc.resourceToString(promise));
+		} catch (Exception e) { //Catch all exceptions
+			throw new JavascriptException("error initializing Nashorn, unable to load Promise.js", e);
 		}
 	}
 
 	@Override
-	public Object executeFunction(String name, Object... parameters) {
+	public void executeScript(String script) throws JavascriptException {
+		try {
+			engine.eval(script, localEngineScope);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing script", e);
+		}
+	}
+
+	@Override
+	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
 		try {
 			return ((Invocable) engine).invokeFunction(name, parameters);
-		} catch (ScriptException | NoSuchMethodException e) {
-			log.error("Error executing function [" + name + "]", e);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing function [" + name + "]", e);
 		}
-		return null;
 	}
 
 	@Override
@@ -88,13 +93,12 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public void registerCallback(ISender sender, PipeLineSession session) {
-		CallbackInterface<String, String> method = (param) -> {
+		ThrowingFunction<String, String, JavascriptException> method = (param) -> {
 			try {
 				Message msg = Message.asMessage(param);
 				return sender.sendMessage(msg, session).asString();
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
+				throw new JavascriptException(e);
 			}
 		};
 		getEngine().put(sender.getName(), method);
@@ -104,10 +108,5 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 	public void setResultHandler(ResultHandler resultHandler) {
 		getEngine().put("result", (Consumer<String>) resultHandler::setResult);
 		getEngine().put("error", (Consumer<String>) resultHandler::setError);
-	}
-
-	@FunctionalInterface
-	interface CallbackInterface<T, R> {
-		public R sendMessage(T b);
 	}
 }

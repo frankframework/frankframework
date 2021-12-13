@@ -28,19 +28,14 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class SenderWrapper extends SenderWrapperBase {
 	private ISender sender;
-	
+
 	@Override
 	protected boolean isSenderConfigured() {
 		return getSender()!=null;
@@ -49,9 +44,6 @@ public class SenderWrapper extends SenderWrapperBase {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSender() instanceof ConfigurationAware) {
-			((ConfigurationAware)getSender()).setConfiguration(getConfiguration());
-		}
 		getSender().configure();
 	}
 	@Override
@@ -82,7 +74,7 @@ public class SenderWrapper extends SenderWrapperBase {
 		return getSender().isSynchronous();
 	}
 
-	@Override
+	/** specification of sender to send messages with */
 	public void setSender(ISender sender) {
 		this.sender=sender;
 	}

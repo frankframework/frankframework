@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="JdbcSenders" description="Test the functioning of the FixedQuerySender and DirectQuerySender">
 		<receiver>
 			<listener name="JdbcQuerySenderTest"
@@ -18,11 +18,11 @@
 			/>
 
 			<pipe name="DirectQuerySender" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" queryType="select" scalar="true"/>
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="DirectQuerySender-TwoParam" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" queryType="select" scalar="true" >
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" >
 					<param name="param1" value="1" type="integer" />
 					<param name="param2" value="10" type="integer" />
 				</sender>
@@ -31,11 +31,11 @@
 			<pipe name="DirectQuerySender-TwoPipeParam" getInputFromSessionKey="query">
 				<param name="param1" value="1" type="integer" />
 				<param name="param2" value="10" type="integer" />
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" queryType="select" scalar="true" />
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="DirectQuerySender-TwoParamNamed" getInputFromSessionKey="query">
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" queryType="select" scalar="true" useNamedParams="true">
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true">
 					<param name="param1" value="1" type="integer" />
 					<param name="param2" value="10" type="integer" />
 				</sender>
@@ -44,9 +44,9 @@
 			<pipe name="DirectQuerySender-TwoPipeParamNamed" getInputFromSessionKey="query">
 				<param name="param1" value="1" type="integer" />
 				<param name="param2" value="10" type="integer" />
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" queryType="select" scalar="true" useNamedParams="true" />
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true" useNamedParams="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

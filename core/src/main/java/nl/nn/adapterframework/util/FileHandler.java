@@ -36,8 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IScopeProvider;
@@ -89,6 +91,7 @@ import nl.nn.adapterframework.stream.Message;
 public class FileHandler implements IScopeProvider {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	protected static final byte[] BOM_UTF_8 = new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF};
 	
@@ -203,8 +206,8 @@ public class FileHandler implements IScopeProvider {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
 				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-				String contentType = (String) session.get("contentType");
-				String contentDisposition = (String) session.get("contentDisposition");
+				String contentType = session.getMessage("contentType").asString();
+				String contentDisposition = session.getMessage("contentDisposition").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
 					response.setHeader("Content-Type", contentType); 
 				}
@@ -275,7 +278,7 @@ public class FileHandler implements IScopeProvider {
 	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
-			name = Message.asString(session.get(filenameSessionKey));
+			name = session.getMessage(filenameSessionKey).asString();
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);
@@ -631,9 +634,6 @@ public class FileHandler implements IScopeProvider {
 	protected String getLogPrefix(PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
-		if (this instanceof INamedObject) {
-			sb.append("[").append(((INamedObject)this).getName()).append("] ");
-		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}

@@ -1,6 +1,6 @@
 <module>
 	<adapter name="BlockEnabledFixedQuerySender" description="Test the sending items in one block from the ForEachChildElementPipe to the FixedQuerySender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledFixedQuerySender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySender" />
 		</receiver>
 		<pipeline>
@@ -8,7 +8,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
@@ -19,7 +19,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledFixedQuerySenderInBlocks" description="Test the sending of multiple blocks from the ForEachChildElementPipe to the FixedQuerySender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledFixedQuerySender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBlocks" />
 		</receiver>
 		<pipeline>
@@ -27,7 +27,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" blockSize="2" combineBlocks="false" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
@@ -38,7 +38,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledFixedQuerySenderInBatch" description="Test the sending of multiple lines from the ForEachChildElementPipe to the FixedQuerySender in batch mode">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledFixedQuerySenderInBatch">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBatch" />
 		</receiver>
 		<pipeline>
@@ -46,7 +46,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" jmsRealm="jdbc" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
 					batchSize="2" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
@@ -58,7 +58,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledDirectQuerySender" description="Test the functioning of sending blocks from the StreamLineIteratorPipe to the DirectQuerySender">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="BlockEnabledDirectQuerySender">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledDirectQuerySender" />
 		</receiver>
 		<pipeline>
@@ -66,7 +66,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe className="nl.nn.adapterframework.pipes.StreamLineIteratorPipe" name="StreamLineIteratorPipe_Record" >
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" jmsRealm="jdbc" />
+				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" />
 			</pipe>
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

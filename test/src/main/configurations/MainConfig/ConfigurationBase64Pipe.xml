@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
 		<receiver name="Base64Pipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -13,15 +13,15 @@
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
 				storeResultInSessionKey="base64"/>
 			<pipe name="Send"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey="fileOut" >
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="testtool-base64pipe" />
 			</pipe>
 			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode" outputType="bytes" />
+				direction="decode"/>
 			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

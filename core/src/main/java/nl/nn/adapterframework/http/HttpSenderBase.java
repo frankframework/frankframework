@@ -70,11 +70,12 @@ import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -167,7 +168,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	private String url;
 	private String urlParam = "url";
-	private String methodType = "GET";
+
+	public enum HttpMethod {
+		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
+	}
+	private @Getter HttpMethod httpMethod = HttpMethod.GET;
+
 	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private ContentType fullContentType = null;
 	private String contentType = null;
@@ -182,10 +188,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private CloseableHttpClient httpClient;
 
 	/** SECURITY */
-	private String authAlias;
-	private String userName;
-	private String password;
-	private String authDomain;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String authDomain;
 
 	/** PROXY **/
 	private String proxyHost;
@@ -384,7 +390,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			if(sslSocketFactory != null)
 				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
 
-			credentials = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			if (!StringUtils.isEmpty(credentials.getUsername())) {
 				String uname;
@@ -532,12 +538,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
-			for(int i=0; i < parameters.size(); i++) {
-				if (skipParameter(paramList.get(i).getName())) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
+			for(ParameterValue pv : parameters) {
+				if (skipParameter(pv.getName())) {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+pv.getName()+"]");
 					continue;
 				}
-				ParameterValue pv = parameters.getParameterValue(i);
 				try {
 					if (parametersAppended) {
 						path.append("&");
@@ -594,7 +599,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = (String) pvl.getParameterValue(getUrlParam()).getValue();
+				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
 				uri = getURI(url);
 			} else {
 				uri = staticUri;
@@ -617,7 +622,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			httpRequestBase = getMethod(uri, message, pvl, session);
 			if(httpRequestBase == null)
-				throw new MethodNotSupportedException("could not find implementation for method ["+getMethodType()+"]");
+				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
 			//Set all headers
 			if(session != null && APPEND_MESSAGEID_HEADER && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -781,12 +786,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return urlParam;
 	}
 
-	@IbisDoc({"3", "type of method to be executed, either 'GET', 'POST', 'PUT', 'DELETE', 'HEAD' or 'REPORT'", "GET"})
-	public void setMethodType(String string) {
-		methodType = string;
-	}
-	public String getMethodType() {
-		return methodType.toUpperCase();
+	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
+	public void setMethodType(HttpMethod method) {
+		this.httpMethod = method;
 	}
 
 	/**
@@ -841,32 +843,25 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
 	@IbisDoc({"21", "username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String username) {
+		this.username = username;
 	}
-	public String getUserName() {
-		return userName;
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
 	@IbisDoc({"22", "password used in authentication to host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
-	public String getPassword() {
-		return password;
-	}
 
 	@IbisDoc({"23", "domain used in authentication to host", " "})
 	public void setAuthDomain(String string) {
 		authDomain = string;
-	}
-	public String getAuthDomain() {
-		return authDomain;
 	}
 
 
@@ -1040,10 +1035,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * CertificateExpiredExceptions are ignored when set to true
+	 * @ff.default false
 	 */
-	@IbisDoc({"57", "when true, the certificateexpiredexception is ignored", "false"})
+	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}
@@ -1092,7 +1087,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return xhtml;
 	}
 
-	@IbisDoc({"66", ">(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}

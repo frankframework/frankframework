@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -46,6 +48,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter String inputSeparator;
@@ -62,7 +65,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			paramList.configure();
 		}
 		if (inputFields.size()>0 && StringUtils.isNotEmpty(getInputSeparator())) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] inputFields and inputSeparator cannot be specified both");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" inputFields and inputSeparator cannot be specified both");
 		}
 	}
 	

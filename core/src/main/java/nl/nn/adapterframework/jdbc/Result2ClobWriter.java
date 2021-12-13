@@ -26,12 +26,6 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 /**
  * {@link nl.nn.adapterframework.batch.IResultHandler ResultHandler} that writes the transformed record to a CLOB.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
- * </table>
- * <p/>
- * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */

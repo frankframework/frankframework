@@ -23,7 +23,8 @@ angular.module('iaf.beheerconsole')
 						Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 					}
 				}
-			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+			}
+			if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
 				var tag = etags[uri];
 				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}
@@ -275,18 +276,22 @@ angular.module('iaf.beheerconsole')
 			data[uri].setInterval(interval, false);
 		},
 		this.add = function (uri, callback, autoStart, interval) {
-			Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
-			var poller = new this.createPollerObject(uri, callback);
-			data[uri] = poller;
-			if(!!autoStart)
-				poller.fn();
-			if(interval && interval > 1500)
-				poller.setInterval(interval);
-			return poller;
+			if(!data[uri]) {
+				Debug.log("Adding new poller ["+uri+"] autoStart ["+!!autoStart+"] interval ["+interval+"]");
+				var poller = new this.createPollerObject(uri, callback);
+				data[uri] = poller;
+				if(!!autoStart)
+					poller.fn();
+				if(interval && interval > 1500)
+					poller.setInterval(interval);
+				return poller;
+			}
 		},
 		this.remove = function (uri) {
-			data[uri].stop();
-			delete data[uri];
+			if(data[uri]) {
+				data[uri].stop();
+				delete data[uri];
+			}
 		},
 		this.get = function (uri) {
 			return data[uri];
@@ -872,6 +877,9 @@ angular.module('iaf.beheerconsole')
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
 		};
+		this.escapeURL = function(uri) {
+			return encodeURIComponent(uri);
+		}
 		this.isMobile = function() {
 			return ( navigator.userAgent.match(/Android/i)
 				|| navigator.userAgent.match(/webOS/i)
@@ -1030,7 +1038,8 @@ angular.module('iaf.beheerconsole')
 			var errorCount = 0;
 			return {
 				request: function(config) {
-					if (config.url.indexOf('views') !== -1 && ff_version != null) {
+					//First check if we can append the version, then if it's an HTML file, and lastly if it's ours!
+					if (ff_version != null && config.url.indexOf('.html') !== -1 && config.url.indexOf('views/') !== -1) {
 						config.url = config.url + '?v=' + ff_version;
 					}
 					return config;
@@ -1041,9 +1050,19 @@ angular.module('iaf.beheerconsole')
 
 						switch (rejection.status) {
 							case -1:
+								fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
+									if (res.type === "opaqueredirect") {
+										// if the request ended in a redirect that failed, then login
+										login_url = Misc.getServerPath() + 'iaf/';
+										window.location.href = login_url;
+									}
+								});
+							
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");
+									} else {
+										Toastr.error("Failed to connect to backend!");
 									}
 								}
 								else if(appConstants.init == 2 && rejection.config.poller) {
@@ -1055,8 +1074,11 @@ angular.module('iaf.beheerconsole')
 											body: "Connection to the server was lost! Click to refresh the page.",
 											timeout: 0,
 											showCloseButton: true,
-											onHideCallback: function() {
-												window.location.reload();
+											clickHandler: function(_, isCloseButton) {
+												if(isCloseButton !== true) {
+													window.location.reload();
+												}
+												return true;
 											}
 										});
 									}

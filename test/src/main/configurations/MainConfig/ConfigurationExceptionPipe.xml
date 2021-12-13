@@ -1,9 +1,6 @@
 <module>
 	<adapter name="ExceptionPipe" description="ExceptionPipe">
-		<receiver
-			className="nl.nn.adapterframework.receivers.GenericReceiver"
-			name="GenericReceiverExceptionPipe"
-			>
+		<receiver>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="ExceptionPipe"

@@ -1,6 +1,6 @@
-<ibis>
+<module>
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="FilePipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
 		</receiver>
 		<pipeline firstPipe="setFilename">
@@ -14,7 +14,7 @@
 			</pipe>
 			
 			<!-- get file text from sample file -->
-			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResult" filename="/FilePipe/sample.txt">
+			<pipe name="setFileData" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="/FilePipe/sample.txt">
 			  <forward name="success" path="write file"/>
 			</pipe>
 			
@@ -174,4 +174,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

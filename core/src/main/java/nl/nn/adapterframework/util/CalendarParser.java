@@ -700,15 +700,14 @@ public class CalendarParser {
 
         Method method;
         try {
-            method = zoneInfo.getDeclaredMethod("getAvailableIDs",
-                                                new Class[0]);
+            method = zoneInfo.getDeclaredMethod("getAvailableIDs", new Class[0]);
         } catch (NoSuchMethodException nsme) {
             return null;
         }
 
         Object result;
         try {
-            result = method.invoke(null, null);
+            result = method.invoke(null, (Object[]) null);
         } catch (IllegalAccessException iae) {
             return null;
         } catch (InvocationTargetException ite) {

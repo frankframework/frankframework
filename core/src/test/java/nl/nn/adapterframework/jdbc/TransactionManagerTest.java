@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
-
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -15,10 +13,6 @@ import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
-
-	public TransactionManagerTest(String productKey, String url, String userid, String password, boolean testPeekDoesntFindRecordsAlreadyLocked) throws SQLException, NamingException {
-		super(productKey, url, userid, password, testPeekDoesntFindRecordsAlreadyLocked);
-	}
 
 	protected void checkNumberOfLines(int expected) throws JdbcException, SQLException {
 		String query = dbmsSupport.prepareQueryTextForNonLockingRead("select count(*) from TEMP where TKEY = 1");
@@ -34,7 +28,7 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 		
-		try (Connection txManagedConnection = txManagedDataSource.getConnection()) {
+		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
 //			checkNumberOfLines(0);			
@@ -52,15 +46,15 @@ public class TransactionManagerTest extends TransactionManagerTestBase {
 
 		TransactionStatus txStatus = txManager.getTransaction(getTxDef(TransactionDefinition.PROPAGATION_REQUIRED));
 		
-		try (Connection txManagedConnection = txManagedDataSource.getConnection()) {
+		try (Connection txManagedConnection = getConnection()) {
 			checkNumberOfLines(0);
 			JdbcUtil.executeStatement(txManagedConnection, "INSERT INTO TEMP (tkey) VALUES (1)");
-//			checkNumberOfLines(0);			
+//			checkNumberOfLines(0);
 		}
 //		checkNumberOfLines(0);
 
 		txManager.rollback(txStatus);
-		
+
 		checkNumberOfLines(0);
 	}
 }

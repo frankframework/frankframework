@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,34 +32,29 @@ public interface IMessageHandler<M> {
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
 	 */
-	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context, boolean duplicatesAlreadyChecked) throws ListenerException;
 	
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener,Object,Map, boolean)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context, long waitingTime) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, M message, Map<String,Object> context, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now without context, for convenience
+	 * Same as {@link #processRawMessage(IListener,Object,Map, boolean)}, but now without context, for convenience
 	 */
 	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
 	
-	/**
-	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
-	 */
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message) throws ListenerException;
 
 	/**
+	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
 	 * Does a processRequest() with a correlationId from the client. This is useful for logging purposes,
 	 * as the correlationId is logged also.
 	 */	
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message) throws ListenerException;
 	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String,Object> context) throws ListenerException;
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String,Object> context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
-	 *  Can be used if the calling system has no other way of returnin the exception to the caller. 
+	 *  Can be used if the calling system has no other way of returning the exception to the caller. 
 	 */	
 	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t);
 

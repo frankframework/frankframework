@@ -17,6 +17,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -80,7 +81,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			if(userPrincipal == null)
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
-			return new PipeRunResult(getForward(), userPrincipal.getData());
+			return new PipeRunResult(getSuccessForward(), userPrincipal.getData());
 		}
 		if(getAction().equals("set")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
@@ -90,7 +91,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			userPrincipal.setData(input);
 			cache.put(userPrincipal.getToken(), userPrincipal, authTTL);
 
-			return new PipeRunResult(getForward(), "");
+			return new PipeRunResult(getSuccessForward(), "");
 		}
 		if(getAction().equals("create")) {
 			//TODO type of token? (jwt, saml)
@@ -116,7 +117,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 			cache.put(token, userPrincipal, authTTL);
 
-			return new PipeRunResult(getForward(), token);
+			return new PipeRunResult(getSuccessForward(), token);
 		}
 		if(getAction().equals("remove")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
@@ -124,10 +125,10 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
 
 			cache.remove(userPrincipal.getToken());
-			return new PipeRunResult(getForward(), "");
+			return new PipeRunResult(getSuccessForward(), "");
 		}
 
-		return new PipeRunResult(findForward("exception"), "this is not supposed to happen... like ever!");
+		return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), "unable to execute action ["+getAction()+"]");
 	}
 
 	public void setAction(String string) {

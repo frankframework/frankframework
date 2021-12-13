@@ -87,6 +87,38 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	@Test
+	public void readTwoAttributes() throws Exception {
+		sender.setOperation("read");
+		Parameter parameter = new Parameter();
+		parameter.setName("entryName");
+		sender.addParameter(parameter);
+		sender.setAttributesToReturn("gidNumber,mail");
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
+
+		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n  <attribute name=\"mail\" value=\"leaadministrator@ibissource.org\" />\n  <attribute name=\"gidNumber\" value=\"505\" />\n</attributes>\n", result);
+	}
+
+	@Test
+	public void readAllAttributes() throws Exception {
+		sender.setOperation("read");
+		Parameter parameter = new Parameter();
+		parameter.setName("entryName");
+		parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
+		sender.addParameter(parameter);
+
+		sender.configure();
+		sender.open();
+
+		String result = sendMessage("<dummy/>").asString();
+
+		compareXML("Ldap/expected/read.xml", result);
+	}
+
+	@Test
 	public void updateAttribute() throws Exception {
 		sender.setOperation("update");
 		Parameter parameter = new Parameter();
@@ -141,7 +173,10 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		compareXML("Ldap/expected/delete.xml", getTree());
 	}
 
+	//Create a new sender and execute the TREE action to run a diff against that changes
 	private String getTree() throws Exception {
+		super.tearDown();
+		super.setUp();
 		sender.setOperation("getTree");
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");

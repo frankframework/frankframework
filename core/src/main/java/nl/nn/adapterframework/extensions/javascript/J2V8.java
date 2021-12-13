@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@ package nl.nn.adapterframework.extensions.javascript;
 
 import java.io.File;
 
-import com.eclipsesource.v8.JavaVoidCallback;
-import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.eclipsesource.v8.JavaCallback;
+import com.eclipsesource.v8.JavaVoidCallback;
 import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class J2V8 implements JavascriptEngine<V8> {
 
@@ -40,7 +40,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	private String alias = null;
 
 	@Override
-	public void setScriptAlias(String alias) {
+	public void setGlobalAlias(String alias) {
 		this.alias = alias;
 	}
 
@@ -81,13 +81,21 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	@Override
-	public void executeScript(String script) {
-		v8.executeScript(script);
+	public void executeScript(String script) throws JavascriptException {
+		try {
+			v8.executeScript(script);
+		} catch(Exception e) {
+			throw new JavascriptException("error executing script", e);
+		}
 	}
 
 	@Override
-	public Object executeFunction(String name, Object... parameters) {
-		return v8.executeJSFunction(name, parameters);
+	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
+		try {
+			return v8.executeJSFunction(name, parameters);
+		} catch (Exception e) {
+			throw new JavascriptException("error executing function [" + name + "]", e);
+		}
 	}
 
 	@Override

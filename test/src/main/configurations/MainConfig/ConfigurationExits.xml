@@ -18,14 +18,21 @@
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="api">
-				<sender className="nl.nn.adapterframework.http.HttpSender" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/" 
-					methodType="POST" resultStatusCodeSessionKey="statuscode"/>
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/exits/" 
+					methodType="POST" resultStatusCodeSessionKey="statuscode"
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 			<pipe name="soap">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
+				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
 					serviceNamespace="urn:exits-soap"
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -34,7 +41,7 @@
 		<receiver >
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
 		</receiver>
-		<receiver maxRetries="-1">
+		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="exits" method="POST" />
 		</receiver>
 		<receiver>

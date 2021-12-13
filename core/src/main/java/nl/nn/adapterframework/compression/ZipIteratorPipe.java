@@ -26,6 +26,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -49,15 +50,6 @@ import nl.nn.adapterframework.util.StreamUtil;
  * The message sent each time to the sender is the filename of the entry found in the archive. 
  * The contents of the archive is available as a Stream or a String in a session variable. 
  *
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>
- * </table>
- * </p>
- * 
- * For more configuration options, see {@link MessageSendingPipe}.
  * <br>
  * 
  * @author  Gerrit van Brakel
@@ -65,11 +57,11 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ZipIteratorPipe extends IteratingPipe<String> {
 
-	private String contentsSessionKey="zipdata";
-	private boolean streamingContents=true;
-	private boolean closeInputstreamOnExit=true;
-	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private boolean skipBOM=false;
+	private @Getter String contentsSessionKey="zipdata";
+	private @Getter boolean streamingContents=true;
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean skipBOM=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -198,23 +190,17 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 
 
-	@IbisDoc({"session key used to store contents of each zip entry", "zipdata"})
+	@IbisDoc({"Session key used to store contents of each zip entry", "zipdata"})
 	public void setContentsSessionKey(String string) {
 		contentsSessionKey = string;
 	}
-	public String getContentsSessionKey() {
-		return contentsSessionKey;
-	}
 
-	@IbisDoc({"when set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents", "true"})
+	@IbisDoc({"If set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents", "true"})
 	public void setStreamingContents(boolean b) {
 		streamingContents = b;
 	}
-	public boolean isStreamingContents() {
-		return streamingContents;
-	}
 
-	@IbisDoc({"when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -223,23 +209,14 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	public void setCloseStreamOnExit(boolean b) {
 		setCloseInputstreamOnExit(b);
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
-	}
 
-	@IbisDoc({"charset used when reading the contents of the entry (only used if streamingcontens=false>", "utf-8"})
+	@IbisDoc({"Charset used when reading the contents of the entry (only used if streamingContents=false)", "utf-8"})
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
-	@IbisDoc({"when set to <code>true</code>, a possible bytes order mark (bom) at the start of the file is skipped (only used for encoding uft-8)", "false"})
+	@IbisDoc({"If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)", "false"})
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
-	}
-	public boolean isSkipBOM() {
-		return skipBOM;
 	}
 }

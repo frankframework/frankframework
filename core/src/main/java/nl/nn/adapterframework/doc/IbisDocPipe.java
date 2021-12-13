@@ -34,11 +34,6 @@ public class IbisDocPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		DocInfo docInfo;
-		try {
-			docInfo = new InfoBuilder().build();
-		} catch(Exception e) {
-			throw new PipeRunException(this, "Could not gather the necessary information", e);
-		}
 		String uri = null;
 		ParameterList parameterList = getParameterList();
 		if (parameterList != null) {
@@ -54,40 +49,52 @@ public class IbisDocPipe extends FixedForwardPipe {
 		}
 		String result = "Not found";
 		String contentType = "text/html";
-		if ("/ibisdoc/ibisdoc.xsd".equals(uri)) {
-			result = DocWriter.getSchema(docInfo);
-			contentType = "application/xml";
-		} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
-			result = DocWriter.getUglifyLookup(docInfo);
-			contentType = "application/xml";
-		} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
-			result = DocWriter.getJson(docInfo);
-			contentType = "application/json";
-		} else if ("/ibisdoc".equals(uri)) {
+		if ("/ibisdoc".equals(uri)) {
 			result = "<html>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.html\">ibisdoc.html (deprecated)</a><br/>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
-					+ "  <a href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
-					+ "  <a href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
-					+ "  <a href=\"../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
+					+ "  <a style=\"text-decoration: line-through;\"  href=\"ibisdoc/ibisdoc.html\">ibisdoc.html (deprecated)</a><br/>\n"
+					+ "  <a style=\"text-decoration: line-through;\"  href=\"ibisdoc/ibisdoc.xsd\">ibisdoc.xsd</a><br/>\n"
+					+ "  <a style=\"text-decoration: line-through;\"  href=\"ibisdoc/uglify_lookup.xml\">uglify_lookup.xml</a><br/>\n"
+					+ "  <a style=\"text-decoration: line-through;\"  href=\"ibisdoc/ibisdoc.json\">ibisdoc.json</a><br/>\n"
+					+ "  <a style=\"text-decoration: line-through;\"  href=\"../iaf/ibisdoc\">The new ibisdoc application</a><br/>\n"
+					+ "  <br/>\n"
+					+ "  <br/>\n"
+					+ "  <a href=\"../iaf/frankdoc\">The Frank!Doc</a><br/>\n"
+					+ "  <a href=\"../iaf/api/frankdoc/files/frankdoc.xsd\">The Frank!Doc.xsd</a><br/>\n"
 					+ "</html>";
-		} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
-			result = DocWriter.getHtmlFrankDocTopLevel();
-		} else if (uri.endsWith(".html")) {
-			if ("/ibisdoc/topmenu.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocTopMenu(docInfo);
-			} else if ("/ibisdoc/all.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocAll(docInfo);
-			} else if ("/ibisdoc/excludes.html".equals(uri)) {
-				result = DocWriter.getHtmlFrankDocExcludes(docInfo);
-			} else {
-				if (uri.length() > "/ibisdoc/".length() && uri.indexOf(".") != -1) {
-					String page = uri.substring("/ibisdoc/".length(), uri.lastIndexOf("."));
-					result = DocWriter.getHtmlFrankDocGroupOrBean(page, docInfo);
+		} else {
+			try {
+				docInfo = new InfoBuilder().build();
+			} catch(Exception e) {
+				throw new PipeRunException(this, "Could not gather the necessary information", e);
+			}
+
+			if ("/ibisdoc/ibisdoc.xsd".equals(uri)) {
+				result = DocWriter.getSchema(docInfo);
+				contentType = "application/xml";
+			} else if ("/ibisdoc/uglify_lookup.xml".equals(uri)) {
+				result = DocWriter.getUglifyLookup(docInfo);
+				contentType = "application/xml";
+			} else if ("/ibisdoc/ibisdoc.json".equals(uri)) {
+				result = DocWriter.getJson(docInfo);
+				contentType = "application/json";
+			} else if ("/ibisdoc/ibisdoc.html".equals(uri)) {
+				result = DocWriter.getHtmlFrankDocTopLevel();
+			} else if (uri.endsWith(".html")) {
+				if ("/ibisdoc/topmenu.html".equals(uri)) {
+					result = DocWriter.getHtmlFrankDocTopMenu(docInfo);
+				} else if ("/ibisdoc/all.html".equals(uri)) {
+					result = DocWriter.getHtmlFrankDocAll(docInfo);
+				} else if ("/ibisdoc/excludes.html".equals(uri)) {
+					result = DocWriter.getHtmlFrankDocExcludes(docInfo);
+				} else {
+					if (uri.length() > "/ibisdoc/".length() && uri.indexOf(".") != -1) {
+						String page = uri.substring("/ibisdoc/".length(), uri.lastIndexOf("."));
+						result = DocWriter.getHtmlFrankDocGroupOrBean(page, docInfo);
+					}
 				}
 			}
 		}
 		session.put("contentType", contentType);
-		return new PipeRunResult(getForward(), result);
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 }

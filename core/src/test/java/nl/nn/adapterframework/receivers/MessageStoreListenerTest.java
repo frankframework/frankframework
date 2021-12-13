@@ -14,17 +14,18 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.stream.Message;
 
 @SuppressWarnings("unchecked")
-public class MessageStoreListenerTest extends ListenerTestBase<MessageStoreListener> {
+public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStoreListener<M>> {
 
 	@Override
-	public MessageStoreListener createListener() throws Exception {
+	public MessageStoreListener<M> createListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected Object getRawMessage(Connection conn, Map<String, Object> threadContext) throws ListenerException {
+			protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 				MessageWrapper<Object> mw = new MessageWrapper<>(); //super class JdbcListener always wraps this in a MessageWrapper
 				mw.setMessage(Message.asMessage(threadContext.get(STUB_RESULT_KEY)));
 				mw.setId(""+threadContext.get(PipeLineSession.originalMessageIdKey));
@@ -44,6 +45,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<MessageStoreListe
 		doReturn(conn).when(dataSource).getConnection();
 		listener.setConnectionsArePooled(false);
 		listener.setDatasourceName(dataSourceName);
+		doReturn(new GenericDbmsSupport()).when(listener).getDbmsSupport();
 		return listener;
 	}
 

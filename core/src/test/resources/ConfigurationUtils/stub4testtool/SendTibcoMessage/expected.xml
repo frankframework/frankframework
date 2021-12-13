@@ -1,0 +1,27 @@
+<configuration>
+	  <adapter name="SendTibcoMessage">
+      <receiver name="testtool-SendTibcoMessage">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SendTibcoMessage"/>
+      </receiver>
+		    <receiver>
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="SendTibcoMessage"/>
+		    </receiver>
+      <receiver name="testtool-SendTibcoMessage-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-SendTibcoMessage-1"/>
+      </receiver>
+		    <pipeline firstPipe="SendTibcoMessage">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="sendTibcoMessage"
+               className="nl.nn.adapterframework.pipes.SenderPipe">
+            <sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+                    serviceName="testtool-sendTibcoMessage"/>
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

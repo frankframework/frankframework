@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,12 +116,12 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 
 			String serviceName;
 			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = (String)session.get(getServiceNameSessionKey());
+				serviceName = session.getMessage(getServiceNameSessionKey()).asString();
 			} else {
 				serviceName = getServiceName();
 			}
 
-			String correlationID = session==null ? null : (String)session.get(PipeLineSession.businessCorrelationIdKey);
+			String correlationID = session==null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
 			result = dm.processRequest(serviceName, correlationID, message.asString(), context);
 			if (isMultipartResponse()) {
 				return HttpSender.handleMultipartResponse(multipartResponseContentType, new ByteArrayInputStream(result.getBytes(multipartResponseCharset)), session);
@@ -136,7 +136,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
 			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, session);
+				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}
 		return new Message(result);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ import nl.nn.adapterframework.util.Misc;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, ConfigurationAware {
-	
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+
 	private Configuration configuration;
 	private String serviceName;
 	private String javaListener;
@@ -110,6 +110,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 						|| StringUtils.isNotEmpty(getJavaListenerSessionKey()))) {
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
+
+		if(!(getApplicationContext() instanceof Configuration)) {
+			throw new ConfigurationException(getLogPrefix()+"unable to determine configuration");
+		}
+		configuration = (Configuration) getApplicationContext();
 	}
 
 	@Override
@@ -193,13 +198,17 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			} 
 		} else {
 			String javaListener;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
-				javaListener = (String)session.get(getJavaListenerSessionKey());
+				try {
+					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
+				} catch (IOException e) {
+					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+				}
 			} else {
 				javaListener = getJavaListener();
 			}
@@ -237,7 +246,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 		}
@@ -250,16 +259,6 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		return result;
 	}
 
-
-	@Override
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-	@Override
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-	
 	/**
 	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
@@ -321,7 +320,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. a value of -1 indicates to wait indefinitely", "60 s"})
+	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}

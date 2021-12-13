@@ -31,6 +31,7 @@ import nl.nn.adapterframework.http.rest.ApiEhcache;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
@@ -87,9 +88,9 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			try {
 				pvl = parameterList.getValues(message, session);
 				if (pvl != null) {
-					String uriPattern = (String)pvl.getValue("uriPattern");
-					if (uriPattern!=null) {
-						uriPatternSessionKey = uriPattern;
+					ParameterValue pv = pvl.get("uriPattern");
+					if (pv != null) {
+						uriPatternSessionKey = pv.asStringValue();
 					}
 				}
 			} catch (ParameterException e) {
@@ -143,10 +144,10 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			}
 			if(log.isDebugEnabled()) log.debug("found eTag cacheKey ["+cacheKey+"] with action ["+getAction()+"]");
 
-			return new PipeRunResult(getForward(), returnCode);
+			return new PipeRunResult(getSuccessForward(), returnCode);
 		}
 		else {
-			PipeForward pipeForward = findForward("exception");
+			PipeForward pipeForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			String msg;
 
 			if(cache == null)

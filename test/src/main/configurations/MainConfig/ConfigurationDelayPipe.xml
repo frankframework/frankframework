@@ -1,6 +1,6 @@
 <module>
 	<adapter name="DelayPipe" description="Test the functioning of the DelayPipe">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="DelayPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
@@ -13,14 +13,14 @@
 		</pipeline>
 	</adapter>
 	<adapter name="DelayPipe5000" description="Test the functioning of the DelayPipe (5000ms)">
-		<receiver className="nl.nn.adapterframework.receivers.GenericReceiver" name="DelayPipe">
+		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe-5000ms" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="5000">
+			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

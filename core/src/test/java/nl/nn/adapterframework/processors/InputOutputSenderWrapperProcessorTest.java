@@ -41,14 +41,14 @@ public class InputOutputSenderWrapperProcessorTest {
 
 		Message actual = processor.sendMessage(sender, new Message(input), session);
 		
-		assertEquals(expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals(expectedWrapperOutput, actual.asString());
-		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")));
+		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
+		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.asString());
+		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
 	}
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
@@ -57,7 +57,7 @@ public class InputOutputSenderWrapperProcessorTest {
 					throw new SenderException(e);
 				}
 			}});
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
 			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 				try {
@@ -159,6 +159,19 @@ public class InputOutputSenderWrapperProcessorTest {
 		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
 		String expectedWrapperOutput = "abc";
 		String expectedSessionKeyValue = expectedSecondSenderOutput;
+		
+		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
+	}
+	
+	@Test
+	public void testStoreInput() throws Exception {
+		SenderWrapperBase sender = getSenderWrapper();
+		sender.setStoreInputInSessionKey("storedResult");
+		
+		String input = "abc";
+		String expectedSecondSenderOutput = "Sender 2: [Sender 1: [abc]]";
+		String expectedWrapperOutput = expectedSecondSenderOutput;
+		String expectedSessionKeyValue = input;
 		
 		testInputOutputSenderWrapperProcessor(sender, input, expectedSecondSenderOutput, expectedWrapperOutput, expectedSessionKeyValue);
 	}

@@ -3,76 +3,13 @@
 
 <div class="wrapper wrapper-content animated fadeInRight" ng-controller="EnvironmentVariablesCtrl">
 	<div class="row">
-		<div class="col-lg-12">
-			<div class="ibox float-e-margins">
-				<div class="ibox-title">
-					<h4>Dynamic parameters</h4>
-				</div>
-				<div class="ibox-content" style="overflow: visible;">
-					<div class="row">
-						<div class="col-lg-5 col-md-12 col-md-12">
-							<div class="row">
-								<div class="col-md-8">
-									<strong class="lh32">Log Level</strong>
-								</div>
-								<div class="col-md-4">
-									<div class="btn-group" uib-dropdown style="width: 100%;">
-										<button type="button" class="btn btn-default" uib-dropdown-toggle style="width: 100%;">
-											{{form.loglevel}} <span class="caret"></span>
-										</button>
-										<ul role="menu" uib-dropdown-menu="">
-											<li ng-repeat="loglevel in form.errorLevels">
-												<a ng-click="changeLoglevel(loglevel)">{{::loglevel}}</a>
-											</li>
-										</ul>
-									</div>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-md-9">
-									<strong class="lh32">Log Intermediary Results</strong>
-								</div>
-								<div class="col-md-3 col-xs-2">
-									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.logIntermediaryResults" /></span>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-md-8 col-xs-10">
-									<strong class="lh32">Maximum Log-message Length</strong>
-								</div>
-								<div class="col-md-4">
-									<input class="form-control m-b" name="maxMessageLength" type="text" ng-model="form.maxMessageLength"/>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-md-9 col-xs-10">
-									<strong class="lh32">Enable Ladybug Debugger</strong>
-								</div>
-								<div class="col-md-3 col-xs-2">
-									<span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.enableDebugger" /></span>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-md-offset-2 col-md-10">
-									<button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
-									<button ladda="updateDynamicParams" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="row">
 		<div class="col-lg-12 tabs-container">
 			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-				<li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">All</a></li>
+				<li ng-class="{active : selectedConfiguration == 'All'}"><a ng-click="changeConfiguration('All')">Global</a></li>
 				<li ng-class="{active : selectedConfiguration == configuration.name}" ng-repeat="configuration in configurations">
 					<a ng-click="changeConfiguration(configuration.name)">{{::configuration.name}}</a>
 				</li>
-			</ul> 
+			</ul>
 		</div>
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">

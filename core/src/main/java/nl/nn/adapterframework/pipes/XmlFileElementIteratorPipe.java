@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ import nl.nn.adapterframework.xml.SaxException;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
-@ConfigurationWarning("Please replace with ForEachChildElementPipe, replace elementName or elementChain with containerElement or targetElement")
+@ConfigurationWarning("Please replace with ForEachChildElementPipe. ElementName and elementChain can be replaced with containerElement and/or targetElement. It is not a 1 to 1 replacement, different values may be required!")
 public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 
 	private String elementName = null;
@@ -76,7 +75,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		private boolean sElem = false;
 		private Exception rootException = null;
 		private int startLength;
-		private boolean stopRequested;
+		private StopReason stopReason;
 		private TimeOutException timeOutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
@@ -135,7 +134,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			if ((getElementName() != null && localName.equals(getElementName()))
 					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				try {
-					stopRequested = !callback.handleItem(elementBuffer.toString());
+					stopReason = callback.handleItem(elementBuffer.toString());
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
@@ -152,7 +151,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					throw se;
 
 				}
-				if (stopRequested) {
+				if (isStopRequested()) {
 					throw new SAXException("stop maar");
 				}
 			}
@@ -184,7 +183,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 
 		public boolean isStopRequested() {
-			return stopRequested;
+			return stopReason != null;
 		}
 
 		public TimeOutException getTimeOutException() {
@@ -193,11 +192,11 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	protected void iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
-			xmlInput = new FileInputStream((String) input.asObject());
-		} catch (FileNotFoundException e) {
+			xmlInput = new FileInputStream(input.asString());
+		} catch (IOException e) {
 			throw new SenderException("could not find file [" + input + "]", e);
 		}
 		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
@@ -221,6 +220,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 				throw new SenderException("could not endDocument after stop was requested",e1);
 			}
 		}
+		return handler.stopReason;
 	}
 
 	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})
