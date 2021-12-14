@@ -19,7 +19,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,36 +56,40 @@ public class JwtValidator<C extends SecurityContext> {
 	public JwtValidator() {
 		jwtProcessor = new DefaultJWTProcessor<C>();
 	}
-	
-	public JwtValidator(URL jwksURL, String requiredIssuer) throws IOException, ParseException {
-		this();
-		init(jwksURL, requiredIssuer);
-	}
-	
-	public void init(URL jwksURL, String requiredIssuer) throws IOException, ParseException {
-		JWKSource<C> keySource = getKeySource(jwksURL);
 
-		
+	public void init(JwtWrapper jwtWrapper) throws IOException, ParseException {
+		JWKSource<C> keySource = getKeySource(jwtWrapper.getJwksURL());
+
 		Set<JWSAlgorithm> algorithmSet = new LinkedHashSet<JWSAlgorithm>();
 		algorithmSet.addAll(JWSAlgorithm.Family.HMAC_SHA);
 		algorithmSet.addAll(JWSAlgorithm.Family.RSA);
 
-		// Configure the JWT processor with a key selector to feed matching public
-		// RSA keys sourced from the JWK set URL
 		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<C>(algorithmSet, keySource);
 
-		// Set up a JWT processor to parse the tokens and then check their signature
-		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
+		Set<String> requiredClaimsSet = null;
+		if(StringUtils.isNotEmpty(jwtWrapper.getRequiredClaims())) {
+			requiredClaimsSet = Stream.of(jwtWrapper.getRequiredClaims().split("\\s*,\\s*"))
+									.map(String::trim)
+									.collect(Collectors.toSet());
+		}
 
-		if (StringUtils.isNotEmpty(requiredIssuer)) {
-			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>() { // TODO: it is possible to provide required claims and exact value match for the claims in this constructor
+		JWTClaimsSet exactMatchClaims = null;
+		if(StringUtils.isNotEmpty(jwtWrapper.getExactMatchClaims())) {
+			Map<String, Object> claimsMap = Stream.of(jwtWrapper.getExactMatchClaims().split("\\s*,\\s*"))
+												.map(s -> s.split("\\s*=\\s*"))
+												.collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1] : ""));
+			exactMatchClaims = JWTClaimsSet.parse(claimsMap);
+		}
+
+		if (StringUtils.isNotEmpty(jwtWrapper.getRequiredIssuer())) {
+			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>(exactMatchClaims, requiredClaimsSet) {
 
 				@Override
 				public void verify(JWTClaimsSet claimsSet, C context) throws BadJWTException {
 					super.verify(claimsSet, context);
 					String issuer=claimsSet.getIssuer();
-					if (!requiredIssuer.equals(issuer)) {
-						throw new BadJWTException("illegal issuer ["+issuer+"], must be ["+requiredIssuer+"]");
+					if (!jwtWrapper.getRequiredIssuer().equals(issuer)) {
+						throw new BadJWTException("illegal issuer ["+issuer+"], must be ["+jwtWrapper.getRequiredIssuer()+"]");
 					}
 				}
 			};
@@ -90,8 +97,9 @@ public class JwtValidator<C extends SecurityContext> {
 		}
 
 		getJwtProcessor().setJWSKeySelector(keySelector);
-	}
 
+	}
+	
 	protected JWKSource<C> getKeySource(URL jwksURL) throws IOException, ParseException {
 		JWKSource<C> keySource = null;
 		if(jwksURL.getProtocol().equals("file") || jwksURL.getProtocol().equals("jar")) {

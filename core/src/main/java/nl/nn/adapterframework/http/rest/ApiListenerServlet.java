@@ -50,6 +50,7 @@ import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
+import nl.nn.adapterframework.jwt.JwtWrapper;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -58,7 +59,6 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.credentialprovider.util.ClassUtils;
 
 /**
  * 
@@ -77,8 +77,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
 	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
-	private final static String JWT_VALIDATION_URL = AppConstants.getInstance().getString("jwt.validation.url", null); 
-	
+
 	private ApiServiceDispatcher dispatcher = null;
 	private IApiCache cache = null;
 
@@ -169,21 +168,6 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			String authorizationHeader = request.getHeader("Authorization");
-			if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) { // assumes that the jwt token is provided via authorization header
-				URL url = null;
-				if(JWT_VALIDATION_URL.startsWith("http://") || JWT_VALIDATION_URL.startsWith("https://")) {
-					url = new URL(JWT_VALIDATION_URL);
-				} else {
-					url = ClassUtils.getResourceURL(JWT_VALIDATION_URL);
-				}
-
-				JwtSecurityHandler securityHandler = new JwtSecurityHandler(request, authorizationHeader, url, remoteUser);
-				messageContext.setSecurityHandler(securityHandler);
-				messageContext.put("ClaimsSet", securityHandler.getClaimsJson());
-			} else {
-				messageContext.setSecurityHandler(new HttpSecurityHandler(request));
-			}
 			messageContext.put("HttpMethod", method);
 	
 			try {
@@ -229,6 +213,34 @@ public class ApiListenerServlet extends HttpServletBase {
 					response.setStatus(405);
 					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
+				}
+				// set security handler
+				String authorizationHeader = request.getHeader("Authorization");
+				if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) { // assumes that the jwt token is provided via authorization header
+					if(StringUtils.isEmpty(listener.getJwksURL())) {
+						response.sendError(401, "no jwksUrl supplied!");
+						return;
+					}
+					URL url = new URL(listener.getJwksURL());
+
+					JwtWrapper jwtWrapper = new JwtWrapper();
+					jwtWrapper.setToken(authorizationHeader.substring(7));
+					jwtWrapper.setJwksURL(url);
+					jwtWrapper.setRequiredIssuer(listener.getRequiredIssuer());
+					jwtWrapper.setRequiredClaims(listener.getRequiredClaims());
+					jwtWrapper.setExactMatchClaims(listener.getExactMatchClaims());
+
+					try {
+						JwtSecurityHandler securityHandler = new JwtSecurityHandler(request, jwtWrapper);
+						messageContext.setSecurityHandler(securityHandler);
+						messageContext.put("ClaimsSet", securityHandler.getClaimsJson());
+					} catch(Exception e) {
+						log.warn("unable to validate jwt",e);
+						response.sendError(401, e.getMessage());
+						return;
+					}
+				} else {
+					messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 				}
 	
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");

@@ -21,6 +21,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -63,6 +64,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private String headerParams = null;
 	private String charset = null;
 
+	// for jwt validation
+	private @Getter String requiredIssuer=null;
+	private @Getter String jwksURL=null;
+	private @Getter String requiredClaims=null;
+	private @Getter String exactMatchClaims=null;
+	
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
 	}
@@ -283,6 +290,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 	public String getHeaderParams() {
 		return headerParams;
+	}
+
+	/** issuer to validate jwt */
+	public void setRequiredIssuer(String issuer) { 
+		this.requiredIssuer = issuer;
+	}
+
+	/** keysource url to validate jwt */
+	public void setJwksURL(String string) { 
+		this.jwksURL = string;
+	}
+
+	/** comma separated list of required claims */
+	public void setRequiredClaims(String string) { 
+		this.requiredClaims = string;
+	}
+
+	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test"*/
+	public void setExactMatchClaims(String string) { 
+		this.exactMatchClaims = string;
 	}
 
 	@Override
