@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -32,12 +33,12 @@ import nl.nn.adapterframework.util.LogUtil;
  * DataSource that is aware of the database metadata.
  * Fetches the metadata once and caches them.
  */
-public class DbAwareDataSource extends DelegatingDataSource {
+public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwareDataSourceProxy {
 	private Logger log = LogUtil.getLogger(this);
 	private Map<String, String> metadata;
 	private String destinationName = null;
 
-	public DbAwareDataSource(DataSource delegate) {
+	public TransactionalDbmsSupportAwareDataSourceProxy(DataSource delegate) {
 		super(delegate);
 	}
 
