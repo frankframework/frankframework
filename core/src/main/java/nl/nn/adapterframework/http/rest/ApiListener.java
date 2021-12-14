@@ -21,6 +21,8 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.nimbusds.jose.proc.SecurityContext;
+
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -28,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -69,7 +72,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String jwksURL=null;
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
-	
+	private @Getter String roleClaim;
+
+	private @Getter JwtValidator<SecurityContext> jwtValidator;
+
 	public enum AuthenticationMethods {
 		NONE, COOKIE, HEADER, AUTHROLE;
 	}
@@ -98,6 +104,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		if(StringUtils.isNotEmpty(getJwksURL())) {
+			try {
+				jwtValidator = new JwtValidator<SecurityContext>();
+				jwtValidator.init(getJwksURL(), getRequiredIssuer(), getRequiredClaims(), getExactMatchClaims());
+			} catch (Exception e) {
+				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
+			}
+		}
 		super.open();
 	}
 
@@ -307,9 +321,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.requiredClaims = string;
 	}
 
-	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test"*/
+	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test" */
 	public void setExactMatchClaims(String string) { 
 		this.exactMatchClaims = string;
+	}
+
+	/** claim name which specifies the role */
+	public void setRoleClaim(String roleClaim) { 
+		this.roleClaim = roleClaim;
 	}
 
 	@Override

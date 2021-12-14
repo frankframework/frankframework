@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
@@ -44,13 +43,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
-import nl.nn.adapterframework.jwt.JwtWrapper;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -214,26 +214,13 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
 				}
-				// set security handler
+
 				String authorizationHeader = request.getHeader("Authorization");
 				if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) { // assumes that the jwt token is provided via authorization header
-					if(StringUtils.isEmpty(listener.getJwksURL())) {
-						response.sendError(401, "no jwksUrl supplied!");
-						return;
-					}
-					URL url = new URL(listener.getJwksURL());
-
-					JwtWrapper jwtWrapper = new JwtWrapper();
-					jwtWrapper.setToken(authorizationHeader.substring(7));
-					jwtWrapper.setJwksURL(url);
-					jwtWrapper.setRequiredIssuer(listener.getRequiredIssuer());
-					jwtWrapper.setRequiredClaims(listener.getRequiredClaims());
-					jwtWrapper.setExactMatchClaims(listener.getExactMatchClaims());
-
 					try {
-						JwtSecurityHandler securityHandler = new JwtSecurityHandler(request, jwtWrapper);
-						messageContext.setSecurityHandler(securityHandler);
-						messageContext.put("ClaimsSet", securityHandler.getClaimsJson());
+						Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+						messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
+						messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 					} catch(Exception e) {
 						log.warn("unable to validate jwt",e);
 						response.sendError(401, e.getMessage());

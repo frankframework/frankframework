@@ -716,17 +716,6 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void testJwtTokenParsingWithoutJwksUrl() throws Exception {
-		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
-			.build();
-
-		Response result = service(prepareJWTRequest(null));
-
-		assertEquals(401, result.getStatus());
-		assertEquals("no jwksUrl supplied!",result.getErrorMessage());
-	}
-
-	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
@@ -836,7 +825,7 @@ public class ApiListenerServletTest extends Mockito {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
 			.setRequiredIssuer("JWTPipeTest")
-			.setExactMatchClaims("sub, aud, kid")
+			.setRequiredClaims("sub, aud, kid")
 			.build();
 
 		Response result = service(prepareJWTRequest(null));

@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.jwt;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,39 +57,42 @@ public class JwtValidator<C extends SecurityContext> {
 		jwtProcessor = new DefaultJWTProcessor<C>();
 	}
 
-	public void init(JwtWrapper jwtWrapper) throws IOException, ParseException {
-		JWKSource<C> keySource = getKeySource(jwtWrapper.getJwksURL());
+	public void init(String jwksUrl, String requiredIssuer, String requiredClaims, String exactMatchClaims) throws ParseException, MalformedURLException, IOException {
+		JWKSource<C> keySource = getKeySource(new URL(jwksUrl));
 
-		Set<JWSAlgorithm> algorithmSet = new LinkedHashSet<JWSAlgorithm>();
-		algorithmSet.addAll(JWSAlgorithm.Family.HMAC_SHA);
-		algorithmSet.addAll(JWSAlgorithm.Family.RSA);
+		// The expected JWS algorithm of the access tokens (agreed out-of-band)
+		JWSAlgorithm expectedJWSAlg = JWSAlgorithm.RS256;
 
-		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<C>(algorithmSet, keySource);
+		// Configure the JWT processor with a key selector to feed matching public
+		// RSA keys sourced from the JWK set URL
+		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<C>(expectedJWSAlg, keySource);
 
 		Set<String> requiredClaimsSet = null;
-		if(StringUtils.isNotEmpty(jwtWrapper.getRequiredClaims())) {
-			requiredClaimsSet = Stream.of(jwtWrapper.getRequiredClaims().split("\\s*,\\s*"))
+		if(StringUtils.isNotEmpty(requiredClaims)) {
+			requiredClaimsSet = Stream.of(requiredClaims.split("\\s*,\\s*"))
 									.map(String::trim)
 									.collect(Collectors.toSet());
 		}
 
-		JWTClaimsSet exactMatchClaims = null;
-		if(StringUtils.isNotEmpty(jwtWrapper.getExactMatchClaims())) {
-			Map<String, Object> claimsMap = Stream.of(jwtWrapper.getExactMatchClaims().split("\\s*,\\s*"))
+		JWTClaimsSet exactMatchClaimsSet = null;
+		if(StringUtils.isNotEmpty(exactMatchClaims)) {
+			Map<String, Object> claimsMap = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
 												.map(s -> s.split("\\s*=\\s*"))
 												.collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1] : ""));
-			exactMatchClaims = JWTClaimsSet.parse(claimsMap);
+			exactMatchClaimsSet = JWTClaimsSet.parse(claimsMap);
 		}
 
-		if (StringUtils.isNotEmpty(jwtWrapper.getRequiredIssuer())) {
-			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>(exactMatchClaims, requiredClaimsSet) {
+		// Set up a JWT processor to parse the tokens and then check their signature
+		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
+		if (StringUtils.isNotEmpty(requiredIssuer)) {
+			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>(exactMatchClaimsSet, requiredClaimsSet) {
 
 				@Override
 				public void verify(JWTClaimsSet claimsSet, C context) throws BadJWTException {
 					super.verify(claimsSet, context);
 					String issuer=claimsSet.getIssuer();
-					if (!jwtWrapper.getRequiredIssuer().equals(issuer)) {
-						throw new BadJWTException("illegal issuer ["+issuer+"], must be ["+jwtWrapper.getRequiredIssuer()+"]");
+					if (!requiredIssuer.equals(issuer)) {
+						throw new BadJWTException("illegal issuer ["+issuer+"], must be ["+requiredIssuer+"]");
 					}
 				}
 			};
@@ -107,6 +110,10 @@ public class JwtValidator<C extends SecurityContext> {
 			keySource = new ImmutableJWKSet<C>(set);
 			return keySource;
 		} else {
+			// The public RSA keys to validate the signatures will be sourced from the
+			// OAuth 2.0 server's JWK set, published at a well-known URL. The RemoteJWKSet
+			// object caches the retrieved keys to speed up subsequent look-ups and can
+			// also gracefully handle key-rollover
 			ResourceRetriever retriever = new DefaultResourceRetriever(getConnectTimeout(), getReadTimeout());
 			//JWKSource<C> keySource = new RemoteJWKSet<C>(new URL(jwksURL),retriever);
 			// Implemented Seam for Dependency Injection of JWKSource for unit testing
@@ -120,11 +127,11 @@ public class JwtValidator<C extends SecurityContext> {
 		return null;  // optional context parameter, not required here
 	}
 
-	public JWTClaimsSet validateJWT(String idToken) throws ParseException, BadJOSEException, JOSEException {
+	public Map<String, Object> validateJWT(String idToken) throws ParseException, BadJOSEException, JOSEException {
 		// Process the token
 		C ctx = createSecurityContext(idToken);
 		JWTClaimsSet claimsSet = getJwtProcessor().process(idToken, ctx);
-		return claimsSet;
+		return claimsSet.toJSONObject();
 	}
 
 	public void setConnectTimeout(int connectTimeout) {

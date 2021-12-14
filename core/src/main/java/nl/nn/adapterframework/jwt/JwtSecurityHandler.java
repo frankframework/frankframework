@@ -15,36 +15,46 @@
 */
 package nl.nn.adapterframework.jwt;
 
+import java.security.Principal;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.util.JSONObjectUtils;
-import com.nimbusds.jwt.JWTClaimsSet;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import nl.nn.adapterframework.http.HttpSecurityHandler;
+import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.core.PipeLineSession;
 
-public class JwtSecurityHandler extends HttpSecurityHandler {
+public class JwtSecurityHandler implements ISecurityHandler {
 
 	private @Getter Map<String, Object> claimsSet;
+	private @Getter String roleClaim;
 
-	public JwtSecurityHandler(HttpServletRequest request, JwtWrapper jwtWrapper) throws Exception {
-		super(request);
-		validateAndParseToken(jwtWrapper);
+	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim) throws Exception {
+		this.claimsSet = claimsSet;
+		this.roleClaim = roleClaim;
 	}
 
-	private void validateAndParseToken(JwtWrapper jwtWrapper) throws Exception {
-		JwtValidator<SecurityContext> validator = new JwtValidator<SecurityContext>();
-		validator.init(jwtWrapper);
-		JWTClaimsSet claims = validator.validateJWT(jwtWrapper.getToken());
-		claimsSet = claims.toJSONObject();
-
+	@Override
+	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
+		String claim = (String) getClaimsSet().get(roleClaim);
+		if (StringUtils.isNotEmpty(claim)) {
+			claim.contains(role);
+		}
+		return true;
 	}
 
-	public String getClaimsJson() {
-		return JSONObjectUtils.toJSONString(claimsSet);
+	@Override
+	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+		Principal principal = new Principal() {
+
+			@Override
+			public String getName() {
+				return (String) getClaimsSet().get("sub");
+			}
+
+		};
+		return principal;
 	}
 
 }
