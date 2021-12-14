@@ -118,4 +118,8 @@ public class TestAppender extends AbstractAppender {
 		}
 		return false;
 	}
+
+	public void clearLogs() {
+		logMessages.clear();
+	}
 }

@@ -101,6 +101,21 @@ public class SenderSeries extends SenderWrapperBase {
 		//hski.closeGroup(senderData);
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		if (super.consumesSessionVariable(sessionKey)) {
+			return true;
+			
+		}
+		for (ISender sender:senderList) {
+			if (sender.consumesSessionVariable(sessionKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 
 	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
 	public final void setSender(ISender sender) {

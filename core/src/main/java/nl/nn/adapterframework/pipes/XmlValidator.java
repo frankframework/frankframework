@@ -580,6 +580,11 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public void setApplicationContext(ApplicationContext applicationContext) {
 			//Can ignore this as it's not set through Spring
 		}
+
+		@Override
+		public boolean consumesSessionVariable(String sessionKey) {
+			return owner.consumesSessionVariable(sessionKey);
+		}
 	}
 	
 	public boolean isMixedValidator(Object outputValidator) {
