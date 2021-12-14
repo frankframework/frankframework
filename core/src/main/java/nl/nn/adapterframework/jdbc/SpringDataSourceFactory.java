@@ -18,17 +18,14 @@ package nl.nn.adapterframework.jdbc;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
-
-import nl.nn.adapterframework.jndi.DbAwareDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		DataSource ds = new TransactionAwareDataSourceProxy((DataSource) dataSource);
-		return new DbAwareDataSource(ds);
+		return new TransactionalDbmsSupportAwareDataSourceProxy((DataSource) dataSource);
 	}
 
 }
