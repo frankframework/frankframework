@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.testutil;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 
@@ -17,8 +16,16 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 			BeanUtils.setProperty(xaDataSource, "URL", url);
 			if (StringUtils.isNotEmpty(userId)) BeanUtils.setProperty(xaDataSource, "user", userId);
 			if (StringUtils.isNotEmpty(password)) BeanUtils.setProperty(xaDataSource, "password", password);
-			return augmentXADataSource(xaDataSource, product);
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | InvocationTargetException e) {
+			DataSource ds = augmentXADataSource(xaDataSource, product);
+
+			return new TransactionAwareDataSourceProxy(ds) {
+				@Override
+				public String toString() {
+					return product;
+				}
+			};
+		} catch (Exception e) {
+			log.info("ignoring DataSource, cannot complete setup", e);
 			e.printStackTrace();
 			return null;
 		}

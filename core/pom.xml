@@ -395,6 +395,12 @@
 			<artifactId>narayana-jta</artifactId>
 			<version>5.11.0.Final</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>3.4.2.Final</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>com.microsoft.ews-java-api</groupId>

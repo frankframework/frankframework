@@ -74,8 +74,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * However, your documentation should say if and how parameters are used!<p>
  * <p> All pipes support a forward named 'exception' which will be followed in the pipeline in case the PipeRunExceptions are not handled by the pipe itself
  *
- * @ff.parameters Parameters are enabled, but the use of parameters is defined by the subclass
- * 
  * @ff.forward success successful processing of the message of the pipe
  * @ff.forward exception an exception was caught when processing the message
  * 
@@ -310,6 +308,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 			return getPipeLine().getAdapter();
 		}
 		return null;
+	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return sessionKey.equals(getInputFromSessionKey) || parameterList!=null && parameterList.consumesSessionVariable(sessionKey);
 	}
 
 

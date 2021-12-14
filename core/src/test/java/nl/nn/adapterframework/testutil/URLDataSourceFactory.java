@@ -18,6 +18,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 public class URLDataSourceFactory extends JndiDataSourceFactory {
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
+	private static final int DB_LOGIN_TIMEOUT = 1;
 
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
@@ -31,7 +32,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		};
 
 	public URLDataSourceFactory() {
-		DriverManager.setLoginTimeout(1);
+		DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
 		for (Object[] datasource: TEST_DATASOURCES) {
 			String product = (String)datasource[0];
 			String url = (String)datasource[1];
@@ -39,7 +40,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			String password = (String)datasource[3];
 			boolean testPeek = (boolean)datasource[4];
 			String xaImplClassName = (String)datasource[5];
-			
+
 			add(createDataSource(product, url, userId, password, testPeek, xaImplClassName), product);
 		}
 	}
@@ -48,7 +49,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
 			@Override
 			public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
-				return "DataSource ["+product+"] url [" + getUrl()+"]";
+				return product;
 			}
 		};
 
