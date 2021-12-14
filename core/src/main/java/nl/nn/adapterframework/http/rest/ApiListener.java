@@ -69,7 +69,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	// for jwt validation
 	private @Getter String requiredIssuer=null;
-	private @Getter String jwksURL=null;
+	private @Getter String jwksUrl=null;
 	private @Getter String requiredClaims=null;
 	private @Getter String exactMatchClaims=null;
 	private @Getter String roleClaim;
@@ -104,10 +104,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
-		if(StringUtils.isNotEmpty(getJwksURL())) {
+		if(StringUtils.isNotEmpty(getJwksUrl())) {
 			try {
 				jwtValidator = new JwtValidator<SecurityContext>();
-				jwtValidator.init(getJwksURL(), getRequiredIssuer(), getRequiredClaims(), getExactMatchClaims());
+				jwtValidator.init(getJwksUrl(), getRequiredIssuer(), getRequiredClaims(), getExactMatchClaims());
 			} catch (Exception e) {
 				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
 			}
@@ -313,7 +313,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/** keysource url to validate jwt */
 	public void setJwksURL(String string) { 
-		this.jwksURL = string;
+		this.jwksUrl = string;
 	}
 
 	/** comma separated list of required claims */
