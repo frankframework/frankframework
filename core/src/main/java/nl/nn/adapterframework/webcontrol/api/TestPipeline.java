@@ -61,7 +61,7 @@ public class TestPipeline extends Base {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
-	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
+	private final String PIPELINE_RESULT_STATE_ERROR="ERROR";
 
 	@POST
 	@RolesAllowed("IbisTester")
