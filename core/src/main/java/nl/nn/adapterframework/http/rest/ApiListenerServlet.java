@@ -578,7 +578,9 @@ public class ApiListenerServlet extends HttpServletBase {
 			try {
 				ContentType parsedContentType = ContentType.parse(contentType);
 				Charset parsedCharset = parsedContentType.getCharset();
-				charset = parsedCharset.displayName();
+				if(parsedCharset != null) {
+					charset = parsedCharset.displayName();
+				}
 			} catch (Exception e) {
 				//For now just log when we cannot parse, perhaps we should abort the request?
 				log.warn("unable to parse charset from contentType [{}]", contentType, e);

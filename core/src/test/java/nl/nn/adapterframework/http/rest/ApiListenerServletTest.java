@@ -442,6 +442,23 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void listenerMultipartContentNoContentType() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMultipartContentCharset";
+		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON);
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));//explicitly sent as UTF-8
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertEquals("<request/>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/queryParamTest";
 		addListener(uri, Methods.GET);
