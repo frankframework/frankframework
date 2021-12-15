@@ -61,6 +61,7 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -432,6 +433,10 @@ public class ApiListenerServletTest extends Mockito {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
 
+		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		assertNotNull(url1);
+		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
+
 		Response result = service(createRequest(uri, Methods.POST, builder.build()));
 		assertEquals(200, result.getStatus());
 		assertEquals("<hello>€ è</hello>", result.getContentAsString());
@@ -439,6 +444,13 @@ public class ApiListenerServletTest extends Mockito {
 		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
 		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
 		assertNull(result.getErrorMessage());
+
+		String multipartXml = (String) session.get("multipartAttachments");
+		assertNotNull(multipartXml);
+		MatchUtils.assertXmlEquals("<parts>\n"
+				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
+				+ "	<part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" charSet=\"ISO-8859-1\" mimeType=\"application/xml\"/>\n"
+				+ "</parts>", multipartXml);
 	}
 
 	@Test
