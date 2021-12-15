@@ -18,20 +18,18 @@
 		<extension module="org.jboss.as.remoting"/>
 		<extension module="org.jboss.as.sar"/>
 		<extension module="org.jboss.as.security"/>
-		<extension module="org.jboss.as.threads"/>
 		<extension module="org.jboss.as.transactions"/>
-		<extension module="org.jboss.as.web"/>
 		<extension module="org.jboss.as.webservices"/>
 		<extension module="org.jboss.as.weld"/>
+        <extension module="org.wildfly.extension.undertow"/>
 	</extensions>
 	<system-properties>
 		<property name="log.dir" value="${jboss.server.log.dir}"/>
 		<property name="log.dir.match" value="(?i)(([cd]:[\\\\/]temp)|(${jboss.server.log.dir}))"/>
 		<property name="dtap.stage" value="LOC"/>
-		<property name="strutsConsole.enabled" value="false"/>
 		<property name="web.protocol" value="http"/>
 		<property name="web.port" value="8080"/>
-		<property name="web.contextpath" value="/iaf"/>
+		<property name="web.contextpath" value="/iaf-test"/>
 		<property name="active.tibco" value="false"/>
 		<property name="active.jms" value="false"/>
 		<property name="active.ifsa" value="false"/>
@@ -371,7 +369,6 @@
 				</security-domain>
 			</security-domains>
 		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:threads:1.1"/>
 		<subsystem xmlns="urn:jboss:domain:transactions:1.5">
 			<core-environment>
 				<process-id>
@@ -381,14 +378,25 @@
 			<recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
 			<coordinator-environment default-timeout="300"/>
 		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:web:2.2" default-virtual-server="default-host" native="false">
-			<connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
-			<virtual-server name="default-host" enable-welcome-root="true">
-				<alias name="localhost"/>
-				<alias name="example.com"/>
-			</virtual-server>
-		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:webservices:1.2">
+        <subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default">
+            <buffer-cache name="default"/>
+            <server name="default-server">
+                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+                <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                <host name="default-host" alias="localhost">
+                    <location name="/" handler="welcome-content"/>
+                    <http-invoker security-realm="ApplicationRealm"/>
+                </host>
+            </server>
+            <servlet-container name="default">
+                <jsp-config/>
+                <websockets/>
+            </servlet-container>
+            <handlers>
+                <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+            </handlers>
+        </subsystem>
+		<subsystem xmlns="urn:jboss:domain:webservices:2.0">
 			<modify-wsdl-address>true</modify-wsdl-address>
 			<wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
 			<endpoint-config name="Standard-Endpoint-Config"/>
