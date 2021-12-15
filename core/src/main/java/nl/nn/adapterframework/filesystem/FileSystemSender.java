@@ -29,6 +29,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -175,7 +176,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	
 	@IbisDocRef({"9", FILESYSTEMACTOR})
 	@Deprecated
-	public void setBase64(String base64) {
+	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
 	}
 
