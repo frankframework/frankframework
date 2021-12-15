@@ -9,16 +9,22 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 				<exit path="ERROR" state="error" />
+				<exit path="testExit" state="testExit"/>
 			</exits>
 
-			<inputValidator>
+			<global-forwards>
+				<forward name="exception" path="ERROR"/>
+				<forward name="test" path="testExit"/>
+			</global-forwards>
+
+			<inputValidator responseRoot="test">
 				<forward name="exception" path="ERROR" />
 			</inputValidator>
 			<inputWrapper/>
 			<outputWrapper/>
-			<outputValidator>
-				<forward name="exception" path="ERROR" />
-			</outputValidator>
+<!--			<outputValidator>-->
+<!--				<forward name="exception" path="ERROR" />-->
+<!--			</outputValidator>-->
 
 			<pipe name="TestXmlIfWithForwards" className="nl.nn.adapterframework.pipes.XmlIf"
 				  elementXPathExpression="test">

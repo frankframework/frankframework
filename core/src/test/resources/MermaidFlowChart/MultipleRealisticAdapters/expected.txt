@@ -28,6 +28,9 @@ graph
 	d1e110{Check_Security_Class_Against_Rules_Result<br/>XmlIf}
 	d1e21-NotAllowed([OutputValidator<br/>XmlValidator])
 	d1e30{{success<br/>200}}
+	d1e32{{success<br/>304}}
+	d1e34{{error<br/>400}}
+	d1e36{{error<br/>401}}
 	d1e38{{error<br/>403}}
 	d1e41{{error<br/>500}}
 	end
