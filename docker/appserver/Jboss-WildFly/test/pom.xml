@@ -12,6 +12,14 @@
 		<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
 		<version>${revision}</version>
 	</parent>
+	
+	<properties>
+		<config.tag>test</config.tag>
+		<config.groupid>org.ibissource</config.groupid>
+		<config.project>ibis-adapterframework-${config.tag}</config.project>
+		<config.project.version>${iaf.version}</config.project.version>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -20,15 +28,10 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>full-configuration</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.6.0</version>
+			<groupId>${config.groupid}</groupId>
+			<artifactId>${config.project}</artifactId>
+			<version>${config.project.version}</version>
+			<type>war</type>
 		</dependency>
 	</dependencies>
 

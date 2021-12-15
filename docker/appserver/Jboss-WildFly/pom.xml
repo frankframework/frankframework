@@ -14,12 +14,6 @@
 	</parent>
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-ear</artifactId>
-			<version>${iaf.version}</version>
-			<type>ear</type>
-		</dependency>
-		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
@@ -62,6 +56,11 @@
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.6.0</version>
 		</dependency>
 	</dependencies>
 

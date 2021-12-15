@@ -3,10 +3,10 @@ ARG DOCKER_REPO
 FROM ${DOCKER_REPO}:${IMAGE_VERSION}
 
 # copy the frank framework
-COPY target/dependencies/ibis-adapterframework-ear.ear ${JBOSS_HOME}/standalone/deployments/iaf.ear
+#COPY target/dependencies/ibis-adapterframework-ear.ear ${JBOSS_HOME}/standalone/deployments/iaf.ear
 
 # copy JDBC and JMS drivers
-COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/lib/
+COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/deployments/
 
 # Insert fake module.xml for jdk.unsupported
-COPY module.xml ${JBOSS_HOME}/modules/system/layers/base/jdk/unsupported/main/
+#COPY module.xml ${JBOSS_HOME}/modules/system/layers/base/jdk/unsupported/main/
