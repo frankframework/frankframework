@@ -47,15 +47,11 @@ import nl.nn.adapterframework.util.LogUtil;
 
 
 /**
- * Use this listener to receive messages from other adapters or as a dummy listener.
+ * Use this listener to receive messages from other adapters.
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
  * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender}
  * or {@link nl.nn.adapterframework.senders.IbisLocalSender}.
- * <p>
- * This listener is also useful as a dummy listener, because a {@link nl.nn.adapterframework.receivers.Receiver} is required to
- * have at least one listener. Your adapter may not actually need a listener because the "Test a Pipeline" function of the Frank!Console
- * bypasses any listeners. 
  *
  * @author  Gerrit van Brakel
  */
