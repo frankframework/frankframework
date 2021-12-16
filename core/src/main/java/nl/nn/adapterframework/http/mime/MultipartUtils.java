@@ -15,28 +15,66 @@
 */
 package nl.nn.adapterframework.http.mime;
 
-import java.io.IOException;
-
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.http.InputStreamDataSource;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MultipartUtils {
+	private static Logger log = LogUtil.getLogger(MultipartUtils.class);
+
+	public static final String FORM_DATA = "form-data";
+	public static final String MULTIPART = "multipart/";
 
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
 		if("POST".equals(httpMethod) || "PUT".equals(httpMethod) || "PATCH".equals(httpMethod)) {
-			return request.getContentType().startsWith("multipart/");
+			return request.getContentType().startsWith(MULTIPART);
 		}
 		return false;
 	}
 
-	public static MimeMultipart parse(HttpServletRequest request) throws IOException, MessagingException {
-		InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
-		MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-//		mimeMultipart.
-		return mimeMultipart;
+	public static String getFieldName(BodyPart part) {
+		try {
+			String[] cd = part.getHeader("Content-Disposition");
+			if(cd != null) {
+				String cdFields = cd[0]; //form-data; name="file1"; filename="file1"
+				if(cdFields != null && cdFields.toLowerCase().startsWith(FORM_DATA)) {
+					return parseParameterField(cdFields, "name");
+				}
+			}
+		} catch (MessagingException e) {
+			log.warn("unable to determine fieldname from part ["+part+"]");
+		}
+		return null;
+	}
+
+	public static boolean isBinary(BodyPart part) {
+		try {
+			String[] cd = part.getHeader("Content-Transfer-Encoding");
+			if(cd != null) {
+				String cdFields = cd[0]; //Content-Transfer-Encoding - binary || 8bit
+				if(cdFields != null && cdFields.equalsIgnoreCase("binary")) {
+					return true;
+				}
+			}
+		} catch (MessagingException e) {
+			log.warn("unable to determine if part ["+part+"] is binary");
+		}
+		return false;
+	}
+
+	private static String parseParameterField(String cdFields, String fieldName) {
+		for(String field : cdFields.split(";")) {
+			String[] f = field.trim().split("=");
+			String name = f[0];
+			if(fieldName.equalsIgnoreCase(name)) {
+				return f[1].substring(1, f[1].length()-1);
+			}
+		}
+		return null;
 	}
 }
