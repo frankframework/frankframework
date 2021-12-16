@@ -32,17 +32,23 @@ public abstract class MultipartUtils {
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
 		if("POST".equals(httpMethod) || "PUT".equals(httpMethod) || "PATCH".equals(httpMethod)) {
-			return request.getContentType().startsWith(MULTIPART);
+			return (request.getContentType() != null && request.getContentType().startsWith(MULTIPART));
 		}
 		return false;
 	}
 
 	public static String getFieldName(BodyPart part) {
 		try {
-			String[] cd = part.getHeader("Content-Disposition");
+			String[] id = part.getHeader("Content-ID"); //MTOM requests
+			if(id != null) {
+				String idField = id[0];
+				return idField.substring(1, idField.length()-1);
+			}
+
+			String[] cd = part.getHeader("Content-Disposition"); //MTOM Attachments and FORM-DATA requests
 			if(cd != null) {
-				String cdFields = cd[0]; //form-data; name="file1"; filename="file1"
-				if(cdFields != null && cdFields.toLowerCase().startsWith(FORM_DATA)) {
+				String cdFields = cd[0]; //form-data; name="file1"; filename="file1" || attachment; name="file1"; filename="file1"
+				if(cdFields != null) {
 					return parseParameterField(cdFields, "name");
 				}
 			}

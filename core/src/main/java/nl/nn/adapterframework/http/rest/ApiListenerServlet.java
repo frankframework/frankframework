@@ -415,7 +415,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						for (int i = 0; i < mimeMultipart.getCount(); i++) {
 							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							String fieldName = MultipartUtils.getFieldName(bodyPart);
-							if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
 								body = new PartMessage(bodyPart);
 							}
 

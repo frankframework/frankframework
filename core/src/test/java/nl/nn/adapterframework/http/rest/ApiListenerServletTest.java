@@ -476,7 +476,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMtomMultipart();
-		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.TEXT_XML);//explicitly sent as UTF-8
+		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/xml", "UTF-8"));//explicitly sent as UTF-8, defaults to ISO-8859-1
 
 		URL url1 = ClassUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
@@ -494,8 +494,10 @@ public class ApiListenerServletTest extends Mockito {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" charSet=\"ISO-8859-1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
+		Message file = (Message) session.get("file1");
+		assertEquals("ISO-8859-1", file.getCharset());
 	}
 
 	@Test
