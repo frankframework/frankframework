@@ -47,6 +47,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
  * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListener-s. You can
  * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
+ * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
+ * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
+ * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.  
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
