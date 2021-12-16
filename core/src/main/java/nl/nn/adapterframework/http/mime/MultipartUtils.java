@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nl.nn.adapterframework.http.InputStreamDataSource;
 
-public abstract class MultipartUtil {
+public abstract class MultipartUtils {
 
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
