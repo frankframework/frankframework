@@ -45,6 +45,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
  * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
+ * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListener-s. You can
+ * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
