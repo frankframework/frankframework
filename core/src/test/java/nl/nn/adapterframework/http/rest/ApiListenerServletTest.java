@@ -44,7 +44,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -60,6 +59,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -120,10 +120,18 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	private void addListener(String uri, Methods method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
-		addListener(uri, method, consumes, produces, null);
+		addListener(uri, method, consumes, produces, null, null);
+	}
+
+	private void addListener(String uri, Methods method, MediaTypes consumes, MediaTypes produces, String multipartBodyName) throws ListenerException, ConfigurationException {
+		addListener(uri, method, consumes, produces, null, multipartBodyName);
 	}
 
 	private void addListener(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod) throws ListenerException, ConfigurationException {
+		addListener(uri, method, consumes, produces, authMethod, null);
+	}
+
+	private void addListener(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) throws ListenerException, ConfigurationException {
 		ApiListener listener = spy(ApiListener.class);
 		listener.setUriPattern(uri);
 		listener.setMethod(method.name());
@@ -135,6 +143,10 @@ public class ApiListenerServletTest extends Mockito {
 			listener.setConsumes(consumes.name());
 		if(produces != null)
 			listener.setProduces(produces.name());
+
+		if(multipartBodyName != null) {
+			listener.setMultipartBodyName(multipartBodyName);
+		}
 
 		if(authMethod != null) {
 			listener.setAuthenticationMethod(authMethod.name());
@@ -428,10 +440,11 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentUTF8() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContentCharset";
-		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON);
+		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, "string2");
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
+		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/plain"));
+		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
 
 		URL url1 = ClassUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
@@ -449,13 +462,42 @@ public class ApiListenerServletTest extends Mockito {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "	<part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" charSet=\"ISO-8859-1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" charSet=\"ISO-8859-1\" mimeType=\"application/xml\"/>\n"
+				+ "</parts>", multipartXml);
+	}
+
+	@Test
+	public void listenerMtomContent() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/listenerMtomContent";
+		addListener(uri, Methods.POST, MediaTypes.MULTIPART_RELATED, MediaTypes.JSON);
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.setMtomMultipart();
+		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.TEXT_XML);//explicitly sent as UTF-8
+
+		URL url1 = ClassUtils.getResourceURL("/test1.xml");
+		assertNotNull(url1);
+		builder.addBinaryBody("file1", url1.openStream(), ContentType.APPLICATION_XML, "file1");
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+		assertEquals(200, result.getStatus());
+		assertEquals("<hello>€ è</hello>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertTrue("Content-Type header does not contain [application/json]", result.getContentType().contains("application/json"));
+		assertTrue("Content-Type header does not contain correct [charset]", result.getContentType().contains("charset=UTF-8"));
+		assertNull(result.getErrorMessage());
+
+		String multipartXml = (String) session.get("multipartAttachments");
+		assertNotNull(multipartXml);
+		MatchUtils.assertXmlEquals("<parts>\n"
+				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1041\" sessionKey=\"file1\" charSet=\"ISO-8859-1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
 	}
 
 	@Test
 	public void listenerMultipartContentNoContentType() throws ServletException, IOException, ListenerException, ConfigurationException {
-		String uri="/listenerMultipartContentCharset";
+		String uri="/listenerMultipartContentNoContentType";
 		addListener(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON);
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
