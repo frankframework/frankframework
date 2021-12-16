@@ -99,7 +99,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean schemaBasedParsing = AppConstants.getInstance().getBoolean("configurations.digester.schemaBasedParsing", true);
-	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), true);
+	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
