@@ -36,7 +36,6 @@
         <property name="log.dir" value="${jboss.server.log.dir}"/>
         <property name="log.dir.match" value="(?i)(([cd]:[\\\\/]temp)|(${jboss.server.log.dir}))"/>
         <property name="dtap.stage" value="LOC"/>
-        <property name="strutsConsole.enabled" value="false"/>
         <property name="scenariosroot1.directory" value="/opt/frank/testtool"/>
         <property name="scenariosroot1.description" value="embedded testtool directory /opt/frank/testtool"/>
 		<property name="scenariosroot2.directory" value="/opt/frank/testtool-ext"/>

@@ -35,7 +35,6 @@
 		<property name="log.dir" value="${jboss.server.log.dir}"/>
 		<property name="log.dir.match" value="(?i)(([cd]:[\\\\/]temp)|(${jboss.server.log.dir}))"/>
 		<property name="dtap.stage" value="LOC"/>
-		<property name="strutsConsole.enabled" value="false"/>
 		<property name="web.protocol" value="http"/>
 		<property name="web.port" value="8080"/>
 		<property name="web.contextpath" value="/iaf"/>

@@ -381,8 +381,7 @@
         <subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-                <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                <http-listener name="default" socket-binding="http" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
                     <http-invoker security-realm="ApplicationRealm"/>
@@ -407,7 +406,7 @@
 			</endpoint-config>
 			<client-config name="Standard-Client-Config"/>
 		</subsystem>
-		<subsystem xmlns="urn:jboss:domain:weld:1.0"/>
+		<subsystem xmlns="urn:jboss:domain:weld:4.0"/>
 	</profile>
 	<interfaces>
 		<interface name="management">
