@@ -15,10 +15,15 @@ import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ExchangeMailListener;
+import nl.nn.adapterframework.testutil.PropertyUtil;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.ClassUtils;
 
-public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase{
+public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase {
+	private String PROPERTY_FILE = "ExchangeMailListener.properties";
+
+	private String ndrMessageId = PropertyUtil.getProperty(PROPERTY_FILE, "ndrMessageId");
+	private String mainFrom = PropertyUtil.getProperty(PROPERTY_FILE, "mainFrom");
 
 	protected String mailaddress;
 	protected String mailaddress_fancy;
@@ -28,19 +33,19 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	protected String baseurl     = "https://outlook.office365.com/EWS/Exchange.asmx"; // leave empty to use autodiscovery
 
 	protected String recipient;
-	
+
 	private String testProperties="ExchangeMail.properties";
 
 	protected String basefolder1;
 	protected String basefolder2;
-	
+
 	private String senderSmtpHost;
 	private int senderSmtpPort;
 	private boolean senderSsl;
 	private String senderUserId;
 	private String senderPassword;
 //	private String sendGridApiKey;
-	
+
 //	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
 	protected ExchangeMailListener mailListener;
@@ -49,7 +54,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new MailSendingTestHelper(mailaddress,senderSmtpHost,senderSmtpPort, senderSsl, senderUserId, senderPassword);
 	}
-	
+
 	@Override
 	public void setUp() throws Exception {
 		Properties properties=new Properties();
@@ -76,7 +81,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setUrl(baseurl);
 		mailListener.setBaseFolder(basefolder2);
 	}
-	
+
 	@Override
 	public void tearDown() throws Exception {
 		if (mailListener!=null) {
@@ -92,9 +97,10 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.configure();
 		mailListener.open();	
 	}
-	
+
 	protected abstract ExchangeMailListener createExchangeMailListener();
-	
+
+	@Override
 	protected void equalsCheck(String content, String actual) {
 		assertEquals(content, actual);
 	}
@@ -263,21 +269,19 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		String mainRecipient=originalRecipient;
 		String mainSubject="Onbestelbaar: "+originalSubject;	
-		String mainFrom="MicrosoftExchange329e71ec88ae4615bbc36ab6ce41109e@integrationpartnersnl.onmicrosoft.com";
 		String expectedAttachmentName="onbestelbaar met attachments";
-		
-		
+
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-				
+
 		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
-		
+
 		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
 		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
 		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
@@ -293,11 +297,8 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		TestAssertions.assertXpathValueEquals(originalMessageId,      	message, "/email/attachments/attachment/headers/header[@name='Message-ID']");
 		TestAssertions.assertXpathValueEquals(originalSubject,      	message, "/email/attachments/attachment/headers/header[@name='Subject']");
-
-
 	}
 
-	
 	@Test
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce2() throws Exception {
@@ -306,28 +307,26 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String originalFrom="ip@nn.nl";
 		String originalSubject="Digitale verzending pensioenoverzicht";
 		String originalReturnPath="<test.nns.functioneel.beheer@nn.nl>";
-		String originalMessageId="<1601962671.67364.1537864705705.JavaMail.wasadmin@srtzzapp0315.insim.biz>";
+		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="TST";
 		String xCorrelationId="ID:EMS_TST_ESB_P2P_LARGE.19DA5B995492D604248:15";
 		int    originalAttachmentCount=0;
 
 		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;	
-		String mainFrom="MAILER-DAEMON@smtpgate-nl1.iresources.biz";
+		String mainSubject="Onbestelbaar: "+originalSubject;
 		String expectedAttachmentName="Undelivered Message";
-		
-		
+
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-				
+
 		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
-		
+
 		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
 		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
 		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
@@ -348,7 +347,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
 		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
-
 	}
 
 	@Test
@@ -359,7 +357,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String originalFrom="FSC.Debiteuren@nn-group.com";
 		String originalSubject="Invoice 1800000078";
 		String originalReturnPath="<dm.sm.bounce@nn-group.com>";
-		String originalMessageId="<1414718922.255345.1538728621718.JavaMail.wasadmin@srpzzapp0403.insim.biz>";
+		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="PRD";
 		String xCorrelationId="ID:EMS_PRD_P2P_LARGE.C7F75BA93B09872C7C:67234";
 		int originalAttachmentCount=1;
@@ -367,21 +365,19 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		String mainRecipient=originalRecipient;
 		String mainSubject="Onbestelbaar: "+originalSubject;	
-		String mainFrom="MAILER-DAEMON@smtpgate-nl1.iresources.biz";
 		String expectedAttachmentName="Undelivered Message";
-		
-		
+
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-				
+
 		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
-		
+
 		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
 		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
 		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
@@ -402,7 +398,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
 		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
-
 	}
 
 	@Test
@@ -413,7 +408,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String originalFrom="jouri.kock@nn-group.com";
 		String originalSubject="Factuur 1800000045";
 		String originalReturnPath="<test.nns.functioneel.beheer@nn.nl>";
-		String originalMessageId="<1201979233.119885.1538570623051.JavaMail.wasadmin@srtzzapp0315.insim.biz>";
+		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="TST";
 		String xCorrelationId="ID:EMS_TST_ESB_P2P_LARGE.19DA5B995492D6613E2:15033";
 		int originalAttachmentCount=0;
@@ -421,21 +416,19 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		String mainRecipient=originalRecipient;
 		String mainSubject="Onbestelbaar: "+originalSubject;	
-		String mainFrom="MAILER-DAEMON@smtpgate-nl2.iresources.biz";
 		String expectedAttachmentName="Undelivered Message";
-		
-		
+
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-				
+
 		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
-		
+
 		System.out.println("message ["+message+"]");
-		
+
 		TestAssertions.assertXpathValueEquals(mainRecipient, 			message, "/email/recipients/recipient[@type='to']");
 		TestAssertions.assertXpathValueEquals(mainFrom,      			message, "/email/from");
 		TestAssertions.assertXpathValueEquals(mainSubject,   			message, "/email/subject");
@@ -456,7 +449,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 		TestAssertions.assertXpathValueEquals(xEnvironment,      		message, "/email/attachments/attachment/headers/header[@name='x-Environment']");
 		TestAssertions.assertXpathValueEquals(xCorrelationId,      		message, "/email/attachments/attachment/headers/header[@name='x-CorrelationId']");
-
 	}
 
 	@Test
@@ -464,9 +456,9 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String targetFolder="Empty";
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
-		
+
 		Map<String,Object> threadContext=new HashMap<String,Object>();
-				
+
 		EmailMessage rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);
 	}
