@@ -262,7 +262,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	public void readFileBounce1() throws Exception {
 		String targetFolder="Onbestelbaar 1";
 		String originalRecipient="onbestelbaar@weetikwaarwelniet.nl";
-		String originalFrom="gerrit@integrationpartners.nl";
+		String originalFrom="";
 		String originalSubject="onbestelbaar met attachments";
 		String originalMessageId="<AM0PR02MB3732B19ECFCCFA4DF3499604AAEE0@AM0PR02MB3732.eurprd02.prod.outlook.com>";
 		int    originalAttachmentCount=1;
@@ -303,13 +303,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce2() throws Exception {
 		String targetFolder="Bounce 2";
-		String originalRecipient="annet.de.vries1@nn.nl";
-		String originalFrom="ip@nn.nl";
-		String originalSubject="Digitale verzending pensioenoverzicht";
-		String originalReturnPath="<test.nns.functioneel.beheer@nn.nl>";
+		String originalRecipient="";
+		String originalFrom="";
+		String originalSubject="";
+		String originalReturnPath="<>";
 		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="TST";
-		String xCorrelationId="ID:EMS_TST_ESB_P2P_LARGE.19DA5B995492D604248:15";
+		String xCorrelationId="";
 		int    originalAttachmentCount=0;
 
 		String mainRecipient=originalRecipient;
@@ -353,13 +353,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce3WithAttachmentInOriginalMail() throws Exception {
 		String targetFolder="Bounce 3";
-		String originalRecipient="marcel.zentveld@stevik.nl";
-		String originalFrom="FSC.Debiteuren@nn-group.com";
-		String originalSubject="Invoice 1800000078";
-		String originalReturnPath="<dm.sm.bounce@nn-group.com>";
+		String originalRecipient="";
+		String originalFrom="";
+		String originalSubject="Invoice 123";
+		String originalReturnPath="<>";
 		String originalMessageId="<"+ndrMessageId+">";
-		String xEnvironment="PRD";
-		String xCorrelationId="ID:EMS_PRD_P2P_LARGE.C7F75BA93B09872C7C:67234";
+		String xEnvironment="TST";
+		String xCorrelationId="ID:EMS.C7F75BA93B09872C7C:67234";
 		int originalAttachmentCount=1;
 		String originalAttachmentName="Invoice_1800000078.pdf";
 
@@ -404,13 +404,13 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	@Ignore("skip NDR filter for now")
 	public void readFileBounce4() throws Exception {
 		String targetFolder="Bounce 4";
-		String originalRecipient="jouri.kock23@nn-group.com";
-		String originalFrom="jouri.kock@nn-group.com";
-		String originalSubject="Factuur 1800000045";
-		String originalReturnPath="<test.nns.functioneel.beheer@nn.nl>";
+		String originalRecipient="";
+		String originalFrom="";
+		String originalSubject="Factuur 23"
+		String originalReturnPath="<>";
 		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="TST";
-		String xCorrelationId="ID:EMS_TST_ESB_P2P_LARGE.19DA5B995492D6613E2:15033";
+		String xCorrelationId="ID:EMS.19DA5B995492D6613E2:15033";
 		int originalAttachmentCount=0;
 		//String originalAttachmentName="Invoice_1800000045.pdf";
 
