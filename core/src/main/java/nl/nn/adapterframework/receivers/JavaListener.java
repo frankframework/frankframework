@@ -45,13 +45,14 @@ import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
-
+// TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
  * Use this listener to receive messages from other adapters.
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
  * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender}
- * or {@link nl.nn.adapterframework.senders.IbisLocalSender}.
+ * or {@link nl.nn.adapterframework.senders.IbisLocalSender}. Other Java applications running in the same JVM can also
+ * access a JavaListener, see also our GitHub project ibis-servicedispatcher.
  *
  * @author  Gerrit van Brakel
  */
