@@ -753,7 +753,7 @@ public class HttpSender extends HttpSenderBase {
 
 	@Deprecated
 	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
-	@IbisDoc({"when true and <code>methodetype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
+	@IbisDoc({"when true and <code>methodtype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
 	public void setMultipart(boolean b) {
 		if(b && !postType.equals(PostType.MTOM)) {
 			postType = PostType.FORMDATA;
@@ -770,7 +770,7 @@ public class HttpSender extends HttpSenderBase {
 		return multipartResponse;
 	}
 
-	@IbisDoc({"if set and <code>methodetype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
+	@IbisDoc({"if set and <code>methodtype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

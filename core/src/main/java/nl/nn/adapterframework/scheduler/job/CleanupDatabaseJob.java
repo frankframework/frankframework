@@ -134,7 +134,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
+				log.error(getLogPrefix()+msg, e);
 			} finally {
 				if(qs != null) {
 					qs.close();

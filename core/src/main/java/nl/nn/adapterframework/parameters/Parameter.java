@@ -338,7 +338,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		return true;
 	}
- 
+
+	public boolean consumesSessionVariable(String sessionKey) {
+		return sessionKey.equals(getSessionKey()) 
+				|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}") 
+				|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+	}
+
 	/**
 	 * determines the raw value 
 	 */
