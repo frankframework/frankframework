@@ -115,6 +115,11 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	 */
 	public abstract void update(Writer writer, InputStream fromFile) throws JdbcException;
 
+	/**
+	 * Check whether the configuration contains liquibase script that can be translated into sql statements in the classpath
+	 */
+	public abstract boolean hasMigrationScript();
+
 	protected final void logConfigurationMessage(String message) {
 		configuration.publishEvent(new ConfigurationMessageEvent(this, message));
 	}
@@ -135,4 +140,5 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	public boolean isEnabled() {
 		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false);
 	}
+
 }
