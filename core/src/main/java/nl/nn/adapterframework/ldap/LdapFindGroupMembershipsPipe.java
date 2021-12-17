@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,16 +41,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * </pre></code> <br/>
  * Sample result:<br/><code><pre>
  *	&lt;ldap&gt;
- *	 &lt;entry name="CN=ni83nz,OU=Users,OU=PRD,OU=AB,OU=Tenants,DC=INSIM,DC=BIZ"&gt;
+ *	 &lt;entry name="CN=xxyyzz,OU=Users,DC=domain,DC=ext"&gt;
  *	   &lt;attributes&gt;
  *	    &lt;attribute&gt;
  *	    &lt;attribute name="memberOf" value="Extern"/&gt;
- *	    &lt;attribute name="roomNumber" value="DP 2.13.025"/&gt;
  *	    &lt;attribute name="departmentCode" value="358000"/&gt;
  *	    &lt;attribute name="organizationalHierarchy"&gt;
- *	        &lt;item value="ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
- *	        &lt;item value="ou=000001,ou=OPS&amp;IT,ou=NL,ou=ING-EUR,ou=Group,ou=Organization,o=ing"/&gt;
+ *	        &lt;item value="ou=zzyyxx"/&gt;
+ *	        &lt;item value="ou=OPS&amp;IT,ou=Group,ou=domain,o=ext"/&gt;
  *	    &lt;/attribute>
  *	    &lt;attribute name="givenName" value="Gerrit"/>
  *	   &lt;/attributes&gt;
