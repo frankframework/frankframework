@@ -33,7 +33,15 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 
+// TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
+ * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
+ * by OpenAPI specifications. The Frank!Framework generates an OpenAPI specification for each ApiListener and
+ * also an OpenAPI specification for all ApiListeners in all configurations. You can
+ * find them in the Frank!Console under main menu item Webservices, heading Available ApiListeners.
+ * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
+ * therefore they document the full URLs of the provided services. 
  * 
  * @author Niels Meijer
  *
