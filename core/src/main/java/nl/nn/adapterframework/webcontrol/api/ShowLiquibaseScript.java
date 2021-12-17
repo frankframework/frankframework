@@ -58,7 +58,7 @@ public final class ShowLiquibaseScript extends Base {
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(databaseMigrator.hasLiquibaseScript(config)) {
+			if(databaseMigrator.hasMigrationScript()) {
 				configNames.add(config.getName());
 			}
 		}
@@ -79,7 +79,7 @@ public final class ShowLiquibaseScript extends Base {
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
 			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
-			if(databaseMigrator.hasLiquibaseScript(config)) {
+			if(databaseMigrator.hasMigrationScript()) {
 				configurations.add(config);
 			}
 		}

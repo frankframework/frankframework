@@ -115,6 +115,11 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	 */
 	public abstract void update(Writer writer, InputStream fromFile) throws JdbcException;
 
+	/**
+	 * Check whether the configuration contains liquibase script that can be translated into sql statements in the classpath
+	 */
+	public abstract boolean hasMigrationScript();
+
 	protected final void logConfigurationMessage(String message) {
 		configuration.publishEvent(new ConfigurationMessageEvent(this, message));
 	}
@@ -136,17 +141,4 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false);
 	}
 
-	/**
-	 * Checks whether the configuration contains liquibase script that can be translated into sql statements in the classpath
-	 */
-	public boolean hasLiquibaseScript(Configuration config) {
-		AppConstants appConstants = AppConstants.getInstance(config.getClassLoader());
-		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
-		LiquibaseResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(config.getClassLoader());
-		if(resourceAccessor.getResource(changeLogFile) == null) {
-			log.debug("No liquibase script ["+changeLogFile+"] found in the classpath of configuration ["+config.getName()+"]");
-			return false;
-		}
-		return true;
-	}
 }
