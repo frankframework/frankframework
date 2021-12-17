@@ -26,7 +26,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
- * Pipe that batch-transforms the lines in a CLOB.
+ * Pipe that batch-transforms the lines in a BLOB.
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
