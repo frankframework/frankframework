@@ -11,11 +11,11 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.6-RC3-SNAPSHOT</version>
+		<version>7.6.3-SNAPSHOT</version>
 	</parent>
 
 	<properties>
-		<iaf.version>7.6-RC3-SNAPSHOT</iaf.version>
+		<iaf.version>7.6.3-SNAPSHOT</iaf.version>
 		<h2.version>1.4.200</h2.version>
 		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
