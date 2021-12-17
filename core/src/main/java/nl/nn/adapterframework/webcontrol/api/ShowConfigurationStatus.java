@@ -617,18 +617,6 @@ public final class ShowConfigurationStatus extends Base {
 			messages.put("retried", receiver.getMessagesRetried());
 			messages.put("rejected", receiver.getMessagesRejected());
 			receiverInfo.put("messages", messages);
-			ISender sender=null;
-			Map<String, Object> listenerInfo = new HashMap<String, Object>();
-			IListener<?> listener=receiver.getListener();
-			listenerInfo.put("name", listener.getName());
-			listenerInfo.put("class", ClassUtils.nameOf(listener));
-			if (listener instanceof HasPhysicalDestination) {
-				String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
-				listenerInfo.put("destination", pd);
-			}
-			if (listener instanceof HasSender) {
-				sender = ((HasSender)listener).getSender();
-			}
 
 			Set<ProcessState> knownStates = receiver.knownProcessStates();
 			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
@@ -648,13 +636,31 @@ public final class ShowConfigurationStatus extends Base {
 			}
 			receiverInfo.put("transactionalStores", tsInfo);
 
-			boolean isRestListener = (listener instanceof RestListener);
-			listenerInfo.put("isRestListener", isRestListener);
-			if (isRestListener) {
-				RestListener rl = (RestListener) listener;
-				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-				listenerInfo.put("isView", rl.isView());
+			ISender sender=null;
+			IListener<?> listener=receiver.getListener();
+			if(listener != null) {
+				Map<String, Object> listenerInfo = new HashMap<String, Object>();
+				listenerInfo.put("name", listener.getName());
+				listenerInfo.put("class", ClassUtils.nameOf(listener));
+				if (listener instanceof HasPhysicalDestination) {
+					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
+					listenerInfo.put("destination", pd);
+				}
+				if (listener instanceof HasSender) {
+					sender = ((HasSender)listener).getSender();
+				}
+
+				boolean isRestListener = (listener instanceof RestListener);
+				listenerInfo.put("isRestListener", isRestListener);
+				if (isRestListener) {
+					RestListener rl = (RestListener) listener;
+					listenerInfo.put("restUriPattern", rl.getRestUriPattern());
+					listenerInfo.put("isView", rl.isView());
+				}
+
+				receiverInfo.put("listener", listenerInfo);
 			}
+
 			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 				JmsListenerBase jlb = (JmsListenerBase) listener;
 				JmsBrowser<javax.jms.Message> jmsBrowser;
@@ -694,8 +700,6 @@ public final class ShowConfigurationStatus extends Base {
 				}
 			}
 			receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
-
-			receiverInfo.put("listener", listenerInfo);
 
 			ISender rsender = receiver.getSender();
 			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
@@ -773,7 +777,7 @@ public final class ShowConfigurationStatus extends Base {
 			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
-			
+
 			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
 			if(esmb != null) {
 				try {
