@@ -36,9 +36,12 @@ import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive REST messages.
- *
+ * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a REST webservice.
+ * Prepends the configured URI pattern with <code>rest/</code>. When you are writing a new Frank config, you are recommended
+ * to use an {@link nl.nn.adapterframework.http.rest.ApiListener} instead. You can find all serviced URI patterns
+ * in the Frank!Console: main menu item Webservice, heading Available REST Services.
+ * 
+ * <p>
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
  * So do not use other multipart content types like <code>multipart/related</code>

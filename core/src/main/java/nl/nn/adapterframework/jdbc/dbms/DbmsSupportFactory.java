@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
-import nl.nn.adapterframework.jndi.DbAwareDataSource;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -48,8 +48,8 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private IDbmsSupport compute(DataSource datasource) {
 		try {
-			if(datasource instanceof DbAwareDataSource) {
-				Map<String, String> md = ((DbAwareDataSource) datasource).getMetaData();
+			if(datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
 				return getDbmsSupport(md.get("product"), md.get("product-version"));
 			}
 

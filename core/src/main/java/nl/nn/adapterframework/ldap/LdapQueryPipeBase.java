@@ -105,7 +105,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://insim.biz'.", ""})
+	@IbisDoc({"1", "Url to context to search in, e.g. 'ldaps://DOMAIN.EXT'.", ""})
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -137,7 +137,7 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return useSsl;
 	}
 
-	@IbisDoc({"5", "BaseDN, e.g. OU=Tenants,DC=INSIM,DC=BIZ", "false"})
+	@IbisDoc({"5", "BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT", "false"})
 	public void setBaseDN(String baseDN) {
 		this.baseDN = baseDN;
 	}

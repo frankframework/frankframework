@@ -969,6 +969,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return super.hasSizeStatistics();
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || getSender().consumesSessionVariable(sessionKey);
+	}
+
+
 
 	@IbisDoc({"10", "The sender that should send the message"})
 	protected void setSender(ISender sender) {

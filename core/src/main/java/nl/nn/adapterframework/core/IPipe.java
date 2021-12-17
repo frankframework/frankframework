@@ -88,4 +88,11 @@ public interface IPipe extends IConfigurable, IForwardTarget {
 	 * For instance, closing JMS connections, DBMS connections etc.
 	 */
 	void stop();
+	
+	
+	/**
+	 * returns <code>true</code> if the pipe or one of its children use the named session variable. 
+	 * Callers can use this to determine if a message needs to be preserved.
+	 */
+	boolean consumesSessionVariable(String sessionKey);
 }

@@ -203,6 +203,12 @@ public class XmlSwitch extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
+
 	@IbisDoc({"1", "stylesheet may return a string representing the forward to look up", "<i>a stylesheet that returns the name of the root-element</i>"})
 	public void setStyleSheetName(String styleSheetName) {
 		this.styleSheetName = styleSheetName;
