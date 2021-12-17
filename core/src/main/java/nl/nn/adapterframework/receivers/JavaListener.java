@@ -50,9 +50,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * Use this listener to receive messages from other adapters.
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
- * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender}
- * or {@link nl.nn.adapterframework.senders.IbisLocalSender}. Other Java applications running in the same JVM can also
- * access a JavaListener, see also our GitHub project ibis-servicedispatcher.
+ * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link nl.nn.adapterframework.senders.IbisJavaSender} (external call)
+ * or {@link nl.nn.adapterframework.senders.IbisLocalSender} (internal call). 
+ * For more information see the ibis-servicedispatcher project.
  *
  * @author  Gerrit van Brakel
  */
