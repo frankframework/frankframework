@@ -106,7 +106,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
 		}
 		catch (FileNotFoundException e) {
-			log.debug(e.getMessage(), e); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
+			log.debug(e.getMessage()); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
 		}
 		catch (SQLException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
