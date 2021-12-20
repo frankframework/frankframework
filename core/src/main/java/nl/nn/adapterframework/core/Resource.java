@@ -43,6 +43,10 @@ public class Resource implements IScopeProvider {
 	private String systemId;
 
 	private Resource(IScopeProvider scopeProvider, URL url, String systemId) {
+		if(scopeProvider == null) {
+			throw new IllegalStateException("a scopeProvider must be provided");
+		}
+
 		this.scopeProvider=scopeProvider;
 		this.url=url;
 		this.systemId=systemId;
