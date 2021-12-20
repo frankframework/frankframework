@@ -367,19 +367,14 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 	}
 
-	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException, ConfigurationException {
+	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
 		FtpType transport = getFtpType();
 		if (transport == FtpType.FTP) {
 			return new FTPClient();
 		}
 
-		FTPSClient client;
-		SSLContext sslContext = createSSLContext();
-		if(sslContext != null) { //If we have a custom SSLContext, initialize with the context, else use JMV defaults
-			client =  new FTPSClient(sslContext);
-		}
-
-		client = new FTPSClient(sslContext);
+		SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, getFtpType().getProtocol());
+		FTPSClient client = new FTPSClient(sslContext);
 		if(isVerifyHostname()) {
 			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager'
 		}
@@ -392,19 +387,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		return client;
 	}
 
-	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException, ConfigurationException {
-		SSLContext sslContext = null;
-		if (StringUtils.isNotEmpty(getKeystore()) || StringUtils.isNotEmpty(getTruststore()) || isAllowSelfSignedCertificates()) {
-			try {
-				sslContext = AuthSSLContextFactory.createSSLContext(this, this, getFtpType().getProtocol());
-				log.debug("created custom SSLConnectionSocketFactory");
-
-			} catch (Exception e) {
-				throw new ConfigurationException("cannot create or initialize SocketFactory", e);
-			}
-		}
-		return sslContext;
-	}
 
 	public void closeClient() {
 		log.debug("Close ftp client");

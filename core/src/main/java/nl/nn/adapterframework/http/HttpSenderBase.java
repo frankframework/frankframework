@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -470,27 +469,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		SSLConnectionSocketFactory sslSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
-		if (StringUtils.isNotEmpty(getKeystore()) || StringUtils.isNotEmpty(getTruststore()) || isAllowSelfSignedCertificates()) {
-			try {
-				SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, getProtocol());
-
-				sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-				log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
-
-			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"cannot create or initialize SocketFactory", e);
-			}
-		} else {
-			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if non has been set.
-			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
-			// 
-			// The first time this method is called, the security property "ssl.SocketFactory.provider" is examined. 
-			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
-			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
-			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
-			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+		try {
+			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
 			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
-			
+		} catch (Exception e) {
+			throw new SenderException("Cannot create SSLSockerFactory", e);
 		}
 		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
 		// Can still be null when no default or an invalid system sslSocketFactory has been defined
@@ -518,11 +501,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {

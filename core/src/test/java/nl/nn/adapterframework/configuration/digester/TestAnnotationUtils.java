@@ -3,7 +3,6 @@ package nl.nn.adapterframework.configuration.digester;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -30,8 +29,6 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
-
-import nl.nn.adapterframework.testutil.TestAssertions;
 
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);

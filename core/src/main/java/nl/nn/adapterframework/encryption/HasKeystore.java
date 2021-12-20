@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.encryption;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IScopeProvider;
 
 public interface HasKeystore extends IScopeProvider{

@@ -259,7 +259,7 @@ public class PkiUtil {
 		return certificate.getPublicKey();
 	}
 	
-	public static byte[] loadPEM(URL resource) throws IOException {
+	private static byte[] loadPEM(URL resource) throws IOException {
 		InputStream in = resource.openStream();
 		String pem = StreamUtil.streamToString(in, null, "ISO_8859_1");
 		Pattern parse = Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*");
@@ -267,13 +267,13 @@ public class PkiUtil {
 		return Base64.decodeBase64(encoded);
 	}
 	
-	public static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	private static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
 		KeyFactory kf = KeyFactory.getInstance("RSA");
 		byte[] pkcs8EncodedKeySpec = loadPEM(resource);
 		return kf.generatePrivate(new PKCS8EncodedKeySpec(pkcs8EncodedKeySpec));
 	}
 
-	public static Certificate getCertificateFromPem(URL resource) throws CertificateException, IOException {
+	private static Certificate getCertificateFromPem(URL resource) throws CertificateException, IOException {
 		CertificateFactory fact = CertificateFactory.getInstance("X.509");
 		return fact.generateCertificate(resource.openStream());
 	}
