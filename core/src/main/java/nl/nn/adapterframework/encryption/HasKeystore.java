@@ -48,26 +48,5 @@ public interface HasKeystore extends IScopeProvider{
 	void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias);
 	/** Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
 	void setKeystoreAliasPassword(String keystoreAliasPassword);
-	
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystore instead")
-	default void setCertificate(String string) {
-		setKeystore(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("has been replaced with keystoreType")
-	default void setCertificateType(KeystoreType value) {
-		setKeystoreType(value);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
-	default void setCertificateAuthAlias(String string) {
-		setKeystoreAuthAlias(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystorePassword instead")
-	default void setCertificatePassword(String string) {
-		setKeystorePassword(string);
-	}
 
 }

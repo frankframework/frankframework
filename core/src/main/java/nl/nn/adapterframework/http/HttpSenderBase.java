@@ -880,6 +880,27 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return disableCookies;
 	}
 
+	
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
+	public void setCertificate(String string) {
+		setKeystore(string);
+	}
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
+	public void setCertificateAuthAlias(String string) {
+		setKeystoreAuthAlias(string);
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
+	public void setCertificatePassword(String string) {
+		setKeystorePassword(string);
+	}
 
 	/** resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
 	@Override

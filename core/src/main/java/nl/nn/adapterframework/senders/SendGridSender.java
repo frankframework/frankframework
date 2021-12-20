@@ -337,6 +337,26 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
+	public void setCertificate(String string) {
+		setKeystore(string);
+	}
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
+	public void setCertificateAuthAlias(String string) {
+		setKeystoreAuthAlias(string);
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
+	public void setCertificatePassword(String string) {
+		setKeystorePassword(string);
+	}
 
 
 	@Override

@@ -195,7 +195,7 @@ public class TestAnnotationUtils {
 
 	@Test
 	public void findInterfacesWithAnnotations() throws Exception {
-		assumeTrue(TestAssertions.isTestRunningOnCI());
+		//assumeTrue(TestAssertions.isTestRunningOnCI());
 
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
@@ -236,7 +236,7 @@ public class TestAnnotationUtils {
 				for(Method method : interfaze.getDeclaredMethods()) {
 					for(Annotation annotation : method.getAnnotations()) {
 						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
-							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"]");
+							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
 						}
 					}
 				}
