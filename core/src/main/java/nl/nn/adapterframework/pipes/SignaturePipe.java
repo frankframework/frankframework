@@ -70,7 +70,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	private @Getter String keystoreAliasPassword;
 	private @Getter String keyManagerAlgorithm=null;
 
-//	private URL keystoreUrl = null;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails

@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -83,7 +84,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(session.get("certificatePassword") != null)
 				sender.setCertificatePassword((String) session.get("certificatePassword"));
 			if(session.get("keystoreType") != null)
-				sender.setKeystoreType((String) session.get("keystoreType"));
+				sender.setKeystoreType((KeystoreType) session.get("keystoreType"));
 			if(session.get("keyManagerAlgorithm") != null)
 				sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
 			if(session.get("truststoreUrl") != null)
@@ -91,7 +92,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(session.get("truststorePassword") != null)
 				sender.setTruststorePassword((String) session.get("truststorePassword"));
 			if(session.get("truststoreType") != null)
-				sender.setTruststoreType((String) session.get("truststoreType"));
+				sender.setTruststoreType((KeystoreType) session.get("truststoreType"));
 			if(session.get("trustManagerAlgorithm") != null)
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
