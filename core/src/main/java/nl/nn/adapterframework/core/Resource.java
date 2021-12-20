@@ -21,11 +21,13 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -34,13 +36,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  *
  */
-public class Resource {
+public class Resource implements IScopeProvider {
 
 	private IScopeProvider scopeProvider;
 	private URL url;
 	private String systemId;
 
 	private Resource(IScopeProvider scopeProvider, URL url, String systemId) {
+		if(scopeProvider == null) {
+			throw new IllegalStateException("a scopeProvider must be provided");
+		}
+
 		this.scopeProvider=scopeProvider;
 		this.url=url;
 		this.systemId=systemId;
@@ -80,8 +86,12 @@ public class Resource {
 		}
 	}
 
-	public String getCacheKey() {
-		return url.toExternalForm();
+	public String getName() {
+		return FilenameUtils.getName(systemId);
+	}
+
+	public Source asSource() throws SAXException, IOException {
+		return XmlUtils.inputSourceToSAXSource(this);
 	}
 
 	public InputStream openStream() throws IOException {
@@ -94,19 +104,21 @@ public class Resource {
 		return inputSource;
 	}
 
-	public Source asSource() throws SAXException, IOException {
-		return XmlUtils.inputSourceToSAXSource(this);
-	}
-
-	public IScopeProvider getScopeProvider() {
-		return scopeProvider;
+	public XMLInputSource asXMLInputSource() throws IOException {
+		return new XMLInputSource(null, getSystemId(), null, openStream(), null);
 	}
 
 	public String getSystemId() {
 		return systemId;
 	}
 
-	public URL getURL() {
-		return url;
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return scopeProvider.getConfigurationClassLoader();
+	}
+
+	@Override
+	public String toString() {
+		return "ResourceHolder url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
 	}
 }
