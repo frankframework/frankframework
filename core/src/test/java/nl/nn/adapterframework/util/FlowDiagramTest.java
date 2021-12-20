@@ -80,7 +80,6 @@ public class FlowDiagramTest {
 
 	@Test
 	public void testAdapter2DotXslWithoutFirstPipe() throws Exception {
-		TransformerPool.clearTransformerPools();
 		Resource resource = Resource.getResource("xml/xsl/adapter2dot.xsl");
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
@@ -92,7 +91,6 @@ public class FlowDiagramTest {
 
 	@Test
 	public void testAdapter2DotXslExitInMiddle() throws Exception {
-		TransformerPool.clearTransformerPools();
 		Resource resource = Resource.getResource("xml/xsl/adapter2dot.xsl");
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
