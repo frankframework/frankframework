@@ -101,7 +101,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystoreAlias("1");
 
 		exception.expect(PipeStartException.class);
-		exception.expectMessage("cannot get Private Key for signing in alias [1]");
+		exception.expectMessage("Cannot obtain Private Key in alias [1]");
 		configureAndStartPipe();
 
 	}
