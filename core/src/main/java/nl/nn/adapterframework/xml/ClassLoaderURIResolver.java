@@ -48,10 +48,6 @@ public class ClassLoaderURIResolver implements URIResolver {
 		this.scopeProvider = scopeProvider;
 	}
 
-	public ClassLoaderURIResolver(Resource resource) {
-		this(resource.getScopeProvider());
-	}
-
 	public Resource resolveToResource(String href, String base) throws TransformerException {
 		String absoluteOrRelativeRef;
 		String globalClasspathRef=null;
@@ -98,7 +94,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
-		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to systemId ["+resource.getSystemId()+"] to url ["+resource.getURL()+"] in scope of ["+scopeProvider+"]");
+		if (log.isDebugEnabled()) log.debug("resolved href ["+href+"] base ["+base+"] to resource ["+resource+"]");
 		return resource;
 	}
 

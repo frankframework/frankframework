@@ -94,7 +94,7 @@ public class TransformerPool {
 	public enum OutputType {
 		TEXT,
 		XML;
-		
+
 		public String getOutputMethod() {
 			return name().toLowerCase();
 		}
@@ -175,7 +175,7 @@ public class TransformerPool {
 		tFactory = XmlUtils.getTransformerFactory(xsltVersion);
 		if(scopeProvider != null) {
 			classLoaderURIResolver = new ClassLoaderURIResolver(scopeProvider);
-			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] scopeProvider ["+ClassUtils.nameOf(scopeProvider)+"]");
+			if (log.isDebugEnabled()) log.debug("created Transformerpool for sysId ["+sysId+"] scopeProvider ["+scopeProvider+"]");
 			tFactory.setURIResolver(classLoaderURIResolver);
 		} else {
 			classLoaderURIResolver = new NonResolvingURIResolver();
@@ -192,7 +192,7 @@ public class TransformerPool {
 
 
 	private TransformerPool(Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
-		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource.getScopeProvider());
+		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource);
 	}
 
 	//TODO Fix this, Thread.currentThread().getContextClassLoader() should not be used and causes memory leaks upon reloading configurations!!!
@@ -361,7 +361,7 @@ public class TransformerPool {
 				if (styleSheet==null) {
 					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]"); 
 				}
-				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] url ["+styleSheet.getURL()+"] in scope ["+ClassUtils.nameOf(scopeProvider)+"]");
+				if (log.isDebugEnabled()) log.debug(logPrefix+"configuring stylesheet ["+styleSheetName+"] resource ["+styleSheet+"]");
 				result = TransformerPool.getInstance(styleSheet, xsltVersion);
 
 				if (xsltVersion!=0) {
@@ -372,7 +372,7 @@ public class TransformerPool {
 					}
 				}
 			} catch (IOException e) {
-				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "] resource ["+styleSheet.getSystemId()+"] url ["+styleSheet.getURL()+"]", e);
+				throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "] resource ["+styleSheet+"]", e);
 			} catch (SAXException|TransformerException e) {
 				throw new ConfigurationException(logPrefix+" got error creating transformer from file [" + styleSheetName + "]", e);
 			}

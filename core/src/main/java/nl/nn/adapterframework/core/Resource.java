@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -34,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  *
  */
-public class Resource {
+public class Resource implements IScopeProvider {
 
 	private IScopeProvider scopeProvider;
 	private URL url;
@@ -47,6 +48,10 @@ public class Resource {
 	}
 
 	public static Resource getResource(String resource) {
+		return getResource(null, resource);
+	}
+
+	public static Resource getResource(String resource, InputStream inputStream) {
 		return getResource(null, resource);
 	}
 
@@ -80,8 +85,8 @@ public class Resource {
 		}
 	}
 
-	public String getCacheKey() {
-		return url.toExternalForm();
+	public String getName() {
+		return FilenameUtils.getName(systemId);
 	}
 
 	public InputStream openStream() throws IOException {
@@ -98,15 +103,21 @@ public class Resource {
 		return XmlUtils.inputSourceToSAXSource(this);
 	}
 
-	public IScopeProvider getScopeProvider() {
-		return scopeProvider;
-	}
-
 	public String getSystemId() {
 		return systemId;
 	}
 
 	public URL getURL() {
 		return url;
+	}
+
+	@Override
+	public ClassLoader getConfigurationClassLoader() {
+		return scopeProvider.getConfigurationClassLoader();
+	}
+
+	@Override
+	public String toString() {
+		return "ResourceHolder url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
 	}
 }
