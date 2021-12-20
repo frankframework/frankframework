@@ -17,24 +17,13 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -47,18 +36,20 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.EncryptionException;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.PkiUtil;
 
 /**
  * 
  * @ff.parameter signature the signature to verify
  * @ff.forward failure used when verification fails
  */
-public class SignaturePipe extends FixedForwardPipe {
+public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	public final String PARAMETER_SIGNATURE="signature";
 	
@@ -71,7 +62,7 @@ public class SignaturePipe extends FixedForwardPipe {
 	private @Getter boolean signatureBase64 = true;
 
 	private @Getter String keystore;
-	private @Getter String keystoreType="pkcs12";
+	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
 	private @Getter String keystoreAlias;
@@ -79,13 +70,11 @@ public class SignaturePipe extends FixedForwardPipe {
 	private @Getter String keystoreAliasPassword;
 	private @Getter String keyManagerAlgorithm=null;
 
-	private URL keystoreUrl = null;
+//	private URL keystoreUrl = null;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
 	
-	private CredentialFactory keystoreCredentialFactory;
-	private CredentialFactory keystoreAliasCredentialFactory;
 
 	public enum Action {
 		/** signs the input */
@@ -103,11 +92,8 @@ public class SignaturePipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		keystoreUrl = ClassUtils.getResourceURL(this, getKeystore());
-		if (keystoreUrl == null) {
-			throw new ConfigurationException("cannot find URL for keystore resource ["+getKeystore()+"]");
-		}
-		log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
+		
+		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
 			if (getParameterList().findParameter(PARAMETER_SIGNATURE)==null) {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
@@ -117,12 +103,6 @@ public class SignaturePipe extends FixedForwardPipe {
 				throw new ConfigurationException("Forward [failure] must be specfied for action [" + action + "]");
 			}
 		}
-		keystoreCredentialFactory = new CredentialFactory(getKeystoreAuthAlias(), null, getKeystorePassword());
-		if (StringUtils.isNotEmpty(getKeystoreAliasAuthAlias()) || StringUtils.isNotEmpty(getKeystoreAliasPassword())) {
-			keystoreAliasCredentialFactory =  new CredentialFactory(getKeystoreAliasAuthAlias(), null, getKeystoreAliasPassword());
-		} else {
-			keystoreAliasCredentialFactory = keystoreCredentialFactory;
-		}
 	}
 
 	@Override
@@ -131,41 +111,16 @@ public class SignaturePipe extends FixedForwardPipe {
 		switch (getAction()) {
 		case SIGN:
 			try {
-				if ("pem".equals(getKeystoreType())) {
-					privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
-				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-					String password = keystoreAliasCredentialFactory.getPassword() != null ? keystoreAliasCredentialFactory.getPassword() : "";
-					privateKey = (PrivateKey) keystore.getKey(getKeystoreAlias(), password.toCharArray());
-				}
-				if (privateKey==null) {
-					throw new PipeStartException("No Signing Key found in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]");
-				}
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException | InvalidKeySpecException e) {
-				throw new PipeStartException("cannot get Private Key for signing in alias ["+getKeystoreAlias()+"] of keystore ["+keystoreUrl+"]", e);
+				privateKey = PkiUtil.getPrivateKey(this, "Keys for action ["+getAction()+"]");
+			} catch (EncryptionException e) {
+				throw new PipeStartException(e);
 			}
 			break;
 		case VERIFY:
 			try {
-				Certificate certificate;
-				if ("pem".equals(getKeystoreType())) {
-					certificate = PkiUtil.getCertificateFromPem(keystoreUrl);
-				} else {
-					KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreType, "Keys for action ["+getAction()+"]");
-					TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, keyManagerAlgorithm);
-					if (trustmanagers==null || trustmanagers.length==0) {
-						throw new PipeStartException("No trustmanager for keystore ["+keystoreUrl+"]");
-					}
-					X509TrustManager trustManager = (X509TrustManager)trustmanagers[0];
-					X509Certificate[] certificates = trustManager.getAcceptedIssuers();
-					if (certificates==null || certificates.length==0) {
-						throw new PipeStartException("No Verfication Key found in keystore ["+keystoreUrl+"]");
-					}
-					certificate = certificates[0];
-				}
-				publicKey = certificate.getPublicKey();
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				throw new PipeStartException("cannot get Public Key for verification in keystore ["+keystoreUrl+"]", e);
+				publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action ["+getAction()+"]");
+			} catch (EncryptionException e) {
+				throw new PipeStartException(e);
 			}
 			break;
 		default:
@@ -246,6 +201,7 @@ public class SignaturePipe extends FixedForwardPipe {
 
 
 	/** Keystore to obtain signing key */
+	@Override
 	public void setKeystore(String string) {
 		keystore = string;
 	}
@@ -253,21 +209,25 @@ public class SignaturePipe extends FixedForwardPipe {
 	/** Type of keystore, can be pkcs12 or pem
 	 * @ff.default pkcs12
 	 */
-	public void setKeystoreType(String string) {
-		keystoreType = string;
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 	}
 
 	/** Alias used to obtain keystore password */
+	@Override
 	public void setKeystoreAuthAlias(String string) {
 		keystoreAuthAlias = string;
 	}
 
 	/** Keystore password */
+	@Override
 	public void setKeystorePassword(String string) {
 		keystorePassword = string;
 	}
 
 	/** Alias in keystore */
+	@Override
 	public void setKeystoreAlias(String string) {
 		keystoreAlias = string;
 	}
@@ -275,6 +235,7 @@ public class SignaturePipe extends FixedForwardPipe {
 	/** Alias used to obtain keystoreAlias password 
 	 * @ff default same as <code>keystoreAuthAlias</code>
 	 */
+	@Override
 	public void setKeystoreAliasAuthAlias(String string) {
 		keystoreAliasAuthAlias = string;
 	}
@@ -282,10 +243,12 @@ public class SignaturePipe extends FixedForwardPipe {
 	/** KeystoreAlias password 
 	 * @ff default same as <code>keystorePassword</code>
 	 */
+	@Override
 	public void setKeystoreAliasPassword(String string) {
 		keystoreAliasPassword = string;
 	}
 
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}

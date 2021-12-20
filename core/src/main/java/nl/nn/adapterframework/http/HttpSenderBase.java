@@ -80,6 +80,10 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -163,7 +167,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
 	private @Getter String url;
 	private @Getter String urlParam = "url";
@@ -181,7 +185,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int timeout = 10000;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
-	private SSLConnectionSocketFactory sslSocketFactory = null;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private CloseableHttpClient httpClient;
@@ -201,21 +204,19 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String proxyRealm=null;
 
 	/** SSL **/
-//	private @Getter String certificate;
-//	private @Getter String certificateAuthAlias;
-//	private @Getter String certificatePassword;
 	private @Getter String keystore;
-	private @Getter String keystoreType="pkcs12";
 	private @Getter String keystoreAuthAlias;
 	private @Getter String keystorePassword;
-	private @Getter String keyAuthAlias;
+	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
 	private @Getter String keystoreAlias;
-	private @Getter String keyPassword;
+	private @Getter String keystoreAliasAuthAlias;
+	private @Getter String keystoreAliasPassword;
 	private @Getter String keyManagerAlgorithm=null;
+
 	private @Getter String truststore=null;
 	private @Getter String truststoreAuthAlias;
 	private @Getter String truststorePassword=null;
-	private @Getter String truststoreType="jks";
+	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
 	private @Getter String trustManagerAlgorithm=null;
 	private @Getter boolean allowSelfSignedCertificates = false;
 	private @Getter boolean verifyHostname=true;
@@ -341,65 +342,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				staticUri = getURI(getUrl());
 			}
 
-			URL keystoreUrl = null;
-			URL truststoreUrl = null;
-	
-			if (!StringUtils.isEmpty(getKeystore())) {
-				keystoreUrl = ClassUtils.getResourceURL(this, getKeystore());
-				if (keystoreUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for keystore resource ["+getKeystore()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved keystore-URL to ["+keystoreUrl.toString()+"]");
-			}
-			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
-				if (truststoreUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
-			}
+			AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-			HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
-			if(!isVerifyHostname())
-				hostnameVerifier = new NoopHostnameVerifier();
-
-			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if non has been set.
-			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
-			// 
-			// The first time this method is called, the security property "ssl.SocketFactory.provider" is examined. 
-			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
-			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
-			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
-			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
-			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
-
-			if (keystoreUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
-				try {
-					CredentialFactory keystoreCf = new CredentialFactory(getKeystoreAuthAlias(), null, getKeystorePassword());
-					CredentialFactory keyCf = keystoreCf;
-					if (StringUtils.isNotEmpty(getKeyAuthAlias()) || StringUtils.isNotEmpty(getKeyPassword())) {
-						keyCf = new CredentialFactory(getKeyAuthAlias(), null, getKeyPassword());
-					}
-					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
-
-					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							keystoreUrl, keystoreCf.getPassword(), getKeystoreType(), getKeystoreAlias(), keyCf.getPassword(), getKeyManagerAlgorithm(),
-							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
-
-					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
-
-				} catch (Throwable t) {
-					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
-				}
-			}
-
-			// This method will be overwritten by the connectionManager when connectionPooling is enabled!
-			// Can still be null when no default or an invalid system sslSocketFactory has been defined
-			if(sslSocketFactory != null) {
-				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-			}
 			
 			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -485,6 +429,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
 		PoolingHttpClientConnectionManager connectionManager;
+		SSLConnectionSocketFactory sslSocketFactory = getSSLConnectionSocketFactory();
 		if(sslSocketFactory != null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -521,6 +466,40 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		httpClient = httpClientBuilder.build();
 	}
 
+	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
+		SSLConnectionSocketFactory sslSocketFactory;
+		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
+
+		if (StringUtils.isNotEmpty(getKeystore()) || StringUtils.isNotEmpty(getTruststore()) || isAllowSelfSignedCertificates()) {
+			try {
+				SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, getProtocol());
+
+				sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+				log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
+
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix()+"cannot create or initialize SocketFactory", e);
+			}
+		} else {
+			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if non has been set.
+			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
+			// 
+			// The first time this method is called, the security property "ssl.SocketFactory.provider" is examined. 
+			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
+			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
+			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
+			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
+			
+		}
+		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
+		// Can still be null when no default or an invalid system sslSocketFactory has been defined
+		if(sslSocketFactory != null) {
+			httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+		}
+		return sslSocketFactory;
+	}
+	
 	public CloseableHttpClient getHttpClient() {
 		return httpClient;
 	}
@@ -566,7 +545,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
 					path.append(parameterToAppend);
 				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]");
+					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
 				}
 			}
 		}
@@ -902,99 +881,82 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystore instead")
-	public void setCertificate(String string) {
-		setKeystore(string);
-	}
-	@IbisDoc({"40", "resource url to keystore to be used for authentication", ""})
+	/** resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
+	@Override
 	public void setKeystore(String string) {
 		keystore = string;
 	}
 
-	@IbisDoc({"41", "pkcs or pem", "pkcs12"})
-	public void setKeystoreType(String string) {
-		keystoreType = string;
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
-	public void setCertificateAuthAlias(String string) {
-		setKeystoreAuthAlias(string);
-	}
-	@IbisDoc({"42", "alias used to obtain keystore password", ""})
+	@Override
 	public void setKeystoreAuthAlias(String string) {
 		keystoreAuthAlias = string;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystorePassword instead")
-	public void setCertificatePassword(String string) {
-		setKeystorePassword(string);
-	}
-	@IbisDoc({"42", "keystore password", " "})
+	@Override
 	public void setKeystorePassword(String string) {
 		keystorePassword = string;
 	}
 	
-	@IbisDoc({"44", "", " "})
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
-	@IbisDoc({"46", "alias used to obtain private key password", ""})
-	public void setKeystoreAliasAuthAlias(String string) {
-		keyAuthAlias = string;
-	}
-	@IbisDoc({"47", "private key password", " "})
-	public void setKeystoreAliasPassword(String string) {
-		keyPassword = string;
-	}
-	/** alias in keystore */
+	@Override
 	public void setKeystoreAlias(String string) {
 		keystoreAlias = string;
 	}
+	@Override
+	public void setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+	}
+	@Override
+	public void setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
+	}
 
-	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
+	@Override
+	/** Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	public void setTruststore(String string) {
 		truststore = string;
 	}
 
-	@IbisDoc({"51", "alias used to obtain truststore password", ""})
+	@Override
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
 
-	@IbisDoc({"52", "truststore password", " "})
+	@Override
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
 
-	@IbisDoc({"53", "type of truststore", "jks"})
-	public void setTruststoreType(String string) {
-		truststoreType = string;
+	@Override
+	public void setTruststoreType(KeystoreType value) {
+		truststoreType = value;
 	}
 
-	@IbisDoc({"54", "", " "})
+	@Override
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
 
-	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
 
-	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
+	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
 
-	/**
-	 * CertificateExpiredExceptions are ignored when set to true
-	 * @ff.default false
-	 */
-	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
+	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
 	}

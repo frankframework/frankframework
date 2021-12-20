@@ -18,11 +18,12 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.PkiUtil;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
@@ -42,7 +43,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		URL pfxURL = ClassUtils.getResourceURL(pfxCertificate);
 		assertNotNull("PFX file not found", pfxURL);
-		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, "pkcs12", "junittest");
+		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
 		if (keymanagers==null || keymanagers.length==0) {
 			fail("No keymanager found in PFX file ["+pfxCertificate+"]");
@@ -140,7 +141,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	@Test
 	public void testSignPem() throws Exception {
 		pipe.setKeystore("/Signature/privateKey.key");
-		pipe.setKeystoreType("pem");
+		pipe.setKeystoreType(KeystoreType.PEM);
 		configureAndStartPipe();
 		
 		PipeRunResult prr = doPipe(new Message(testMessage));
@@ -199,7 +200,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	public void testVerifyOKPEM() throws Exception {
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.crt");
-		pipe.setKeystoreType("pem");
+		pipe.setKeystoreType(KeystoreType.PEM);
 		
 		Parameter param = new Parameter();
 		param.setName("signature");

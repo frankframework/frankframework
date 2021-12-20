@@ -19,11 +19,12 @@ import java.io.IOException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -258,13 +259,13 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 
 	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
-	public void setCertificate(String certificate) {
-		ftpSession.setCertificate(certificate);
+	public void setKeystore(String certificate) {
+		ftpSession.setKeystore(certificate);
 	}
 
 	@IbisDoc({"(ftps) ", "pkcs12"})
-	public void setCertificateType(String keystoreType) {
-		ftpSession.setCertificateType(keystoreType);
+	public void setKeystoreType(KeystoreType keystoreType) {
+		ftpSession.setKeystoreType(keystoreType);
 	}
 
 	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
@@ -274,12 +275,12 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
+		ftpSession.setKeystoreAuthAlias(certificateAuthAlias);
 	}
 
 	@IbisDoc({"(ftps) ", " "})
 	public void setCertificatePassword(String certificatePassword) {
-		ftpSession.setCertificatePassword(certificatePassword);
+		ftpSession.setKeystorePassword(certificatePassword);
 	}
 
 
@@ -289,7 +290,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"(ftps) ", "jks"})
-	public void setTruststoreType(String truststoreType) {
+	public void setTruststoreType(KeystoreType truststoreType) {
 		ftpSession.setTruststoreType(truststoreType);
 	}
 

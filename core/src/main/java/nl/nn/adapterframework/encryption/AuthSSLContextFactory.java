@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.encryption;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -37,8 +37,10 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.PkiUtil;
 
 public class AuthSSLContextFactory {
 	protected static Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
@@ -47,45 +49,75 @@ public class AuthSSLContextFactory {
 
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
-	protected String keystoreType = "null";
-	protected String keyAlias = null;
-	protected String keyPassword = null;
+	protected KeystoreType keystoreType = null;
+	protected String keystoreAlias = null;
+	protected String keystoreAliasPassword = null;
 	protected String keyManagerAlgorithm = null;
 	protected URL truststoreUrl = null;
 	protected String truststorePassword = null;
-	protected String truststoreType = "null";
+	protected KeystoreType truststoreType = null;
 	protected String trustManagerAlgorithm = null;
 	protected boolean allowSelfSignedCertificates = false;
 	protected boolean ignoreCertificateExpiredException=false;
 
 	protected SSLContext sslContext = null;
 
-	public static SSLContext createSSLContext(
-			URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm, 
-			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
-			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) throws GeneralSecurityException, IOException {
-		AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystorePassword, keystoreType, keyAlias, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
-				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, protocol);
-		return socket.getSSLContext();
+	public static void verifyKeystoreConfiguration(HasKeystore keystoreRef, HasTruststore trustoreRef) throws ConfigurationException {
+		URL keystoreUrl = null;
+		URL truststoreUrl = null;
+
+		if (keystoreRef!=null && !StringUtils.isEmpty(keystoreRef.getKeystore())) {
+			keystoreUrl = ClassUtils.getResourceURL(keystoreRef, keystoreRef.getKeystore());
+			if (keystoreUrl == null) {
+				throw new ConfigurationException("cannot find URL for keystore resource ["+keystoreRef.getKeystore()+"]");
+			}
+			log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
+		}
+		if (trustoreRef!=null && !StringUtils.isEmpty(trustoreRef.getTruststore())) {
+			truststoreUrl = ClassUtils.getResourceURL(trustoreRef, trustoreRef.getTruststore());
+			if (truststoreUrl == null) {
+				throw new ConfigurationException("cannot find URL for truststore resource ["+trustoreRef.getTruststore()+"]");
+			}
+			log.debug("resolved truststore-URL to ["+truststoreUrl.toString()+"]");
+		}
+	}
+	
+
+	public static SSLContext createSSLContext(HasKeystore keystoreRef, HasTruststore trustoreRef, String protocol) throws GeneralSecurityException, IOException {
+		URL keystoreUrl = null;
+		URL truststoreUrl = null;
+
+		if (!StringUtils.isEmpty(keystoreRef.getKeystore())) {
+			keystoreUrl = ClassUtils.getResourceURL(keystoreRef, keystoreRef.getKeystore());
+		}
+		if (!StringUtils.isEmpty(trustoreRef.getTruststore())) {
+			truststoreUrl = ClassUtils.getResourceURL(trustoreRef, trustoreRef.getTruststore());
+		}
+		if (keystoreUrl != null || truststoreUrl != null || trustoreRef.isAllowSelfSignedCertificates()) {
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreRef.getKeystoreAuthAlias(), null, keystoreRef.getKeystorePassword());
+			CredentialFactory keystoreAliasCf = keystoreCf;
+			if (StringUtils.isNotEmpty(keystoreRef.getKeystoreAliasAuthAlias()) || StringUtils.isNotEmpty(keystoreRef.getKeystoreAliasPassword())) {
+				keystoreAliasCf = new CredentialFactory(keystoreRef.getKeystoreAliasAuthAlias(), null, keystoreRef.getKeystoreAliasPassword());
+			}
+			CredentialFactory truststoreCf  = new CredentialFactory(trustoreRef.getTruststoreAuthAlias(),  null, trustoreRef.getTruststorePassword());
+			AuthSSLContextFactory socket = new AuthSSLContextFactory(keystoreUrl, keystoreCf.getPassword(), keystoreRef.getKeystoreType(), keystoreRef.getKeystoreAlias(), keystoreAliasCf.getPassword(), keystoreRef.getKeyManagerAlgorithm(), 
+					truststoreUrl, truststoreCf.getPassword(), trustoreRef.getTruststoreType(), 
+					trustoreRef.getTrustManagerAlgorithm(), trustoreRef.isAllowSelfSignedCertificates(), trustoreRef.isIgnoreCertificateExpiredException(), protocol);
+			return socket.getSSLContext();
+		}
+		return SSLContext.getDefault();
 	}
 
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm, 
-			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
-			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException) {
-		this(keystoreUrl, keystorePassword, keystoreType, keyAlias, keyPassword, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, 
-				trustManagerAlgorithm, allowSelfSignedCertificates, ignoreCertificateExpiredException, null);
-	}
-
-	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, String keystoreType, String keyAlias, String keyPassword, String keyManagerAlgorithm,
-			URL truststoreUrl, String truststorePassword, String truststoreType, String trustManagerAlgorithm, 
+	public AuthSSLContextFactory(URL keystoreUrl, String keystorePassword, KeystoreType keystoreType, String keystoreAlias, String keystoreAliasPassword, String keyManagerAlgorithm,
+			URL truststoreUrl, String truststorePassword, KeystoreType truststoreType, String trustManagerAlgorithm, 
 			boolean allowSelfSignedCertificates, boolean ignoreCertificateExpiredException, String protocol) {
 
 		this.keystoreUrl = keystoreUrl;
 		this.keystorePassword = keystorePassword;
 		this.keystoreType = keystoreType;
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
-		this.keyAlias = keyAlias;
-		this.keyPassword = keyPassword;
+		this.keystoreAlias = keystoreAlias;
+		this.keystoreAliasPassword = keystoreAliasPassword;
 
 		this.truststoreUrl = truststoreUrl;
 		this.truststorePassword = truststorePassword;
@@ -105,10 +137,10 @@ public class AuthSSLContextFactory {
 		TrustManager[] trustmanagers = null;
 		if (keystoreUrl != null) {
 			KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystorePassword, keystoreType, "Certificate chain");
-			if(keyAlias != null) {
-				keymanagers = new KeyManager[] { KeyManagerUtils.createClientKeyManager(keystore, keyAlias, keyPassword)};
+			if(keystoreAlias != null) {
+				keymanagers = new KeyManager[] { KeyManagerUtils.createClientKeyManager(keystore, keystoreAlias, keystoreAliasPassword)};
 			} else {
-				keymanagers = PkiUtil.createKeyManagers(keystore, keyPassword, keyManagerAlgorithm);
+				keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasPassword, keyManagerAlgorithm);
 			}
 		}
 		if (truststoreUrl != null) {
