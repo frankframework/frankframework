@@ -124,7 +124,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 			XmlUtils.parseXml(resource, new XmlWriter());
 		});
 
-		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [ResourceHolder ";
+		String errorMessage = "Cannot get resource for publicId [null] with systemId [file:///c:/temp/test.xml] in scope [ConfigurationResource ";
 		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
 	}
 
