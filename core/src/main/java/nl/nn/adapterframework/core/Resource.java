@@ -21,6 +21,7 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -89,6 +90,10 @@ public class Resource implements IScopeProvider {
 		return FilenameUtils.getName(systemId);
 	}
 
+	public Source asSource() throws SAXException, IOException {
+		return XmlUtils.inputSourceToSAXSource(this);
+	}
+
 	public InputStream openStream() throws IOException {
 		return url.openStream();
 	}
@@ -99,8 +104,8 @@ public class Resource implements IScopeProvider {
 		return inputSource;
 	}
 
-	public Source asSource() throws SAXException, IOException {
-		return XmlUtils.inputSourceToSAXSource(this);
+	public XMLInputSource asXMLInputSource() throws IOException {
+		return new XMLInputSource(null, getSystemId(), null, openStream(), null);
 	}
 
 	public String getSystemId() {

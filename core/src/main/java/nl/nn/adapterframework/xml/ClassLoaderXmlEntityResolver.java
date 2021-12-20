@@ -77,8 +77,7 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 			throw new XNIException(e);
 		}
 
-		InputStream inputStream = resource.openStream();
-		return new XMLInputSource(null, resource.getSystemId(), null, inputStream, null);
+		return resource.asXMLInputSource();
 	}
 
 }
