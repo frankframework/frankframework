@@ -52,10 +52,6 @@ public class Resource implements IScopeProvider {
 		return getResource(null, resource);
 	}
 
-	public static Resource getResource(String resource, InputStream inputStream) {
-		return getResource(null, resource);
-	}
-
 	public static Resource getResource(IScopeProvider scopeProvider, String resource) {
 		return getResource(scopeProvider, resource, null);
 	}
