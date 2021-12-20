@@ -140,12 +140,14 @@ public class TransformerPool {
 		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), scopeProvider);
 	}
 
-	//TODO Use Resource instead! This can/will cause memory leaks upon reloading configurations!!!
+	/** @deprecated Use Resource or UtilityInstance instead! This can/will cause memory leaks upon reloading configurations!!! */
+	@Deprecated
 	public static TransformerPool getInstance(String xsltString) throws TransformerConfigurationException {
 		return getInstance(xsltString, 0);
 	}
 
-	//TODO Use Resource instead! This can/will cause memory leaks upon reloading configurations!!!
+	/** @deprecated Use Resource or UtilityInstance instead! This can/will cause memory leaks upon reloading configurations!!! */
+	@Deprecated
 	public static TransformerPool getInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
 		return new TransformerPool(xsltString, null, xsltVersion);
 	}

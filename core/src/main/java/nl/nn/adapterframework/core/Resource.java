@@ -107,10 +107,6 @@ public class Resource implements IScopeProvider {
 		return systemId;
 	}
 
-	public URL getURL() {
-		return url;
-	}
-
 	@Override
 	public ClassLoader getConfigurationClassLoader() {
 		return scopeProvider.getConfigurationClassLoader();
