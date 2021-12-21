@@ -15,29 +15,36 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import nl.nn.credentialprovider.util.Misc;
+
 /**
- * Reference to an InputStream. Can NOT be accessed multiple times.
+ * Reference to an byte[]. Can be accessed multiple times.
  * 
  * @author Niels Meijer
  *
  */
-public class InputStreamResource extends Resource {
+public class BytesResource extends Resource {
 	private String name;
-	private InputStream inputStream;
+	private byte[] bytes;
 
-	public InputStreamResource(InputStream inputStream, String name) {
+	public BytesResource(byte[] bytes, String name) {
 		super(new GlobalScopeProvider());
 
-		this.inputStream = inputStream;
+		this.bytes = bytes;
 		this.name = name;
+	}
+
+	public BytesResource(InputStream inputStream, String name) throws IOException {
+		this(Misc.streamToBytes(inputStream), name);
 	}
 
 	@Override
 	public InputStream openStream() throws IOException {
-		return inputStream;
+		return new ByteArrayInputStream(bytes);
 	}
 
 	@Override
