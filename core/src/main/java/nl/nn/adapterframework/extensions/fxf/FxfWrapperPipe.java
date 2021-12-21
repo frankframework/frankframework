@@ -33,9 +33,9 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * FxF wrapper to be used with FxF3. When receiving files (direction=unwrap)
@@ -83,7 +83,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		setRemoveOutputNamespaces(true);
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			ParameterList parameterList = getParameterList();
 			Parameter parameter = parameterList.findParameter(DESTINATION);
 			if (parameter == null) {
@@ -95,7 +95,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 		super.configure();
 		AppConstants rootAppConstants = AppConstants.getInstance();
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			instanceName = rootAppConstants.getResolvedProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
 				throw new ConfigurationException("instance.name not available");
@@ -172,7 +172,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", TRANSFER_ACTION_NAMESPACE_PREFIX+retrieveStartTransferVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
