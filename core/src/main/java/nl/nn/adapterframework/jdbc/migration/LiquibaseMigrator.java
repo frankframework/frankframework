@@ -96,7 +96,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		ResourceAccessor resourceAccessor = new BytesResourceAccessor(resource);
 		DatabaseConnection connection = getDatabaseConnection();
 
-		return new Liquibase(resource.getName(), resourceAccessor, connection);
+		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
 	}
 
 	private DatabaseConnection getDatabaseConnection() throws SQLException {

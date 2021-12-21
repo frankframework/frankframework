@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
@@ -48,7 +49,12 @@ public class BytesResourceAccessor implements ResourceAccessor {
 	 */
 	@Override
 	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
-		URL url = BytesResourceAccessor.class.getResource("/"+streamPath); // only allow for absolute classpath files
+		String path = streamPath;
+		if(!streamPath.startsWith("/")) {
+			path = "/" + streamPath; // only allow for absolute classpath files.
+		}
+
+		URL url = BytesResourceAccessor.class.getResource(path);
 		if(url != null) {
 			try {
 				URI uri = url.toURI();
@@ -62,7 +68,7 @@ public class BytesResourceAccessor implements ResourceAccessor {
 
 	@Override
 	public InputStream openStream(String relativeTo, String path) throws IOException {
-		if(path.equals(resource.getName())) {
+		if(path.equals(resource.getSystemId())) {
 			return resource.openStream();
 		}
 
@@ -76,6 +82,8 @@ public class BytesResourceAccessor implements ResourceAccessor {
 
 	@Override
 	public SortedSet<String> describeLocations() {
-		return null;
+		SortedSet<String> set = new TreeSet<>();
+		set.add(resource.toString());
+		return set;
 	}
 }

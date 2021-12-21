@@ -82,6 +82,9 @@ public abstract class Resource implements IScopeProvider {
 		}
 	}
 
+	/**
+	 * @return Name of the resource
+	 */
 	public String getName() {
 		return FilenameUtils.getName(getSystemId());
 	}
@@ -100,6 +103,9 @@ public abstract class Resource implements IScopeProvider {
 		return new XMLInputSource(null, getSystemId(), null, openStream(), null);
 	}
 
+	/**
+	 * @return Canonical path of the resource
+	 */
 	public abstract String getSystemId();
 
 	public abstract InputStream openStream() throws IOException;
