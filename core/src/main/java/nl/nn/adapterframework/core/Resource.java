@@ -56,6 +56,9 @@ public abstract class Resource implements IScopeProvider {
 	}
 
 	public static Resource getResource(IScopeProvider scopeProvider, String resource, String allowedProtocols) {
+		if(scopeProvider == null) {
+			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
+		}
 		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
 		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
@@ -69,11 +72,7 @@ public abstract class Resource implements IScopeProvider {
 			systemId=url.toExternalForm();
 		}
 
-		if(scopeProvider == null) {
-			return new ClassPathResource(url, systemId);
-		}
-
-		return new ConfigurationResource(scopeProvider, url, systemId);
+		return new URLResource(scopeProvider, url, systemId);
 	}
 
 	public static class GlobalScopeProvider implements IScopeProvider {

@@ -20,31 +20,21 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * Reference to a resource on the classpath. Can be accessed multiple times.
+ * Reference to a resource, within the Configuration scope. Can be accessed multiple times.
  * 
  * @author Niels Meijer
  *
  */
-public class ClassPathResource extends Resource {
+public class URLResource extends Resource {
 
-	private IScopeProvider scopeProvider;
 	private URL url;
 	private String systemId;
 
-	protected ClassPathResource(URL url) {
-		this(url, url.toExternalForm());
-	}
-
-	protected ClassPathResource(URL url, String systemId) {
-		super(new GlobalScopeProvider());
+	protected URLResource(IScopeProvider scopeProvider, URL url, String systemId) {
+		super(scopeProvider);
 
 		this.url = url;
 		this.systemId = systemId;
-	}
-
-	@Override
-	public String getSystemId() {
-		return systemId;
 	}
 
 	@Override
@@ -53,7 +43,12 @@ public class ClassPathResource extends Resource {
 	}
 
 	@Override
+	public String getSystemId() {
+		return systemId;
+	}
+
+	@Override
 	public String toString() {
-		return "ClassPathResource url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
+		return "ConfigurationResource url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
 	}
 }
