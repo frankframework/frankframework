@@ -297,19 +297,19 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<Object>,
 		}
 	}
 
-	public Object debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<?> listener, String correlationId, IPipeLineSession pipeLineSession) throws Throwable {
+	public <M> M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, IPipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (M)proceedingJoinPoint.proceed();
 		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		String result = null;
+		M result = null;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
 			return null;
 		} else {
 			try {
 				Object[] args = proceedingJoinPoint.getArgs();
 				args[1] = correlationId;
-				result = (String)proceedingJoinPoint.proceed(args);
+				result = (M)proceedingJoinPoint.proceed(args);
 			} catch(Throwable throwable) {
 				throw ibisDebugger.replyListenerAbort(listener, pipeLineSession.getMessageId(), throwable);
 			}

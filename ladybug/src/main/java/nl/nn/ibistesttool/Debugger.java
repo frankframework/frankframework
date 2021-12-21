@@ -148,8 +148,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public String replyListenerOutput(IListener listener, String correlationId, String output) {
-		return (String)testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
+	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
+		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
 	}
 
 	@Override
