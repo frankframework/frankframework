@@ -66,7 +66,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
@@ -410,9 +409,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
+			throw new SenderException(e);
 		}
 
 		Document document = (Document) object;
@@ -484,11 +482,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					}
 					return Message.nullMessage();
 				}
-				else {
-					session.put("contentStream:MimeType", contentStream.getMimeType());
-					session.put("contentStream:Filename", contentStream.getFileName());
-					return new Message(inputStream);
-				}
+				session.put("contentStream:MimeType", contentStream.getMimeType());
+				session.put("contentStream:Filename", contentStream.getFileName());
+				return new Message(inputStream);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
@@ -562,11 +558,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
 			return new Message(document.getId());
-		} else {
-			ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
-			return new Message(objectId.getId());
 		}
+		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
+		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+		return new Message(objectId.getId());
 	}
 
 	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
@@ -639,9 +634,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
+			throw new SenderException(e);
 		}
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
@@ -649,9 +643,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			String correlationID = session==null ? null : session.getMessageId();
 			return new Message(correlationID);
 
-		} else {  //// You can't delete
-			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
+		//// You can't delete
+		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 	}
 
 	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeOutException {
@@ -744,10 +738,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if(objectIdstr != null) {
 			return cmisSession.getObject(cmisSession.createObjectId(objectIdstr), operationContext);
 		}
-		else { //Ok, id can still be null, perhaps its a path?
-			String path = XmlUtils.getChildTagAsString(queryElement, "path");
-			return cmisSession.getObjectByPath(path, operationContext);
-		}
+		//Ok, id can still be null, perhaps its a path?
+		String path = XmlUtils.getChildTagAsString(queryElement, "path");
+		return cmisSession.getObjectByPath(path, operationContext);
 	}
 
 	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
@@ -977,10 +970,8 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
-
+			throw new SenderException(e);
 		}
 		object.updateProperties(props);
 		return new Message(object.getId());

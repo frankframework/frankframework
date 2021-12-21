@@ -32,8 +32,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.encryption.HasKeystore;
-import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -193,12 +191,17 @@ public class CmisSessionBuilder {
 
 		//SSL
 		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
-			CredentialFactory certificateCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
-			CredentialFactory truststoreCf  = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
+			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword) 
+							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword) 
+							: keystoreCf;
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
-			parameterMap.put("certificateUrl", keystore);
-			parameterMap.put("certificatePassword", certificateCf.getPassword());
+			parameterMap.put("keystoreUrl", keystore);
+			parameterMap.put("keystorePassword", keystoreCf.getPassword());
 			parameterMap.put("keystoreType", keystoreType.name());
+			parameterMap.put("keystoreAlias", keystoreAlias);
+			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
 			parameterMap.put("keyManagerAlgorithm", keyManagerAlgorithm);
 			parameterMap.put("truststoreUrl", truststore);
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
@@ -431,5 +434,54 @@ public class CmisSessionBuilder {
 				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
+	}
+	
+	public String getKeystore() {
+		return keystore;
+	}
+	public KeystoreType getKeystoreType() {
+		return keystoreType;
+	}
+	public String getKeystoreAuthAlias() {
+		return keystoreAuthAlias;
+	}
+	public String getKeystorePassword() {
+		return keystorePassword;
+	}
+	public String getKeystoreAlias() {
+		return keystoreAlias;
+	}
+	public String getKeystoreAliasAuthAlias() {
+		return keystoreAliasAuthAlias;
+	}
+	public String getKeystoreAliasPassword() {
+		return keystoreAliasPassword;
+	}
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+	public String getTruststore() {
+		return truststore;
+	}
+	public KeystoreType getTruststoreType() {
+		return truststoreType;
+	}
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+	public String getTruststorePassword() {
+		return truststorePassword;
+	}
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+	public boolean isIgnoreCertificateExpiredException() {
+		return ignoreCertificateExpiredException;
 	}
 }
