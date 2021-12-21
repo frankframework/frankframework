@@ -66,6 +66,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -205,7 +209,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase {
+public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private String authAlias;
 	private String username;
@@ -988,69 +992,168 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setOverrideEntryPointWSDL(overrideEntryPointWSDL);
 	}
 
-	@IbisDoc({"Accept self signed certificates", "false"})
-	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		sessionBuilder.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
-	}
-
-	@IbisDoc({"Ignore certificate hostname validation", "true"})
-	public void setVerifyHostname(boolean verifyHostname) {
-		sessionBuilder.setVerifyHostname(verifyHostname);
-	}
-
-	@IbisDoc({"Ignore expired certificate exceptions", "false"})
-	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
-	}
-
-	@IbisDoc({"Path (or resource url) to certificate to be used for authentication", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystore'")
 	public void setCertificateUrl(String certificate) {
-		sessionBuilder.setCertificateUrl(certificate);
+		setKeystore(certificate);
 	}
 
-	@IbisDoc({"Auth Alias used to obtain certificate password", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystoreAuthAlias'")
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		sessionBuilder.setCertificateAuthAlias(certificateAuthAlias);
+		setKeystoreAuthAlias(certificateAuthAlias);
 	}
 
-	@IbisDoc({"Certificate Password", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystorePassword'")
 	public void setCertificatePassword(String certificatePassword) {
-		sessionBuilder.setCertificatePassword(certificatePassword);
+		setKeystorePassword(certificatePassword);
 	}
 
-	@IbisDoc({"Path (or resource url) to truststore to be used for authentication", ""})
-	public void setTruststore(String truststore) {
-		sessionBuilder.setTruststore(truststore);
+	@Override
+	public void setKeystore(String keystore) {
+		sessionBuilder.setKeystore(keystore);
+	}
+	@Override
+	public String getKeystore() {
+		return sessionBuilder.getKeystore();
 	}
 
-	@IbisDoc({"Alias used to obtain truststore password", ""})
-	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-
-	@IbisDoc({"Truststore Password", ""})
-	public void setTruststorePassword(String truststorePassword) {
-		sessionBuilder.setTruststorePassword(truststorePassword);
-	}
-
-	@IbisDoc({"Keystore Type", "pkcs12"})
-	public void setKeystoreType(String keystoreType) {
+	@Override
+	public void setKeystoreType(KeystoreType keystoreType) {
 		sessionBuilder.setKeystoreType(keystoreType);
 	}
+	@Override
+	public KeystoreType getKeystoreType() {
+		return sessionBuilder.getKeystoreType();
+	}
 
-	@IbisDoc({"KeyManager Algorithm", "pkix"})
+	@Override
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
+	}
+	@Override
+	public String getKeystoreAuthAlias() {
+		return sessionBuilder.getKeystoreAuthAlias();
+	}
+
+	@Override
+	public void setKeystorePassword(String keystorePassword) {
+		sessionBuilder.setKeystorePassword(keystorePassword);
+	}
+	@Override
+	public String getKeystorePassword() {
+		return sessionBuilder.getKeystorePassword();
+	}
+
+	@Override
+	public void setKeystoreAlias(String keystoreAlias) {
+		sessionBuilder.setKeystoreAlias(keystoreAlias);
+	}
+	@Override
+	public String getKeystoreAlias() {
+		return sessionBuilder.getKeystoreAlias();
+	}
+
+	@Override
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@Override
+	public String getKeystoreAliasAuthAlias() {
+		return sessionBuilder.getKeystoreAliasAuthAlias();
+	}
+
+	@Override
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+	@Override
+	public String getKeystoreAliasPassword() {
+		return sessionBuilder.getKeystoreAliasPassword();
+	}
+
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
-
-	@IbisDoc({"Truststore Type", "jks"})
-	public void setTruststoreType(String truststoreType) {
-		sessionBuilder.setTruststoreType(truststoreType);
+	@Override
+	public String getKeyManagerAlgorithm() {
+		return sessionBuilder.getKeyManagerAlgorithm();
 	}
 
-	@IbisDoc({"TrustManager Algorithm", "pkix"})
-	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
-		sessionBuilder.setTrustManagerAlgorithm(getTrustManagerAlgorithm);
+	
+	@Override
+	public void setTruststore(String truststore) {
+		sessionBuilder.setTruststore(truststore);
+	}
+	@Override
+	public String getTruststore() {
+		return sessionBuilder.getTruststore();
+	}
+
+	@Override
+	public void setTruststoreType(KeystoreType truststoreType) {
+		sessionBuilder.setTruststoreType(truststoreType);
+	}
+	@Override
+	public KeystoreType getTruststoreType() {
+		return sessionBuilder.getTruststoreType();
+	}
+
+
+	@Override
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+	@Override
+	public String getTruststoreAuthAlias() {
+		return sessionBuilder.getTruststoreAuthAlias();
+	}
+
+	@Override
+	public void setTruststorePassword(String truststorePassword) {
+		sessionBuilder.setTruststorePassword(truststorePassword);
+	}
+	@Override
+	public String getTruststorePassword() {
+		return sessionBuilder.getTruststorePassword();
+	}
+
+	@Override
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		sessionBuilder.setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+	@Override
+	public String getTrustManagerAlgorithm() {
+		return sessionBuilder.getTrustManagerAlgorithm();
+	}
+
+	@Override
+	public void setVerifyHostname(boolean verifyHostname) {
+		sessionBuilder.setVerifyHostname(verifyHostname);
+	}
+	@Override
+	public boolean isVerifyHostname() {
+		return sessionBuilder.isVerifyHostname();
+	}
+
+	@Override
+	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
+		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
+	}
+	@Override
+	public boolean isAllowSelfSignedCertificates() {
+		return sessionBuilder.isAllowSelfSignedCertificates();
+	}
+
+	@Override
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
+	}
+	@Override
+	public boolean isIgnoreCertificateExpiredException() {
+		return sessionBuilder.isIgnoreCertificateExpiredException();
 	}
 
 	@IbisDoc({"Proxy host url", ""})
