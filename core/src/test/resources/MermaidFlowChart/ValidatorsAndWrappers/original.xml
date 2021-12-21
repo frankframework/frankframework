@@ -160,4 +160,31 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<adapter name="Test4" description="test" active="${test}">
+
+		<receiver name="Test4">
+			<listener name="Test4_Listener" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+
+		<pipeline firstPipe="TestFirstPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+				<exit path="ServerError" state="error" />
+			</exits>
+
+			<inputValidator responseRoot="test"/>
+			<inputWrapper/>
+			<outputWrapper/>
+
+			<pipe name="TestFirstPipe" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="Test2_Listener">
+					<param name="test" xpathExpression="test"/>
+				</sender>
+
+				<forward name="success" path="EXIT" />
+				<forward name="exception" path="ServerError" />
+			</pipe>
+		</pipeline>
+	</adapter>
 </module>
