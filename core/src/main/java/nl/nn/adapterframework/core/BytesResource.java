@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.credentialprovider.util.Misc;
 
 /**
@@ -33,6 +35,9 @@ public class BytesResource extends Resource {
 
 	public BytesResource(byte[] bytes, String name) {
 		super(new GlobalScopeProvider());
+		if(StringUtils.isEmpty(name)) {
+			throw new IllegalStateException("name may not be empty");
+		}
 
 		this.bytes = bytes;
 		this.name = name;
@@ -54,6 +59,6 @@ public class BytesResource extends Resource {
 
 	@Override
 	public String toString() {
-		return "InputStreamResource name ["+name+"]";
+		return "BytesResource name ["+name+"]";
 	}
 }

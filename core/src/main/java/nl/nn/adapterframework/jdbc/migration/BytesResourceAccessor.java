@@ -17,42 +17,56 @@ package nl.nn.adapterframework.jdbc.migration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.SortedSet;
 
 import liquibase.resource.InputStreamList;
 import liquibase.resource.ResourceAccessor;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * @author alisihab
  *
  */
-public class StreamResourceAccessor implements ResourceAccessor {
+public class BytesResourceAccessor implements ResourceAccessor {
 
-	private InputStream stream;
-	
-	public StreamResourceAccessor(InputStream stream) {
+	private Resource resource;
+
+	public BytesResourceAccessor(Resource resource) {
 		super();
-		this.stream = stream;
+		this.resource = resource;
 	}
 
 	/** 
 	 * This method is primarily used by Liquibase to get the xsd 
-	 * (http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd) to validate against.
+	 * (/www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd) to validate against. (the path literally contains www.liquibase.org !)
 	 * Since the XSD is in the jar file and we do not want to override it, simply return null.
 	 * Then the default XSD in the Liquibase jar will be used.
 	 */
 	@Override
 	public InputStreamList openStreams(String relativeTo, String streamPath) throws IOException {
+		URL url = BytesResourceAccessor.class.getResource("/"+streamPath); // only allow for absolute classpath files
+		if(url != null) {
+			try {
+				URI uri = url.toURI();
+				return new InputStreamList(uri, url.openStream());
+			} catch (URISyntaxException e) {
+				LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public InputStream openStream(String relativeTo, String path) throws IOException {
-		if(path.endsWith(".xsd")) {
-			return null;
+		if(path.equals(resource.getName())) {
+			return resource.openStream();
 		}
 
-		return stream;
+		return null;
 	}
 
 	@Override

@@ -15,7 +15,6 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
@@ -34,6 +33,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationMessageEvent;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -106,14 +106,12 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	/**
 	 * Run the migration script and write the output to the {@link Writer}.
 	 */
-	public void update(Writer writer) throws JdbcException {
-		update(writer, null);
-	}
+	public abstract void update(Writer writer) throws JdbcException;
 
 	/**
 	 * Run the provided migration script (against the local database) and write the output to the {@link Writer}.
 	 */
-	public abstract void update(Writer writer, InputStream fromFile) throws JdbcException;
+	public abstract void update(Writer writer, Resource resource) throws JdbcException;
 
 	/**
 	 * Check whether the configuration contains liquibase script that can be translated into sql statements in the classpath

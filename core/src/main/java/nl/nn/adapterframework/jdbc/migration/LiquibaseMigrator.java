@@ -15,9 +15,9 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.Writer;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +45,8 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.BytesResource;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -62,31 +64,39 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private String getChangeLogFile() throws FileNotFoundException {
+	private Resource getChangeLog() {
 		AppConstants appConstants = AppConstants.getInstance(getApplicationContext().getClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		if(getResource(changeLogFile) == null) {
+		URL resource = getResource(changeLogFile);
+		if(resource == null) {
 			String msg = "unable to find database changelog file [" + changeLogFile + "]";
 			msg += " classLoader [" + getConfigurationClassLoader() + "]";
-			throw new FileNotFoundException(msg);
+			log.debug(msg);
+			return null;
 		}
 
-		return changeLogFile;
+		try {
+			return new BytesResource(resource.openStream(), changeLogFile);
+		} catch (IOException e) {
+			log.debug("unable to open or read changelog ["+changeLogFile+"]", e);
+		}
+		return null;
 	}
 
-	private Liquibase createMigrator(InputStream file) throws FileNotFoundException, SQLException, LiquibaseException {
-		String changeLogFile = getChangeLogFile();
+	private Liquibase createMigrator() throws SQLException, LiquibaseException {
+		return createMigrator(getChangeLog());
+	}
 
-		ResourceAccessor resourceAccessor;
-		if(file == null) {
-			resourceAccessor = new LiquibaseResourceAccessor(getConfigurationClassLoader());
-		} else {
-			resourceAccessor = new StreamResourceAccessor(file);
+	private Liquibase createMigrator(Resource resource) throws SQLException, LiquibaseException {
+		if(resource == null) {
+			throw new LiquibaseException("no resource provided");
 		}
+
+		ResourceAccessor resourceAccessor = new BytesResourceAccessor(resource);
 		DatabaseConnection connection = getDatabaseConnection();
 
-		return new Liquibase(changeLogFile, resourceAccessor, connection);
+		return new Liquibase(resource.getName(), resourceAccessor, connection);
 	}
 
 	private DatabaseConnection getDatabaseConnection() throws SQLException {
@@ -96,8 +106,10 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	@Override
 	public boolean validate() {
 		try {
-			doValidate();
-			return true;
+			if(hasMigrationScript()) {
+				doValidate();
+				return true;
+			}
 		}
 		catch (ValidationFailedException e) {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
@@ -105,17 +117,14 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 		catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
 		}
-		catch (FileNotFoundException e) {
-			log.debug(e.getMessage()); //this can only happen when jdbc.migrator.active=true but no migrator file is present.
-		}
 		catch (SQLException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
 		}
 		return false;
 	}
 
-	private void doValidate() throws LiquibaseException, FileNotFoundException, SQLException {
-		try (Liquibase liquibase = createMigrator(null)) {
+	private void doValidate() throws LiquibaseException, SQLException {
+		try (Liquibase liquibase = createMigrator()) {
 			Database database = liquibase.getDatabase();
 
 			LockService lockService = LockServiceFactory.getInstance().getLockService(database);
@@ -156,7 +165,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	@Override
 	public void update() {
 		List<String> changes = new ArrayList<>();
-		try (Liquibase liquibase = createMigrator(null)) {
+		try (Liquibase liquibase = createMigrator()) {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
 				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
@@ -187,8 +196,13 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	}
 
 	@Override
-	public void update(Writer writer, InputStream fromFile) throws JdbcException {
-		try (Liquibase migrator = createMigrator(fromFile)){
+	public void update(Writer writer) throws JdbcException {
+		update(writer, getChangeLog());
+	}
+
+	@Override
+	public void update(Writer writer, Resource resource) throws JdbcException {
+		try (Liquibase migrator = createMigrator(resource)){
 			migrator.update(contexts, labelExpression, writer);
 		} catch (Exception e) {
 			throw new JdbcException("unable to generate database migration script", e);
@@ -197,10 +211,6 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	@Override
 	public boolean hasMigrationScript() {
-		try {
-			return getChangeLogFile() != null;
-		} catch (FileNotFoundException e) {
-			return false;
-		}
+		return getChangeLog() != null;
 	}
 }
