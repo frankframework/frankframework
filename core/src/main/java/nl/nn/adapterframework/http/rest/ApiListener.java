@@ -59,7 +59,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private @Getter AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;
-	private @Getter List<String> authenticationRoles = null;
+	private List<String> authenticationRoles = null;
 
 	private @Getter MediaTypes consumes = MediaTypes.ANY;
 	private @Getter MediaTypes produces = MediaTypes.ANY;
