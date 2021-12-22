@@ -16,14 +16,13 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -51,24 +51,26 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private String uriPattern;
-	private String method;
-	private String etagSessionKey;
-	private String contentTypeSessionKey;
-	private String restPath = "/rest";
-	private Boolean view = null;
-	private String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
-	private boolean writeToSecLog = false;
-	private boolean writeSecLogMessage = false;
-	private boolean retrieveMultipart = true;
+	private @Getter String uriPattern;
+	private @Getter String method;
+	private @Getter String etagSessionKey;
+	private @Getter String contentTypeSessionKey;
+	private @Getter String restPath = "/rest";
+	private @Getter Boolean view = null;
+	private @Getter String authRoles="IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService";
+	private @Getter boolean writeToSecLog = false;
+	private @Getter boolean writeSecLogMessage = false;
+	private @Getter boolean retrieveMultipart = true;
 
-	private String consumes = "XML";
-	private String produces = "XML";
-	private List<String> mediaTypes = Arrays.asList("XML", "JSON", "TEXT");
+	private @Getter MediaTypes consumes = MediaTypes.XML;
+	private @Getter MediaTypes produces = MediaTypes.XML;
 
-	private boolean validateEtag = false;
-	private boolean generateEtag = false;
+	private @Getter boolean validateEtag = false;
+	private @Getter boolean generateEtag = false;
 
+	public enum MediaTypes {
+		XML, JSON, TEXT;
+	}
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -88,7 +90,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void open() throws ListenerException {
 		super.open();
 		try {
-			RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), getValidateEtag());
+			RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 		} catch (ConfigurationException e) {
 			throw new ListenerException(e);
 		}
@@ -112,7 +114,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 
 		//Check if consumes has been set or contentType is set to JSON
-		if(getConsumes().equalsIgnoreCase("JSON") && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
+		if(getConsumes()== MediaTypes.JSON && "application/json".equalsIgnoreCase(httpServletRequest.getContentType())) {
 			try {
 				message = transformToXml(message);
 			} catch (PipeRunException e) {
@@ -123,13 +125,20 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 		//Check if contentType is not overwritten which disabled auto-converting and mediatype headers
 		if(contentType == null || StringUtils.isEmpty(contentType) || contentType.equalsIgnoreCase("*/*")) {
-			if(getProduces().equalsIgnoreCase("XML"))
-				requestContext.put("contentType", "application/xml");
-			if(getProduces().equalsIgnoreCase("JSON"))
-				requestContext.put("contentType", "application/json");
-			if(getProduces().equalsIgnoreCase("TEXT"))
-				requestContext.put("contentType", "text/plain");
-
+			switch(getProduces()) {
+				case XML:
+					requestContext.put("contentType", "application/xml");
+					break;
+				case JSON:
+					requestContext.put("contentType", "application/json");
+					break;
+				case TEXT:
+					requestContext.put("contentType", "text/plain");
+					break;
+				default:
+					throw new IllegalStateException("Unknown mediatype ["+getProduces()+"]");
+			}
+			
 			try {
 				response = super.processRequest(correlationId, new Message(message), requestContext).asString();
 			} catch (IOException e) {
@@ -138,7 +147,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			if(response != null && !response.isEmpty())
 				eTag = response.hashCode();
 
-			if(getProduces().equalsIgnoreCase("JSON")) {
+			if(getProduces()== MediaTypes.JSON) {
 				try {
 					response = transformToJson(response);
 				} catch (PipeRunException e) {
@@ -156,7 +165,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 				eTag = response.hashCode();
 		}
 
-		if(!requestContext.containsKey("etag") && getGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
+		if(!requestContext.containsKey("etag") && isGenerateEtag() && eTag != 0) { //The etag can be a negative integer...
 			requestContext.put("etag", RestListenerUtils.formatEtag(getRestPath(), getUriPattern(), eTag));
 		}
 
@@ -165,7 +174,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 
 	public String transformToJson(String message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		pipe.setDirection("xml2json");
+		pipe.setDirection(Direction.XML2JSON);
 		PipeRunResult pipeResult = pipe.doPipe(new Message(message), new PipeLineSession());
 		try {
 			return pipeResult.getResult().asString();
@@ -209,39 +218,24 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
-	public String getUriPattern() {
-		return uriPattern;
-	}
 
 	@IbisDoc({"Method (e.g. GET or POST) to match", ""})
 	public void setMethod(String method) {
 		this.method = method;
-	}
-	public String getMethod() {
-		return method;
 	}
 
 	@IbisDoc({"Key of session variable to store etag", ""})
 	public void setEtagSessionKey(String etagSessionKey) {
 		this.etagSessionKey = etagSessionKey;
 	}
-	public String getEtagSessionKey() {
-		return etagSessionKey;
-	}
 
 	@IbisDoc({"Key of Session variable that determines requested content type, overrides {@link #setProduces(String) produces}", ""})
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}
-	public String getContentTypeSessionKey() {
-		return contentTypeSessionKey;
-	}
 
 	public void setRestPath(String restPath) {
 		this.restPath = restPath;
-	}
-	public String getRestPath() {
-		return restPath;
 	}
 
 	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
@@ -260,67 +254,37 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	public void setAuthRoles(String string) {
 		authRoles = string;
 	}
-	public String getAuthRoles() {
-		return authRoles;
-	}
 
 	public void setWriteToSecLog(boolean b) {
 		writeToSecLog = b;
 	}
-	public boolean isWriteToSecLog() {
-		return writeToSecLog;
-	}
 
 	public void setWriteSecLogMessage(boolean b) {
 		writeSecLogMessage = b;
-	}
-	public boolean isWriteSecLogMessage() {
-		return writeSecLogMessage;
 	}
 
 	@IbisDoc({"Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!", "true"})
 	public void setRetrieveMultipart(boolean b) {
 		retrieveMultipart = b;
 	}
-	public boolean isRetrieveMultipart() {
-		return retrieveMultipart;
-	}
 
 	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} receives as input", "XML"})
-	public void setConsumes(String consumes) throws ConfigurationException {
-		if(!mediaTypes.contains(consumes)) {
-			throw new ConfigurationException("Unknown mediatype ["+consumes+"]");
-		}
+	public void setConsumes(MediaTypes consumes) {
 		this.consumes = consumes;
-	}
-	public String getConsumes() {
-		return consumes;
 	}
 
 	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link nl.nn.adapterframework.http.RestServiceDispatcher restServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
-	public void setProduces(String produces) throws ConfigurationException {
-		if(!mediaTypes.contains(produces)) {
-			throw new ConfigurationException("Unknown mediatype ["+produces+"]");
-		}
+	public void setProduces(MediaTypes produces) {
 		this.produces = produces;
-	}
-	public String getProduces() {
-		return produces;
 	}
 
 	@IbisDoc({"If set to true the ibis will automatically validate and process etags", "false"})
 	public void setValidateEtag(boolean b) {
 		this.validateEtag = b;
 	}
-	public boolean getValidateEtag() {
-		return validateEtag;
-	}
 
 	@IbisDoc({"If set to true the ibis will automatically create an etag", "false"})
 	public void setGenerateEtag(boolean b) {
 		this.generateEtag = b;
-	}
-	public boolean getGenerateEtag() {
-		return generateEtag;
 	}
 }
