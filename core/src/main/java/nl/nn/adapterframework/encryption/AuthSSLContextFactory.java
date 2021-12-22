@@ -170,7 +170,7 @@ public class AuthSSLContextFactory {
 			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
 			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
 			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
-			return (SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+			return (SSLSocketFactory) SSLSocketFactory.getDefault();
 		}
 		return getSSLContext().getSocketFactory();
 	}
