@@ -93,7 +93,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new LiquibaseException("no resource provided");
 		}
 
-		ResourceAccessor resourceAccessor = new BytesResourceAccessor(resource);
+		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
 		DatabaseConnection connection = getDatabaseConnection();
 
 		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);

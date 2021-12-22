@@ -29,14 +29,13 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * @author alisihab
- *
+ * @author Niels Meijer
  */
-public class BytesResourceAccessor implements ResourceAccessor {
+public class LiquibaseResourceAccessor implements ResourceAccessor {
 
 	private Resource resource;
 
-	public BytesResourceAccessor(Resource resource) {
+	public LiquibaseResourceAccessor(Resource resource) {
 		super();
 		this.resource = resource;
 	}
@@ -54,7 +53,7 @@ public class BytesResourceAccessor implements ResourceAccessor {
 			path = "/" + streamPath; // only allow for absolute classpath files.
 		}
 
-		URL url = BytesResourceAccessor.class.getResource(path);
+		URL url = LiquibaseResourceAccessor.class.getResource(path);
 		if(url != null) {
 			try {
 				URI uri = url.toURI();

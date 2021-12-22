@@ -49,6 +49,6 @@ public class URLResource extends Resource {
 
 	@Override
 	public String toString() {
-		return "ConfigurationResource url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
+		return "URLResource url ["+url+"] systemId ["+systemId+"] scope ["+scopeProvider+"]";
 	}
 }
