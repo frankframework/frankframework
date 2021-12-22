@@ -47,7 +47,7 @@ public class ApiListenerTest {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
 			listener.setMethod(HttpMethod.OPTIONS);
 		});
-		assertEquals("unknown httpMethod value [optIonS]. Must be one of [GET, PUT, POST, PATCH, DELETE]", ex.getMessage());
+		assertEquals("method OPTIONS is default and should not be added manually", ex.getMessage());
 	}
 
 
@@ -75,8 +75,8 @@ public class ApiListenerTest {
 	@Test
 	public void testEmptyContentTypes() throws ConfigurationException {
 		//Check empty produces
-		listener.setProduces(null);
-		listener.setConsumes(null);
+//		listener.setProduces(null);
+//		listener.setConsumes(null);
 		listener.configure();
 
 		assertEquals("*/*", listener.getContentType().getContentType());

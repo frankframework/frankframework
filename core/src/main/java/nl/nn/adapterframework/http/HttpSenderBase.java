@@ -473,7 +473,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
 			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
 		} catch (Exception e) {
-			throw new SenderException("Cannot create SSLSockerFactory", e);
+			throw new SenderException("cannot create or initialize SocketFactory", e);
 		}
 		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
 		// Can still be null when no default or an invalid system sslSocketFactory has been defined
