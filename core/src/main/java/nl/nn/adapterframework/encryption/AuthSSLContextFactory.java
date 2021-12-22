@@ -134,7 +134,7 @@ public class AuthSSLContextFactory {
 						new AuthSslTrustManager(truststore, trustmanagers)
 					};
 				}
-			} else if (trustoreOwner.isAllowSelfSignedCertificates()) {
+			} else if (trustoreOwner!=null && trustoreOwner.isAllowSelfSignedCertificates()) {
 				trustmanagers = new TrustManager[] {
 					new AuthSslTrustManager(null, trustmanagers)
 				};

@@ -70,7 +70,6 @@ import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -704,11 +703,10 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(String string) {
-		setFtpType(EnumUtils.parse(FtpType.class, string));
+	public void setFtpTypeDescription(FtpType value) {
+		setFtpType(value);
 	}
 	@IbisDoc({"FTP protocol to use", "FTP"})
 	public void setFtpType(FtpType value) {

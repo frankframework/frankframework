@@ -144,13 +144,11 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 		ftpSession.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(String string) {
-		setFtpType(EnumUtils.parse(FtpType.class, string));
+	public void setFtpTypeDescription(FtpType value) {
+		setFtpType(value);
 	}
-	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "FTP"})
 	public void setFtpType(FtpType string) {
 		ftpSession.setFtpType(string);
 	}

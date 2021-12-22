@@ -27,6 +27,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
@@ -485,7 +486,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.addParameter(param2);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType("urlencoded");
+		sender.setPostType(PostType.URLENCODED);
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
 		sender.configure();
@@ -522,7 +523,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/json");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
@@ -542,7 +543,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setContentType("application/pdf");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
@@ -578,7 +579,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.PUT);
 		sender.setContentType("application/json");
-		sender.setPostType("binary");
+		sender.setPostType(PostType.BINARY);
 
 		sender.configure();
 		sender.open();
@@ -621,7 +622,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType("FORMDATA");
+		sender.setPostType(PostType.FORMDATA);
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -674,7 +675,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType("mtom");
+		sender.setPostType(PostType.MTOM);
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "

@@ -93,7 +93,7 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 	@IbisDocRef({FTPFILESYSTEM})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(String ftpTypeDescription) {
+	public void setFtpTypeDescription(FtpType ftpTypeDescription) {
 		getFileSystem().setFtpTypeDescription(ftpTypeDescription);
 	}
 	@IbisDocRef({FTPFILESYSTEM})

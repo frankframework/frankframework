@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 
@@ -196,8 +197,7 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setProxyPassword(proxyPassword);
 	}
 
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpTypeDescription(String ftpTypeDescription) {
+	public void setFtpTypeDescription(FtpType ftpTypeDescription) {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
 

@@ -222,11 +222,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				ApiPrincipal userPrincipal = null;
 	
-				if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethodEnum())) {
+				if(listener.getAuthenticationMethod() != AuthenticationMethods.NONE) {
 					String authorizationToken = null;
 					Cookie authorizationCookie = null;
 	
-					switch (listener.getAuthenticationMethodEnum()) {
+					switch (listener.getAuthenticationMethod()) {
 					case COOKIE:
 						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
 						if(authorizationCookie != null) {
@@ -298,7 +298,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
+					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
 	
@@ -325,7 +325,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put("updateEtag", listener.getUpdateEtag());
+				messageContext.put("updateEtag", listener.isUpdateEtag());
 	
 				/**
 				 * Check authorization
@@ -524,7 +524,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				String contentType = mimeType.getContentType();
-				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
+				if(listener.getProduces() == MediaTypes.ANY) {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
 						contentType = parsedContentType.asString();
