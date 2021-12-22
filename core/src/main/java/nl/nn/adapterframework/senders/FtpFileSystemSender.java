@@ -24,6 +24,7 @@ import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.FtpFileSystem;
+import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 
@@ -105,7 +106,7 @@ public class FtpFileSystemSender extends FileSystemSender<FTPFile, FtpFileSystem
 	}
 
 	@IbisDocRef({FTPFILESYSTEM})
-	public void setFileType(String fileType) {
+	public void setFileType(FileType fileType) {
 		getFileSystem().setFileType(fileType);
 	}
 

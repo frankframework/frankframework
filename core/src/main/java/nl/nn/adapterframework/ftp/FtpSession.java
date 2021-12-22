@@ -112,6 +112,18 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		/** Private */
 		P
 	}
+	
+	public enum FileType {
+		
+		ASCII(org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE), 
+		BINARY(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+
+		int ftpFileType;
+		
+		private FileType(int ftpFileType) {
+			this.ftpFileType=ftpFileType;
+		}
+	}
 
 	private @Getter String name;
 
@@ -126,7 +138,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter String proxyAuthAlias;
 	private @Getter String proxyUsername;
 	private @Getter String proxyPassword;
-	private @Getter String fileType = null;
+	private @Getter FileType fileType = null;
 	private @Getter boolean messageIsContent=false;
 	private @Getter boolean passive=true;
 	private @Getter boolean keyboardInteractive=false;
@@ -185,12 +197,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		}
 		
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
-		try {
-			getFileTypeIntValue();
-		}
-		catch(IOException e) {
-			throw new ConfigurationException(e);
-		}
 		
 	}
 
@@ -343,26 +349,14 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 				checkReply("changeWorkingDirectory "+remoteDirectory);
 			}
 			
-			if (StringUtils.isNotEmpty(fileType)) {
-				ftpClient.setFileType(getFileTypeIntValue());
+			if (fileType!=null) {
+				ftpClient.setFileType(fileType.ftpFileType);
 				checkReply("setFileType "+remoteDirectory);
 			}
 		}
 		catch(Exception e) {
 			closeFtpClient();
 			throw new FtpConnectException(e);
-		}
-	}
-
-	private int getFileTypeIntValue() throws IOException {
-		if (StringUtils.isEmpty(fileType))
-			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
-		else if ("ASCII".equals(fileType))
-			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
-		else if ("BINARY".equals(fileType))
-			return org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE;
-		else {
-			throw new IOException("Unknown Type [" + fileType + "] specified, use one of ASCII, BINARY");
 		}
 	}
 
@@ -713,9 +707,9 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		ftpType = value;
 	}
 
-	@IbisDoc({"File type, one of ascii, binary", ""})
-	public void setFileType(String string) {
-		fileType = string;
+	@IbisDoc({"File type", ""})
+	public void setFileType(FileType value) {
+		fileType = value;
 	}
 
 	@IbisDoc({"If <code>true</code>, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})

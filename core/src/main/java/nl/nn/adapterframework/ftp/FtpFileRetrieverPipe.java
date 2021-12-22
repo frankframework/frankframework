@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -201,8 +202,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setFtpTypeDescription(ftpTypeDescription);
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", ""})
-	public void setFileType(String fileType) {
+	@IbisDoc({"file type", ""})
+	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}
 

@@ -24,11 +24,11 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.ftp.FtpSession.FileType;
 import nl.nn.adapterframework.ftp.FtpSession.FtpType;
 import nl.nn.adapterframework.ftp.FtpSession.Prot;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * FTP client voor het versturen van files via FTP.
@@ -156,8 +156,8 @@ public class FtpSender extends SenderWithParametersBase implements HasKeystore, 
 		return ftpSession.getFtpType();
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", ""})
-	public void setFileType(String fileType) {
+	@IbisDoc({"file type", ""})
+	public void setFileType(FileType fileType) {
 		ftpSession.setFileType(fileType);
 	}
 

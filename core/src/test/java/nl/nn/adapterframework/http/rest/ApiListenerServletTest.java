@@ -60,9 +60,12 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
+import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiListenerServletTest extends Mockito {
@@ -134,22 +137,22 @@ public class ApiListenerServletTest extends Mockito {
 	private void addListener(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) throws ListenerException, ConfigurationException {
 		ApiListener listener = spy(ApiListener.class);
 		listener.setUriPattern(uri);
-		listener.setMethod(method.name());
+		listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
 
 		IMessageHandler<Message> handler = new MessageHandler();
 		listener.setHandler(handler);
 
 		if(consumes != null)
-			listener.setConsumes(consumes.name());
+			listener.setConsumes(consumes);
 		if(produces != null)
-			listener.setProduces(produces.name());
+			listener.setProduces(produces);
 
 		if(multipartBodyName != null) {
 			listener.setMultipartBodyName(multipartBodyName);
 		}
 
 		if(authMethod != null) {
-			listener.setAuthenticationMethod(authMethod.name());
+			listener.setAuthenticationMethod(EnumUtils.parse(AuthenticationMethods.class, authMethod.name()));
 			listener.setAuthenticationRoles("IbisObserver,TestRole");
 		}
 
