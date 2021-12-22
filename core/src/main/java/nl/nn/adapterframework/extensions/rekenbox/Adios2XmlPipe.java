@@ -48,16 +48,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Transforms between ascii-ADIOS and an XML representation of ADIOS.
  *
  * <p>
- * Sample xml:<br/><code><pre>
- *	&lt;adios rekenbox="L76HB150"&gt;
- *	    &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
- *	    &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
- *	    &lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&gt;
- *	    &lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&gt;
- *
- *          ...
- *	&lt;/adios&gt;
- * </pre></code> <br/>
+ * Sample xml:<br/>
+ * <pre><code>
+ * &lt;adios rekenbox="L76HB150"&gt;
+ *     &lt;rubriek naam="BER_VERZ_CD" waarde="COMBIFLEX_BELEGGING" /&gt;
+ *     &lt;rubriek naam="INBR_CD" waarde="NIEUWE_VERZEKERING" /&gt;
+ *     &lt;rubriek naam="PENS_DT_BEP_CD"  waarde="DT_UIT_PENS_LFT" /&gt;
+ *     &lt;rubriek nummer="313" naam="AS_OPSL_PRD_TRM_PRM" index="3" recordnr="74" record="VUT_VERZEKERING" waarde="52.34" /&gt;
+ * ...
+ * &lt;/adios&gt;
+ * </code></pre>
+ * <br/>
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element. 
  * Where applicable 'index', 'recordnr', 'record' and 'recordindex' are present, too.

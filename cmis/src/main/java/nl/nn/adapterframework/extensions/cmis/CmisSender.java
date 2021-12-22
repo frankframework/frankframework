@@ -91,39 +91,30 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
+ *      &lt;id&gt;documentId&lt;/id&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
+ *      &lt;id&gt;documentId&lt;/id&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
  *      &lt;name&gt;Offerte&lt;/name&gt;
  *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
@@ -134,8 +125,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  *
  * <p>
@@ -161,9 +151,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When <code>action=find</code> the input (xml string) indicates the query to perform.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;query&gt;
  *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
  *      &lt;maxItems&gt;10&lt;/maxItems&gt;
@@ -171,16 +160,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
  *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
  *   &lt;/query&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=update</code> the input (xml string) indicates document properties to update.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
  *      &lt;id&gt;123456789&lt;/id&gt;
  *      &lt;properties&gt;
@@ -189,8 +176,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  *
  * <p>

@@ -3,7 +3,9 @@
 		<receiver name="HelloWorld" >
 			<listener
 				name="HelloWorld"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="hello-world"
+				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
