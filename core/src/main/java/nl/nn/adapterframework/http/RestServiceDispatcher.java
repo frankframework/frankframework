@@ -315,7 +315,7 @@ public class RestServiceDispatcher  {
 			return listenerConfig;
 		})==null) {
 			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
-		}			
+		}
 	}
 
 	public void unregisterServiceClient(String uriPattern, String method) {
