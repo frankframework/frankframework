@@ -304,7 +304,7 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		patternClients.computeIfAbsent(uriPattern, p -> new HashMap<>());
+		patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
 		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
 		if (patternEntry.computeIfAbsent(method, m -> {
 			Map<String,Object> listenerConfig = new HashMap<>();
@@ -318,9 +318,17 @@ public class RestServiceDispatcher  {
 		}			
 	}
 
-	public void unregisterServiceClient(String uriPattern) {
+	public void unregisterServiceClient(String uriPattern, String method) {
 		uriPattern = unifyUriPattern(uriPattern);
-		patternClients.remove(uriPattern);
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry == null) {
+			return;
+		}
+		if (StringUtils.isEmpty(method)) {
+			method=WILDCARD;
+		}
+		patternEntry.remove(method);
+		// removing patternEntry from patternClients is not thread safe
 	}
 
 	public Set<String> getUriPatterns() {
