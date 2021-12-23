@@ -62,6 +62,13 @@
 			<artifactId>activemq-all</artifactId>
 			<version>5.6.0</version>
 		</dependency>
+		
+		<!-- Reactive Streams are required because of https://github.com/ibissource/iaf/issues/2539 -->
+		<dependency>
+		    <groupId>org.reactivestreams</groupId>
+		    <artifactId>reactive-streams</artifactId>
+		    <version>1.0.3</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -121,6 +128,8 @@
 									<arg value="build"/>
 									<arg value="-t"/>
 									<arg value="iaf-as-${SERVER_TYPE}"/>
+									<arg value="--build-arg"/>
+									<arg value="SERVER_TYPE=${SERVER_TYPE}"/>
 									<arg value="--build-arg"/>
 									<arg value="DOCKER_REPO=${DOCKER_REPO}"/>
 									<arg value="--build-arg"/>

@@ -3,7 +3,7 @@ FROM iaf-as-${SERVER_TYPE}
 ARG SERVER_TYPE
 ARG STANDALONE_VERSION
 # copy any additional drivers
-COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/deployments/
+COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/lib/ext/
 
 # copy war
 COPY target/dependencies/ibis-adapterframework-example.war ${JBOSS_HOME}/standalone/deployments/iaf-example.war
@@ -13,8 +13,4 @@ COPY src/configurations/standalone_${SERVER_TYPE}${STANDALONE_VERSION}.xml ${JBO
 
 COPY src/scripts/add_modules.py /home/add_modules.py
 
-USER root
-RUN if [ "$SERVER_TYPE" = "jboss" ]; then yum -y --nogpgcheck install python3; fi
-
-USER jboss
 RUN if [ "$SERVER_TYPE" = "jboss" ]; then python3 /home/add_modules.py; else python /home/add_modules.py; fi

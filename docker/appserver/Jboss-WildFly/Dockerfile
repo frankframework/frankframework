@@ -1,12 +1,15 @@
 ARG IMAGE_VERSION
 ARG DOCKER_REPO
 FROM ${DOCKER_REPO}:${IMAGE_VERSION}
-
-# copy the frank framework
-#COPY target/dependencies/ibis-adapterframework-ear.ear ${JBOSS_HOME}/standalone/deployments/iaf.ear
+ARG SERVER_TYPE
 
 # copy JDBC and JMS drivers
 COPY target/dependencies/*.jar ${JBOSS_HOME}/standalone/deployments/
 
-# Insert fake module.xml for jdk.unsupported
-#COPY module.xml ${JBOSS_HOME}/modules/system/layers/base/jdk/unsupported/main/
+COPY src/scripts/add_global_modules.py /home/add_global_modules.py
+
+USER root
+RUN if [ "$SERVER_TYPE" = "jboss" ]; then yum -y --nogpgcheck install python3; fi
+
+USER jboss
+RUN if [ "$SERVER_TYPE" = "jboss" ]; then python3 /home/add_global_modules.py; else python /home/add_global_modules.py; fi
