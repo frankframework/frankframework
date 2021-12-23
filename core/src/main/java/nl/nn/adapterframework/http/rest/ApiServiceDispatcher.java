@@ -122,7 +122,7 @@ public class ApiServiceDispatcher {
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
-		HttpMethod method = listener.getMethodEnum();
+		HttpMethod method = listener.getMethod();
 
 		synchronized(patternClients) {
 			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
@@ -132,7 +132,7 @@ public class ApiServiceDispatcher {
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
-		HttpMethod method = listener.getMethodEnum();
+		HttpMethod method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
@@ -204,12 +204,12 @@ public class ApiServiceDispatcher {
 					}
 					// GET and DELETE methods cannot have a requestBody according to the specs.
 					if(method != HttpMethod.GET && method != HttpMethod.DELETE) {
-						mapRequest(adapter, listener.getConsumesEnum(), methodBuilder);
+						mapRequest(adapter, listener.getConsumes(), methodBuilder);
 					}
 					mapParamsInRequest(request, adapter, listener, methodBuilder);
 
 					//ContentType may have more parameters such as charset and formdata-boundry
-					MediaTypes produces = listener.getProducesEnum();
+					MediaTypes produces = listener.getProduces();
 					methodBuilder.add("responses", mapResponses(adapter, produces, schemas));
 				}
 				methods.add(method.name().toLowerCase(), methodBuilder);

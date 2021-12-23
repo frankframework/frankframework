@@ -67,12 +67,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.ftp.FtpSender;
-import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
@@ -414,79 +413,33 @@ public final class ShowConfigurationStatus extends Base {
 		}
 	}
 
-	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
-		String certificate = s.getCertificate();
+	private Map<String, Object> addCertificateInfo(HasKeystore s) {
+		String certificate = s.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
 		Map<String, Object> certElem = new HashMap<String, Object>(4);
 		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
+		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
-		if (certificateUrl == null) {
-			certElem.put("url", null);
-			certElem.put("info", "*** ERROR ***");
-		} else {
-			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getKeystoreType();
-			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
-		}
-		return certElem;
-	}
-
-	private Map<String, Object> addCertificateInfo(HttpSender s) {
-		String certificate = s.getCertificate();
-		if (certificate == null || StringUtils.isEmpty(certificate))
-			return null;
-
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
-		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
-		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, s.getKeystore());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
 		} else {
 			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
+			String certificatePassword = s.getKeystorePassword();
 			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getKeystoreType();
+			KeystoreType keystoreType = s.getKeystoreType();
 			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
 		}
 		return certElem;
 	}
 
-	private Map<String, Object> addCertificateInfo(FtpSender s) {
-		String certificate = s.getCertificate();
-		if (certificate == null || StringUtils.isEmpty(certificate))
-			return null;
-
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
-		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
-		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
-		if (certificateUrl == null) {
-			certElem.put("url", "");
-			certElem.put("info", "*** ERROR ***");
-		} else {
-			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getCertificateType();
-			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
-		}
-		return certElem;
-	}
-
-	private ArrayList<Object> getCertificateInfo(final URL url, final String password, String keyStoreType, String prefix) {
+	private ArrayList<Object> getCertificateInfo(final URL url, final String password, KeystoreType KeystoreType, String prefix) {
 		ArrayList<Object> certificateList = new ArrayList<Object>();
 		try {
-			KeyStore keystore = KeyStore.getInstance(keyStoreType);
+			KeyStore keystore = KeyStore.getInstance(KeystoreType.name());
 			keystore.load(url.openStream(), password != null ? password.toCharArray() : null);
 			if (log.isInfoEnabled()) {
 				Enumeration<String> aliases = keystore.aliases();
@@ -534,24 +487,18 @@ public final class ShowConfigurationStatus extends Base {
 
 			pipesInfo.put("name", pipename);
 			pipesInfo.put("forwards", forwards);
+			if (pipe instanceof HasKeystore) {
+				HasKeystore s = (HasKeystore) pipe;
+				Map<String, Object> certInfo = addCertificateInfo(s);
+				if(certInfo != null)
+					pipesInfo.put("certificate", certInfo);
+			}
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
-				if (sender instanceof WebServiceSender) {
-					WebServiceSender s = (WebServiceSender) sender;
-					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
-						pipesInfo.put("certificate", certInfo);
-				}
-				if (sender instanceof HttpSender) {
-					HttpSender s = (HttpSender) sender;
-					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
-						pipesInfo.put("certificate", certInfo);
-				}
-				if (sender instanceof FtpSender) {
-					FtpSender s = (FtpSender) sender;
+				if (sender instanceof HasKeystore) {
+					HasKeystore s = (HasKeystore) sender;
 					Map<String, Object> certInfo = addCertificateInfo(s);
 					if(certInfo != null)
 						pipesInfo.put("certificate", certInfo);
