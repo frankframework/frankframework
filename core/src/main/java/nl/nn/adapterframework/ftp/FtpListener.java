@@ -166,7 +166,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunStateEnum.STARTED;
 	}
 
 	@Override

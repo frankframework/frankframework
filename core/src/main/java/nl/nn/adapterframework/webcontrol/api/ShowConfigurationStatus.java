@@ -215,11 +215,11 @@ public final class ShowConfigurationStatus extends Base {
 
 		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-		if(state.equals(RunStateEnum.STARTED)) {
+		if(state==RunStateEnum.STARTED) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {
 				RunStateEnum rState = receiver.getRunState();
 
-				if(!rState.equals(RunStateEnum.STARTED)) {
+				if(rState!=RunStateEnum.STARTED) {
 					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
 					state = RunStateEnum.ERROR;
 				}
@@ -231,9 +231,9 @@ public final class ShowConfigurationStatus extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(state.equals(RunStateEnum.ERROR))
+		if(state==RunStateEnum.ERROR) {
 			status = Response.Status.SERVICE_UNAVAILABLE;
-
+		}
 		if(errors.size() > 0)
 			response.put("errors", errors);
 		response.put("status", status);
@@ -555,7 +555,7 @@ public final class ShowConfigurationStatus extends Base {
 
 			RunStateEnum receiverRunState = receiver.getRunState();
 
-			receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
+			receiverInfo.put("started", receiverRunState==RunStateEnum.STARTED);
 			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
 			
 			receiverInfo.put("name", receiver.getName());
@@ -702,7 +702,7 @@ public final class ShowConfigurationStatus extends Base {
 		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
 		adapterInfo.put("nameUC", nameUC);
 		RunStateEnum adapterRunState = adapter.getRunState();
-		adapterInfo.put("started", adapterRunState.equals(RunStateEnum.STARTED));
+		adapterInfo.put("started", adapterRunState==RunStateEnum.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 

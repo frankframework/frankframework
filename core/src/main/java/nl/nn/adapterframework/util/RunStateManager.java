@@ -32,11 +32,6 @@ public class RunStateManager implements RunStateEnquirer {
 		return runState;
 	}
 
-	@Override
-	public synchronized boolean isInState(RunStateEnum state) {
-		return runState.equals(state);
-	}
-
 	public synchronized void setRunState(RunStateEnum newRunState) {
 		if(!runState.equals(newRunState)) {
 			if(log.isDebugEnabled())

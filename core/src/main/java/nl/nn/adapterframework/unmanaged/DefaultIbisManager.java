@@ -177,18 +177,22 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum currentRunState = receiver.getRunState();
-					if (!currentRunState.equals(RunStateEnum.STARTED)) {
-						if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
-							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
-							return;
-						} 
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
+					RunStateEnum receiverRunState = receiver.getRunState();
+					switch(receiverRunState) {
+						case STOPPING:
+						case STOPPED:
+							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+							break;
+						case STARTED:
+						case TIMEOUT_STARTING:
+						case TIMEOUT_STOPPING:
+							receiver.stopRunning();
+							log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
+							break;
+						default:
+							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring stop() command");
+							break;
 					}
-
-					receiver.stopRunning();
-					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 				}
 			}
 			break;
@@ -199,18 +203,20 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum currentRunState = receiver.getRunState();
-					if (!currentRunState.equals(RunStateEnum.STOPPED)) {
-						if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
-							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
-							return;
-						}
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
+					RunStateEnum receiverRunState = receiver.getRunState();
+					switch(receiverRunState) {
+						case STARTING:
+						case STARTED:
+							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+							break;
+						case STOPPED:
+							receiver.startRunning();
+							log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
+							break;
+						default:
+							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring start() command");
+							break;
 					}
-
-					receiver.startRunning();
-					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
 				}
 			}
 			break;

@@ -75,7 +75,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ProtectedAttribute;
@@ -186,15 +185,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final int MAX_RETRY_INTERVAL=100;
 	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
+	public enum OnError { 
+		/** don't stop the receiver if an error occurs.*/ 
+		CONTINUE, 
+		/** 
+		 * If an error occurs (eg. connection is lost) the receiver will be stopped and marked as ERROR
+		 * Once every <code>recover.adapters.interval</code> it will be attempted to (re-) start the receiver.
+		 */
+		RECOVER, 
+		/** stop the receiver when an error occurs. */
+		CLOSE 
+	};
+
 	/**
-	 * CONTINUE: don't stop the receiver and an error occurs.
-	 * RECOVER: when an error occurs (eq. connection is lost) the receiver will be stopped and marked as ERROR
-	 * Once every `recover.adapters.interval` it will attempt to (re-) start the receiver.
-	 * CLOSE: stop the receiver when an error occurs.
-	 * 
-	 * Currently, this feature is only implemented for `IPushingListeners`, like Tibco and SAP.
+	 * Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP.
 	 */
-	public enum OnError { CONTINUE, RECOVER, CLOSE };
 	private @Getter OnError onError = OnError.CONTINUE;
 
 	private @Getter String name;
@@ -204,10 +209,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	// the number of threads that are actively polling for messages (concurrently, only for pulling listeners)
 	private @Getter int numThreadsPolling = 1;
 	private @Getter int pollInterval=10;
-
+	private @Getter int startTimeout=60;
+	private @Getter int stopTimeout=60;
+	
 	private @Getter boolean forceRetryFlag = false;
 	private @Getter boolean checkForDuplicates=false;
-	private @Getter String checkForDuplicatesMethod="MESSAGEID";
+	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID };
+	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
 	private @Getter int maxDeliveries=5;
 	private @Getter int maxRetries=1;
 	private @Getter int processResultCacheSize = 100;
@@ -265,22 +273,22 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
 
 	// the adapter that handles the messages and initiates this listener
-	private Adapter adapter;
+	private @Getter @Setter Adapter adapter;
 
-	private IListener<M> listener;
-	private ISender errorSender=null;
+	private @Getter IListener<M> listener;
+	private @Getter ISender errorSender=null;
 	// See configure() for explanation on this field
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
-	private ITransactionalStorage<Serializable> messageLog=null;
-	private ITransactionalStorage<Serializable> errorStorage=null;
-	private ISender sender=null; // answer-sender
+	private @Getter ITransactionalStorage<Serializable> messageLog=null;
+	private @Getter ITransactionalStorage<Serializable> errorStorage=null;
+	private @Getter ISender sender=null; // answer-sender
 	private Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new HashMap<>();
 	
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
 
 
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter PlatformTransactionManager txManager;
 
 	private @Setter EventPublisher eventPublisher;
 
@@ -407,27 +415,36 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	protected void openAllResources() throws ListenerException {
 		// on exit resouces must be in a state that runstate is or can be set to 'STARTED'
+		TimeoutGuard timeoutGuard = new TimeoutGuard(getStopTimeout(), "starting receiver ["+getName()+"]");
 		try {
-			if (getSender()!=null) {
-				getSender().open();
+			try {
+				if (getSender()!=null) {
+					getSender().open();
+				}
+				if (getErrorSender()!=null) {
+					getErrorSender().open();
+				}
+				if (getErrorStorage()!=null) {
+					getErrorStorage().open();
+				}
+				if (getMessageLog()!=null) {
+					getMessageLog().open();
+				}
+			} catch (Exception e) {
+				throw new ListenerException(e);
 			}
-			if (getErrorSender()!=null) {
-				getErrorSender().open();
+			getListener().open();
+		} finally {
+			if (timeoutGuard.cancel()) {
+				runState.setRunState(RunStateEnum.TIMEOUT_STARTING);
+				log.warn(getLogPrefix()+"timeout starting");
+			} else {
+				throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+				if (getListener() instanceof IPullingListener){
+					// start all threads
+					listenerContainer.start();
+				}
 			}
-			if (getErrorStorage()!=null) {
-				getErrorStorage().open();
-			}
-			if (getMessageLog()!=null) {
-				getMessageLog().open();
-			}
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-		getListener().open();
-		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-		if (getListener() instanceof IPullingListener){
-			// start all threads
-			listenerContainer.start();
 		}
 	}
 
@@ -450,49 +467,57 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * On exit resources must be 'closed' so the receiver RunState can be set to 'STOPPED'
 	 */
 	protected void closeAllResources() {
+		TimeoutGuard timeoutGuard = new TimeoutGuard(getStopTimeout(), "stopping receiver ["+getName()+"]");
 		log.debug(getLogPrefix()+"closing");
 		try {
-			getListener().close();
-		} catch (Throwable t) {
-			error("error closing listener", t);
-		}
-		if (getSender()!=null) {
 			try {
-				getSender().close();
-			} catch (Throwable t) {
-				error("error closing sender", t);
+				getListener().close();
+			} catch (Exception e) {
+				error("error closing listener", e);
 			}
-		}
-		if (getErrorSender()!=null) {
-			try {
-				getErrorSender().close();
-			} catch (Throwable t) {
-				error("error closing error sender", t);
+			if (getSender()!=null) {
+				try {
+					getSender().close();
+				} catch (Exception e) {
+					error("error closing sender", e);
+				}
 			}
-		}
-		if (getErrorStorage()!=null) {
-			try {
-				getErrorStorage().close();
-			} catch (Throwable t) {
-				error("error closing error storage", t);
+			if (getErrorSender()!=null) {
+				try {
+					getErrorSender().close();
+				} catch (Exception e) {
+					error("error closing error sender", e);
+				}
 			}
-		}
-		if (getMessageLog()!=null) {
-			try {
-				getMessageLog().close();
-			} catch (Throwable t) {
-				error("error closing message log", t);
+			if (getErrorStorage()!=null) {
+				try {
+					getErrorStorage().close();
+				} catch (Exception e) {
+					error("error closing error storage", e);
+				}
 			}
-		}
+			if (getMessageLog()!=null) {
+				try {
+					getMessageLog().close();
+				} catch (Exception e) {
+					error("error closing message log", e);
+				}
+			}
+		} finally {
+			if (timeoutGuard.cancel()) {
+				runState.setRunState(RunStateEnum.TIMEOUT_STOPPING);
+				log.warn(getLogPrefix()+"timeout stopping");
+			} else {
+				log.debug(getLogPrefix()+"closed");
+				if (isInRunState(RunStateEnum.STOPPING) || isInRunState(RunStateEnum.TIMEOUT_STOPPING)) {
+					runState.setRunState(RunStateEnum.STOPPED);
+				}
+				throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
+				resetRetryInterval();
 
-		log.debug(getLogPrefix()+"closed");
-		if (runState.isInState(RunStateEnum.STOPPING)) {
-			runState.setRunState(RunStateEnum.STOPPED);
+				info("stopped");
+			}
 		}
-		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-		resetRetryInterval();
-
-		info("stopped");
 	}
 
 	protected void propagateName() {
@@ -729,7 +754,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		configurationSucceeded = true;
 
-		if(runState.isInState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+		if(isInRunState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunStateEnum.STOPPED);
 		}
 	}
@@ -742,7 +767,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			// may only be executed when the adapter is started.
 			if (adapter != null) {
 				RunStateEnum adapterRunState = adapter.getRunState();
-				if (!adapterRunState.equals(RunStateEnum.STARTED)) {
+				if (adapterRunState!=RunStateEnum.STARTED) {
 					log.warn(getLogPrefix()+"on adapter [" + adapter.getName() + "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
 					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
 					return;
@@ -762,8 +787,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			synchronized (runState) {
 				RunStateEnum currentRunState = getRunState();
-				if (!currentRunState.equals(RunStateEnum.STOPPED) && !(runState.isInState(RunStateEnum.ERROR) && configurationSucceeded())) { // stopped OR in error after configuring the receiver
-					if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
+				if (currentRunState!=RunStateEnum.STOPPED && currentRunState!=RunStateEnum.ERROR && configurationSucceeded()) { // stopped OR in error after configuring the receiver
+					if (currentRunState==RunStateEnum.STARTING || currentRunState==RunStateEnum.STARTED) {
 						log.info("already in state [" + currentRunState + "]");
 					} else {
 						log.warn("currently in state [" + currentRunState + "], ignoring start() command");
@@ -790,14 +815,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
 		synchronized (runState) {
 			RunStateEnum currentRunState = getRunState();
-			if (currentRunState.equals(RunStateEnum.STARTING)) {
+			if (currentRunState==RunStateEnum.STARTING) {
 				log.warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
-			} else if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
+			} else if (currentRunState==RunStateEnum.STOPPING || currentRunState==RunStateEnum.STOPPED) {
 				log.info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
-			if (!currentRunState.equals(RunStateEnum.ERROR)) {
+			if (currentRunState!=RunStateEnum.ERROR) {
 				runState.setRunState(RunStateEnum.STOPPING); //Don't change the runstate when in ERROR
 			}
 		}
@@ -1492,7 +1517,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	private boolean isDuplicateAndSkip(IMessageBrowser<Object> transactionStorage, String messageId, String correlationId) throws ListenerException {
 		if (isCheckForDuplicates() && transactionStorage != null) {
-			if ("CORRELATIONID".equalsIgnoreCase(getCheckForDuplicatesMethod())) {
+			if (getCheckForDuplicatesMethod()== CheckForDuplicatesMethod.CORRELATIONID) {
 				if (transactionStorage.containsCorrelationId(correlationId)) {
 					warn("message with correlationId [" + correlationId + "] already exists in messageLog, will not process");
 					return true;
@@ -1724,7 +1749,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	public boolean isInRunState(RunStateEnum someRunState) {
-		return runState.isInState(someRunState);
+		return runState.getRunState()==someRunState;
 	}
 	private String sendResultToSender(Message result) {
 		String errorMessage = null;
@@ -1843,32 +1868,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return queueingStatistics;
 	}		
 
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
-
-	
-	/**
-	 * The processing of messages must be delegated to the <code>Adapter</code>
-	 * object. The adapter also provides a MessageKeeper, which the receiver may use
-	 * to store messages in.
-	 * 
-	 * @see nl.nn.adapterframework.core.IAdapter
-	 */
-	public void setAdapter(Adapter adapter) {
-		this.adapter = adapter;
-	}
 
 	public boolean isOnErrorContinue() {
 		return OnError.CONTINUE == getOnError();
-	}
-
-	@Override
-	public Adapter getAdapter() {
-		return adapter;
 	}
 
 	/**
@@ -1904,6 +1906,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 //	}
 
 
+
+	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
+		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
+		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
+		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
+	}
+
 	/**
 	 *  Returns a toString of this class by introspection and the toString() value of its listener.
 	 *
@@ -1932,17 +1941,10 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
 	}
-	public IListener<M> getListener() {
-		return listener;
-	}
 
 	@IbisDoc("20")
 	public void setSender(ISender sender) {
 		this.sender = sender;
-	}
-	@Override
-	public ISender getSender() {
-		return sender;
 	}
 
 	/**
@@ -1971,31 +1973,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.errorSender = errorSender;
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
-	public ISender getErrorSender() {
-		return errorSender;
-	}
 
 	@IbisDoc({"40", "Storage to keep track of messages that failed processing"})
 	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
 		this.errorStorage = errorStorage;
-	}
-	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store failed messages. If present, this storage will be managed by the Receiver.
-	 */
-	public ITransactionalStorage<Serializable> getErrorStorage() {
-		return errorStorage;
 	}
 
 
 	@IbisDoc({"50", "Storage to keep track of all messages processed correctly"})
 	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		this.messageLog = messageLog;
-	}
-	/**
-	 * returns the {@link ITransactionalStorage} if it is provided in the configuration. It is used to store messages that have been processed successfully. If present, this storage will be managed by the Receiver.
-	 */
-	public ITransactionalStorage<Serializable> getMessageLog() {
-		return messageLog;
 	}
 
 
@@ -2004,14 +1991,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	@IbisDoc({"1", "Name of the Receiver as known to the Adapter", ""})
+	@IbisDoc({"Name of the Receiver as known to the Adapter", ""})
 	@Override
 	public void setName(String newName) {
 		name = newName;
 		propagateName();
 	}
 
-	@IbisDoc({"7", "One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "CONTINUE"})
+	@IbisDoc({"One of 'continue' or 'close'. Controls the behaviour of the Receiver when it encounters an error sending a reply or receives an exception asynchronously", "CONTINUE"})
 	public void setOnError(OnError value) {
 		this.onError = value;
 	}
@@ -2019,77 +2006,86 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
-	@IbisDoc({"8", "The number of threads that may execute a Pipeline concurrently (only for pulling listeners)", "1"})
+	@IbisDoc({"The number of threads that may execute a Pipeline concurrently (only for pulling listeners)", "1"})
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
 
-	@IbisDoc({"9", "The number of threads that are actively polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)", "1"})
+	@IbisDoc({"The number of threads that are actively polling for messages concurrently. '0' means 'limited only by <code>numthreads</code>' (only for pulling listeners)", "1"})
 	public void setNumThreadsPolling(int i) {
 		numThreadsPolling = i;
 	}
 
-	@IbisDoc({"10", "The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners", "10"})
+	@IbisDoc({"The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners", "10"})
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
 
-	@IbisDoc({"11", "If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})
+	/** timeout to start receiver. It this timeout is reached, the Receiver may be stopped again */
+	public void setStartTimeout(int i) {
+		startTimeout = i;
+	}
+	/** timeout to stopped receiver. It this timeout is reached, a new stop command may be issued */
+	public void setStopTimeout(int i) {
+		startTimeout = i;
+	}
+	
+	@IbisDoc({"If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})
 	public void setCheckForDuplicates(boolean b) {
 		checkForDuplicates = b;
 	}
 
-	@IbisDoc({"12", "(Only used when <code>checkForDuplicates=true</code>) Either 'CORRELATIONID' or 'MESSAGEID'. Indicates whether the messageid or the correlationid is used for checking presence in the message log", "MESSAGEID"})
-	public void setCheckForDuplicatesMethod(String method) {
+	@IbisDoc({"(Only used when <code>checkForDuplicates=true</code>) Indicates whether the messageid or the correlationid is used for checking presence in the message log", "MESSAGEID"})
+	public void setCheckForDuplicatesMethod(CheckForDuplicatesMethod method) {
 		checkForDuplicatesMethod=method;
 	}
 
-	@IbisDoc({"13", "The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored", "5"})
+	@IbisDoc({"The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored", "5"})
 	public void setMaxDeliveries(int i) {
 		maxDeliveries = i;
 	}
 
-	@IbisDoc({"14", "The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite", "1"})
+	@IbisDoc({"The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If <code>maxRetries &lt; 0</code> the number of attempts is infinite", "1"})
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
 
-	@IbisDoc({"15", "Size of the cache to keep process results, used by maxRetries", "100"})
+	@IbisDoc({"Size of the cache to keep process results, used by maxRetries", "100"})
 	public void setProcessResultCacheSize(int processResultCacheSize) {
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@IbisDoc({"16", "Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
+	@IbisDoc({"Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for Listeners that support it, like JavaListener)", ""})
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
 
-	@IbisDoc({"17", "XPath expression to extract correlationid from message", ""})
+	@IbisDoc({"XPath expression to extract correlationid from message", ""})
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
 	}
 
-	@IbisDoc({"18", "Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	@IbisDoc({"19", "Stylesheet to extract correlationID from message", ""})
+	@IbisDoc({"Stylesheet to extract correlationID from message", ""})
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
 
-	@IbisDoc({"20", "XPath expression to extract label from message", ""})
+	@IbisDoc({"XPath expression to extract label from message", ""})
 	public void setLabelXPath(String string) {
 		labelXPath = string;
 	}
 
-	@IbisDoc({"21","Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
+	@IbisDoc({"Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", ""})
 	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
 		this.labelNamespaceDefs = labelNamespaceDefs;
 	}
 	
-	@IbisDoc({"22", "Stylesheet to extract label from message", ""})
+	@IbisDoc({"Stylesheet to extract label from message", ""})
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
@@ -2133,7 +2129,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		hiddenInputSessionKeys = string;
 	}
 
-	@IbisDoc({"23", "If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
+	@IbisDoc({"If set to <code>true</code>, every message read will be processed as if it is being retried, by setting a session variable '"+Receiver.RETRY_FLAG_SESSION_KEY+"'", "false"})
 	public void setForceRetryFlag(boolean b) {
 		forceRetryFlag = b;
 	}
@@ -2141,11 +2137,5 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@IbisDoc({"Number of connection attemps to put the adapter in warning status", "5"})
 	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {
 		this.numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = number;
-	}
-
-	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
-		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
-		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
-		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 	}
 }

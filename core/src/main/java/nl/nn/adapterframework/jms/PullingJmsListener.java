@@ -359,7 +359,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunStateEnum.STARTED;
 	}
 
 	@Override

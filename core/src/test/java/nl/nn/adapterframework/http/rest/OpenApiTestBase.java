@@ -280,7 +280,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (!adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				while (adapter.getRunState()!=RunStateEnum.STARTED) {
 					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
 					try {
 						Thread.sleep(1000);

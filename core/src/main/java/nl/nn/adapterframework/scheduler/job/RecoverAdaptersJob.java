@@ -38,7 +38,7 @@ public class RecoverAdaptersJob extends JobDef {
 			countAdapter++;
 			RunStateEnum adapterRunState = adapter.getRunState();
 			boolean startAdapter = false;
-			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
+			if (adapterRunState==RunStateEnum.ERROR) { //if not previously configured, there is no point in trying to do this again.
 				log.debug("trying to recover adapter [" + adapter.getName() + "]");
 
 				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
@@ -58,10 +58,10 @@ public class RecoverAdaptersJob extends JobDef {
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-			if (adapterRunState.equals(RunStateEnum.STARTED)) {
+			if (adapterRunState==RunStateEnum.STARTED) {
 				countAdapterStateStarted++;
 				heartbeatLog.info(message);
-			} else if (adapterRunState.equals(RunStateEnum.ERROR)) {
+			} else if (adapterRunState==RunStateEnum.ERROR) {
 				heartbeatLog.error(message);
 			} else {
 				heartbeatLog.warn(message);
@@ -71,7 +71,7 @@ public class RecoverAdaptersJob extends JobDef {
 				countReceiver++;
 
 				RunStateEnum receiverRunState = receiver.getRunState();
-				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+				if (adapterRunState==RunStateEnum.STARTED && receiverRunState==RunStateEnum.ERROR && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
 					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 
 					receiver.startRunning();
@@ -81,10 +81,10 @@ public class RecoverAdaptersJob extends JobDef {
 
 				receiverRunState = receiver.getRunState();
 				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
-				if (receiverRunState.equals(RunStateEnum.STARTED)) {
+				if (receiverRunState==RunStateEnum.STARTED) {
 					countReceiverStateStarted++;
 					heartbeatLog.info(message);
-				} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
+				} else if (receiverRunState==RunStateEnum.ERROR) {
 					heartbeatLog.error(message);
 				} else {
 					heartbeatLog.warn(message);

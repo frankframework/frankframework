@@ -21,25 +21,12 @@ package nl.nn.adapterframework.util;
  */
 public enum RunStateEnum {
 
-	ERROR("**ERROR**"),
-	STARTING("Starting"),
-	STARTED("Started"),
-	STOPPING("Stopping"),
-	STOPPED("Stopped");
+	ERROR,
+	STARTING,
+	TIMEOUT_STARTING,
+	STARTED,
+	STOPPING,
+	TIMEOUT_STOPPING,
+	STOPPED;
 
-	private final String stateDescriptor;
-
-	private RunStateEnum(String stateDescriptor) {
-		this.stateDescriptor = stateDescriptor;
-	}
-
-	public boolean isState(String state) {
-		if(state == null) return false;
-
-		return this.equals(valueOf(state.toUpperCase()));
-	}
-
-	public String getName() {
-		return stateDescriptor;
-	}
 }

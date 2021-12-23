@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,5 +23,4 @@ package nl.nn.adapterframework.util;
 public interface RunStateEnquirer {
 
 	public RunStateEnum getRunState();
-	public boolean isInState(RunStateEnum state);	
 }

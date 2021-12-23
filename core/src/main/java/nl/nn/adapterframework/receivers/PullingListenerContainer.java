@@ -174,7 +174,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				Thread.currentThread().interrupt();
 			} finally {
 				log.debug("closing down ControllerTask");
-				if(!receiver.getRunState().equals(RunStateEnum.STOPPING) && !receiver.getRunState().equals(RunStateEnum.STOPPED)) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+				if(receiver.getRunState()!=RunStateEnum.STOPPING && receiver.getRunState()!=RunStateEnum.TIMEOUT_STOPPING && receiver.getRunState()!=RunStateEnum.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stopRunning();
 				}
 				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners

@@ -319,11 +319,11 @@ public class ServerStatistics extends Base {
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
 			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state.equals(RunStateEnum.STARTED)) {
+			if(state==RunStateEnum.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					RunStateEnum rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunStateEnum.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
 						state = RunStateEnum.ERROR;
 					}
