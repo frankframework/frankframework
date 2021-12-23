@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -76,7 +76,7 @@ public class RestServiceDispatcher  {
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
 	private boolean STRUTS_CONSOLE_ENABLED = appConstants.getBoolean("strutsConsole.enabled", false);
 
-	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
+	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
@@ -375,26 +375,31 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
-		if (patternEntry==null) {
-			patternEntry=new HashMap();
-			patternClients.put(uriPattern, patternEntry);
-		}
-		Map listenerConfig = (Map)patternEntry.get(method);
-		if (listenerConfig!=null) { 
+		patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry.computeIfAbsent(method, m -> {
+			Map<String,Object> listenerConfig = new HashMap<>();
+			listenerConfig.put(KEY_LISTENER, listener);
+			listenerConfig.put("validateEtag", validateEtag);
+			if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
+			if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
+			return listenerConfig;
+		})==null) {
 			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
 		}
-		listenerConfig = new HashMap();
-		patternEntry.put(method,listenerConfig);
-		listenerConfig.put(KEY_LISTENER, listener);
-		listenerConfig.put("validateEtag", validateEtag);
-		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
-		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
 
-	public void unregisterServiceClient(String uriPattern) {
+	public void unregisterServiceClient(String uriPattern, String method) {
 		uriPattern = unifyUriPattern(uriPattern);
-		patternClients.remove(uriPattern);
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry == null) {
+			return;
+		}
+		if (StringUtils.isEmpty(method)) {
+			method=WILDCARD;
+		}
+		patternEntry.remove(method);
+		// removing patternEntry from patternClients is not thread safe	
 	}
 
 	public Set getUriPatterns() {
