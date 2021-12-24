@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
  * to receive messages from Servlets.
- * </table>
+ *
  * @author  Gerrit van Brakel 
  * @since   4.12
  */
@@ -46,10 +47,11 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
+	private @Getter String name;
+	private @Getter boolean applicationFaultsAsExceptions=true;
+
+	private @Getter boolean running;
 	private IMessageHandler<Message> handler;
-	private String name;
-	private boolean applicationFaultsAsExceptions=true;
-	private boolean running;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -88,7 +90,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	public Message processRequest(String correlationId, Message rawMessage, Map<String, Object> requestContext) throws ListenerException {
 		Message message = extractMessage(rawMessage, requestContext);
 		try {
-			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
+			log.debug("PushingListenerAdapter.processRequest() for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, rawMessage, message, requestContext);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
@@ -102,15 +104,26 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
+	public void setHandler(IMessageHandler<Message> handler) {
+		this.handler=handler;
+	}
+
+	@ProtectedAttribute
+	public void setRunning(boolean running) {
+		this.running = running;
+	}
+
+	@Override
+	public void setExceptionListener(IbisExceptionListener exceptionListener) {
+//		this.exceptionListener=exceptionListener;
+	}
+
+	@Override
 	public String toString() {
 		//Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
 		return ReflectionToStringBuilder.toStringExclude(this, "handler");
 	}
 
-	@Override
-	public String getName() {
-		return name;
-	}
 
 	@Override
 	@IbisDoc({"name of the listener as known to the adapter", ""})
@@ -118,26 +131,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 		this.name=name;
 	}
 
-	@Override
-	public void setHandler(IMessageHandler<Message> handler) {
-		this.handler=handler;
-	}
-	@Override
-	public void setExceptionListener(IbisExceptionListener exceptionListener) {
-//		this.exceptionListener=exceptionListener;
-	}
-
-	public boolean isApplicationFaultsAsExceptions() {
-		return applicationFaultsAsExceptions;
-	}
 	public void setApplicationFaultsAsExceptions(boolean b) {
 		applicationFaultsAsExceptions = b;
-	}
-
-	public boolean isRunning() {
-		return running;
-	}
-	public void setRunning(boolean running) {
-		this.running = running;
 	}
 }

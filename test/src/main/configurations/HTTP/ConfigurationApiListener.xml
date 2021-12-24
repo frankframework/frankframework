@@ -121,8 +121,10 @@
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					authAlias="${framework.api.user.alias}"
+					headersParams="Message-Id"
 				>
 					<param name="url_param" xpathExpression="*/@uri" /> <!-- use pipeline input -->
+					<param name="Message-Id" sessionKey="cid" /> <!-- use well known value for messageId, to be able to test duplicate check -->
 				</sender>
 			</pipe>
 
