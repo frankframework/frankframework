@@ -84,6 +84,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return (String) Message.asObject(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
 	}
 
+	public String getCorrelationId() {
+		return getString(businessCorrelationIdKey);
+	}
+
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if(obj != null) {

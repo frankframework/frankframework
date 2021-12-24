@@ -315,7 +315,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return configurationSucceeded;
 	}
 
-	private PipeLineSession createProcessingContext(String correlationId, Map<String,Object> threadContext, String messageId) {
+	private PipeLineSession createProcessingContext(String messageId, String correlationId, Map<String,Object> threadContext) {
 		PipeLineSession pipelineSession = new PipeLineSession();
 		if (threadContext != null) {
 			pipelineSession.putAll(threadContext);
@@ -1244,7 +1244,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			
 			numReceived.increase();
 			// Note: errorMessage is used to pass value from catch-clause to finally-clause!
-			pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
+			pipelineSession = createProcessingContext(messageId, businessCorrelationId, threadContext);
 //			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				if (getMessageLog()!=null) {
@@ -1255,7 +1255,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+getTransactionTimeout()+"]s");
 					tg.activateGuard(getTransactionTimeout());
-					pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
+					pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, pipelineSession);
 					setExitState(threadContext, pipeLineResult.getState(), pipeLineResult.getExitCode());
 					pipelineSession.put("exitcode", ""+ pipeLineResult.getExitCode());
 					result=pipeLineResult.getResult();
