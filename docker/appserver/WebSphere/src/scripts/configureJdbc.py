@@ -69,13 +69,21 @@ createTemplatedDatasource('ibis4test-mssql', 'Microsoft SQL Server JDBC Driver (
 
 createDatasource('ibis4test-mysql', 'MySQL JDBC Driver', authAliasName, [
 		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3307/testiaf']],
-		[['name', 'sslMode'], ['value', 'DISABLED']]
+		[['name', 'sslMode'], ['value', 'DISABLED']],
+		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
+		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
+		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
+		[['name', 'socketTimeout'], ['value', '5000']]
 	])
-
+	
 # MariaDB uses the same driver as MySQL for proper XA support
 createDatasource('ibis4test-mariadb', 'MySQL JDBC Driver', authAliasName, [
 		[['name', 'URL'],  ['value', 'jdbc:mysql://host.docker.internal:3306/testiaf']],
-		[['name', 'sslMode'], ['value', 'DISABLED']]
+		[['name', 'sslMode'], ['value', 'DISABLED']],
+		[['name', 'serverTimezone'], ['value', 'Europe/Amsterdam']],
+		[['name', 'allowPublicKeyRetrieval'], ['value', 'true']],
+		[['name', 'pinGlobalTxToPhysicalConnection'], ['value', 'true']],
+		[['name', 'socketTimeout'], ['value', '5000']]
 	])
 
 createAuthAlias( authAliasName, 'testiaf_user', 'testiaf_user00', 'alias for iaf-test datasources' )
