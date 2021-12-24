@@ -88,7 +88,9 @@
 		</pipeline>
 	</adapter>
 	<adapter name="ApiListener_MultiOriginalMessage">
-		<receiver>
+		<receiver
+			processResultCacheSize="0"
+		>
 			<listener
 				name="MultipleUseOfOriginalMessage"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
