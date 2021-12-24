@@ -73,6 +73,12 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>4.2.3</version>
 		</dependency>
+		<!-- required for ActiveMQ -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.driver.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
