@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://api.nn.nl/GetPolicyDetailsTravelForCustomer/wsdl/" xmlns:ns1="http://api.nn.nl/GetPolicyDetailsTravel" xmlns:ns2="http://api.nn.nl/MessageHeader" xmlns:ns3="http://nn.nl/XSD/Generic/MessageHeader/1" targetNamespace="http://api.nn.nl/GetPolicyDetailsTravelForCustomer/wsdl/">
-	<wsdl:documentation>Generated at https://srdzzapp0220.insim.biz/ija_api/rest/webservices/GetPolicyDetailsTravel.wsdl as GetPolicyDetailsTravel.wsdl on 2017-07-10T14:36:39CEST.</wsdl:documentation>
+	<wsdl:documentation>Generated at https://server.domain.ext/ija_api/rest/webservices/GetPolicyDetailsTravel.wsdl as GetPolicyDetailsTravel.wsdl on 2017-07-10T14:36:39CEST.</wsdl:documentation>
 	<wsdl:types>
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns0="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns:jms="http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS" xmlns="http://api.nn.nl/GetPolicyDetailsTravel" xmlns:jndi="http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi" xmlns:tns="http://nn.nl/XSD/PropertyAndCasualtyRetail/PRPolicyAppNL/1/GetPolicyDetailsTravel/1/GetPolicyDetailsTravel_1Impl/Operations/GetPolicyDetailsTravel/Starter" targetNamespace="http://api.nn.nl/GetPolicyDetailsTravel" attributeFormDefault="unqualified" elementFormDefault="qualified">
 			<xs:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1"/>
@@ -619,7 +619,7 @@
 	</wsdl:binding>
 	<wsdl:service name="Service_GetPolicyDetailsTravel">
 		<wsdl:port name="Port_GetPolicyDetailsTravel" binding="tns:Binding_GetPolicyDetailsTravel">
-			<soap:address location="http://development.css-EP-app.nn.insim.biz/api/x2/execute/"/>
+			<soap:address location="http://server.domain.ext/api/x2/execute/"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

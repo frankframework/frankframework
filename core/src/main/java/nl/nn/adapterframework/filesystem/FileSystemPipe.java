@@ -32,6 +32,7 @@ import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -41,6 +42,12 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * Base class for Pipes that use a {@link IBasicFileSystem FileSystem}.
  * 
  * @see FileSystemActor
+ * 
+ * @ff.parameter action overrides attribute <code>action</code>.
+ * @ff.parameter filename overrides attribute <code>filename</code>. If not present, the input message is used.
+ * @ff.parameter destination destination for action <code>rename</code> and <code>move</code>. Overrides attribute <code>destination</code>.
+ * @ff.parameter contents contents for action <code>write</code> and <code>append</code>.
+ * @ff.parameter inputFolder folder for actions <code>list</code>, <code>mkdir</code> and <code>rmdir</code>. This is a sub folder of baseFolder. Overrides attribute <code>inputFolder</code>. If not present, the input message is used.
  * 
  * @author Gerrit van Brakel
  */
@@ -191,7 +198,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 	
 	@IbisDocRef({"9", FILESYSTEMACTOR})
 	@Deprecated
-	public void setBase64(String base64) {
+	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
 	}
 

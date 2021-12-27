@@ -37,14 +37,9 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * FileSystem Sender extension to handle Attachments.
- * 
- * 
- * <p><b>Actions:</b></p>
- * <br/>
  */
-
 public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
-	
+
 	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
 	private boolean attachmentsAsSessionKeys=false;

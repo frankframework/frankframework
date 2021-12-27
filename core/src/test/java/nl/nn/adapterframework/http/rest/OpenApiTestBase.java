@@ -31,12 +31,14 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -159,9 +161,9 @@ public class OpenApiTestBase extends Mockito {
 		}
 		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
-			listener.setMethod(method);
+			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method));
 			listener.setUriPattern(uriPattern);
-			listener.setProduces(produces);
+			if (produces!=null) listener.setProduces(EnumUtils.parse(MediaTypes.class,produces));
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.StringTokenizer;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -25,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -289,7 +289,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				cmhVersion = 0;
 			}
 		}
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}

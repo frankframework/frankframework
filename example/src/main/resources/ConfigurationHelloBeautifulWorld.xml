@@ -14,8 +14,10 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 		<Receiver
 			name="HelloBeautifulWorld"
 			>
-			<JavaListener
+			<ApiListener
 				name="HelloBeautifulWorld"
+				uriPattern="hello-beautiful-world"
+				method="GET"
 			/>
 		</Receiver>
 		<Pipeline firstPipe="HelloBeautifulWorld">

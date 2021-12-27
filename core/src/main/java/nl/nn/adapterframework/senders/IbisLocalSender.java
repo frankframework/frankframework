@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
- *
+ * 
  * @author Gerrit van Brakel
  * @since  4.2
  */

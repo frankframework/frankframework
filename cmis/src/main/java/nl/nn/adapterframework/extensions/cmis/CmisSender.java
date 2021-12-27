@@ -66,6 +66,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -88,39 +91,30 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
+ *      &lt;id&gt;documentId&lt;/id&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
- *      &lt;id&gt;
- *         documentId
- *      &lt;/id&gt;
+ *      &lt;id&gt;documentId&lt;/id&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
  *      &lt;name&gt;Offerte&lt;/name&gt;
  *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
@@ -131,8 +125,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  *
  * <p>
@@ -158,9 +151,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When <code>action=find</code> the input (xml string) indicates the query to perform.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;query&gt;
  *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
  *      &lt;maxItems&gt;10&lt;/maxItems&gt;
@@ -168,16 +160,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
  *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
  *   &lt;/query&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  * <p>
  * When <code>action=update</code> the input (xml string) indicates document properties to update.
  * </p>
  * <p>
- * <b>example:</b>
- * <code>
- * <pre>
+ * <b>Example:</b>
+ * <pre><code>
  *   &lt;cmis&gt;
  *      &lt;id&gt;123456789&lt;/id&gt;
  *      &lt;properties&gt;
@@ -186,8 +176,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </pre>
- * </code>
+ * </code></pre>
  * </p>
  *
  * <p>
@@ -205,7 +194,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase {
+public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
 	private String authAlias;
 	private String username;
@@ -406,9 +395,8 @@ public class CmisSender extends SenderWithParametersBase {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
+			throw new SenderException(e);
 		}
 
 		Document document = (Document) object;
@@ -480,11 +468,9 @@ public class CmisSender extends SenderWithParametersBase {
 					}
 					return Message.nullMessage();
 				}
-				else {
-					session.put("contentStream:MimeType", contentStream.getMimeType());
-					session.put("contentStream:Filename", contentStream.getFileName());
-					return new Message(inputStream);
-				}
+				session.put("contentStream:MimeType", contentStream.getMimeType());
+				session.put("contentStream:Filename", contentStream.getFileName());
+				return new Message(inputStream);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
@@ -558,11 +544,10 @@ public class CmisSender extends SenderWithParametersBase {
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
 			return new Message(document.getId());
-		} else {
-			ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
-			return new Message(objectId.getId());
 		}
+		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
+		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+		return new Message(objectId.getId());
 	}
 
 	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
@@ -635,9 +620,8 @@ public class CmisSender extends SenderWithParametersBase {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
+			throw new SenderException(e);
 		}
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
@@ -645,9 +629,9 @@ public class CmisSender extends SenderWithParametersBase {
 			String correlationID = session==null ? null : session.getMessageId();
 			return new Message(correlationID);
 
-		} else {  //// You can't delete
-			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
+		//// You can't delete
+		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 	}
 
 	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeOutException {
@@ -740,10 +724,9 @@ public class CmisSender extends SenderWithParametersBase {
 		if(objectIdstr != null) {
 			return cmisSession.getObject(cmisSession.createObjectId(objectIdstr), operationContext);
 		}
-		else { //Ok, id can still be null, perhaps its a path?
-			String path = XmlUtils.getChildTagAsString(queryElement, "path");
-			return cmisSession.getObjectByPath(path, operationContext);
-		}
+		//Ok, id can still be null, perhaps its a path?
+		String path = XmlUtils.getChildTagAsString(queryElement, "path");
+		return cmisSession.getObjectByPath(path, operationContext);
 	}
 
 	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
@@ -973,10 +956,8 @@ public class CmisSender extends SenderWithParametersBase {
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
-			} else {
-				throw new SenderException(e);
 			}
-
+			throw new SenderException(e);
 		}
 		object.updateProperties(props);
 		return new Message(object.getId());
@@ -988,69 +969,168 @@ public class CmisSender extends SenderWithParametersBase {
 		sessionBuilder.setOverrideEntryPointWSDL(overrideEntryPointWSDL);
 	}
 
-	@IbisDoc({"Accept self signed certificates", "false"})
-	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		sessionBuilder.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
-	}
-
-	@IbisDoc({"Ignore certificate hostname validation", "true"})
-	public void setVerifyHostname(boolean verifyHostname) {
-		sessionBuilder.setVerifyHostname(verifyHostname);
-	}
-
-	@IbisDoc({"Ignore expired certificate exceptions", "false"})
-	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
-	}
-
-	@IbisDoc({"Path (or resource url) to certificate to be used for authentication", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystore'")
 	public void setCertificateUrl(String certificate) {
-		sessionBuilder.setCertificateUrl(certificate);
+		setKeystore(certificate);
 	}
 
-	@IbisDoc({"Auth Alias used to obtain certificate password", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystoreAuthAlias'")
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		sessionBuilder.setCertificateAuthAlias(certificateAuthAlias);
+		setKeystoreAuthAlias(certificateAuthAlias);
 	}
 
-	@IbisDoc({"Certificate Password", ""})
+	@Deprecated
+	@ConfigurationWarning("replaced with 'keystorePassword'")
 	public void setCertificatePassword(String certificatePassword) {
-		sessionBuilder.setCertificatePassword(certificatePassword);
+		setKeystorePassword(certificatePassword);
 	}
 
-	@IbisDoc({"Path (or resource url) to truststore to be used for authentication", ""})
-	public void setTruststore(String truststore) {
-		sessionBuilder.setTruststore(truststore);
+	@Override
+	public void setKeystore(String keystore) {
+		sessionBuilder.setKeystore(keystore);
+	}
+	@Override
+	public String getKeystore() {
+		return sessionBuilder.getKeystore();
 	}
 
-	@IbisDoc({"Alias used to obtain truststore password", ""})
-	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-
-	@IbisDoc({"Truststore Password", ""})
-	public void setTruststorePassword(String truststorePassword) {
-		sessionBuilder.setTruststorePassword(truststorePassword);
-	}
-
-	@IbisDoc({"Keystore Type", "pkcs12"})
-	public void setKeystoreType(String keystoreType) {
+	@Override
+	public void setKeystoreType(KeystoreType keystoreType) {
 		sessionBuilder.setKeystoreType(keystoreType);
 	}
+	@Override
+	public KeystoreType getKeystoreType() {
+		return sessionBuilder.getKeystoreType();
+	}
 
-	@IbisDoc({"KeyManager Algorithm", "pkix"})
+	@Override
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
+	}
+	@Override
+	public String getKeystoreAuthAlias() {
+		return sessionBuilder.getKeystoreAuthAlias();
+	}
+
+	@Override
+	public void setKeystorePassword(String keystorePassword) {
+		sessionBuilder.setKeystorePassword(keystorePassword);
+	}
+	@Override
+	public String getKeystorePassword() {
+		return sessionBuilder.getKeystorePassword();
+	}
+
+	@Override
+	public void setKeystoreAlias(String keystoreAlias) {
+		sessionBuilder.setKeystoreAlias(keystoreAlias);
+	}
+	@Override
+	public String getKeystoreAlias() {
+		return sessionBuilder.getKeystoreAlias();
+	}
+
+	@Override
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@Override
+	public String getKeystoreAliasAuthAlias() {
+		return sessionBuilder.getKeystoreAliasAuthAlias();
+	}
+
+	@Override
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+	@Override
+	public String getKeystoreAliasPassword() {
+		return sessionBuilder.getKeystoreAliasPassword();
+	}
+
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
-
-	@IbisDoc({"Truststore Type", "jks"})
-	public void setTruststoreType(String truststoreType) {
-		sessionBuilder.setTruststoreType(truststoreType);
+	@Override
+	public String getKeyManagerAlgorithm() {
+		return sessionBuilder.getKeyManagerAlgorithm();
 	}
 
-	@IbisDoc({"TrustManager Algorithm", "pkix"})
-	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
-		sessionBuilder.setTrustManagerAlgorithm(getTrustManagerAlgorithm);
+	
+	@Override
+	public void setTruststore(String truststore) {
+		sessionBuilder.setTruststore(truststore);
+	}
+	@Override
+	public String getTruststore() {
+		return sessionBuilder.getTruststore();
+	}
+
+	@Override
+	public void setTruststoreType(KeystoreType truststoreType) {
+		sessionBuilder.setTruststoreType(truststoreType);
+	}
+	@Override
+	public KeystoreType getTruststoreType() {
+		return sessionBuilder.getTruststoreType();
+	}
+
+
+	@Override
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+	@Override
+	public String getTruststoreAuthAlias() {
+		return sessionBuilder.getTruststoreAuthAlias();
+	}
+
+	@Override
+	public void setTruststorePassword(String truststorePassword) {
+		sessionBuilder.setTruststorePassword(truststorePassword);
+	}
+	@Override
+	public String getTruststorePassword() {
+		return sessionBuilder.getTruststorePassword();
+	}
+
+	@Override
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		sessionBuilder.setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+	@Override
+	public String getTrustManagerAlgorithm() {
+		return sessionBuilder.getTrustManagerAlgorithm();
+	}
+
+	@Override
+	public void setVerifyHostname(boolean verifyHostname) {
+		sessionBuilder.setVerifyHostname(verifyHostname);
+	}
+	@Override
+	public boolean isVerifyHostname() {
+		return sessionBuilder.isVerifyHostname();
+	}
+
+	@Override
+	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
+		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
+	}
+	@Override
+	public boolean isAllowSelfSignedCertificates() {
+		return sessionBuilder.isAllowSelfSignedCertificates();
+	}
+
+	@Override
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
+	}
+	@Override
+	public boolean isIgnoreCertificateExpiredException() {
+		return sessionBuilder.isIgnoreCertificateExpiredException();
 	}
 
 	@IbisDoc({"Proxy host url", ""})

@@ -20,9 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,7 +54,7 @@ public class JwtValidator<C extends SecurityContext> {
 		jwtProcessor = new DefaultJWTProcessor<C>();
 	}
 
-	public void init(String jwksUrl, String requiredIssuer, String requiredClaims, String exactMatchClaims) throws ParseException, MalformedURLException, IOException {
+	public void init(String jwksUrl, String requiredIssuer) throws ParseException, MalformedURLException, IOException {
 		JWKSource<C> keySource = getKeySource(new URL(jwksUrl));
 
 		// The expected JWS algorithm of the access tokens (agreed out-of-band)
@@ -67,25 +64,10 @@ public class JwtValidator<C extends SecurityContext> {
 		// RSA keys sourced from the JWK set URL
 		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<C>(expectedJWSAlg, keySource);
 
-		Set<String> requiredClaimsSet = null;
-		if(StringUtils.isNotEmpty(requiredClaims)) {
-			requiredClaimsSet = Stream.of(requiredClaims.split("\\s*,\\s*"))
-									.map(String::trim)
-									.collect(Collectors.toSet());
-		}
-
-		JWTClaimsSet exactMatchClaimsSet = null;
-		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, Object> claimsMap = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
-												.map(s -> s.split("\\s*=\\s*"))
-												.collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1] : ""));
-			exactMatchClaimsSet = JWTClaimsSet.parse(claimsMap);
-		}
-
 		// Set up a JWT processor to parse the tokens and then check their signature
 		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
 		if (StringUtils.isNotEmpty(requiredIssuer)) {
-			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>(exactMatchClaimsSet, requiredClaimsSet) {
+			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>() {
 
 				@Override
 				public void verify(JWTClaimsSet claimsSet, C context) throws BadJWTException {

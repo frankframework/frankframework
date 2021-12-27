@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
-import nl.nn.adapterframework.jndi.DbAwareDataSource;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -123,7 +123,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
-		if(getDatasource() instanceof DbAwareDataSource) {
+		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			return getDatasource().toString();
 		}
 		try (Connection conn=getConnection()) {
@@ -219,8 +219,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getPhysicalDestinationName() {
 		try {
 			//Try to minimise the amount of DB connections
-			if(getDatasource() instanceof DbAwareDataSource) {
-				return ((DbAwareDataSource) getDatasource()).getDestinationName();
+			if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getDestinationName();
 			}
 
 			try (Connection connection = getConnection()) {

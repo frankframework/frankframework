@@ -17,17 +17,15 @@ package nl.nn.adapterframework.soap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.validation.RootValidation;
 import nl.nn.adapterframework.validation.RootValidations;
 
@@ -45,12 +43,12 @@ import nl.nn.adapterframework.validation.RootValidations;
  */
 public class SoapValidator extends Json2XmlValidator {
 
-	private String soapBody = "";
-	private String outputSoapBody = "";
-	private String soapHeader = "";
-	private String soapHeaderNamespace = "";
-	private SoapVersion soapVersion = SoapVersion.SOAP11;
-	private boolean allowPlainXml = false;
+	private @Getter String soapBody = "";
+	private @Getter String outputSoapBody = "";
+	private @Getter String soapHeader = "";
+	private @Getter String soapHeaderNamespace = "";
+	private @Getter SoapVersion soapVersion = SoapVersion.SOAP11;
+	private @Getter boolean allowPlainXml = false;
 	public static final String SOAP_ENVELOPE = "Envelope";
 	public static final String SOAP_BODY = "Body";
 	public static final String SOAP_HEADER = "Header";
@@ -137,48 +135,29 @@ public class SoapValidator extends Json2XmlValidator {
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}
-	public String getSoapBody() {
-		return soapBody;
-	}
 
 	@IbisDoc({"2", "identical to the <code>soapBody</code> attribute except that it's used for the output message instead of the input message. For more information see <a href=\"#note1\">note 1</a>", "" })
 	public void setOutputSoapBody(String outputSoapBody) {
 		this.outputSoapBody = outputSoapBody;
-	}
-	public String getOutputSoapBody() {
-		return outputSoapBody;
 	}
 
 	@IbisDoc({"3", "name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)", "" })
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
-	public String getSoapHeader() {
-		return soapHeader;
-	}
 
 	@IbisDoc({"4", "can be used when the SOAP header element exists multiple times", "" })
 	public void setSoapHeaderNamespace(String soapHeaderNamespace) {
 		this.soapHeaderNamespace = soapHeaderNamespace;
 	}
-	public String getSoapHeaderNamespace() {
-		return soapHeaderNamespace;
-	}
 
 	@IbisDoc({"5", "SOAP envelope XSD version to use", "1.1" })
-	public void setSoapVersion(String soapVersion) {
-		this.soapVersion = EnumUtils.parse(SoapVersion.class, soapVersion);
-	}
-	public SoapVersion getSoapVersionEnum() {
-		return soapVersion;
+	public void setSoapVersion(SoapVersion soapVersion) {
+		this.soapVersion = soapVersion;
 	}
 
 	@IbisDoc({"6", "allow plain XML, without a SOAP Envelope, too. Be aware that setting this true inhibits the capability to test for exit specific response roots in SOAP messages", "false"})
 	public void setAllowPlainXml(boolean allowPlainXml) {
 		this.allowPlainXml = allowPlainXml;
 	}
-	public boolean isAllowPlainXml() {
-		return allowPlainXml;
-	}
-
 }

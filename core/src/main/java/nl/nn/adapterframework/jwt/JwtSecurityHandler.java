@@ -16,7 +16,10 @@
 package nl.nn.adapterframework.jwt;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +58,31 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		};
 		return principal;
+	}
+
+	public void validateClaims(String requiredClaims, String exactMatchClaims) {
+		// verify required claims exist
+		if(StringUtils.isNotEmpty(requiredClaims)) {
+			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
+			for (String claim : claims) {
+				if(!claimsSet.containsKey(claim)) {
+					throw new IllegalArgumentException("JWT missing required claims: ["+claim+"]");
+				}
+			}
+		}
+
+		// verify claims have expected values
+		if(StringUtils.isNotEmpty(exactMatchClaims)) {
+			Map<String, String> claims = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
+					.map(s -> s.split("\\s*=\\s*")).collect(Collectors.toMap(item -> item[0], item -> item[1]));
+			for (String key : claims.keySet()) {
+				String expectedValue = claims.get(key);
+				String value = (String) claimsSet.get(key);
+				if(!value.equals(expectedValue)) {
+					throw new IllegalArgumentException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
+				}
+			}
+		}
 	}
 
 }
