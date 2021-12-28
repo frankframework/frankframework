@@ -15,6 +15,7 @@
 								<tr>
 									<th>&nbsp;</th>
 									<th>Name</th>
+									<th>Method</th>
 									<th>UriPattern</th>
 								</tr>
 							</thead>
@@ -22,6 +23,7 @@
 								<tr ng-repeat="service in services">
 									<td>{{::$index}}</td>
 									<td>{{::service.name}}</a></td>
+									<td>{{::service.method}}</td>
 									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.uriPattern}}</a></td>
 								</tr>
 							</tbody>

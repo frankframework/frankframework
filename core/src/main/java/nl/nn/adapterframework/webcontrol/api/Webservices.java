@@ -86,6 +86,7 @@ public final class Webservices extends Base {
 					if (rl.isView()) {
 						Map<String, Object> service = new HashMap<String, Object>(2);
 						service.put("name", adapter.getName() + " "+  receiver.getName());
+						service.put("method", rl.getMethod());
 						service.put("uriPattern", rl.getUriPattern());
 						webServices.add(service);
 					}
