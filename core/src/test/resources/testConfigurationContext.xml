@@ -24,6 +24,29 @@
 	/>
 
 	<bean
+		name="listenerContainer"
+		class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+		autowire="byName"
+		scope="prototype"
+	/>
+
+	<bean
+		name="namedThreadFactory"
+		class="nl.nn.adapterframework.scheduler.NamedThreadFactory"
+		scope="prototype"
+	>
+		<property name="ThreadGroupName" value="ControlTasks"/>
+	</bean>
+
+	<bean
+		name="taskExecutor"
+		class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+		scope="singleton"
+	>
+		<property name="ThreadFactory" ref="namedThreadFactory"/>
+	</bean>
+
+	<bean
 		name="scheduleManager"
 		class="nl.nn.adapterframework.configuration.ScheduleManager"
 		autowire="byType"

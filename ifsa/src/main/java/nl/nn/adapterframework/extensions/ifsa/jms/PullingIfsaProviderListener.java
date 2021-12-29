@@ -577,7 +577,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState() == RunStateEnum.STARTED;
 	}
 
 	@Override
