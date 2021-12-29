@@ -86,7 +86,12 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			liquibase.dropAll();
+			try {
+				liquibase.dropAll();
+			} catch(Exception e) {
+				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
+				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null); 
+			}
 			liquibase.close();
 		}
 
@@ -106,7 +111,6 @@ public abstract class JdbcTestBase {
 	protected void runMigrator(String changeLogFile) throws Exception {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
-		liquibase.dropAll();
 		liquibase.update(new Contexts());
 	}
 
