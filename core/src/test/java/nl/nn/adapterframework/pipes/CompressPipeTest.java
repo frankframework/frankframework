@@ -7,6 +7,11 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.FileUtils;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private String dummyString = "dummyString";
@@ -15,6 +20,35 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	@Override
 	public CompressPipe createPipe() {
 		return new CompressPipe();
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResult() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setZipEntryPattern("fileaa.txt");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		assertEquals("aaa", prr.getResult().asString());
+	}
+
+//	@Test
+//	public void testMessageIsContent() throws Exception {
+//		String outputDir = FileUtils.createTempDir(null,"test").getPath();
+//		pipe.setMessageIsContent(true);
+//		pipe.setOutputDirectory(outputDir);
+//		configureAndStartPipe();
+//		PipeRunResult prr = doPipe(TestFileUtils.getTestFile("/Unzip/ab.zip"));
+//		assertEquals("aaa", prr.getResult().asString());
+//	}
+
+	@Test
+	public void testZipMultipleFiles() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setCompress(true);
+		configureAndStartPipe();
+		String input=TestFileUtils.getTestFileURL("/Util/FileUtils/copyFile.txt").getPath()+";"+TestFileUtils.getTestFileURL("/Util/FileUtils/copyFrom.txt").getPath();
+		PipeRunResult prr = doPipe(input);
+		assertEquals("success", prr.getPipeForward().getName());
 	}
 
 	@Test

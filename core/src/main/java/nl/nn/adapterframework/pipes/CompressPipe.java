@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
@@ -49,14 +50,14 @@ import nl.nn.adapterframework.util.FileUtils;
  */
 public class CompressPipe extends FixedForwardPipe {
 
-	private boolean messageIsContent;
-	private boolean resultIsContent;
-	private String outputDirectory;
-	private String filenamePattern;
-	private String zipEntryPattern;
-	private boolean compress;
-	private boolean convert2String;
-	private String fileFormat;
+	private @Getter boolean messageIsContent;
+	private @Getter boolean resultIsContent;
+	private @Getter String outputDirectory;
+	private @Getter String filenamePattern;
+	private @Getter String zipEntryPattern;
+	private @Getter boolean compress;
+	private @Getter boolean convert2String;
+	private @Getter String fileFormat;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -126,7 +127,7 @@ public class CompressPipe extends FixedForwardPipe {
 						out = new GZIPOutputStream(out);
 					} else {
 						ZipOutputStream zipper = new ZipOutputStream(out); 
-						String zipEntryName = getZipEntryName(message, session);
+						String zipEntryName = getZipEntryName(message.asString(), session);
 						zipper.putNextEntry(new ZipEntry(zipEntryName));
 						out = zipper;
 					}
@@ -135,7 +136,7 @@ public class CompressPipe extends FixedForwardPipe {
 						in = new GZIPInputStream(in);
 					} else {
 						ZipInputStream zipper = new ZipInputStream(in);
-						String zipEntryName = getZipEntryName(message, session);
+						String zipEntryName = getZipEntryName(message.asString(), session);
 						if (zipEntryName.equals("")) {
 							// Use first entry found
 							zipper.getNextEntry();
@@ -180,31 +181,11 @@ public class CompressPipe extends FixedForwardPipe {
 		return result;
 	}
 	
-	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
+	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException {
 		if (messageIsContent) {
 			return FileUtils.getFilename(getParameterList(), session, (File)null, zipEntryPattern);
 		}
-		return FileUtils.getFilename(getParameterList(), session, new File((String)input), zipEntryPattern);
-	}
-
-	public boolean isCompress() {
-		return compress;
-	}
-
-	public String getFilenamePattern() {
-		return filenamePattern;
-	}
-
-	public boolean isMessageIsContent() {
-		return messageIsContent;
-	}
-
-	public String getOutputDirectory() {
-		return outputDirectory;
-	}
-
-	public boolean isResultIsContent() {
-		return resultIsContent;
+		return FileUtils.getFilename(getParameterList(), session, new File(input), zipEntryPattern);
 	}
 
 	@IbisDoc({"if <code>true</code> the pipe compresses, otherwise it decompress", "false"})
@@ -232,17 +213,9 @@ public class CompressPipe extends FixedForwardPipe {
 		resultIsContent = b;
 	}
 
-	public String getZipEntryPattern() {
-		return zipEntryPattern;
-	}
-
 	@IbisDoc({"the pattern for the zipentry name in case a zipfile is read or written", ""})
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
-	}
-
-	public boolean isConvert2String() {
-		return convert2String;
 	}
 
 	@IbisDoc({"if <code>true</code> result is returned as a string, otherwise as a byte array", "false"})
