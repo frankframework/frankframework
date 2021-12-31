@@ -272,14 +272,20 @@ public class ApiListenerServlet extends HttpServletBase {
 						try {
 							handler.validateClaims(requiredClaims, exactMatchClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
-								if(handler.isUserInRole(listener.getRoleClaim(), messageContext)) {
+								List<String> authRoles = listener.getAuthenticationRoleList();
+								if(authRoles != null) {
+									for (String role : authRoles) {
+										if(handler.isUserInRole(role, messageContext)) {
+											userPrincipal = new ApiPrincipal();
+											break;
+										}
+									}
+								} else {
 									userPrincipal = new ApiPrincipal();
 								}
 							} else {
 								userPrincipal = new ApiPrincipal();
 							}
-						
-							
 						} catch(IllegalArgumentException e) {
 							response.sendError(403, e.getMessage());
 							return;

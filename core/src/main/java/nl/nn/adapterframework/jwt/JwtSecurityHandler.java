@@ -41,10 +41,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	@Override
 	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
 		String claim = (String) getClaimsSet().get(roleClaim);
-		if (StringUtils.isNotEmpty(claim)) {
-			claim.contains(role);
-		}
-		return true;
+		return role.equals(claim);
 	}
 
 	@Override

@@ -924,6 +924,37 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("JWT aud claim has value [Framework], must be [test]", result.getErrorMessage());
 	}
 
+	@Test
+	public void testJwtTokenWithRoleClaim() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+			.setRequiredIssuer("JWTPipeTest")
+			.setRoleClaim("sub")
+			.setAuthenticationRoles("UnitTest")
+			.setAuthenticationMethod(AuthenticationMethods.JWT)
+			.build();
+
+		Response result = service(prepareJWTRequest(null));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+	}
+	
+	@Test
+	public void testJwtTokenWithRoleClaimAndEmptyAuthRoles() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+			.setRequiredIssuer("JWTPipeTest")
+			.setRoleClaim("sub")
+			.setAuthenticationMethod(AuthenticationMethods.JWT)
+			.build();
+
+		Response result = service(prepareJWTRequest(null));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+	}
+
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put("Authorization", "Bearer "+ (token != null ? token : JWT) );
@@ -970,8 +1001,18 @@ public class ApiListenerServletTest extends Mockito {
 
 		}
 
+		public ApiListenerBuilder setAuthenticationRoles(String roles) {
+			listener.setAuthenticationRoles(roles);
+			return this;
+		}
+
 		public ApiListenerBuilder setRequiredClaims(String requiredClaims) {
 			listener.setRequiredClaims(requiredClaims);
+			return this;
+		}
+
+		public ApiListenerBuilder setRoleClaim(String string) {
+			listener.setRoleClaim(string);
 			return this;
 		}
 
