@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -96,8 +96,6 @@ public class AuthSSLContextFactory {
 
 
 	private SSLContext createSSLContext() throws GeneralSecurityException, IOException {
-		KeyManager[] keymanagers = null;
-		TrustManager[] trustmanagers = null;
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
 		SSLContext sslcontext;
@@ -108,9 +106,12 @@ public class AuthSSLContextFactory {
 		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
 			truststoreUrl = ClassUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
 		}
-		if (keystoreUrl==null && truststoreUrl==null) {
+		boolean allowSelfSignedCertificates = trustoreOwner!=null && trustoreOwner.isAllowSelfSignedCertificates();
+		
+		if (keystoreUrl==null && truststoreUrl==null && !allowSelfSignedCertificates) {
 			sslcontext = SSLContext.getDefault();
 		} else {
+			KeyManager[] keymanagers = null;
 			if (keystoreUrl!=null) {
 				CredentialFactory keystoreCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 				KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType(), "Certificate chain");
@@ -125,19 +126,20 @@ public class AuthSSLContextFactory {
 					keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCf.getPassword(), keystoreOwner.getKeyManagerAlgorithm());
 				}
 			}
+			
+			KeyStore truststore = null;
+			TrustManager[] trustmanagers = null;
 			if (truststoreUrl!=null) {
 				CredentialFactory truststoreCf  = new CredentialFactory(trustoreOwner.getTruststoreAuthAlias(),  null, trustoreOwner.getTruststorePassword());
-				KeyStore truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), trustoreOwner.getTruststoreType(), "Trusted Certificate");
-				trustmanagers = PkiUtil.createTrustManagers(truststore, trustoreOwner.getTrustManagerAlgorithm());
-				if (trustoreOwner.isAllowSelfSignedCertificates()) {
-					trustmanagers = new TrustManager[] {
-						new AuthSslTrustManager(truststore, trustmanagers)
-					};
-				}
-			} else if (trustoreOwner!=null && trustoreOwner.isAllowSelfSignedCertificates()) {
+				truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), trustoreOwner.getTruststoreType(), "Trusted Certificate");
+				String algorithm = trustoreOwner!=null ? trustoreOwner.getTrustManagerAlgorithm() : null;
+				trustmanagers = PkiUtil.createTrustManagers(truststore, algorithm);
+			}
+			
+			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
-					new AuthSslTrustManager(null, trustmanagers)
-				};
+						new SelfSignedCertificateAcceptingTrustManagerWrapper(truststore, trustmanagers)
+					};
 			}
 			
 			sslcontext = SSLContext.getInstance(protocol);
@@ -182,10 +184,10 @@ public class AuthSSLContextFactory {
 	 * 
 	 * @author John Dekker
 	 */
-	class AuthSslTrustManager implements X509TrustManager {
+	class SelfSignedCertificateAcceptingTrustManagerWrapper implements X509TrustManager {
 		private X509TrustManager trustManager = null;
 
-		AuthSslTrustManager(KeyStore keystore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
+		SelfSignedCertificateAcceptingTrustManagerWrapper(KeyStore keystore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
 			if (trustmanagers == null || trustmanagers.length == 0) {
 				TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 				factory.init(keystore);
