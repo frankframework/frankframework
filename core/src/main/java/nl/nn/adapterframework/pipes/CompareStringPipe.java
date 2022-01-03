@@ -228,6 +228,12 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey1()) || sessionKey.equals(getSessionKey2());
+	}
+
+
 	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
 	@Deprecated
 	@ConfigurationWarning("Please use the parameter operand1")

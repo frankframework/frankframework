@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
+	<JarScanner scanClassPath="false" scanAllFiles="false" scanAllDirectories="false"/>
 
 	<!-- 
 		Support for XA using BTM requires JDBC datasources to be configured via
@@ -62,7 +63,7 @@
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://host.docker.internal:3307/testiaf"
+		URL="jdbc:mysql://host.docker.internal:3307/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		sslMode="DISABLED"
@@ -79,7 +80,7 @@
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		url="jdbc:mysql://host.docker.internal:3306/testiaf"
+		URL="jdbc:mysql://host.docker.internal:3306/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		sslMode="DISABLED"
@@ -105,7 +106,7 @@
 		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		URL="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>

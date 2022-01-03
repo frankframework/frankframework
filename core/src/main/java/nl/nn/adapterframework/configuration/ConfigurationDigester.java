@@ -99,7 +99,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean schemaBasedParsing = AppConstants.getInstance().getBoolean("configurations.digester.schemaBasedParsing", true);
-	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), true);
+	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
@@ -304,7 +304,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
-			TransformerFilter filter = tp.getTransformerFilter(null, null, null, false, handler);
+			TransformerFilter filter = tp.getTransformerFilter(null, handler);
 			
 			Map<String,Object> parameters = new HashMap<String,Object>();
 			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
@@ -312,9 +312,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
 			
 			return filter;
-		} else {
-			return handler;
-		}
+		} 
+		return handler;
 	}
 
 	public void setDigesterRules(String string) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,12 +31,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that sends an IDoc to SAP.
  * N.B. The sending of the iDoc is committed right after the XA transaction is completed.
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot

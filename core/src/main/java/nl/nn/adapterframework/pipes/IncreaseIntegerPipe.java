@@ -83,6 +83,12 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
+
 	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;

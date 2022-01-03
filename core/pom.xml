@@ -395,6 +395,12 @@
 			<artifactId>narayana-jta</artifactId>
 			<version>5.11.0.Final</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>3.4.2.Final</version>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>com.microsoft.ews-java-api</groupId>
@@ -419,7 +425,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>3.5.3</version><!-- beware, Liquibase checksum generation is not consistent over liquibase versions, see https://liquibase.jira.com/browse/CORE-3204 -->
+			<version>4.4.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

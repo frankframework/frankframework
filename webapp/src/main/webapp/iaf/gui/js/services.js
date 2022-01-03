@@ -1050,6 +1050,14 @@ angular.module('iaf.beheerconsole')
 
 						switch (rejection.status) {
 							case -1:
+								fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
+									if (res.type === "opaqueredirect") {
+										// if the request ended in a redirect that failed, then login
+										login_url = Misc.getServerPath() + 'iaf/';
+										window.location.href = login_url;
+									}
+								});
+							
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");

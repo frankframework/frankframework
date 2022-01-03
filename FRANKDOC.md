@@ -11,7 +11,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | JavaDoc tag | `@ff.forward` | Class | Describes a forward (e.g. `success`, `failure`). First argument is name of forward. Second argument is description.|
 | JavaDoc tag | `@ff.tag` | Class | Tag that classifies the Java class. First argument is tag name, second argument is tag value.|
 | JavaDoc tag | `@ff.default` | Attribute setter | Describes default value. |
-| JavaDoc tag | `@ff.noAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. Attributes can be re-introduced in derived classes by overriding the setter.|
+| Java annotation | `@ProtectedAttribute` | Attribute setter | Suppresses declaration and inheritance of attribute. Annotation is inherited.
 | JavaDoc tag | `@ff.mandatory` | Attribute setter | Makes attribute mandatory in Frank config. |
 | JavaDoc tag | `@ff.defaultElement` | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | Java annotation | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |

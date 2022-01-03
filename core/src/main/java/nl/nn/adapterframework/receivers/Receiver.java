@@ -78,9 +78,11 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -98,8 +100,8 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -122,25 +124,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * requests.
  * 
  *
- * <p>
- * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
- * <table border="1">
- * <tr><th>{@link #setTransactionAttribute(TransactionAttribute) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
- * <tr><td>Required</td><td>true</td></tr>
- * <tr><td>RequiresNew</td><td>true</td></tr>
- * <tr><td>Mandatory</td><td>true</td></tr>
- * <tr><td>otherwise</td><td>false</td></tr>
- * </table>
- * </p>
- * <p>
- * <table border="1">
- * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
- * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
- * </table>
  * </p>
  * <p><b>Transaction control</b><br>
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
@@ -677,7 +660,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				knownProcessStates.add(ProcessState.DONE);
 				messageBrowsers.put(ProcessState.DONE, messageLog);
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null,0);
+					labelTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),OutputType.TEXT,false,null,0);
 				}
 			}
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
@@ -716,7 +699,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null,0);
+				correlationIDTp=TransformerPool.configureTransformer0(getLogPrefix(), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),OutputType.TEXT,false,null,0);
 			}
 			
 			if (StringUtils.isNotEmpty(getHideRegex()) && getErrorStorage()!=null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
@@ -1720,8 +1703,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Changes runstate. 
 	 * Always stops the receiver when state is `**ERROR**`
-	 * @ff.noAttribute
 	 */
+	@ProtectedAttribute
 	public void setRunState(RunStateEnum state) {
 		if(RunStateEnum.ERROR.equals(state)) {
 			stopRunning();
@@ -1939,7 +1922,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	
 	
 	/**
-	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
+	 * Sets the listener used to receive messages from. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
 	@IbisDoc({"10", "The source of messages"})

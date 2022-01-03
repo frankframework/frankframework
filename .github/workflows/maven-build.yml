@@ -78,6 +78,13 @@ jobs:
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
+    - name: Store Test Results
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: Surefire
+        path: ${{ github.workspace }}/*/target/surefire-reports/*
+
     - name: Store FrankDoc XSD
       uses: actions/upload-artifact@v2
       with:

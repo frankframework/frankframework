@@ -74,14 +74,19 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 	
 	@Override
 	public void close() throws IOException {
-		super.close();
 		try {
-			pipeReader.join();
-			if (getException()!=null) {
-				throw new IOException(getException());
+			super.close();
+		} finally {
+			try {
+				pipeReader.join();
+				if (getException()!=null) {
+					throw new IOException(getException());
+				}
+			} catch (InterruptedException e) {
+				log.warn("thread interrupted", e);
+			} finally {
+				threadConnector.close();
 			}
-		} catch (InterruptedException e) {
-			log.warn("thread interrupted", e);
 		}
 	}
 

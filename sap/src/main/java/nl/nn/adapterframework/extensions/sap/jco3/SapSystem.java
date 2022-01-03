@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.extensions.sap.ISapSystemJco3;
+import nl.nn.adapterframework.extensions.sap.ISapSystem;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.SapSystemFactory;
 import nl.nn.adapterframework.util.AppConstants;
@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.GlobalListItem;
  * @author  Niels Meijer
  * @since   5.0
  */
-public class SapSystem extends GlobalListItem implements ISapSystemJco3 {
+public class SapSystem extends GlobalListItem implements ISapSystem {
 
 	private String host;
 	private String ashost;

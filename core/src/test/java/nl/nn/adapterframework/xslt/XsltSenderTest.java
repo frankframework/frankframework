@@ -7,6 +7,7 @@ import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -54,7 +55,7 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	protected void setOutputType(String outputType) {
+	protected void setOutputType(OutputType outputType) {
 		sender.setOutputType(outputType);
 	}
 

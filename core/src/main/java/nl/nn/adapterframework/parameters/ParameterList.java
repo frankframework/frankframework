@@ -124,4 +124,14 @@ public class ParameterList extends ArrayList<Parameter> {
 	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
+
+	public boolean consumesSessionVariable(String sessionKey) {
+		for (Parameter p:this) {
+			if (p.consumesSessionVariable(sessionKey)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

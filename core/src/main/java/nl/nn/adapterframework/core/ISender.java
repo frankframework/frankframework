@@ -69,4 +69,12 @@ public interface ISender extends IConfigurable {
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */ 
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException;
+
+	/**
+	 * returns <code>true</code> if the sender or one of its children use the named session variable. 
+	 * Callers can use this to determine if a message needs to be preserved.
+	 */
+	default boolean consumesSessionVariable(String sessionKey) {
+		return false;
+	}
 }

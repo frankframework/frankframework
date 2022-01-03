@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -27,7 +28,7 @@ import nl.nn.adapterframework.stream.Message;
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameterized.Parameter(0)
-	public String engine;
+	public JavaScriptEngines engine;
 
 	@Override
 	public JavascriptSender createSender() {
@@ -36,7 +37,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{"J2V8"}, {"Nashorn"}, {"Rhino"}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}, {JavaScriptEngines.RHINO}});
 	}
 
 	//Test without a given jsFunctionName. Will call the javascript function main as default

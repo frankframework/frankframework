@@ -22,6 +22,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -30,11 +31,11 @@ import nl.nn.adapterframework.stream.Message;
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameterized.Parameter(0)
-	public String engine;
+	public JavaScriptEngines engine;
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{"J2V8"}, {"Nashorn"}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}});
 	}
 
 	@Override

@@ -46,6 +46,27 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
+/**
+ * 
+ * @ff.parameter from email address of the sender
+ * @ff.parameter subject subject field of the message
+ * @ff.parameter threadTopic (optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same
+ * @ff.parameter message message itself. If absent, the complete input message is assumed to be the message
+ * @ff.parameter messageType message MIME type (at this moment only available are <code>text/plain</code> and <code>text/html</code> - default: <code>text/plain</code>)
+ * @ff.parameter messageBase64 (boolean) indicates whether the message content is base64 encoded (default: <code>false</code>)
+ * @ff.parameter charSet the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: UTF-8)
+ * @ff.parameter recipients (xml) recipients of the message. Must result in a structure like: <code><pre>
+ *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
+ *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
+ * </pre></code>
+ * @ff.parameter attachments (xml) attachments to the message. Must result in a structure like: <code><pre>
+ *       &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
+ *       &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
+ *       &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
+ *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
+ * </pre></code>
+ *
+ */
 public abstract class MailSenderBase extends SenderWithParametersBase {
 
 	private String authAlias;

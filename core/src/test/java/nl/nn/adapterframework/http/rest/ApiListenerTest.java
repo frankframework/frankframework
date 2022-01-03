@@ -38,98 +38,34 @@ public class ApiListenerTest {
 	public void setUp() {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
-		listener.setMethod("put");
+		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern("dummy");
-	}
-
-	@Test
-	public void testMethodLowerCase() throws ConfigurationException {
-		listener.setMethod("put");
-		listener.configure();
-
-		assertEquals(HttpMethod.PUT, listener.getMethodEnum());
-	}
-
-	@Test
-	public void testMethodStrangeCase() throws ConfigurationException {
-		listener.setMethod("pOsT");
-		listener.configure();
-
-		assertEquals(HttpMethod.POST, listener.getMethodEnum());
-	}
-
-	@Test
-	public void testNonExistingMethod() throws ConfigurationException {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-			listener.setMethod("pOsTs");
-		});
-		assertEquals("unknown httpMethod value [pOsTs]. Must be one of [GET, PUT, POST, PATCH, DELETE]", ex.getMessage());
 	}
 
 	@Test
 	public void testOptionsMethod() throws ConfigurationException {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-			listener.setMethod("optIonS");
+			listener.setMethod(HttpMethod.OPTIONS);
 		});
-		assertEquals("unknown httpMethod value [optIonS]. Must be one of [GET, PUT, POST, PATCH, DELETE]", ex.getMessage());
+		assertEquals("method OPTIONS is default and should not be added manually", ex.getMessage());
 	}
 
-	@Test
-	public void testProducesLowerCase() throws ConfigurationException {
-		listener.setProduces("xml");
-		listener.configure();
-
-		assertEquals(MediaTypes.XML, listener.getProducesEnum());
-	}
-
-	@Test
-	public void testProducesUpperCase() throws ConfigurationException {
-		listener.setProduces("XML");
-		listener.configure();
-
-		assertEquals(MediaTypes.XML, listener.getProducesEnum());
-	}
 
 	@Test
 	public void testProducesTextWithCharset() throws ConfigurationException {
-		listener.setProduces("TEXT");
+		listener.setProduces(MediaTypes.TEXT);
 		listener.setCharacterEncoding("utf-8");
 		listener.configure();
 
-		assertEquals(MediaTypes.TEXT, listener.getProducesEnum());
+		assertEquals(MediaTypes.TEXT, listener.getProduces());
 		assertEquals("text/plain;charset=UTF-8", listener.getContentType().getContentType());
 	}
 
-	@Test(expected=IllegalArgumentException.class)
-	public void testUnknownProduces() throws ConfigurationException {
-		listener.setProduces("unknown");
-	}
-
-	@Test
-	public void testConsumesLowerCase() throws ConfigurationException {
-		listener.setConsumes("xml");
-		listener.configure();
-
-		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
-	}
-
-	@Test
-	public void testConsumesUpperCase() throws ConfigurationException {
-		listener.setConsumes("XML");
-		listener.configure();
-
-		assertEquals(MediaTypes.XML, listener.getConsumesEnum());
-	}
-
-	@Test(expected=IllegalArgumentException.class)
-	public void testUnknownConsumes() throws ConfigurationException {
-		listener.setConsumes("unknown");
-	}
 
 	@Test
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
-			listener.setProduces(type.name());
+			listener.setProduces(type);
 			listener.configure(); //Check if the mediatype passes the configure checks
 
 			assertTrue(listener.getContentType().getContentType().startsWith(type.getContentType()));
@@ -139,22 +75,22 @@ public class ApiListenerTest {
 	@Test
 	public void testEmptyContentTypes() throws ConfigurationException {
 		//Check empty produces
-		listener.setProduces("");
-		listener.setConsumes("");
+//		listener.setProduces(null);
+//		listener.setConsumes(null);
 		listener.configure();
 
 		assertEquals("*/*", listener.getContentType().getContentType());
-		assertEquals(MediaTypes.ANY, listener.getConsumesEnum());
+		assertEquals(MediaTypes.ANY, listener.getConsumes());
 	}
 
 	@Test
 	public void isConsumableXML() {
 		String acceptHeader = "text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8";
 
-		listener.setConsumes("XML");
+		listener.setConsumes(MediaTypes.XML);
 		assertTrue("can parse [XML]", listener.isConsumable(acceptHeader));
 
-		listener.setConsumes("JSON");
+		listener.setConsumes(MediaTypes.JSON);
 		assertFalse("can parse [JSON]", listener.isConsumable(acceptHeader));
 	}
 
@@ -162,10 +98,10 @@ public class ApiListenerTest {
 	public void isConsumableJSON() {
 		String acceptHeader = "text/html, application/json;q=0.9, */*;q=0.8";
 
-		listener.setConsumes("XML");
+		listener.setConsumes(MediaTypes.XML);
 		assertFalse("can parse [XML]", listener.isConsumable(acceptHeader));
 
-		listener.setConsumes("JSON");
+		listener.setConsumes(MediaTypes.JSON);
 		assertTrue("can parse [JSON]", listener.isConsumable(acceptHeader));
 	}
 
@@ -173,7 +109,7 @@ public class ApiListenerTest {
 	public void isConsumableANY() {
 		String acceptHeader = "application/octet-stream";
 
-		listener.setConsumes("ANY");
+		listener.setConsumes(MediaTypes.ANY);
 		assertTrue("can parse anything", listener.isConsumable(acceptHeader));
 	}
 
@@ -186,7 +122,7 @@ public class ApiListenerTest {
 		acceptHeaders.add("multipart/related");
 		acceptHeaders.add("multipart/mixed");
 
-		listener.setConsumes("MULTIPART");
+		listener.setConsumes(MediaTypes.MULTIPART);
 		for(String header : acceptHeaders) {
 			String acceptHeader = header + "; type=text/html; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
 
@@ -199,7 +135,7 @@ public class ApiListenerTest {
 		String contentType = "application/octet-stream";
 		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
 
-		listener.setProduces("ANY");
+		listener.setProduces(MediaTypes.ANY);
 		assertTrue("accepts anything", listener.accepts(acceptHeader));
 	}
 
@@ -208,7 +144,7 @@ public class ApiListenerTest {
 		String contentType = "application/xhtml+xml, application/xml";
 		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
 
-		listener.setProduces("JSON");
+		listener.setProduces(MediaTypes.JSON);
 		assertTrue("accepts anything", listener.accepts(acceptHeader));
 	}
 
@@ -217,7 +153,7 @@ public class ApiListenerTest {
 		String contentType = "application/octet-stream";
 		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
 
-		listener.setProduces("JSON");
+		listener.setProduces(MediaTypes.JSON);
 		assertFalse("does not accept an octet-stream when set to JSON", listener.accepts(acceptHeader));
 	}
 
@@ -226,23 +162,13 @@ public class ApiListenerTest {
 		String contentType = "application/json";
 		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
 
-		listener.setProduces("JSON");
+		listener.setProduces(MediaTypes.JSON);
 		assertTrue("accepts JSON", listener.accepts(acceptHeader));
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testFaultyAuthMethod() {
-		try{
-			listener.setAuthenticationMethod("unknown$df");
-		}
-		finally {
-			assertEquals("No authentication method should be set", AuthenticationMethods.NONE, listener.getAuthenticationMethodEnum());
-		}
 	}
 
 	@Test
 	public void testAuthRoleMethod() {
-		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE.name());
-		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethodEnum());
+		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE);
+		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
 	}
 }

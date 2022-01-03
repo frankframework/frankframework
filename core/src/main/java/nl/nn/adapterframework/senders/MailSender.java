@@ -93,29 +93,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * The <code>base64</code> attribute is only used when the value of the PipeLineSession variable <code>sessionKey</code> is a String object
  * or when the value of the attachment element is used. If <code>base64=true</code> then the value will be decoded before it's used.
  * <p>
- * <b>Configuration:</b>
- * <table border="1">
- * <b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
- * <tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>
- * <tr><td>threadTopic</td><td>string</td><td>(optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same</td></tr>
- * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
- * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
- * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
- * <tr><td>charSet</td><td>string</td><td>the character encoding (e.g. ISO-8859-1 or UTF-8) used to send the email (default: UTF-8)</td></tr>
- * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
- *       &lt;recipient type="to"&gt;***@hotmail.com&lt;/recipient&gt;
- *       &lt;recipient type="cc"&gt;***@gmail.com&lt;/recipient&gt;
- * </pre></code></td></tr>
- * <tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre>
- *       &lt;attachment name="filename1.txt"&gt;This is the first attachment&lt;/attachment&gt;
- *       &lt;attachment name="filename2.pdf" base64="true"&gt;JVBERi0xLjQKCjIgMCBvYmoKPDwvVHlwZS9YT2JqZWN0L1N1YnR5cGUvSW1...vSW5mbyA5IDAgUgo+PgpzdGFydHhyZWYKMzQxNDY2CiUlRU9GCg==&lt;/attachment&gt;
- *       &lt;attachment name="filename3.pdf" url="file:/c:/filename3.pdf"/&gt;
- *       &lt;attachment name="filename4.pdf" sessionKey="fileContent"/&gt;
- * </pre></code></td></tr>
- * </table>
- * <p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
  * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code> 
  * 

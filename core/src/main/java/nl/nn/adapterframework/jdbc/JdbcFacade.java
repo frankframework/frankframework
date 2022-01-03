@@ -23,7 +23,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +33,9 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -73,8 +70,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
-	
-	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
+
 	private IDbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
 	private CredentialFactory cf=null;
@@ -118,18 +114,18 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			if (datasource==null) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]");
 			}
-			String dsinfo=getDatasourceInfo();
-			if (dsinfo==null) {
-				dsinfo=datasource.toString();
-			}
+
+			String dsinfo = datasource.toString();
 			log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
-			datasource = new TransactionAwareDataSourceProxy(datasource);
 		}
 		return datasource;
 	}
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
+		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			return getDatasource().toString();
+		}
 		try (Connection conn=getConnection()) {
 			DatabaseMetaData md=conn.getMetaData();
 			String product=md.getDatabaseProductName();
@@ -145,65 +141,21 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return dsinfo;
 	}
 
-	public Dbms getDatabaseType() {
-		IDbmsSupport dbms=getDbmsSupport();
-		return dbms != null ? dbms.getDbms() : Dbms.NONE; 
-	}
-
-	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
-		if (dbmsSupportFactoryDefault==null) {
-			dbmsSupportFactoryDefault=new DbmsSupportFactory();
-		}
-		return dbmsSupportFactoryDefault;
-	}
-	public void setDbmsSupportFactoryDefault(IDbmsSupportFactory dbmsSupportFactory) {
-		this.dbmsSupportFactoryDefault=dbmsSupportFactory;
-	}
-	
-	public IDbmsSupportFactory getDbmsSupportFactory() {
-		if (dbmsSupportFactory==null) {
-			dbmsSupportFactory=getDbmsSupportFactoryDefault();
-		}
-		return dbmsSupportFactory;
-	}
 	public void setDbmsSupportFactory(IDbmsSupportFactory dbmsSupportFactory) {
 		this.dbmsSupportFactory=dbmsSupportFactory;
 	}
 
-	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
-		this.dbmsSupport=dbmsSupport;
-	}
-
 	public IDbmsSupport getDbmsSupport() {
 		if (dbmsSupport==null) {
-			Connection conn=null;
 			try {
-				conn=getConnection();
-			} catch (Exception e) {
-				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
+				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+			} catch (JdbcException e) {
+				throw new IllegalStateException("cannot obtain connection to determine dbmssupport", e);
 			}
-			try {
-				dbmsSupport=getDbmsSupportFactory().getDbmsSupport(conn);
-				if (dbmsSupport==null) {
-					log.warn(getLogPrefix()+"Could not determine database type from connection");
-				} else {
-					log.debug(getLogPrefix()+"determined database connection of type ["+dbmsSupport.getDbmsName()+"]");
-				}
-			} finally {
-				try {
-					if (conn!=null) { 
-						conn.close();
-					}
-				} catch (SQLException e1) {
-					log.warn("exception closing connection for dbmssupport",e1);
-				}
-			}
-		}
-		if (dbmsSupport==null) {
-			dbmsSupport=new GenericDbmsSupport();
 		}
 		return dbmsSupport;
 	}
+
 	/**
 	 * Obtains a connection to the datasource. 
 	 */
@@ -250,7 +202,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	@Override
 	@Deprecated
-	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
 		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
@@ -265,18 +217,25 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	 */
 	@Override
 	public String getPhysicalDestinationName() {
-		String result="unknown";
-		try (Connection connection = getConnection()) {
-			DatabaseMetaData metadata = connection.getMetaData();
-			result = metadata.getURL();
+		try {
+			//Try to minimise the amount of DB connections
+			if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getDestinationName();
+			}
 
-			String catalog=null;
-			catalog=connection.getCatalog();
-			result += catalog!=null ? ("/"+catalog):"";
+			try (Connection connection = getConnection()) {
+				DatabaseMetaData metadata = connection.getMetaData();
+				String result = metadata.getURL();
+	
+				String catalog=null;
+				catalog=connection.getCatalog();
+				result += catalog!=null ? ("/"+catalog):"";
+				return result;
+			}
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);
 		}
-		return result;
+		return "unknown";
 	}
 
 	@IbisDoc({"2", "JNDI name of datasource to be used, can be configured via jmsRealm, too", "${"+JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY+"}"})

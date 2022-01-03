@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -38,10 +39,10 @@ import nl.nn.adapterframework.stream.Message;
  */
 public abstract class FixedForwardPipe extends AbstractPipe {
 
-	private PipeForward successForward;
-	private boolean skipOnEmptyInput = false;
-	private String ifParam = null;
-	private String ifValue = null;
+	private @Getter PipeForward successForward;
+	private @Getter boolean skipOnEmptyInput = false;
+	private @Getter String ifParam = null;
+	private @Getter String ifValue = null;
 
 	/**
 	 * checks for correct configuration of forward
@@ -100,32 +101,19 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-	public PipeForward getSuccessForward() {
-		return successForward;
-	}
-
 
 	@IbisDoc({"2", "If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty", "false"})
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
-	}
-	public boolean isSkipOnEmptyInput() {
-		return skipOnEmptyInput;
 	}
 
 	@IbisDoc({"3", "If set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
-	public String getIfParam() {
-		return ifParam;
-	}
 
 	@IbisDoc({"4", "See <code>ifparam</code>", ""})
 	public void setIfValue(String string) {
 		ifValue = string;
-	}
-	public String getIfValue() {
-		return ifValue;
 	}
 }

@@ -350,19 +350,19 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return (Message)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 	}
 
-	public Object debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<?> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
+	public <M> M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (M)proceedingJoinPoint.proceed();
 		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		String result = null;
+		M result = null;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
 			return null;
 		}
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[1] = correlationId;
-			result = (String)proceedingJoinPoint.proceed(args);
+			result = (M)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.replyListenerAbort(listener, pipeLineSession.getMessageId(), throwable);
 		}
@@ -478,7 +478,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, requestReplyExecutor.getCorrelationID());
+			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
 		}
 		
 		@Override

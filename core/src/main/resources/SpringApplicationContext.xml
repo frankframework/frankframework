@@ -300,8 +300,9 @@
 	</bean>
 
 	<bean
-		id="dbmsSupportFactoryDefault"
+		name="dbmsSupportFactory"
 		class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"
+		scope="singleton"
 		>
 		<property name="dbmsSupportMap">
 			<props>

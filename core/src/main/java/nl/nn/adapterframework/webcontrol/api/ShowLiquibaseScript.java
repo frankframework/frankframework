@@ -41,7 +41,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.jdbc.migration.Migrator;
+import nl.nn.adapterframework.core.BytesResource;
+import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -57,10 +58,9 @@ public final class ShowLiquibaseScript extends Base {
 		List<String> configNames= new ArrayList<String>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
-			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-				if(databaseMigrator.hasLiquibaseScript(config)) {
-					configNames.add(config.getName());
-				}
+			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+			if(databaseMigrator.hasMigrationScript()) {
+				configNames.add(config.getName());
 			}
 		}
 
@@ -79,10 +79,9 @@ public final class ShowLiquibaseScript extends Base {
 		List<Configuration> configurations = new ArrayList<Configuration>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
-			try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
-				if(databaseMigrator.hasLiquibaseScript(config)) {
-					configurations.add(config);
-				}
+			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
+			if(databaseMigrator.hasMigrationScript()) {
+				configurations.add(config);
 			}
 		}
 
@@ -131,26 +130,23 @@ public final class ShowLiquibaseScript extends Base {
 
 		Writer writer = new StringBuilderWriter();
 		Configuration config = getIbisManager().getConfiguration(configuration);
-		try(Migrator databaseMigrator = config.getBean("jdbcMigrator", Migrator.class)) {
+		try {
+			DatabaseMigratorBase databaseMigrator = config.getBean("jdbcMigrator", DatabaseMigratorBase.class);
 			if(file != null) {
 				String filename = inputDataMap.getAttachment("file").getContentDisposition().getParameter( "filename" );
 
 				if (filename.endsWith(".xml")) {
-					databaseMigrator.configure(file, filename);
-					databaseMigrator.getUpdateSql(writer);
+					databaseMigrator.update(writer, new BytesResource(file, filename));
 				} else {
 					try(ZipInputStream stream = new ZipInputStream(file)){
 						ZipEntry entry;
 						while((entry = stream.getNextEntry()) != null) {
-							filename = entry.getName();
-							databaseMigrator.configure(StreamUtil.dontClose(stream), filename);
-							databaseMigrator.getUpdateSql(writer);
+							databaseMigrator.update(writer, new BytesResource(StreamUtil.dontClose(stream), entry.getName()));
 						}
 					}
 				}
 			} else {
-				databaseMigrator.configure();
-				databaseMigrator.getUpdateSql(writer);
+				databaseMigrator.update(writer);
 			}
 		} catch (Exception e) {
 			throw new ApiException("Error generating SQL script", e);

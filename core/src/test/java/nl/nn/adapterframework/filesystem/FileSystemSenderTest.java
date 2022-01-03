@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -231,7 +232,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
 		fileSystemSender.configure();
-		fileSystemSender.setBase64("encode");
+		fileSystemSender.setBase64(Base64Pipe.Direction.ENCODE);
 		fileSystemSender.open();
 		
 		PipeLineSession session = new PipeLineSession();

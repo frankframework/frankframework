@@ -19,6 +19,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+
 public class XsltStreamingTest {
 
 	private class SwitchCounter {
@@ -192,7 +194,7 @@ public class XsltStreamingTest {
 		SwitchCounter sc = new SwitchCounter();
 		
 		String xpath="/root/a";
-		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,"xml", false, null, false, false, null, 1));
+		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1));
 		
 		SAXResult result = new SAXResult();
 		SaxLogger resultfilter = new SaxLogger("out>", sc);

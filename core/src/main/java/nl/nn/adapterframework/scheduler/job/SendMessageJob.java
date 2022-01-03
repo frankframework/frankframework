@@ -48,7 +48,7 @@ public class SendMessageJob extends JobDef {
 		localSender = SpringUtils.createBean(getApplicationContext(), IbisLocalSender.class);
 		localSender.setJavaListener(getJavaListener());
 		localSender.setIsolated(false);
-		localSender.setName("AdapterJob");
+		localSender.setName("Job " + getName());
 		if (getInterval() == 0) {
 			localSender.setDependencyTimeOut(-1);
 		}

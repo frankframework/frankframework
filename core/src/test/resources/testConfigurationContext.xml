@@ -38,4 +38,7 @@
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
+
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" />
 </beans>

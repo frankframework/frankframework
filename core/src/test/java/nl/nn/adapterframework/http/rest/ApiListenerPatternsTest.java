@@ -25,6 +25,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+
 
 @RunWith(Parameterized.class)
 public class ApiListenerPatternsTest {
@@ -60,7 +62,7 @@ public class ApiListenerPatternsTest {
 	public ApiListenerPatternsTest(String pattern, String expectedUriPattern, String expectedCleanPattern) {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
-		listener.setMethod("put");
+		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern(pattern);
 		this.expectedUriPattern = expectedUriPattern;
 		this.expectedCleanPattern = expectedCleanPattern;

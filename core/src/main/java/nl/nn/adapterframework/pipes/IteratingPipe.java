@@ -51,6 +51,7 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
@@ -88,7 +89,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	private @Getter String styleSheetName;
 	private @Getter String xpathExpression=null;
 	private @Getter String namespaceDefs = null; 
-	private @Getter String outputType="text";
+	private @Getter OutputType outputType=OutputType.TEXT;
 	private @Getter boolean omitXmlDeclaration=true;
 
 	private @Getter String itemNoSessionKey=null;
@@ -140,7 +141,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
-				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
+				stopConditionTp=TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),OutputType.XML,false));
 				stopConditionStatisticsKeeper =  new StatisticsKeeper("-> stop condition determination");
 			}
 		} catch (TransformerConfigurationException e) {
@@ -513,9 +514,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"4", "Either 'text' or 'xml'. only valid for xpathexpression", "text"})
-	public void setOutputType(String string) {
-		outputType = string;
+	@IbisDoc({"4", "only valid for xpathexpression", "text"})
+	public void setOutputType(OutputType outputType) {
+		this.outputType = outputType;
 	}
 
 	@IbisDoc({"5", "Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})

@@ -15,7 +15,9 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -24,15 +26,28 @@ import org.springframework.util.StreamUtils;
 
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
+import nl.nn.adapterframework.testutil.BTMXADataSourceFactory;
 
 public class BtmJtaTransactionManagerTest {
-	
+
 	public String STATUS_FILE = "status.txt";
 	public String TMUID_FILE = "tm-uid.txt";
-	
+
 	private BtmJtaTransactionManager delegateTransactionManager;
 	private TemporaryFolder folder;
-	
+
+	@BeforeClass
+	public static void ensureBTMisNotActive() {
+		if(TransactionManagerServices.isTransactionManagerRunning()) {
+			TransactionManagerServices.getTransactionManager().shutdown();
+		}
+	}
+
+	@AfterClass
+	public static void reinstatePreviousTM() {
+		BTMXADataSourceFactory.createBtmTransactionManager();
+	}
+
 	@Before
 	public void setup() throws IOException {
 		folder = new TemporaryFolder();

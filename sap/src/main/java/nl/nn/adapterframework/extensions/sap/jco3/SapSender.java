@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,20 +34,14 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
- * <p><b>Configuration:</b>
- * </p>
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
- * <tr><td>functionName</td><td>String</td><td>defines functionName; required when attribute <code>functionName</code> is empty</td></tr>
- * <tr><td><i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the (simple) input field</td></tr>
- * <tr><td><i>structurename</i>/<i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the named field of the named structure</td></tr>
- * </table>
- * </p>
+ * 
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
- * </p>
+ * 
+ * @ff.parameter functionName   defines functionName; required when attribute <code>functionName</code> is empty
+ * @ff.parameter <i>inputfieldname</i> The value of the parameter is set to the (simple) input field
+ * @ff.parameter <i>structurename</i>/<i>inputfieldname</i> The value of the parameter is set to the named field of the named structure
+ * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0

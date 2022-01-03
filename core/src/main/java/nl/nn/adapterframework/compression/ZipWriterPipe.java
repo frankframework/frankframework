@@ -47,13 +47,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <li>OutputStream</li>
  * <li>HttpResponse</li>
  * </ul>
- * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>
- * </table>
+ * 
+ * @ff.parameter filename specifies the filename if the input is a HttpResponse
  *
  * @author  Gerrit van Brakel
  * @since   4.9.10

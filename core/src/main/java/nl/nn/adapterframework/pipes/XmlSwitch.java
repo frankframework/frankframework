@@ -37,6 +37,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 
 /**
@@ -87,7 +88,7 @@ public class XmlSwitch extends AbstractPipe {
 			if (StringUtils.isNotEmpty(getStyleSheetName())) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
 			}
-			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, "text", false, getParameterList(), getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), this, getNamespaceDefs(), getXpathExpression(), null, OutputType.TEXT, false, getParameterList(), getXsltVersion());
 		} else if(StringUtils.isNotEmpty(getStyleSheetName())) {
 			try {
 				Resource stylesheet = Resource.getResource(this, getStyleSheetName());
@@ -102,7 +103,7 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		} else {
 			try {
-				transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
+				transformerPool = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, OutputType.TEXT));
 			} catch (TransformerConfigurationException e) {
 				throw new ConfigurationException("got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", e);
 			}
@@ -201,6 +202,12 @@ public class XmlSwitch extends AbstractPipe {
 		
 		return new PipeRunResult(pipeForward, message);
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
 
 	@IbisDoc({"1", "stylesheet may return a string representing the forward to look up", "<i>a stylesheet that returns the name of the root-element</i>"})
 	public void setStyleSheetName(String styleSheetName) {

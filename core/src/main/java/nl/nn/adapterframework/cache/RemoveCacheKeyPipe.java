@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Remove specified cache key from cache with specified name.
@@ -84,10 +85,10 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"3", "Output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'", "text"})
-	public void setKeyXPathOutputType(String keyXPathOutputType) {
+	public void setKeyXPathOutputType(OutputType keyXPathOutputType) {
 		keyTransformer.setKeyXPathOutputType(keyXPathOutputType);
 	}
-	public String getKeyXPathOutputType() {
+	public OutputType getKeyXPathOutputType() {
 		return keyTransformer.getKeyXPathOutputType();
 	}
 

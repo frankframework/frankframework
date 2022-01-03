@@ -31,7 +31,6 @@ public class DatabaseSchedulerTest extends Mockito {
 
 		job = configuration.createBean(LoadDatabaseSchedulesJob.class);
 		job.setName("testJob");
-		job.setFunction(JobDefFunctions.LOAD_DATABASE_SCHEDULES.getLabel());
 		job.configure();
 	}
 

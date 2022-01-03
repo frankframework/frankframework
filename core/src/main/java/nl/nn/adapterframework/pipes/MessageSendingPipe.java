@@ -80,6 +80,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -319,17 +320,17 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					getAdapter().getMessageKeeper().add(msg);
 			}
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
+				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),OutputType.TEXT,false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null), this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),OutputType.TEXT,false,null);
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
+			retryTp = TransformerPool.configureTransformer(getLogPrefix(null), this, getRetryNamespaceDefs(), getRetryXPath(), null,OutputType.TEXT,false,null);
 		}
 
 		IValidator inputValidator = getInputValidator();
@@ -967,6 +968,12 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 		return super.hasSizeStatistics();
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || getSender().consumesSessionVariable(sessionKey);
+	}
+
 
 
 	@IbisDoc({"10", "The sender that should send the message"})

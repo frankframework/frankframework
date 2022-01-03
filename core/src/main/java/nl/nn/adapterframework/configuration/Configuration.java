@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ProtectedAttribute;
-import nl.nn.adapterframework.jdbc.migration.Migrator;
+import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
@@ -50,6 +50,7 @@ import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
@@ -82,7 +83,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter String originalConfiguration;
 	private @Getter String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
-	private @Getter @Setter boolean configured = false;
+	private @Getter boolean configured = false;
 
 	private @Getter ConfigurationException configurationException = null;
 
@@ -267,7 +268,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			throw e;
 		}
 
-		setConfigured(true);
+		configured = true;
 
 		String msg;
 		if (isAutoStart()) {
@@ -284,10 +285,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	/** Execute any database changes before calling {@link #configure()}. */
 	protected void runMigrator() {
 		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-		if(AppConstants.getInstance(getClassLoader()).getBoolean("jdbc.migrator.active", false)) {
-			try(Migrator databaseMigrator = getBean("jdbcMigrator", Migrator.class)) {
-				if(databaseMigrator.hasLiquibaseScript(this)) {
-					databaseMigrator.configure();
+		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
+		if(databaseMigrator.isEnabled()) {
+			try {
+				if(databaseMigrator.validate()) {
 					databaseMigrator.update();
 				}
 			} catch (Exception e) {
@@ -347,6 +348,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return inState(BootState.STARTED) && super.isRunning();
 	}
 
+	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -418,7 +420,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * information from the parameters, after checking the
 	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
-	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
+	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
@@ -456,6 +458,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getId();
 	}
 
+	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
@@ -486,15 +489,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		this.ibisManager = ibisManager;
 	}
 
-	/** The entire (raw) configuration
-	 * @ff.noAttribute */
+	/** The entire (raw) configuration */
 	@ProtectedAttribute
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
-	/** The loaded (with resolved properties) configuration
-	 * @ff.noAttribute */
+	/** The loaded (with resolved properties) configuration */
 	@ProtectedAttribute
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
@@ -531,12 +532,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Dummy method to include monitoring in the Frank!Doc.
+	 * Specifies event monitoring 
 	 */
+	// above comment is used in FrankDoc
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
 	@Override
+	@ProtectedAttribute
 	public void setBeanName(String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");

@@ -487,9 +487,4 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	public synchronized StatisticsKeeper getStatisticsKeeper() {
 		return statsKeeper;
 	}
-
-	/** @ff.noAttribute */
-	public void setFunction(Object ignoreMe) {
-		//Dummy method to avoid 'does not have an attribute [function] to set to value [dumpStatistics]' warnings
-	}
 }
