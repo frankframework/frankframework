@@ -187,10 +187,10 @@ public class AuthSSLContextFactory {
 	class SelfSignedCertificateAcceptingTrustManagerWrapper implements X509TrustManager {
 		private X509TrustManager trustManager = null;
 
-		SelfSignedCertificateAcceptingTrustManagerWrapper(KeyStore keystore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
+		SelfSignedCertificateAcceptingTrustManagerWrapper(KeyStore truststore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
 			if (trustmanagers == null || trustmanagers.length == 0) {
 				TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-				factory.init(keystore);
+				factory.init(truststore);
 				trustmanagers = factory.getTrustManagers();
 			}
 			if (trustmanagers.length != 1) {
@@ -204,6 +204,10 @@ public class AuthSSLContextFactory {
 			trustManager.checkClientTrusted(certificates, authType);
 		}
 
+		/**
+		 * checkServerTrusted() trusts the server if each of the certificates in the chain is valid.
+		 * It does not compare the root certificate to a list of trusted certificates.
+		 */
 		@Override
 		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
 			try {
