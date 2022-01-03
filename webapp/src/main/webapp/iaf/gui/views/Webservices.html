@@ -16,6 +16,7 @@
 									<th>&nbsp;</th>
 									<th>Name</th>
 									<th>Method</th>
+									<th>IsView</th>
 									<th>UriPattern</th>
 								</tr>
 							</thead>
@@ -24,6 +25,7 @@
 									<td>{{::$index}}</td>
 									<td>{{::service.name}}</a></td>
 									<td>{{::service.method}}</td>
+									<td>{{::service.view}}</td>
 									<td><a target="_blank" href="{{::rootURL}}rest/{{::service.uriPattern}}">{{::service.uriPattern}}</a></td>
 								</tr>
 							</tbody>
