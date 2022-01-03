@@ -146,7 +146,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@Deprecated
-	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. When using a non-default datasource, use the datasourceName attribute directly, instead of specifying as a realm")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
