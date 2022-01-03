@@ -171,7 +171,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
 			messageContext.put("HttpMethod", method);
-	
+			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
@@ -217,21 +217,6 @@ public class ApiListenerServlet extends HttpServletBase {
 					return;
 				}
 
-				String authorizationHeader = request.getHeader("Authorization");
-				if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) { // assumes that the jwt token is provided via authorization header
-					try {
-						Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-						messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
-						messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-					} catch(Exception e) {
-						log.warn("unable to validate jwt",e);
-						response.sendError(401, e.getMessage());
-						return;
-					}
-				} else {
-					messageContext.setSecurityHandler(new HttpSecurityHandler(request));
-				}
-	
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 	
 				/**
@@ -266,6 +251,20 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						break;
 					case JWT:
+						String authorizationHeader = request.getHeader("Authorization");
+						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+							try {
+								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
+								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+							} catch(Exception e) {
+								log.warn("unable to validate jwt",e);
+								response.sendError(401, e.getMessage());
+								return;
+							}
+						} else {
+							response.sendError(401, "JWT is not provided as bearer token");
+						}
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
 						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
