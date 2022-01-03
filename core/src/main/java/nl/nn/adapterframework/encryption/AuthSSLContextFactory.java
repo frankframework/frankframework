@@ -138,8 +138,8 @@ public class AuthSSLContextFactory {
 			
 			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
-						new SelfSignedCertificateAcceptingTrustManagerWrapper(truststore, trustmanagers)
-					};
+					new SelfSignedCertificateAcceptingTrustManagerWrapper(truststore, trustmanagers)
+				};
 			}
 			
 			sslcontext = SSLContext.getInstance(protocol);
