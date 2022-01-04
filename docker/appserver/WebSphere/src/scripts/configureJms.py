@@ -1,8 +1,7 @@
+#Documentation: https://www.ibm.com/docs/en/was/9.0.5?topic=scripting-jms-configuration-scripts
 cell = AdminControl.getCell()
 node = AdminControl.getNode()
 server = 'server1'
-
-
 
 AdminJMS.createJMSProvider(node, server, 'ActiveMQ', 'org.apache.activemq.jndi.ActiveMQInitialContextFactory', 'tcp://host.docker.internal:61616', 'classpath=/work/drivers/activemq-client.jar;/work/drivers/hawtbuf.jar;/work/drivers/slf4j-api.jar')
 
@@ -12,11 +11,9 @@ AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_in', '
 AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_out', 'jms/i4testiaf_out', 'dynamicQueues/Q.TEST.OUT')
 AdminJMS.createGenericJMSDestination(node, server, 'ActiveMQ', 'i4testiaf_ff', 'jms/i4testiaf_ff', 'dynamicQueues/Q.TEST.FF')
 
-p0 = AdminJMS.listJMSProviders()
-print 'JMS Provider templates: ', p0
-p1 = AdminJMS.listGenericJMSConnectionFactories()
-print 'JMS CF: ', p1
-p2 = AdminJMS.listGenericJMSDestinations()
-print 'JMS Destination: ', p2
-
-#https://www.ibm.com/docs/en/was/9.0.5?topic=scripting-jms-configuration-scripts
+#p0 = AdminJMS.listJMSProviders()
+#print 'JMS Provider templates: ', p0
+#p1 = AdminJMS.listGenericJMSConnectionFactories()
+#print 'JMS CF: ', p1
+#p2 = AdminJMS.listGenericJMSDestinations()
+#print 'JMS Destination: ', p2
