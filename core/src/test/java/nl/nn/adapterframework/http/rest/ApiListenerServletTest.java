@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.X509KeyManager;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -55,10 +61,23 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.KeyOperation;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
@@ -73,9 +92,6 @@ public class ApiListenerServletTest extends Mockito {
 	private Logger log = LogUtil.getLogger(this);
 	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<ApiListener>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
-	private static final String JWT="eyJhbGciOiJSUzI1NiJ9."
-			+ "eyJpc3MiOiJKV1RQaXBlVGVzdCIsInN1YiI6IlVuaXRUZXN0IiwiYXVkIjoiRnJhbWV3b3JrIiwianRpIjoiMTIzNCJ9."
-			+ "U1VsMoITf5kUEHtzfgJTyRWEDZ2gjtTuQI3DVRrJcpden2pjCsAWwl4VOr6McmQkcndZj0GPvN4w3NkJR712ltlsIXw1zMm67vuFY0_id7TP2zIJh3jMkKrTuSPE-SBXZyVnIq22Q54R1VMnOTjO6spbrbYowIzyyeAC7U1RzyB3aKxTgeYJS6auLBaiR3-SWoXs_hBnbIIgYT7AC2e76ICpMlFPQS_e2bcqe1B-yz69se8ZlJgwWK-YhqHMoOCA9oQy3t_cObQI0KSzg7cYDkkQ17cWF3SoyTSTs6Cek_Y97Z17lJX2RVBayPc2uI_oWWuaIUbukxAOIUkgpgtf6g";
 
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
@@ -955,9 +971,41 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 	}
 
+	private String createJWT() throws Exception {
+		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
+
+		JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
+		builder.issuer("JWTPipeTest");
+		builder.subject("UnitTest");
+		builder.audience("Framework");
+		builder.jwtID("1234");
+
+		SignedJWT signedJWT = new SignedJWT(jwsHeader, builder.build());
+
+		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/Signature/certificate.pfx"), "geheim", KeystoreType.PKCS12, "Keys for signing");
+		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, "geheim", null);
+		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
+		PrivateKey privateKey = keyManager.getPrivateKey("1");
+		PublicKey publicKey = keystore.getCertificate("1").getPublicKey();
+
+		JWK jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
+				.privateKey(privateKey)
+				.keyUse(KeyUse.SIGNATURE)
+				.keyOperations(Collections.singleton(KeyOperation.SIGN))
+				.algorithm(JWSAlgorithm.RS256)
+				.keyStore(keystore)
+				.build();
+
+		DefaultJWSSignerFactory factory = new DefaultJWSSignerFactory();
+		JWSSigner jwsSigner = factory.createJWSSigner(jwk, JWSAlgorithm.RS256);
+		signedJWT.sign(jwsSigner);
+
+		return signedJWT.serialize();
+	}
+	
 	public MockHttpServletRequest prepareJWTRequest(String token) throws Exception {
 		Map<String, String> headers = new HashMap<String, String>();
-		headers.put("Authorization", "Bearer "+ (token != null ? token : JWT) );
+		headers.put("Authorization", "Bearer "+ (token != null ? token : createJWT()) );
 		MockHttpServletRequest request = createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 
 		return request;
