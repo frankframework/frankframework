@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
@@ -441,7 +441,7 @@ class PollGuard extends TimerTask {
 		if (lastPollFinishedTime < lastCheck) {
  			if (lastPollFinishedTime != previousLastPollFinishedTime
 				&& springJmsConnector.threadsProcessing.getValue() == 0
-				&& springJmsConnector.getReceiver().getRunState() == RunStateEnum.STARTED
+				&& springJmsConnector.getReceiver().getRunState() == RunState.STARTED
 				&& !springJmsConnector.getJmsContainer().isRecovering()) {
  				previousLastPollFinishedTime = lastPollFinishedTime;
  				timeoutDetected = true;

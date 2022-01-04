@@ -60,7 +60,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.NameComparatorBase;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -171,25 +171,25 @@ public final class ShowConfiguration extends Base {
 		}
 
 		Map<String, Object> response = new HashMap<>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state==RunStateEnum.STARTED) {
+			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+					RunState rState = receiver.getRunState();
 	
-					if(rState!=RunStateEnum.STARTED) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -202,7 +202,7 @@ public final class ShowConfiguration extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty())

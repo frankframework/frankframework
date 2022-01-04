@@ -97,7 +97,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -436,14 +436,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			getListener().open();
 		} finally {
 			if (timeoutGuard.cancel()) {
-				runState.setRunState(RunStateEnum.TIMEOUT_STARTING);
-				log.warn(getLogPrefix()+"timeout starting");
-			} else {
-				throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-				if (getListener() instanceof IPullingListener){
-					// start all threads
-					listenerContainer.start();
-				}
+				throw new ListenerException("Timeout starting");
+			} 
+			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+			if (getListener() instanceof IPullingListener){
+				// start all threads. Also sets runstate=STARTED 
+				listenerContainer.start();
 			}
 		}
 	}
@@ -505,12 +503,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		} finally {
 			if (timeoutGuard.cancel()) {
-				runState.setRunState(RunStateEnum.TIMEOUT_STOPPING);
+				runState.setRunState(RunState.EXCEPTION_STOPPING);
 				log.warn(getLogPrefix()+"timeout stopping");
 			} else {
 				log.debug(getLogPrefix()+"closed");
-				if (isInRunState(RunStateEnum.STOPPING) || isInRunState(RunStateEnum.TIMEOUT_STOPPING)) {
-					runState.setRunState(RunStateEnum.STOPPED);
+				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {
+					runState.setRunState(RunState.STOPPED);
 				}
 				throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 				resetRetryInterval();
@@ -744,7 +742,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			throwEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
 			log.debug(getLogPrefix()+"Errors occured during configuration, setting runstate to ERROR");
-			runState.setRunState(RunStateEnum.ERROR);
+			runState.setRunState(RunState.ERROR);
 			throw e;
 		}
 
@@ -754,8 +752,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		configurationSucceeded = true;
 
-		if(isInRunState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
-			runState.setRunState(RunStateEnum.STOPPED);
+		if(isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+			runState.setRunState(RunState.STOPPED);
 		}
 	}
 
@@ -766,8 +764,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			// if this receiver is on an adapter, the StartListening method
 			// may only be executed when the adapter is started.
 			if (adapter != null) {
-				RunStateEnum adapterRunState = adapter.getRunState();
-				if (adapterRunState!=RunStateEnum.STARTED) {
+				RunState adapterRunState = adapter.getRunState();
+				if (adapterRunState!=RunState.STARTED) {
 					log.warn(getLogPrefix()+"on adapter [" + adapter.getName() + "] was tried to start, but the adapter is in state ["+adapterRunState+"]. Ignoring command.");
 					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
 					return;
@@ -777,7 +775,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			if (!configurationSucceeded) {
 				log.error("configuration of receiver [" + getName() + "] did not succeed, therefore starting the receiver is not possible");
 				warn("configuration did not succeed. Starting the receiver ["+getName()+"] is not possible");
-				runState.setRunState(RunStateEnum.ERROR);
+				runState.setRunState(RunState.ERROR);
 				return;
 			}
 			if (adapter.getConfiguration().isUnloadInProgressOrDone()) {
@@ -786,26 +784,26 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				return;
 			}
 			synchronized (runState) {
-				RunStateEnum currentRunState = getRunState();
-				if (currentRunState!=RunStateEnum.STOPPED && currentRunState!=RunStateEnum.ERROR && configurationSucceeded()) { // stopped OR in error after configuring the receiver
-					if (currentRunState==RunStateEnum.STARTING || currentRunState==RunStateEnum.STARTED) {
+				RunState currentRunState = getRunState();
+				if (currentRunState!=RunState.STOPPED && currentRunState!=RunState.ERROR && configurationSucceeded()) { // stopped OR in error after configuring the receiver
+					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
 						log.info("already in state [" + currentRunState + "]");
 					} else {
 						log.warn("currently in state [" + currentRunState + "], ignoring start() command");
 					}
 					return;
 				}
-				runState.setRunState(RunStateEnum.STARTING);
+				runState.setRunState(RunState.STARTING);
 			}
 
 			openAllResources();
 
 			info("starts listening"); // Don't log that it's ready before it's ready!?
-			runState.setRunState(RunStateEnum.STARTED);
+			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
 			error("error occured while starting", t);
-			runState.setRunState(RunStateEnum.ERROR);
+			runState.setRunState(RunState.EXCEPTION_STARTING);
 		}
 	}
 
@@ -814,16 +812,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public void stopRunning() {
 		// See also Adapter.stopRunning() and PullingListenerContainer.ControllerTask
 		synchronized (runState) {
-			RunStateEnum currentRunState = getRunState();
-			if (currentRunState==RunStateEnum.STARTING) {
+			RunState currentRunState = getRunState();
+			if (currentRunState==RunState.STARTING) {
 				log.warn("receiver currently in state [" + currentRunState + "], ignoring stop() command");
 				return;
-			} else if (currentRunState==RunStateEnum.STOPPING || currentRunState==RunStateEnum.STOPPED) {
+			} else if (currentRunState==RunState.STOPPING || currentRunState==RunState.STOPPED) {
 				log.info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
-			if (currentRunState!=RunStateEnum.ERROR) {
-				runState.setRunState(RunStateEnum.STOPPING); //Don't change the runstate when in ERROR
+			if (currentRunState!=RunState.ERROR) {
+				runState.setRunState(RunState.STOPPING); //Don't change the runstate when in ERROR
 			}
 		}
 
@@ -986,7 +984,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
-		if (getRunState() != RunStateEnum.STARTED) {
+		if (getRunState() != RunState.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
 		}
 
@@ -1550,7 +1548,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			case RECOVER:
 				// Make JobDef.recoverAdapters() try to recover
 				error(errorMessage+", will try to recover",t);
-				setRunState(RunStateEnum.ERROR); //Setting the state to ERROR automatically stops the receiver
+				setRunState(RunState.ERROR); //Setting the state to ERROR automatically stops the receiver
 				break;
 			case CLOSE:
 				error(errorMessage+", stopping receiver", t);
@@ -1602,7 +1600,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			suspensionMessagePending=true;
 			throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 		}
-		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
+		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e2) {
@@ -1730,8 +1728,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * Always stops the receiver when state is `**ERROR**`
 	 */
 	@ProtectedAttribute
-	public void setRunState(RunStateEnum state) {
-		if(RunStateEnum.ERROR.equals(state)) {
+	public void setRunState(RunState state) {
+		if(RunState.ERROR.equals(state)) {
 			stopRunning();
 		}
 
@@ -1741,14 +1739,14 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Get the {@link RunStateEnum runstate} of this receiver.
+	 * Get the {@link RunState runstate} of this receiver.
 	 */
 	@Override
-	public RunStateEnum getRunState() {
+	public RunState getRunState() {
 		return runState.getRunState();
 	}
 
-	public boolean isInRunState(RunStateEnum someRunState) {
+	public boolean isInRunState(RunState someRunState) {
 		return runState.getRunState()==someRunState;
 	}
 	private String sendResultToSender(Message result) {

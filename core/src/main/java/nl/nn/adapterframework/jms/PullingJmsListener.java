@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class.
@@ -359,7 +359,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunStateEnum.STARTED;
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
 
 	@Override

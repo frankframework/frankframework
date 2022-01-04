@@ -36,7 +36,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -177,15 +177,15 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum receiverRunState = receiver.getRunState();
+					RunState receiverRunState = receiver.getRunState();
 					switch(receiverRunState) {
 						case STOPPING:
 						case STOPPED:
 							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
 							break;
 						case STARTED:
-						case TIMEOUT_STARTING:
-						case TIMEOUT_STOPPING:
+						case EXCEPTION_STARTING:
+						case EXCEPTION_STOPPING:
 							receiver.stopRunning();
 							log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 							break;
@@ -203,7 +203,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum receiverRunState = receiver.getRunState();
+					RunState receiverRunState = receiver.getRunState();
 					switch(receiverRunState) {
 						case STARTING:
 						case STARTED:

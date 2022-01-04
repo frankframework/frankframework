@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021,2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package nl.nn.adapterframework.util;
  * Enumeration of states for IManagable
  * @author Gerrit van Brakel
  */
-public enum RunStateEnum {
+public enum RunState {
 
 	ERROR,
 	STARTING,
-	TIMEOUT_STARTING,
+	EXCEPTION_STARTING,
 	STARTED,
 	STOPPING,
-	TIMEOUT_STOPPING,
+	EXCEPTION_STOPPING,
 	STOPPED;
 
 }

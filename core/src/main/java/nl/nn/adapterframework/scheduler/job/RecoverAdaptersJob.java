@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 public class RecoverAdaptersJob extends JobDef {
 	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
@@ -36,9 +36,9 @@ public class RecoverAdaptersJob extends JobDef {
 		int countReceiverStateStarted=0;
 		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
 			countAdapter++;
-			RunStateEnum adapterRunState = adapter.getRunState();
+			RunState adapterRunState = adapter.getRunState();
 			boolean startAdapter = false;
-			if (adapterRunState==RunStateEnum.ERROR) { //if not previously configured, there is no point in trying to do this again.
+			if (adapterRunState==RunState.ERROR) { //if not previously configured, there is no point in trying to do this again.
 				log.debug("trying to recover adapter [" + adapter.getName() + "]");
 
 				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
@@ -58,10 +58,10 @@ public class RecoverAdaptersJob extends JobDef {
 			}
 
 			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-			if (adapterRunState==RunStateEnum.STARTED) {
+			if (adapterRunState==RunState.STARTED) {
 				countAdapterStateStarted++;
 				heartbeatLog.info(message);
-			} else if (adapterRunState==RunStateEnum.ERROR) {
+			} else if (adapterRunState==RunState.ERROR) {
 				heartbeatLog.error(message);
 			} else {
 				heartbeatLog.warn(message);
@@ -70,8 +70,8 @@ public class RecoverAdaptersJob extends JobDef {
 			for (Receiver<?> receiver: adapter.getReceivers()) {
 				countReceiver++;
 
-				RunStateEnum receiverRunState = receiver.getRunState();
-				if (adapterRunState==RunStateEnum.STARTED && receiverRunState==RunStateEnum.ERROR && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+				RunState receiverRunState = receiver.getRunState();
+				if (adapterRunState==RunState.STARTED && receiverRunState==RunState.ERROR && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
 					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
 
 					receiver.startRunning();
@@ -81,10 +81,10 @@ public class RecoverAdaptersJob extends JobDef {
 
 				receiverRunState = receiver.getRunState();
 				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
-				if (receiverRunState==RunStateEnum.STARTED) {
+				if (receiverRunState==RunState.STARTED) {
 					countReceiverStateStarted++;
 					heartbeatLog.info(message);
-				} else if (receiverRunState==RunStateEnum.ERROR) {
+				} else if (receiverRunState==RunState.ERROR) {
 					heartbeatLog.error(message);
 				} else {
 					heartbeatLog.warn(message);
@@ -95,6 +95,6 @@ public class RecoverAdaptersJob extends JobDef {
 				adapter.startRunning(); //ASync startup can still cause the Adapter to end up in an ERROR state
 			}
 		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
+		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunState.STARTED + "]");
 	}
 }

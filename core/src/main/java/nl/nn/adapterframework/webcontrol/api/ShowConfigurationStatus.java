@@ -81,7 +81,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -213,25 +213,25 @@ public final class ShowConfigurationStatus extends Base {
 		Map<String, Object> response = new HashMap<String, Object>();
 		List<String> errors = new ArrayList<String>();
 
-		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-		if(state==RunStateEnum.STARTED) {
+		if(state==RunState.STARTED) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {
-				RunStateEnum rState = receiver.getRunState();
+				RunState rState = receiver.getRunState();
 
-				if(rState!=RunStateEnum.STARTED) {
+				if(rState!=RunState.STARTED) {
 					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-					state = RunStateEnum.ERROR;
+					state = RunState.ERROR;
 				}
 			}
 		}
 		else {
 			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-			state = RunStateEnum.ERROR;
+			state = RunState.ERROR;
 		}
 
 		Status status = Response.Status.OK;
-		if(state==RunStateEnum.ERROR) {
+		if(state==RunState.ERROR) {
 			status = Response.Status.SERVICE_UNAVAILABLE;
 		}
 		if(errors.size() > 0)
@@ -553,9 +553,9 @@ public final class ShowConfigurationStatus extends Base {
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverInfo = new HashMap<>();
 
-			RunStateEnum receiverRunState = receiver.getRunState();
+			RunState receiverRunState = receiver.getRunState();
 
-			receiverInfo.put("started", receiverRunState==RunStateEnum.STARTED);
+			receiverInfo.put("started", receiverRunState==RunState.STARTED);
 			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
 			
 			receiverInfo.put("name", receiver.getName());
@@ -701,8 +701,8 @@ public final class ShowConfigurationStatus extends Base {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
 		adapterInfo.put("nameUC", nameUC);
-		RunStateEnum adapterRunState = adapter.getRunState();
-		adapterInfo.put("started", adapterRunState==RunStateEnum.STARTED);
+		RunState adapterRunState = adapter.getRunState();
+		adapterInfo.put("started", adapterRunState==RunState.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 

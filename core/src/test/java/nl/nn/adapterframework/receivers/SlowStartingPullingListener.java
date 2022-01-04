@@ -13,9 +13,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
 
-public class MockPullingListener implements IPullingListener<String>{
+public class SlowStartingPullingListener implements IPullingListener<String>{
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+	
+	private @Getter @Setter int startupDelay = 10000;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -25,7 +27,7 @@ public class MockPullingListener implements IPullingListener<String>{
 	@Override
 	public void open() throws ListenerException {
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(getStartupDelay());
 		} catch (InterruptedException e) {
 			throw new ListenerException(e);
 		}

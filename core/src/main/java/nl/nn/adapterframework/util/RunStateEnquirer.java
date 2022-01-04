@@ -22,5 +22,5 @@ package nl.nn.adapterframework.util;
  */
 public interface RunStateEnquirer {
 
-	public RunStateEnum getRunState();
+	public RunState getRunState();
 }

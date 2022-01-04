@@ -25,14 +25,14 @@ import org.apache.logging.log4j.Logger;
 public class RunStateManager implements RunStateEnquirer {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private RunStateEnum runState = RunStateEnum.STOPPED;
+	private RunState runState = RunState.STOPPED;
 
 	@Override
-	public synchronized RunStateEnum getRunState() {
+	public synchronized RunState getRunState() {
 		return runState;
 	}
 
-	public synchronized void setRunState(RunStateEnum newRunState) {
+	public synchronized void setRunState(RunState newRunState) {
 		if(!runState.equals(newRunState)) {
 			if(log.isDebugEnabled())
 				log.debug("Runstate [" + this + "] set from " + runState + " to " + newRunState);

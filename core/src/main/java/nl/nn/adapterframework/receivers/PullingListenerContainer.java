@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.Semaphore;
 
 
@@ -153,17 +153,17 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		public void run() {
 			ThreadContext.push(getName());
 			log.debug("taskExecutor ["+ToStringBuilder.reflectionToString(taskExecutor)+"]");
-			receiver.setRunState(RunStateEnum.STARTED);
+			receiver.setRunState(RunState.STARTED);
 			log.debug("started ControllerTask");
 			try {
-				while (receiver.isInRunState(RunStateEnum.STARTED) && !Thread.currentThread().isInterrupted()) {
+				while (receiver.isInRunState(RunState.STARTED) && !Thread.currentThread().isInterrupted()) {
 					processToken.acquire();
 					if (pollToken != null) {
 						pollToken.acquire();
 					}
 					if (isIdle() && receiver.getPollInterval()>0) {
 						if (log.isDebugEnabled() && receiver.getPollInterval()>600)log.debug("is idle, sleeping for ["+receiver.getPollInterval()+"] seconds");
-						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
+						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunState.STARTED); i++) {
 							Thread.sleep(1000);
 						}
 					}
@@ -174,7 +174,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				Thread.currentThread().interrupt();
 			} finally {
 				log.debug("closing down ControllerTask");
-				if(receiver.getRunState()!=RunStateEnum.STOPPING && receiver.getRunState()!=RunStateEnum.TIMEOUT_STOPPING && receiver.getRunState()!=RunStateEnum.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
+				if(receiver.getRunState()!=RunState.STOPPING && receiver.getRunState()!=RunState.EXCEPTION_STOPPING && receiver.getRunState()!=RunState.STOPPED) { // Prevent circular reference in Receiver. IPullingListeners stop as their threads finish
 					receiver.stopRunning();
 				}
 				receiver.closeAllResources(); //We have to call closeAllResources as the receiver won't do this for IPullingListeners
@@ -206,7 +206,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 			boolean pollTokenReleased=false;
 			try {
 				threadsRunning.increase();
-				if (receiver.isInRunState(RunStateEnum.STARTED)) {
+				if (receiver.isInRunState(RunState.STARTED)) {
 					if (listener instanceof IHasProcessState<?> && ((IHasProcessState<?>)listener).knownProcessStates().contains(ProcessState.INPROCESS)) {
 						inProcessStateManager = (IHasProcessState<M>)listener;
 					}
@@ -409,7 +409,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
-		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
+		while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e2) {
