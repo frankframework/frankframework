@@ -40,7 +40,7 @@ setJVMSystemProperty( 'com.ibm.websphere.java2secman.norethrow', 'true')
 #setJVMSystemProperty( 'javax.net.debug', 'ssl,handshake,data,trustmanager')
 #setJVMSystemProperty( 'javax.net.debug', 'all')
 
-setSecurityProperty('enforceJava2Security', 'false')
+setSecurityProperty('enforceJava2Security', 'true')
 
 
 AdminConfig.save()
