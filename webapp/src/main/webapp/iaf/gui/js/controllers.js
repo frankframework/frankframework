@@ -2196,7 +2196,7 @@ angular.module('iaf.beheerconsole')
 			return;
 		}
 
-		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue)
+		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
 			fd.append("property", formData.propertyKey+","+formData.propertyValue);
 		if(formData.message && formData.message != "")
 			fd.append("message", formData.message);
