@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -77,7 +77,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 
 	@Override
-	public Connection openBlock(PipeLineSession session) throws SenderException, TimeOutException {
+	public Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			return super.getConnectionForSendMessage(null);
 		} catch (JdbcException e) {
@@ -89,31 +89,31 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
 		try {
 			super.closeConnectionForSendMessage(connection, session);
-		} catch (JdbcException | TimeOutException e) {
+		} catch (JdbcException | TimeoutException e) {
 			throw new SenderException("cannot close Connection",e);
 		}
 	}
 	
 	@Override
-	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeOutException {
+	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeoutException {
 		return blockHandle;
 	}
 
 	@Override
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
 		// postpone close to closeBlock()
 	}
 
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sendMessageOnConnection(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
 	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		Connection blockHandle = openBlock(session);
 		try {
 			return sendMessageOnConnection(blockHandle, message, session, next);

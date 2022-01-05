@@ -56,7 +56,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
@@ -568,7 +568,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 						} else {
 							replyIsValid = true;
 						}
-					} catch (TimeOutException toe) {
+					} catch (TimeoutException toe) {
 						if (retriesLeft>=1) {
 							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "timeout occured, retries left [" + retriesLeft + "]");
 						} else {
@@ -676,7 +676,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
 		
-			} catch (TimeOutException toe) {
+			} catch (TimeoutException toe) {
 				throwEvent(PIPE_TIMEOUT_MONITOR_EVENT);
 				if (!timeoutPending) {
 					timeoutPending=true;
@@ -770,7 +770,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return validResult;
 	}
 
-	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException, InterruptedException {
+	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException, InterruptedException {
 		long startTime = System.currentTimeMillis();
 		PipeRunResult sendResult = null;
 		String exitState = null;
@@ -785,7 +785,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 							long duration = startTime - lastExitIsTimeoutDate;
 							if (duration < (1000L * getPresumedTimeOutInterval())) {
 								exitState = PRESUMED_TIMEOUT_FORWARD;
-								throw new TimeOutException(getLogPrefix(session)+exitState);
+								throw new TimeoutException(getLogPrefix(session)+exitState);
 							}
 						}
 					}
@@ -802,7 +802,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			} catch (SenderException se) {
 				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 				throw se;
-			} catch (TimeOutException toe) {
+			} catch (TimeoutException toe) {
 				exitState = TIMEOUT_FORWARD;
 				throw toe;
 			}
@@ -815,7 +815,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				String result = (String)sendResultMessage.asObject();
 				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(result)) {
 					exitState = TIMEOUT_FORWARD;
-					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+					throw new TimeoutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 				}
 				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(result)) {
 					exitState = PipeForward.EXCEPTION_FORWARD_NAME;

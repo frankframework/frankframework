@@ -28,7 +28,7 @@ import net.bankid.merchant.library.DirectoryResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -96,7 +96,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Ignore
 	@Test
-	public void randomMessage() throws SenderException, TimeOutException, SAXException, IOException {
+	public void randomMessage() throws SenderException, TimeoutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
 		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();
@@ -105,7 +105,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Ignore
 	@Test
-	public void normal() throws SenderException, TimeOutException, IOException {
+	public void normal() throws SenderException, TimeoutException, IOException {
 		String message = "<idin/>";
 		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();
@@ -114,7 +114,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Ignore
 	@Test
-	public void issuersByCountry() throws SenderException, TimeOutException, IOException {
+	public void issuersByCountry() throws SenderException, TimeoutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
 		PipeLineSession session = null;
 		String result = sender.sendMessage(new Message(message), session).asString();

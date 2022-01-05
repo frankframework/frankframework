@@ -18,7 +18,7 @@ package nl.nn.adapterframework.testtool;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +37,7 @@ public class SenderThread extends Thread {
 	private String response;
 	private SenderException senderException;
 	private IOException ioException;
-	private TimeOutException timeOutException;
+	private TimeoutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
 	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage) {
@@ -72,7 +72,7 @@ public class SenderThread extends Thread {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
@@ -113,7 +113,7 @@ public class SenderThread extends Thread {
         return ioException;
     }
 
-    public TimeOutException getTimeOutException() {
+    public TimeoutException getTimeOutException() {
         while (this.isAlive()) {
             try {
                 Thread.sleep(100);

@@ -33,6 +33,6 @@ public interface IPostboxListener<M> extends IPullingListener<M> {
 	 * changes per listener, for example a JMSListener's messageSelector follows the JMS specification.
 	 * @param threadContext context in which the method is called 
 	 */ 
-	M retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeOutException;
+	M retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException, TimeoutException;
 
 }

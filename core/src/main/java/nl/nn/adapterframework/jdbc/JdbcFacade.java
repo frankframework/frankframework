@@ -31,7 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
@@ -180,7 +180,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		}
 	}
 
-	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeOutException {
+	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();
 		}
@@ -190,7 +190,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return getConnection();
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeOutException(getLogPrefix()+"thread has been interrupted");
+				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
 			} 
 		}
 	}

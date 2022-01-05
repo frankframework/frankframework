@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -75,12 +75,12 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private boolean processingInBlocks=false;
 
 			@Override
-			public void endIterating() throws SenderException, TimeOutException, IOException {
+			public void endIterating() throws SenderException, TimeoutException, IOException {
 				finalizeBlock();
 				super.endIterating();
 			}
 			@Override
-			public void startBlock() throws SenderException, TimeOutException, IOException {
+			public void startBlock() throws SenderException, TimeoutException, IOException {
 				processingInBlocks=true;
 				super.startBlock();
 				if (isCombineBlocks()) {
@@ -88,7 +88,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 			}
 			
-			private StopReason finalizeBlock() throws SenderException, TimeOutException, IOException {
+			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());
@@ -100,7 +100,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			}
 			
 			@Override
-			public StopReason handleItem(String item) throws SenderException, TimeOutException, IOException {
+			public StopReason handleItem(String item) throws SenderException, TimeoutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
 				} 

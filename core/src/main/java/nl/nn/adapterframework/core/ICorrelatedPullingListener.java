@@ -30,5 +30,5 @@ public interface ICorrelatedPullingListener<M> extends IPullingListener<M>{
 	 * Retrieves messages from queue or other channel,  but retrieves only
 	 * messages with the specified correlationId.
 	 */
-	M getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeOutException;
+	M getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException;
 }
