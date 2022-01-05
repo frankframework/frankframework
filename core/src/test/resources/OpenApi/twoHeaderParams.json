@@ -1,14 +1,13 @@
 {
     "openapi":"3.0.0",
     "info":{
-        "title":"TestConfiguration (xxx)",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration",
+        "title":"TestConfiguration",
+        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
         "version":"unknown"
     },
     "servers":[
         {
-            "url":"http://dummy",
-            "description":"request url"
+            "url":"http://dummy/api"
         }
     ],
     "paths":{

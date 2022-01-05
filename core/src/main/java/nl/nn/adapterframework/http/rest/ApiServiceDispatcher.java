@@ -180,12 +180,11 @@ public class ApiServiceDispatcher {
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
 		String environment = AppConstants.getInstance().getString("dtap.stage", "LOC");
 		JsonObjectBuilder info = Json.createObjectBuilder();
-		info.add("title", instanceName + " ("+environment+")");
-		info.add("description", "OpenApi auto-generated at "+DateUtils.getTimeStamp()+" for "+instanceName+"");
+		info.add("title", instanceName);
+		info.add("description", "OpenApi auto-generated at "+DateUtils.getTimeStamp()+" for "+instanceName+" ("+environment+")");
 		info.add("version", "unknown");
 		root.add("info", info);
-		JsonArrayBuilder serverObjectArray = mapServers(request);
-		root.add("servers", serverObjectArray);
+		root.add("servers", mapServers(request));
 
 		JsonObjectBuilder paths = Json.createObjectBuilder();
 		JsonObjectBuilder schemas = Json.createObjectBuilder();
@@ -239,9 +238,10 @@ public class ApiServiceDispatcher {
 		}
 		else { // fall back to the request url
 			String requestUrl = request.getRequestURL().toString();
+			System.err.println(requestUrl);
 			String requestPath = request.getPathInfo(); //The servlet path is not part of the path, we don't need to add it
 			String url = requestUrl.split(requestPath)[0];
-			serversArray.add(Json.createObjectBuilder().add("url", url).add("description", "request url"));
+			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
 
 		return serversArray;
