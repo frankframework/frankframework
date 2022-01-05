@@ -186,20 +186,20 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	public static final String RETRY_FLAG_SESSION_KEY="retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
 
 	public enum OnError { 
-		/** don't stop the receiver if an error occurs.*/ 
-		CONTINUE, 
+		/** Don't stop the receiver when an error occurs.*/ 
+		CONTINUE,
+
 		/** 
 		 * If an error occurs (eg. connection is lost) the receiver will be stopped and marked as ERROR
 		 * Once every <code>recover.adapters.interval</code> it will be attempted to (re-) start the receiver.
 		 */
-		RECOVER, 
-		/** stop the receiver when an error occurs. */
+		RECOVER,
+
+		/** Stop the receiver when an error occurs. */
 		CLOSE 
 	};
 
-	/**
-	 * Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP.
-	 */
+	/** Currently, this feature is only implemented for {@link IPushingListener}s, like Tibco and SAP. */
 	private @Getter OnError onError = OnError.CONTINUE;
 
 	private @Getter String name;
@@ -281,9 +281,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private ITransactionalStorage<Serializable> tmpInProcessStorage=null;
 	private @Getter ITransactionalStorage<Serializable> messageLog=null;
 	private @Getter ITransactionalStorage<Serializable> errorStorage=null;
-	private @Getter ISender sender=null; // answer-sender
+	private @Getter ISender sender=null; // reply-sender
 	private Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new HashMap<>();
-	
+
 	private TransformerPool correlationIDTp=null;
 	private TransformerPool labelTp=null;
 
@@ -436,7 +436,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			getListener().open();
 		} finally {
 			if (timeoutGuard.cancel()) {
-				throw new ListenerException("Timeout starting");
+				throw new TimeoutException("Timeout starting");
 			} 
 			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 			if (getListener() instanceof IPullingListener){

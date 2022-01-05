@@ -282,8 +282,9 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 					}
 */
-					if(!adapter.started)
+					if(adapter.state != "started") {
 						adapter.status = "stopped";
+					}
 
 					//Add flow diagrams
 					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
