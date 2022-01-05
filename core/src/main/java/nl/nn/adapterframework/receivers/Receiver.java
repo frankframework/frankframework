@@ -75,6 +75,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ProtectedAttribute;
@@ -413,9 +414,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 
-	protected void openAllResources() throws ListenerException {
+	protected void openAllResources() throws ListenerException, TimeoutException {
 		// on exit resouces must be in a state that runstate is or can be set to 'STARTED'
-		TimeoutGuard timeoutGuard = new TimeoutGuard(getStopTimeout(), "starting receiver ["+getName()+"]");
+		TimeoutGuard timeoutGuard = new TimeoutGuard(getStartTimeout(), "starting receiver ["+getName()+"]");
 		try {
 			try {
 				if (getSender()!=null) {
@@ -436,8 +437,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			getListener().open();
 		} finally {
 			if (timeoutGuard.cancel()) {
-				throw new TimeoutException("Timeout starting");
-			} 
+				throw new TimeoutException("timeout exceeded while starting receiver");
+			}
+
 			throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 			if (getListener() instanceof IPullingListener){
 				// start all threads. Also sets runstate=STARTED 
@@ -2019,11 +2021,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		pollInterval = i;
 	}
 
-	/** timeout to start receiver. It this timeout is reached, the Receiver may be stopped again */
+	/** timeout to start receiver. If this timeout is reached, the Receiver may be stopped again */
 	public void setStartTimeout(int i) {
 		startTimeout = i;
 	}
-	/** timeout to stopped receiver. It this timeout is reached, a new stop command may be issued */
+	/** timeout to stopped receiver. If this timeout is reached, a new stop command may be issued */
 	public void setStopTimeout(int i) {
 		startTimeout = i;
 	}
