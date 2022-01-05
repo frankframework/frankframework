@@ -4,13 +4,15 @@
 		<thead>
 			<tr>
 				<th class="tbl-15">Name</th>
-				<th class="tbl-85">Description</th>
+				<th class="tbl-75">Description</th>
+				<th class="tbl-10">Cardinality</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr ng-repeat="child in element.children" ng-attr-title="{{ getTitle(child) }}" ng-if="!child.deprecated || showDeprecatedElements">
 				<td ng-class="{ 'deprecated': child.deprecated }">{{::child.roleName}}</td>
 				<td ng-bind-html="::child.description | javadoc:this"></td>
+				<td>{{::(child.multiple?'1 .. n':'0 .. 1')}}</td>
 			</tr>
 		</tbody>
 	</table>
