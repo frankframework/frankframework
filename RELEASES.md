@@ -75,7 +75,19 @@ Upcoming (7.7)
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 - Remove Struts management console (including the IAF-WebControl Configuration)
+- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+  It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
 
+
+
+7.6.2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+
+- Fix gui log error message when more then x files (#2426)
+- Ladybug report keeps in progress while adapter is finished (#2496)
+- Remove Rownum max value upper limit when using Browse Tables (#2515)
+- Update log4j2 (CVE-2021-44228) (#2527)
 
 7.6.1
 --------
