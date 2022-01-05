@@ -83,6 +83,8 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
+import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -193,6 +195,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String username;
 	private @Getter String password;
 	private @Getter String authDomain;
+	private @Getter String tokenEndpoint;
+	private @Getter String scope;
 
 	/** PROXY **/
 	private @Getter String proxyHost;
@@ -239,6 +243,8 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected URI staticUri;
 	private CredentialFactory credentials;
+	
+	private OAuthAccessTokenManager accessTokenManager;
 
 	private Set<String> parametersToSkip=new HashSet<String>();
 
@@ -354,6 +360,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					uname = credentials.getUsername();
 				}
 
+				// TODO: credentials should be evaluated at open(), not in configure()
 				credentialsProvider.setCredentials(
 					new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
 					new UsernamePasswordCredentials(uname, credentials.getPassword())
@@ -361,6 +368,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				requestConfig.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
 				requestConfig.setAuthenticationEnabled(true);
+				
+				if (StringUtils.isNotEmpty(getTokenEndpoint())) {
+					String[] scope = StringUtils.isNotEmpty(getScope()) ? getScope().split(",") : new String[0];
+					accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), scope);
+				}
+				
 			}
 			if (StringUtils.isNotEmpty(getProxyHost())) {
 				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
@@ -368,6 +381,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
 
+				// TODO: credentials should be evaluated at open(), not in configure()
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
 					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
 					credentialsProvider.setCredentials(scope, credentials);
@@ -387,6 +401,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				requestConfig.setProxy(proxy);
 				httpClientBuilder.setProxy(proxy);
+
 			}
 
 			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
@@ -453,6 +468,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
+		
+		if (accessTokenManager!=null) {
+			httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy(accessTokenManager));
+		}
 
 		if (transformerPool!=null) {
 			try {
@@ -738,17 +757,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"1", "URL or base of URL to be used", ""})
+	@IbisDoc({"URL or base of URL to be used", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
 
-	@IbisDoc({"2", "parameter that is used to obtain url; overrides url-attribute.", "url"})
+	@IbisDoc({"parameter that is used to obtain url; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
 
-	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
+	@IbisDoc({"The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(HttpMethod method) {
 		this.httpMethod = method;
 	}
@@ -756,37 +775,37 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
+	@IbisDoc({"content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	@IbisDoc({"charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
 
-	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
 
-	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
 
-	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"21", "username used in authentication to host", ""})
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -796,33 +815,42 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setUsername(username);
 	}
 
-	@IbisDoc({"22", "password used in authentication to host", " "})
+	@IbisDoc({"password used in authentication to host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"23", "domain used in authentication to host", " "})
+	@IbisDoc({"domain used in authentication to host", " "})
 	public void setAuthDomain(String string) {
 		authDomain = string;
 	}
 
+	/** endpoint to obtain OAuth accessToken using ClientCredentials grant. ClientID/ClientSecret are taken from authAlias, username and password. */
+	public void setTokenEndpoint(String string) {
+		tokenEndpoint = string;
+	}
+	/** comma separated list of scope items, only used when tokenEndpoint is specified */
+	public void setScope(String string) {
+		scope = string;
+	}
 
-	@IbisDoc({"30", "proxy host", " "})
+
+	@IbisDoc({"proxy host", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"31", "proxy port", "80"})
+	@IbisDoc({"proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"32", "alias used to obtain credentials for authentication to proxy", ""})
+	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"33", "proxy username", " "})
+	@IbisDoc({"proxy username", " "})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -832,12 +860,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setProxyUsername(string);
 	}
 
-	@IbisDoc({"34", "proxy password", " "})
+	@IbisDoc({"proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"35", "proxy realm", " "})
+	@IbisDoc({"proxy realm", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
@@ -850,7 +878,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	@IbisDoc({"36", "Disables the use of cookies, making the sender completely stateless", "false"})
+	@IbisDoc({"Disables the use of cookies, making the sender completely stateless", "false"})
 	public void setDisableCookies(boolean disableCookies) {
 		this.disableCookies = disableCookies;
 	}
@@ -961,42 +989,42 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 	
 	
-	@IbisDoc({"60", "comma separated list of parameter names which should be set as http headers", ""})
+	@IbisDoc({"comma separated list of parameter names which should be set as http headers", ""})
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
 	
-	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+	@IbisDoc({"when true, a redirect request will be honoured, e.g. to switch to https", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
 	
-	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	@IbisDoc({"controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
 	
-	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+	@IbisDoc({"Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
 
-	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})
+	@IbisDoc({"when true, the html response is transformed to xhtml", "false"})
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
 
-	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	@IbisDoc({"(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
+	@IbisDoc({"Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.", "SSL"})
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
 
-	@IbisDoc({"68", "if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
+	@IbisDoc({"if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}
