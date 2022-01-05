@@ -158,7 +158,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri+"/{pattern}");
+		String result = callOpenApi(uri+"/mock-pattern");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);

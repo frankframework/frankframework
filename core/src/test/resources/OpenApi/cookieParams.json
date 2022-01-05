@@ -7,8 +7,8 @@
     },
     "servers":[
         {
-            "url":"http://dummy:80/api",
-            "description":"xxx server"
+            "url":"http://dummy",
+            "description":"request url"
         }
     ],
     "paths":{

@@ -128,7 +128,8 @@ public class OpenApiTestBase extends Mockito {
 
 			servlet.service(request, response);
 
-			return response.getContentAsString();
+			String res = response.getContentAsString();
+			return res.replaceFirst("\"version\".*", "\"version\":\"test\"");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
 			assertTrue(ExceptionUtils.getStackTrace(t), false);
