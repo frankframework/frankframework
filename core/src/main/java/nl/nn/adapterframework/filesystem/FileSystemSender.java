@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -91,7 +91,7 @@ public class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends Streami
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		
 		try {

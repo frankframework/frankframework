@@ -20,7 +20,7 @@ import java.io.IOException;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -33,7 +33,7 @@ import nl.nn.adapterframework.stream.Message;
 public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 	
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ICache<String,String> cache=senderWrapperBase.getCache();
 		if (cache==null) {
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, message, session);

@@ -40,7 +40,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -146,11 +146,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sendMessage(message, session, null);
 	}
 
-	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
 		Session s = null;
 		MessageProducer mp = null;
 		String correlationID = session==null ? null : session.getMessageId();
@@ -245,7 +245,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				try {
 					javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 					if (rawReplyMsg==null) {
-						throw new TimeOutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
+						throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
 					}
 					if(getResponseHeadersList().size() > 0) {
 						Enumeration<?> propertyNames = rawReplyMsg.getPropertyNames();

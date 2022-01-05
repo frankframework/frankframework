@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -54,7 +54,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			return new Message(responseMessage.getMessage());
 		} catch (IOException e) {
 			throw new ListenerException("cannot convert message to string", e);
-		} catch (TimeOutException e) {
+		} catch (TimeoutException e) {
 			throw new ListenerException("error processing request", e);
 		}
 	}
@@ -63,16 +63,16 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	public ListenerMessage getRequestMessage() {
 		try {
 			return getRequestMessage(0);
-		} catch (TimeOutException e) {
+		} catch (TimeoutException e) {
 			return null;
 		}
 	}
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getRequestMessage(long timeout) throws TimeOutException {
+	public ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
-	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeOutException {
+	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
 		try {
 			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
 			if(requestMessage != null) {
@@ -83,19 +83,19 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			Thread.currentThread().interrupt();
 		}
 
-		throw new TimeOutException();
+		throw new TimeoutException();
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
 	public ListenerMessage getResponseMessage() {
 		try {
 			return getResponseMessage(0);
-		} catch (TimeOutException e) {
+		} catch (TimeoutException e) {
 			return null;
 		}
 	}
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	public ListenerMessage getResponseMessage(long timeout) throws TimeOutException {
+	public ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 

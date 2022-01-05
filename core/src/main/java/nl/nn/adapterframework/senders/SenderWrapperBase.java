@@ -25,7 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -83,10 +83,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException; 
+	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException; 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}

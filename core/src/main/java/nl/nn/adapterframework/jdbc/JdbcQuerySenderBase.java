@@ -50,7 +50,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
@@ -267,13 +267,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeOutException {
+	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled()) {
 			return getConnectionWithTimeout(getTimeout());
 		}
 		return connection;
 	}
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled() && connection!=null) {
 			try {
 				connection.close();
@@ -310,7 +310,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
@@ -318,7 +318,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
-		} catch (SenderException|TimeOutException e) {
+		} catch (SenderException|TimeoutException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -326,7 +326,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -380,7 +380,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
 				if  (sqle.getErrorCode() == 1013) {
-					throw new TimeOutException("Timeout of ["+getTimeout()+"] sec expired");
+					throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
 				}
 			}
 			throw new SenderException(e);
@@ -666,7 +666,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			try {
 				connection = getConnectionWithTimeout(getTimeout());
 				queryExecutionContext = getQueryExecutionContext(connection, null, session);
-			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
+			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeoutException e) {
 				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
 			try {

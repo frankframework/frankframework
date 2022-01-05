@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
@@ -137,7 +137,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 		return sender;
 	}
 
-	public void configure() throws ConfigurationException, SenderException, TimeOutException {
+	public void configure() throws ConfigurationException, SenderException, TimeoutException {
 		sender.setGetProperties(getProperties);
 		sender.setGetDocumentContent(getDocumentContent);
 
@@ -147,7 +147,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 		sender.configure();
 	}
 
-	public void configureWithParameters() throws ConfigurationException, SenderException, TimeOutException {
+	public void configureWithParameters() throws ConfigurationException, SenderException, TimeoutException {
 		Parameter getPropertiesParameter = new Parameter();
 		getPropertiesParameter.setName("getProperties");
 		getPropertiesParameter.setValue(getProperties.toString());
@@ -162,7 +162,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessageFileStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageFileStream() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 
@@ -182,7 +182,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessageStreamResult() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageStreamResult() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
@@ -193,7 +193,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessageFileContent() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageFileContent() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 
@@ -213,7 +213,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessageFileStreamWithParameters() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageFileStreamWithParameters() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		sender.setFileInputStreamSessionKey("fis");
 		configureWithParameters();
 
@@ -233,7 +233,7 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	@Test
-	public void sendMessageFileContentWithParameters() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageFileContentWithParameters() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		sender.setFileContentSessionKey("fileContent");
 		configureWithParameters();
 

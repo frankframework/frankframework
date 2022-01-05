@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -100,7 +100,7 @@ public class XmlJmsBrowserSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;
