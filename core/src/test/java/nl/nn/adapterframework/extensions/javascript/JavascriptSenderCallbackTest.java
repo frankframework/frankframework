@@ -17,7 +17,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
@@ -44,7 +44,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 	}
 
 	@Test
-	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
@@ -70,7 +70,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 
 	//An EchoSender will be called in the javascript code.
 	@Test
-	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f4");
@@ -124,7 +124,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			promiseResult = message;
 			return Message.nullMessage();
 		}

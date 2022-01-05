@@ -38,7 +38,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -165,7 +165,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return Message.asMessage(item);
 	}
 
-	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException, IOException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException, IOException {
 		IDataIterator<I> it=null;
 		StopReason stopReason = null;
 		it = getIterator(input,session, threadContext);
@@ -177,7 +177,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					boolean keepGoing = true;
 					while (keepGoing && (it.hasNext())) {
 						if (Thread.currentThread().isInterrupted()) {
-							throw new TimeOutException("Thread has been interrupted");
+							throw new TimeoutException("Thread has been interrupted");
 						}
 						stopReason = callback.handleItem(getItem(it));
  						keepGoing = stopReason == null;
@@ -220,7 +220,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			}
 		}
 		
-		public void startIterating() throws SenderException, TimeOutException, IOException {
+		public void startIterating() throws SenderException, TimeoutException, IOException {
 			if (isCollectResults()) {
 				results.append("<results>\n");
 			}
@@ -229,7 +229,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				blockOpen=true;
 			}
 		}
-		public void endIterating() throws SenderException, TimeOutException, IOException {
+		public void endIterating() throws SenderException, TimeoutException, IOException {
 			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 			}
@@ -240,7 +240,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				results.append("<results count=\""+getCount()+"\"/>");
 			}
 		}
-		public void startBlock() throws SenderException, TimeOutException, IOException {
+		public void startBlock() throws SenderException, TimeoutException, IOException {
 			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
 				blockOpen=true;
@@ -249,7 +249,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return true when looping should continue, false when stop is required. 
 		 */
-		public boolean endBlock() throws SenderException, TimeOutException, IOException {
+		public boolean endBlock() throws SenderException, TimeoutException, IOException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 				blockOpen=false;
@@ -261,7 +261,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return a non null StopReason when stop is required
 		 */
-		public StopReason handleItem(I item) throws SenderException, TimeOutException, IOException {
+		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
 				if (inputItems.indexOf(item)>=0) {
 					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
@@ -334,7 +334,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 					}
 					if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(itemResult)) {
-						throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+						throw new TimeoutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
 					}
 					if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(itemResult)) {
 						throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
@@ -346,7 +346,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					} else {
 						throw e;
 					}
-				} catch (TimeOutException e) {
+				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
 						log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
 						itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
@@ -443,7 +443,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeOutException, IOException {
+	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		StopReason stopReason = null;
 		try (MessageOutputStream target=getTargetStream(session)) { 
@@ -459,7 +459,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				}
 			}
 			return prr;
-		} catch (SenderException | TimeOutException | IOException e) {
+		} catch (SenderException | TimeoutException | IOException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix(session)+"Exception on transforming input", e);

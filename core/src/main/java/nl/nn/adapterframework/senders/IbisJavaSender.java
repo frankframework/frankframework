@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
@@ -89,7 +89,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HashMap context = null;
 		try {

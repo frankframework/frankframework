@@ -20,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -43,7 +43,7 @@ public class FileListener {
 	 * 
 	 * @return The message read from the specified file
 	 */
-	public String getMessage() throws TimeOutException, ListenerException {
+	public String getMessage() throws TimeoutException, ListenerException {
 		String result = null;
 		if (waitBeforeRead != -1) {
 			try {
@@ -118,7 +118,7 @@ public class FileListener {
 					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
 				}
 			} else {
-				throw new TimeOutException("Time out waiting for file.");
+				throw new TimeoutException("Time out waiting for file.");
 			}
 		}
 		return result;

@@ -36,7 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
@@ -163,7 +163,7 @@ public class NetStorageSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		//The input of this sender is the path where to send or retrieve info from.
 		String path;

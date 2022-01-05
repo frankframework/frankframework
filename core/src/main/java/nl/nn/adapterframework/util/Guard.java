@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 
 /**
  * A Guard is the counterpart of the {@link Semaphore} that waits till all resources have been released.
@@ -50,14 +50,14 @@ public class Guard {
 	 * Wait for the counter to get zero.
 	 *
 	 * @exception InterruptedException passed from this.wait().
-	 * @exception TimeOutException if the time specified has passed, but the counter did not reach zero.
+	 * @exception TimeoutException if the time specified has passed, but the counter did not reach zero.
 	 */
-	public synchronized void waitForAllResources(long timeout) throws InterruptedException, TimeOutException {
+	public synchronized void waitForAllResources(long timeout) throws InterruptedException, TimeoutException {
 		while (counter != 0) {
 			this.wait(timeout);
 		}
 		if (counter!=0) {
-			throw new TimeOutException("Timeout of ["+timeout+"] ms expired");
+			throw new TimeoutException("Timeout of ["+timeout+"] ms expired");
 		}
 	}
 

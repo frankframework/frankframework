@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -82,7 +82,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			if(tg.cancel()) {
 				//Throw a TimeOutException
 				String msgString = "TimeOutException";
-				Exception e = new TimeOutException("exceeds timeout of [" + timeout_work + "] s, interupting");
+				Exception e = new TimeoutException("exceeds timeout of [" + timeout_work + "] s, interupting");
 				if (isThrowException()) {
 					throw new PipeRunException(this, msgString, e);
 				} else {

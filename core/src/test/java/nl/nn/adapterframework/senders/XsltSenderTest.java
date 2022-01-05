@@ -12,7 +12,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -25,7 +25,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void basicXslt1() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void basicXslt1() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.setXsltVersion(1);
 		sender.configure();
@@ -40,7 +40,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void basicXslt2() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void basicXslt2() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		sender.configure();
 		sender.open();
@@ -54,7 +54,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testSimpleXslt1Xpath() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testSimpleXslt1Xpath() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("result");
 		sender.setXsltVersion(1);
 		sender.configure();
@@ -67,7 +67,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testSimpleXslt2Xpath() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testSimpleXslt2Xpath() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("result");
 		sender.configure();
 		sender.open();
@@ -80,7 +80,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
 	//This xPath only runs on xslt version 1
 	@Test
-	public void testComplexXslt1Xpath() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testComplexXslt1Xpath() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setOutputType(OutputType.TEXT);
 		sender.setXsltVersion(1);
@@ -94,7 +94,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testXpathWithNamespaceXslt1() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testXpathWithNamespaceXslt1() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("//x:directoryUrl");
 		sender.setNamespaceDefs("x=http://studieData.nl/schema/edudex/directory");
 		sender.setXsltVersion(1);
@@ -109,7 +109,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testXpathWithNamespaceXslt2() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testXpathWithNamespaceXslt2() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("//directoryUrl");
 		sender.configure();
 		sender.open();
@@ -122,7 +122,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -139,7 +139,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
 		sender.open();
@@ -155,7 +155,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -171,7 +171,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		exception.expectMessage("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		sender.configure();
 		sender.open();
@@ -186,7 +186,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -203,7 +203,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -218,7 +218,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 	
 	@Test
-	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeOutException {
+	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
 		exception.expectMessage("cannot find [/Xslt/dynamicStylesheet/nonexistingDummy.xsl]");
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
@@ -237,7 +237,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	
 	@Ignore("First have to fix this")
 	@Test
-	public void testNamespaceUnaware() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void testNamespaceUnaware() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setStyleSheetName("/Xslt/NamespaceUnaware/FileInfoNamespaceUnAware.xsl");
 		sender.setRemoveNamespaces(true);
 		sender.configure();

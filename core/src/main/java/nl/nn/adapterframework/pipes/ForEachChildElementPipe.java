@@ -38,7 +38,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.stream.IThreadCreator;
@@ -169,7 +169,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		public void startDocument() throws SAXException {
 			try {
 				callback.startIterating();
-			} catch (SenderException | TimeOutException | IOException e) {
+			} catch (SenderException | TimeoutException | IOException e) {
 				throw new SaxException(e);
 			}
 			super.startDocument();
@@ -182,7 +182,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			super.endDocument();
 			try {
 				callback.endIterating();
-			} catch (SenderException | TimeOutException | IOException e) {
+			} catch (SenderException | TimeoutException | IOException e) {
 				throw new SaxException(e);
 			}
 		}
@@ -204,7 +204,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			try {
 				stopReason = callback.handleItem(xmlWriter.toString());
 			} catch (Exception e) {
-				if (e instanceof TimeOutException) {
+				if (e instanceof TimeoutException) {
 					throw new SaxTimeoutException(e);
 				}
 				throw new SaxException(e);
@@ -381,7 +381,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 
 	@Override
-	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
+	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputSource src;
 		if (isProcessFile()) {
 			try {
@@ -415,10 +415,10 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			} catch (Exception e) {
 				try {
 					if (e instanceof SaxTimeoutException) {
-						if (e.getCause()!=null && e.getCause() instanceof TimeOutException) {
-							throw (TimeOutException)e.getCause();
+						if (e.getCause()!=null && e.getCause() instanceof TimeoutException) {
+							throw (TimeoutException)e.getCause();
 						}
-						throw new TimeOutException(e);
+						throw new TimeoutException(e);
 					}
 					if (!(e instanceof SaxAbortException)) {
 						throw new SenderException(e);
