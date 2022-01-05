@@ -401,7 +401,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 				requestConfig.setProxy(proxy);
 				httpClientBuilder.setProxy(proxy);
-
 			}
 
 			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
