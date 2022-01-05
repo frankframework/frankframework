@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -39,13 +40,15 @@ import nl.nn.adapterframework.stream.Message;
  * @author Niels Meijer
  *
  */
+@Deprecated
+@ConfigurationWarning("Please configure eTag caching on the ApiListener")
 public class EtagHandlerPipe extends FixedForwardPipe {
 	private @Getter EtagAction action = null;
-//	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	private @Getter String restPath = "/rest";
 	private String uriPattern = null;
 	private IApiCache cache = null;
 
+//	hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 	public enum EtagAction {
 		GENERATE, GET, SET, DELETE, FLUSH, CLEAR;
 	}
