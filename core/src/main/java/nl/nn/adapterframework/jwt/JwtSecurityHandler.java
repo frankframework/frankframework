@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -33,19 +32,19 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	private @Getter Map<String, Object> claimsSet;
 	private @Getter String roleClaim;
 
-	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim) throws Exception {
+	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
+	public boolean isUserInRole(String role, PipeLineSession session) {
 		String claim = (String) getClaimsSet().get(roleClaim);
 		return role.equals(claim);
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal(PipeLineSession session) {
 		Principal principal = new Principal() {
 
 			@Override
@@ -57,13 +56,13 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return principal;
 	}
 
-	public void validateClaims(String requiredClaims, String exactMatchClaims) {
+	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
 			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
 			for (String claim : claims) {
 				if(!claimsSet.containsKey(claim)) {
-					throw new IllegalArgumentException("JWT missing required claims: ["+claim+"]");
+					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
 				}
 			}
 		}
@@ -76,7 +75,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 				String expectedValue = claims.get(key);
 				String value = (String) claimsSet.get(key);
 				if(!value.equals(expectedValue)) {
-					throw new IllegalArgumentException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
+					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
 				}
 			}
 		}

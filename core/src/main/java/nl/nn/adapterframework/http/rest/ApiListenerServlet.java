@@ -52,6 +52,7 @@ import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
@@ -264,6 +265,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							}
 						} else {
 							response.sendError(401, "JWT is not provided as bearer token");
+							return;
 						}
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
@@ -285,7 +287,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							} else {
 								userPrincipal = new ApiPrincipal();
 							}
-						} catch(IllegalArgumentException e) {
+						} catch(AuthorizationException e) {
 							response.sendError(403, e.getMessage());
 							return;
 						}
