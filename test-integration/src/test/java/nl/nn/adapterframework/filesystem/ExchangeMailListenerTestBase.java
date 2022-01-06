@@ -406,7 +406,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		String targetFolder="Bounce 4";
 		String originalRecipient="";
 		String originalFrom="";
-		String originalSubject="Factuur 23"
+		String originalSubject="Factuur 23";
 		String originalReturnPath="<>";
 		String originalMessageId="<"+ndrMessageId+">";
 		String xEnvironment="TST";
