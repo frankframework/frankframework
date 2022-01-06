@@ -76,7 +76,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		} else {
 			buffer.append(AUTH.WWW_AUTH_RESP);
 		}
-		buffer.append(": Bearer ");
+		buffer.append(": ");
 		buffer.append(accessToken);
 
 		return new BufferedHeader(buffer);

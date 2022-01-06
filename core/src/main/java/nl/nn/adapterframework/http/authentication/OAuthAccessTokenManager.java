@@ -59,7 +59,7 @@ public class OAuthAccessTokenManager {
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
 		// The request scope for the token (may be optional)
-		Scope _scope = new Scope(scope);
+		Scope _scope = scope.length>1 || scope[0]!=null ? new Scope(scope) : null;
 
 		// The token endpoint
 		URI _tokenEndpoint = new URI(tokenEndpoint);
@@ -72,7 +72,7 @@ public class OAuthAccessTokenManager {
 		if (! response.indicatesSuccess()) {
 			// We got an error response...
 			TokenErrorResponse errorResponse = response.toErrorResponse();
-			throw new AuthenticationException(errorResponse.toString());
+			throw new AuthenticationException(errorResponse.toJSONObject().toString());
 		}
 
 		AccessTokenResponse successResponse = response.toSuccessResponse();
