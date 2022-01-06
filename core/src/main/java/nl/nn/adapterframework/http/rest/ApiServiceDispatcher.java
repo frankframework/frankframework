@@ -237,9 +237,8 @@ public class ApiServiceDispatcher {
 			serversArray.add(Json.createObjectBuilder().add("url", loadBalancerUrl + servletPath).add("description", "load balancer"));
 		}
 		else { // fall back to the request url
-			String requestUrl = request.getRequestURL().toString();
-			System.err.println(requestUrl);
-			String requestPath = request.getPathInfo(); //The servlet path is not part of the path, we don't need to add it
+			String requestUrl = request.getRequestURL().toString(); // -> schema+hostname+port/context-path/servlet-path
+			String requestPath = request.getPathInfo(); // -> the remaining path
 			String url = requestUrl.split(requestPath)[0];
 			serversArray.add(Json.createObjectBuilder().add("url", url));
 		}
