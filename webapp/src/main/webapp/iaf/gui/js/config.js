@@ -454,14 +454,6 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			$scope.url = Misc.getServerPath() + "testtool";
 		}
 	})
-	.state('pages.fileSystem', {
-		url: "/fileSystem",
-		templateUrl: "views/FileSystem.html",
-		data: {
-			pageTitle: 'FileSystem',
-			breadcrumbs: 'FileSystem'
-		}
-	})
 	.state('pages.empty_page', {
 		url: "/empty_page",
 		templateUrl: "views/empty_page.html",

@@ -80,7 +80,7 @@
 				className="nl.nn.adapterframework.pipes.UnzipPipe"
 				getInputFromSessionKey="file"
 				directorySessionKey="destination"
-				createSubdirectories="true">
+				keepOriginalFilePath="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
