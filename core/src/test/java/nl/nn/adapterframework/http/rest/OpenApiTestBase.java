@@ -110,10 +110,16 @@ public class OpenApiTestBase extends Mockito {
 	}
 
 	protected MockHttpServletRequest createRequest(String method, String uri) {
+		if(!uri.startsWith("/")) {
+			fail("uri must start with a '/'");
+		}
+
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
-		request.setServerName("dummy");
-		request.setRequestURI("/api"+uri);
+		request.setServerName("mock-hostname");
 		request.setPathInfo(uri);
+		request.setContextPath("/mock-context-path");
+		request.setServletPath("/mock-servlet-path");
+		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
 		return request;
 	}
 

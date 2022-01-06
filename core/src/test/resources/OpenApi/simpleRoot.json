@@ -7,7 +7,7 @@
     },
     "servers":[
         {
-            "url":"http://dummy/api"
+            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
     "paths":{
