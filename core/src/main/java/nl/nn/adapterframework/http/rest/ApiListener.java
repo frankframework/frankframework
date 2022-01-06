@@ -53,7 +53,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = true;
 	private @Getter String operationId;
 
-	private @Getter HttpMethod method;
+	private @Getter HttpMethod method = HttpMethod.GET;
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
@@ -161,11 +161,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return producedContentType;
 	}
 
-	@IbisDoc({"1", "HTTP method to listen to", ""})
+	@IbisDoc({"1", "HTTP method to listen to", "GET"})
 	public void setMethod(HttpMethod method) {
 		this.method = method;
 		if(this.method == HttpMethod.OPTIONS) {
-			throw new IllegalArgumentException("method OPTIONS is default and should not be added manually");
+			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
 	}
 
