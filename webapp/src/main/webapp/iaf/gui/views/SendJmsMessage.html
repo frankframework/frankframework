@@ -60,14 +60,22 @@
 							</div>
 						</div>
 						<div class="row form-group">
-							<label class="col-sm-7 col-md-3 control-label label-height-30">Message Property</label>
+							<label class="col-sm-5 col-md-3 control-label label-height-30">Message Property</label>
 							<div class="col-sm-7 col-md-3">
 								<input class="form-control" name="propertyKey" type="text" ng-model="form.propertyKey"/>
 							</div>
-							<div class="col-sm-7 col-md-1">
+							<div class="hidden-xs hidden-sm col-md-1">
 								<label class="control-label label-height-30 pull-right">Value</label>
 							</div>
-							<div class="col-sm-7 col-md-5">
+							<div class="hidden-xs hidden-sm col-md-5">
+								<input class="form-control" name="propertyValue" type="text" ng-model="form.propertyValue"/>
+							</div>
+						</div>
+						<div class="row form-group hidden-md hidden-lg">
+							<div class="col-sm-5">
+								<label class="control-label label-height-30">Value</label>
+							</div>
+							<div class="col-sm-7">
 								<input class="form-control" name="propertyValue" type="text" ng-model="form.propertyValue"/>
 							</div>
 						</div>
