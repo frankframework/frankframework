@@ -19,7 +19,7 @@ import org.quartz.JobDetail;
 
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.scheduler.ConfiguredJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -32,10 +32,10 @@ public interface IJob extends IConfigurable {
 	/**
 	 * Actual implementation of the {@link IJob}. Is wrapped around a {@link Locker}, {@link MessageKeeper exceptions} 
 	 * and {@link StatisticsKeeper statistics} will be managed automatically.
-	 * @exception TimeOutException when the TransactionTimeout has been reached
+	 * @exception TimeoutException when the TransactionTimeout has been reached
 	 * @exception JobExecutionException when the implementation fails to execute
 	 */
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException;
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException;
 
 	/**
 	 * Triggers the Job at the specified number of milliseconds. Keep cronExpression empty in order to use interval.

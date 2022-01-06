@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.MessagingSource;
@@ -95,7 +95,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 	}
 	
 	@Test
-	public void createAndGetStringMessage() throws SenderException, TimeOutException, ConfigurationException, IOException {
+	public void createAndGetStringMessage() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setDestinationName("TEST");
 		sender.setTransactionCode("UNITTEST");
 		sender.setSynchronous(true);
