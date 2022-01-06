@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -55,7 +55,7 @@ public class ExecuteQueryJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
 		try {
 			qs.open();
 			Message result = qs.sendMessage(Message.nullMessage(), null);

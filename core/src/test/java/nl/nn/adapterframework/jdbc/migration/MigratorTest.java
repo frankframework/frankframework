@@ -9,10 +9,8 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +19,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.testutil.ConfigurationMessageEventListener;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -86,12 +85,11 @@ public class MigratorTest extends JdbcTestBase {
 	public void testSQLWriter() throws Exception {
 		assumeTrue(getDataSourceName().equals("H2"));
 
-		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
-		URL resource = MigratorTest.class.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
-		InputStream file = resource.openStream();
+		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
+		assertNotNull(resource);
 
 		StringWriter writer = new StringWriter();
-		migrator.update(writer, file);
+		migrator.update(writer, resource);
 
 		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes.sql");
 

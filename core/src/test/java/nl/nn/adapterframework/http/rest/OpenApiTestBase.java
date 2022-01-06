@@ -31,12 +31,14 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -107,10 +109,17 @@ public class OpenApiTestBase extends Mockito {
 		return taskExecutor;
 	}
 
-	protected HttpServletRequest createRequest(String method, String uri) {
+	protected MockHttpServletRequest createRequest(String method, String uri) {
+		if(!uri.startsWith("/")) {
+			fail("uri must start with a '/'");
+		}
+
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
-		request.setServerName("dummy");
+		request.setServerName("mock-hostname");
 		request.setPathInfo(uri);
+		request.setContextPath("/mock-context-path");
+		request.setServletPath("/mock-servlet-path");
+		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
 		return request;
 	}
 
@@ -126,7 +135,8 @@ public class OpenApiTestBase extends Mockito {
 
 			servlet.service(request, response);
 
-			return response.getContentAsString();
+			String res = response.getContentAsString();
+			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
 			assertTrue(ExceptionUtils.getStackTrace(t), false);
@@ -159,9 +169,9 @@ public class OpenApiTestBase extends Mockito {
 		}
 		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
-			listener.setMethod(method);
+			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method));
 			listener.setUriPattern(uriPattern);
-			listener.setProduces(produces);
+			if (produces!=null) listener.setProduces(EnumUtils.parse(MediaTypes.class,produces));
 			if(StringUtils.isNotEmpty(operationId)) {
 				listener.setOperationId(operationId);
 			}

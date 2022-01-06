@@ -1,11 +1,7 @@
 package nl.nn.adapterframework.validation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Ignore;
@@ -20,6 +16,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -52,7 +49,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		jsonPipe=new JsonPipe();
 		jsonPipe.setName("xml2json");
 		jsonPipe.registerForward(new PipeForward("success",null));
-		jsonPipe.setDirection("xml2json");
+		jsonPipe.setDirection(Direction.XML2JSON);
 		jsonPipe.configure();
 		try {
 			validator = implementation.newInstance();

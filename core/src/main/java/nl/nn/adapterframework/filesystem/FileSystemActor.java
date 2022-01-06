@@ -41,12 +41,13 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -96,8 +97,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	public final String PARAMETER_INPUTFOLDER="inputFolder";	// folder for actions list, mkdir and rmdir. This is a sub folder of baseFolder
 	public final String PARAMETER_DESTINATION="destination";	// destination for action rename and move
 	
-	public final String BASE64_ENCODE="encode";
-	public final String BASE64_DECODE="decode";
 	
 	public final FileSystemAction[] ACTIONS_BASIC= {FileSystemAction.LIST, FileSystemAction.INFO, FileSystemAction.READ, FileSystemAction.DOWNLOAD, FileSystemAction.READDELETE, FileSystemAction.MOVE, FileSystemAction.COPY, FileSystemAction.DELETE, FileSystemAction.MKDIR, FileSystemAction.RMDIR};
 	public final FileSystemAction[] ACTIONS_WRITABLE_FS= {FileSystemAction.WRITE, FileSystemAction.UPLOAD, FileSystemAction.APPEND, FileSystemAction.RENAME};
@@ -109,7 +108,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String inputFolder; // folder for action=list
 	private @Getter boolean createFolder; // for action move, rename and list
 
-	private @Getter String base64;
+	private @Getter Base64Pipe.Direction base64;
 	private @Getter int rotateDays=0;
 	private @Getter int rotateSize=0;
 	private @Getter boolean overwrite=false;
@@ -129,56 +128,38 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private byte[] eolArray=null;
 
 	public enum FileSystemAction implements DocumentedEnum {
-		/** list files in a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol> */
+		/** list files in a folder/directory, specified by attribute <code>inputFolder</code>, parameter <code>inputFolder</code> or input message */
 		@EnumLabel(ACTION_LIST) LIST,
-		/** show info about a single file<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message</li><li>root folder</li></ol> */
+		/** show info about a single file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
 		@EnumLabel(ACTION_INFO) INFO,
-		/** read a file, returns an InputStream<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>&nbsp; */
+		/** read a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
 		@EnumLabel(ACTION_READ1) READ,
-		@EnumLabel(ACTION_READ2) DOWNLOAD,
-		/** like read, but deletes the file after it has been read<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/> */
+		/** replaced by <code>read</code> */
+		@EnumLabel(ACTION_READ2) @Deprecated DOWNLOAD,
+		/** like <code>read</code>, but deletes the file after it has been read */
 		@EnumLabel(ACTION_READ_DELETE) READDELETE,
-		/** move a file to another folder<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
+		/** move a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message, to a folder specified by attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_MOVE) MOVE,
-		/** copy a file to another folder<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
+		/** copy a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message, to a folder specified by attribute <code>destination</code> or parameter <code>destination</code>  */
 		@EnumLabel(ACTION_COPY) COPY,
-		/** delete a file<br/>filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/> */
+		/** delete a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message */
 		@EnumLabel(ACTION_DELETE) DELETE,
-		/** create a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol><br/> */
+		/** create a folder/directory, specified by attribute <code>inputFolder</code>, parameter <code>inputFolder</code> or input message */
 		@EnumLabel(ACTION_MKDIR) MKDIR,
-		/** remove a folder/directory<br/>folder, taken from first available of:<ol><li>attribute <code>inputFolder</code></li><li>parameter <code>inputFolder</code></li><li>input message</li></ol><br/> */
+		/** remove a folder/directory, specified by attribute <code>inputFolder</code>, parameter <code>inputFolder</code> or input message */
 		@EnumLabel(ACTION_RMDIR) RMDIR,
-		/** write contents to a file<br/>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified. */
+		/** write contents, specified by parameter <code>contents</code> or input message, to a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message.
+		 *  At least one of the parameters must be specified. The missing parameter defaults to the input message. For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_WRITE1) WRITE,
-		@EnumLabel(ACTION_WRITE2) UPLOAD,
-		/** append contents to a file (only for filesystems that support 'append')<br/>
- *  filename: taken from attribute <code>filename</code>, parameter <code>filename</code> or input message<br/>
- *  parameter <code>contents</code>: contents as either Stream, Bytes or String<br/>
- *  At least one of the parameters must be specified.<br/>
- *  The missing parameter defaults to the input message.<br/>
- *  For streaming operation, the parameter <code>filename</code> must be specified. */
+		/** replaced by <code>write</code> */
+		@EnumLabel(ACTION_WRITE2) @Deprecated UPLOAD,
+		/** (only for filesystems that support 'append') append contents, specified by parameter <code>contents</code> or input message, to a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message.
+		 *  At least one of the parameters must be specified. The missing parameter defaults to the input message. For streaming operation, the parameter <code>filename</code> must be specified. */
 		@EnumLabel(ACTION_APPEND) APPEND,
-		/** change the name of a file<br/>filename: taken from parameter <code>filename</code> or input message<br/>destination: taken from attribute <code>destination</code> or parameter <code>destination</code> */
+		/** change the name of a file, specified by attribute <code>filename</code>, parameter <code>filename</code> or input message, to the value specified by attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_RENAME) RENAME,
-		/** (for MailFileSystems only:) forward an existing file to an email address<br/>filename: taken from parameter <code>filename</code> or input message<br/>destination (an email address in this case): taken from attribute <code>destination</code> or parameter <code>destination</code> */
+		/** (for MailFileSystems only:) forward an existing file, specified by parameter <code>contents</code> or input message, to a file, to an email address specified by attribute <code>destination</code> or parameter <code>destination</code> */
 		@EnumLabel(ACTION_FORWARD) FORWARD,
-
-//		/** Specific to AmazonS3Sender */
-//		@EnumLabel("createBucket") CREATEBUCKET,
-//
-//		/** Specific to AmazonS3Sender */
-//		@EnumLabel("deleteBucket") DELETEBUCKET,
-//
-//		/** Specific to AmazonS3Sender */
-//		@EnumLabel("restore") RESTORE,
-//
-//		/** Specific to AmazonS3Sender */
-//		@EnumLabel("copyS3Object") COPYS3OBJECT,
 
 		/** Specific to FileSystemSenderWithAttachments */
 		@EnumLabel(ACTION_LIST_ATTACHMENTS) LISTATTACHMENTS;
@@ -214,10 +195,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 			checkConfiguration(getAction());
 		} else if (parameterList == null || parameterList.findParameter(PARAMETER_ACTION) == null) {
 			throw new ConfigurationException(ClassUtils.nameOf(owner)+": either attribute [action] or parameter ["+PARAMETER_ACTION+"] must be specified");
-		}
-
-		if (StringUtils.isNotEmpty(getBase64()) && !(getBase64().equals(BASE64_ENCODE) || getBase64().equals(BASE64_DECODE))) {
-			throw new ConfigurationException("attribute 'base64' can have value '"+BASE64_ENCODE+"' or '"+BASE64_DECODE+"' or can be left empty");
 		}
 
 		if (StringUtils.isNotEmpty(getInputFolder()) && parameterList!=null && parameterList.findParameter(PARAMETER_INPUTFOLDER) != null) {
@@ -280,14 +257,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 	
-//	@Override
-//	public void close() throws SenderException {
-//		try {
-//			getFileSystem().close();
-//		} catch (FileSystemException e) {
-//			throw new SenderException("Cannot close fileSystem",e);
-//		}
-//	}
 	
 	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getFilename())) {
@@ -339,7 +308,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 	
-	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeOutException {
+	public Object doAction(Message input, ParameterValueList pvl, PipeLineSession session) throws FileSystemException, TimeoutException {
 		try {
 			if(input != null) {
 				input.closeOnCloseOf(session, getClass().getSimpleName()+" of a "+fileSystem.getClass().getSimpleName()); // don't know if the input will be used
@@ -368,8 +337,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 				case READ: {
 					F file=getFile(input, pvl);
 					Message in = fileSystem.readFile(file, getCharset());
-					if (StringUtils.isNotEmpty(getBase64())) {
-						return new Base64InputStream(in.asInputStream(), getBase64().equals(BASE64_ENCODE));
+					if (getBase64()!=null) {
+						return new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE);
 					}
 					return in;
 				}
@@ -398,8 +367,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						}
 						
 					};
-					if (StringUtils.isNotEmpty(getBase64())) {
-						in = new Base64InputStream(in, getBase64().equals(BASE64_ENCODE));
+					if (getBase64()!=null) {
+						in = new Base64InputStream(in, getBase64()==Base64Pipe.Direction.ENCODE);
 					}
 					return in;
 				}
@@ -543,8 +512,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		} else {
 			contents=input;
 		}
-		if (StringUtils.isNotEmpty(getBase64())) {
-			out = new Base64OutputStream(out, getBase64().equals(BASE64_ENCODE));
+		if (getBase64()!=null) {
+			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
 		}
 		if (contents instanceof Message) {
 			Misc.streamToStream(((Message)contents).asInputStream(), out);
@@ -655,9 +624,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.numberOfBackups = numberOfBackups;
 	}
 
-	@IbisDoc({"10", "Can be set to 'encode' or 'decode' for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
+	@IbisDoc({"10", "Can be set for actions "+ACTION_READ1+", "+ACTION_WRITE1+" and "+ACTION_APPEND+". When set the stream is base64 encoded or decoded, respectively", ""})
 	@Deprecated
-	public void setBase64(String base64) {
+	public void setBase64(Base64Pipe.Direction base64) {
 		this.base64 = base64;
 	}
 

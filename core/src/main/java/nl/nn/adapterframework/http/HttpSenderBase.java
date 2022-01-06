@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -78,8 +77,12 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -95,9 +98,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender for the HTTP protocol using GET, POST, PUT or DELETE using httpclient 4+
- * 
- * <p><b>Parameters:</b></p>
- * <p>Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers</p>
  * 
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this</p>
@@ -159,30 +159,31 @@ import nl.nn.adapterframework.util.XmlUtils;
  * please check password or authAlias configuration of the corresponding certificate. 
  * </p>
  * 
+ * @ff.parameters Any parameters present are appended to the request as request-parameters except the headersParams list which are added as http headers
+ * 
  * @author	Niels Meijer
  * @since	7.0
  */
 //TODO: Fix javadoc!
 
-public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination {
+public abstract class HttpSenderBase extends SenderWithParametersBase implements HasPhysicalDestination, HasKeystore, HasTruststore {
 
-	private String url;
-	private String urlParam = "url";
+	private @Getter String url;
+	private @Getter String urlParam = "url";
 
 	public enum HttpMethod {
 		GET,POST,PUT,PATCH,DELETE,HEAD,REPORT;
 	}
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
-	private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private ContentType fullContentType = null;
-	private String contentType = null;
+	private @Getter String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter ContentType fullContentType = null;
+	private @Getter String contentType = null;
 
 	/** CONNECTION POOL **/
-	private int timeout = 10000;
-	private int maxConnections = 10;
-	private int maxExecuteRetries = 1;
-	private SSLConnectionSocketFactory sslSocketFactory = null;
+	private @Getter int timeout = 10000;
+	private @Getter int maxConnections = 10;
+	private @Getter int maxExecuteRetries = 1;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
 	private CloseableHttpClient httpClient;
@@ -194,36 +195,41 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String authDomain;
 
 	/** PROXY **/
-	private String proxyHost;
-	private int    proxyPort=80;
-	private String proxyAuthAlias;
-	private String proxyUserName;
-	private String proxyPassword;
-	private String proxyRealm=null;
+	private @Getter String proxyHost;
+	private @Getter int    proxyPort=80;
+	private @Getter String proxyAuthAlias;
+	private @Getter String proxyUsername;
+	private @Getter String proxyPassword;
+	private @Getter String proxyRealm=null;
 
 	/** SSL **/
-	private String certificate;
-	private String certificateAuthAlias;
-	private String certificatePassword;
-	private String keystoreType="pkcs12";
-	private String keyManagerAlgorithm=null;
-	private String truststore=null;
-	private String truststoreAuthAlias;
-	private String truststorePassword=null;
-	private String truststoreType="jks";
-	private String trustManagerAlgorithm=null;
-	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname=true;
-	private boolean ignoreCertificateExpiredException=false;
+	private @Getter String keystore;
+	private @Getter String keystoreAuthAlias;
+	private @Getter String keystorePassword;
+	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
+	private @Getter String keystoreAlias;
+	private @Getter String keystoreAliasAuthAlias;
+	private @Getter String keystoreAliasPassword;
+	private @Getter String keyManagerAlgorithm=null;
 
-	private String headersParams="";
-	private boolean followRedirects=true;
-	private boolean staleChecking=true;
-	private int staleTimeout = 5000;
-	private boolean xhtml=false;
-	private String styleSheetName=null;
-	private String protocol=null;
-	private String resultStatusCodeSessionKey;
+	private @Getter String truststore=null;
+	private @Getter String truststoreAuthAlias;
+	private @Getter String truststorePassword=null;
+	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
+	private @Getter String trustManagerAlgorithm=null;
+	private @Getter boolean allowSelfSignedCertificates = false;
+	private @Getter boolean verifyHostname=true;
+	private @Getter boolean ignoreCertificateExpiredException=false;
+
+	private @Getter String headersParams="";
+	private @Getter boolean followRedirects=true;
+	private @Getter boolean staleChecking=true;
+	private @Getter int staleTimeout = 5000;
+	private @Getter boolean xhtml=false;
+	private @Getter String styleSheetName=null;
+	private @Getter String protocol=null;
+	private @Getter String resultStatusCodeSessionKey;
+	
 	private final boolean APPEND_MESSAGEID_HEADER = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("http.headers.messageid", true);
 	private boolean disableCookies = false;
 
@@ -335,61 +341,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				staticUri = getURI(getUrl());
 			}
 
-			URL certificateUrl = null;
-			URL truststoreUrl = null;
-	
-			if (!StringUtils.isEmpty(getCertificate())) {
-				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
-				if (certificateUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
-			}
-			if (!StringUtils.isEmpty(getTruststore())) {
-				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
-				if (truststoreUrl == null) {
-					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
-				}
-				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
-			}
+			AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-			HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
-			if(!isVerifyHostname())
-				hostnameVerifier = new NoopHostnameVerifier();
-
-			// Add javax.net.ssl.SSLSocketFactory.getDefault() SSLSocketFactory if non has been set.
-			// See: http://httpcomponents.10934.n7.nabble.com/Upgrading-commons-httpclient-3-x-to-HttpClient4-x-td19333.html
-			// 
-			// The first time this method is called, the security property "ssl.SocketFactory.provider" is examined. 
-			// If it is non-null, a class by that name is loaded and instantiated. If that is successful and the 
-			// object is an instance of SSLSocketFactory, it is made the default SSL socket factory.
-			// Otherwise, this method returns SSLContext.getDefault().getSocketFactory(). If that call fails, an inoperative factory is returned.
-			javax.net.ssl.SSLSocketFactory socketfactory = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
-			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
-
-			if (certificateUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
-				try {
-					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
-					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
-
-					SSLContext sslContext = AuthSSLContextFactory.createSSLContext(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-							truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-							isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getProtocol());
-
-					sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
-					log.debug(getLogPrefix()+"created custom SSLConnectionSocketFactory");
-
-				} catch (Throwable t) {
-					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
-				}
-			}
-
-			// This method will be overwritten by the connectionManager when connectionPooling is enabled!
-			// Can still be null when no default or an invalid system sslSocketFactory has been defined
-			if(sslSocketFactory != null)
-				httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-
+			
 			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			if (!StringUtils.isEmpty(credentials.getUsername())) {
@@ -474,6 +428,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		// In order to support multiThreading and connectionPooling
 		// If a sslSocketFactory has been defined, the connectionManager has to be initialized with the sslSocketFactory
 		PoolingHttpClientConnectionManager connectionManager;
+		SSLConnectionSocketFactory sslSocketFactory = getSSLConnectionSocketFactory();
 		if(sslSocketFactory != null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -510,6 +465,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		httpClient = httpClientBuilder.build();
 	}
 
+	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
+		SSLConnectionSocketFactory sslSocketFactory;
+		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
+
+		try {
+			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
+			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
+		} catch (Exception e) {
+			throw new SenderException("cannot create or initialize SocketFactory", e);
+		}
+		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
+		// Can still be null when no default or an invalid system sslSocketFactory has been defined
+		if(sslSocketFactory != null) {
+			httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+		}
+		return sslSocketFactory;
+	}
+	
 	public CloseableHttpClient getHttpClient() {
 		return httpClient;
 	}
@@ -528,11 +501,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
-	}
-
-	@Override
-	public boolean isSynchronous() {
-		return true;
 	}
 
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
@@ -555,7 +523,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
 					path.append(parameterToAppend);
 				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]");
+					throw new SenderException(getLogPrefix()+"["+getCharSet()+"] encoding error. Failed to add parameter ["+pv.getDefinition().getName()+"]", e);
 				}
 			}
 		}
@@ -584,7 +552,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -702,7 +670,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			} catch (IOException e) {
 				httpRequestBase.abort();
 				if (e instanceof SocketTimeoutException) {
-					throw new TimeOutException(e);
+					throw new TimeoutException(e);
 				}
 				throw new SenderException(e);
 			} finally {
@@ -718,7 +686,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// This will cause the connection to become stale..
 				
 				if (tg.cancel()) {
-					throw new TimeOutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
+					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
 			}
 		}
@@ -726,7 +694,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (statusCode == -1){
 			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
 				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeOutException("Failed to recover from timeout exception");
+				throw new TimeoutException("Failed to recover from timeout exception");
 			}
 			throw new SenderException("Failed to recover from exception");
 		}
@@ -774,16 +742,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setUrl(String string) {
 		url = string;
 	}
-	public String getUrl() {
-		return url;
-	}
 
 	@IbisDoc({"2", "parameter that is used to obtain url; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
-	}
-	public String getUrlParam() {
-		return urlParam;
 	}
 
 	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
@@ -798,46 +760,26 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setContentType(String string) {
 		contentType = string;
 	}
-	public String getContentType() {
-		return contentType;
-	}
-	public ContentType getFullContentType() {
-		return fullContentType;
-	}
 
 	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
-	}
-	public String getCharSet() {
-		return charSet;
 	}
 
 	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
-	public int getTimeout() {
-		return timeout;
-	}
 
 	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
-	}
-	public int getMaxConnections() {
-		return maxConnections;
 	}
 
 	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
-	public int getMaxExecuteRetries() {
-		return maxExecuteRetries;
-	}
-
-
 
 	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
@@ -869,55 +811,35 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
-	public String getProxyHost() {
-		return proxyHost;
-	}
 
 	@IbisDoc({"31", "proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
-	}
-	public int getProxyPort() {
-		return proxyPort;
 	}
 
 	@IbisDoc({"32", "alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
 
 	@IbisDoc({"33", "proxy username", " "})
 	public void setProxyUsername(String string) {
-		proxyUserName = string;
+		proxyUsername = string;
 	}
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	public String getProxyUsername() {
-		return proxyUserName;
-	}
 
 	@IbisDoc({"34", "proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
 
 	@IbisDoc({"35", "proxy realm", " "})
 	public void setProxyRealm(String string) {
-		proxyRealm = string;
-	}
-	public String getProxyRealm() {
-		if(StringUtils.isEmpty(proxyRealm))
-			return null;
-		return proxyRealm;
+		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
 
 	/**
@@ -936,114 +858,106 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return disableCookies;
 	}
 
-
-	@IbisDoc({"40", "resource url to certificate to be used for authentication", ""})
+	
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
-		certificate = string;
+		setKeystore(string);
 	}
-	public String getCertificate() {
-		return certificate;
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
 	}
-
-	@IbisDoc({"41", "alias used to obtain certificate password", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
+		setKeystoreAuthAlias(string);
 	}
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
-	}
-
-	@IbisDoc({"42", "certificate password", " "})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
 	public void setCertificatePassword(String string) {
-		certificatePassword = string;
-	}
-	public String getCertificatePassword() {
-		return certificatePassword;
+		setKeystorePassword(string);
 	}
 
-	@IbisDoc({"43", "", "pkcs12"})
-	public void setKeystoreType(String string) {
-		keystoreType = string;
-	}
-	public String getKeystoreType() {
-		return keystoreType;
+	/** resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
+	@Override
+	public void setKeystore(String string) {
+		keystore = string;
 	}
 
-	@IbisDoc({"44", "", " "})
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
+	}
+
+	@Override
+	public void setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
+	}
+
+	@Override
+	public void setKeystorePassword(String string) {
+		keystorePassword = string;
+	}
+	
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
+
+	@Override
+	public void setKeystoreAlias(String string) {
+		keystoreAlias = string;
+	}
+	@Override
+	public void setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+	}
+	@Override
+	public void setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
 	}
 
-
-	@IbisDoc({"50", "resource url to truststore to be used for authentication", ""})
+	@Override
+	/** Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	public void setTruststore(String string) {
 		truststore = string;
 	}
-	public String getTruststore() {
-		return truststore;
-	}
 
-	@IbisDoc({"51", "alias used to obtain truststore password", ""})
+	@Override
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
 
-	@IbisDoc({"52", "truststore password", " "})
+	@Override
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
-	public String getTruststorePassword() {
-		return truststorePassword;
+
+	@Override
+	public void setTruststoreType(KeystoreType value) {
+		truststoreType = value;
 	}
 
-	@IbisDoc({"53", "type of truststore", "jks"})
-	public void setTruststoreType(String string) {
-		truststoreType = string;
-	}
-	public String getTruststoreType() {
-		return truststoreType;
-	}
-
-	@IbisDoc({"54", "", " "})
+	@Override
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
 
-	@IbisDoc({"55", "when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
 
-	@IbisDoc({"56", "when true, self signed certificates are accepted", "false"})
+	@Override
 	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
 		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
 	}
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
 
-	/**
-	 * CertificateExpiredExceptions are ignored when set to true
-	 * @ff.default false
-	 */
-	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
+	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
-	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
 	}
 	
 	
@@ -1051,63 +965,39 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
-	public String getHeadersParams() {
-		return headersParams;
-	}
 	
 	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
-	}
-	public boolean isFollowRedirects() {
-		return followRedirects;
 	}
 	
 	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
 	
 	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
-	}
-	public int getStaleTimeout() {
-		return staleTimeout;
 	}
 
 	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
-	public boolean isXhtml() {
-		return xhtml;
-	}
 
 	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
-	}
-	public String getStyleSheetName() {
-		return styleSheetName;
 	}
 
 	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
-	public String getProtocol() {
-		return protocol;
-	}
 
 	@IbisDoc({"68", "if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
-	}
-	public String getResultStatusCodeSessionKey() {
-		return resultStatusCodeSessionKey;
 	}
 }
