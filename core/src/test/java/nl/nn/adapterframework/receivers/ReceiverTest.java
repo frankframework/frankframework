@@ -73,9 +73,13 @@ public class ReceiverTest {
 			}
 		}
 	}
-	public void waitForState(IManagable object, RunState state) throws InterruptedException {
+	public void waitForState(IManagable object, RunState state) {
 		while(object.getRunState()!=state) {
-			Thread.sleep(100);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				fail("test interrupted");
+			}
 		}
 	}
 
@@ -101,8 +105,6 @@ public class ReceiverTest {
 		waitWhileInState(receiver, RunState.STARTING);
 		log.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.STARTED, receiver.getRunState());
-
-		configuration.stop();
 	}
 
 	@Test
@@ -128,6 +130,17 @@ public class ReceiverTest {
 
 		log.info("Receiver RunState "+receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
+
+		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+		while(receiver.getRunState()!=RunState.STOPPED) {
+			System.out.println(receiver.getRunState());
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				fail("test interrupted");
+			}
+		}
+		assertEquals(RunState.STOPPED, receiver.getRunState());
 	}
 
 	@Test
@@ -163,12 +176,9 @@ public class ReceiverTest {
 
 		// try to stop the started adapter
 		configuration.getIbisManager().handleAction(IbisAction.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
-		waitWhileInState(adapter, RunState.STOPPING);
+		waitForState(adapter, RunState.STOPPED);
 
-		assertEquals(RunState.STOPPING, receiver.getRunState());
-		waitWhileInState(receiver, RunState.STOPPING);
-
-		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
-		assertEquals(RunState.STARTED, adapter.getRunState());
+		assertEquals(RunState.STOPPED, receiver.getRunState());
+		assertEquals(RunState.STOPPED, adapter.getRunState());
 	}
 }

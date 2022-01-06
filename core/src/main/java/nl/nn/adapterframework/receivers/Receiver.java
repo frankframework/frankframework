@@ -212,7 +212,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private @Getter int pollInterval=10;
 	private @Getter int startTimeout=60;
 	private @Getter int stopTimeout=60;
-	
+
 	private @Getter boolean forceRetryFlag = false;
 	private @Getter boolean checkForDuplicates=false;
 	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID };
@@ -805,6 +805,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
 			error("error occured while starting", t);
+
+			closeAllResources(); //Close potential dangling resources, don't change state here..
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 		}
 	}
@@ -822,6 +824,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				log.info("receiver already in state [" + currentRunState + "]");
 				return;
 			}
+
+			if(currentRunState == RunState.EXCEPTION_STARTING) {
+				runState.setRunState(RunState.STOPPED); //Nothing ever started, directly go to stopped
+				ThreadContext.removeStack(); //Clean up receiver ThreadContext
+				return; //Prevent tellResourcesToStop from being called
+			}
+
 			if (currentRunState!=RunState.ERROR) {
 				runState.setRunState(RunState.STOPPING); //Don't change the runstate when in ERROR
 			}
@@ -2027,7 +2036,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 	/** timeout to stopped receiver. If this timeout is reached, a new stop command may be issued */
 	public void setStopTimeout(int i) {
-		startTimeout = i;
+		stopTimeout = i;
 	}
 	
 	@IbisDoc({"If set to <code>true</code>, each message is checked for presence in the messageLog. If already present, it is not processed again. Only required for non XA compatible messaging. Requires messageLog!", "false"})

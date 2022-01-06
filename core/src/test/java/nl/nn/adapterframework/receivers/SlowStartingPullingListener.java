@@ -17,7 +17,7 @@ public class SlowStartingPullingListener implements IPullingListener<String>{
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
-	private @Getter @Setter int startupDelay = 10000;
+	private @Setter int startupDelay = 10000;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -27,7 +27,7 @@ public class SlowStartingPullingListener implements IPullingListener<String>{
 	@Override
 	public void open() throws ListenerException {
 		try {
-			Thread.sleep(getStartupDelay());
+			Thread.sleep(startupDelay);
 		} catch (InterruptedException e) {
 			throw new ListenerException("InterruptedException while opening listener", e);
 		}
