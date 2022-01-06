@@ -335,6 +335,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 		if(requiresDatabase) {
+			if(transactionManager == null) {
+				throw new IllegalStateException("no TransactionManager found or configured");
+			}
+
 			//Try to create a new transaction to check if there is a connection to the database
 			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 			if(status != null) { //If there is a transaction (read connection) close it!

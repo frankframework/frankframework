@@ -24,15 +24,9 @@ public class TestConfiguration extends Configuration {
 
 	//Configures a standalone configuration.
 	public TestConfiguration() {
-		this(new JunitTestClassLoaderWrapper());
-	}
-
-	/**
-	 * When the beanfactory is mocked it holds bean references!
-	 */
-	public TestConfiguration(ClassLoader classLoader) {
 		super();
 
+		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
 		setClassLoader(classLoader); //Add the test classpath
 		setConfigLocation("testConfigurationContext.xml");
 		setName(TEST_CONFIGURATION_NAME);
