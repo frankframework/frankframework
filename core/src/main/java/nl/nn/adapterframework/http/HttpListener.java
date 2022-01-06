@@ -25,8 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Implementation of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
- * to receive messages from HTTP requests.
- * </table>
+ * to receive messages from HTTP requests. If you are writing a new configuration, you are recommended to use
+ * an {@link nl.nn.adapterframework.http.rest.ApiListener} or a {@link nl.nn.adapterframework.http.WebServiceListener}
+ * instead.
+ *
  * @author  Gerrit van Brakel 
  * @since   4.4.x (still experimental)
  */

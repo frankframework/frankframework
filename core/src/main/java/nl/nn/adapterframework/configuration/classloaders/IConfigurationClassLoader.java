@@ -17,14 +17,13 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.net.URL;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.IbisContext;
 
 /**
  * Interface for IBIS Configuration ClassLoaders.
  * 
  * @author Niels Meijer
- *
  */
 public interface IConfigurationClassLoader {
 
@@ -36,9 +35,9 @@ public interface IConfigurationClassLoader {
 
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation
-	 * @throws ConfigurationException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
+	 * @throws ClassLoaderException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
 	 */
-	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException;
+	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException;
 
 	/**
 	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
@@ -59,7 +58,7 @@ public interface IConfigurationClassLoader {
 	/**
 	 * Unload the current IConfigurationClassLoader and load again upon successful unload.
 	 */
-	public void reload() throws ConfigurationException;
+	public void reload() throws ClassLoaderException;
 
 	/**
 	 * Called upon destroying (and thus removing) the IConfigurationClassLoader

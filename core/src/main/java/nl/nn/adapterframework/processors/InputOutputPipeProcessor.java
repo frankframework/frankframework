@@ -63,7 +63,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		if (pe!=null) {
 			if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-				message.closeOnCloseOf(pipeLineSession);
+				message.closeOnCloseOf(pipeLineSession, owner);
 				if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
 					throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
 				}
@@ -71,7 +71,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 			}
 			if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 				if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
-				message.closeOnCloseOf(pipeLineSession);
+				message.closeOnCloseOf(pipeLineSession, owner);
 				message=new Message(pe.getGetInputFromFixedValue());
 			}
 			if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
@@ -151,7 +151,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				}
 			}
 			if (pe.isPreserveInput()) {
-				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
+				pipeRunResult.getResult().closeOnCloseOf(pipeLineSession, owner);
 				pipeRunResult.setResult(preservedObject);
 			}
 		}
@@ -175,6 +175,12 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		}
 		
 		return pipeRunResult;
+	}
+
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
 	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
@@ -213,4 +219,5 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 		return buffer.toString();
 	}
+	
 }

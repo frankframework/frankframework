@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,38 +15,46 @@
 */
 package nl.nn.adapterframework.scheduler;
 
+import lombok.Getter;
 import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
+import nl.nn.adapterframework.scheduler.job.CheckReloadJob;
+import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
+import nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob;
+import nl.nn.adapterframework.scheduler.job.DumpFullStatisticsJob;
+import nl.nn.adapterframework.scheduler.job.DumpStatisticsJob;
+import nl.nn.adapterframework.scheduler.job.ExecuteQueryJob;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.IbisActionJob;
+import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
+import nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob;
+import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 
+/**
+ * @author Niels Meijer
+ */
 public enum JobDefFunctions implements DocumentedEnum {
-	STOP_ADAPTER("StopAdapter"),
-	START_ADAPTER("StartAdapter"),
-	STOP_RECEIVER("StopReceiver"),
-	START_RECEIVER("StartReceiver"),
-	SEND_MESSAGE("SendMessage"),
-	QUERY("ExecuteQuery"),
-	DUMPSTATS("dumpStatistics", true),
-	DUMPSTATSFULL("dumpStatisticsFull", true),
-	CLEANUPDB("cleanupDatabase", true),
-	CLEANUPFS("cleanupFileSystem", true),
-	RECOVER_ADAPTERS("recoverAdapters", true),
-	CHECK_RELOAD("checkReload", true), 
-	LOAD_DATABASE_SCHEDULES("loadDatabaseSchedules", true);
+	@EnumLabel("StopAdapter") STOP_ADAPTER(IbisActionJob.class),
+	@EnumLabel("StartAdapter") START_ADAPTER(IbisActionJob.class),
+	@EnumLabel("StopReceiver") STOP_RECEIVER(IbisActionJob.class),
+	@EnumLabel("StartReceiver") START_RECEIVER(IbisActionJob.class),
+	@EnumLabel("SendMessage") SEND_MESSAGE(SendMessageJob.class),
+	@EnumLabel("ExecuteQuery") QUERY(ExecuteQueryJob.class),
+	@EnumLabel("dumpStatistics") DUMPSTATS(DumpStatisticsJob.class),
+	@EnumLabel("dumpStatisticsFull") DUMPSTATSFULL(DumpFullStatisticsJob.class),
+	@EnumLabel("cleanupDatabase") CLEANUPDB(CleanupDatabaseJob.class),
+	@EnumLabel("cleanupFileSystem") CLEANUPFS(CleanupFileSystemJob.class),
+	@EnumLabel("recoverAdapters") RECOVER_ADAPTERS(RecoverAdaptersJob.class),
+	@EnumLabel("checkReload") CHECK_RELOAD(CheckReloadJob.class), 
+	@EnumLabel("loadDatabaseSchedules") LOAD_DATABASE_SCHEDULES(LoadDatabaseSchedulesJob.class);
 
-	private boolean servicejob = false;
-	private final String label;
+	/**
+	 * Should never return NULL
+	 */
+	private @Getter Class<? extends IJob> jobClass = null;
 
-	private JobDefFunctions(String label) {
-		this(label, false);
-	}
-
-	private JobDefFunctions(String label, boolean servicejob) {
-		this.label = label;
-		this.servicejob = servicejob;
-	}
-
-	@Override
-	public String getLabel() {
-		return label;
+	private JobDefFunctions(Class<? extends IJob> jobClass) {
+		this.jobClass = jobClass;
 	}
 
 	public boolean isNotEqualToAtLeastOneOf(JobDefFunctions... functions) {
@@ -60,12 +68,5 @@ public enum JobDefFunctions implements DocumentedEnum {
 				equals = true;
 		}
 		return equals;
-	}
-
-	/**
-	 * Application related jobs, scheduled by the IBIS it selves for maintenance and performance enhancements
-	 */
-	public boolean isServiceJob() {
-		return servicejob;
 	}
 }

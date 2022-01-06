@@ -1,3 +1,18 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.testtool;
 
 import java.io.File;
@@ -5,7 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
@@ -28,7 +43,7 @@ public class FileListener {
 	 * 
 	 * @return The message read from the specified file
 	 */
-	public String getMessage() throws TimeOutException, ListenerException {
+	public String getMessage() throws TimeoutException, ListenerException {
 		String result = null;
 		if (waitBeforeRead != -1) {
 			try {
@@ -103,7 +118,7 @@ public class FileListener {
 					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
 				}
 			} else {
-				throw new TimeOutException("Time out waiting for file.");
+				throw new TimeoutException("Time out waiting for file.");
 			}
 		}
 		return result;

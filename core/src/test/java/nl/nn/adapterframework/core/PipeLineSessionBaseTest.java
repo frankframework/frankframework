@@ -172,16 +172,16 @@ public class PipeLineSessionBaseTest {
 		Message mc = new Message(c);
 		Message md = new Message(d);
 		
-		ma.closeOnCloseOf(session);
+		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream p = (InputStream)ma.asObject();
-		ma.closeOnCloseOf(session);
+		ma.closeOnCloseOf(session, "testCloseables()");
 		InputStream q = (InputStream)ma.asObject();
 
 		assertTrue("scheduling a resource twice must yield the same object", p==q); 
 		
-		mb.closeOnCloseOf(session);
-		mc.closeOnCloseOf(session);
-		md.closeOnCloseOf(session);
+		mb.closeOnCloseOf(session, "testCloseables()");
+		mc.closeOnCloseOf(session, "testCloseables()");
+		md.closeOnCloseOf(session, "testCloseables()");
 
 		log.debug("test calling close on wrapped(b)");
 		mb.close();

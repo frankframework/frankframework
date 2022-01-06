@@ -28,10 +28,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -44,10 +47,12 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
-public class Monitor implements ApplicationContextAware, DisposableBean {
+@FrankDocGroup(name = "Monitoring")
+public class Monitor implements IConfigurationAware, INamedObject, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private String name;
+	private @Getter String name;
 	private EventTypeEnum type = EventTypeEnum.TECHNICAL;
 	private boolean raised = false;
 	private Date stateChangeDt = null;
@@ -61,9 +66,9 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 
 	private MonitorManager manager = null;
 
-	private List<Trigger> triggers = new ArrayList<>();
+	private List<ITrigger> triggers = new ArrayList<>();
 	private Set<String> destinations = new HashSet<>(); 
-	private @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public void configure() {
 		for(String destination : destinations) {
@@ -73,8 +78,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 
 		if (log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
-		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
-			Trigger trigger = it.next();
+		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
+			ITrigger trigger = it.next();
 			if(!trigger.isConfigured()) {
 				trigger.configure();
 				((ConfigurableApplicationContext)applicationContext).addApplicationListener(trigger);
@@ -130,8 +135,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 	}
 
 	protected void clearEvents(boolean alarm) {
-		for (Iterator<Trigger> it=triggers.iterator(); it.hasNext();) {
-			Trigger trigger=(Trigger)it.next();
+		for (Iterator<ITrigger> it=triggers.iterator(); it.hasNext();) {
+			ITrigger trigger = it.next();
 			if (trigger.isAlarm()!=alarm) {
 				trigger.clearEvents();
 			}
@@ -159,8 +164,8 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		for (Iterator<Trigger> it=triggers.iterator();it.hasNext();) {
-			Trigger trigger=(Trigger)it.next();
+		for (Iterator<ITrigger> it=triggers.iterator();it.hasNext();) {
+			ITrigger trigger=it.next();
 			trigger.toXml(monitor);
 		}
 		return monitor;
@@ -211,27 +216,18 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerTrigger(Trigger trigger) {
+	public void registerTrigger(ITrigger trigger) {
 		trigger.setMonitor(this);
 		triggers.add(trigger);
 	}
 
-	public void removeTrigger(Trigger trigger) {
+	public void removeTrigger(ITrigger trigger) {
 		int index = triggers.indexOf(trigger);
 		if(index > -1) {
 			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 			factory.destroyBean(trigger);
 			triggers.remove(trigger);
 		}
-	}
-
-	public void registerAlarm(Trigger trigger) {
-		trigger.setAlarm(true);
-		registerTrigger(trigger);
-	}
-	public void registerClearing(Trigger trigger) {
-		trigger.setAlarm(false);
-		registerTrigger(trigger);
 	}
 
 	public String getLogPrefix() {
@@ -245,18 +241,16 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return manager;
 	}
 
-	public List<Trigger> getTriggers() {
+	public List<ITrigger> getTriggers() {
 		return triggers;
 	}
-	public Trigger getTrigger(int index) {
+	public ITrigger getTrigger(int index) {
 		return triggers.get(index);
 	}
 
+	@Override
 	public void setName(String string) {
 		name = string;
-	}
-	public String getName() {
-		return name;
 	}
 
 	public void setType(String eventType) {
@@ -338,7 +332,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		log.info("removing monitor ["+this+"]");
 
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-		for (Trigger trigger : triggers) {
+		for (ITrigger trigger : triggers) {
 			factory.destroyBean(trigger);
 		}
 	}

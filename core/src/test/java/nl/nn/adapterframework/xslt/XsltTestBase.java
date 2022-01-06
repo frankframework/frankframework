@@ -21,10 +21,12 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
 	
@@ -38,7 +40,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
 	protected abstract void setXslt2(boolean xslt2);
-	protected abstract void setOutputType(String outputType);
+	protected abstract void setOutputType(OutputType outputType);
  
 	
 	@Override
@@ -305,7 +307,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		Parameter inputParameter = new Parameter();
 		inputParameter.setName("source");
 		inputParameter.setValue(input);
-		inputParameter.setType("domdoc");
+		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		setXpathExpression("$source/request/b");
 
@@ -353,7 +355,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
 		setXpathExpression("request/g");
-		setOutputType("xml");
+		setOutputType(OutputType.XML);
 		pipe.configure();
 		pipe.start();
 

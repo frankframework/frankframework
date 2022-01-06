@@ -48,13 +48,13 @@
 						<div class="form-group" title="Quatz CRON Expression to specify execution times. Overrides Interval">
 							<label class="col-sm-3 control-label">CRON Expression</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="cron" type="text" ng-model="form.cron"/>
+								<input class="form-control m-b" name="cron" type="text" ng-disabled="form.interval!='' && form.interval!=-1" ng-model="form.cron"/>
 							</div>
 						</div>
 						<div class="form-group" title="Interval between executions. Only used when NO cron expression specified">
 							<label class="col-sm-3 control-label">Interval</label>
 							<div class="col-sm-9">
-								<input class="form-control m-b" name="interval" type="text" ng-disabled="form.cron!=''" ng-model="form.interval"/>
+								<input class="form-control m-b" name="interval" type="text" ng-disabled="form.cron!='' && form.cron!=null" ng-model="form.interval"/>
 							</div>
 						</div>
 						<div class="form-group">

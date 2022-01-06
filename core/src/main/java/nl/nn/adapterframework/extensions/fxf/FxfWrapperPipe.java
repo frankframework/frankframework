@@ -33,6 +33,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -47,16 +48,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * only). Replace NNX00000 with the specific flowId and generate a unique
  * filename (files will automatically be cleaned after 30 days or any other
  * value specified by ${fxf.retention}).
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
- * <tr><td>{@link #setFlowId(String) flowId}</td><td>The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.</td><td></td></tr>
- * <tr><td>{@link #setTransformFilename(boolean) transformFilename}</td><td>When true and direction=wrap the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.</td><td>true</td></tr>
- * <tr><td>{@link #setFxfVersion(String) fxfVersion}</td><td>either 3.1 or 3.2</td><td>3.1</td></tr>
- * </table>
  * 
  * @author Jaco de Groot
  */
@@ -92,7 +83,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		setRemoveOutputNamespaces(true);
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			ParameterList parameterList = getParameterList();
 			Parameter parameter = parameterList.findParameter(DESTINATION);
 			if (parameter == null) {
@@ -104,7 +95,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 		super.configure();
 		AppConstants rootAppConstants = AppConstants.getInstance();
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			instanceName = rootAppConstants.getResolvedProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
 				throw new ConfigurationException("instance.name not available");
@@ -137,9 +128,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if(!new File(fxfDir).isDirectory()) {
 				throw new ConfigurationException("fxf.dir [" + fxfDir + "] doesn't exist or is not a directory");
 			}
-			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, "text", false, getParameterList());
+			transferFlowIdTp = XmlUtils.getXPathTransformerPool(null, TRANSFORMER_FLOW_ID_XPATH, OutputType.TEXT, false, getParameterList());
 			String xpathFilename = isUseServerFilename() ? SERVER_FILENAME_XPATH : CLIENT_FILENAME_XPATH;
-			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, "text", false, getParameterList());
+			clientFilenameTp = XmlUtils.getXPathTransformerPool(null, xpathFilename, OutputType.TEXT, false, getParameterList());
 		}
 		if (StringUtils.isNotEmpty(getFlowOutFolder()) && !getFlowOutFolder().endsWith("/")) {
 			setFlowOutFolder(getFlowOutFolder()+"/");
@@ -181,7 +172,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", TRANSFER_ACTION_NAMESPACE_PREFIX+retrieveStartTransferVersion());
 			XmlBuilder xmlTransferDetails = new XmlBuilder("TransferDetails");
@@ -212,38 +203,37 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			xmlTransferFlowId.setValue(transferFlowId);
 			xmlTransferDetails.addSubElement(xmlTransferFlowId);
 			return super.doPipe(new Message(xmlStartTransfer_Action.toXML()), session);
-		} else {
-			String soapBody;
-			try {
-				soapBody = super.doPipe(message, session).getResult().asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this,"cannot convert result",e);
-			}
-			session.put(getSoapBodySessionKey(), soapBody);
-			String transferFlowId;
-			String clientFilename;
-			try {
-				transferFlowId = transferFlowIdTp.transform(soapBody, null);
-				session.put(getTransferFlowIdSessionKey(), transferFlowId);
-				clientFilename = clientFilenameTp.transform(soapBody, null);
-				session.put(getClientFilenameSessionKey(), clientFilename);
-			} catch (Throwable t) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
-			}
-			String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
-			session.put(getFlowIdSessionKey(), flowId);
-			session.put(getFxfDirSessionKey(), fxfDir);
-			// Windows style file separator will be a problem in linux with new File(clientFilename).getName() so replace it
-			if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
-				clientFilename = clientFilename.replace("\\", File.separator);
-			}
-			// Transform the filename as it is known locally on the IUF state
-			// machine to the filename as know on the application server (which
-			// has a mount to the IUF state machine).
-			String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
-			session.put(getFxfFileSessionKey(), fxfFile);
-			return new PipeRunResult(getSuccessForward(), fxfFile);
 		}
+		String soapBody;
+		try {
+			soapBody = super.doPipe(message, session).getResult().asString();
+		} catch (IOException e) {
+			throw new PipeRunException(this,"cannot convert result",e);
+		}
+		session.put(getSoapBodySessionKey(), soapBody);
+		String transferFlowId;
+		String clientFilename;
+		try {
+			transferFlowId = transferFlowIdTp.transform(soapBody, null);
+			session.put(getTransferFlowIdSessionKey(), transferFlowId);
+			clientFilename = clientFilenameTp.transform(soapBody, null);
+			session.put(getClientFilenameSessionKey(), clientFilename);
+		} catch (Throwable t) {
+			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+		}
+		String flowId = transferFlowId.substring(0, 2) + "X" + transferFlowId.substring(3);
+		session.put(getFlowIdSessionKey(), flowId);
+		session.put(getFxfDirSessionKey(), fxfDir);
+		// Windows style file separator will be a problem in linux with new File(clientFilename).getName() so replace it
+		if(StringUtils.isNotEmpty(clientFilename) && clientFilename.contains("\\")) {
+			clientFilename = clientFilename.replace("\\", File.separator);
+		}
+		// Transform the filename as it is known locally on the IUF state
+		// machine to the filename as know on the application server (which
+		// has a mount to the IUF state machine).
+		String fxfFile = fxfDir + File.separator + flowId + File.separator + "in" + File.separator + new File(clientFilename).getName();
+		session.put(getFxfFileSessionKey(), fxfFile);
+		return new PipeRunResult(getSuccessForward(), fxfFile);
 	}
 
 	private int retrieveStartTransferVersion() {
@@ -255,7 +245,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	@IbisDoc({"1", "specifies the id of the transfer flow", ""})
+	@IbisDoc({"1", "The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
@@ -265,7 +255,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.flowOutFolder = flowOutFolder;
 	}
 
-	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the folder the output folder <code>flowOutFolder</code> will be constructed as <code>/opt/data/FXF/&lt;instanceNameLowerCase&gt;/&lt;flowId&gt;/out/</code> ", "true"})
+	@IbisDoc({"3", "when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
@@ -294,6 +284,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
+	@IbisDoc({"either 3.1 or 3.2", "3.1"})
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

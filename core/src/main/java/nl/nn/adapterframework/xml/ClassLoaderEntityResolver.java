@@ -44,10 +44,6 @@ public class ClassLoaderEntityResolver implements EntityResolver {
 		this.scopeProvider = scopeProvider;
 	}
 
-	public ClassLoaderEntityResolver(Resource resource) {
-		this(resource.getScopeProvider());
-	}
-
 	/**
 	 * @see org.xml.sax.EntityResolver#resolveEntity(String, String)
 	 */

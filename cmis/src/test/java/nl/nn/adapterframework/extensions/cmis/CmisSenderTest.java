@@ -1,14 +1,16 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.senders.SenderTestBase;
 
-public class CmisSenderTest extends SenderBase<CmisSender> {
+public class CmisSenderTest extends SenderTestBase<CmisSender> {
 
 	@Override
 	public CmisSender createSender() {
@@ -16,271 +18,44 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 	}
 
 	@Test
-	public void getterSetterOverrideEntryPointWSDL() {
-		String dummyString = "dummyString";
-		sender.setOverrideEntryPointWSDL(dummyString);
-	}
-
-	@Test
-	public void getterSetterAllowSelfSignedCertificates() {
-		sender.setAllowSelfSignedCertificates(true);
-
-		sender.setAllowSelfSignedCertificates(false);
-	}
-
-	@Test
-	public void getterSetterVerifyHostname() {
-		sender.setVerifyHostname(true);
-
-		sender.setVerifyHostname(false);
-	}
-
-	@Test
-	public void getterSetterIgnoreCertificateExpiredException() {
-		sender.setIgnoreCertificateExpiredException(true);
-
-		sender.setIgnoreCertificateExpiredException(false);
-	}
-
-	@Test
-	public void getterSetterCertificateUrl() {
-		String dummyString = "dummyString";
-		sender.setCertificateUrl(dummyString);
-	}
-
-	@Test
-	public void getterSetterCertificateAuthAlias() {
-		String dummyString = "dummyString";
-		sender.setCertificateAuthAlias(dummyString);
-	}
-
-	@Test
-	public void getterSetterCertificatePassword() {
-		String dummyString = "dummyString";
-		sender.setCertificatePassword(dummyString);
-	}
-
-	@Test
-	public void getterSetterTruststore() {
-		String dummyString = "dummyString";
-		sender.setTruststore(dummyString);
-	}
-
-	@Test
-	public void getterSetterTruststoreAuthAlias() {
-		String dummyString = "dummyString";
-		sender.setTruststoreAuthAlias(dummyString);
-	}
-
-	@Test
-	public void getterSetterTruststorePassword() {
-		String dummyString = "dummyString";
-		sender.setTruststorePassword(dummyString);
-	}
-
-	@Test
-	public void getterSetterKeystoreType() {
-		String dummyString = "dummyString";
-		sender.setKeystoreType(dummyString);
-	}
-
-	@Test
-	public void getterSetterKeyManagerAlgorithm() {
-		String dummyString = "dummyString";
-		sender.setKeyManagerAlgorithm(dummyString);
-	}
-
-	@Test
-	public void getterSetterTrustManagerAlgorithm() {
-		String dummyString = "dummyString";
-		sender.setTrustManagerAlgorithm(dummyString);
-	}
-
-	@Test
-	public void getterSetterProxyHost() {
-		String dummyString = "dummyString";
-		sender.setProxyHost(dummyString);
-	}
-
-	@Test
-	public void getterSetterProxyPort() {
-		int dummyInt = 1337;
-		sender.setProxyPort(dummyInt);
-	}
-
-	@Test
-	public void getterSetterProxyAuthAlias() {
-		String dummyString = "dummyString";
-		sender.setProxyAuthAlias(dummyString);
-	}
-
-	@Test
-	public void getterSetterProxyUserName() {
-		String dummyString = "dummyString";
-		sender.setProxyUsername(dummyString);
-	}
-
-	@Test
-	public void getterSetterProxyPassword() {
-		String dummyString = "dummyString";
-		sender.setProxyPassword(dummyString);
-	}
-
-	@Test
-	public void getterSetterAction() {
+	public void testValidAction() {
 		String dummyString = "CREATE";
 		sender.setAction(dummyString);
 
 		assertEquals(dummyString.toLowerCase(), sender.getAction());
 	}
 
-	@Test
-	public void getterSetterUrl() throws ConfigurationException {
-		String dummyString = "dummyString";
-		sender.setUrl(dummyString);
+	@Test(expected = IllegalArgumentException.class)
+	public void testInvalidAction() {
+		String dummyString = "CREATED";
+		sender.setAction(dummyString);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testNonExistingBindingType() {
+		sender.setBindingType("WEBTOMBROWSER");
 	}
 
 	@Test
-	public void getterSetterRepository() throws ConfigurationException {
-		String dummyString = "dummyString";
-		sender.setRepository(dummyString);
-	}
-
-	@Test
-	public void getterSetterAuthAlias() {
-		String dummyString = "dummyString";
-		sender.setAuthAlias(dummyString);
-
-		assertEquals(dummyString, sender.getAuthAlias());
-	}
-
-	@Test
-	public void getterSetterUserName() {
-		String dummyString = "dummyString";
-		sender.setUserName(dummyString);
-
-		assertEquals(dummyString, sender.getUserName());
-	}
-
-	@Test
-	public void getterSetterPassword() {
-		String dummyString = "dummyString";
-		sender.setPassword(dummyString);
-
-		assertEquals(dummyString, sender.getPassword());
-	}
-
-	@Test
-	public void getterSetterFileNameSessionKey() {
-		String dummyString = "dummyString";
-		sender.setFileNameSessionKey(dummyString);
-
-		assertEquals(dummyString, sender.getFilenameSessionKey());
-	}
-
-	@Test
-	public void getterSetterFileInputStreamSessionKey() {
-		String dummyString = "dummyString";
-		sender.setFileInputStreamSessionKey(dummyString);
-
-		assertEquals(dummyString, sender.getFileSessionKey());
-	}
-
-	@Test
-	public void getterSetterFileContentSessionKey() {
-		String dummyString = "dummyString";
-		sender.setFileContentSessionKey(dummyString);
-
-		assertEquals(dummyString, sender.getFileSessionKey());
-	}
-
-	@Test
-	public void getterSetterDefaultMediaType() {
-		String dummyString = "dummyString";
-		sender.setDefaultMediaType(dummyString);
-
-		assertEquals(dummyString, sender.getDefaultMediaType());
-	}
-
-	@Test
-	public void getterSetterStreamResultToServlet() {
-		sender.setStreamResultToServlet(true);
-
-		assertTrue(sender.isStreamResultToServlet());
-	}
-
-	@Test
-	public void getterSetterResultOnNotFound() {
-		String dummyString = "dummyString";
-		sender.setResultOnNotFound(dummyString);
-
-		assertEquals(dummyString, sender.getResultOnNotFound());
-	}
-
-	@Test
-	public void getterSetterGetProperties() {
-		sender.setGetProperties(true);
-		assertEquals(true, sender.isGetProperties());
-
-		sender.setGetProperties(false);
-		assertEquals(false, sender.isGetProperties());
-	}
-
-	@Test
-	public void getterSetterUseRootFolder() {
-		sender.setUseRootFolder(true);
-		assertEquals(true, sender.isUseRootFolder());
-
-		sender.setUseRootFolder(false);
-		assertEquals(false, sender.isUseRootFolder());
-	}
-
-	@Test
-	public void getterSetterKeepSession() {
-		sender.setKeepSession(true);
-		assertEquals(true, sender.isKeepSession());
-
-		sender.setKeepSession(false);
-		assertEquals(false, sender.isKeepSession());
-	}
-
-	@Test(expected = Exception.class)
-	public void getterSetterBindingTypeFailure() throws ConfigurationException {
-		sender.setBindingType("dummyString");
-	}
-
-	@Test()
-	public void getterSetterBindingTypeSuccess() throws ConfigurationException {
+	public void testExistingBindingTypes() {
 		sender.setBindingType(BindingType.BROWSER.value());
 		sender.setBindingType(BindingType.ATOMPUB.value());
 		sender.setBindingType(BindingType.WEBSERVICES.value());
+		//All BindingTypes should be parsed (and thus not throw an exception)
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void testEmptyUrlOverrideEntryPointWSDLNull() throws ConfigurationException {
+	@Test(expected = IllegalArgumentException.class)
+	public void testEmptyUrlOverrideEntryPointWSDLNull() {
 		sender.setUrl("");
-		sender.configure();
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void testEmptyRepository() throws ConfigurationException {
-		String dummyString = "dummyString";
-		sender.setUrl(dummyString);
+	@Test(expected = IllegalArgumentException.class)
+	public void testEmptyRepository() {
 		sender.setRepository("");
-		sender.configure();
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void testWrongBindingType() throws ConfigurationException {
-		String dummyString = "dummyString";
-		sender.setUrl(dummyString);
-		sender.setRepository(dummyString);
-		sender.setBindingType(dummyString);
-		sender.configure();
-	}
-
-	@Test()
-	public void testOverrideEntryPointWSDLWithoutWebservice() throws ConfigurationException {
+	@Test(expected = SenderException.class)
+	public void testOverrideEntryPointWSDLWithoutWebservice() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
@@ -288,16 +63,7 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		sender.setBindingType("browser");
 		sender.setAction("dynamic");
 		sender.configure();
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testWrongAction() throws ConfigurationException {
-		String dummyString = "dummyString";
-		sender.setUrl(dummyString);
-		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction(dummyString);
-		sender.configure();
+		sender.open();
 	}
 
 	@Test(expected = ConfigurationException.class)
@@ -322,13 +88,14 @@ public class CmisSenderTest extends SenderBase<CmisSender> {
 		sender.configure();
 	}
 
-	@Test
-	public void testSuccessfulConfigure() throws ConfigurationException {
+	@Test(expected = CmisConnectionException.class)
+	public void testSuccessfulConfigure() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);
 		sender.setBindingType("webservices");
 		sender.setAction("find");
 		sender.configure();
+		sender.open();//Should configure and open just fine, but fail trying to connect to an endpoint.
 	}
 }

@@ -50,12 +50,17 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
 
 		@Override
 		public void configure() throws ConfigurationException {
-			super.configure(query!=null);
+			//In case a query is specified, return the Adapter, else return true to suppress the SQL Injection warning
+			if(query!=null) {
+				super.configure(getAdapter());
+			} else {
+				super.configure(true);
+			}
 		}
 
 		@Override
@@ -141,7 +146,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

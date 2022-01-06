@@ -1,9 +1,24 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.testtool;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +37,7 @@ public class SenderThread extends Thread {
 	private String response;
 	private SenderException senderException;
 	private IOException ioException;
-	private TimeOutException timeOutException;
+	private TimeoutException timeOutException;
 	private boolean convertExceptionToMessage = false;
 
 	SenderThread(ISender sender, String request, PipeLineSession session, boolean convertExceptionToMessage) {
@@ -57,7 +72,7 @@ public class SenderThread extends Thread {
 				log.error("IOException for ISender '" + name + "'", e);
 				ioException = e;
 			}
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
 			} else {
@@ -98,7 +113,7 @@ public class SenderThread extends Thread {
         return ioException;
     }
 
-    public TimeOutException getTimeOutException() {
+    public TimeoutException getTimeOutException() {
         while (this.isAlive()) {
             try {
                 Thread.sleep(100);

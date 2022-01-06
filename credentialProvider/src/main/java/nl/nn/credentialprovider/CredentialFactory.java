@@ -73,6 +73,7 @@ public class CredentialFactory {
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
 				delegate = factoryClass.newInstance();
+				delegate.initialize();
 				log.info("installed CredentialFactory ["+factoryClassName+"]");
 				return true;
 			} catch (Exception e) {

@@ -18,7 +18,7 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.rmi.server.UID;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -38,9 +38,9 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 	}
 
 	@Override
-	protected Map<String, byte[]> loadResources() throws ConfigurationException {
+	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		if (adapterName == null) {
-			throw new ConfigurationException("Name of adapter to provide configuration jar not specified");
+			throw new ClassLoaderException("Name of adapter to provide configuration jar not specified");
 		}
 		IAdapter adapter = getIbisContext().getIbisManager().getRegisteredAdapter(adapterName);
 		if (adapter != null) {
@@ -51,16 +51,15 @@ public class ServiceClassLoader extends JarBytesClassLoader {
 				if (object != null) {
 					if (object instanceof byte[]) {
 						return readResources((byte[])object);
-					} else {
-						throw new ConfigurationException("SessionKey configurationJar not a byte array");
 					}
-				} else {
-					throw new ConfigurationException("SessionKey configurationJar not found");
+					throw new ClassLoaderException("SessionKey configurationJar not a byte array");
 				}
-			}			
-		} else {
-			throw new ConfigurationException("Could not find adapter: " + adapterName);
+
+				throw new ClassLoaderException("SessionKey configurationJar not found");
+			}
 		}
+
+		throw new ClassLoaderException("Could not find adapter: " + adapterName);
 	}
 
 	public void setAdapterName(String adapterName) {

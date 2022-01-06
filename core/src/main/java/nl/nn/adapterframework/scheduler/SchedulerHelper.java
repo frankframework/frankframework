@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -46,7 +47,7 @@ public class SchedulerHelper {
 
 	private Scheduler scheduler;
 
-	public void scheduleJob(JobDef jobdef) throws SchedulerException {
+	public void scheduleJob(IJob jobdef) throws SchedulerException {
 		JobDetail jobDetail = jobdef.getJobDetail();
 		scheduleJob(jobDetail, jobdef.getCronExpression(), jobdef.getInterval(), true);
 	}
@@ -149,7 +150,7 @@ public class SchedulerHelper {
 		return scheduler.getJobDetail(JobKey.jobKey(jobName, jobGroup));
 	}
 
-	public void deleteTrigger(JobDef jobDef) throws SchedulerException {
+	public void deleteTrigger(IJob jobDef) throws SchedulerException {
 		deleteTrigger(jobDef.getName(), jobDef.getJobGroup());
 	}
 

@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.util.List;
 
 import javax.xml.transform.TransformerException;
@@ -41,6 +42,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -67,7 +69,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
-	private Resource noImageAvailable;
+	private URL noImageAvailable;
 	private String fileExtension = null;
 
 	/**
@@ -92,7 +94,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			fileExtension = generator.getFileExtension();
 		}
 
-		noImageAvailable = Resource.getResource(NO_IMAGE_AVAILABLE);
+		noImageAvailable = ClassUtils.getResourceURL(NO_IMAGE_AVAILABLE);
 		if(noImageAvailable == null) {
 			throw new IllegalStateException("image ["+NO_IMAGE_AVAILABLE+"] not found");
 		}
@@ -291,6 +293,10 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			getFlowGenerator().generateFlow(name, dot, outputStream);
 		} catch (IOException e) {
 			if(log.isDebugEnabled()) log.debug("error generating flow diagram for ["+name+"]", e);
+
+			if(destination.exists()) {
+				destination.delete();
+			}
 
 			throw e;
 		}

@@ -15,6 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+@Deprecated
 public class IfsaProviderListener extends PushingIfsaProviderListener {
-
 }

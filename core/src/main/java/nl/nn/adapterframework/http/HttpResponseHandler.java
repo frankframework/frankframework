@@ -131,6 +131,6 @@ public class HttpResponseHandler {
 	}
 
 	public boolean isMultipart() {
-		return getContentType().getMimeType().contains("multipart");
+		return getContentType().getMimeType().startsWith("multipart/");
 	}
 }

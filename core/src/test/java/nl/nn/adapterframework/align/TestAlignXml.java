@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -18,13 +17,16 @@ public class TestAlignXml {
 	public static String BASEDIR="/Align/";
 
 	public void testXml(String xml, URL schemaUrl, String expectedFailureReason, String description) throws Exception {
+		testXml(xml, schemaUrl, expectedFailureReason, description, true, false);
+	}
+	public void testXml(String xml, URL schemaUrl, String expectedFailureReason, String description, boolean inputValid, boolean ignoreExtraElements) throws Exception {
 		Document dom = XmlUtils.buildDomDocument(xml, true);
  
 		// check the validity of the input XML
-    	assertTrue("valid input XML", Utils.validate(schemaUrl, xml));
+		if (inputValid) assertTrue("valid input XML", Utils.validate(schemaUrl, xml));
  
 		try {
-			String xmlAct = DomTreeAligner.translate(dom, schemaUrl);
+			String xmlAct = DomTreeAligner.translate(dom, schemaUrl, ignoreExtraElements);
 	    	System.out.println("xml out="+xmlAct);
 	    	if (expectedFailureReason!=null) {
 	    		fail("Expected to fail: "+description);
@@ -53,12 +55,12 @@ public class TestAlignXml {
 	
 	public void testStrings(String xmlIn,URL schemaUrl, String targetNamespace, String rootElement, String expectedFailureReason) throws Exception {
 		System.out.println("schemaUrl ["+schemaUrl+"]");
-		if (xmlIn!=null) assertTrue("validated input",Utils.validate(schemaUrl, xmlIn));
+		if (xmlIn!=null) assertTrue("input not valid",Utils.validate(schemaUrl, xmlIn));
 
 		testXml(xmlIn, schemaUrl, expectedFailureReason,"");
 	}
 
-    protected String getTestFile(String file) throws IOException, TimeoutException {
+	protected String getTestFile(String file) throws IOException {
 		URL url=AlignTestBase.class.getResource(BASEDIR+file);
 		if (url==null) {
 			return null;
@@ -77,9 +79,9 @@ public class TestAlignXml {
     }
 
     public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile) throws Exception {
-		testFiles(schemaFile, namespace, rootElement, inputFile, false, true, null);
+		testFiles(schemaFile, namespace, rootElement, inputFile, null);
 	}
-	public void testFiles(String schemaFile, String namespace, String rootElement, String file, boolean potentialCompactionProblems, boolean checkRountTrip, String expectedFailureReason) throws Exception {
+	public void testFiles(String schemaFile, String namespace, String rootElement, String file, String expectedFailureReason) throws Exception {
 		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
 		String xmlString=getTestFile(file+".xml");
 		testStrings(xmlString, schemaUrl,namespace, rootElement,expectedFailureReason);
@@ -92,6 +94,28 @@ public class TestAlignXml {
 	}
 
 	@Test
+	public void testAbcExtraElementsNotAllowed() throws Exception {
+		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
+		String schemaFile="Abc/abc.xsd"; 
+		String inputFile="Abc/abc-x";
+		String expectedFailureReason="Cannot find the declaration of element [x]";
+		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
+		String xmlString=getTestFile(inputFile+".xml");
+		testXml(xmlString, schemaUrl, expectedFailureReason,"extra elements not allowed", false, false);
+	}
+
+	@Test
+	public void testAbcExtraElementsIgnored() throws Exception {
+		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
+		String schemaFile="Abc/abc.xsd"; 
+		String inputFile="Abc/abc-x";
+		String expectedFailureReason=null;
+		URL schemaUrl=Utils.class.getResource(BASEDIR+schemaFile);
+		String xmlString=getTestFile(inputFile+".xml");
+		testXml(xmlString, schemaUrl, expectedFailureReason,"extra elements not allowed", false, true);
+	}
+
+	@Test
 	public void testOK_hcda() throws Exception {
 		testFiles("HCDA/HandleCollectionDisbursementAccount3_v3.0.xsd","","HandleCollectionDisbursementAccount","HCDA/HandleCollectionDisbursementAccount");
 	}
@@ -100,31 +124,31 @@ public class TestAlignXml {
 	@Test
 	public void testArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/arrays",null);
 	}
 
 	@Test
 	public void testEmptyArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/empty-arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/empty-arrays",null);
 	}
 
 	@Test
 	public void testSingleElementArrays() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/single-element-arrays",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","arrays","Arrays/single-element-arrays",null);
 	}
 
 	@Test
 	public void testSingleComplexArray() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays.xsd","urn:arrays","array1","Arrays/single-complex-array",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","array1","Arrays/single-complex-array",null);
 	}
 
 	@Test
 	public void testSingleSimpleArray() throws Exception {
 		// straight test
-		testFiles("Arrays/arrays.xsd","urn:arrays","singleSimpleRepeatedElement","Arrays/single-simple-array",true,true, null);
+		testFiles("Arrays/arrays.xsd","urn:arrays","singleSimpleRepeatedElement","Arrays/single-simple-array",null);
 	}
 
 	@Test
@@ -134,22 +158,22 @@ public class TestAlignXml {
 
 	@Test
     public void testStrings() throws Exception {
-    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Strings",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Strings",null);
     }
 
 	@Test
     public void testSpecialChars() throws Exception {
-    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/SpecialChars",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/SpecialChars",null);
     }
 
 	@Test
     public void testDiacritics() throws Exception {
-    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Diacritics",null);
     }
 
 	@Test
     public void testBooleans() throws Exception {
-    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Booleans",true,true, null);
+    	testFiles("/DataTypes/DataTypes.xsd","urn:datatypes","DataTypes","/DataTypes/Booleans",null);
     }
 
     @Test
@@ -185,7 +209,7 @@ public class TestAlignXml {
     public void testRepeatedElements() throws Exception {
 //    	testFiles("/RepeatedElements/sprint-withRepeatedElement","","/RepeatedElements/sprint.xsd","sprint");
 //    	testFiles("/RepeatedElements/sprint-withoutRepeatedElement","","/RepeatedElements/sprint.xsd","sprint");
-    	testFiles("/RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-emptyRepeatedElement",false,false,null);
+    	testFiles("/RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-emptyRepeatedElement",null);
     }
 
     @Test

@@ -942,7 +942,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return proxyHost;
 	}
 
-	@IbisDoc({"14", "proxy port", ""})
+	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}

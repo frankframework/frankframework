@@ -69,7 +69,11 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					for(i in groupMembers) {
 						let memberName = groupMembers[i];
 						if($scope.elements[memberName].name == elementSimpleName) {
-							$rootScope.$broadcast('element', $scope.elements[memberName]);
+							let el = $scope.elements[memberName];
+							if($scope.showInheritance) {
+								el = $scope.flattenElements(el);
+							}
+							$rootScope.$broadcast('element', el);
 						}
 					}
 				} else {
@@ -85,14 +89,18 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 }])
 .filter('matchElement', function() {
 	return function(elements, $scope, searchText) {
+		let searchTextLC = null;
+		if(searchText && searchText != "") {
+			searchTextLC = searchText.toLowerCase();
+		}
 		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
 		let r = {};
 		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
 		for(element in elements) {
 			if(groupMembers.indexOf(element) > -1) {
 				let obj = elements[element];
-				if(searchText && searchText != "") {
-					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1) {
+				if(searchTextLC) {
+					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
 						r[element] = obj;
 					}
 				} else {

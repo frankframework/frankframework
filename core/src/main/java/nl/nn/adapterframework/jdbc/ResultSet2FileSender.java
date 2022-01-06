@@ -34,7 +34,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -68,7 +68,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		int counter = 0;
 		String fileName = null;
 		try {
@@ -78,7 +78,11 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
-			maxRecords = Integer.parseInt((String)session.get(getMaxRecordsSessionKey()));
+			try {
+				maxRecords = Integer.parseInt(session.getMessage(getMaxRecordsSessionKey()).asString());
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
+			}
 		}
 
 		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {

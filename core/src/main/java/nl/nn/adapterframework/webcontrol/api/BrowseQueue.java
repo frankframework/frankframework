@@ -1,19 +1,18 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+   Copyright 2016-2021 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
-
 package nl.nn.adapterframework.webcontrol.api;
 
 import java.util.ArrayList;
@@ -36,10 +35,12 @@ import javax.ws.rs.core.Response;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsMessageBrowserIteratorItem;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Send a message with JMS.
@@ -79,11 +80,11 @@ public final class BrowseQueue extends Base {
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 
 		String connectionFactory = null,
-				destination = null,
-				type = null;
+				destination = null;
 		boolean rowNumbersOnly = false,
 				showPayload = false,
 				lookupDestination=false;
+		DestinationType type = null;
 
 		for (Entry<String, Object> entry : json.entrySet()) {
 			String key = entry.getKey();
@@ -94,7 +95,7 @@ public final class BrowseQueue extends Base {
 				destination = entry.getValue().toString();
 			}
 			if(key.equalsIgnoreCase("type")) {
-				type = entry.getValue().toString();
+				type = EnumUtils.parse(DestinationType.class, entry.getValue().toString());
 			}
 			if(key.equalsIgnoreCase("rowNumbersOnly")) {
 				rowNumbersOnly = Boolean.parseBoolean(entry.getValue().toString());

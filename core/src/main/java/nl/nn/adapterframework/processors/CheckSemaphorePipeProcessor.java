@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -58,6 +59,18 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 			pipeRunResult = chain.apply(message);
 		}
 		return pipeRunResult;
+	}
+
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
+	}
+
+	// method needs to be overridden to enable AOP for debugger
+	@Override
+	public PipeRunResult validate(PipeLine pipeLine, IValidator validator, Message message, PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 
 	private Semaphore getSemaphore(IPipe pipe) {

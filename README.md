@@ -3,7 +3,7 @@
 [![Core Tests](https://github.com/ibissource/iaf/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/ibissource/iaf/actions?query=workflow%3A%22Java+CI+with+Maven%22+branch%3Amaster)
 [![Pull Requests](https://img.shields.io/github/commit-activity/m/ibissource/iaf?label=Pull%20Requests)](https://github.com/ibissource/iaf/pulls)
 [![codecov](https://codecov.io/gh/ibissource/iaf/branch/master/graph/badge.svg)](https://codecov.io/gh/ibissource/iaf)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f191c229880d40738b919ef38712b533)](https://app.codacy.com/manual/nielsm5/iaf?utm_source=github.com&utm_medium=referral&utm_content=ibissource/iaf&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/56a982cc39084043b2e283a146206ec9)](https://www.codacy.com/gh/ibissource/iaf/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibissource/iaf&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ibissource/iaf/badge)](https://www.codefactor.io/repository/github/ibissource/iaf)
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/ibissource/iaf.svg)](https://github.com/ibissource/iaf/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
@@ -22,12 +22,12 @@ Some example XML configurations:
 - [HelloWorlds](example/src/main/resources/ConfigurationHelloWorlds.xml)
 - [ManageDatabase](core/src/main/resources/IAF_Util/ConfigurationManageDatabase.xml)
 
-See them in action: http://ibis4example.ibissource.org/
+See them in action: https://ibis4example.ibissource.org/
 
 
 The Ibis Adapter Framework is being renamed to "Frank!Framework". There is a user manual, the Frank!Manual, which can
 be found at <http://frank-manual.readthedocs.io>. If you want to contribute to this manual, please go to
-<http://github.com/ibissource/frank-manual>.
+<https://github.com/ibissource/frank-manual>.
 
 
 Releases

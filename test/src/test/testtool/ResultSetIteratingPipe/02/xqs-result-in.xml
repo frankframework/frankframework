@@ -1,0 +1,17 @@
+<root>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>tkey</name>
+			</column>
+			<column>
+				<name>tchar</name>
+			</column>
+			<column>
+				<name>tnumber</name>
+			</column>
+		</columns>
+		<order>TKEY</order>
+	</select>
+</root>

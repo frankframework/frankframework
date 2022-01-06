@@ -1,5 +1,5 @@
 <!DOCTYPE configuration [
-	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+	<!ENTITY ManageDatabase SYSTEM "./ConfigurationManageDatabase.xml">
 	<!ENTITY CheckReload SYSTEM "./ConfigurationCheckReload.xml">
 	<!ENTITY LoadDatabaseSchedules SYSTEM "./ConfigurationLoadDatabaseSchedules.xml">
 	<!ENTITY StatScheduler SYSTEM "./ConfigurationStatScheduler.xml">

@@ -8,7 +8,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
@@ -29,6 +30,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
+
 	private static final int PARALLEL_DELAY = 200;
 
 	@Override
@@ -90,7 +92,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setParallel(true);
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
-		pipe.setTaskExecutor(new SimpleAsyncTaskExecutor()); //Should be sequential, not parallel, for testing purposes
+		pipe.setTaskExecutor(new SimpleAsyncTaskExecutor());
 
 		ResultCollectingSender sender = new ResultCollectingSender(PARALLEL_DELAY);
 		pipe.setSender(sender);
@@ -101,11 +103,11 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		long duration = System.currentTimeMillis() - startTime;
-		assertTrue(duration < PARALLEL_DELAY + 100);
+		assertTrue("Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.", duration < PARALLEL_DELAY + 100);
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
-		String xmlResult = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
-		Thread.sleep(PARALLEL_DELAY + 100);
-		MatchUtils.assertXmlEquals(xmlResult, sender.collectResults());
+		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
+
+		MatchUtils.assertXmlEquals(expectedXml, sender.collectResults()); //to display clean diff
 	}
 
 	@Test
@@ -136,7 +138,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 	}
 
 	private static class ResultCollectingSender extends EchoSender {
-		private List<Message> data = new LinkedList<>();
+		private List<Message> data = Collections.synchronizedList(new ArrayList<>());
 		private int delay = 0;
 		public ResultCollectingSender() {
 			this(0);
@@ -147,7 +149,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			if(delay > 0) {
 				try {
 					Thread.sleep(delay);
@@ -160,8 +162,12 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 			data.add(message);
 			return super.sendMessage(message, session);
 		}
-		public String collectResults() {
-			return "<xml>\n"+data.stream().map(this::mapMessage).collect(Collectors.joining())+"\n</xml>";
+		public String collectResults() throws InterruptedException {
+			while(data.size() < 10) {
+				System.out.println("sleeping, result count ["+data.size()+"]");
+				Thread.sleep(200);
+			}
+			return "<xml>\n"+data.stream().map(this::mapMessage).sorted().collect(Collectors.joining())+"\n</xml>";
 		}
 		private String mapMessage(Message message) {
 			try {

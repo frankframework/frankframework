@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -63,12 +62,14 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.http.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.HasTruststore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -79,82 +80,96 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author John Dekker
  */
-public class FtpSession implements IConfigurable {
+public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private FtpType ftpType = FtpType.FTP;
+	private @Getter FtpType ftpType = FtpType.FTP;
 	public enum FtpType implements DocumentedEnum {
-		FTP("FTP", null, true),
-		SFTP("SFTP", null, true),
-		FTPS_IMPLICIT("FTPSI", "TLS", true),
-		FTPS_EXPLICIT_TLS("FTPSX(TLS)", "TLS", false),
-		FTPS_EXPLICIT_SSL("FTPSX(SSL)", "SSL", false);
+		@EnumLabel("FTP") FTP(null, true),
+		@EnumLabel("SFTP") SFTP(null, true),
+		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),
+		@EnumLabel("FTPSX(TLS)") FTPS_EXPLICIT_TLS("TLS", false),
+		@EnumLabel("FTPSX(SSL)") FTPS_EXPLICIT_SSL("SSL", false);
 
-		private String type = null;
 		private @Getter boolean implicit;
 		private @Getter String protocol;
-		private FtpType(String type, String protocol, boolean implicit) {
-			this.type = type;
+		private FtpType(String protocol, boolean implicit) {
 			this.protocol = protocol;
 			this.implicit = implicit;
 		}
+	}
 
-		@Override
-		public String getLabel() {
-			return type;
+	private @Getter Prot prot = Prot.C;
+	public enum Prot {
+		/** Clear */
+		C,
+		/** Safe(SSL protocol only) */
+		S,
+		/** Confidential(SSL protocol only) */
+		E,
+		/** Private */
+		P
+	}
+	
+	public enum FileType {
+		
+		ASCII(org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE), 
+		BINARY(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
+
+		int ftpFileType;
+		
+		private FileType(int ftpFileType) {
+			this.ftpFileType=ftpFileType;
 		}
 	}
 
-	private Prot prot = Prot.C;
-	public enum Prot {
-		C, S, E, P
-	}
-
-	private String name;
+	private @Getter String name;
 
 	// configuration parameters, global for all types
-	private String host;
-	private int port = 21;
-	private String authAlias;
-	private String username;
-	private String password;
-	private String proxyHost;
-	private int proxyPort = 1080;
-	private String proxyAuthAlias;
-	private String proxyUsername;
-	private String proxyPassword;
-	private String fileType = null;
-	private boolean messageIsContent=false;
-	private boolean passive=true;
-	private boolean keyboardInteractive=false;
+	private @Getter String host;
+	private @Getter int port = 21;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String proxyHost;
+	private @Getter int proxyPort = 1080;
+	private @Getter String proxyAuthAlias;
+	private @Getter String proxyUsername;
+	private @Getter String proxyPassword;
+	private @Getter FileType fileType = null;
+	private @Getter boolean messageIsContent=false;
+	private @Getter boolean passive=true;
+	private @Getter boolean keyboardInteractive=false;
 
 	// configuration property for sftp
 	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
 	private String prefCSEncryption = null;
 	private String prefSCEncryption = null;
 	private String privateKeyFilePath = null;
-	private String privateKeyAuthAlias;
-	private String privateKeyPassword = null;
+	private @Getter String privateKeyAuthAlias;
+	private @Getter String privateKeyPassword = null;
 	private String knownHostsPath = null;
 	private boolean consoleKnownHostsVerifier = false;
 
 	// configuration parameters for ftps
-	private String certificate;
-	private String certificateType="pkcs12";
-	private String certificateAuthAlias;
-	private String certificatePassword;
-	private String keystoreType = "pkcs12";
-	private String keyManagerAlgorithm=null;
-	private String truststore = null;
-	private String truststoreType="jks";
-	private String truststoreAuthAlias;
-	private String truststorePassword = null;
-	private String trustManagerAlgorithm=null;
-	private boolean verifyHostname = true;
-	private boolean allowSelfSignedCertificates = false;
-	private boolean ignoreCertificateExpiredException = false;
+	private @Getter String keystore;
+	private @Getter String keystoreAuthAlias;
+	private @Getter String keystorePassword;
+	private @Getter KeystoreType keystoreType = KeystoreType.PKCS12;
+	private @Getter String keystoreAlias;
+	private @Getter String keystoreAliasAuthAlias;
+	private @Getter String keystoreAliasPassword;
+	private @Getter String keyManagerAlgorithm=null;
+	private @Getter String truststore = null;
+	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
+	private @Getter String truststoreAuthAlias;
+	private @Getter String truststorePassword = null;
+	private @Getter String trustManagerAlgorithm=null;
+	private @Getter boolean verifyHostname = true;
+	private @Getter boolean allowSelfSignedCertificates = false;
+	private @Getter boolean ignoreCertificateExpiredException = false;
 
 	private SshClient sshClient;
 	private SftpClient sftpClient;
@@ -162,7 +177,7 @@ public class FtpSession implements IConfigurable {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getFtpTypeEnum() == null) {
+		if (getFtpType() == null) {
 			throw new ConfigurationException("Attribute [ftpType] is not set");
 		}
 
@@ -181,12 +196,7 @@ public class FtpSession implements IConfigurable {
 			throw new ConfigurationException("Incorrect value for [proxyTransportType]");
 		}
 		
-		try {
-			getFileTypeIntValue();
-		}
-		catch(IOException e) {
-			throw new ConfigurationException(e);
-		}
+		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 		
 	}
 
@@ -339,8 +349,8 @@ public class FtpSession implements IConfigurable {
 				checkReply("changeWorkingDirectory "+remoteDirectory);
 			}
 			
-			if (StringUtils.isNotEmpty(fileType)) {
-				ftpClient.setFileType(getFileTypeIntValue());
+			if (fileType!=null) {
+				ftpClient.setFileType(fileType.ftpFileType);
 				checkReply("setFileType "+remoteDirectory);
 			}
 		}
@@ -350,31 +360,14 @@ public class FtpSession implements IConfigurable {
 		}
 	}
 
-	private int getFileTypeIntValue() throws IOException {
-		if (StringUtils.isEmpty(fileType))
-			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
-		else if ("ASCII".equals(fileType))
-			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
-		else if ("BINARY".equals(fileType))
-			return org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE;
-		else {
-			throw new IOException("Unknown Type [" + fileType + "] specified, use one of ASCII, BINARY");
-		}
-	}
-
-	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException, ConfigurationException {
-		FtpType transport = getFtpTypeEnum();
+	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+		FtpType transport = getFtpType();
 		if (transport == FtpType.FTP) {
 			return new FTPClient();
 		}
 
-		FTPSClient client;
-		SSLContext sslContext = createSSLContext();
-		if(sslContext != null) { //If we have a custom SSLContext, initialize with the context, else use JMV defaults
-			client =  new FTPSClient(sslContext);
-		}
-
-		client = new FTPSClient(sslContext);
+		SSLContext sslContext = AuthSSLContextFactory.createSSLContext(this, this, getFtpType().getProtocol());
+		FTPSClient client = new FTPSClient(sslContext);
 		if(isVerifyHostname()) {
 			client.setTrustManager(null);//When NULL it overrides the default 'ValidateServerCertificateTrustManager'
 		}
@@ -387,45 +380,6 @@ public class FtpSession implements IConfigurable {
 		return client;
 	}
 
-	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException, ConfigurationException {
-		URL certificateUrl = null;
-		URL truststoreUrl = null;
-
-		if (!StringUtils.isEmpty(getCertificate())) {
-			certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
-			if (certificateUrl == null) {
-				throw new IOException("Cannot find URL for certificate resource [" + getCertificate() + "]");
-			}
-			log.debug("resolved certificate-URL to [" + certificateUrl.toString() + "]");
-		}
-		if (!StringUtils.isEmpty(getTruststore())) {
-			truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
-			if (truststoreUrl == null) {
-				throw new IOException("cannot find URL for truststore resource [" + getTruststore() + "]");
-			}
-			log.debug("resolved truststore-URL to [" + truststoreUrl.toString() + "]");
-		}
-
-		SSLContext sslContext = null;
-		if (certificateUrl != null || truststoreUrl != null || isAllowSelfSignedCertificates()) {
-			try {
-				CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
-				CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
-
-				sslContext = AuthSSLContextFactory.createSSLContext(
-						certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
-						truststoreUrl, truststoreCf.getPassword(), getTruststoreType(), getTrustManagerAlgorithm(),
-						isAllowSelfSignedCertificates(), isIgnoreCertificateExpiredException(), getFtpTypeEnum().getProtocol());
-
-				log.debug("created custom SSLConnectionSocketFactory");
-
-			} catch (Throwable t) {
-				throw new ConfigurationException("cannot create or initialize SocketFactory",t);
-			}
-		}
-
-		return sslContext;
-	}
 
 	public void closeClient() {
 		log.debug("Close ftp client");
@@ -615,7 +569,7 @@ public class FtpSession implements IConfigurable {
 		try {
 			StringBuffer result = new StringBuffer();
 			for (Iterator<String> filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
-				String remoteFilename = (String)filenameIt.next();
+				String remoteFilename = filenameIt.next();
 				OutputStream os = null;
 
 				os = new ByteArrayOutputStream();
@@ -693,330 +647,251 @@ public class FtpSession implements IConfigurable {
 		}
 	}
 
-	@IbisDoc({"name or ip adres of remote host", ""})
+	@IbisDoc({"Name or ip address of remote host", ""})
 	public void setHost(String string) {
 		host = string;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
-	@IbisDoc({"portnumber of remote host", "21"})
+	@IbisDoc({"Port number of remote host", "21"})
 	public void setPort(int i) {
 		port = i;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
-	@IbisDoc({"name of the alias to obtain credentials to authenticatie on remote server", ""})
+	@IbisDoc({"Name of the alias to obtain credentials to authenticatie on remote server", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
-	@IbisDoc({"name of the user to authenticatie on remote server", ""})
+	@IbisDoc({"Name of the user to authenticatie on remote server", ""})
 	public void setUsername(String string) {
 		username = string;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-	@IbisDoc({"name of the password to authenticatie on remote server", ""})
+	@IbisDoc({"Password to authenticatie on remote server", ""})
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	@IbisDoc({"proxy host name", ""})
+	@IbisDoc({"Proxy hostname", ""})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	public String getProxyHost() {
-		return proxyHost;
-	}
-
-	@IbisDoc({"proxy port", "1080"})
+	@IbisDoc({"Proxy port", "1080"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	public int getProxyPort() {
-		return proxyPort;
-	}
-
-	@IbisDoc({"name of the alias to obtain credentials to authenticate on proxy", ""})
+	@IbisDoc({"alias to obtain credentials to authenticate on proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	public String getProxyAuthAlias() {
-		return proxyAuthAlias;
-	}
-
-	@IbisDoc({"default user name in case proxy requires authentication", ""})
+	@IbisDoc({"Default user name in case proxy requires authentication", ""})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
 
-	public String getProxyUsername() {
-		return proxyUsername;
-	}
-
-	@IbisDoc({"default password in case proxy requires authentication", ""})
+	@IbisDoc({"Default password in case proxy requires authentication", ""})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	public String getProxyPassword() {
-		return proxyPassword;
-	}
-
-	@IbisDoc({"one of ftp, sftp, ftps(i) or ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
 	@Deprecated
 	@ConfigurationWarning("use attribute ftpType instead")
-	public void setFtpTypeDescription(String string) {
-		setFtpType(string);
+	public void setFtpTypeDescription(FtpType value) {
+		setFtpType(value);
 	}
-	@IbisDoc({"one of ftp, sftp, ftpsi, ftpsx(ssl), ftpsx(tls)", "ftp"})
-	public void setFtpType(String value) {
-		ftpType = EnumUtils.parse(FtpType.class, value);
-	}
-	public FtpType getFtpTypeEnum() {
-		return ftpType;
+	@IbisDoc({"FTP protocol to use", "FTP"})
+	public void setFtpType(FtpType value) {
+		ftpType = value;
 	}
 
-	@IbisDoc({"file type, one of ascii, binary", ""})
-	public void setFileType(String string) {
-		fileType = string;
+	@IbisDoc({"File type", ""})
+	public void setFileType(FileType value) {
+		fileType = value;
 	}
 
-	@IbisDoc({"if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})
+	@IbisDoc({"If <code>true</code>, the contents of the message is send, otherwise it message contains the local filenames of the files to be send", "false"})
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
 
-	public boolean isMessageIsContent() {
-		return messageIsContent;
-	}
-
-	@IbisDoc({"if true, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server", "true"})
+	@IbisDoc({"If <code>true</code>, passive ftp is used: before data is sent, a pasv command is issued, and the connection is set up by the server", "true"})
 	public void setPassive(boolean b) {
 		passive = b;
 	}
 
-	public boolean isPassive() {
-		return passive;
-	}
-
-	@IbisDoc({"(sftp) transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)", "4"})
+	@IbisDoc({"(sftp) Transport type in case of sftp (1=standard, 2=http, 3=socks4, 4=socks5)", "4"})
 	public void setProxyTransportType(int i) {
 		proxyTransportType = i;
 	}
 
-	public int getProxyTransportType() {
-		return proxyTransportType;
-	}
-
-	@IbisDoc({"(sftp) optional preferred encryption from client to server for sftp protocol", ""})
+	@IbisDoc({"(sftp) Optional preferred encryption from client to server for sftp protocol", ""})
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
 	}
 
-	public String getPrefCSEncryption() {
-		return prefCSEncryption;
-	}
-
-	@IbisDoc({"(sftp) optional preferred encryption from server to client for sftp protocol", ""})
+	@IbisDoc({"(sftp) Optional preferred encryption from server to client for sftp protocol", ""})
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
 
-	public String getPrefSCEncryption() {
-		return prefSCEncryption;
-	}
-
-	@IbisDoc({"(sftp) path to private key file for sftp authentication", ""})
+	@IbisDoc({"(sftp) Path to private key file for sftp authentication", ""})
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
 
-	public String getPrivateKeyFilePath() {
-		return privateKeyFilePath;
-	}
-
-	@IbisDoc({"(sftp) name of the alias to obtain credentials for passphrase of private key file", ""})
+	@IbisDoc({"(sftp) Name of the alias to obtain credentials for passphrase of private key file", ""})
 	public void setPrivateKeyAuthAlias(String string) {
 		privateKeyAuthAlias = string;
 	}
-	public String getPrivateKeyAuthAlias() {
-		return privateKeyAuthAlias;
-	}
 
-	@IbisDoc({"(sftp) passphrase of private key file", ""})
+	@IbisDoc({"(sftp) Passphrase of private key file", ""})
 	public void setPrivateKeyPassword(String password) {
 		privateKeyPassword = password;
 	}
 
-	public String getPrivateKeyPassword() {
-		return privateKeyPassword;
-	}
-
-	@IbisDoc({"(sftp) path to file with knownhosts", ""})
+	@IbisDoc({"(sftp) Path to file with knownhosts", ""})
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
-	}
-
-	public String getKnownHostsPath() {
-		return knownHostsPath;
 	}
 
 	@IbisDoc({"(sftp) ", "false"})
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
 	}
-
 	public boolean isConsoleKnownHostsVerifier() {
 		return consoleKnownHostsVerifier;
 	}
 
-	@IbisDoc({"(ftps) resource url to certificate to be used for authentication", ""})
+
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
-		certificate = string;
+		setKeystore(string);
 	}
-
-	public String getCertificate() {
-		return certificate;
+	@Deprecated
+	@ConfigurationWarning("has been replaced with keystoreType")
+	public void setCertificateType(KeystoreType value) {
+		setKeystoreType(value);
 	}
-
-	@IbisDoc({"(ftps) ", "pkcs12"})
-	public void setCertificateType(String string) {
-		certificateType = string;
-	}
-
-	public String getCertificateType() {
-		return certificateType;
-	}
-
-	@IbisDoc({"(ftps) alias used to obtain certificate password", ""})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
 	public void setCertificateAuthAlias(String string) {
-		certificateAuthAlias = string;
+		setKeystoreAuthAlias(string);
 	}
-
-	public String getCertificateAuthAlias() {
-		return certificateAuthAlias;
-	}
-
-	@IbisDoc({"(ftps) ", " "})
+	@Deprecated
+	@ConfigurationWarning("Please use attribute keystorePassword instead")
 	public void setCertificatePassword(String string) {
-		certificatePassword = string;
+		setKeystorePassword(string);
 	}
 
-	public String getCertificatePassword() {
-		return certificatePassword;
+	/** (ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
+	@Override
+	public void setKeystore(String string) {
+		keystore = string;
 	}
 
-	@IbisDoc({"43", "", "pkcs12"})
-	public void setKeystoreType(String string) {
-		keystoreType = string;
-	}
-	public String getKeystoreType() {
-		return keystoreType;
-	}
-
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
+	/** (ftps) Type of keystore 
+	 * @ff.default pkcs12
+	 */
+	@Override
+	public void setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 	}
 
-	@IbisDoc({"selects the algorithm to generate keymanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
+	/** (ftps) Authentication alias used to obtain keystore password */
+	@Override
+	public void setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
+	}
+	
+	/** (ftps) Default password to access keystore */
+	@Override
+	public void setKeystorePassword(String string) {
+		keystorePassword = string;
+	}
+
+	/** (ftps) Key manager algorithm. Can be left empty to use the servers default algorithm */
+	@Override
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
-	@IbisDoc({"(ftps) resource url to truststore to be used for authentication", ""})
+	/** (ftps) Alias to obtain specific certificate or key in keystore */
+	@Override
+	public void setKeystoreAlias(String string) {
+		keystoreAlias = string;
+	}
+
+	/** (ftps) Authentication alias to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
+	@Override
+	public void setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+	}
+	
+	/** (ftps) Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
+	@Override
+	public void setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
+	}
+
+
+
+	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
+	@Override
 	public void setTruststore(String string) {
 		truststore = string;
 	}
 
-	public String getTruststore() {
-		return truststore;
+	/** (ftps) Type of truststore 
+	 * @ff.default jks
+	 */
+	@Override
+	public void setTruststoreType(KeystoreType value) {
+		truststoreType = value;
 	}
 
-	@IbisDoc({"(ftps) ", "jks"})
-	public void setTruststoreType(String string) {
-		truststoreType = string;
-	}
-
-	public String getTruststoreType() {
-		return truststoreType;
-	}
-
-	@IbisDoc({"(ftps) alias used to obtain truststore password", ""})
+	/** (ftps) Authentication alias used to obtain truststore password */
+	@Override
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
 	}
 
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
-
-	@IbisDoc({"(ftps) ", " "})
+	/** (ftps) Default password to access truststore */
+	@Override
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
 	}
 
-	public String getTruststorePassword() {
-		return truststorePassword;
-	}
-
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
-
-	@IbisDoc({"selects the algorithm to generate trustmanagers. can be left empty to use the servers default algorithm", "websphere: ibmx509"})
+	/** (ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm */
+	@Override
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
 		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
 
-	@IbisDoc({"(ftps) when true, the hostname in the certificate will be checked against the actual hostname", "true"})
+	/** (ftps) If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
+	@Override
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
 	}
 
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-
-	@IbisDoc({"(ftps) if true, the server certificate can be self signed", "false"})
+	/** (ftps) If <code>true</code>, self signed certificates are accepted
+	 * @ff.default false
+	 */
+	@Override
 	public void setAllowSelfSignedCertificates(boolean b) {
 		allowSelfSignedCertificates = b;
 	}
 
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
-
 	/**
-	 * The CertificateExpiredException is ignored when set to true
-	 * @IbisDoc.default false
+	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
+	 * @ff.default false
 	 */
-	@IbisDoc({"57", "when true, the certificateExpiredException is ignored", "false"})
+	@Override
 	public void setIgnoreCertificateExpiredException(boolean b) {
 		ignoreCertificateExpiredException = b;
-	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
 	}
 
 	@IbisDoc({"(ftps) if true, the server returns data via a SSL socket", "false"})
@@ -1026,39 +901,18 @@ public class FtpSession implements IConfigurable {
 		prot = Prot.P;
 	}
 
-	/**
-	 * <ul>
-	 * <li>C - Clear</li>
-	 * <li>S - Safe(SSL protocol only)</li>
-	 * <li>E - Confidential(SSL protocol only)</li>
-	 * <li>P - Private</li>
-	 * </ul>
-	 *
-	 */
-	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>. C - Clear; S - Safe(SSL protocol only), E - Confidential(SSL protocol only), P - Private", "C"})
-	public void setProt(String prot) {
-		this.prot = EnumUtils.parse(Prot.class, prot);
-	}
-	public Prot getProtEnum() {
-		return prot;
+	@IbisDoc({"Sets the <code>Data Channel Protection Level</code>.", "C"})
+	public void setProt(Prot prot) {
+		this.prot = prot;
 	}
 
-	public boolean isKeyboardInteractive() {
-		return keyboardInteractive;
-	}
-
-	@IbisDoc({"when true, keyboardinteractive is used to login", "false"})
+	@IbisDoc({"When <code>true</code>, keyboardinteractive is used to login", "false"})
 	public void setKeyboardInteractive(boolean keyboardInteractive) {
 		this.keyboardInteractive = keyboardInteractive;
 	}
 
 	@Override
-	@IbisDoc({"name of the listener or sender", ""})
 	public void setName(String name) {
 		this.name = name;
-	}
-	@Override
-	public String getName() {
-		return name;
 	}
 }

@@ -24,11 +24,14 @@ import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
@@ -40,6 +43,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import lombok.Getter;
 import nl.nn.adapterframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
@@ -55,7 +59,28 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 		when(httpEntity.getContent()).thenReturn(content);
 		when(httpResponse.getEntity()).thenReturn(httpEntity);
+		when(httpResponse.getAllHeaders()).thenReturn(generateResponseHeaders());
 		return httpResponse;
+	}
+
+	private Header[] generateResponseHeaders() {
+		Header[] headers = new Header[2];
+		headers[0] = new HeaderImpl("Connection", "Keep-Alive");
+		headers[1] = new HeaderImpl("Content-Type", "text/plain");
+		return headers;
+	}
+
+	private static class HeaderImpl implements Header {
+		private @Getter String name;
+		private @Getter String value;
+		public HeaderImpl(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+		@Override
+		public HeaderElement[] getElements() throws ParseException {
+			return null;
+		}
 	}
 
 	@Override
@@ -73,6 +98,8 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			response = doPut(host, (HttpPut) request, context);
 		else if(request instanceof HttpPatch)
 			response = doPatch(host, (HttpPatch) request, context);
+		else if(request instanceof HttpDelete)
+			response = doDelete(host, (HttpDelete) request, context);
 		else
 			throw new Exception("mock method not implemented");
 
@@ -124,7 +151,8 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String content = new String(baos.toByteArray());
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
-		} else {
+		}
+		else if(entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
 				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
@@ -149,13 +177,16 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 		appendHeaders(request, response);
 
-		Header contentTypeHeader = request.getEntity().getContentType();
-		if(contentTypeHeader != null) {
-			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+		if(request.getEntity() != null) { //If an entity is present
+			Header contentTypeHeader = request.getEntity().getContentType();
+			if(contentTypeHeader != null) {
+				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
+			}
+
+			response.append(lineSeparator);
+			response.append(EntityUtils.toString(request.getEntity()));
 		}
 
-		response.append(lineSeparator);
-		response.append(EntityUtils.toString(request.getEntity()));
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 
@@ -173,6 +204,16 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 		response.append(lineSeparator);
 		response.append(EntityUtils.toString(request.getEntity()));
+		return new ByteArrayInputStream(response.toString().getBytes());
+	}
+
+	public InputStream doDelete(HttpHost host, HttpDelete request, HttpContext context) {
+		assertEquals("DELETE", request.getMethod());
+		StringBuilder response = new StringBuilder();
+		response.append(request.toString() + lineSeparator);
+
+		appendHeaders(request, response);
+
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 

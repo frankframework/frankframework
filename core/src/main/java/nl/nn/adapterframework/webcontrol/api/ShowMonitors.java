@@ -49,6 +49,8 @@ import org.springframework.context.ApplicationContext;
 import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.ITrigger;
+import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -139,8 +141,8 @@ public final class ShowMonitors extends Base {
 		}
 
 		List<Map<String, Object>> triggers = new ArrayList<Map<String, Object>>();
-		List<Trigger> listOfTriggers = monitor.getTriggers();
-		for(Trigger trigger : listOfTriggers) {
+		List<ITrigger> listOfTriggers = monitor.getTriggers();
+		for(ITrigger trigger : listOfTriggers) {
 
 			Map<String, Object> map = mapTrigger(trigger);
 			map.put("id", listOfTriggers.indexOf(trigger));
@@ -149,7 +151,7 @@ public final class ShowMonitors extends Base {
 		}
 		monitorMap.put("triggers", triggers);
 
-		List<String> destinations = new ArrayList<String>();
+		List<String> destinations = new ArrayList<>();
 		Set<String> d = monitor.getDestinationSet();
 		for(Iterator<String> it = d.iterator(); it.hasNext();) {
 			destinations.add(it.next());
@@ -159,10 +161,10 @@ public final class ShowMonitors extends Base {
 		return monitorMap;
 	}
 
-	private Map<String, Object> mapTrigger(Trigger trigger) {
+	private Map<String, Object> mapTrigger(ITrigger trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
-		triggerMap.put("type", trigger.getType());
+		triggerMap.put("type", trigger.getTriggerType().name());
 		triggerMap.put("events", trigger.getEventCodes());
 		triggerMap.put("severity", trigger.getSeverity());
 		triggerMap.put("threshold", trigger.getThreshold());
@@ -319,7 +321,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
+		ITrigger trigger = SpringUtils.createBean(mm.getApplicationContext(), Trigger.class);
 		handleTrigger(trigger, json);
 		monitor.registerTrigger(trigger);
 		monitor.configure();
@@ -351,7 +353,7 @@ public final class ShowMonitors extends Base {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		if(id != null) {
-			Trigger trigger = monitor.getTrigger(id);
+			ITrigger trigger = monitor.getTrigger(id);
 			if(trigger == null) {
 				throw new ApiException("Trigger not found!", Status.NOT_FOUND);
 			} else {
@@ -390,7 +392,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = monitor.getTrigger(index);
+		ITrigger trigger = monitor.getTrigger(index);
 		if(trigger == null) {
 			throw new ApiException("Trigger not found!", Status.NOT_FOUND);
 		}
@@ -401,9 +403,9 @@ public final class ShowMonitors extends Base {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void handleTrigger(Trigger trigger, Map<String, Object> json) {
+	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
-		String type = null;
+		TriggerType type = null;
 		SeverityEnum severity = null;
 		int threshold = 0;
 		int period = 0;
@@ -416,7 +418,7 @@ public final class ShowMonitors extends Base {
 			if(key.equalsIgnoreCase("events") && entry.getValue() instanceof List<?>) {
 				eventList = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("type")) {
-				type = entry.getValue().toString();
+				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("severity")) {
 				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
@@ -440,7 +442,7 @@ public final class ShowMonitors extends Base {
 
 		// If no parse errors have occured we can continue!
 		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
-		trigger.setType(type);
+		trigger.setTriggerType(type);
 		trigger.setSeverityEnum(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);
@@ -483,7 +485,7 @@ public final class ShowMonitors extends Base {
 			throw new ApiException("Monitor not found!", Status.NOT_FOUND);
 		}
 
-		Trigger trigger = monitor.getTrigger(index);
+		ITrigger trigger = monitor.getTrigger(index);
 
 		if(trigger == null) {
 			throw new ApiException("Trigger not found!", Status.NOT_FOUND);

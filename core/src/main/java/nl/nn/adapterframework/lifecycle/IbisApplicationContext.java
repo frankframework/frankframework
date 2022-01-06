@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  *
  */
-public class IbisApplicationContext {
+public class IbisApplicationContext implements Closeable {
 	private Exception startupException;
 
 	public enum BootState {
@@ -123,7 +124,7 @@ public class IbisApplicationContext {
 	}
 
 	/**
-	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springUnmanagedDeployment, SpringApplicationContext and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
@@ -131,8 +132,7 @@ public class IbisApplicationContext {
 	 */
 	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
-		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
+		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
@@ -165,10 +165,11 @@ public class IbisApplicationContext {
 		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource("ibis", APP_CONSTANTS));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		classPathapplicationContext.setId("IbisApplicationContext");
-		classPathapplicationContext.setDisplayName("IbisApplicationContext");
+		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		classPathapplicationContext.setId(instanceName);
+		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
 
 		return classPathapplicationContext;
 	}
@@ -176,7 +177,8 @@ public class IbisApplicationContext {
 	/**
 	 * Destroys the Spring context
 	 */
-	protected void destroyApplicationContext() {
+	@Override
+	public void close() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
 			log.debug("destroying Ibis Application Context ["+oldContextName+"]");

@@ -23,12 +23,13 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -40,18 +41,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Collection of Senders, that are executed all at the same time.
  * 
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders. Each will receive the same input message, to be processed in parallel</td></tr>
- * </table>
- * </p>
-
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class ParallelSenders extends SenderSeries {
 
-	private int maxConcurrentThreads = 0;
+	private @Getter int maxConcurrentThreads = 0;
 	private TaskExecutor executor;
 
 	@Override
@@ -68,7 +63,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 
@@ -101,7 +96,7 @@ public class ParallelSenders extends SenderSeries {
 		for (ISender sender: getSenders()) {
 			ParallelSenderExecutor pse = executorMap.get(sender);
 			XmlBuilder resultXml = new XmlBuilder("result");
-			resultXml.addAttribute("senderClass", ClassUtils.nameOf(sender));
+			resultXml.addAttribute("senderClass", org.springframework.util.ClassUtils.getUserClass(sender).getSimpleName());
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
@@ -144,14 +139,17 @@ public class ParallelSenders extends SenderSeries {
 		return executor;
 	}
 
+	/** one or more specifications of senders. Each will receive the same input message, to be processed in parallel */
+	@Override
+	public void registerSender(ISender sender) {
+		super.registerSender(sender);
+	}
+	
 	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;
 
 		this.maxConcurrentThreads = maxThreads;
-	}
-	public int getMaxConcurrentThreads() {
-		return maxConcurrentThreads;
 	}
 }

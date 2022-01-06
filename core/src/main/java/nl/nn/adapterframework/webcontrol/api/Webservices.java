@@ -52,6 +52,7 @@ import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.rest.ApiDispatchConfig;
 import nl.nn.adapterframework.http.rest.ApiListener;
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiServiceDispatcher;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.WsdlGenerator;
@@ -82,12 +83,12 @@ public final class Webservices extends Base {
 				IListener listener = receiver.getListener();
 				if (listener instanceof RestListener) {
 					RestListener rl = (RestListener) listener;
-					if (rl.getView()) {
-						Map<String, Object> service = new HashMap<String, Object>(2);
-						service.put("name", adapter.getName() + " "+  receiver.getName());
-						service.put("uriPattern", rl.getUriPattern());
-						webServices.add(service);
-					}
+					Map<String, Object> service = new HashMap<String, Object>();
+					service.put("name", adapter.getName() + " "+  receiver.getName());
+					service.put("method", rl.getMethod());
+					service.put("view", rl.isView());
+					service.put("uriPattern", rl.getUriPattern());
+					webServices.add(service);
 				}
 			}
 		}
@@ -124,8 +125,8 @@ public final class Webservices extends Base {
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
 
-			Set<String> methods = config.getMethods();
-			for (String method : methods) {
+			Set<HttpMethod> methods = config.getMethods();
+			for (HttpMethod method : methods) {
 				ApiListener listener = config.getApiListener(method);
 				Receiver receiver = listener.getReceiver();
 				IAdapter adapter = receiver == null? null : receiver.getAdapter();

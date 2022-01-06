@@ -31,7 +31,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		pipe = createForEachAttachmentPipe();
 		pipe.registerForward(new PipeForward("success",null));
 		SenderSeries series = new SenderSeries();
-		series.setSender(new EchoSender());
+		series.registerSender(new EchoSender());
 		pipe.setSender(series);
 	}
 

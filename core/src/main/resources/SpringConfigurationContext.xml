@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Beans defined in this file are unique for every configuration. If you want 
+	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
+	Singleton beans are managed by Spring and will be closed upon configuration unload.
+ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	default-autowire="byName"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+	">
+
+	<!-- AOP has to be enabled explicitly on a per Context basis -->
+	<aop:config proxy-target-class="true" />
+
+	<bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" scope="singleton" />
+
+	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
+
+	<bean
+		name="adapterManager"
+		class="nl.nn.adapterframework.configuration.AdapterManager"
+		autowire="byType"
+		scope="singleton"
+	/>
+
+	<bean
+		name="scheduleManager"
+		class="nl.nn.adapterframework.configuration.ScheduleManager"
+		autowire="byType"
+		scope="singleton"
+	/>
+
+	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
+
+	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
+	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
+
+	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
+<!-- 	<bean name="applicationEventMulticaster" class="nl.nn.adapterframework.lifecycle.FrankEventMulticaster" /> -->
+
+</beans>

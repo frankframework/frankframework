@@ -50,10 +50,12 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
+import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -76,12 +78,6 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * <br/>
  * <h3>Note on using packages</h3>
  * The package processor makes some assumptions about the datatypes:
  * <ul>
@@ -93,6 +89,8 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
  * </p>
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
+ * 
+ * @ff.parameters all parameters present are applied to the statement to be executed
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
@@ -141,10 +139,15 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private String convertedResultQuery;
 
 	public enum QueryType {
+		/** For queries that return data */
 		SELECT,
+		/** For queries that update a BLOB */
 		UPDATEBLOB,
+		/** For queries that update a CLOB */
 		UPDATECLOB,
+		/** To execute Oracle PL/SQL package */
 		PACKAGE,
+		/** For queries that return no data */
 		OTHER
 	}
 
@@ -264,13 +267,13 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeOutException {
+	protected Connection getConnectionForSendMessage(H blockHandle) throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled()) {
 			return getConnectionWithTimeout(getTimeout());
 		}
 		return connection;
 	}
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled() && connection!=null) {
 			try {
 				connection.close();
@@ -307,7 +310,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try (JdbcSession jdbcSession = isAvoidLocking()?getDbmsSupport().prepareSessionForNonLockingRead(connection):null) {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(null, connection, message, session);
 			try {
@@ -315,7 +318,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			} finally {
 				closeStatementSet(queryExecutionContext, session);
 			}
-		} catch (SenderException|TimeOutException e) {
+		} catch (SenderException|TimeoutException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -323,7 +326,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 	
 
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -377,7 +380,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
 				if  (sqle.getErrorCode() == 1013) {
-					throw new TimeOutException("Timeout of ["+getTimeout()+"] sec expired");
+					throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
 				}
 			}
 			throw new SenderException(e);
@@ -388,11 +391,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			ParameterList newParameterList = queryExecutionContext.getParameterList();
 			if (isCloseInputstreamOnExit() && newParameterList!=null) {
 				for (int i = 0; i < newParameterList.size(); i++) {
-					if (Parameter.TYPE_INPUTSTREAM.equals(newParameterList.getParameter(i).getType())) {
-						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + newParameterList.getParameter(i).getName() + "]");
-						try {
-							InputStream inputStream = (InputStream) newParameterList.getParameter(i).getValue(null, message, session, true);
-							inputStream.close();
+					Parameter param = newParameterList.getParameter(i);
+					if (param.getType() == ParameterType.INPUTSTREAM) {
+						log.debug(getLogPrefix() + "Closing inputstream for parameter [" + param.getName() + "]");
+						try {Object object = newParameterList.getParameter(i).getValue(null, message, session, true);
+							if(object instanceof AutoCloseable) {
+								((AutoCloseable)object).close();
+							}
+							else {
+								log.error("unable to auto-close parameter ["+param.getName()+"]");
+							}
 						} catch (Exception e) {
 							log.warn(new SenderException(getLogPrefix() + "got exception closing inputstream", e));
 						}
@@ -546,24 +554,23 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				}
 			}
 			return new PipeRunResult(null, new Message(result));
-		} else {
-			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-				// Create XML and give the maxlength as a parameter
-				DB2XMLWriter db2xml = new DB2XMLWriter();
-				db2xml.setNullValue(getNullValue());
-				db2xml.setTrimSpaces(isTrimSpaces());
-				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
-				db2xml.setDecompressBlobs(isBlobsCompressed());
-				db2xml.setGetBlobSmart(isBlobSmartGet());
-				ContentHandler handler = target.asContentHandler();
-				if (isPrettyPrint()) {
-					handler = new PrettyPrintFilter(handler);
-				}
-				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
-				return target.getPipeRunResult();
-			} catch (Exception e) {
-				throw new JdbcException(e);
+		}
+		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
+			// Create XML and give the maxlength as a parameter
+			DB2XMLWriter db2xml = new DB2XMLWriter();
+			db2xml.setNullValue(getNullValue());
+			db2xml.setTrimSpaces(isTrimSpaces());
+			if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+			db2xml.setDecompressBlobs(isBlobsCompressed());
+			db2xml.setGetBlobSmart(isBlobSmartGet());
+			ContentHandler handler = target.asContentHandler();
+			if (isPrettyPrint()) {
+				handler = new PrettyPrintFilter(handler);
 			}
+			db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler);
+			return target.getPipeRunResult();
+		} catch (Exception e) {
+			throw new JdbcException(e);
 		}
 	}
 	
@@ -653,43 +660,61 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (!canProvideOutputStream()) {
 			return null;
 		}
-		final Connection connection;
-		QueryExecutionContext queryExecutionContext;
-		try {
-			connection = getConnectionWithTimeout(getTimeout());
-			queryExecutionContext = getQueryExecutionContext(connection, null, session);
-		} catch (JdbcException | ParameterException | SQLException | SenderException | TimeOutException e) {
-			throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-		}
-		try {
-			PreparedStatement statement=queryExecutionContext.getStatement();
-			if (queryExecutionContext.getParameterList() != null) {
-				JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+		return TransactionConnectorCoordinator.doInUnsuspendedTransationContext(()-> {
+			final Connection connection;
+			QueryExecutionContext queryExecutionContext;
+			try {
+				connection = getConnectionWithTimeout(getTimeout());
+				queryExecutionContext = getQueryExecutionContext(connection, null, session);
+			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeoutException e) {
+				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
-			if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
-				BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-				return new MessageOutputStream(this, blobOutputStream, next) {
-					@Override
-					public void afterClose() throws SQLException {
+			try {
+				PreparedStatement statement=queryExecutionContext.getStatement();
+				if (queryExecutionContext.getParameterList() != null) {
+					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList().getValues(new Message(""), session));
+				}
+				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
+					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
+						blobOutputStream.close(); 
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-					}
-				};
-			}
-			if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
-				ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
-				return new MessageOutputStream(this, clobWriter, next) {
-					@Override
-					public void afterClose() throws SQLException {
+					});
+					return new MessageOutputStream(this, blobOutputStream, next) {
+						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
+						@Override
+						public void afterClose() throws SQLException {
+							if (!connection.isClosed()) {
+								connection.close();
+							}
+							log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
+						}
+					};
+				}
+				if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
+					ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
+					TransactionConnectorCoordinator.onEndChildThread(()-> {
+						clobWriter.close();
 						connection.close();
 						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-					}
-				};
-			} 
-			throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-		} catch (JdbcException | SQLException | IOException | ParameterException e) {
-			throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-		}
+					});
+					return new MessageOutputStream(this, clobWriter, next) {
+						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
+						@Override
+						public void afterClose() throws SQLException {
+							if (!connection.isClosed()) {
+								connection.close();
+							}
+							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
+						}
+					};
+				} 
+				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
+			} catch (JdbcException | SQLException | IOException | ParameterException e) {
+				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
+			}
+		});
 	}
 
 	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{
@@ -943,27 +968,20 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-		 * Controls wheter the returned package content is db2 format or xml format. 
-		 * Possible values: 
-		 * <ul>
-		 * <li>select:</li> xml content s expected
-		 * <li><i>anything else</i>:</li> db2 content is expected
-		 * </ul>
-		 */
-		public void setPackageContent(String packageContent) {
-			this.packageContent = packageContent;
-		}
-		public String getPackageContent() {
-			return packageContent;
-		}
+	 * Controls wheter the returned package content is db2 format or xml format. 
+	 * Possible values: 
+	 * <ul>
+	 * <li>select:</li> xml content s expected
+	 * <li><i>anything else</i>:</li> db2 content is expected
+	 * </ul>
+	 */
+	public void setPackageContent(String packageContent) {
+		this.packageContent = packageContent;
+	}
+	public String getPackageContent() {
+		return packageContent;
+	}
 
-	@IbisDoc({"1", "One of: <ul>" 
-				+ "<li><code>select</code> for queries that return data</li>" 
-				+ "<li><code>updateBlob</code> for queries that update a BLOB</li>" 
-				+ "<li><code>updateClob</code> for queries that update a CLOB</li>" 
-				+ "<li><code>package</code> to execute Oracle PL/SQL package</li>" 
-				+ "<li><code>other</code> for queries that return no data.</li>" 
-				+ "</ul>", "<code>other</code>"})
 	public void setQueryType(String queryType) {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;
@@ -995,7 +1013,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return scalarExtended;
 	}
 
-	@IbisDoc({"4", "The maximum number of rows to be returned from the output of <code>select</code> queries", "-1 (unlimited)"})
+	@IbisDoc({"4", "The maximum number of rows to be returned from the output of <code>select</code> queries, -1 means unlimited rows", "-1"})
 	public void setMaxRows(int i) {
 		maxRows = i;
 	}
@@ -1043,7 +1061,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		useNamedParams = b;
 	}
 
-	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields", "application default (true)"})
+	@IbisDoc({"10", "when <code>true</code>, the result contains besides the returned rows also includes a header with information about the fetched fields", "application default (true)"})
 	public void setIncludeFieldDefinition(boolean b) {
 		includeFieldDefinition = b;
 	}

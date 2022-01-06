@@ -75,6 +75,25 @@
 					"
 					execution(
 						*
+						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.validate(
+							nl.nn.adapterframework.core.PipeLine,
+							nl.nn.adapterframework.core.IValidator,
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.PipeLineSession,
+							String
+						)
+					)
+					and
+					args(pipeLine, validator, message, pipeLineSession, messageRoot)
+					"
+				method="debugValidatorInputOutputAbort"
+				arg-names="pipeLine, validator, message, pipeLineSession, messageRoot"
+			/>
+			<aop:around
+				pointcut=
+					"
+					execution(
+						*
 						nl.nn.adapterframework.core.ISender.sendMessage(
 							nl.nn.adapterframework.stream.Message, 
 							nl.nn.adapterframework.core.PipeLineSession
@@ -110,7 +129,7 @@
 	 					*
 	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
 	 						nl.nn.adapterframework.core.PipeLineSession, 
-	 						..
+	 						nl.nn.adapterframework.core.IForwardTarget
 	 					)
 	 				)
 	 				and
@@ -149,7 +168,7 @@
 					args(message, session, next)
 					"
 				method="debugStreamingSenderInputOutputAbort"
-				arg-names="blockHandle, message, session, next"
+				arg-names="message, session, next"
 			/>
 			<aop:around
 				pointcut=

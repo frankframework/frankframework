@@ -12,8 +12,9 @@ COPY target/dependencies/ibis-adapterframework-test.war /usr/local/tomcat/webapp
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # provide database credentials
-RUN echo "testiaf_user"   > /opt/frank/secrets/testiaf_user/username
-RUN echo "testiaf_user00" > /opt/frank/secrets/testiaf_user/password
+RUN mkdir -p /opt/frank/secrets/testiaf_user \
+	&& echo "testiaf_user"   > /opt/frank/secrets/testiaf_user/username \
+	&& echo "testiaf_user00" > /opt/frank/secrets/testiaf_user/password
 
 # copy configuration, properties and testscenarios
 #COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/

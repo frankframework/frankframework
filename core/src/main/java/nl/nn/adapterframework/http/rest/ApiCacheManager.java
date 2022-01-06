@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017, 2021 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class ApiCacheManager {
@@ -54,10 +55,10 @@ public class ApiCacheManager {
 	}
 
 	public static String getParentCacheKey(ApiListener listener, String uri) {
-		String method = listener.getMethod();
+		HttpMethod method = listener.getMethod();
 		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
-		if((method.equals("PUT") || method.equals("DELETE")) && pattern != null && pattern.endsWith("/*")) {
+		if((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {
 			//Check the amount of asterisks, if there is only 1, this will return false
 			if(listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
 				//Get collection uri

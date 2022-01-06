@@ -15,7 +15,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.util.Misc;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,7 +101,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 	@Test
 	public void retrieveEmptyMapFromSession() throws ConfigurationException, PipeStartException, PipeRunException {
-		pipe.setType(Parameter.TYPE_MAP);
+		pipe.setType(ParameterType.MAP);
 		pipe.setSessionKey("emptyMap");
 		pipe.configure();
 		pipe.start();
@@ -113,7 +113,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 
 	@Test
 	public void retrieveMapFromSession() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
-		pipe.setType(Parameter.TYPE_MAP);
+		pipe.setType(ParameterType.MAP);
 		pipe.setSessionKey("map");
 		pipe.configure();
 		pipe.start();

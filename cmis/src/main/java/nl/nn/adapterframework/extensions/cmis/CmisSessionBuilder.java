@@ -18,14 +18,6 @@ package nl.nn.adapterframework.extensions.cmis;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Arrays;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -35,14 +27,22 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.IScopeProvider;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private String bindingType = null;
+	private BindingTypes bindingType = null;
 	/**
 	 * 'atompub', 'webservices' or 'browser'
 	 */
@@ -62,15 +62,18 @@ public class CmisSessionBuilder {
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname = true;
 	private boolean ignoreCertificateExpiredException = false;
-	private String certificate = null;
-	private String certificateAuthAlias = null;
-	private String certificatePassword = null;
+	private String keystore = null;
+	private String keystoreAuthAlias = null;
+	private String keystorePassword = null;
+	private String keystoreAlias = null;
+	private String keystoreAliasAuthAlias = null;
+	private String keystoreAliasPassword = null;
 	private String truststore = null;
 	private String truststoreAuthAlias = null;
 	private String truststorePassword = null;
-	private String keystoreType = "pkcs12";
+	private KeystoreType keystoreType = KeystoreType.PKCS12;
 	private String keyManagerAlgorithm = "PKIX";
-	private String truststoreType = "jks";
+	private KeystoreType truststoreType = KeystoreType.JKS;
 	private String trustManagerAlgorithm = "PKIX";
 
 	/** PROXY **/
@@ -124,10 +127,10 @@ public class CmisSessionBuilder {
 		if (StringUtils.isEmpty(repository)) {
 			throw new CmisSessionException("no repository configured");
 		}
-		if (StringUtils.isEmpty(getBindingType())) {
+		if (getBindingType() == null) {
 			throw new CmisSessionException("no bindingType configured");
 		}
-		if(overrideEntryPointWSDL != null && !"webservices".equals(getBindingType())) {
+		if(overrideEntryPointWSDL != null && getBindingType() != BindingTypes.WEBSERVICES) {
 			throw new CmisSessionException("illegal value for bindingtype [" + getBindingType() + "], overrideEntryPointWSDL only supports webservices");
 		}
 
@@ -138,10 +141,10 @@ public class CmisSessionBuilder {
 		if(StringUtils.isNotEmpty(userName))
 			parameterMap.setUserAndPassword(userName, password);
 
-		if (getBindingType().equalsIgnoreCase("atompub")) {
+		if (getBindingType() == BindingTypes.ATOMPUB) {
 			parameterMap.setAtomPubBindingUrl(url);
 			parameterMap.setUsernameTokenAuthentication(false);
-		} else if (getBindingType().equalsIgnoreCase("browser")) {
+		} else if (getBindingType() == BindingTypes.BROWSER) {
 			parameterMap.setBrowserBindingUrl(url);
 			parameterMap.setBasicAuthentication();
 			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
@@ -187,17 +190,22 @@ public class CmisSessionBuilder {
 		parameterMap.setRepositoryId(repository);
 
 		//SSL
-		if (certificate!=null || truststore!=null || allowSelfSignedCertificates) {
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			CredentialFactory truststoreCf  = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
+			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword) 
+							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword) 
+							: keystoreCf;
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
-			parameterMap.put("certificateUrl", certificate);
-			parameterMap.put("certificatePassword", certificateCf.getPassword());
-			parameterMap.put("keystoreType", keystoreType);
+			parameterMap.put("keystoreUrl", keystore);
+			parameterMap.put("keystorePassword", keystoreCf.getPassword());
+			parameterMap.put("keystoreType", keystoreType.name());
+			parameterMap.put("keystoreAlias", keystoreAlias);
+			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
 			parameterMap.put("keyManagerAlgorithm", keyManagerAlgorithm);
 			parameterMap.put("truststoreUrl", truststore);
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
-			parameterMap.put("truststoreType", truststoreType);
+			parameterMap.put("truststoreType", truststoreType.name());
 			parameterMap.put("trustManagerAlgorithm", trustManagerAlgorithm);
 		}
 
@@ -249,69 +257,81 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+	public CmisSessionBuilder setKeystore(String string) {
+		keystore = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setVerifyHostname(boolean verifyHostname) {
-		this.verifyHostname = verifyHostname;
+	public CmisSessionBuilder setKeystoreType(KeystoreType value) {
+		keystoreType = value;
 		return this;
 	}
 
-	public CmisSessionBuilder setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		this.ignoreCertificateExpiredException = ignoreCertificateExpiredException;
+	public CmisSessionBuilder setKeystoreAuthAlias(String string) {
+		keystoreAuthAlias = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setCertificateUrl(String certificate) {
-		this.certificate = certificate;
+	public CmisSessionBuilder setKeystorePassword(String string) {
+		keystorePassword = string;
 		return this;
 	}
-
-	public CmisSessionBuilder setCertificateAuthAlias(String certificateAuthAlias) {
-		this.certificateAuthAlias = certificateAuthAlias;
-		return this;
-	}
-
-
-	public CmisSessionBuilder setCertificatePassword(String certificatePassword) {
-		this.certificatePassword = certificatePassword;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststore(String truststore) {
-		this.truststore = truststore;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststoreAuthAlias(String truststoreAuthAlias) {
-		this.truststoreAuthAlias = truststoreAuthAlias;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststorePassword(String truststorePassword) {
-		this.truststorePassword = truststorePassword;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystoreType(String keystoreType) {
-		this.keystoreType = keystoreType;
-		return this;
-	}
-
+	
 	public CmisSessionBuilder setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 		return this;
 	}
 
-	public CmisSessionBuilder setTruststoreType(String truststoreType) {
-		this.truststoreType = truststoreType;
+	public CmisSessionBuilder setKeystoreAlias(String string) {
+		keystoreAlias = string;
+		return this;
+	}
+	public CmisSessionBuilder setKeystoreAliasAuthAlias(String string) {
+		keystoreAliasAuthAlias = string;
+		return this;
+	}
+	public CmisSessionBuilder setKeystoreAliasPassword(String string) {
+		keystoreAliasPassword = string;
 		return this;
 	}
 
-	public CmisSessionBuilder setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
-		this.trustManagerAlgorithm = getTrustManagerAlgorithm;
+	public CmisSessionBuilder setTruststore(String string) {
+		truststore = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststoreAuthAlias(String string) {
+		truststoreAuthAlias = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststorePassword(String string) {
+		truststorePassword = string;
+		return this;
+	}
+
+	public CmisSessionBuilder setTruststoreType(KeystoreType value) {
+		truststoreType = value;
+		return this;
+	}
+
+	public CmisSessionBuilder setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		this.trustManagerAlgorithm = trustManagerAlgorithm;
+		return this;
+	}
+
+	public CmisSessionBuilder setVerifyHostname(boolean b) {
+		verifyHostname = b;
+		return this;
+	}
+
+	public CmisSessionBuilder setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
+		return this;
+	}
+
+	public CmisSessionBuilder setIgnoreCertificateExpiredException(boolean b) {
+		ignoreCertificateExpiredException = b;
 		return this;
 	}
 
@@ -340,17 +360,17 @@ public class CmisSessionBuilder {
 		return this;
 	}
 
-	public CmisSessionBuilder setUrl(String url) throws ConfigurationException {
+	public CmisSessionBuilder setUrl(String url) {
 		if(StringUtils.isEmpty(url))
-			throw new ConfigurationException("url must be set");
+			throw new IllegalArgumentException("url must be set");
 
 		this.url = url;
 		return this;
 	}
 
-	public CmisSessionBuilder setRepository(String repository) throws ConfigurationException {
+	public CmisSessionBuilder setRepository(String repository) {
 		if(StringUtils.isEmpty(repository))
-			throw new ConfigurationException("repository must be set");
+			throw new IllegalArgumentException("repository must be set");
 
 		this.repository = repository;
 		return this;
@@ -374,32 +394,22 @@ public class CmisSessionBuilder {
 	/**
 	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
-	public CmisSessionBuilder setBindingType(String bindingType) throws ConfigurationException {
-		try {
-			BindingTypes type = BindingTypes.valueOf(bindingType.toUpperCase());
-
-			this.bindingType = type.name();
-		}
-		catch(IllegalArgumentException e) {
-			throw new ConfigurationException("illegal value for bindingType ["+bindingType+"] must be one of " + Arrays.asList(BindingTypes.values()));
-		}
+	public CmisSessionBuilder setBindingType(String bindingType) {
+		this.bindingType = EnumUtils.parse(BindingTypes.class, bindingType);
 
 		return this;
 	}
 
-	private String getBindingType() {
-		if(bindingType != null)
-			return bindingType.toLowerCase();
-
-		return null;
+	private BindingTypes getBindingType() {
+		return bindingType;
 	}
 
 	/**
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
-	public CmisSessionBuilder setMaxConnections(int i) throws ConfigurationException {
+	public CmisSessionBuilder setMaxConnections(int i) {
 		if(i < 0)
-			throw new ConfigurationException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
+			throw new IllegalArgumentException("illegal value ["+i+"] for maxConnections, must be 0 or larger");
 
 		maxConnections = i;
 		return this;
@@ -408,9 +418,9 @@ public class CmisSessionBuilder {
 	/**
 	 * the maximum number of concurrent connections, 0 uses default
 	 */
-	public CmisSessionBuilder setTimeout(int i) throws ConfigurationException {
+	public CmisSessionBuilder setTimeout(int i) {
 		if(i < 1)
-			throw new ConfigurationException("illegal value ["+i+"] for timeout, must be 1 or larger");
+			throw new IllegalArgumentException("illegal value ["+i+"] for timeout, must be 1 or larger");
 
 		timeout = i;
 		return this;
@@ -424,5 +434,54 @@ public class CmisSessionBuilder {
 				return super.accept(f) && !f.getName().contains("password") && !f.getName().contains("classLoader");
 			}
 		}).toString();
+	}
+	
+	public String getKeystore() {
+		return keystore;
+	}
+	public KeystoreType getKeystoreType() {
+		return keystoreType;
+	}
+	public String getKeystoreAuthAlias() {
+		return keystoreAuthAlias;
+	}
+	public String getKeystorePassword() {
+		return keystorePassword;
+	}
+	public String getKeystoreAlias() {
+		return keystoreAlias;
+	}
+	public String getKeystoreAliasAuthAlias() {
+		return keystoreAliasAuthAlias;
+	}
+	public String getKeystoreAliasPassword() {
+		return keystoreAliasPassword;
+	}
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+	public String getTruststore() {
+		return truststore;
+	}
+	public KeystoreType getTruststoreType() {
+		return truststoreType;
+	}
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+	public String getTruststorePassword() {
+		return truststorePassword;
+	}
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+	public boolean isIgnoreCertificateExpiredException() {
+		return ignoreCertificateExpiredException;
 	}
 }

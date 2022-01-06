@@ -27,12 +27,17 @@ import org.apache.http.entity.ContentType;
 import nl.nn.adapterframework.stream.Message;
 
 public class PartMessage extends Message {
-	
+
 	private Part part;
-	
+
+	public PartMessage(Part part) {
+		this(part, null);
+	}
+
 	public PartMessage(Part part, String charset) {
 		super(() -> part.getInputStream(), charset, part.getClass());
 		this.part = part;
+
 		if (StringUtils.isEmpty(charset)) {
 			try {
 				ContentType contentType = ContentType.parse(part.getContentType());
@@ -43,9 +48,6 @@ public class PartMessage extends Message {
 				log.warn("Could not determine charset", e);
 			}
 		}
-	}
-	public PartMessage(Part part) {
-		this(part, null);
 	}
 
 	@Override

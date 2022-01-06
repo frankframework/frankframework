@@ -28,8 +28,8 @@ import nl.nn.adapterframework.stream.Message;
 public class MultipartHttpSender extends HttpSender {
 
 	public MultipartHttpSender() {
-		setPostType(PostType.FORMDATA.name());
-		setMethodType("POST");
+		setPostType(PostType.FORMDATA);
+		setMethodType(HttpMethod.POST);
 		setFirstBodyPartName("message");
 	}
 

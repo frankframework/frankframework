@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +57,10 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.RootValidation;
+import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.Schema;
 import nl.nn.adapterframework.validation.SchemaUtils;
 import nl.nn.adapterframework.validation.SchemasProvider;
@@ -70,20 +72,16 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
-*<code>Pipe</code> that validates the input message against a XML-Schema.
-*
-* <table border="1">
-* <tr><th>state</th><th>condition</th></tr>
-* <tr><td>"success"</td><td>default</td></tr>
-* <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
-* <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
-* </table>
-* <br>
-* 
-* @author Johan Verrips IOS
-* @author Jaco de Groot
-*/
+ *<code>Pipe</code> that validates the input message against a XML-Schema.
+ *
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
+ * @ff.forward failure The document is not valid according to the configured schema.
+ * @ff.forward outputParserError a <code>parserError</code> when validating a response. If not specified, <code>parserError</code> is used.
+ * @ff.forward outputFailure a <code>failure</code> when validating a response. If not specified, <code>failure</code> is used.
+ * 
+ * @author Johan Verrips IOS
+ * @author Jaco de Groot
+ */
 public class XmlValidator extends FixedForwardPipe implements SchemasProvider, HasSpecialDefaultValues, IDualModeValidator, IXmlValidator, InitializingBean {
 
 	private String schemaLocation;
@@ -103,8 +101,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	 * Therefore, rootValidations are a set of required paths.
 	 * However, each element in a path can be a comma separated list of elements, of which one needs to match at that place.
 	 */
-	private Set<List<String>> requestRootValidations;
-	private Set<List<String>> responseRootValidations;
+	private RootValidations requestRootValidations;
+	private RootValidations responseRootValidations;
 	private Map<List<String>, List<String>> invalidRootNamespaces;
 
 	protected AbstractXmlValidator validator = new XercesXmlValidator();
@@ -153,7 +151,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, "xml"));
+					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
@@ -286,10 +284,8 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return determineForward(resultEvent, session, responseMode);
 	}
 
-	protected Set<List<String>> createRootValidation(String messageRoot) {
-		Set<List<String>> messageRootValidations = new LinkedHashSet<List<String>>();
-		messageRootValidations.add(Arrays.asList(messageRoot));
-		return messageRootValidations;
+	protected RootValidations createRootValidation(String messageRoot) {
+		return new RootValidations(messageRoot);
 	}
 	
 	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
@@ -377,7 +373,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	}
 
 	protected boolean isConfiguredForMixedValidation() {
-		return responseRootValidations!=null && !responseRootValidations.isEmpty();
+		return responseRootValidations!=null;
 	}
 
 
@@ -584,29 +580,30 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public void setApplicationContext(ApplicationContext applicationContext) {
 			//Can ignore this as it's not set through Spring
 		}
+
+		@Override
+		public boolean consumesSessionVariable(String sessionKey) {
+			return owner.consumesSessionVariable(sessionKey);
+		}
 	}
 	
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}
 
-	public Set<List<String>> getRootValidations(boolean responseMode) {
+	public RootValidations getRootValidations(boolean responseMode) {
 		return responseMode ? responseRootValidations : requestRootValidations;
 	} 
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getRequestRootValidations() != null) {
-			for (List<String> path: getRequestRootValidations()) {
-				checkRootValidation(path, xsds);
-			}
+			getRequestRootValidations().check(this, xsds);
 		}
 	}
 
 	private void checkOutputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getResponseRootValidations() != null) {
-			for (List<String> path: getResponseRootValidations()) {
-				checkRootValidation(path, xsds);
-			}
+			getResponseRootValidations().check(this, xsds);
 		}
 	}
 
@@ -684,29 +681,31 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return defaultValue;
 	}
 	@Deprecated
-	protected void addRootValidation(List<String> path) {
+	protected void addRootValidation(RootValidation path) {
 		addRequestRootValidation(path);
 	}
 	
-	protected void addRequestRootValidation(List<String> path) {
+	protected void addRequestRootValidation(RootValidation path) {
 		if (requestRootValidations == null) {
-			requestRootValidations = new LinkedHashSet<List<String>>();
+			requestRootValidations = new RootValidations(path);
+		} else {
+			requestRootValidations.add(path);
 		}
-		requestRootValidations.add(path);
 	}
 
-	protected Set<List<String>> getRequestRootValidations() {
+	protected RootValidations getRequestRootValidations() {
 		return requestRootValidations;
 	}
 
-	protected void addResponseRootValidation(List<String> path) {
+	protected void addResponseRootValidation(RootValidation path) {
 		if (responseRootValidations == null) {
-			responseRootValidations = new LinkedHashSet<List<String>>();
+			responseRootValidations = new RootValidations(path);
+		} else {
+			responseRootValidations.add(path);
 		}
-		responseRootValidations.add(path);
 	}
 
-	protected Set<List<String>> getResponseRootValidations() {
+	protected RootValidations getResponseRootValidations() {
 		return responseRootValidations;
 	}
 
@@ -796,7 +795,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setRoot(String root) {
 		this.root = root;
 		if (StringUtils.isNotEmpty(root)) {
-			addRequestRootValidation(Arrays.asList(root));
+			addRequestRootValidation(new RootValidation(root));
 		}
 	}
 	public String getRoot() {
@@ -806,7 +805,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 		if (StringUtils.isNotEmpty(responseRoot)) {
-			addResponseRootValidation(Arrays.asList(responseRoot));
+			addResponseRootValidation(new RootValidation(responseRoot));
 		}
 	}
 	protected String getResponseRoot() {
@@ -818,7 +817,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return getRoot();
 	}
 
-	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "<code>false</code>"})
+	@IbisDoc({"7", "If set <code>true</code>, the failure forward is replaced by the success forward (like a warning mode)", "false"})
 	@Deprecated
 	@ConfigurationWarning("please specify a forward with name=failure instead")
 	public void setForwardFailureToSuccess(boolean b) {
