@@ -1,0 +1,51 @@
+package nl.nn.adapterframework.http.authentication;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import lombok.Getter;
+
+public class MockTokenServer extends WireMockRule {
+
+	private @Getter int port;
+	private boolean mockServer = true;
+	
+	String KEYCLOAK_SERVER="http://localhost:8888";
+	String KEYCLOAK_PATH="/auth/realms/iaf-test/protocol/openid-connect/token";
+
+	String LOCAL_SERVER="http://localhost:"+port;
+	String LOCAL_PATH="/token";
+	
+	private @Getter String server   = mockServer ? LOCAL_SERVER : KEYCLOAK_SERVER;
+	private @Getter String path     = mockServer ? LOCAL_PATH   : KEYCLOAK_PATH;
+	private @Getter String endpoint =server + path;
+	
+	private @Getter String clientId = "testiaf-client";
+	private @Getter String clientSecret = "testiaf-client-pwd";
+
+	private String accessTokenResponseSuccess = "{\"access_token\":\"fakeAccessToken\",\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":300}";
+	
+	public MockTokenServer() {
+		this(8887);
+	}
+	public MockTokenServer(int port) {
+		super(port);
+		this.port=port;
+	}
+
+	@Override
+	public void start() {
+		stubFor(any(urlPathMatching(path))
+				  .willReturn(aResponse()
+				  .withStatus(200)
+				  .withHeader("Content-Type", "application/json")
+				  .withBody(accessTokenResponseSuccess)));
+		super.start();
+	}
+	
+
+	
+}
