@@ -1,17 +1,21 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.FileInputStream;
 
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private String dummyString = "dummyString";
@@ -25,21 +29,72 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	@Test
 	public void testUnzippingAndCollectingResult() throws Exception {
 		pipe.setResultIsContent(true);
-		pipe.setZipEntryPattern("fileaa.txt");
+		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
-		assertEquals("aaa", prr.getResult().asString());
+		assertTrue(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
 	}
 
-//	@Test
-//	public void testMessageIsContent() throws Exception {
-//		String outputDir = FileUtils.createTempDir(null,"test").getPath();
-//		pipe.setMessageIsContent(true);
-//		pipe.setOutputDirectory(outputDir);
-//		configureAndStartPipe();
-//		PipeRunResult prr = doPipe(TestFileUtils.getTestFile("/Unzip/ab.zip"));
-//		assertEquals("aaa", prr.getResult().asString());
-//	}
+	@Test
+	public void testUnzippingAndCollectingResult2String() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setConvert2String(true);
+		pipe.setZipEntryPattern("filebb.log");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		assertFalse(prr.getResult().isBinary());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testDecompressingGz() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setConvert2String(true);
+		pipe.setFileFormat("gz");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.tar.gz").getPath());
+		assertTrue(prr.getResult().asString().startsWith("fileaa.txt"));
+	}
+
+	@Test
+	public void testExceptionForward() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
+
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(pipe, dummyStringSemiColon, session);
+		
+		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
+	}
+
+	@Test
+	public void testMessageIsNotContent() throws Exception {
+		String outputDir = FileUtils.createTempDir().getPath();
+		pipe.setFilenamePattern("file.txt");
+		pipe.setZipEntryPattern("fileaa.txt");
+		pipe.setFileFormat("zip");
+		pipe.setOutputDirectory(outputDir);
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
+		assertEquals("aaa", result);
+	}
+
+	@Test
+	public void testMessageIsNotContentAndResultString() throws Exception {
+		String outputDir = FileUtils.createTempDir().getPath();
+		pipe.setFilenamePattern("file.txt");
+		pipe.setZipEntryPattern("fileaa.txt");
+		pipe.setConvert2String(true);
+		pipe.setFileFormat("zip");
+		pipe.setOutputDirectory(outputDir);
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		String result = StreamUtil.streamToString(new FileInputStream(prr.getResult().asString()), null, null);
+		assertEquals("aaa", result);
+	}
 
 	@Test
 	public void testZipMultipleFiles() throws Exception {

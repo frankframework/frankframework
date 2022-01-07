@@ -23,7 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -48,7 +48,7 @@ public class SendMessageJob extends JobDef {
 		localSender = SpringUtils.createBean(getApplicationContext(), IbisLocalSender.class);
 		localSender.setJavaListener(getJavaListener());
 		localSender.setIsolated(false);
-		localSender.setName("AdapterJob");
+		localSender.setName("Job " + getName());
 		if (getInterval() == 0) {
 			localSender.setDependencyTimeOut(-1);
 		}
@@ -56,7 +56,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
 		try {
 			localSender.open();
 			//sendMessage message cannot be NULL

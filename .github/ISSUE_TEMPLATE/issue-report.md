@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**❗ please do not add sensitive infomation in issues, you can provide extra information via email using issue number as reference ❗**
+**❗ please do not add sensitive information in issues, you can provide extra information via email using issue number as reference ❗**
 
 **Describe the issue**
 A clear and concise description of what the issue is.

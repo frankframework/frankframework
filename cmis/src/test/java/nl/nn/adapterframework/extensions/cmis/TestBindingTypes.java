@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
@@ -107,14 +107,14 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void configure() throws ConfigurationException, SenderException, TimeOutException {
+	public void configure() throws ConfigurationException, SenderException, TimeoutException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
 	}
 
 	@Test
-	public void sendMessage() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessage() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		if(action.equals("get")) {
 			sender.setFileContentSessionKey("");
@@ -128,7 +128,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void sendMessageWithContentStream() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		if(!action.equals("get")) return;
 
 		configure();

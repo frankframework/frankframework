@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,18 +18,21 @@ package nl.nn.adapterframework.core;
 /**
  * Exception thrown to signal that a timeout occurred.
  */
-public class TimeOutException extends IbisException {
-	
-	public TimeOutException() {
+public class TimeoutException extends IbisException {
+
+	public TimeoutException() {
 		super();
 	}
-	public TimeOutException(String arg1) {
-		super(arg1);
+
+	public TimeoutException(String message) {
+		super(message);
 	}
-	public TimeOutException(String arg1, Throwable arg2) {
-		super(arg1, arg2);
+
+	public TimeoutException(String message, Throwable throwable) {
+		super(message, throwable);
 	}
-	public TimeOutException(Throwable arg1) {
-		super(arg1);
+
+	public TimeoutException(Throwable throwable) {
+		super(throwable);
 	}
 }

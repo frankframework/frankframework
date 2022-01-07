@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -150,7 +150,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		}
 		
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
 			if (sc!=null) sc.mark("out");
 			try {
@@ -159,8 +159,8 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 						if (e instanceof SenderException) {
 							throw (SenderException)e;
 						}
-						if (e instanceof TimeOutException) {
-							throw (TimeOutException)e;
+						if (e instanceof TimeoutException) {
+							throw (TimeoutException)e;
 						}
 						if (e instanceof RuntimeException) {
 							throw (RuntimeException)e;
@@ -274,7 +274,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	@Test
 	public void testTimeout() throws Exception {
-		Exception targetException = new TimeOutException("FakeTimeout");
+		Exception targetException = new TimeoutException("FakeTimeout");
 		pipe.setSender(getElementRenderer(targetException));
 		configurePipe();
 		pipe.start();
@@ -290,7 +290,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 	@Test
 	public void testTimeoutXpath() throws Exception {
-		Exception targetException = new TimeOutException("FakeTimeout");
+		Exception targetException = new TimeoutException("FakeTimeout");
 		pipe.setSender(getElementRenderer(targetException));
 		pipe.setElementXPathExpression("/root/sub");
 		configurePipe();

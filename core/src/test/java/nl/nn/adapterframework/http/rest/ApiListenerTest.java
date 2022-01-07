@@ -47,7 +47,7 @@ public class ApiListenerTest {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
 			listener.setMethod(HttpMethod.OPTIONS);
 		});
-		assertEquals("method OPTIONS is default and should not be added manually", ex.getMessage());
+		assertEquals("method OPTIONS should not be added manually", ex.getMessage());
 	}
 
 
