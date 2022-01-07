@@ -126,7 +126,7 @@ public class CompressPipe extends FixedForwardPipe {
 						out = new GZIPOutputStream(out);
 					} else {
 						ZipOutputStream zipper = new ZipOutputStream(out); 
-						String zipEntryName = getZipEntryName(message, session);
+						String zipEntryName = getZipEntryName(message.asString(), session);
 						zipper.putNextEntry(new ZipEntry(zipEntryName));
 						out = zipper;
 					}
@@ -135,7 +135,7 @@ public class CompressPipe extends FixedForwardPipe {
 						in = new GZIPInputStream(in);
 					} else {
 						ZipInputStream zipper = new ZipInputStream(in);
-						String zipEntryName = getZipEntryName(message, session);
+						String zipEntryName = getZipEntryName(message.asString(), session);
 						if (zipEntryName.equals("")) {
 							// Use first entry found
 							zipper.getNextEntry();
@@ -180,11 +180,11 @@ public class CompressPipe extends FixedForwardPipe {
 		return result;
 	}
 	
-	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
+	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException {
 		if (messageIsContent) {
 			return FileUtils.getFilename(getParameterList(), session, (File)null, zipEntryPattern);
 		}
-		return FileUtils.getFilename(getParameterList(), session, new File((String)input), zipEntryPattern);
+		return FileUtils.getFilename(getParameterList(), session, new File(input), zipEntryPattern);
 	}
 
 	public boolean isCompress() {

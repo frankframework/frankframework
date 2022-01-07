@@ -6,7 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.FileUtils;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private String dummyString = "dummyString";
@@ -15,6 +19,50 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	@Override
 	public CompressPipe createPipe() {
 		return new CompressPipe();
+	}
+
+	@Test
+	public void testUnzippingAndCollectingResult() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setZipEntryPattern("filebb.log");
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
+		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testExceptionForward() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.registerForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "dummy"));
+
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(pipe, dummyStringSemiColon, session);
+		
+		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
+	}
+
+//	@Test
+//	public void testMessageIsContent() throws Exception {
+//		String outputDir = FileUtils.createTempDir().getPath();
+//		pipe.setMessageIsContent(true);
+//		pipe.setFilenamePattern("file.txt");
+//		pipe.setZipEntryPattern("fileaa.txt");
+//		pipe.setFileFormat("zip");
+//		pipe.setOutputDirectory(outputDir);
+//		configureAndStartPipe();
+//		PipeRunResult prr = doPipe(TestFileUtils.getTestFile("/Unzip/ab.zip"));
+//		assertEquals("aaa", prr.getResult().asString());
+//	}
+
+	@Test
+	public void testZipMultipleFiles() throws Exception {
+		pipe.setResultIsContent(true);
+		pipe.setCompress(true);
+		configureAndStartPipe();
+		String input=TestFileUtils.getTestFileURL("/Util/FileUtils/copyFile.txt").getPath()+";"+TestFileUtils.getTestFileURL("/Util/FileUtils/copyFrom.txt").getPath();
+		PipeRunResult prr = doPipe(input);
+		assertEquals("success", prr.getPipeForward().getName());
 	}
 
 	@Test
