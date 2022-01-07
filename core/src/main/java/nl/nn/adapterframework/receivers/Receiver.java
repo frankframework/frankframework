@@ -1924,6 +1924,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	/**
 	 * Sets the listener used to receive messages from. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
+	 * 
+	 * @ff.mandatory
 	 */
 	@IbisDoc({"10", "The source of messages"})
 	public void setListener(IListener<M> newListener) {
