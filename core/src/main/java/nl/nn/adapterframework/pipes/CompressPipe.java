@@ -61,7 +61,12 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter String zipEntryPattern;
 	private @Getter boolean compress;
 	private @Getter boolean convert2String;
-	private @Getter String fileFormat;
+	private @Getter FileFormat fileFormat;
+
+	public enum FileFormat {
+		GZ,
+		ZIP
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -142,7 +147,7 @@ public class CompressPipe extends StreamingPipe {
 			}
 		} else {
 			if (compress) {
-				if ("gz".equals(fileFormat) || fileFormat == null && resultIsContent) {
+				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
 					out = new GZIPOutputStream(out);
 				} else {
 					ZipOutputStream zipper = new ZipOutputStream(out); 
@@ -151,7 +156,7 @@ public class CompressPipe extends StreamingPipe {
 					out = zipper;
 				}
 			} else {
-				if ("gz".equals(fileFormat) || fileFormat == null && messageIsContent) {
+				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
 					in = new GZIPInputStream(in);
 				} else {
 					ZipInputStream zipper = new ZipInputStream(in);
@@ -224,8 +229,8 @@ public class CompressPipe extends StreamingPipe {
 	}
 
 	@IbisDoc({"when set to gz, the gzip format is used. when set to another value, the zip format is used. if not set and direction is compress, the resultiscontent specifies the output format used (resultiscontent=<code>true</code> -> gzip format, resultiscontent=<code>false</code> -> zip format) if not set and direction is decompress, the messageiscontent specifies the output format used (messageiscontent=<code>true</code> -> gzip format, messageiscontent=<code>false</code> -> zip format)", ""})
-	public void setFileFormat(String string) {
-		fileFormat = string;
+	public void setFileFormat(FileFormat format) {
+		fileFormat = format;
 	}
 
 }

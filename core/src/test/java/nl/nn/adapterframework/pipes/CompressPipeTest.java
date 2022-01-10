@@ -13,6 +13,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.CompressPipe.FileFormat;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -51,7 +52,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testDecompressingGz() throws Exception {
 		pipe.setResultIsContent(true);
 		pipe.setConvert2String(true);
-		pipe.setFileFormat("gz");
+		pipe.setFileFormat(FileFormat.GZ);
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.tar.gz").getPath());
 		assertTrue(prr.getResult().asString().startsWith("fileaa.txt"));
@@ -68,13 +69,25 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		
 		assertEquals(PipeForward.EXCEPTION_FORWARD_NAME, prr.getPipeForward().getName());
 	}
+	@Test
+	public void testBothMessageAndResultIsContentWithNonRepeatableMessage() throws Exception {
+		pipe.setMessageIsContent(true);
+		pipe.setResultIsContent(true);
+		pipe.setZipEntryPattern("filebb.log");
+		pipe.setFileFormat(FileFormat.ZIP);
+
+		configureAndStartPipe();
+		PipeRunResult prr = doPipe(TestFileUtils.getNonRepeatableTestFileMessage("/Unzip/ab.zip"));
+
+		assertEquals("bbb", prr.getResult().asString());
+	}
 
 	@Test
 	public void testMessageIsNotContent() throws Exception {
 		String outputDir = FileUtils.createTempDir().getPath();
 		pipe.setFilenamePattern("file.txt");
 		pipe.setZipEntryPattern("fileaa.txt");
-		pipe.setFileFormat("zip");
+		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
@@ -88,7 +101,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setFilenamePattern("file.txt");
 		pipe.setZipEntryPattern("fileaa.txt");
 		pipe.setConvert2String(true);
-		pipe.setFileFormat("zip");
+		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFileURL("/Unzip/ab.zip").getPath());
@@ -184,7 +197,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	public void testCaptureUncompressedLegitimateFilePath() throws Exception {
 		pipe.setMessageIsContent(false);
 		pipe.setCompress(false);
-		pipe.setFileFormat("gz");
+		pipe.setFileFormat(FileFormat.GZ);
 
 		configureAndStartPipe();
 		doPipe(pipe, dummyStringSemiColon, session);
@@ -201,7 +214,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCompressWithLegitimateFileFormat() throws Exception {
-		pipe.setFileFormat("gz");
+		pipe.setFileFormat(FileFormat.GZ);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
@@ -212,7 +225,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testCompressWithIllegimitateFileFormat() throws Exception {
-		pipe.setFileFormat("notNull");
+		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(true);
@@ -223,7 +236,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testUncompressedWithIlligimitateFileFormat() throws Exception {
-		pipe.setFileFormat("notNull");
+		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(false);
@@ -234,7 +247,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testConvertByteToStringForResultMsg() throws Exception {
-		pipe.setFileFormat("notNull");
+		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(false);
