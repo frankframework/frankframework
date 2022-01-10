@@ -64,7 +64,11 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter FileFormat fileFormat;
 
 	public enum FileFormat {
+		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code> 
+		 * or when direction is decompress and messageIsContent=<code>true</code> */
 		GZ,
+		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code> 
+		 * or when direction is decompress and messageIsContent=<code>false</code> */
 		ZIP
 	}
 
@@ -228,7 +232,6 @@ public class CompressPipe extends StreamingPipe {
 		convert2String = b;
 	}
 
-	@IbisDoc({"when set to gz, the gzip format is used. when set to another value, the zip format is used. if not set and direction is compress, the resultiscontent specifies the output format used (resultiscontent=<code>true</code> -> gzip format, resultiscontent=<code>false</code> -> zip format) if not set and direction is decompress, the messageiscontent specifies the output format used (messageiscontent=<code>true</code> -> gzip format, messageiscontent=<code>false</code> -> zip format)", ""})
 	public void setFileFormat(FileFormat format) {
 		fileFormat = format;
 	}
