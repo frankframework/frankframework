@@ -5,7 +5,6 @@
 				name="HelloWorlds"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="hello-worlds"
-				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="CheckInputIsXml">
@@ -19,12 +18,14 @@
 				<forward name="success" path="HelloWorlds"/>
 				<forward name="failure" path="Text2Xml"/>
 			</pipe>
+			<!-- Input will be empty when called using the ApiListener -->
 			<pipe
 				name="Text2Xml"
 				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
 				includeXmlDeclaration="false"
 				xmlTag="tests"
 				splitLines="true"
+				emptyInputReplacement="- line 1 -&#10;- line 2 -&#10;- line 3 -&#10;- line4 -"
 				>
 				<forward name="success" path="RenameElementLineToTest"/>
 			</pipe>
