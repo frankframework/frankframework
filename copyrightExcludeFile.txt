@@ -59,4 +59,3 @@ org.eclipse.
 .ldif
 .iml
 overview.html
-.editorconfig
