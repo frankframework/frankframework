@@ -16,12 +16,9 @@ public class MockTokenServer extends WireMockRule {
 	String KEYCLOAK_SERVER="http://localhost:8888";
 	String KEYCLOAK_PATH="/auth/realms/iaf-test/protocol/openid-connect/token";
 
-	String LOCAL_SERVER="http://localhost:"+port;
 	String LOCAL_PATH="/token";
 	
-	private @Getter String server   = mockServer ? LOCAL_SERVER : KEYCLOAK_SERVER;
 	private @Getter String path     = mockServer ? LOCAL_PATH   : KEYCLOAK_PATH;
-	private @Getter String endpoint =server + path;
 	
 	private @Getter String clientId = "testiaf-client";
 	private @Getter String clientSecret = "testiaf-client-pwd";
@@ -47,5 +44,10 @@ public class MockTokenServer extends WireMockRule {
 	}
 	
 
-	
+	public String getServer() {
+		return mockServer ? "http://localhost:"+getPort() : KEYCLOAK_SERVER;
+	}
+	public String getEndpoint() {
+		return getServer()+getPath();
+	}
 }

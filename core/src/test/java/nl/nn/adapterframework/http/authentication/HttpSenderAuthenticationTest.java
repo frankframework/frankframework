@@ -11,14 +11,9 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
-	
-	String USERINFOENDPOINT = "http://localhost:8888/auth/realms/iaf-test/protocol/openid-connect/userinfo";
-	String INTROSPECTIONENDPOINT = "http://localhost:8888/auth/realms/iaf-test/protocol/openid-connect/token/introspect";
-	
-	String CLIENT_INFO_ENDPOINT = "http://localhost:8888/auth/admin/realms/iaf-test/clients/27ac1af3-5df6-4b05-96c6-368ebc171bd1";
-	
+
 	String RESULT_STATUS_CODE_SESSIONKEY= "ResultStatusCodeSessionKey";
-	
+
 	@Rule
 	public MockTokenServer tokenServer = new MockTokenServer();
 	@Rule
@@ -44,6 +39,19 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 	}
 
 	@Test
+	public void testBasicAuthenticationUnchallenged() throws Exception {
+		sender.setUrl(authtenticatedService.getBasicEndpointUnchallenged());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertNotNull(result.asString());
+	}
+
+	@Test
 	public void testBasicAuthenticationNoCredentials() throws Exception {
 		sender.setUrl(authtenticatedService.getBasicEndpoint());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -53,6 +61,21 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		
 		Message result = sendMessage("");
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testOAuthAuthenticationUnchallenged() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
 		assertNotNull(result.asString());
 	}
 
@@ -84,4 +107,57 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		assertNotNull(result.asString());
 	}
 
+	@Test
+	public void testFlexibleAuthenticationBasic() throws Exception {
+		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testFlexibleAuthenticationBasicNoCredentials() throws Exception {
+		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testFlexibleAuthenticationOAuth() throws Exception {
+		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertNotNull(result.asString());
+	}
+	@Test
+	public void testFlexibleAuthenticationOAuthNoCredentials() throws Exception {
+		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+	
 }

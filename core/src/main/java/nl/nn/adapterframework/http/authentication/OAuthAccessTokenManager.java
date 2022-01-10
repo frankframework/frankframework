@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
@@ -33,6 +32,7 @@ import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
@@ -49,7 +49,7 @@ public class OAuthAccessTokenManager {
 		this.scope = scope;
 	}
 		
-	private synchronized void retrieveAccessToken(Credentials credentials) throws URISyntaxException, ParseException, IOException, AuthenticationException {
+	public synchronized void retrieveAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		// Construct the client credentials grant
 		AuthorizationGrant clientGrant = new ClientCredentialsGrant();
 
@@ -59,31 +59,48 @@ public class OAuthAccessTokenManager {
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
 		// The request scope for the token (may be optional)
-		Scope _scope = scope.length>1 || scope[0]!=null ? new Scope(scope) : null;
+		Scope _scope = scope.length>1 && scope[0]!=null ? new Scope(scope) : null;
 
-		// The token endpoint
-		URI _tokenEndpoint = new URI(tokenEndpoint);
+		try {
+			// The token endpoint
+			System.out.println("-->tokenEndpoint: "+tokenEndpoint);
+			URI _tokenEndpoint = new URI(tokenEndpoint);
+			// Make the token request
+			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, _scope);
 
-		// Make the token request
-		TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, _scope);
+			try {
+				HTTPResponse httpResponse = request.toHTTPRequest().send();
+				if (httpResponse.getStatusCode()!=200) {
+					throw new HttpAuthenticationException("Could not retrieve token: ("+httpResponse.getStatusCode()+") "+httpResponse.getStatusMessage());
+				}
+				
+				try {
+					TokenResponse response = TokenResponse.parse(httpResponse);
+					if (! response.indicatesSuccess()) {
+						// We got an error response...
+						TokenErrorResponse errorResponse = response.toErrorResponse();
+						throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
+					}
 
-		TokenResponse response = TokenResponse.parse(request.toHTTPRequest().send());
-
-		if (! response.indicatesSuccess()) {
-			// We got an error response...
-			TokenErrorResponse errorResponse = response.toErrorResponse();
-			throw new AuthenticationException(errorResponse.toJSONObject().toString());
+					AccessTokenResponse successResponse = response.toSuccessResponse();
+					
+					// Get the access token
+					accessToken = successResponse.getTokens().getAccessToken();
+					accessTokenIssuedAt = System.currentTimeMillis();
+				} catch (ParseException e) {
+					throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
+				}
+			} catch (IOException e) {
+				throw new HttpAuthenticationException("Could not send TokenRequest", e);
+			}
+		} catch (URISyntaxException e) {
+			throw new HttpAuthenticationException("illegal token endpoint", e);
 		}
-
-		AccessTokenResponse successResponse = response.toSuccessResponse();
-
-		// Get the access token
-		accessToken = successResponse.getTokens().getAccessToken();
-		accessTokenIssuedAt = System.currentTimeMillis();
 	}
 	
-	public String getAccessToken(Credentials credentials) throws ParseException, URISyntaxException, IOException, AuthenticationException {
+	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		if (accessToken==null || System.currentTimeMillis() > accessTokenIssuedAt + 500 * accessToken.getLifetime()) {
+			// retrieve a fresh token if there is none, or it is half way expiration
 			retrieveAccessToken(credentials);
 		}
 		return accessToken.toAuthorizationHeader();

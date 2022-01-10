@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.http.authentication;
 
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
@@ -22,8 +23,16 @@ import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthOption;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.MalformedChallengeException;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.protocol.HttpContext;
+import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * OAuth prefering AuthenticationStrategy.
@@ -31,19 +40,29 @@ import org.apache.http.protocol.HttpContext;
  * @author Gerrit van Brakel
  *
  */
-public class OAuthPreferringAuthenticationStrategy extends SingleSchemePreferringAuthenticationStrategy {
-	
-	private OAuthAccessTokenManager accessTokenManager;
-	
-	public OAuthPreferringAuthenticationStrategy(OAuthAccessTokenManager accessTokenManager) {
-		super(new OAuthAuthenticationScheme());
-		this.accessTokenManager = accessTokenManager;
-	}
-	
+public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
+	protected Logger log = LogUtil.getLogger(this);
+
 	@Override
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
-		context.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
-		return super.select(challenges, authhost, response, context);
+		final HttpClientContext clientContext = HttpClientContext.adapt(context);
+
+		final Queue<AuthOption> options = new LinkedList<AuthOption>();
+
+		final CredentialsProvider credsProvider = clientContext.getCredentialsProvider();
+		if (credsProvider == null) {
+			this.log.debug("Credentials provider not set in the context");
+			return options;
+		}
+
+		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME);
+		final Credentials credentials = credsProvider.getCredentials(authScope);
+		if (credentials != null) {
+			options.add(new AuthOption(new OAuthAuthenticationScheme(), credentials));
+		}
+
+		options.addAll(super.select(challenges, authhost, response, clientContext));
+		return options;
 	}
 
 }

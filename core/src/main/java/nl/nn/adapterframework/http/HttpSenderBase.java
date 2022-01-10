@@ -25,7 +25,9 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -37,7 +39,11 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthOption;
+import org.apache.http.auth.AuthProtocolState;
+import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
@@ -84,6 +90,7 @@ import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
+import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -244,8 +251,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected URI staticUri;
 	private CredentialFactory credentials;
 	
-	private OAuthAccessTokenManager accessTokenManager;
-
 	private Set<String> parametersToSkip=new HashSet<String>();
 
 	protected void addParameterToSkip(String parameterName) {
@@ -309,10 +314,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 //		httpClientBuilder.disableAuthCaching();
 		httpClientBuilder.disableAutomaticRetries();
 
-		Builder requestConfig = RequestConfig.custom();
-		requestConfig.setConnectTimeout(getTimeout());
-		requestConfig.setConnectionRequestTimeout(getTimeout());
-		requestConfig.setSocketTimeout(getTimeout());
+		Builder requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setConnectTimeout(getTimeout());
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
+		requestConfigBuilder.setSocketTimeout(getTimeout());
 
 		if (paramList!=null) {
 			paramList.configure();
@@ -351,59 +356,16 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			
 			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-			if (!StringUtils.isEmpty(credentials.getUsername())) {
-				String uname;
-				if (StringUtils.isNotEmpty(getAuthDomain())) {
-					uname = getAuthDomain() + "\\" + credentials.getUsername();
-				} else {
-					uname = credentials.getUsername();
-				}
-
-				// TODO: credentials should be evaluated at open(), not in configure()
-				credentialsProvider.setCredentials(
-					new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
-					new UsernamePasswordCredentials(uname, credentials.getPassword())
-				);
-
-				requestConfig.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-				requestConfig.setAuthenticationEnabled(true);
-				
-				if (StringUtils.isNotEmpty(getTokenEndpoint())) {
-					String[] scope = StringUtils.isNotEmpty(getScope()) ? getScope().split(",") : new String[0];
-					accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), scope);
-				}
-				
-			}
+			HttpHost proxy = null;
+			CredentialFactory pcf = null;
 			if (StringUtils.isNotEmpty(getProxyHost())) {
-				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
-				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
-
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-
-				// TODO: credentials should be evaluated at open(), not in configure()
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
-					credentialsProvider.setCredentials(scope, credentials);
-				}
-				log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
-
-				if(prefillProxyAuthCache()) {
-					requestConfig.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-
-					AuthCache authCache = httpClientContext.getAuthCache();
-					if(authCache == null)
-						authCache = new BasicAuthCache();
-	
-					authCache.put(proxy, new BasicScheme());
-					httpClientContext.setAuthCache(authCache);
-				}
-
-				requestConfig.setProxy(proxy);
+				proxy = new HttpHost(getProxyHost(), getProxyPort());
+				pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+				requestConfigBuilder.setProxy(proxy);
 				httpClientBuilder.setProxy(proxy);
 			}
-
-			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+			
+			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
 		}
@@ -422,7 +384,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		httpClientBuilder.setDefaultRequestConfig(requestConfig.build());
+		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
@@ -467,10 +429,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 
 		httpClientBuilder.setConnectionManager(connectionManager);
-		
-		if (accessTokenManager!=null) {
-			httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy(accessTokenManager));
-		}
 
 		if (transformerPool!=null) {
 			try {
@@ -483,6 +441,71 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		httpClient = httpClientBuilder.build();
 	}
 
+	private void setupAuthentication(CredentialFactory cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
+		String scopeList = getScope();
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		if (!StringUtils.isEmpty(cf.getUsername())) {
+
+			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
+
+			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(getPreferredAuthSchemeName()));
+			requestConfigBuilder.setAuthenticationEnabled(true);
+			
+			if (StringUtils.isNotEmpty(getTokenEndpoint())) {
+				String[] scope = StringUtils.isNotEmpty(scopeList) ? scopeList.split(",") : new String[0];
+				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, new OAuthAccessTokenManager(getTokenEndpoint(), scope));
+				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
+			}
+			
+			httpClientContext.setAttribute("preemptive-auth", new OAuthAuthenticationScheme()); // Does this really do something?
+			
+		}
+		if (proxy!=null) {
+			AuthScope scope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
+
+
+			if (StringUtils.isNotEmpty(proxyCredentials.getUsername())) {
+				Credentials credentials = new UsernamePasswordCredentials(proxyCredentials.getUsername(), proxyCredentials.getPassword());
+				credentialsProvider.setCredentials(scope, credentials);
+			}
+			//log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
+
+			if(prefillProxyAuthCache()) {
+				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+
+				AuthCache authCache = httpClientContext.getAuthCache();
+				if(authCache == null)
+					authCache = new BasicAuthCache();
+
+				authCache.put(proxy, new BasicScheme());
+				httpClientContext.setAuthCache(authCache);
+			}
+
+		}
+
+		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+		
+	}
+
+	private Credentials getCredentials() {
+		String uname;
+		if (StringUtils.isNotEmpty(getAuthDomain())) {
+			uname = getAuthDomain() + "\\" + credentials.getUsername();
+		} else {
+			uname = credentials.getUsername();
+		}
+
+		return new UsernamePasswordCredentials(uname, credentials.getPassword());
+	}
+	
+	private String getPreferredAuthSchemeName() {
+		return StringUtils.isNotEmpty(getTokenEndpoint()) ? OAuthAuthenticationScheme.SCHEME_NAME : AuthSchemes.BASIC;
+	}
+
+	private AuthScheme getPreferredAuthScheme() {
+		return StringUtils.isNotEmpty(getTokenEndpoint()) ? new OAuthAuthenticationScheme() :new BasicScheme();
+	}
+	
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
 		SSLConnectionSocketFactory sslSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
@@ -619,14 +642,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 
 			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-				AuthCache authCache = httpClientContext.getAuthCache();
-				if(authCache == null)
-					authCache = new BasicAuthCache();
-
-				if(authCache.get(httpTarget) == null)
-					authCache.put(httpTarget, new BasicScheme());
-
-				httpClientContext.setAuthCache(authCache);
+				AuthState authState = httpClientContext.getTargetAuthState();
+				if (authState==null) {
+					authState = new AuthState();
+					httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+				}
+				authState.setState(AuthProtocolState.CHALLENGED);
+				authState.update(getPreferredAuthScheme(), getCredentials());
+				AuthOption authOption = new AuthOption(getPreferredAuthScheme(), getCredentials());
+				Queue<AuthOption> authOptionQueue = new LinkedList<>();
+				authOptionQueue.add(authOption);
+				authState.update(authOptionQueue);
 			}
 
 			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");

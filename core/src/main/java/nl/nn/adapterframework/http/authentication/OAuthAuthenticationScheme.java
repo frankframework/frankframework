@@ -15,9 +15,6 @@
 */
 package nl.nn.adapterframework.http.authentication;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.auth.AUTH;
@@ -28,8 +25,6 @@ import org.apache.http.message.BufferedHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.CharArrayBuffer;
-
-import com.nimbusds.oauth2.sdk.ParseException;
 
 /**
  * HttpClient AuthScheme that uses ClientCredentials flow.
@@ -49,11 +44,6 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 	}
 
 	@Override
-	public boolean isComplete() {
-		return false;
-	}
-
-	@Override
 	public Header authenticate(Credentials credentials, HttpRequest request, final HttpContext context) throws AuthenticationException {
 		Args.notNull(credentials, "Credentials");
 		Args.notNull(request, "HTTP request");
@@ -63,23 +53,28 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 			throw new AuthenticationException("no accessTokenManager found");
 		}
 
-		String accessToken;
 		try {
-			accessToken = accessTokenManager.getAccessToken(credentials);
-		} catch (ParseException | URISyntaxException | IOException e) {
-			throw new AuthenticationException("cannot retrieve accessToken", e);
-		}
-		
-		final CharArrayBuffer buffer = new CharArrayBuffer(32);
-		if (isProxy()) {
-			buffer.append(AUTH.PROXY_AUTH_RESP);
-		} else {
-			buffer.append(AUTH.WWW_AUTH_RESP);
-		}
-		buffer.append(": ");
-		buffer.append(accessToken);
+			String accessToken = accessTokenManager.getAccessToken(credentials);
+			final CharArrayBuffer buffer = new CharArrayBuffer(32);
+			if (isProxy()) {
+				buffer.append(AUTH.PROXY_AUTH_RESP);
+			} else {
+				buffer.append(AUTH.WWW_AUTH_RESP);
+			}
+			buffer.append(": ");
+			buffer.append(accessToken);
 
-		return new BufferedHeader(buffer);
+			return new BufferedHeader(buffer);
+		} catch (HttpAuthenticationException e) {
+			throw new AuthenticationException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append(getSchemeName()+" [complete=").append(isComplete()).append("]");
+		return builder.toString();
 	}
 
 }

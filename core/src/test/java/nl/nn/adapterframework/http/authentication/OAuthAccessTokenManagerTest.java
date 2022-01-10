@@ -2,9 +2,9 @@ package nl.nn.adapterframework.http.authentication;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.Rule;
@@ -15,6 +15,12 @@ public class OAuthAccessTokenManagerTest {
 	@Rule
 	public MockTokenServer tokenServer = new MockTokenServer();
 		
+	
+	@Test
+	public void testAttributes() {
+		assertEquals(tokenServer.getServer()+tokenServer.getPath(),tokenServer.getEndpoint());
+	}
+	
 	@Test
 	public void testRetrieveAccessToken() throws Exception {
 		String scope = "email";
@@ -23,7 +29,7 @@ public class OAuthAccessTokenManagerTest {
 
 		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getPath(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope);
 				
 		String accessToken = accessTokenManager.getAccessToken(credentials);
 		
@@ -38,7 +44,7 @@ public class OAuthAccessTokenManagerTest {
 
 		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getPath(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope);
 				
 		String accessToken = accessTokenManager.getAccessToken(credentials);
 		
@@ -55,7 +61,7 @@ public class OAuthAccessTokenManagerTest {
 
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getServer()+"/xxxx", scope);
 
-		assertThrows(AuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
+		assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
 	}
 
 }
