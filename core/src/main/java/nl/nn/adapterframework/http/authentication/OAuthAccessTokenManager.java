@@ -44,7 +44,7 @@ public class OAuthAccessTokenManager {
 	private AccessToken accessToken;
 	private long accessTokenIssuedAt;
 	
-	public OAuthAccessTokenManager(String tokenEndpoint, String...scope ) {
+	public OAuthAccessTokenManager(String tokenEndpoint, String...scope) {
 		this.tokenEndpoint = tokenEndpoint;
 		this.scope = scope;
 	}
@@ -63,7 +63,6 @@ public class OAuthAccessTokenManager {
 
 		try {
 			// The token endpoint
-			System.out.println("-->tokenEndpoint: "+tokenEndpoint);
 			URI _tokenEndpoint = new URI(tokenEndpoint);
 			// Make the token request
 			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, _scope);
