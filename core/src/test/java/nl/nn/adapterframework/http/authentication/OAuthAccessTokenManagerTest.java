@@ -96,7 +96,7 @@ public class OAuthAccessTokenManagerTest {
 		tokenServer.resetScenarios();
 		assertThat(accessTokenManager.getAccessToken(credentials), containsString("Expired"));
 		
-		//Thread.sleep(1000);
+		Thread.sleep(100);
 		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
 	}
 
