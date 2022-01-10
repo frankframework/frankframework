@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
@@ -55,7 +55,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		this.expectedResult = expected;
 	}
 
-	public void configure() throws ConfigurationException, SenderException, TimeOutException {
+	public void configure() throws ConfigurationException, SenderException, TimeoutException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
@@ -123,7 +123,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 	}
 	
 	@Test
-	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeoutException, IOException {
 //		exception.expect(SenderException.class);
 //		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
 		sender.setGetProperties(true);

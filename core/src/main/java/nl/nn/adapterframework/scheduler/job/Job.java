@@ -20,7 +20,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.digester.JobFactory;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
@@ -45,7 +45,7 @@ public class Job extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
 		throw new NotImplementedException();
 	}
 

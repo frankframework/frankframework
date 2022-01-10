@@ -83,7 +83,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -593,7 +593,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList !=null) {
@@ -714,7 +714,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			} catch (IOException e) {
 				httpRequestBase.abort();
 				if (e instanceof SocketTimeoutException) {
-					throw new TimeOutException(e);
+					throw new TimeoutException(e);
 				}
 				throw new SenderException(e);
 			} finally {
@@ -730,7 +730,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// This will cause the connection to become stale..
 				
 				if (tg.cancel()) {
-					throw new TimeOutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
+					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
 			}
 		}
@@ -738,7 +738,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		if (statusCode == -1){
 			if (msg != null && StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
 				//java.net.SocketTimeoutException: Read timed out
-				throw new TimeOutException("Failed to recover from timeout exception");
+				throw new TimeoutException("Failed to recover from timeout exception");
 			}
 			throw new SenderException("Failed to recover from exception");
 		}

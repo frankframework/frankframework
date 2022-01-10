@@ -42,6 +42,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -50,6 +52,8 @@ import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
+import nl.nn.adapterframework.jwt.AuthorizationException;
+import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -167,9 +171,8 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			messageContext.put("HttpMethod", method);
-	
+			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
@@ -214,7 +217,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
 				}
-	
+
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 	
 				/**
@@ -247,6 +250,48 @@ public class ApiListenerServlet extends HttpServletBase {
 								}
 							}
 						}
+						break;
+					case JWT:
+						String authorizationHeader = request.getHeader("Authorization");
+						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
+							try {
+								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
+								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
+								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+							} catch(Exception e) {
+								log.warn("unable to validate jwt",e);
+								response.sendError(401, e.getMessage());
+								return;
+							}
+						} else {
+							response.sendError(401, "JWT is not provided as bearer token");
+							return;
+						}
+						String requiredClaims = listener.getRequiredClaims();
+						String exactMatchClaims = listener.getExactMatchClaims();
+						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
+						try {
+							handler.validateClaims(requiredClaims, exactMatchClaims);
+							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
+								List<String> authRoles = listener.getAuthenticationRoleList();
+								if(authRoles != null) {
+									for (String role : authRoles) {
+										if(handler.isUserInRole(role, messageContext)) {
+											userPrincipal = new ApiPrincipal();
+											break;
+										}
+									}
+								} else {
+									userPrincipal = new ApiPrincipal();
+								}
+							} else {
+								userPrincipal = new ApiPrincipal();
+							}
+						} catch(AuthorizationException e) {
+							response.sendError(403, e.getMessage());
+							return;
+						}
+
 						break;
 					default:
 						break;

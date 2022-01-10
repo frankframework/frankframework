@@ -55,7 +55,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
@@ -151,7 +151,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -189,7 +189,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
 		} catch (SocketTimeoutException | ConnectTimeoutException e) {
-			throw new TimeOutException(e);
+			throw new TimeoutException(e);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		} finally {

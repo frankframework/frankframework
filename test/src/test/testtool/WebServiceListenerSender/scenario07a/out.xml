@@ -15,7 +15,7 @@
               <message>Pipe [send2ws_no_forwards] msgId [Test Tool correlation id] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
               <cause>
                 <throwable>
-                  <class>nl.nn.adapterframework.core.TimeOutException</class>
+                  <class>nl.nn.adapterframework.core.TimeoutException</class>
                   <message>(SocketTimeoutException) Read timed out</message>
                   <cause>
                     <throwable>

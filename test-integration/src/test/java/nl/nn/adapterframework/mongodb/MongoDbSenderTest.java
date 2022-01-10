@@ -29,9 +29,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private String password="testiaf_user00";
 	private String database="testdb";
 	private String collection="Students";
-	private MongoAction action=MongoAction.FINDONE;
-	
-	private JndiMongoClientFactory mongoClientFactory;
+
+  private JndiMongoClientFactory mongoClientFactory;
 
 	@Override
 	public void setUp() throws Exception {
@@ -54,13 +53,13 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testConfigure() throws ConfigurationException {
-		sender.setAction(action);
+		sender.setAction(MongoAction.FINDONE);
 		sender.configure();
 	}
 
 	@Test
 	public void testOpen() throws Exception {
-		sender.setAction(action);
+		sender.setAction(MongoAction.FINDONE);
 		sender.configure();
 		sender.open();
 	}

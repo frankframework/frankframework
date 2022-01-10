@@ -27,7 +27,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -118,7 +118,7 @@ public class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends Streaming
 		Object result;
 		try {
 			result = actor.doAction(message, pvl, session);
-		} catch (FileSystemException | TimeOutException e) {
+		} catch (FileSystemException | TimeoutException e) {
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
 				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());

@@ -17,7 +17,7 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
@@ -33,7 +33,7 @@ public class DelaySender extends SenderBase {
 	private long delayTime=5000;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
 			Thread.sleep(getDelayTime());

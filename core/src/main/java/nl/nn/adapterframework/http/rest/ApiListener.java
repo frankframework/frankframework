@@ -23,12 +23,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
+import com.nimbusds.jose.proc.SecurityContext;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
+import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -53,7 +55,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = true;
 	private @Getter String operationId;
 
-	private @Getter HttpMethod method;
+	private @Getter HttpMethod method = HttpMethod.GET;
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
@@ -72,8 +74,17 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String charset = null;
 
+	// for jwt validation
+	private @Getter String requiredIssuer=null;
+	private @Getter String jwksUrl=null;
+	private @Getter String requiredClaims=null;
+	private @Getter String exactMatchClaims=null;
+	private @Getter String roleClaim;
+
+	private @Getter JwtValidator<SecurityContext> jwtValidator;
+
 	public enum AuthenticationMethods {
-		NONE, COOKIE, HEADER, AUTHROLE;
+		NONE, COOKIE, HEADER, AUTHROLE, JWT;
 	}
 
 	/**
@@ -91,6 +102,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
+		if(getAuthenticationMethod() == AuthenticationMethods.JWT && StringUtils.isEmpty(getJwksUrl())) {
+			throw new ConfigurationException("jwksUrl cannot be empty");
+		}
+
 		producedContentType = new ContentType(produces);
 		if(charset != null) {
 			producedContentType.setCharset(charset);
@@ -100,6 +115,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@Override
 	public void open() throws ListenerException {
 		ApiServiceDispatcher.getInstance().registerServiceClient(this);
+		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
+			try {
+				jwtValidator = new JwtValidator<SecurityContext>();
+				jwtValidator.init(getJwksUrl(), getRequiredIssuer());
+			} catch (Exception e) {
+				throw new ListenerException("unable to initialize jwtSecurityHandler", e);
+			}
+		}
 		super.open();
 	}
 
@@ -161,11 +184,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return producedContentType;
 	}
 
-	@IbisDoc({"1", "HTTP method to listen to", ""})
+	@IbisDoc({"1", "HTTP method to listen to", "GET"})
 	public void setMethod(HttpMethod method) {
 		this.method = method;
 		if(this.method == HttpMethod.OPTIONS) {
-			throw new IllegalArgumentException("method OPTIONS is default and should not be added manually");
+			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
 	}
 
@@ -254,6 +277,31 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	@IbisDoc({"12", "Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.", ""})
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
+	}
+
+	/** issuer to validate jwt */
+	public void setRequiredIssuer(String issuer) { 
+		this.requiredIssuer = issuer;
+	}
+
+	/** keysource url to validate jwt */
+	public void setJwksURL(String string) { 
+		this.jwksUrl = string;
+	}
+
+	/** comma separated list of required claims */
+	public void setRequiredClaims(String string) { 
+		this.requiredClaims = string;
+	}
+
+	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test" */
+	public void setExactMatchClaims(String string) { 
+		this.exactMatchClaims = string;
+	}
+
+	/** claim name which specifies the role */
+	public void setRoleClaim(String roleClaim) { 
+		this.roleClaim = roleClaim;
 	}
 
 	@Override

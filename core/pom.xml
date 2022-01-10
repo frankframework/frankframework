@@ -607,6 +607,12 @@
 			<version>1.69</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>9.15.2</version>
+		</dependency>
+
 		<!-- Test scoped dependencies -->
 		<dependency>
 			<groupId>org.hamcrest</groupId>

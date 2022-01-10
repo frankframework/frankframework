@@ -79,7 +79,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
@@ -1480,7 +1480,7 @@ public class TestTool {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						} catch(TimeOutException e) {
+						} catch(TimeoutException e) {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
@@ -1527,7 +1527,7 @@ public class TestTool {
 								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
-							} catch(TimeOutException e) {
+							} catch(TimeoutException e) {
 								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
@@ -2219,7 +2219,7 @@ public class TestTool {
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
 								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-							} catch(TimeOutException e) {
+							} catch(TimeoutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
 								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
@@ -2232,7 +2232,7 @@ public class TestTool {
 							
 						}
 						prePostFixedQuerySender.close();
-					} catch(TimeOutException e) {
+					} catch(TimeoutException e) {
 						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
 					} catch(IOException | SenderException e) {
 						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
@@ -2260,7 +2260,7 @@ public class TestTool {
 					if (ioException != null) {
 						errorMessage("Found remaining IOException: " + ioException.getMessage(), ioException, writers);
 					}
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2293,7 +2293,7 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2355,7 +2355,7 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeOutException timeOutException = ibisJavaSenderThread.getTimeOutException();
+					TimeoutException timeOutException = ibisJavaSenderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2504,7 +2504,7 @@ public class TestTool {
 				remainingMessagesFound = true;
 				wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 			}
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 		} catch(ListenerException e) {
 			errorMessage("Could read message from file listener '" + queueName + "': " + e.getMessage(), e, writers);
 		}
@@ -2552,7 +2552,7 @@ public class TestTool {
 			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2704,7 +2704,7 @@ public class TestTool {
 			if (senderException == null) {
 				IOException ioException = senderThread.getIOException();
 				if (ioException == null) {
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException == null) {
 						String message = senderThread.getResponse();
 						if (message == null) {
@@ -2752,7 +2752,7 @@ public class TestTool {
 			}
 			try {
 				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
-			} catch (TimeOutException e) {
+			} catch (TimeoutException e) {
 				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
 				return RESULT_ERROR;
 			}
@@ -2816,7 +2816,7 @@ public class TestTool {
 				 * are remaining messages left.
 				 */
 				querySendersInfo.put("prePostQueryResult", postResult);
-			} catch(TimeOutException e) {
+			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2829,7 +2829,7 @@ public class TestTool {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-			} catch(TimeOutException e) {
+			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);

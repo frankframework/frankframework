@@ -415,7 +415,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		//String originalAttachmentName="Invoice_1800000045.pdf";
 
 		String mainRecipient=originalRecipient;
-		String mainSubject="Onbestelbaar: "+originalSubject;	
+		String mainSubject="Onbestelbaar: "+originalSubject;
 		String expectedAttachmentName="Undelivered Message";
 
 		mailListener.setFilter("NDR");
