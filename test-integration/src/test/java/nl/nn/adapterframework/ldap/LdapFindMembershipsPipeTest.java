@@ -92,7 +92,7 @@ public class LdapFindMembershipsPipeTest {
 		System.out.println("result:"+prr1.getResult());
 
 		long time2=System.currentTimeMillis();
-		PipeRunResult prr2 = pipe.doPipe(new Message(input), null);
+		PipeRunResult prr2 = pipe.doPipe(new Message(pipeInput), null);
 		long time3=System.currentTimeMillis();
 
 		System.out.println("first  duration ["+(time1-time0)+"] ms");
