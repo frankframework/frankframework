@@ -21,6 +21,7 @@ public class MockAuthenticatedService extends WireMockRule {
 	private @Getter String oauthPath = "/oauth";
 	private @Getter String basicPathUnchallenged = "/basicUnchallenged";
 	private @Getter String oauthPathUnchallenged = "/oauthUnchallenged";
+	private @Getter String failing = "/failing";
 	private @Getter String anyPath   = "/any";
 	
 	public MockAuthenticatedService() {
@@ -52,7 +53,7 @@ public class MockAuthenticatedService extends WireMockRule {
 				  .withHeader("Content-Type", "application/json")
 				  .withBody("{}")));
 		stubFor(any(urlPathMatching("/*"))
-				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer Expired"))
+				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
 				  .withStatus(401)
 				  .withHeader("WWW-Authenticate", "Basic realm=test")
@@ -83,7 +84,7 @@ public class MockAuthenticatedService extends WireMockRule {
 				  .withHeader("Content-Type", "application/json")
 				  .withBody("{}")));
 		stubFor(any(urlPathMatching(oauthPath))
-				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer Expired"))
+				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
 				  .withStatus(401)
 				  .withHeader("WWW-Authenticate", "Bearer realm=test")
@@ -111,11 +112,15 @@ public class MockAuthenticatedService extends WireMockRule {
 				  .withHeader("Content-Type", "application/json")
 				  .withBody("{}")));
 		stubFor(any(urlPathMatching(oauthPathUnchallenged))
-				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer Expired"))
+				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
 				  .withStatus(401)
 				  .withBody("{\"message\":\"token expired\"}")));
 
+		stubFor(any(urlPathMatching(failing))
+				  .willReturn(aResponse()
+				  .withStatus(401)
+				  .withBody("{\"message\":\"on this endpoint the authentication will always fail\"}")));
 		super.start();
 	}
 
@@ -134,6 +139,9 @@ public class MockAuthenticatedService extends WireMockRule {
 	}
 	public String getOAuthEndpointUnchallenged() {
 		return getServer() + oauthPathUnchallenged;
+	}
+	public String gethEndpointFailing() {
+		return getServer() + failing;
 	}
 	public String getMultiAuthEndpoint() {
 		return getServer() + anyPath;

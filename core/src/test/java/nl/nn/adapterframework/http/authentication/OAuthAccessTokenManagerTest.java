@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.http.authentication;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -62,6 +64,40 @@ public class OAuthAccessTokenManagerTest {
 		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getServer()+"/xxxx", scope);
 
 		assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
+	}
+
+	@Test
+	public void testRetrieveAccessTokenFirstExpiredForced() throws Exception {
+		String scope = "email";
+		String clientId = tokenServer.getClientId();
+		String clientSecret = tokenServer.getClientSecret();
+
+		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope);
+				
+		tokenServer.resetScenarios();
+		assertThat(accessTokenManager.getAccessToken(credentials), containsString("Expired"));
+		
+		accessTokenManager.retrieveAccessToken(credentials);
+		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
+	}
+
+	@Test
+	public void testRetrieveAccessTokenFirstExpiredAutomatic() throws Exception {
+		String scope = "email";
+		String clientId = tokenServer.getClientId();
+		String clientSecret = tokenServer.getClientSecret();
+
+		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope);
+
+		tokenServer.resetScenarios();
+		assertThat(accessTokenManager.getAccessToken(credentials), containsString("Expired"));
+		
+		//Thread.sleep(1000);
+		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
 	}
 
 }

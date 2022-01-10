@@ -22,6 +22,7 @@ import java.util.Queue;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AUTH;
 import org.apache.http.auth.AuthOption;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -29,6 +30,7 @@ import org.apache.http.auth.MalformedChallengeException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
 
@@ -42,6 +44,8 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
 	protected Logger log = LogUtil.getLogger(this);
+	
+	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 
 	@Override
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
@@ -63,6 +67,16 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 
 		options.addAll(super.select(challenges, authhost, response, clientContext));
 		return options;
+	}
+
+	@Override
+	public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
+		Map<String, Header> result = super.getChallenges(authhost, response, context);
+		if (refreshTokenOn401 && !result.containsKey(AUTH.WWW_AUTH)) {
+			// retrying unchallenged request/responses might cause endless authentication loops
+			result.put(AUTH.WWW_AUTH, new BasicHeader(AUTH.WWW_AUTH,"oauth"));
+		}
+		return result;
 	}
 
 }

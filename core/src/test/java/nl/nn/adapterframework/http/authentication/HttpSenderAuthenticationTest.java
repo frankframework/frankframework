@@ -3,6 +3,7 @@ package nl.nn.adapterframework.http.authentication;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -86,7 +87,6 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
 		sender.setUsername(tokenServer.getClientId());
 		sender.setPassword(tokenServer.getClientSecret());
-		sender.setTimeout(100000);
 
 		sender.configure();
 		sender.open();
@@ -108,6 +108,52 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
 	}
+
+	@Test
+	public void testOAuthAuthenticationTokenExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertNotNull(result.asString());
+	}
+
+	@Ignore("retrying unchallenged request/responses might cause endless authentication loops")
+	@Test
+	public void testOAuthAuthenticationUnchallengedExpired() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
+		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testOAuthAuthenticationFailing() throws Exception {
+		sender.setUrl(authtenticatedService.gethEndpointFailing());
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setUsername(tokenServer.getClientId());
+		sender.setPassword(tokenServer.getClientSecret());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+
+		sender.configure();
+		sender.open();
+		
+		Message result = sendMessage("");
+		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
+		assertNotNull(result.asString());
+	}
+
 
 
 	@Test
