@@ -64,13 +64,14 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		assertNotNull(result.asString());
 	}
 
+
+
 	@Test
-	public void testOAuthAuthenticationUnchallenged() throws Exception {
-		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
+	public void testOAuthAuthentication() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
 		sender.setUsername(tokenServer.getClientId());
 		sender.setPassword(tokenServer.getClientSecret());
-		sender.setTimeout(100000);
 
 		sender.configure();
 		sender.open();
@@ -80,11 +81,12 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 	}
 
 	@Test
-	public void testOAuthAuthentication() throws Exception {
-		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+	public void testOAuthAuthenticationUnchallenged() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
 		sender.setUsername(tokenServer.getClientId());
 		sender.setPassword(tokenServer.getClientSecret());
+		sender.setTimeout(100000);
 
 		sender.configure();
 		sender.open();
@@ -106,6 +108,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
 	}
+
 
 	@Test
 	public void testFlexibleAuthenticationBasic() throws Exception {
