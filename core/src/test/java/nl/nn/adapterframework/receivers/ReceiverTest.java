@@ -119,6 +119,7 @@ public class ReceiverTest {
 		configuration.configure();
 		configuration.start();
 
+		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
 		log.info("Adapter RunState "+adapter.getRunState());
