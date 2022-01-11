@@ -505,17 +505,21 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 		} finally {
 			if (timeoutGuard.cancel()) {
-				runState.setRunState(RunState.EXCEPTION_STOPPING);
+				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
+					runState.setRunState(RunState.EXCEPTION_STOPPING);
+				}
 				log.warn(getLogPrefix()+"timeout stopping");
 			} else {
 				log.debug(getLogPrefix()+"closed");
 				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {
 					runState.setRunState(RunState.STOPPED);
 				}
-				throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-				resetRetryInterval();
-
-				info("stopped");
+				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
+					throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
+					resetRetryInterval();
+	
+					info("stopped");
+				}
 			}
 		}
 	}
@@ -806,8 +810,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		} catch (Throwable t) {
 			error("error occured while starting", t);
 
-			closeAllResources(); //Close potential dangling resources, don't change state here..
 			runState.setRunState(RunState.EXCEPTION_STARTING);
+			closeAllResources(); //Close potential dangling resources, don't change state here..
 		}
 	}
 
@@ -825,8 +829,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				return;
 			}
 
-			if(currentRunState == RunState.EXCEPTION_STARTING) {
-				runState.setRunState(RunState.STOPPED); //Nothing ever started, directly go to stopped
+			if(currentRunState == RunState.EXCEPTION_STARTING && getListener() instanceof IPullingListener) {
+				runState.setRunState(RunState.STOPPING); //Nothing ever started, directly go to stopped
+				closeAllResources();
 				ThreadContext.removeStack(); //Clean up receiver ThreadContext
 				return; //Prevent tellResourcesToStop from being called
 			}

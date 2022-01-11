@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.receivers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.apache.logging.log4j.Logger;
@@ -29,15 +31,28 @@ public class ReceiverTest {
 		configuration.getBean("adapterManager", AdapterManager.class).close();
 	}
 
-	public Receiver<String> setupReceiver(int startupDelay) throws Exception {
+	public SlowStartingListenerBase setupPullingListener(int startupDelay) throws Exception {
 		SlowStartingPullingListener listener = configuration.createBean(SlowStartingPullingListener.class);
 		listener.setStartupDelay(startupDelay);
+		return listener;
+	}
+
+	public SlowStartingListenerBase setupPushingListener(int startupDelay) throws Exception {
+		SlowStartingPushingListener listener = configuration.createBean(SlowStartingPushingListener.class);
+		listener.setStartupDelay(startupDelay);
+		return listener;
+	}
+
+	public Receiver<String> setupReceiver(SlowStartingListenerBase listener) throws Exception {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
+		configuration.autowireByName(listener);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
+		DummySender sender = configuration.createBean(DummySender.class);
+		receiver.setSender(sender);
 		return receiver;
 	}
 
@@ -84,9 +99,17 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void testReceiverStartBasic() throws Exception {
+	public void testPullingReceiverStartBasic() throws Exception {
+		testStartNoTimeout(setupPullingListener(0));
+	}
 
-		Receiver<String> receiver = setupReceiver(0);
+	@Test
+	public void testPushingReceiverStartBasic() throws Exception {
+		testStartNoTimeout(setupPushingListener(0));
+	}
+
+	public void testStartNoTimeout(SlowStartingListenerBase listener) throws Exception {
+		Receiver<String> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -101,16 +124,27 @@ public class ReceiverTest {
 		log.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitWhileInState(receiver, RunState.STOPPED); // ?
-		waitWhileInState(receiver, RunState.STARTING);
+		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
 		log.info("Receiver RunState "+receiver.getRunState());
+
+		assertFalse(listener.isClosed()); // Not closed, thus open
+		assertFalse(receiver.getSender().isSynchronous()); // Not closed, thus open
 		assertEquals(RunState.STARTED, receiver.getRunState());
 	}
 
 	@Test
-	public void testReceiverStartTimeout() throws Exception {
+	public void testPullingReceiverStartWithTimeout() throws Exception {
+		testStartTimeout(setupPullingListener(10000));
+	}
 
-		Receiver<String> receiver = setupReceiver(10000);
+	@Test
+	public void testPushingReceiverStartWithTimeout() throws Exception {
+		testStartTimeout(setupPushingListener(10000));
+	}
+
+	public void testStartTimeout(SlowStartingListenerBase listener) throws Exception {
+		Receiver<String> receiver = setupReceiver(listener);
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -125,11 +159,12 @@ public class ReceiverTest {
 		log.info("Adapter RunState "+adapter.getRunState());
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
-		waitWhileInState(receiver, RunState.STOPPED);
-		waitWhileInState(receiver, RunState.STARTING);
+		waitWhileInState(receiver, RunState.STOPPED); //Ensure the next waitWhileInState doesn't skip when STATE is still STOPPED
+		waitWhileInState(receiver, RunState.STARTING); //Don't continue until the receiver has been started.
 
 		log.info("Receiver RunState "+receiver.getRunState());
-		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
+		assertEquals("Receiver should be in state [EXCEPTION_STARTING]", RunState.EXCEPTION_STARTING, receiver.getRunState());
+		assertTrue("Close has not been called on the Receiver's sender!", receiver.getSender().isSynchronous());
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		while(receiver.getRunState()!=RunState.STOPPED) {
@@ -141,11 +176,13 @@ public class ReceiverTest {
 			}
 		}
 		assertEquals(RunState.STOPPED, receiver.getRunState());
+		assertEquals(RunState.STARTED, adapter.getRunState());
+		assertTrue(listener.isClosed());
 	}
 
 	@Test
 	public void startReceiver() throws Exception {
-		Receiver<String> receiver = setupReceiver(10000);
+		Receiver<String> receiver = setupReceiver(setupPullingListener(10000));
 		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());

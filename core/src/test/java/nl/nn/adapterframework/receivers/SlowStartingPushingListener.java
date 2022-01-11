@@ -1,14 +1,16 @@
 package nl.nn.adapterframework.receivers;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.stream.Message;
 
-public class SlowStartingPullingListener extends SlowStartingListenerBase implements IPullingListener<String> {
+public class SlowStartingPushingListener extends SlowStartingListenerBase implements IPushingListener<String> {
+
 
 	@Override
 	public String getIdFromRawMessage(String rawMessage, Map<String, Object> context) throws ListenerException {
@@ -25,18 +27,15 @@ public class SlowStartingPullingListener extends SlowStartingListenerBase implem
 	}
 
 	@Override
-	public Map<String, Object> openThread() throws ListenerException {
-		return new LinkedHashMap<String,Object>();
-	}
-
-	@Override
-	public void closeThread(Map<String, Object> threadContext) throws ListenerException {
+	public void setHandler(IMessageHandler<String> handler) {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String getRawMessage(Map<String, Object> threadContext) throws ListenerException {
-		return null;
+	public void setExceptionListener(IbisExceptionListener listener) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
