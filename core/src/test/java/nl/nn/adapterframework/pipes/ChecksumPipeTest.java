@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.security.NoSuchAlgorithmException;
@@ -10,16 +9,12 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
+import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumType;
 import nl.nn.adapterframework.stream.Message;
 
 
 
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
-
-	public static final String CHECKSUM_MD5="MD5";
-	public static final String CHECKSUM_SHA="SHA";
-	public static final String CHECKSUM_CRC32="CRC32";
-	public static final String CHECKSUM_ADLER32="Adler32";
 
 	@Override
 	public ChecksumPipe createPipe() {
@@ -28,63 +23,15 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	
 	@Test(expected = ConfigurationException.class)
-	public void checkEmptyType() throws ConfigurationException {
-		String type = "";
-		pipe.setType(type);
-		pipe.configure();
-	}
-	
-	@Test(expected = ConfigurationException.class)
 	public void checkNullType() throws ConfigurationException {
 		pipe.setType(null);
 		pipe.configure();
 	}
-	
-	@Test(expected = ConfigurationException.class)
-	public void checkWrongChecksumType() throws ConfigurationException {
-		pipe.setType("dummy");
-		pipe.configure();	
-	}
-	
-	@Test
-	public void checkRightChecksumTypeMD5() throws ConfigurationException {
-		pipe.setType(CHECKSUM_MD5);
-		pipe.configure();
-		String check = "MD5";
-		assertEquals(CHECKSUM_MD5, check);		
-	}
-	
-	
-	@Test
-	public void checkRightChecksumTypeSHA() throws ConfigurationException {		
-		pipe.setType(CHECKSUM_SHA);
-		pipe.configure();
-		String check = "SHA";
-		assertEquals(CHECKSUM_SHA, check);
 		
-	}
-	
-	@Test
-	public void checkRightChecksumTypeCRC32() throws ConfigurationException {
-		pipe.setType(CHECKSUM_CRC32);
-		pipe.configure();
-		String check = "CRC32";
-		assertEquals(CHECKSUM_CRC32, check);
-	
-	}
-	
-	@Test
-	public void checkRightChecksumTypeADLER32() throws ConfigurationException {
-		pipe.setType(CHECKSUM_ADLER32);
-		pipe.configure();
-		String check = "Adler32";
-		assertEquals(CHECKSUM_ADLER32, check);
-		
-	}
 
 	@Test
 	public void rightChecksumGeneratedMD5() throws NoSuchAlgorithmException {
-		pipe.setType(CHECKSUM_MD5);
+		pipe.setType(ChecksumType.MD5);
 		ChecksumGenerator result = pipe.createChecksumGenerator();
 
 		assertNotNull(result);
@@ -92,7 +39,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	@Test
 	public void rightChecksumGeneratedSHA() throws NoSuchAlgorithmException {
-		pipe.setType(CHECKSUM_SHA);
+		pipe.setType(ChecksumType.SHA);
 		ChecksumGenerator result = pipe.createChecksumGenerator();
 
 		assertNotNull(result);
@@ -100,7 +47,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Test
 	public void rightChecksumGeneratedCRC32() throws NoSuchAlgorithmException {
-		pipe.setType(CHECKSUM_CRC32);
+		pipe.setType(ChecksumType.CRC32);
 		ChecksumGenerator result = pipe.createChecksumGenerator();
 
 		assertNotNull(result);
@@ -108,7 +55,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Test
 	public void rightChecksumGeneratedADLER32() throws NoSuchAlgorithmException {
-		pipe.setType(CHECKSUM_ADLER32);
+		pipe.setType(ChecksumType.ADLER32);
 		ChecksumGenerator result = pipe.createChecksumGenerator();
 
 		assertNotNull(result);
@@ -116,7 +63,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	
 	@Test(expected = NoSuchAlgorithmException.class)
 	public void emptyChecksumGenerated () throws NoSuchAlgorithmException {
-		pipe.setType("");
+		pipe.setType(null);
 		pipe.createChecksumGenerator();
 	}
 	

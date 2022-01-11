@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,7 +199,9 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 
-	/** Keystore to obtain signing key */
+	/** Keystore to obtain signing key 
+	 * @ff.mandatory
+	 */
 	@Override
 	public void setKeystore(String string) {
 		keystore = string;
