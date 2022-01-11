@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.sap.conn.jco.JCoFunction;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -46,6 +47,8 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Jaco de Groot
  * @since   5.0
  */
+@Deprecated
+@ConfigurationWarning("Please do not specify jco version in package name")
 public class SapSender extends SapSenderBase implements ISapSender {
 	
 	private @Getter String functionName=null;
