@@ -28,7 +28,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -48,13 +47,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <li>OutputStream</li>
  * <li>HttpResponse</li>
  * </ul>
- * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
- *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>filename</td><td>string</td><td>filename of the zip or zipentry.</td></tr>
- * </table>
+ * 
+ * @ff.parameter filename specifies the filename if the input is a HttpResponse
  *
  * @author  Gerrit van Brakel
  * @since   4.9.10
@@ -191,7 +185,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (sessionData==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");
 		}
-		String filename=(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
+		String filename = pvl.getParameterValue(PARAMETER_FILENAME).asStringValue();
 		if (StringUtils.isEmpty(filename)) {
 			throw new PipeRunException(this,getLogPrefix(session)+"filename cannot be empty");
 		}

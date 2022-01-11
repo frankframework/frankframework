@@ -1,6 +1,14 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.XsltPipe;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
@@ -40,7 +48,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	}
 
 	@Override
-	protected void setOutputType(String outputType) {
+	protected void setOutputType(OutputType outputType) {
 		pipe.setOutputType(outputType);
 	}
 
@@ -52,6 +60,23 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	@Override
 	protected void setXslt2(boolean xslt2) {
 		pipe.setXslt2(xslt2);
+	}
+
+	@Test
+	public void testSessionKey() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
+
+		pipe.setSessionKey("sessionKey");
+		setXpathExpression("/request/g/@attr");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		Message sessionKey = session.getMessage("sessionKey");
+		assertEquals(expected, sessionKey.asString());
+		String result = Message.asMessage(prr.getResult()).asString();
+		assertEquals(result, input);
 	}
 
 }

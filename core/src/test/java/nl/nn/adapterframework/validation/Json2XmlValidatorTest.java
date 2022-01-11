@@ -1,11 +1,7 @@
 package nl.nn.adapterframework.validation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Ignore;
@@ -20,6 +16,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.pipes.JsonPipe;
+import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -52,7 +49,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		jsonPipe=new JsonPipe();
 		jsonPipe.setName("xml2json");
 		jsonPipe.registerForward(new PipeForward("success",null));
-		jsonPipe.setDirection("xml2json");
+		jsonPipe.setDirection(Direction.XML2JSON);
 		jsonPipe.configure();
 		try {
 			validator = implementation.newInstance();
@@ -122,15 +119,10 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
         	}
         	evaluateResult(event, session, null, expectedFailureReasons);
             try {
-    	        Set<List<String>> rootvalidations=null;
-    	        if (rootelement!=null) {
-    	        	List<String> rootvalidation=new ArrayList<String>();
-    	        	rootvalidation.add("Envelope");
-    	        	rootvalidation.add("Body");
-    	        	rootvalidation.add(rootelement);
-    	        	rootvalidations=new HashSet<List<String>>();
-    	        	rootvalidations.add(rootvalidation);
-    	        }
+    			RootValidations rootvalidations = null;
+    			if(rootelement != null) {
+    				rootvalidations = new RootValidations("Envelope", "Body", rootelement);
+    			}
     	        String validationResult=validator.validate(result, session, "check result", rootvalidations, null);
     	        evaluateResult(validationResult, session, null, expectedFailureReasons);
     	        return result;

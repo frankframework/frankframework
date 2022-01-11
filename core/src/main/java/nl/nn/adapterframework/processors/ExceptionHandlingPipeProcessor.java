@@ -28,7 +28,6 @@ import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.pipes.ExceptionPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
 
 public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
@@ -37,21 +36,14 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 		PipeRunResult prr = null;
 		try {
 			prr = chain.apply(message);
-		} catch (PipeRunException e) {
+		} catch (Exception e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
-				Object tsReceivedObj = pipeLineSession.get(PipeLineSession.tsReceivedKey);
-				Date tsReceivedDate = null;
 
-				if(tsReceivedObj instanceof Date) {
-					tsReceivedDate = (Date) tsReceivedObj;
-				} else if(tsReceivedObj instanceof String) {
-					tsReceivedDate = DateUtils.parseToDate((String) tsReceivedObj, DateUtils.FORMAT_FULL_GENERIC);
-				}
-
+				Date tsReceivedDate = pipeLineSession.getTsReceived();
 				long tsReceivedLong = 0L;
 				if(tsReceivedDate != null) {
-					tsReceivedLong= tsReceivedDate.getTime();
+					tsReceivedLong = tsReceivedDate.getTime();
 				}
 
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();

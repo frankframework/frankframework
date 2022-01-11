@@ -114,13 +114,12 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return execute(connection, query, parameters.toArray(new String[parameters.size()])) ? rawMessage : null;
 	}
 
-	
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
 		if (!knownProcessStates().contains(state)) {
 			return null;
 		}
-		JdbcTableMessageBrowser<M> browser = new JdbcTableMessageBrowser<M>(this, getStatusValue(state), getStorageType(state));
+		JdbcTableMessageBrowser<M> browser = new JdbcTableMessageBrowser<>(this, getStatusValue(state), getStorageType(state));
 		if (StringUtils.isNotEmpty(getCommentField())) {
 			browser.setCommentField(commentField);
 		}
@@ -182,7 +181,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return statusField;
 	}
 
-	@IbisDoc({"5", "(optional) Field determining the order in which messages are processed", ""})
+	@IbisDoc({"5", "(optional) Comma separated list of fields determining the order in which messages are processed", ""})
 	public void setOrderField(String string) {
 		orderField = string;
 	}

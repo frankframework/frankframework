@@ -47,7 +47,7 @@ public class DelayPipe extends FixedForwardPipe {
 	/**
 	 * the time the thread will be put to sleep.
 	 */
-	@IbisDoc({"the time the thread will be put to sleep", "5000 [ms]"})
+	@IbisDoc({"The time <i>in milliseconds</i> the thread will be put to sleep", "5000"})
 	public void setDelayTime(long l) {
 		delayTime = l;
 	}

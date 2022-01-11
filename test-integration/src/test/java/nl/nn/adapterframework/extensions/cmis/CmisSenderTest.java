@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -99,11 +100,11 @@ public class CmisSenderTest {
 		String fullUrl=url+"/"+repo+"/root?objectId="+id1+"&cmisselector=content";
 		System.out.println("url: "+fullUrl);
 		sender.setUrl(fullUrl);
-		sender.setMethodType("GET");
+		sender.setMethodType(HttpMethod.GET);
 //		sender.setRepository(repo);
 //		sender.setAction("get");
 //		sender.setBindingType("browser");
-		sender.setUserName(titanUser);
+		sender.setUsername(titanUser);
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
 		sender.configure();

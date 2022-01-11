@@ -1,20 +1,22 @@
 <div>
-	<div ng-if="! attr.enum" ng-bind-html="::attr.description" />
-	<div ng-if="attr.enum">
-		<div ng-bind-html="::attr.description" />
+	<div ng-if="::attr.description" ng-bind-html="::attr.description | javadoc:this" />
 
-		<br />
-		<table class="attributeEnumValues">
-			<thead>
-				<tr>
-					<th>Value</th>
-					<th>Description</th>
+	<div ng-if="attr.enum">
+		<div ng-controller="attribute-description">
+			<table ng-if="descriptiveEnum">
+				<thead>
+					<tr>
+						<th class="tbl-15">Value</th>
+						<th class="tbl-85">Description</th>
+					</tr>
+				</thead>
+				<tr ng-repeat="enumField in ::enums[attr.enum]">
+					<td>{{::enumField.label}}</td>
+					<td ng-bind-html="enumField.description | javadoc:this" />
 				</tr>
-			</thead>
-			<tr ng-repeat="enumValue in ::enums[attr.enum]">
-				<td>{{::enumValue.label}}</td>
-				<td ng-bind-html="enumValue.description" />
-			</tr>
-		</table>
+			</table>
+
+			<span ng-if="!descriptiveEnum">Possible values: <span ng-repeat="enumValue in ::enums[attr.enum]"><code>{{enumValue.label}}</code><span ng-if="!$last">, </span></span></span>
+		</div>
 	</div>
 </div>

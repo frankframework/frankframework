@@ -16,26 +16,14 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
 
 /**
  * Implementation of {@link IPullingListener} that acts as an IFSA-service.
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
- *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
- * </table>
+ * 
  * The following session keys are set for each message:
  * <ul>
  *   <li>id (the message id)</li>
@@ -49,6 +37,7 @@ import nl.nn.adapterframework.core.IPullingListener;
  *   <li>ifsaOccurrence</li>
  *   <li>ifsaVersion</li>
  * </ul>
+ * 
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
  * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
@@ -60,7 +49,5 @@ import nl.nn.adapterframework.core.IPullingListener;
  * @author  Gerrit van Brakel
  * @since   4.2, switch class: 4.8
  */
-public class IfsaProviderListener
-	extends nl.nn.adapterframework.extensions.ifsa.jms.IfsaProviderListener {
-
+public class IfsaProviderListener extends PushingIfsaProviderListener {
 }

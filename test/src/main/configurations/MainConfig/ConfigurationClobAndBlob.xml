@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="ClobAndBlob" description="Test the functioning handling CLOBs and BLOBs">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ClobAndBlob" />
@@ -224,4 +224,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

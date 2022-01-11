@@ -7,6 +7,7 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
@@ -27,7 +28,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
 	@Test
 	public void testBasicUnwrap() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" + 
 				"<SOAP-ENV:Body>\n" + 
@@ -51,7 +52,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
 	@Test
 	public void testUnwrapClientFilenameWithoutSlash() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" + 
 				"<SOAP-ENV:Body>\n" + 
@@ -75,7 +76,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
 	@Test
 	public void testClientFileNameContainsPath() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" + 
 				"<SOAP-ENV:Body>\n" + 
@@ -95,7 +96,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 
 	@Test
 	public void testUseServerFilename() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.setUseServerFilename(true);
 		pipe.configure();
 		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" + 
@@ -116,7 +117,7 @@ public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 	
 	@Test
 	public void testClientFilenameContainsWindowsPath() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 
 		PipeRunResult pipeRunResult = doPipe(new Message("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" + 

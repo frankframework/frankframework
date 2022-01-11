@@ -30,7 +30,7 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload File</label>
 							<div class="col-sm-5">
-								<input class="form-control form-file" name="file" type="file" onchange="angular.element(this).scope().handleFile(this.files)"/>
+								<input class="form-control form-file" name="file" type="file" onchange="angular.element(this).scope().handleFile(this.files)" accept=".zip,.jar"/>
 							</div>
 							<div class="col-sm-1">
 								<label class="control-label label-height-30 pull-right">Encoding</label>
@@ -42,19 +42,22 @@
 						<div class="row form-group">
 							<label class="col-sm-3 control-label">Multiple Configurations</label>
 							<div class="col-sm-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.multiple_configs" /></span>
+								<input icheck type="checkbox" ng-model="form.multiple_configs" />
+								<small class="m-l-sm">To upload multiple configurations compressed in 1 zip-archive.</small>
 							</div>
 						</div>
 						<div class="row form-group">
-							<label class="col-sm-3 control-label">Activate Config</label>
+							<label class="col-sm-3 control-label">Startup Configuration</label>
 							<div class="col-sm-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.activate_config" /></span>
+								<input icheck type="checkbox" ng-model="form.activate_config" />
+								<small class="m-l-sm">Load this version of the configuration on application startup or by manually reloading the configuration. Resets this flag for other versions of this configuration.</small>
 							</div>
 						</div>
 						<div class="row form-group">
-							<label class="col-sm-3 control-label">Automatic Reload</label>
+							<label class="col-sm-3 control-label">Reload Automatically</label>
 							<div class="col-sm-9">
-								<span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.automatic_reload" /></span>
+								<input icheck type="checkbox" ng-model="form.automatic_reload" />
+								<small class="m-l-sm">Load this version of the configuration at the next reload event if it has also been selected as 'Startup Configuration'.</small>
 							</div>
 						</div>
 						<div class="row form-group">

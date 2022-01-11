@@ -23,7 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -36,12 +36,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * Filename and contents are taken from parameters. If one of the parameters is not present, the input message 
  * is used for either filename or contents.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>filename</td><td>string</td><td>filename of the zipentry</td></tr>
- * <tr><td>contents</td><td>string</td><td>contents of the zipentry</td></tr>
- * </table>
+ * @ff.parameter filename filename of the zipentry
+ * @ff.parameter contents contents of the zipentry
  * 
  * @author  Gerrit van Brakel
  * @since   4.9.10
@@ -71,7 +67,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);

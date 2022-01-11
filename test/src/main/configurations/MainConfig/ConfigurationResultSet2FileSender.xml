@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="ResultSet2FileSender">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -35,4 +35,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -15,12 +15,14 @@
 */
 package nl.nn.ibistesttool;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
@@ -35,6 +37,8 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
@@ -45,7 +49,9 @@ import nl.nn.testtool.run.ReportRunner;
 /**
  * @author Jaco de Groot
  */
-public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent>, ApplicationEventPublisherAware {
+public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, ApplicationListener<DebuggerStatusChangedEvent> {
+	private Logger log = LogUtil.getLogger(this);
+
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
 	protected static final String STUB_STRATEGY_NEVER = "Never";
 	private static final String STUB_STRATEGY_ALWAYS = "Always";
@@ -56,12 +62,12 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private List<String> rerunRoles;
 
 	protected Set<String> inRerun = new HashSet<String>();
-	private ApplicationEventPublisher applicationEventPublisher;
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
 	}
 
+	@Override
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
 	}
@@ -145,7 +151,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	}
 
 	@Override
-	public String replyListenerOutput(IListener<?> listener, String correlationId, String output) {
+	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
 		return testTool.endpoint(correlationId, listener.getClass().getName(), getCheckpointNameForINamedObject("Listener ", listener), output);
 	}
 
@@ -202,6 +208,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value) {
+		if (parameter.isHidden()) {
+			try {
+				value = Misc.hide(Message.asString(value));
+			} catch (IOException e) {
+				value = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
+				log.warn(value, e);
+			}
+		}
 		return testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), value);
 	}
 	@Override
@@ -376,14 +390,14 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
-	// - to get notified of canges, components should listen to DebuggerStatusChangedEvents
-	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
+	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
+	// IbisDebuggerAdvice stores state in AppConstants testtool.enabled for use by GUI
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
-		if (applicationEventPublisher != null) {
+		if (ibisManager != null && ibisManager.getApplicationEventPublisher() != null) {
 			DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enabled);
-			applicationEventPublisher.publishEvent(event);
+			ibisManager.getApplicationEventPublisher().publishEvent(event);
 		}
 	}
 
@@ -392,10 +406,5 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 		if (event.getSource()!=this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
-	}
-	
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.applicationEventPublisher = applicationEventPublisher;
 	}
 }

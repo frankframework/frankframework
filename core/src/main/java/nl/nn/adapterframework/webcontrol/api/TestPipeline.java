@@ -62,9 +62,9 @@ public class TestPipeline extends Base {
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
-	
+
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	@Path("/test-pipeline")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)

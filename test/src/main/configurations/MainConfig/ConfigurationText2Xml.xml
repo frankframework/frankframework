@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Text2Xml">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -14,4 +14,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

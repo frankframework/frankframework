@@ -37,6 +37,7 @@ public class ClobWriter extends FilterWriter {
 	private int clobColumn;
 	private ResultSet resultSet;
 	private XmlBuilder warnings;
+	private boolean open;
 	
 	public ClobWriter(IDbmsSupport dbmsSupport, Object clobUpdateHandle, int clobColumn, Writer clobWriter, ResultSet resultSet, XmlBuilder warnings) {
 		super(clobWriter);
@@ -45,19 +46,23 @@ public class ClobWriter extends FilterWriter {
 		this.clobColumn=clobColumn;
 		this.resultSet=resultSet;
 		this.warnings=warnings;
+		open=true;
 	}
 
 	@Override
 	public void close() throws IOException {
-		try {
-			super.close();
-			dbmsSupport.updateClob(resultSet, clobColumn, clobUpdateHandle);
-			resultSet.updateRow();
-			JdbcUtil.warningsToXml(resultSet.getWarnings(),warnings);
-		} catch (JdbcException | SQLException e) {
-			throw new IOException("cannot write CLOB",e);
-		} finally {
-			JdbcUtil.fullClose(null, resultSet);
+		if (open) {
+			open=false;
+			try {
+				super.close();
+				dbmsSupport.updateClob(resultSet, clobColumn, clobUpdateHandle);
+				resultSet.updateRow();
+				JdbcUtil.warningsToXml(resultSet.getWarnings(),warnings);
+			} catch (JdbcException | SQLException e) {
+				throw new IOException("cannot write CLOB",e);
+			} finally {
+				JdbcUtil.fullClose(null, resultSet);
+			}
 		}
 	}
 

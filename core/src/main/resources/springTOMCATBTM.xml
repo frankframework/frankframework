@@ -13,28 +13,21 @@
 
 	<bean
 		name="txManagerReal"
-		class="org.springframework.transaction.jta.JtaTransactionManager"
+		class="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager"
+		depends-on="btmConfig"
 		>
-		<property name="transactionManager" ref="btmTransactionManager"/>
-		<property name="userTransaction" ref="btmTransactionManager"/>
+		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
+		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
+		<property name="uid" value="${transactionmanager.uid}" />
 	</bean>
-
-	<bean
-		name="btmTransactionManager"
-		class="bitronix.tm.TransactionManagerServices"
-		factory-method="getTransactionManager"
-		depends-on="btmConfig,defaultDataSource"
-		destroy-method="shutdown"
-	/>
 
 	<bean
 		name="btmConfig"
 		class="bitronix.tm.TransactionManagerServices"
 		factory-method="getConfiguration"
 		>
-			<property name="serverId" value="${instance.name.lc}.tm"/>
-			<property name="logPart1Filename" value="${transactionlog.dir}/btm/1.tlog" />
-			<property name="logPart2Filename" value="${transactionlog.dir}/btm/2.tlog" />
+			<property name="logPart1Filename" value="${transactionmanager.log.dir}/1.tlog" />
+			<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog" />
 	</bean>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />

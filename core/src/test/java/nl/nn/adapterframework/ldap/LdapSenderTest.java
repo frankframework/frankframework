@@ -25,6 +25,7 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
 
+import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -88,7 +89,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Test
 	public void readTwoAttributes() throws Exception {
-		sender.setOperation("read");
+		sender.setOperation(Operation.READ);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		sender.addParameter(parameter);
@@ -104,7 +105,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Test
 	public void readAllAttributes() throws Exception {
-		sender.setOperation("read");
+		sender.setOperation(Operation.READ);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
@@ -120,7 +121,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Test
 	public void updateAttribute() throws Exception {
-		sender.setOperation("update");
+		sender.setOperation(Operation.UPDATE);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
@@ -137,7 +138,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Test
 	public void updateNewEntry() throws Exception {
-		sender.setOperation("update");
+		sender.setOperation(Operation.UPDATE);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
@@ -158,7 +159,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Test
 	public void deleteAttribute() throws Exception {
-		sender.setOperation("delete");
+		sender.setOperation(Operation.DELETE);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		parameter.setValue("cn=LEA Administrator,ou=groups,ou=development," + baseDNs);
@@ -173,8 +174,11 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		compareXML("Ldap/expected/delete.xml", getTree());
 	}
 
+	//Create a new sender and execute the TREE action to run a diff against that changes
 	private String getTree() throws Exception {
-		sender.setOperation("getTree");
+		super.tearDown();
+		super.setUp();
+		sender.setOperation(Operation.GET_TREE);
 		Parameter parameter = new Parameter();
 		parameter.setName("entryName");
 		parameter.setValue(baseDNs);

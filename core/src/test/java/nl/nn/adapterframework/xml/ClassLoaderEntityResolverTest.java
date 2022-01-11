@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
@@ -36,7 +35,7 @@ public class ClassLoaderEntityResolverTest {
 	}
 
 	@Test
-	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
+	public void localClassPathFileOnRootOfClasspathAbsolute() throws Exception {
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		String systemId="/AppConstants.properties"; // this file is known to be in the root of the classpath
@@ -57,7 +56,7 @@ public class ClassLoaderEntityResolverTest {
 
 	
 	@Test
-	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -78,7 +77,7 @@ public class ClassLoaderEntityResolverTest {
 	}
 
 	@Test
-	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPathAbsolute() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -103,7 +102,7 @@ public class ClassLoaderEntityResolverTest {
 	 */
 	@Test
 	@Ignore("Fixed the original problem in XmlUtils.identityTransform(), that did not set a systemId for relative resolutions")
-	public void localClassPathFullPath() throws SAXException, IOException, ConfigurationException {
+	public void localClassPathFullPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		//Get the working directory

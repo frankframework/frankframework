@@ -175,6 +175,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
 		} catch (IOException e) {
@@ -183,6 +190,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);

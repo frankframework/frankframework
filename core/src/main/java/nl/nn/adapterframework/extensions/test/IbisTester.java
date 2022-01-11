@@ -162,7 +162,7 @@ public class IbisTester {
 
 	public void closeTest() {
 		if (ibisContext != null) {
-			ibisContext.destroy();
+			ibisContext.close();
 		}
 		debug("***end***");
 	}

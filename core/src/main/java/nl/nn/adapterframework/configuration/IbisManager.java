@@ -45,7 +45,7 @@ public interface IbisManager extends ApplicationEventPublisherAware {
     Configuration getConfiguration(String configurationName);
 
 	public enum IbisAction {
-		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS, SENDMESSAGE, MOVEMESSAGE
+		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
 	}
 
 	/**

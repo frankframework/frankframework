@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="XmlFileElementIteratorPipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -10,7 +10,7 @@
 			</exits>
 
 			<pipe name="getRequest" className="nl.nn.adapterframework.pipes.XsltPipe"
-				xpathExpression="request" sessionKey="originalRequest">
+				xpathExpression="request" storeResultInSessionKey="originalRequest" preserveInput="true">
 				<forward name="success" path="switchMode" />
 			</pipe>
 
@@ -54,4 +54,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

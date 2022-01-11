@@ -39,12 +39,13 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
-import nl.nn.credentialprovider.util.Misc;
 
 
 /**
@@ -84,8 +85,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 		processToken = new Semaphore(receiver.getNumThreads());
 		maxThreadCount = receiver.getNumThreads();
-		if (receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
-			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		if (receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
+			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionAttribute.REQUIRESNEW.getTransactionAttributeNum());
 			if (receiver.getTransactionTimeout() > 0) {
 				txDef.setTimeout(receiver.getTransactionTimeout());
 			}
@@ -145,7 +146,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 		}
 
 		public ControllerTask() {
-			setName(ClassUtils.nameOf(receiver) + " ["+receiver.getName()+"]");
+			setName(ClassUtils.nameOf(receiver));
 		}
 
 		@Override
@@ -231,7 +232,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (messageAvailable) {
 									// Start a transaction if the entire processing is transacted, or
 									// messages needs to be moved to inProcess, and transaction control is not inhibited by setting transactionAttribute=NotSupported.
-									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
+									if (receiver.isTransacted() || inProcessStateManager!=null && receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED) {
 										txStatus = txManager.getTransaction(txNew);
 									}
 									rawMessage = listener.getRawMessage(threadContext);
@@ -341,7 +342,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						}
 					}
 					if (!messageHandled && inProcessStateManager!=null) {
-						txStatus = receiver.isTransacted() || receiver.getTransactionAttributeNum() != TransactionDefinition.PROPAGATION_NOT_SUPPORTED ? txManager.getTransaction(txNew) : null;
+						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;
 						if (log.isDebugEnabled()) log.debug("noMoreRetries ["+noMoreRetries+"] deliveryCount ["+deliveryCount+"] targetState ["+targetState+"]");

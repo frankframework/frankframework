@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,10 +22,10 @@ import org.mockito.stubbing.Answer;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -201,11 +200,11 @@ public class ClassLoaderManagerTest extends Mockito {
 		when(ibisContext.getIbisManager()).thenReturn(ibisManager);
 	}
 
-	private ClassLoader getClassLoader() throws ConfigurationException {
+	private ClassLoader getClassLoader() throws Exception {
 		return getClassLoader(configurationName);
 	}
 
-	private ClassLoader getClassLoader(String testConfiguration) throws ConfigurationException {
+	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
 		ClassLoader config = manager.get(testConfiguration);
 		if(config instanceof ClassLoaderBase) {
 			((ClassLoaderBase)config).setBasePath(".");
@@ -214,7 +213,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void properClassLoaderType() throws ConfigurationException {
+	public void properClassLoaderType() throws Exception {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 
@@ -226,7 +225,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveTestFileNotInClassLoader() throws ConfigurationException, IOException {
+	public void retrieveTestFileNotInClassLoader() throws Exception {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("test1.xml");
@@ -235,7 +234,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveTestFileInClassLoaderRoot() throws ConfigurationException, IOException {
+	public void retrieveTestFileInClassLoaderRoot() throws Exception {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -246,7 +245,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveTestFileInSubFolder() throws ConfigurationException, IOException {
+	public void retrieveTestFileInSubFolder() throws Exception {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -257,7 +256,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void retrieveNonExistingTestFile() throws ConfigurationException, IOException {
+	public void retrieveNonExistingTestFile() throws Exception {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("dummy-test-file.xml");
@@ -266,7 +265,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild() throws ConfigurationException, IOException {
+	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild() throws Exception {
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
@@ -292,7 +291,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void reloadString() throws ConfigurationException, IOException {
+	public void reloadString() throws Exception {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 
@@ -304,7 +303,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@Test
-	public void reloadClassLoader() throws ConfigurationException, IOException {
+	public void reloadClassLoader() throws Exception {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 

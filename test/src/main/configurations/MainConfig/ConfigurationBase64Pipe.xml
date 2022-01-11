@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
 		<receiver name="Base64Pipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -19,9 +19,9 @@
 					serviceName="testtool-base64pipe" />
 			</pipe>
 			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode" outputType="bytes" />
+				direction="decode"/>
 			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

@@ -41,7 +41,7 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -150,7 +150,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session);
+			responseMessage.closeOnCloseOf(session, this);
 
 			InputStream responseStream = null;
 			InputStream errorStream = null;
@@ -171,7 +171,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		return new Message("response");
 	}
 
-	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeoutException {
 		//Prepare the message. We will overwrite things later...
 
 		int responseCode = -1;

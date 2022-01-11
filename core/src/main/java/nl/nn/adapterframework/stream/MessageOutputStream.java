@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.stream.json.JsonTee;
 import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
@@ -59,6 +60,7 @@ public class MessageOutputStream implements AutoCloseable {
 	private Set<AutoCloseable> resourcesToClose;
 	
 	private ThreadConnector<?> threadConnector;
+	private ThreadConnector<?> targetThreadConnector;
 	
 	protected MessageOutputStream(INamedObject owner, IForwardTarget next) {
 		this.owner=owner;
@@ -88,26 +90,30 @@ public class MessageOutputStream implements AutoCloseable {
 		this.requestStream=writer;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
+	// this constructor for testing only
+	<T> MessageOutputStream(ContentHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
-	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, ContentHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 	
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, IForwardTarget next, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
-		this(owner, next);
+	// this constructor for testing only
+	<T> MessageOutputStream(JsonEventHandler handler) {
+		this(null, (IForwardTarget)null);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(null, null, null, (PipeLineSession)null);
 	}
-	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, PipeLineSession session) {
+	public <T> MessageOutputStream(INamedObject owner, JsonEventHandler handler, MessageOutputStream nextStream, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session, ThreadConnector<?> targetThreadConnector) {
 		this(owner, nextStream);
 		this.requestStream=handler;
-		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, session);
+		threadConnector = new ThreadConnector<T>(owner, threadLifeCycleEventListener, txManager, session);
+		this.targetThreadConnector = targetThreadConnector;
 	}
 
 
@@ -157,16 +163,28 @@ public class MessageOutputStream implements AutoCloseable {
 				}
 			} finally {
 				try {
-					afterClose();
+					try {
+						if (targetThreadConnector!=null) {
+							targetThreadConnector.close();
+						}
+					} finally {
+						if (threadConnector!=null) {
+							threadConnector.close();
+						}
+					}
 				} finally {
-					if (resourcesToClose!=null) {
-						resourcesToClose.forEach(r -> {
-							try {
-								r.close();
-							} catch (Exception e) {
-								log.warn("Could not close resource", e);
-							}
-						});
+					try {
+						afterClose();
+					} finally {
+						if (resourcesToClose!=null) {
+							resourcesToClose.forEach(r -> {
+								try {
+									r.close();
+								} catch (Exception e) {
+									log.warn("Could not close resource", e);
+								}
+							});
+						}
 					}
 				}
 			}

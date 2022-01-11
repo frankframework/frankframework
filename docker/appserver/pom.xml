@@ -15,10 +15,35 @@
 
 
 	<modules>
-		<module>Tomcat</module>
-		<module>WebSphere</module>
-		<module>Jboss-WildFly</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>Tomcat</id>
+			<modules>
+				<module>Tomcat</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>WebSphere</id>
+			<modules>
+				<module>WebSphere</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>Jboss-WildFly</id>
+			<modules>
+				<module>Jboss-WildFly</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>all-as</id>
+			<modules>
+				<module>Tomcat</module>
+				<module>WebSphere</module>
+				<module>Jboss-WildFly</module>
+			</modules>
+		</profile>
+	</profiles>
 
 </project>

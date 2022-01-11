@@ -30,7 +30,9 @@ public enum SuppressKeys {
 	DEFAULT_VALUE_SUPPRESS_KEY("warnings.suppress.defaultvalue", true),
 	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction"),
 	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck"),
-	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true);
+	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true),
+	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation", false), 
+	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true);
 
 	private @Getter String key;
 	private @Getter boolean allowGlobalSuppression = false;

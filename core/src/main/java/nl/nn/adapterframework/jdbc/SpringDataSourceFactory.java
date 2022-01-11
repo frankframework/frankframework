@@ -18,15 +18,14 @@ package nl.nn.adapterframework.jdbc;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
-
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 
 public class SpringDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		return new LazyConnectionDataSourceProxy((DataSource)dataSource);
+		return new TransactionalDbmsSupportAwareDataSourceProxy((DataSource) dataSource);
 	}
 
 }
