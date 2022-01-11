@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -250,7 +250,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	protected URI staticUri;
 	private CredentialFactory credentials;
-	
+
 	private Set<String> parametersToSkip=new HashSet<String>();
 
 	protected void addParameterToSkip(String parameterName) {
