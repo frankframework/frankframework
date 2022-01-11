@@ -25,6 +25,7 @@ public class TestConfiguration extends Configuration {
 	//Configures a standalone configuration.
 	public TestConfiguration() {
 		super();
+		setAutoStart(false);
 
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); //Add ability to retrieve classes from src/test/resources
 		setClassLoader(classLoader); //Add the test classpath
