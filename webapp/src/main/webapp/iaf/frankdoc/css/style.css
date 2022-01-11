@@ -115,7 +115,7 @@ table.table thead th.tbl-85 {
 	background-color: white;
 	overflow-y: scroll;
 }
-.sidebar__elements li.deprecated span, td.deprecated {
+.sidebar__elements li.deprecated span, td.deprecated, code.deprecated {
 	text-decoration: line-through;
 }
 .sidebar__elements li.deprecated i {
