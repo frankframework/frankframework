@@ -9,7 +9,7 @@
 			/>
 		</receiver>
 		<receiver name="HelloWorld">
-			<!-- This listener is used by IbisLocalSender in adapter HelloWorlds  -->
+			<!-- This listener is used by the scheduler and IbisLocalSender in adapter HelloWorlds  -->
 			<listener
 				name="HelloWorld"
 				className="nl.nn.adapterframework.receivers.JavaListener"
