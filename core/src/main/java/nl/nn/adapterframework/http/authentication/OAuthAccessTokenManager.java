@@ -68,6 +68,7 @@ public class OAuthAccessTokenManager {
 			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, _scope);
 
 			try {
+				// TODO: should use proxy configured in HttpSender.
 				HTTPResponse httpResponse = request.toHTTPRequest().send();
 				if (httpResponse.getStatusCode()!=200) {
 					throw new HttpAuthenticationException("Could not retrieve token: ("+httpResponse.getStatusCode()+") "+httpResponse.getStatusMessage());

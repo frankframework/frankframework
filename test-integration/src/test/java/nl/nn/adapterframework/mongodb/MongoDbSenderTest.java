@@ -30,7 +30,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private String database="testdb";
 	private String collection="Students";
 
-  private JndiMongoClientFactory mongoClientFactory;
+	private JndiMongoClientFactory mongoClientFactory;
 
 	@Override
 	public void setUp() throws Exception {

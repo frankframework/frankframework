@@ -27,8 +27,7 @@ import org.apache.http.util.Args;
 import org.apache.http.util.CharArrayBuffer;
 
 /**
- * HttpClient AuthScheme that uses ClientCredentials flow.
- * N.B. The scheme is stateful, it can manage only a single token.
+ * HttpClient AuthScheme that uses OAuthAccessTokenManager to obtain an access token (via Client Credentials flow).
  * 
  * @author Gerrit van Brakel
  *

@@ -195,7 +195,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int maxExecuteRetries = 1;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
-	private CloseableHttpClient httpClient;
+	private @Getter CloseableHttpClient httpClient;
 
 	/** SECURITY */
 	private @Getter String authAlias;
@@ -441,6 +441,22 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		httpClient = httpClientBuilder.build();
 	}
 
+	@Override
+	public void close() throws SenderException {
+		try {
+			//Close the HttpClient and ConnectionManager to release resources and potential open connections
+			if(httpClient != null) {
+				httpClient.close();
+			}
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
+
+		if (transformerPool!=null) {
+			transformerPool.close();
+		}
+	}
+
 	private void setupAuthentication(CredentialFactory cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
 		String scopeList = getScope();
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -456,9 +472,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, new OAuthAccessTokenManager(getTokenEndpoint(), scope));
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
-			
-			httpClientContext.setAttribute("preemptive-auth", new OAuthAuthenticationScheme()); // Does this really do something?
-			
 		}
 		if (proxy!=null) {
 			AuthScope scope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
@@ -487,6 +500,22 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		
 	}
 
+	private void preAuthenticate() {
+		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
+			AuthState authState = httpClientContext.getTargetAuthState();
+			if (authState==null) {
+				authState = new AuthState();
+				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+			}
+			authState.setState(AuthProtocolState.CHALLENGED);
+			authState.update(getPreferredAuthScheme(), getCredentials());
+			AuthOption authOption = new AuthOption(getPreferredAuthScheme(), getCredentials());
+			Queue<AuthOption> authOptionQueue = new LinkedList<>();
+			authOptionQueue.add(authOption);
+			authState.update(authOptionQueue);
+		}
+	}
+	
 	private Credentials getCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
@@ -524,26 +553,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return sslSocketFactory;
 	}
 	
-	public CloseableHttpClient getHttpClient() {
-		return httpClient;
-	}
-
-	@Override
-	public void close() throws SenderException {
-		try {
-			//Close the HttpClient and ConnectionManager to release resources and potential open connections
-			if(httpClient != null) {
-				httpClient.close();
-			}
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
-
-		if (transformerPool!=null) {
-			transformerPool.close();
-		}
-	}
-
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
@@ -641,19 +650,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
 
-			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-				AuthState authState = httpClientContext.getTargetAuthState();
-				if (authState==null) {
-					authState = new AuthState();
-					httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
-				}
-				authState.setState(AuthProtocolState.CHALLENGED);
-				authState.update(getPreferredAuthScheme(), getCredentials());
-				AuthOption authOption = new AuthOption(getPreferredAuthScheme(), getCredentials());
-				Queue<AuthOption> authOptionQueue = new LinkedList<>();
-				authOptionQueue.add(authOption);
-				authState.update(authOptionQueue);
-			}
+			preAuthenticate();
 
 			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");
 
