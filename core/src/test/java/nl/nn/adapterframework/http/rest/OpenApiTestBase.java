@@ -109,10 +109,17 @@ public class OpenApiTestBase extends Mockito {
 		return taskExecutor;
 	}
 
-	protected HttpServletRequest createRequest(String method, String uri) {
+	protected MockHttpServletRequest createRequest(String method, String uri) {
+		if(!uri.startsWith("/")) {
+			fail("uri must start with a '/'");
+		}
+
 		MockHttpServletRequest request = new MockHttpServletRequest(method.toUpperCase(), uri);
-		request.setServerName("dummy");
+		request.setServerName("mock-hostname");
 		request.setPathInfo(uri);
+		request.setContextPath("/mock-context-path");
+		request.setServletPath("/mock-servlet-path");
+		request.setRequestURI(request.getContextPath()+request.getServletPath()+uri);
 		return request;
 	}
 
@@ -128,7 +135,8 @@ public class OpenApiTestBase extends Mockito {
 
 			servlet.service(request, response);
 
-			return response.getContentAsString();
+			String res = response.getContentAsString();
+			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
 			assertTrue(ExceptionUtils.getStackTrace(t), false);
