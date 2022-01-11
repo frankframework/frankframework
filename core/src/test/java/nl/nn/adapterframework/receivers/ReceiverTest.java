@@ -59,7 +59,7 @@ public class ReceiverTest {
 	public Adapter setupAdapter(Receiver<String> receiver) throws Exception {
 
 		Adapter adapter = configuration.createBean(Adapter.class);
-		adapter.setName("adapterName");
+		adapter.setName("ReceiverTestAdapterName");
 
 		PipeLine pl = new PipeLine();
 		pl.setFirstPipe("dummy");
@@ -154,6 +154,7 @@ public class ReceiverTest {
 		configuration.configure();
 		configuration.start();
 
+		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
 
 		log.info("Adapter RunState "+adapter.getRunState());
@@ -192,7 +193,9 @@ public class ReceiverTest {
 		configuration.configure();
 		configuration.start();
 
+		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
+		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 
 		log.info("Adapter RunState "+adapter.getRunState());
@@ -208,6 +211,7 @@ public class ReceiverTest {
 		});
 
 		// when receiver is in starting state
+		waitWhileInState(receiver, RunState.STOPPED);
 		waitWhileInState(receiver, RunState.STARTING);
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
