@@ -15,7 +15,6 @@ public class DummySender implements ISender {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
-	private @Setter int startupDelay = 10000;
 	private @Getter boolean closed = false;
 
 	@Override

@@ -166,7 +166,8 @@ public class ReceiverTest {
 
 		log.info("Receiver RunState "+receiver.getRunState());
 		assertEquals("Receiver should be in state [EXCEPTION_STARTING]", RunState.EXCEPTION_STARTING, receiver.getRunState());
-		assertTrue("Close has not been called on the Receiver's sender!", receiver.getSender().isSynchronous());
+		Thread.sleep(500); //Extra timeout to give the receiver some time to close all resources
+		assertTrue("Close has not been called on the Receiver's sender!", receiver.getSender().isSynchronous()); //isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(IbisAction.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		while(receiver.getRunState()!=RunState.STOPPED) {
