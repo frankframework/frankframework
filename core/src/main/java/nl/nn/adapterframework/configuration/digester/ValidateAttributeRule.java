@@ -181,7 +181,8 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		return	(defaultValue instanceof String && value.equals(defaultValue)) ||
 				(defaultValue instanceof Boolean && Boolean.valueOf(value).equals(defaultValue)) ||
 				(defaultValue instanceof Integer && Integer.valueOf(value).equals(defaultValue)) ||
-				(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue));
+				(defaultValue instanceof Long && Long.valueOf(value).equals(defaultValue)) ||
+				(defaultValue instanceof Enum && parseAsEnum(defaultValue.getClass(), value) == defaultValue);
 	}
 
 	private void checkDeprecationAndConfigurationWarning(String name, Method m) {
