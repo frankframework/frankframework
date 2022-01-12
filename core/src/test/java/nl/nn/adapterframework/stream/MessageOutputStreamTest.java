@@ -226,7 +226,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
@@ -242,7 +242,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
@@ -260,7 +260,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testJson.getBytes());
 			}
@@ -276,7 +276,7 @@ public class MessageOutputStreamTest {
 		
 		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
 
-		try (MessageOutputStream stream = new MessageOutputStream(target)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null, null, null)) {
 		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testJson);
@@ -333,7 +333,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
 		
 			try {
 				try (Writer writer = stream.asWriter()) {
@@ -365,7 +365,7 @@ public class MessageOutputStreamTest {
 		TransformerHandler transformerHandler = tf.newTransformerHandler();
 		transformerHandler.setResult(result);
 
-		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
+		try (MessageOutputStream stream = new MessageOutputStream(null, transformerHandler, (IForwardTarget)null, null, null)) {
 
 			try {
 				try (Writer writer = stream.asWriter()) {

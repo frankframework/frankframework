@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="JsonPipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -24,4 +24,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

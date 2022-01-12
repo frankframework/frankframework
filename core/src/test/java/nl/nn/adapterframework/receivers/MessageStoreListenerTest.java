@@ -14,7 +14,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.stream.Message;
 
@@ -45,7 +44,6 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 		doReturn(conn).when(dataSource).getConnection();
 		listener.setConnectionsArePooled(false);
 		listener.setDatasourceName(dataSourceName);
-		doReturn(new GenericDbmsSupport()).when(listener).getDbmsSupport();
 		return listener;
 	}
 

@@ -12,9 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.http.rest.ApiListenerServletTest.Methods;
-import nl.nn.adapterframework.util.EnumUtils;
 
 public class ApiServiceDispatcherTest {
 
@@ -71,7 +69,7 @@ public class ApiServiceDispatcherTest {
 			}
 			ApiListener listener = new ApiListener();
 			listener.setName(name);
-			listener.setMethod(HttpMethod.GET);
+			listener.setMethod("GET");
 			listener.setUriPattern(name);
 			
 			try {
@@ -85,7 +83,7 @@ public class ApiServiceDispatcherTest {
 	private ApiListener createServiceClient(Methods method, String uri) {
 		ApiListener listener = new ApiListener();
 		listener.setName("Listener4Uri["+uri+"]");
-		listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
+		listener.setMethod(method.name());
 		listener.setUriPattern(uri);
 		return listener;
 	}

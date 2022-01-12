@@ -54,10 +54,6 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 
-	static {
-		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
-	}
-
 	/**
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
 	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.

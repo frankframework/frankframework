@@ -49,7 +49,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				preserveInput="true"
 				notFoundForwardName="CreateMail"
-				forwardNameSessionKey="method"
+				sessionKey="method"
 				>
 				<forward name="GET" path="SetContentType" />
 			</pipe>
@@ -96,30 +96,12 @@
 			</exits>
 		</pipeline>
 	</adapter>
-
-	<Adapter name="LarvaDelayed" active="${larva.adapter.active}">
-		<Receiver>
-			<JavaListener
-				name="LarvaDelayed"
-			/>
-		</Receiver>
-		<Pipeline>
-			<Exit path="EXIT" state="success" />
-			<DelayPipe name="delay" delayTime="30000"/>
-			<SenderPipe 
-				name="callLarva">
-				<IbisLocalSender 
-					name="callLarva"
-					javaListener="Larva"/>
-				<Forward name="success" path="EXIT" />
-			</SenderPipe>
-		</Pipeline>
-	</Adapter>
-
+	
 	<scheduler>
 		<job
 			name="Larva"
-			javaListener="LarvaDelayed"
+			adapterName="Larva"
+			receiverName="Larva"
 			interval="86400000"
 			function="sendMessage"
 			active="${larva.adapter.scheduler.active}"

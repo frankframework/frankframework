@@ -89,9 +89,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 			String correlationID = session==null ? "" : session.getMessageId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
+			String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").asStringValue();
+				jobName = values.getParameterValue("_jobname").getValue().toString();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
 			return new Message(jobName);

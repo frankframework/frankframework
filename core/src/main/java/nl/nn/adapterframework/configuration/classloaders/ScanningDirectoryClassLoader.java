@@ -21,17 +21,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 
-/**
- * Actively scans the configuration directory for file changes.
- * When it finds a file change it will automatically try to reload the configuration
- * Has a default cooldown after a change has been detected before it can be triggered again.
- * 
- * @author Niels Meijer
- */
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 	private ScheduledThreadPoolExecutor executor;
@@ -43,7 +35,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super.configure(ibisContext, configurationName);
 
 		createTaskExecutor();

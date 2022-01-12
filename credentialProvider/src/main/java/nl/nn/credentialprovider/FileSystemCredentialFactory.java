@@ -36,8 +36,7 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	private String usernamefile;
 	private String passwordfile;
 	
-	@Override
-	public void initialize() {
+	public FileSystemCredentialFactory() {
 		AppConstants appConstants = AppConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
 		if (Misc.isEmpty(fsroot)) {

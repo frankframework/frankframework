@@ -32,8 +32,9 @@ public interface DocumentedEnum {
 		if(enumConstant.isAnnotationPresent(EnumLabel.class)) {
 			EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
 			return enumLabel.value();
-		} 
-		return name();
+		} else {
+			return name();
+		}
 	}
 
 	// returns the fieldname of the enum.

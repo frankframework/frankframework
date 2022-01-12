@@ -19,7 +19,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -42,7 +43,7 @@ public class DummyClassLoader extends ClassLoaderBase {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(IbisContext ibisContext, String configurationName) throws ConfigurationException {
 		super.configure(ibisContext, configurationName);
 	}
 

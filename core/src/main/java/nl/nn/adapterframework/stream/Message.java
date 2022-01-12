@@ -36,14 +36,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -51,7 +48,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -60,6 +56,8 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
+
+	private static final long serialVersionUID = 437863352486501445L;
 
 	protected transient Logger log = LogUtil.getLogger(this);
 
@@ -113,10 +111,6 @@ public class Message implements Serializable {
 		this((Object)request, null);
 	}
 
-	public Message(Node request) {
-		this((Object)request, null);
-	}
-
 	public static Message nullMessage() {
 		return new Message((Object)null, null);
 	}
@@ -153,7 +147,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * @deprecated Please avoid the use of the raw object.
+	 * @Deprecated Please avoid the use of the raw object.
 	 */
 	@Deprecated
 	public Object asObject() {
@@ -165,7 +159,7 @@ public class Message implements Serializable {
 	}
 	
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node;
+		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
 	/**
@@ -181,7 +175,7 @@ public class Message implements Serializable {
 	 */
 	public void close() throws Exception {
 		try {
-			if (request instanceof AutoCloseable) {
+			if (request instanceof InputStream || request instanceof Reader) {
 				((AutoCloseable)request).close();
 				request = null;
 			}
@@ -205,11 +199,7 @@ public class Message implements Serializable {
 		resourcesToClose.add(resource);
 	}
 	
-	public void closeOnCloseOf(PipeLineSession session, INamedObject requester) {
-		closeOnCloseOf(session, ClassUtils.nameOf(requester));
-	}
-	
-	public void closeOnCloseOf(PipeLineSession session, String requester) {
+	public void closeOnCloseOf(PipeLineSession session) {
 		if (!(request instanceof InputStream || request instanceof Reader) || isScheduledForCloseOnExitOf(session)) {
 			return;
 		}
@@ -226,7 +216,7 @@ public class Message implements Serializable {
 				unscheduleFromCloseOnExitOf(session);
 			});
 		}
-		session.scheduleCloseOnSessionExit(this, request.toString()+" requested by "+requester);
+		session.scheduleCloseOnSessionExit(this);
 	}
 	
 	public boolean isScheduledForCloseOnExitOf(PipeLineSession session) {
@@ -276,10 +266,6 @@ public class Message implements Serializable {
 				throw Lombok.sneakyThrow(e);
 			}
 		}
-		if(request instanceof Node) {
-			log.debug("returning Node as Reader");
-			return new StringReader(asString());
-		}
 		log.debug("returning String as Reader");
 		return new StringReader(request.toString());
 	}
@@ -318,10 +304,6 @@ public class Message implements Serializable {
 				log.debug("returning byte[] as InputStream");
 				return new ByteArrayInputStream((byte[]) request);
 			}
-			if(request instanceof Node) {
-				log.debug("returning Node as InputStream");
-				return new ByteArrayInputStream(asByteArray());
-			}
 			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
 		} catch (IOException e) {
@@ -353,10 +335,7 @@ public class Message implements Serializable {
 			return (new InputSource(new StringReader((String) request)));
 		}
 		log.debug("returning as InputSource");
-		if (isBinary()) {
-			return new InputSource(asInputStream());
-		}
-		return new InputSource(asReader());
+		return (new InputSource(asInputStream()));
 	}
 
 	/**
@@ -369,10 +348,6 @@ public class Message implements Serializable {
 		if (request instanceof Source) {
 			log.debug("returning Source as Source");
 			return (Source) request;
-		}
-		if (request instanceof Node) {
-			log.debug("returning Node as DOMSource");
-			return new DOMSource((Node) request);
 		}
 		log.debug("returning as Source");
 		return (XmlUtils.inputSourceToSAXSource(asInputSource()));
@@ -397,15 +372,6 @@ public class Message implements Serializable {
 		if (request instanceof String) {
 			return ((String)request).getBytes(defaultCharset);
 		}
-		if (request instanceof Node) {
-			try {
-				log.warn("returning Node as byte[]; consider to avoid using Node or Document here to reduce memory footprint");
-				return XmlUtils.nodeToByteArray((Node) request);
-			} catch (TransformerException e) {
-				throw new IOException("Could not convert Node to byte[]", e);
-			}
-			
-		}
 		// save the generated byte array as the request before returning it
 		request = StreamUtil.streamToByteArray(asInputStream(defaultCharset), false);
 		return (byte[]) request;
@@ -423,14 +389,6 @@ public class Message implements Serializable {
 		}
 		if (request instanceof String) {
 			return (String)request;
-		}
-		if(request instanceof Node) {
-			try {
-				log.warn("returning Node as String; consider to avoid using Node or Document here to reduce memory footprint");
-				return XmlUtils.nodeToString((Node)request, true);
-			} catch (TransformerException e) {
-				throw new IOException("Could not convert type Node to String", e);
-			}
 		}
 		// save the generated String as the request before returning it
 		request = StreamUtil.readerToString(asReader(defaultCharset), null);

@@ -16,8 +16,8 @@
 package nl.nn.adapterframework.extensions.javascript;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.flow.ResultHandler;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 
 /** 
  * Javascript engine interface, allows the use of a javascript engine to execute javascript code functions.

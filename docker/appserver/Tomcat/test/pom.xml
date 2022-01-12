@@ -34,6 +34,11 @@
 			<version>${config.project.version}</version>
 			<type>war</type>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.6.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -59,6 +64,68 @@
 							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
+					<!-- 
+					<execution>
+						<id>copy-configuration</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<classifier>configurations</classifier>
+								</artifactItem>
+								<artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<classifier>resources</classifier>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
+							<stripVersion>true</stripVersion>
+							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-context</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<classifier>context</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/context</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-tests</id>
+						<phase>package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${config.groupid}</groupId>
+									<artifactId>${config.project}</artifactId>
+									<classifier>scenarios</classifier>
+								</artifactItem>
+							</artifactItems>
+							<excludeTransitive>true</excludeTransitive>
+							<outputDirectory>${project.build.directory}/dependencies/frank/testtool</outputDirectory>
+						</configuration>
+					</execution>
+					 -->
 				</executions>
 			</plugin>
 			<plugin>

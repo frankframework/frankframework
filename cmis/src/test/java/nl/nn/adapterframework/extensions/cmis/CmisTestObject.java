@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -13,49 +15,23 @@ import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
+import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-public abstract class CmisTestObject extends Mockito implements Document, Answer<CmisObject> {
-	protected String objectId = "dummy_id";
+public abstract class CmisTestObject extends Mockito implements Document {
 
-	public static CmisTestObject newInstance() {
+	public static CmisObject newInstance() {
 		return mock(CmisTestObject.class, CALLS_REAL_METHODS);
 	}
 
 	@Override
-	public CmisObject answer(InvocationOnMock invocation) throws Throwable {
-		Object obj = invocation.getArguments()[0];
-		if(obj instanceof ObjectId) {
-			ObjectId id = (ObjectId) obj;
-			objectId = id.getId();
-		} else if(obj instanceof Map) {
-			@SuppressWarnings({"unchecked", "rawtypes"})
-			Map<String, Object> properties = (Map) obj;
-			objectId = (String) properties.get(PropertyIds.NAME);
-		}
-
-		if(objectId != null && objectId.equals("NOT_FOUND")) {
-			throw new CmisObjectNotFoundException();
-		}
-
-		return this; //created at newInstance() to mock unimplemented methods, initialized once answer is called
-	}
-
-	@Override
 	public String getId() {
-		return objectId;
-	}
-	public String getObjectId() {
-		return objectId;
+		return "dummy_id";
 	}
 
 	@Override
@@ -100,7 +76,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	@Override
 	public AllowableActions getAllowableActions() {
 		AllowableActions actions = mock(AllowableActions.class);
-		Set<Action> actionSet = new HashSet<Action>();
+		Set<Action> actionSet = new HashSet<Action>() {} ;
 		Action action = Action.CAN_CREATE_DOCUMENT;
 		actionSet.add(action);
 		when(actions.getAllowableActions()).thenReturn(actionSet);
@@ -116,14 +92,9 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	public List<Relationship> getRelationships() {
 		List<Relationship> list = new ArrayList<Relationship>();
 		Relationship relationship = mock(Relationship.class);
-		when(relationship.getId()).thenReturn(objectId);
+		when(relationship.getId()).thenReturn("dummyId");
 		list.add(relationship);
 		return list;
-	}
-
-	@Override
-	public boolean hasAllowableAction(Action action) {
-		return objectId.equals("ALLOWED");
 	}
 
 	@Override
@@ -142,11 +113,48 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public ContentStream getContentStream() {
-		return new CmisSenderTestBase.ContentStreamMock();
+		return getContentStream(null);
 	}
 
 	@Override
 	public ContentStream getContentStream(String streamId) {
-		return new CmisSenderTestBase.ContentStreamMock();
+		return new ContentStream() {
+
+			@Override
+			public void setExtensions(List<CmisExtensionElement> extensions) {
+				//Can't set something that doesn't exist!
+			}
+
+			@Override
+			public List<CmisExtensionElement> getExtensions() {
+				return null;
+			}
+
+			@Override
+			public InputStream getStream() {
+				return new ByteArrayInputStream("dummy_stream".getBytes());
+			}
+
+			@Override
+			public String getMimeType() {
+				return "text/xml";
+			}
+
+			@Override
+			public long getLength() {
+				return 0;
+			}
+
+			@Override
+			public String getFileName() {
+				return null;
+			}
+
+			@Override
+			public BigInteger getBigLength() {
+				return null;
+			}
+		};
 	}
+
 }

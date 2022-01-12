@@ -634,6 +634,9 @@ public class FileHandler implements IScopeProvider {
 	protected String getLogPrefix(PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
+		if (this instanceof INamedObject) {
+			sb.append("[").append(((INamedObject)this).getName()).append("] ");
+		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}

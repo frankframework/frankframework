@@ -39,14 +39,7 @@ public class Credentials implements ICredentials {
 		if (!gotCredentials) {
 			
 			if (Misc.isNotEmpty(getAlias())) {
-				try {
-					getCredentialsFromAlias();
-				} catch (RuntimeException e) {
-					
-					if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
-						throw e;
-					}
-				}
+				getCredentialsFromAlias();
 			}
 			gotCredentials=true;
 		}

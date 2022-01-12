@@ -89,11 +89,11 @@ public class ConfigurationUtils {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
-	public static String getStubbedConfiguration(ClassLoader classLoader, String originalConfig) throws ConfigurationException {
+	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
+		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
@@ -506,6 +506,10 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
+		return retrieveConfigNamesFromDatabase(ibisContext, false);
+	}
+
+	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -516,6 +520,9 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
+			if (onlyAutoReload) {
+				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
+			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();

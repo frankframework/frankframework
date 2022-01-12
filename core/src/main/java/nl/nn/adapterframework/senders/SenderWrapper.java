@@ -20,7 +20,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -28,7 +28,12 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  * 
- * @ff.parameters any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the senderwrapper will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
+ * </table>
+ * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
@@ -58,7 +63,7 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message,session);
 	}
 
@@ -74,7 +79,7 @@ public class SenderWrapper extends SenderWrapperBase {
 		return getSender().isSynchronous();
 	}
 
-	/** specification of sender to send messages with */
+	@Override
 	public void setSender(ISender sender) {
 		this.sender=sender;
 	}

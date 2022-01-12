@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -28,7 +28,13 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
  * 
- * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
+ * <p>
+ * <table border="1">
+ * <b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>timeout</td><td>int</td><td>When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute</td></tr>
+ * </table>
+ * </p>
  * 
  * @author Peter Leeuwenburgh
  */
@@ -82,7 +88,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			if(tg.cancel()) {
 				//Throw a TimeOutException
 				String msgString = "TimeOutException";
-				Exception e = new TimeoutException("exceeds timeout of [" + timeout_work + "] s, interupting");
+				Exception e = new TimeOutException("exceeds timeout of [" + timeout_work + "] s, interupting");
 				if (isThrowException()) {
 					throw new PipeRunException(this, msgString, e);
 				} else {

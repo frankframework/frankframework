@@ -29,19 +29,18 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
+import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.scheduler.job.IJob;
 
 /**
- * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  *
- * @author Niels Meijer
  */
 public class ScheduleManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
 
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter SchedulerHelper schedulerHelper;
-	private final Map<String, IJob> schedules = new LinkedHashMap<>();
+	private final Map<String, JobDef> schedules = new LinkedHashMap<>();
 
 	@Override
 	public void configure() {
@@ -51,7 +50,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 		updateState(BootState.STARTING);
 
-		for (IJob jobdef : getSchedulesList()) {
+		for (JobDef jobdef : getSchedulesList()) {
 			try {
 				jobdef.configure();
 				log.info("job scheduled with properties :" + jobdef.toString());
@@ -71,7 +70,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 			return;
 		}
 
-		for (IJob jobdef : getSchedulesList()) {
+		for (JobDef jobdef : getSchedulesList()) {
 			if(jobdef.isConfigured()) {
 				try {
 					schedulerHelper.scheduleJob(jobdef);
@@ -105,15 +104,15 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		updateState(BootState.STOPPING);
 
 		log.info("stopping all adapters in AdapterManager ["+this+"]");
-		List<IJob> scheduledJobs = getSchedulesList();
-		Collections.reverse(scheduledJobs);
-		for (IJob jobDef : scheduledJobs) {
-			log.info("removing trigger for JobDef [" + jobDef.getName() + "]");
+		List<JobDef> schedules = getSchedulesList();
+		Collections.reverse(schedules);
+		for (JobDef jobdef : schedules) {
+			log.info("removing trigger for JobDef [" + jobdef.getName() + "]");
 			try {
-				getSchedulerHelper().deleteTrigger(jobDef);
+				getSchedulerHelper().deleteTrigger(jobdef);
 			}
 			catch (SchedulerException se) {
-				log.error("unable to remove scheduled job ["+jobDef+"]", se);
+				log.error("unable to remove scheduled job ["+jobdef+"]", se);
 			}
 		}
 
@@ -127,12 +126,12 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 
 		while (!getSchedulesList().isEmpty()) {
-			IJob job = getSchedulesList().get(0);
+			JobDef job = getSchedulesList().get(0);
 			unRegister(job);
 		}
 	}
 
-	public void register(IJob job) {
+	public void register(JobDef job) {
 		if(!inState(BootState.STOPPED)) {
 			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
 		}
@@ -148,22 +147,22 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		schedules.put(job.getName(), job);
 	}
 
-	public void unRegister(IJob job) {
+	public void unRegister(JobDef job) {
 		String name = job.getName();
 
 		schedules.remove(name);
 		if(log.isDebugEnabled()) log.debug("unregistered JobDef ["+name+"] from ScheduleManager ["+this+"]");
 	}
 
-	public final Map<String, IJob> getSchedules() {
+	public final Map<String, JobDef> getSchedules() {
 		return Collections.unmodifiableMap(schedules);
 	}
 
-	public List<IJob> getSchedulesList() {
+	public List<JobDef> getSchedulesList() {
 		return new ArrayList<>(getSchedules().values());
 	}
 
-	public IJob getSchedule(String name) {
+	public JobDef getSchedule(String name) {
 		return getSchedules().get(name);
 	}
 

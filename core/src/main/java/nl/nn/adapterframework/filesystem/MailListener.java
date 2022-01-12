@@ -99,7 +99,7 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		return new Message(writer.toString());
 	}
 
-	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", "false"})
+	@IbisDoc({"1", "when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", ""})
 	public void setSimple(boolean b) {
 		simple = b;
 	}

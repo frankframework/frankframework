@@ -61,10 +61,7 @@
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -83,10 +80,7 @@
 				name="Send2WS">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_error/address" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -112,10 +106,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -124,10 +115,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -167,10 +155,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -179,10 +164,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -192,10 +174,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false"  />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -205,10 +184,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -219,10 +195,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -233,10 +206,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
@@ -245,10 +215,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -258,10 +225,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -271,10 +235,7 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws_timeout/address"
 					timeout="1000" 
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+					allowSelfSignedCertificates="true" verifyHostname="false" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />

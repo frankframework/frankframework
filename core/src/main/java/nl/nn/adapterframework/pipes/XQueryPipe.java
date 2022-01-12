@@ -45,10 +45,14 @@ import nl.nn.adapterframework.util.Misc;
 /**
  * Perform an XQuery.
  *
- * @ff.parameters any parameters defined on the pipe will be passed as external variable to the XQuery
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be passed as external variable to the XQuery</td></tr>
+ * </table>
+ * </p>
  * 
  * @author Jaco de Groot
  */
+
 public class XQueryPipe extends FixedForwardPipe {
 	private String xquery;
 	private String xqueryName;

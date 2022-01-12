@@ -28,29 +28,21 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.scheduler.job.IJob;
-import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
-/**
- * @author Niels Meijer
- */
 public abstract class DigesterRuleBase extends Rule implements ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
-	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
-	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
+	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", false);
 
 	/**
 	 * Returns the name of the object. In case a Spring proxy is being used, 
@@ -70,14 +62,12 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * Add a configuration warning message to the current configuration.
-	 * Display location information conform {@link IbisException} when the cause is a {@link SAXParseException}.
+	 * Add a configuration warning message to the current configuration
 	 */
-	protected final void addLocalWarning(String msg) {
-		String message = msg;
+	protected final void addLocalWarning(String message) {
 		if(includeLineInformation) {
 			Locator loc = getDigester().getDocumentLocator();
-			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
+			message = "on line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+" "+message;
 		}
 		configurationWarnings.add(getBean(), log, message);
 	}
@@ -134,12 +124,6 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 			if(StringUtils.isNotEmpty(name)) {
 				BeanUtils.setProperty(top, "name", name);
 			}
-		}
-
-		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
-		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job)) {
-			map.remove("function");
 		}
 
 		handleBean();

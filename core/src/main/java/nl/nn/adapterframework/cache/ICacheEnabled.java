@@ -26,7 +26,6 @@ package nl.nn.adapterframework.cache;
  */
 public interface ICacheEnabled<K,V> {
 
-	/** optional {@link nl.nn.adapterframework.cache.EhCache cache} definition */
 	void setCache(ICache<K,V> cache);
 	ICache<K,V> getCache();
 }

@@ -235,7 +235,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return excludeWildcard;
 	}
 
-	@IbisDoc({"Minimal age of file <i>in milliseconds</i>, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 to disable)", "1000"})
+	@IbisDoc({"minimal age of file in milliseconds, to avoid deleting a file while it is still being written (only used when wildcard is set) (set to 0 or negative value to disable)", "1000 [ms]"})
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}

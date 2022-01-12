@@ -25,18 +25,19 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 
 import lombok.Getter;
-import nl.nn.adapterframework.stream.ThreadConnector;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 public class TransformerFilter extends FullXmlFilter {
 
 	private TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
-	private ThreadConnectingFilter threadConnectingFilter;
 	
-	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler) {
+	public TransformerFilter(INamedObject owner, TransformerHandler transformerHandler, ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener, PipeLineSession session, boolean expectChildThreads, ContentHandler handler) {
 		super();
-		if (threadConnector != null) {
-			handler = threadConnectingFilter = new ThreadConnectingFilter(threadConnector, handler);
+		if (expectChildThreads) {
+			handler = new ThreadConnectingFilter(owner, threadLifeCycleEventListener, session, handler);
 		}
 		SAXResult transformedStream = new SAXResult();
 		transformedStream.setHandler(handler);
@@ -47,7 +48,7 @@ public class TransformerFilter extends FullXmlFilter {
 		transformerHandler.setResult(transformedStream);
 		errorListener = transformerHandler.getTransformer().getErrorListener();
 		ContentHandler inputHandler = transformerHandler;
-		if (threadConnectingFilter != null) {
+		if (expectChildThreads) {
 			/*
 			 * If XSLT processing is done in another thread than the SAX events are provided, which is the 
 			 * case if streaming XSLT is used, then exceptions in the processing part do not travel up

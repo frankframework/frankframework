@@ -33,25 +33,20 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
-/**
- * Reads a message in CSV format, and turns it into XML.
- * 
- * @author Gerrit van Brakel
- *
- */
 public class CsvParserPipe extends StreamingPipe {
 	
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
-	private @Getter HeaderCase headerCase=null;
+	private HeaderCase headerCase=null;
 
 	private CSVFormat format = CSVFormat.DEFAULT;
 
-	public enum HeaderCase {
+	private enum HeaderCase {
 		LOWERCASE,
 		UPPERCASE;
 	}
@@ -89,8 +84,8 @@ public class CsvParserPipe extends StreamingPipe {
 						try (SaxElementBuilder element = document.startElement("record")) {
 							for(Entry<String,String> entry:record.toMap().entrySet()) {
 								String key = entry.getKey();
-								if(getHeaderCase() != null) {
-									key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+								if(getHeaderCaseEnum() != null) {
+									key = getHeaderCaseEnum()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
 								}
 								element.addElement(key, entry.getValue());
 							}
@@ -114,7 +109,7 @@ public class CsvParserPipe extends StreamingPipe {
 		this.fileContainsHeader = fileContainsHeader;
 	}
 
-	@IbisDoc({"2", "Comma separated list of header names. If set, then <code>fileContainsHeader</code> defaults to false. If not set, headers are taken from the first line"})
+	@IbisDoc({"2", "Comma separated list of header names. If set, then fileContainsHeader defaults to false. If not set, headers are taken from the first line"})
 	public void setFieldNames(String fieldNames) {
 		this.fieldNames = fieldNames;
 	}
@@ -124,9 +119,12 @@ public class CsvParserPipe extends StreamingPipe {
 		this.fieldSeparator = fieldSeparator;
 	}
 
-	@IbisDoc({"4", "When set, character casing will be changed for the header"})
-	public void setHeaderCase(HeaderCase headerCase) {
-		this.headerCase = headerCase;
+	@IbisDoc({"4", "When set, character casing will be changed for the header. Possible values ['lowercase', 'uppercase']","not set"})
+	public void setHeaderCase(String headerCase) {
+		this.headerCase = EnumUtils.parse(HeaderCase.class, headerCase);
+	}
+	public HeaderCase getHeaderCaseEnum() {
+		return headerCase;
 	}
 
 }

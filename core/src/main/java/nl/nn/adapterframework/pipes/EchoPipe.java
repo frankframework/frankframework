@@ -24,7 +24,13 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Returns simply the input message.
- * 
+ *
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * </table>
+ * </p>
  * @author  Gerrit van Brakel
  * @since   4.2
  */

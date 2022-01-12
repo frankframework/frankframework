@@ -161,7 +161,7 @@ public final class RecordHandlingFlow {
 	}
 
 
-	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
+	@IbisDoc({"10", "If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "<code>true</code>"})
 	public void setAutoCloseBlock(boolean b) {
 		autoCloseBlock = b;
 	}

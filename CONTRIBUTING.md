@@ -11,8 +11,6 @@ Either use our public `ibissource` or private `proprietary` profile when running
 
 ## Running the Frank!Framework
 
-If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/ibissource/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
-
 Initial:
 
 - git clone https://github.com/ibissource/iaf
@@ -20,7 +18,7 @@ Initial:
 - mvn
 - cd example
 - mvn jetty:run
-- [http://localhost:8080/iaf](http://localhost:8080/iaf)
+- [http://localhost:8080/](http://localhost:8080/)
 
 
 After modifying a project file:
@@ -28,7 +26,7 @@ After modifying a project file:
 - ctrl-c
 - cd .. ; mvn clean install ; cd example ; mvn jetty:run
 
-The jetty-maven-plugin requires Maven 3 and Java 1.8. We tested these instructions with Maven 3.6.3.
+The jetty-maven-plugin requires Maven 3 and Java 1.8.
 
 ## Submitting changes
 
@@ -108,7 +106,7 @@ WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this 
 
 ## Testing
 
-Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Frank developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
+Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Ibis developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
 
 We have yet to test the compatibility of the iaf-test module with Jetty. Until then, the only verified way to run the module is on a Tomcat server in Eclipse. However, feel free to try and run it on Jetty yourself! If it works for you, we'd love to hear about it. :)
 
@@ -134,31 +132,21 @@ If you are developing under Windows, you can do the following to set this up:
 
 ## Developing with Eclipse
 
-You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/ibissource/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
-
 ### Install Eclipse with Lombok
 
-- Download Eclipse from [here](https://www.eclipse.org/downloads/packages/), choosing "Eclipse IDE for Enterprise Java Developers". We tested our instructions with version 2021-09, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
+- Download Eclipse from [Eclipse 2019-03](https://www.eclipse.org/downloads/packages/release/2019-03/r), choosing "Eclipse IDE for Enterprise Java Developers". Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
 - Download version 1.18.12. You may need the link "older versions".
 - Run the .jar you downloaded. Under Windows you can double-click it.
-- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the eclipse.exe file.
+- You see a GUI. If you used Eclipse 2020-06, the GUI will automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the 
+eclipse.exe file.
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
-- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html).
-
-**NOTE:** In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore 
-with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typically the JRE delivered with Eclipse, and then configure a Java 8 **JDK** in the workspace or project settings. A Java 8 JRE is not sufficient because some unit tests require a JDK. Configuring Eclipse to use the Java 8 JDK will be explained later.
 
 ### Configure Eclipse
 
-- If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
-- You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
-
-      --illegal-access=warn
-      --add-opens java.base/java.lang=ALL-UNNAMED
-
-- Start Eclipse and close Welcome.
+- Start Eclipse with Java 8. You might want to [use -vm in eclipse.ini](http://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM).
+- Close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - There are a few unit tests that only run when a JDK is available; a JRE is not sufficient for them. Let Eclipse run unit tests using a JDK, as follows. Go to Window | Preferences. Go to Java | Installed JREs. Press Add... and browse to an installation directory of a JDK. Finally, make it the default by clicking the checkbox.
 
@@ -217,7 +205,6 @@ with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typica
     <JarScanner>
         <JarScanFilter defaultPluggabilityScan="false" />
     </JarScanner>
-- In case Eclipse is continuously downloading javadoc and source files, you might need to upgrade your M2E installation.
 
 ### Let Eclipse check Javadoc comments
 
@@ -246,17 +233,6 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - Name your configuration and save it
 - Open Maven window by clicking Maven button on your right and open execution window by clicking "m" button. Then run command "mvn clean install -Dmaven.javadoc.skip=true verify"
 - Run your configuration and you are ready to go.
-
-# Frank!Doc - Documentation for Frank developers
-
-The Frank!Framework is used by Frank developers. They write XML files (Frank configurations) to solve software integration problems. These XML files are translated to Java objects that will collaborate to do the intended job. The Java objects have the types that are available in this repository. For example, when a Frank configuration contains a tag `<XsltPipe>`, an object of type `XsltPipe` is instantiated.
-
-The syntax and the meaning of Frank configurations are documented in the following files (the Frank!Doc):
-* `./target/frankDoc/js/frankDoc.json`. This file is read by a web application implemented in sub-project `webapp`. This web application will render the information in the JSON file. Frank developers use the website as a reference manual. See https://ibis4example.ibissource.org/iaf/frankdoc.
-* `./target/frankDoc/xml/xsd/FrankConfig-strict.xsd`. This file is given to Frank developers. They reference this XSD in their Frank config XML files. When they open an XML file, their text editor will use `FrankConfig-strict.xsd` to support autocomplete and to provide tooltip information.
-* `./target/frankDoc/xml/xsd/FrankConfig-compatibility.xsd`. This file is added to the Frank!Framework .jar file during the Maven build. The file is then used at runtime to parse Frank configurations.
-
-The Frank!Doc is created by a doclet (see https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/doclet/overview.html) that is implemented in our project https://github.com/ibissource/frank-doc. The doclet is executed during the Maven build of this project. The information in the Frank!Doc is based on the Java source files in this repository. As a developer of the F!F, please take care that the Frank!Doc remains correct and helpful for Frank developers. For further instructions, see [FRANKDOC.md](./FRANKDOC.md).
 
 Thanks,
 The Frank!Framework Team

@@ -411,7 +411,7 @@ public class MiscTest {
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);
-		Misc.copyContext(keys, from, to, null);
+		Misc.copyContext(keys, from, to);
 		assertTrue(from.equals(to));
 	}
 
@@ -602,51 +602,4 @@ public class MiscTest {
 		String expectedString = Misc.resourceToString(expected);
 		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
 	}
-	
-
-	@Test
-	public void testAuthorityInUrlString1() {
-		String username="user";
-		String password="password";
-		String url="http://aa:bb@host.nl";
-		String expected = "http://user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString2() {
-		String username="user";
-		String password="password";
-		String url="http://host.nl";
-		String expected = "http://user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString3() {
-		String username=null;
-		String password=null;
-		String url="http://aa:bb@host.nl";
-		String expected = "http://aa:bb@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString4() {
-		String username="user";
-		String password="password";
-		String url="aa:bb@host.nl";
-		String expected = "user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
-	@Test
-	public void testAuthorityInUrlString5() {
-		String username="user";
-		String password="password";
-		String url="host.nl";
-		String expected = "user:password@host.nl";
-		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
-	}
-
 }

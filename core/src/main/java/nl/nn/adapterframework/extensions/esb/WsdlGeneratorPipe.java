@@ -47,7 +47,6 @@ import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 
@@ -221,7 +220,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		String countRoot = null;
 		try {
 			String countRootXPath = "count(*/*[local-name()='element'])";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, OutputType.TEXT));
+			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(countRootXPath, "text"));
 			Resource xsdResource = Resource.getResource(xsdFile.getPath());
 			countRoot = tp.transform(xsdResource.asSource());
 			if (StringUtils.isNotEmpty(countRoot)) {
@@ -250,7 +249,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			if (StringUtils.isEmpty(namespace)) {
 				String xsdTargetNamespace = null;
 				try {
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", OutputType.TEXT));
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("*/@targetNamespace", "text"));
 					xsdTargetNamespace = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdTargetNamespace)) {
 						log.debug("found target namespace [" + xsdTargetNamespace + "] in xsd file [" + xsdFile.getName() + "]");
@@ -280,7 +279,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				String xsdRoot = null;
 				try {
 					String rootXPath = "*/*[local-name()='element'][" + rootPosition + "]/@name";
-					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, OutputType.TEXT));
+					TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(rootXPath, "text"));
 					xsdRoot = tp.transform(xsdResource.asSource());
 					if (StringUtils.isNotEmpty(xsdRoot)) {
 						log.debug("found root element [" + xsdRoot + "] in xsd file [" + xsdFile.getName() + "]");

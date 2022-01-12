@@ -57,12 +57,17 @@ public class SapSystemFactory {
 			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + toString() + "]");
 			return null;
 		}
-		nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
-		try {
-			return sapSystem3.getDestination().toString();
-		} catch (JCoException e) {
-			log.warn("Exception determining sapsytem info", e);
-			return null;
+		if (sapSystem instanceof nl.nn.adapterframework.extensions.sap.jco3.SapSystem) {
+			nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
+			try {
+				return sapSystem3.getDestination().toString();
+			} catch (JCoException e) {
+				log.warn("Exception determining sapsytem info", e);
+				return null;
+			}
+		} else {
+			nl.nn.adapterframework.extensions.sap.jco2.SapSystem sapSystem2 = (nl.nn.adapterframework.extensions.sap.jco2.SapSystem) sapSystem;
+			return sapSystem2.toString();
 		}
 	}
 

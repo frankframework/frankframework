@@ -68,28 +68,6 @@
 			<artifactId>postgresql</artifactId>
 			<version>${postgresql.driver.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.2.3</version>
-		</dependency>
-		
-		<!-- required for ActiveMQ -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<version>${activemq.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.31</version>
-		</dependency>
-		<dependency>
-			<groupId>org.fusesource.hawtbuf</groupId>
-			<artifactId>hawtbuf</artifactId>
-			<version>1.11</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -112,7 +90,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>full-configuration,scenarios</excludeClassifiers>
+							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -126,8 +104,14 @@
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>full-configuration</classifier>
+									<classifier>configurations</classifier>
 									<destFileName>configurations.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-test</artifactId>
+									<classifier>resources</classifier>
+									<destFileName>resources.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>
@@ -154,25 +138,22 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/assembly/dockerAssembly.xml</descriptor>
+					</descriptors>
+				</configuration>
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
 						<phase>package</phase>
 						<goals>
-							<goal>resources</goal>
+							<goal>single</goal>
 						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<filtering>true</filtering>
-									<directory>src/scripts</directory>
-								</resource>
-							</resources>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -187,6 +168,11 @@
 						<inherited>false</inherited>
 						<configuration>
 							<target>
+								<exec executable="docker-compose">
+									<arg value="down"/>
+									<arg value="--volumes"/>
+									<arg value="--remove-orphans"/>
+								</exec>
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>

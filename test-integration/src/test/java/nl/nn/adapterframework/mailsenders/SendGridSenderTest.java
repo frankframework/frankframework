@@ -1,11 +1,12 @@
 package nl.nn.adapterframework.mailsenders;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
 
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 
 public class SendGridSenderTest extends MailSenderTestBase<SendGridSenderWrapper> {
 	private String password = "";
@@ -19,9 +20,9 @@ public class SendGridSenderTest extends MailSenderTestBase<SendGridSenderWrapper
 
 	@Test
 	@Override
-	public void testEmptySubject() throws Exception {
-		SenderException thrown = assertThrows(SenderException.class, () -> super.testEmptySubject());
-		assertTrue(thrown.getMessage().contains("subject is required"));
+	public void testEmptySubject() throws SenderException, TimeOutException, ConfigurationException, IOException {
+		exception.expectMessage("subject is required");
+		super.testEmptySubject();
 	}
 
 }

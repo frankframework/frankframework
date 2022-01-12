@@ -24,9 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -39,7 +38,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SvnUtils {
 	protected static Logger log = LogUtil.getLogger(SvnUtils.class);
 
-	public static String getLogReport(String urlString) throws DomBuilderException, XPathExpressionException, ConfigurationException, SenderException, TimeoutException, IOException {
+	public static String getLogReport(String urlString) throws DomBuilderException, XPathExpressionException, ConfigurationException, SenderException, TimeOutException, IOException {
 		String head = getHeadHtml(urlString);
 		String etag = XmlUtils.evaluateXPathNodeSetFirstElement(head,
 				"headers/header[lower-case(@name)='etag']");
@@ -55,7 +54,7 @@ public class SvnUtils {
 		return null;
 	}
 
-	private static String getHeadHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
+	private static String getHeadHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -64,7 +63,7 @@ public class SvnUtils {
 			httpSender.setVerifyHostname(false);
 			httpSender.setIgnoreCertificateExpiredException(true);
 			httpSender.setXhtml(true);
-			httpSender.setMethodType(HttpMethod.HEAD);
+			httpSender.setMethodType("HEAD");
 			httpSender.configure();
 			httpSender.open();
 			String result = httpSender.sendMessage(new Message(""), null).asString();
@@ -76,7 +75,7 @@ public class SvnUtils {
 		}
 	}
 
-	private static String getReportHtml(String urlString, String revision, String path) throws ConfigurationException, SenderException, TimeoutException, IOException {
+	private static String getReportHtml(String urlString, String revision, String path) throws ConfigurationException, SenderException, TimeOutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();
@@ -85,7 +84,7 @@ public class SvnUtils {
 			httpSender.setVerifyHostname(false);
 			httpSender.setIgnoreCertificateExpiredException(true);
 			httpSender.setXhtml(true);
-			httpSender.setMethodType(HttpMethod.REPORT);
+			httpSender.setMethodType("REPORT");
 			httpSender.configure();
 			httpSender.open();
 
@@ -95,6 +94,9 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
+			httpSender.setMethodType("REPORT");
+			httpSender.configure();
+			httpSender.open();
 			String result = httpSender.sendMessage(new Message(logReportRequest), null).asString();
 			return result;
 		} finally {

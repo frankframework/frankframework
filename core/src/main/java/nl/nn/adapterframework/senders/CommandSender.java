@@ -24,18 +24,21 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
- * 
- * @ff.parameters All parameters present are appended as arguments to the command.
- * 
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>&nbsp;</td><td>the values of all parameters present are appended as arguments to the command</td></tr>
+ * </table>
+ * </p>
+ *
  * @since   4.8
  * @author  Gerrit van Brakel
  */
@@ -47,7 +50,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
@@ -65,8 +68,8 @@ public class CommandSender extends SenderWithParametersBase {
 			} catch (ParameterException e) {
 				throw new SenderException("Could not extract parametervalues",e);
 			}
-			for(ParameterValue pv : pvl) {
-				commandline.add(pv.getValue());
+			for (int i=0; i<pvl.size(); i++) {
+				commandline.add(pvl.getParameterValue(i).getValue());
 			}
 		}
 		return new Message(ProcessUtil.executeCommand(commandline, timeOut));

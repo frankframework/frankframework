@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<digester-rules>
+  <rule pattern="*/child1" registerMethod="setChild1"/>
+  <rule pattern="*/child2" registerMethod="setChild2"/>
+  <rule pattern="*/child3" registerMethod="setChild3"/>
+  <rule pattern="*/child4" registerMethod="setChild4"/>
+</digester-rules>

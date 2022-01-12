@@ -49,9 +49,12 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the larva timeout</td>30000</tr>
  * </table>
  * </p>
- * 
- * @ff.forward success no errors and all tests passed
- * @ff.forward fail errors or failed tests
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>no errors and all scenarios passed</td></tr>
+ * <tr><td>"fail"</td><td>errors or failed scenarios</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  *
@@ -88,6 +91,9 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 	}
 
+	
+	
+	
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
@@ -118,7 +124,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		TestTool.setTimeout(getTimeout());
 		int numScenariosFailed=TestTool.runScenarios(ibisContext, appConstants, paramLogLevel,
 								paramAutoScroll, paramExecute,
-								paramWaitBeforeCleanUp, getTimeout(), realPath,
+								paramWaitBeforeCleanUp, realPath,
 								paramScenariosRootDirectory,
 								out, silent);
 		PipeForward forward=numScenariosFailed==0? getSuccessForward(): failForward;

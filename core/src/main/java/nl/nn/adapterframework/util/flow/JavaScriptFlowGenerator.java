@@ -21,11 +21,12 @@ import java.io.OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.extensions.graphviz.Format;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizEngine;
+import nl.nn.adapterframework.extensions.graphviz.GraphvizException;
+import nl.nn.adapterframework.extensions.graphviz.Options;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.flow.graphviz.Format;
-import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
-import nl.nn.adapterframework.util.flow.graphviz.Options;
 
 /**
  * Initialized through Spring. Uses @{link GraphvizEngine} to get an available 
@@ -62,7 +63,7 @@ public class JavaScriptFlowGenerator implements IFlowGenerator {
 			String flow = engine.execute(dot, options);
 
 			outputStream.write(flow.getBytes());
-		} catch (FlowGenerationException e) {
+		} catch (GraphvizException e) {
 			throw new IOException (e);
 		}
 	}

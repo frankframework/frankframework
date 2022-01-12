@@ -21,7 +21,6 @@ import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 
@@ -240,7 +239,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	protected void setOutputType(OutputType outputType) {
+	protected void setOutputType(String outputType) {
 		for (XsltSender sender:xsltSenders) {
 			sender.setOutputType(outputType);
 		}

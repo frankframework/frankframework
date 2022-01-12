@@ -99,7 +99,7 @@ public class RestListenerServlet extends HttpServlet {
 		
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
-			messageContext.setSecurityHandler(securityHandler);
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 	
 			Enumeration paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {

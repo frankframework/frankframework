@@ -34,8 +34,12 @@ import nl.nn.adapterframework.stream.Message;
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
  * 
- * @ff.parameter increment integer value to be added to the session variable
- * 
+ * <p>
+ * <table border="1">
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr>
+ * <tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value. Can be set from the attribute or the parameter 'increment'</td><td>1</td></tr>
+ * </table>
+ * </p>
  * @author Richard Punt / Gerrit van Brakel
  */
 public class IncreaseIntegerPipe extends FixedForwardPipe {
@@ -82,12 +86,6 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getSuccessForward(), message);
 	}
-
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
-	}
-
 
 	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
 	public void setSessionKey(String string) {

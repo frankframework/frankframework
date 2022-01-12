@@ -48,8 +48,12 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
  *
- * @ff.forward success no errors and all tests passed
- * @ff.forward failure errors or failed tests
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>no errors and all tests passed</td></tr>
+ * <tr><td>"failure"</td><td>errors or failed tests</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  *

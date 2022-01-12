@@ -17,13 +17,13 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 
 public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	private Map<String, Object> configuration;
-	private String datasourceName = null;
+	private String dataSourceName = null;
 
 	public DatabaseClassLoader(ClassLoader parent) {
 		super(parent);
@@ -34,18 +34,18 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	}
 
 	@Override
-	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
+	protected Map<String, byte[]> loadResources() throws ConfigurationException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), datasourceName);
+			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), dataSourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
-			throw new ClassLoaderException(getErrorMessage(), t);
+			throw new ConfigurationException(getErrorMessage(), t);
 		}
 
 		if (configuration == null) {
-			throw new ClassLoaderException(getErrorMessage());
+			throw new ConfigurationException(getErrorMessage());
 		} else {
 			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
 			configuration.remove("CONFIG");
@@ -70,18 +70,7 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 		return (String) configuration.get("CREATED");
 	}
 
-	/**
-	 * @param datasourceName the Datasource to retrieve the configuration jar from
-	 */
-	public void setDatasourceName(String datasourceName) {
-		this.datasourceName = datasourceName;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder(super.toString());
-		if(datasourceName != null) builder.append(" datasourceName ["+datasourceName+"]");
-		if(configuration != null && getFileName() != null) builder.append(" fileName ["+getFileName()+"]");
-		return builder.toString();
+	public void setDataSourceName(String dataSourceName) {
+		this.dataSourceName = dataSourceName;
 	}
 }

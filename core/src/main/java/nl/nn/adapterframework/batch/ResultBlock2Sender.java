@@ -21,27 +21,30 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
  * 
- * @ff.parameters any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link ISender sender}</td><td>Sender to which each block of results is sent</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}</td></tr>
+ * </table>
+ * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7  
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
-	private @Getter ISender sender = null; 
+	private ISender sender = null; 
 	private Map<String,Integer> counters = new HashMap<>();
 	private Map<String,Integer> levels = new HashMap<>();
 
@@ -56,7 +59,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		super.configure();
 
 		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
 		}
 		if (StringUtils.isEmpty(sender.getName())) {
 			sender.setName("sender of "+getName());
@@ -161,8 +164,10 @@ public class ResultBlock2Sender extends Result2StringWriter {
 	}
 
 
-	@IbisDoc({"10", "Sender to which each block of results is sent"})
 	public void setSender(ISender sender) {
 		this.sender = sender;
+	}
+	public ISender getSender() {
+		return sender;
 	}
 }

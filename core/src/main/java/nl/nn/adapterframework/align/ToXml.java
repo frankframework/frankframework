@@ -53,8 +53,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -73,15 +71,14 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	public static final String MSG_INVALID_CONTENT="Invalid content";
 	public static final String MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION="Cannot find the declaration of element";
 
-	private @Getter @Setter String rootElement;
-	private @Getter @Setter String targetNamespace;
+	private String rootElement;
+	private String targetNamespace;
 	protected ValidatorHandler validatorHandler;
-	private @Getter @Setter List<XSModel> schemaInformation; 
+	private List<XSModel> schemaInformation; 
 
-//	private @Getter @Setter boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
-	private @Getter @Setter boolean deepSearch=false;
-	private @Getter @Setter boolean failOnWildcards=false;
-	private @Getter @Setter boolean ignoreUndeclaredElements=false;
+//	private boolean autoInsertMandatory=false;   // TODO: behaviour needs to be tested.
+	private boolean deepSearch=false;
+	private boolean failOnWildcards=false;
 
 	private String prefixPrefix="ns";
 	private int prefixPrefixCounter=1;
@@ -335,9 +332,6 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				log.warn("processing unprocessed child element ["+childName+"]");
 				XSElementDeclaration childElementDeclaration = findElementDeclarationForName(null,childName);
 				if (childElementDeclaration==null) {
-					if (isIgnoreUndeclaredElements()) {
-						continue;
-					}
 					// this clause is hit for mixed content element containing elements that are not defined
 					throw new SAXException(MSG_CANNOT_NOT_FIND_ELEMENT_DECLARATION+" ["+childName+"]");
 				}
@@ -346,7 +340,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		}
 		// the below is used for mixed content nodes containing text
 		if (processedChildren.isEmpty()) {  
-			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() handle element ["+name+"] as simple, because no children processed"); 
+			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() handle element ["+name+"] as simple, because none processed"); 
 			handleSimpleTypedElement(elementDeclaration, null, node);
 		}
 		
@@ -674,5 +668,48 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		return xmlWriter.toString();
 	}
 	
+	public String getRootElement() {
+		return rootElement;
+	}
+	public void setRootElement(String rootElement) {
+		this.rootElement = rootElement;
+	}
+	
+	public String getTargetNamespace() {
+		return targetNamespace;
+	}
+	public void setTargetNamespace(String targetNamespace) {
+		this.targetNamespace = targetNamespace;
+	}
+
+	public List<XSModel> getSchemaInformation() {
+		return schemaInformation;
+	}
+	public void setSchemaInformation(List<XSModel> schemaInformation) {
+		this.schemaInformation = schemaInformation;
+	}
+
+//	public boolean isAutoInsertMandatory() {
+//		return autoInsertMandatory;
+//	}
+//	public void setAutoInsertMandatory(boolean autoInsertMandatory) {
+//		this.autoInsertMandatory = autoInsertMandatory;
+//	}
+
+	public boolean isDeepSearch() {
+		return deepSearch;
+	}
+
+	public void setDeepSearch(boolean deepSearch) {
+		this.deepSearch = deepSearch;
+	}
+
+	public boolean isFailOnWildcards() {
+		return failOnWildcards;
+	}
+
+	public void setFailOnWildcards(boolean failOnWildcards) {
+		this.failOnWildcards = failOnWildcards;
+	}
 
 }

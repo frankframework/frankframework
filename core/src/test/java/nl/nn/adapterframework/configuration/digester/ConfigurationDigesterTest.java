@@ -29,10 +29,10 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class ConfigurationDigesterTest {
 	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
-
+	
 	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
-
+	
 	@Test
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
@@ -173,7 +173,7 @@ public class ConfigurationDigesterTest {
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
 	}
-
+	
 	private class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) throws SAXParseException {

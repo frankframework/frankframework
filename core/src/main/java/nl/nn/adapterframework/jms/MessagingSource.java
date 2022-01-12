@@ -31,8 +31,6 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
@@ -124,9 +122,10 @@ public class MessagingSource  {
 				context = null;
 			}
 			return true;
+		} else {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
+			return false;
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
-		return false;
 	}
 
 	public synchronized void increaseReferences() {
@@ -156,7 +155,6 @@ public class MessagingSource  {
 			try {
 				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 			} catch (Exception e) {
-				log.debug("Could not get managedConnectionFactory: ("+e.getClass().getTypeName()+") "+e.getMessage());
 				// In case of BTM.
 				return ClassUtils.invokeGetter(qcf, "getResource", true);
 			}
@@ -164,32 +162,25 @@ public class MessagingSource  {
 			if (qcf != null) {
 				return qcf;
 			}
-			log.warn(getLogPrefix() + "could not determine managed connection factory", e);
-			return null;
+			else {
+				log.warn(getLogPrefix() + "could not determine managed connection factory", e);
+				return null;
+			}
 		}
 	}
 
 	public String getPhysicalName() { 
 		String result="";
-		
-		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
-		} catch (Exception e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-		}
-		
-		
-		try {
-			Object managedConnectionFactory = getManagedConnectionFactory();
-			if (managedConnectionFactory!=null) {
-				result +=managedConnectionFactory.toString();
+		Object managedConnectionFactory = getManagedConnectionFactory();
+		if (managedConnectionFactory!=null) {
+			try {
+				result=managedConnectionFactory.toString();
 				if (result.contains("activemq")) {
 					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
 				}
+			} catch (Exception e) {
+				result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();
 			}
-		} catch (Exception | NoClassDefFoundError e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 		return result;
 	}
@@ -201,18 +192,22 @@ public class MessagingSource  {
 			if (useJms102()) {
 				if (connectionFactory instanceof QueueConnectionFactory) {
 					return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
+				} else {
+					return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
 				}
-				return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
+			} else {
+				return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
 			}
-			return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
 		}
 		if (useJms102()) {
 			if (connectionFactory instanceof QueueConnectionFactory) {
 				return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
-			} 
-			return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
-		} 
-		return connectionFactory.createConnection();
+			} else {
+				return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
+			}
+		} else {
+			return connectionFactory.createConnection();
+		}
 	}
 	
 	private Connection createAndStartConnection() throws JMSException {
@@ -228,13 +223,14 @@ public class MessagingSource  {
 	private Connection getConnection() throws JMSException {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
-		}
-		synchronized (this) {
-			if (globalConnection == null) {
-				globalConnection = createAndStartConnection();
+		} else {
+			synchronized (this) {
+				if (globalConnection == null) {
+					globalConnection = createAndStartConnection();
+				}
 			}
+			return globalConnection;
 		}
-		return globalConnection;
 	}
 
 	private void releaseConnection(Connection connection) {
@@ -284,7 +280,7 @@ public class MessagingSource  {
 	public void releaseSession(Session session) { 
 		if (session != null) {
 			if (connectionsArePooled()) {
-				Connection connection = connectionTable.remove(session);
+				Connection connection = (Connection)connectionTable.remove(session);
 				try {
 					// do not log, as this may happen very often
 //					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");

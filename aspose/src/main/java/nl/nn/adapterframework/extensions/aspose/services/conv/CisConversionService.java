@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
-import nl.nn.adapterframework.stream.Message;
+
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
+ *
  */
 public interface CisConversionService {
 
@@ -30,7 +32,7 @@ public interface CisConversionService {
 	 * <p>
 	 * The given document stream is <em>not</em> closed by this method.
 	 * 
-	 * @param input
+	 * @param inputStream
 	 * @param filename
 	 *            (without the path). Is used to detect mediatype and inform the
 	 *            user of the name of the file. Is allowed to be null.
@@ -38,8 +40,19 @@ public interface CisConversionService {
 	 * @throws CisConversionException
 	 *             when a failure occurs.
 	 */
-	CisConversionResult convertToPdf(Message input, String filename, ConversionOption conversionOption) throws IOException;
+	CisConversionResult convertToPdf(InputStream inputStream, String filename, ConversionOption conversionOption) throws IOException;
 
+	/**
+	 * This will try to convert the given inputStream to a pdf.
+	 * <p>
+	 * The given document stream is <em>not</em> closed by this method.
+	 * 
+	 * @param inputStream
+	 * @throws IOException 
+	 * @throws CisConversionException
+	 *             when a failure occurs.
+	 */
+	CisConversionResult convertToPdf(InputStream inputStream, ConversionOption conversionOption) throws IOException;
 
 	String getFontsDirectory();
 }

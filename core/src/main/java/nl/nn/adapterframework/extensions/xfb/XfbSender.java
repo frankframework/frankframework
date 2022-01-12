@@ -19,18 +19,35 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 /**
  * Sender for transferring files using the XFB protocol. Assumes sender input is local filename.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.xfb.XfbSender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the XFB script to be executed to transfer the file</td><td></td></tr>
+ * <tr><td>{@link #setFt(String) ft}</td><td>XFB ft parameter</td><td>SEND_FF</td></tr>
+ * <tr><td>{@link #setFlow(String) flow}</td><td>XFB flow parameter</td><td></td></tr>
+ * <tr><td>{@link #setAppli(String) appli}</td><td>XFB appli parameter</td><td></td></tr>
+ * <tr><td>{@link #setNoname(String) noname}</td><td>XFB noname parameter</td><td></td></tr>
+ * <tr><td>{@link #setCopy(boolean) copy}</td><td>when set <code>true</code>, the file is copied before calling the XFB script. Reasons to copy the file: - XFB will rename the file (prefix it with FXB_) and delete it. - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy)</td><td>true</td></tr>
+ * <tr><td>{@link #setCopyPrefix(String) copyPrefix}</td><td>prefix for the name of the copied or original filename. When the name of the original file starts with this prefix this prefix is removed otherwise this prefix is added to the filename of the copied file </td><td>IBIS_</td></tr>
+ * </table>
+ * </p>
+ *
  * <br/>
  * Some comments from Richard Maddox (FTO) about UNIX File permissions:
  * <br/>
@@ -68,6 +85,8 @@ import nl.nn.adapterframework.util.ProcessUtil;
  * @since   4.11
  */
 public class XfbSender extends SenderWithParametersBase {
+	private Logger log = LogUtil.getLogger(this);
+
 	private String script;
 	private String ft = "SEND_FF";
 	private String flow;
@@ -90,7 +109,7 @@ public class XfbSender extends SenderWithParametersBase {
  	} 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			File file = new File(message.asString());
 			if (getCopy()) {
@@ -122,7 +141,6 @@ public class XfbSender extends SenderWithParametersBase {
 		}
 	}
 
-	/** Full pathname to the XFB script to be executed to transfer the file */
 	public void setScript(String script) {
 		this.script = script;
 	}
@@ -163,12 +181,6 @@ public class XfbSender extends SenderWithParametersBase {
 		return noname;
 	}
 
-	/** 
-	 * When set to <code>true</code>, the file is copied before calling the XFB script. 
-	 * Reasons to copy the file:
-	 * - XFB will rename the file (prefix it with FXB_) and delete it.
-	 * - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).
-	 */
 	public void setCopy(boolean copy) {
 		this.copy = copy;
 	}
@@ -177,7 +189,6 @@ public class XfbSender extends SenderWithParametersBase {
 		return copy;
 	}
 
-	/** Prefix for the name of the copied or original filename. When the name of the original file starts with this prefix, it is removed. Otherwise this prefix is added to the filename of the copied file. */
 	public void setCopyPrefix(String copyPrefix) {
 		this.copyPrefix = copyPrefix;
 	}

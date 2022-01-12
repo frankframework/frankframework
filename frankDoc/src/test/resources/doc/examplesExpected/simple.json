@@ -1,0 +1,152 @@
+{
+  "groups": [
+    {
+      "name": "Child",
+      "types": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"]
+    },
+    {
+      "name": "Other",
+      "types": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild",
+      "members": [
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+        "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
+      ]
+    },
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"]
+    },
+    {
+      "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+      "members": ["nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"]
+    }
+  ],
+  "elements": [
+    {
+      "name": "AbstractParentOfStart",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
+      "abstract": true,
+      "elementNames": [],
+      "attributes": [
+      	{
+          "name": "abstractParentOfStartAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
+        }
+      ]
+    },
+    {
+      "name": "DescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"DescribedPossibleIChild\\\".",
+      "elementNames": ["DescribedPossibleIRoleNameIChild"],
+      "attributes": [
+        {
+          "name": "firstAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+          "description": "First attribute of DescribedPossibleIChild.",
+          "default": "this default value"
+        },
+        {
+          "name": "secondAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.DescribedPossibleIChild",
+          "description": "Second attribute of DescribedPossibleIChild"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
+        }
+      ]
+    },
+    {
+      "name": "NotDescribedPossibleIChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
+      "elementNames": ["NotDescribedPossibleIRoleNameIChild"],
+      "attributes": [
+        {
+          "name": "firstAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "enum": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.MyEnum"
+        },
+        {
+          "name": "secondAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild"
+        },
+        {
+          "name": "thirdAttribute",
+          "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.NotDescribedPossibleIChild",
+          "type": "int"
+        },
+        {
+          "name":"active",
+          "description":"If defined and empty or false, then this element and all its children are ignored"
+        }
+      ]
+    },
+    {
+      "name": "Object",
+      "fullName": "java.lang.Object",
+      "elementNames": [],
+      "attributes": [{
+        "name":"active",
+        "description":"If defined and empty or false, then this element and all its children are ignored"
+      }]
+    },
+    {
+      "name": "Start",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start",
+      "parent": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.AbstractParentOfStart",
+      "elementNames": ["Start"],
+      "attributes": [{
+        "name": "attribute",
+        "describer": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.Start"
+      }],
+      "children": [
+        {
+          "multiple": false,
+          "roleName": "roleNameIChild",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.IChild"
+        },
+        {
+          "multiple": true,
+          "roleName": "roleNameTChild",
+          "type": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild"
+        }
+      ]
+    },
+    {
+      "name": "TChild",
+      "fullName": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.TChild",
+      "descriptionHeader": "This is the header of the JavaDoc of \\\"TChild\\\".",
+      "elementNames": ["RoleNameTChild"],
+      "attributes": [{
+        "name":"active",
+        "description":"If defined and empty or false, then this element and all its children are ignored"
+      }]
+    }
+  ],
+  "enums": [{
+    "name": "nl.nn.adapterframework.frankdoc.testtarget.examples.simple.MyEnum",
+    "values": [
+      {
+        "label": "ONE"
+      },
+      {
+        "label": "customLabelTwo",
+        "description": "Description of TWO"
+      }
+    ]
+  }]
+}
+        

@@ -21,7 +21,7 @@
 
 	<sidebar></sidebar>
 	<div class="element" ui-view></div>
-	<div class="loadError" ng-style="{ display: (loadError ? 'block' : '') }"><p>ERROR: {{loadError}}</p></div> 
+	<div class="loadError" ng-if="loadError"><p>ERROR: {{loadError}}</p></div> 
 
 	<script src="js/angular.min.js" charset="utf-8"></script>
 	<script src="js/angular-sanitize.min.js"></script>

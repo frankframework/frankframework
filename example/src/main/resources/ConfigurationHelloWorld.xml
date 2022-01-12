@@ -3,9 +3,7 @@
 		<receiver name="HelloWorld" >
 			<listener
 				name="HelloWorld"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
-				uriPattern="hello-world"
-				method="GET"
+				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
@@ -24,7 +22,8 @@
 	<scheduler>
 		<job
 			name="HelloWorld"
-			javaListener="HelloWorld"
+			adapterName="HelloWorld"
+			receiverName="HelloWorld"
 			interval="0"
 			function="sendMessage"
 			active="${HelloWorld.job.active}"

@@ -28,21 +28,17 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
-		if (connectionFactory instanceof XAConnectionFactory) {
-			PoolingConnectionFactory result = new PoolingConnectionFactory();
-			result.setUniqueName(connectionFactoryName);
-			result.setMaxPoolSize(100);
-			result.setAllowLocalTransactions(true);
-			result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
-			result.init();
-			return result;
-		}
-		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
-		return connectionFactory;
+		PoolingConnectionFactory result = new PoolingConnectionFactory();
+		result.setUniqueName(connectionFactoryName);
+		result.setMaxPoolSize(100);
+		result.setAllowLocalTransactions(true);
+		result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
+		result.init();
+		return result;
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingConnectionFactory).forEach(cf -> ((PoolingConnectionFactory)cf).close());
+		objects.values().forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }

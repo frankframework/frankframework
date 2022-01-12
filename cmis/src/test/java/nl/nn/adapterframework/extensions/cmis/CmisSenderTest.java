@@ -8,9 +8,8 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.senders.SenderTestBase;
 
-public class CmisSenderTest extends SenderTestBase<CmisSender> {
+public class CmisSenderTest extends SenderBase<CmisSender> {
 
 	@Override
 	public CmisSender createSender() {

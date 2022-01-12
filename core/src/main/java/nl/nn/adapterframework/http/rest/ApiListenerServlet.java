@@ -1,17 +1,17 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+Copyright 2017-2021 WeAreFrank!
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
@@ -30,30 +30,24 @@ import javax.json.JsonObject;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
 
-import com.nimbusds.jose.util.JSONObjectUtils;
-
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
-import nl.nn.adapterframework.http.InputStreamDataSource;
-import nl.nn.adapterframework.http.PartMessage;
-import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
-import nl.nn.adapterframework.jwt.AuthorizationException;
-import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -171,8 +165,9 @@ public class ApiListenerServlet extends HttpServletBase {
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
-			messageContext.put("HttpMethod", method);
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
+			messageContext.put("HttpMethod", method);
+	
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
@@ -217,7 +212,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					log.warn(createAbortingMessage(remoteUser,405) + "method ["+method+"] not allowed");
 					return;
 				}
-
+	
 				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
 	
 				/**
@@ -225,11 +220,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				ApiPrincipal userPrincipal = null;
 	
-				if(listener.getAuthenticationMethod() != AuthenticationMethods.NONE) {
+				if(!AuthenticationMethods.NONE.equals(listener.getAuthenticationMethodEnum())) {
 					String authorizationToken = null;
 					Cookie authorizationCookie = null;
 	
-					switch (listener.getAuthenticationMethod()) {
+					switch (listener.getAuthenticationMethodEnum()) {
 					case COOKIE:
 						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
 						if(authorizationCookie != null) {
@@ -250,48 +245,6 @@ public class ApiListenerServlet extends HttpServletBase {
 								}
 							}
 						}
-						break;
-					case JWT:
-						String authorizationHeader = request.getHeader("Authorization");
-						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
-							try {
-								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
-								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-							} catch(Exception e) {
-								log.warn("unable to validate jwt",e);
-								response.sendError(401, e.getMessage());
-								return;
-							}
-						} else {
-							response.sendError(401, "JWT is not provided as bearer token");
-							return;
-						}
-						String requiredClaims = listener.getRequiredClaims();
-						String exactMatchClaims = listener.getExactMatchClaims();
-						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
-						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims);
-							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
-								List<String> authRoles = listener.getAuthenticationRoleList();
-								if(authRoles != null) {
-									for (String role : authRoles) {
-										if(handler.isUserInRole(role, messageContext)) {
-											userPrincipal = new ApiPrincipal();
-											break;
-										}
-									}
-								} else {
-									userPrincipal = new ApiPrincipal();
-								}
-							} else {
-								userPrincipal = new ApiPrincipal();
-							}
-						} catch(AuthorizationException e) {
-							response.sendError(403, e.getMessage());
-							return;
-						}
-
 						break;
 					default:
 						break;
@@ -343,7 +296,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+					log.warn(createAbortingMessage(remoteUser,415) + "did not match consumes ["+listener.getConsumesEnum()+"] got ["+request.getContentType()+"] instead");
 					return;
 				}
 	
@@ -370,7 +323,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put("updateEtag", listener.isUpdateEtag());
+				messageContext.put("updateEtag", listener.getUpdateEtag());
 	
 				/**
 				 * Check authorization
@@ -425,7 +378,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
 					XmlBuilder headersXml = new XmlBuilder("headers");
-					String[] params = listener.getHeaderParams().split(",");
+					String params[] = listener.getHeaderParams().split(",");
 					for (String headerParam : params) {
 						if(IGNORE_HEADERS.contains(headerParam)) {
 							continue;
@@ -449,65 +402,68 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * If applicable, map multipart parts into messageContext
 				 */
 				Message body = null;
-				//TODO fix HttpSender#handleMultipartResponse(..)
-				if(MultipartUtils.isMultipart(request)) {
+				if (ServletFileUpload.isMultipartContent(request)) {
+					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
+					List<FileItem> items = servletFileUpload.parseRequest(request);
+					XmlBuilder attachments = new XmlBuilder("parts");
+					int i = 0;
 					String multipartBodyName = listener.getMultipartBodyName();
-					try {
-						InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
-						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-						XmlBuilder attachments = new XmlBuilder("parts");
-
-						for (int i = 0; i < mimeMultipart.getCount(); i++) {
-							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-							String fieldName = MultipartUtils.getFieldName(bodyPart);
-							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(bodyPart);
-							}
-
-							XmlBuilder attachment = new XmlBuilder("part");
-							attachment.addAttribute("name", fieldName);
-							PartMessage message = new PartMessage(bodyPart);
-							if (!MultipartUtils.isBinary(bodyPart)) {
-								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-								if(log.isTraceEnabled()) log.trace("setting multipart formField ["+fieldName+"] to ["+message+"]");
-								messageContext.put(fieldName, message.asString());
-								attachment.addAttribute("type", "text");
-								attachment.addAttribute("value", message.asString());
-							} else {
-								// Process form file field (input type="file").
-								String fieldNameName = fieldName + "Name";
-								String fileName = bodyPart.getFileName();
-								if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
-								messageContext.put(fieldNameName, fileName);
-								if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
-								messageContext.put(fieldName, message);
-		
-								attachment.addAttribute("type", "file");
-								attachment.addAttribute("filename", fileName);
-								attachment.addAttribute("size", message.size());
-								attachment.addAttribute("sessionKey", fieldName);
-								String contentType = bodyPart.getContentType();
+					for (FileItem item : items) {
+						String fieldName = item.getFieldName();
+						//First part -> pipeline input when multipartBodyName=null
+						if((i == 0 && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+							//TODO this is possible because it's been read from disk multiple times, ideally you want to stream it directly!
+							body = parseContentAsMessage(item.getInputStream(), item.getContentType());
+						}
+	
+						XmlBuilder attachment = new XmlBuilder("part");
+						attachment.addAttribute("name", fieldName);
+						if (item.isFormField()) {
+							// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
+							String fieldValue = item.getString();
+							if(log.isTraceEnabled()) log.trace("setting multipart formField ["+fieldName+"] to ["+fieldValue+"]");
+							messageContext.put(fieldName, fieldValue);
+							attachment.addAttribute("type", "text");
+							attachment.addAttribute("value", fieldValue);
+						} else {
+							// Process form file field (input type="file").
+							String fieldNameName = fieldName + "Name";
+							String fileName = FilenameUtils.getName(item.getName());
+							if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+							messageContext.put(fieldNameName, fileName);
+							if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+							messageContext.put(fieldName, item.getInputStream());
+	
+							attachment.addAttribute("type", "file");
+							attachment.addAttribute("filename", fileName);
+							attachment.addAttribute("size", item.getSize());
+							attachment.addAttribute("sessionKey", fieldName);
+							String contentType = item.getContentType();
+							if(contentType != null) {
 								String mimeType = contentType;
 								int semicolon = contentType.indexOf(";");
 								if(semicolon >= 0) {
 									mimeType = contentType.substring(0, semicolon);
+									String mightContainCharSet = contentType.substring(semicolon+1).trim();
+									if(mightContainCharSet.contains("charset=")) {
+										String charSet = mightContainCharSet.substring(mightContainCharSet.indexOf("charset=")+8);
+										attachment.addAttribute("charSet", charSet);
+									}
 								}
-
+								else {
+									mimeType = contentType;
+								}
 								attachment.addAttribute("mimeType", mimeType);
 							}
-							attachments.addSubElement(attachment);
 						}
-						messageContext.put("multipartAttachments", attachments.toXML());
-					} catch(MessagingException e) {
-						throw new IOException("Could not read mime multipart response", e);
+						attachments.addSubElement(attachment);
+	
+						i++;
 					}
+					messageContext.put("multipartAttachments", attachments.toXML());
 				} else {
-					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
-					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
-						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
-					} else {
-						body = Message.nullMessage();
-					}
+					body = parseContentAsMessage(request.getInputStream(), request.getContentType());
 				}
 
 				/**
@@ -569,7 +525,7 @@ public class ApiListenerServlet extends HttpServletBase {
 					}
 				}
 				String contentType = mimeType.getContentType();
-				if(listener.getProduces() == MediaTypes.ANY) {
+				if(listener.getProducesEnum().equals(MediaTypes.ANY)) {
 					Message parsedContentType = messageContext.getMessage("contentType");
 					if(!Message.isEmpty(parsedContentType)) {
 						contentType = parsedContentType.asString();
@@ -617,9 +573,7 @@ public class ApiListenerServlet extends HttpServletBase {
 			try {
 				ContentType parsedContentType = ContentType.parse(contentType);
 				Charset parsedCharset = parsedContentType.getCharset();
-				if(parsedCharset != null) {
-					charset = parsedCharset.displayName();
-				}
+				charset = parsedCharset.displayName();
 			} catch (Exception e) {
 				//For now just log when we cannot parse, perhaps we should abort the request?
 				log.warn("unable to parse charset from contentType [{}]", contentType, e);

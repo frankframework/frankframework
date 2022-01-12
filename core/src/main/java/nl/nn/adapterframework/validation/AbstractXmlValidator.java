@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -144,7 +145,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return event;
 	}
 
-	public ValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public ValidationContext createValidationContext(PipeLineSession session, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug(logPrefix + "removing contents of sessionKey [" + getReasonSessionKey() + "]");
@@ -167,7 +168,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * @return MonitorEvent declared in{@link AbstractXmlValidator}
 	 * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
 	 */
-	public String validate(Object input, PipeLineSession session, String logPrefix, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public String validate(Object input, PipeLineSession session, String logPrefix, Set<List<String>> rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws XmlValidatorException, PipeRunException, ConfigurationException {
 		ValidationContext context = createValidationContext(session, rootValidations, invalidRootNamespaces);
 		ValidatorHandler validatorHandler = getValidatorHandler(session, context);
 		return validate(input, session, logPrefix, validatorHandler, null, context);
@@ -230,6 +231,9 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	protected String getLogPrefix(PipeLineSession session) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
+		if (this instanceof INamedObject) {
+			sb.append("[").append(((INamedObject) this).getName()).append("] ");
+		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}
@@ -272,7 +276,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	 * </p>
 	 * Defaults to <code>false</code>;
 	 */
-	@IbisDoc({"Perform addional memory intensive checks", "false"})
+	@IbisDoc({"Perform addional memory intensive checks", "<code>false</code>"})
 	public void setFullSchemaChecking(boolean fullSchemaChecking) {
 		this.fullSchemaChecking = fullSchemaChecking;
 	}
@@ -280,7 +284,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return fullSchemaChecking;
 	}
 
-	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "false"})
+	@IbisDoc({"Should the XmlValidator throw a PipeRunexception on a validation error. If not, a forward with name 'failure' must be defined.", "<code>false</code>"})
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
@@ -304,7 +308,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return xmlReasonSessionKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "false"})
+	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated", "<code>false</code>"})
 	public void setValidateFile(boolean b) {
 		validateFile = b;
 	}
@@ -320,12 +324,12 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return charset;
 	}
 
-	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "true"})
+	@IbisDoc({"If set <code>true</code>, send warnings to logging and console about syntax problems in the configured schema('s)", "<code>true</code>"})
 	public void setWarn(boolean warn) {
 		this.warn = warn;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "false"})
+	@IbisDoc({"If set <code>true</code>, the namespace from schemalocation is added to the schema document as targetnamespace", "<code>false</code>"})
 	public void setAddNamespaceToSchema(boolean addNamespaceToSchema) {
 		this.addNamespaceToSchema = addNamespaceToSchema;
 	}
@@ -341,7 +345,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return importedSchemaLocationsToIgnore;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "false"})
+	@IbisDoc({"If set <code>true</code>, the comparison for importedSchemaLocationsToIgnore is done on base filename without any path", "<code>false</code>"})
 	public void setUseBaseImportedSchemaLocationsToIgnore(boolean useBaseImportedSchemaLocationsToIgnore) {
 		this.useBaseImportedSchemaLocationsToIgnore = useBaseImportedSchemaLocationsToIgnore;
 	}
@@ -357,7 +361,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return importedNamespacesToIgnore;
 	}
 
-	@IbisDoc({"Ignore namespaces in the input message which are unknown", "true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise"})
+	@IbisDoc({"Ignore namespaces in the input message which are unknown", "<code>true</code> when schema or nonamespaceschemalocation is used, <code>false</code> otherwise"})
 	public Boolean getIgnoreUnknownNamespaces() {
 		return ignoreUnknownNamespaces;
 	}
@@ -365,7 +369,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		this.ignoreUnknownNamespaces = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "false"})
+	@IbisDoc({"If set <code>true</code>, the number for caching validators in appConstants is ignored and no caching is done (for this validator only)", "<code>false</code>"})
 	public void setIgnoreCaching(boolean ignoreCaching) {
 		this.ignoreCaching = ignoreCaching;
 	}

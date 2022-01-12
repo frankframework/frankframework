@@ -45,7 +45,7 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	 * Populate all the jBossTS EnvironmentBeans.
 	 */
 	@Override
-	public void afterPropertiesSet() {
+	public void afterPropertiesSet() throws Exception {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
 	}
 

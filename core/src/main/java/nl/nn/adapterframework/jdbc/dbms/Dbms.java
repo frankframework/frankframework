@@ -40,7 +40,6 @@ public enum Dbms {
 	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
-
 	private Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this.key = key;
 		this.productName = productName;
@@ -54,7 +53,7 @@ public enum Dbms {
 	public String getProductName() {
 		return productName;
 	}
-
+	
 	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
 		if (MYSQL.getProductName().equals(product) && productVersion.contains("MariaDB")) {
 			log.debug("Setting databasetype to MARIADB (using MySQL driver)");
@@ -65,7 +64,7 @@ public enum Dbms {
 				log.debug("Setting databasetype to ["+dbms+"]");
 				IDbmsSupport result;
 				try {
-					result = dbms.dbmsSupportClass.newInstance();
+					result = (IDbmsSupport)dbms.dbmsSupportClass.newInstance();
 					if (result != null) {
 						log.debug("Returning built-in DBMS ["+dbms+"] found for product ["+product+"]");
 						return result;
@@ -78,12 +77,13 @@ public enum Dbms {
 		}
 		log.debug("Returning GenericDbmsSupport for product ["+product+"]");
 		return new GenericDbmsSupport();
+		
 	}
-
+	
 	public IDbmsSupport getDbmsSupport() throws IllegalAccessException, InstantiationException {
 		if (dbmsSupportClass==null) {
 			return null;
 		}
-		return dbmsSupportClass.newInstance();
+		return (IDbmsSupport)dbmsSupportClass.newInstance();
 	}
 }

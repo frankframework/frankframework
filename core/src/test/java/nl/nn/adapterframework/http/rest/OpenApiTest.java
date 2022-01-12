@@ -158,7 +158,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri+"/mock-pattern");
+		String result = callOpenApi(uri+"/{pattern}");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
@@ -330,10 +330,12 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
 		request.addHeader("envelopeId", "dummy");
 		request.addHeader("envelopeType", "dummyType");
-
+		
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
@@ -416,10 +418,13 @@ public class OpenApiTest extends OpenApiTestBase {
 			.addExit("200")
 			.build(true);
 
-		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
-		request.addHeader("parameter", "dummy");
 
+		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
+		request.addHeader("parameter", "dummy");
+		
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/validatorParamFromHeaderNotQuery.json");
@@ -442,7 +447,9 @@ public class OpenApiTest extends OpenApiTestBase {
 
 
 		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
 		request.addHeader("x-message-id", "dummy");
 
 		String result = service(request);
@@ -472,7 +479,9 @@ public class OpenApiTest extends OpenApiTestBase {
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
-		MockHttpServletRequest request = createRequest("GET", uri+"/openapi.json");
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", uri + "/openapi.json");
+		request.setServerName("dummy");
+		request.setPathInfo(uri + "/openapi.json");
 		request.addHeader("envelopeId", "dummy");
 		request.addHeader("envelopeType", "dummyType");
 

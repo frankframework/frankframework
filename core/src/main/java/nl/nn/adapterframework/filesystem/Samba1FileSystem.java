@@ -273,11 +273,10 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 		@Override
 		public void remove() {
-			SmbFile file = files[i++];
 			try {
-				deleteFile(file);
+				deleteFile(files[i++]);
 			} catch (FileSystemException e) {
-				log.warn("unable to delete file ["+getCanonicalName(file)+"]", e);
+				log.warn(e);
 			}
 		}
 	}
@@ -297,12 +296,12 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public String getCanonicalName(SmbFile f) {
+	public String getCanonicalName(SmbFile f) throws FileSystemException {
 		return f.getCanonicalPath();
 	}
 
 	@Override
-	public Date getModificationTime(SmbFile f) {
+	public Date getModificationTime(SmbFile f) throws FileSystemException {
 		return new Date(f.getLastModified());
 	}
 

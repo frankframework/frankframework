@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
-	<JarScanner scanClassPath="false" scanAllFiles="false" scanAllDirectories="false"/>
 
 	<!-- 
 		Support for XA using BTM requires JDBC datasources to be configured via
@@ -13,7 +12,7 @@
 		name="jdbc/ibis4test-h2"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.h2.jdbcx.JdbcDataSource"
-		URL="jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;TRACE_LEVEL_FILE=0"
+		URL="jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE"
 	/>
 
 	<Resource
@@ -58,16 +57,15 @@
 		applicationIntent="readwrite"
 	/>
 
-	<!-- serverTimezone is set for docker instances -->
+
 	<Resource
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		URL="jdbc:mysql://host.docker.internal:3307/testiaf"
+		url="jdbc:mysql://host.docker.internal:3307/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		sslMode="DISABLED"
-		serverTimezone="Europe/Amsterdam"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
 		socketTimeout="5000"
@@ -75,16 +73,15 @@
 
  	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
 
-	<!-- Use MySQL driver for MariaDB for proper XA support. --> <!-- serverTimezone is set for docker instances -->
+	<!-- Use MySQL driver for MariaDB for proper XA support. -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		URL="jdbc:mysql://host.docker.internal:3306/testiaf"
+		url="jdbc:mysql://host.docker.internal:3306/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 		sslMode="DISABLED"
-		serverTimezone="Europe/Amsterdam"
 		allowPublicKeyRetrieval="true"
 		pinGlobalTxToPhysicalConnection="true"
 		socketTimeout="5000"
@@ -106,7 +103,7 @@
 		name="jdbc/ibis4test-postgres-xa" 
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.postgresql.xa.PGXADataSource" 
-		URL="jdbc:postgresql://host.docker.internal:5432/testiaf"
+		url="jdbc:postgresql://host.docker.internal:5432/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
@@ -131,54 +128,38 @@
 		singleton="true"
 	/>
 
-
-	<!-- Tibco crendentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
-		delegate_name="SLXHP_Queue_ConnectionFactory"
-		delegate_jndiProperties="TibcoJndi.properties"
-		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
-		
-		userName="IBIS_AWS_POC_USER"
-		userPassword="xxxxxxxxx"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.tibco.tibjms.TibjmsXAQueueConnectionFactory"
+		serverUrl="${qcf_tibco_esb_ff.serverUrl}"
+		userName="${qcf_tibco_esb_ff.userName}"
+		userPassword="${qcf_tibco_esb_ff.userPassword}"
+		SSLVendor="j2se"
 		SSLEnableVerifyHost="false"
+		SSLEnableVerifyHostName="false"
+		SSLTrace="false"
+		SSLDebugTrace="false"
 	/>
 	<Resource
 		name="jms/qcf_tibco_esb_rr"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
-		delegate_name="SLNHN_Queue_ConnectionFactory"
-		delegate_jndiProperties="TibcoJndi.properties"
-		delegate_providerURL="tibjmsnaming://DEVESBSMALLDC1:37243,tibjmsnaming://DEVESBSMALLDC2:37243"
-		
-		userName="IBIS_AWS_POC_USER"
-		userPassword="xxxxxxxxx"
+		factory="org.apache.naming.factory.BeanFactory"
+		type="com.tibco.tibjms.TibjmsQueueConnectionFactory"
+		serverUrl="${qcf_tibco_esb_rr.serverUrl}"
+		userName="${qcf_tibco_esb_rr.userName}"
+		userPassword="${qcf_tibco_esb_rr.userPassword}"
+		SSLVendor="j2se"
 		SSLEnableVerifyHost="false"
+		SSLEnableVerifyHostName="false"
+		SSLTrace="false"
+		SSLDebugTrace="false"
 	/>
 
 	<Resource
-		name="jms/GetMessageRequest"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
-		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"
-		delegate_jndiProperties="TibcoJndi.properties"
-		delegate_providerURL="tibjmsnaming://DEVESBSMALLDC1:37243,tibjmsnaming://DEVESBSMALLDC2:37243"
-	/>
-
-	<Resource
-		name="jms/UpdateMessageAction"
-		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
-		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"
-		delegate_jndiProperties="TibcoJndi.properties"
-		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
-	/>
-
-	<Resource name="jms/qcf-activemq"
+		name="jms/qcf-activemq"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.apache.activemq.ActiveMQXAConnectionFactory"
-		brokerURL="tcp://host.docker.internal:61616"
-	/>	
+		brokerURL="vm://localhost"
+	/>
+	
 </Context>

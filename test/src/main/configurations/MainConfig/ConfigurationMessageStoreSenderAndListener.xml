@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<Adapter name="writeIbisstore">
 		<Receiver name="writeIbisstoreReceiver">
 			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"  />
@@ -39,4 +39,4 @@
 		</Pipeline>
 	</Adapter>
 	
-</module>
+</ibis>

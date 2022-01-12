@@ -169,5 +169,4 @@ public interface IDbmsSupport {
 
 	String getBooleanFieldType();
 	String getBooleanValue(boolean value);
-	String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows);
 }

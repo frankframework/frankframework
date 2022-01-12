@@ -23,21 +23,21 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class JarBytesClassLoader extends BytesClassLoader {
 
-	protected JarBytesClassLoader(ClassLoader classLoader) {
+	public JarBytesClassLoader(ClassLoader classLoader) {
 		super(classLoader);
 	}
 
-	protected final Map<String, byte[]> readResources(byte[] jar) throws ClassLoaderException {
+	protected final Map<String, byte[]> readResources(byte[] jar) throws ConfigurationException {
 		return readResources(new ByteArrayInputStream(jar));
 	}
 
-	protected final Map<String, byte[]> readResources(InputStream stream) throws ClassLoaderException {
+	protected final Map<String, byte[]> readResources(InputStream stream) throws ConfigurationException {
 		try (JarInputStream jarInputStream = new JarInputStream(stream)) {
 			Map<String, byte[]> resources = new HashMap<String, byte[]>();
 			JarEntry jarEntry;
@@ -63,7 +63,7 @@ public abstract class JarBytesClassLoader extends BytesClassLoader {
 			}
 			return resources;
 		} catch (IOException e) {
-			throw new ClassLoaderException("Could not read resources from jar input stream for configuration '" + getConfigurationName() + "'", e);
+			throw new ConfigurationException("Could not read resources from jar input stream for configuration '" + getConfigurationName() + "'", e);
 		}
 	}
 }

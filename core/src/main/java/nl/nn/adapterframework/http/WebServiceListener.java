@@ -43,13 +43,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
- * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
- * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListener-s. You can
- * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
- * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
- * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
- * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.  
+ * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * to receive messages as a web-service.
  * 
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -208,7 +203,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "true"})
+	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "<code>true</code>"})
 	public void setSoap(boolean b) {
 		soap = b;
 	}

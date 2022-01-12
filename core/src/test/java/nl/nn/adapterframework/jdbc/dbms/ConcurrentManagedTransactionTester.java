@@ -1,18 +1,18 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.ResourceTransactionManager;
 
 import nl.nn.adapterframework.core.IbisTransaction;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 public abstract class ConcurrentManagedTransactionTester extends ConcurrentActionTester {
 	
-	private PlatformTransactionManager txManager;
+	private ResourceTransactionManager txManager;
 	private IbisTransaction mainItx;
 
-	public ConcurrentManagedTransactionTester(PlatformTransactionManager txManager) {
+	public ConcurrentManagedTransactionTester(ResourceTransactionManager txManager) {
 		super();
 		this.txManager=txManager;
 	}

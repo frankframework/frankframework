@@ -156,7 +156,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 
 				if (forwardTarget instanceof PipeLineExit) {
 					PipeLineExit plExit= (PipeLineExit)forwardTarget;
-					if(!plExit.isEmptyResult()) {
+					if(!plExit.getEmptyResult()) {
 						boolean outputWrapError = false;
 						IPipe outputWrapper = pipeLine.getOutputWrapper();
 						if (outputWrapper !=null) {
@@ -211,7 +211,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (message.asObject()!=null && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+						if (message.asObject()!=null && !plExit.getEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(Message.nullMessage());

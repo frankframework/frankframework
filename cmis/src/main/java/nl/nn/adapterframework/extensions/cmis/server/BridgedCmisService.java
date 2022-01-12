@@ -100,7 +100,7 @@ public class BridgedCmisService extends FilterCmisService {
 			return session.getBinding();
 		}
 		catch (CmisSessionException e) {
-			log.error("unable to create cmis session", e);
+			log.error(e);
 			throw new CmisConnectionException(e.getMessage());
 		}
 	}

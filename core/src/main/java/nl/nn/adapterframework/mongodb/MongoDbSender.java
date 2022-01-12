@@ -57,7 +57,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -73,19 +73,9 @@ import nl.nn.adapterframework.stream.document.IDocumentBuilder;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
-/**
- * Sender to perform action on a MongoDB database.
- * 
- * @ff.parameter database Database to connect to. Overrides attribute <code>database</code>
- * @ff.parameter collection Collection to act upon. Overrides attribute <code>collection</code>
- * @ff.parameter filter Filter. Can contain references to parameters between '?{' and '}'. Overrides attribute <code>filter</code>
- * @ff.parameter limit Limit to number of results returned. A value of 0 means 'no limit'. Overrides attribute <code>limit</code>
- * 
- * @author Gerrit van Brakel
- *
- */
 public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
 
 	public final String PARAM_DATABASE="database";
@@ -100,11 +90,11 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	private @Getter String datasourceName;
 	private @Getter String database;
 	private @Getter String collection;
-	private @Getter MongoAction action;
+	private MongoAction action;
 	private @Getter String filter;
 	private @Getter int limit=0;
 	private @Getter boolean countOnly=false;
-	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
+	private DocumentFormat outputFormat=DocumentFormat.JSON;
 
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
@@ -134,10 +124,10 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
 		checkStringAttributeOrParameter("collection", getCollection(), PARAM_COLLECTION);
-		if (getAction()==null) {
+		if (getActionEnum()==null) {
 			throw new ConfigurationException("attribute action not specified");
 		}
-		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getAction()!=MongoAction.FINDMANY) {
+		if ((getLimit()>0 || (getParameterList()!=null && getParameterList().findParameter(PARAM_LIMIT)!=null)) && getActionEnum()!=MongoAction.FINDMANY) {
 			throw new ConfigurationException("attribute limit or parameter "+PARAM_LIMIT+" can only be used for action "+MongoAction.FINDMANY);
 		}
 	}
@@ -172,9 +162,9 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		message.closeOnCloseOf(session, this);
-		MongoAction mngaction = getAction();
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		message.closeOnCloseOf(session);
+		MongoAction mngaction = getActionEnum();
 		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, next) : new MessageOutputStreamCap(this, next)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
@@ -205,17 +195,17 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				renderResult(mongoCollection.deleteMany(getFilter(pvl, message)), target);
 				break;
 			default:
-				throw new SenderException("Unknown action ["+getAction()+"]");
+				throw new SenderException("Unknown action ["+getActionEnum()+"]");
 			}
 			return target.getPipeRunResult();
 		} catch (Exception e) {
-			throw new SenderException("Cannot execute action ["+getAction()+"]", e);
+			throw new SenderException("Cannot execute action ["+getActionEnum()+"]", e);
 		}
 	}
 
 	
 	protected void renderResult(InsertOneResult insertOneResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertOneResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertOneResult", target)) {
 			builder.add("acknowledged", insertOneResult.wasAcknowledged());
 			if (insertOneResult.wasAcknowledged()) {
 				builder.add("insertedId", renderField(insertOneResult.getInsertedId()));
@@ -224,7 +214,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 	protected void renderResult(InsertManyResult insertManyResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "insertManyResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "insertManyResult", target)) {
 			builder.add("acknowledged", insertManyResult.wasAcknowledged());
 			if (insertManyResult.wasAcknowledged()) {
 				try (ObjectBuilder objectBuilder = builder.addObjectField("insertedIds")) {
@@ -243,7 +233,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(Document findResult, MessageOutputStream target) throws StreamingException {
-		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormat(), "FindOneResult", target)) {
+		try (IDocumentBuilder builder = DocumentBuilderFactory.startDocument(getOutputFormatEnum(), "FindOneResult", target)) {
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			Encoder<Document> encoder = new DocumentCodec();
 			JsonDocumentWriter jsonWriter = new JsonDocumentWriter(builder, writerSettings);
@@ -265,7 +255,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 				}
 				return;
 			} 
-			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormat(), "FindManyResult", "item", target)) {
+			try (ArrayBuilder builder = DocumentBuilderFactory.startArrayDocument(getOutputFormatEnum(), "FindManyResult", "item", target)) {
 				JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 				Encoder<Document> encoder = new DocumentCodec();
 				for (Document doc : findResults) {
@@ -281,7 +271,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(UpdateResult updateResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "updateResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "updateResult", target)) {
 			builder.add("acknowledged", updateResult.wasAcknowledged());
 			if (updateResult.wasAcknowledged()) {
 				builder.add("matchedCount", updateResult.getMatchedCount());
@@ -292,7 +282,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 	
 	protected void renderResult(DeleteResult deleteResult, MessageOutputStream target) throws SAXException, StreamingException {
-		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormat(), "deleteResult", target)) {
+		try (ObjectBuilder builder = DocumentBuilderFactory.startObjectDocument(getOutputFormatEnum(), "deleteResult", target)) {
 			builder.add("acknowledged", deleteResult.wasAcknowledged());
 			if (deleteResult.wasAcknowledged()) {
 				builder.add("deleteCount", deleteResult.getDeletedCount());
@@ -394,8 +384,11 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 	@IbisDoc({"10", "Action", ""})
-	public void setAction(MongoAction action) {
-		this.action = action;
+	public void setAction(String action) {
+		this.action = EnumUtils.parse(MongoAction.class, "action", action);
+	}
+	public MongoAction getActionEnum() {
+		return action;
 	}
 	
 	@IbisDoc({"11", "Filter. Can contain references to parameters between '"+NAMED_PARAM_START+"' and '"+NAMED_PARAM_END+"'. Can be overridden by parameter '"+PARAM_FILTER+"'", ""})
@@ -414,8 +407,11 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 	@IbisDoc({"14", "OutputFormat", "JSON"})
-	public void setOutputFormat(DocumentFormat outputFormat) {
-		this.outputFormat = outputFormat;
+	public void setOutputFormat(String outputFormat) {
+		this.outputFormat = EnumUtils.parse(DocumentFormat.class, "outputFormat", outputFormat);
+	}
+	public DocumentFormat getOutputFormatEnum() {
+		return outputFormat;
 	}
 
 }

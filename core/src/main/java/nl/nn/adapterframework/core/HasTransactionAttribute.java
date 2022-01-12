@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,10 +50,23 @@ public interface HasTransactionAttribute {
 			+ "    <tr><td colspan=\"1\" rowspan=\"2\">Never</td>       <td>none</td><td>none</td></tr>"
 			+ "											      <tr><td>T1</td>  <td>error</td></tr>"
 			+ "  </table>", "Supports"})
-	public void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
-	public TransactionAttribute getTransactionAttribute();
+	public void setTransactionAttribute(String attribute) throws ConfigurationException;
+	public String getTransactionAttribute();
 
-	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"}) //TODO use Integer and set to NULL by default
+	@IbisDoc({"2", "Like <code>transactionAttribute</code>, but the chosen "
+			+ "option is represented with a number. The numbers mean:"
+			+ "<table>"
+			+ "<tr><td>0</td><td>Required</td></tr>"
+			+ "<tr><td>1</td><td>Supports</td></tr>"
+			+ "<tr><td>2</td><td>Mandatory</td></tr>"
+			+ "<tr><td>3</td><td>RequiresNew</td></tr>"
+			+ "<tr><td>4</td><td>NotSupported</td></tr>"
+			+ "<tr><td>5</td><td>Never</td></tr>"
+			+ "</table>", "1"})
+	public void setTransactionAttributeNum(int i);
+	public int getTransactionAttributeNum();
+
+	@IbisDoc({"3", "Timeout (in seconds) of transaction started to process a message.", "<code>0</code> (use system default)"})
 	public void setTransactionTimeout(int i);
 	public int getTransactionTimeout();
 

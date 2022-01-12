@@ -134,7 +134,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		}
 		ldapSender.setPrincipal(principal);
 		ldapSender.setCredentials(credentials);
-		ldapSender.setOperation(Operation.READ);
+		ldapSender.setOperation(Operation.OPERATION_READ.getLabel());
 		try {
 			log.debug("Looking up context for principal ["+principal+"]");
 			ldapSender.configure();

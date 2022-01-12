@@ -20,12 +20,10 @@ import java.util.Map;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.support.DefaultLifecycleProcessor;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		for (Map.Entry<String, ? extends Lifecycle> entry : lifecycleBeans.entrySet()) {
 			Lifecycle bean = entry.getValue();

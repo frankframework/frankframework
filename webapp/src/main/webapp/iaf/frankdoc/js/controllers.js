@@ -10,47 +10,6 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		window.open(getURI() + "frankdoc.xsd", 'Frank!Doc XSD');
 	}
 
-	$scope.showInheritance = true;
-	$scope.showHideInheritance = function() {
-		$scope.showInheritance = !$scope.showInheritance;
-
-		if($scope.element) {
-			if($scope.showInheritance) {
-				$scope.element = $scope.flattenElements($scope.element); // Merge inherited elements
-			} else {
-				$scope.element = $scope.elements[$scope.element.fullName]; // Update the element to it's original state
-			}
-		}
-	}
-	$scope.flattenElements = function(element) {
-		if(element.parent) {
-			let el = angular.copy(element);
-			let parent = $scope.elements[element.parent];
-
-			//Add separator where attributes inherit from
-			if(parent.attributes && parent.attributes.length > 0) {
-				if(!el.attributes) { el.attributes = []; } //Make sure an array exists
-				el.attributes.push({from: parent.name});
-			}
-
-			el.attributes = copyOf(el.attributes, parent.attributes, 'name');
-			el.children = copyOf(el.children, parent.children, 'roleName');
-			el.forwards = copyOf(el.forwards, parent.forwards, 'name');
-
-			if(!el.parametersDescription && parent.parametersDescription) {
-				el.parametersDescription = parent.parametersDescription;
-			}
-			if(parent.parent) {
-				el.parent = parent.parent;
-			} else {
-				el.parent = null;
-			}
-			return $scope.flattenElements(el);
-		}
-
-		return element;
-	}
-
 	$scope.groups = {};
 	$scope.types = {};
 	$scope.elements = {};
@@ -98,16 +57,15 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		$scope.element = element;
 
 		if(element != null) {
-			$scope.javaDocURL = javaDocUrlOf(element);
+			$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html';
 		}
 	});
-}])
-.controller('parent-element', ['$scope', function($scope) {
+}]).controller('parent-element', ['$scope', function($scope) {
 	if(!$scope.element || !$scope.element.parent) return;
 
 	var parent = $scope.element.parent;
 	$scope.element = $scope.elements[parent]; //Update element to the parent's element
-	$scope.javaDocURL = javaDocUrlOf($scope.element);
+	$scope.javaDocURL = 'https://javadoc.ibissource.org/latest/' + $scope.element.fullName.replaceAll(".", "/") + '.html';
 }]).controller('element-children', ['$scope', function($scope) {
 	$scope.getTitle = function(child) {
 		let title = '';
@@ -121,7 +79,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 				} else {
 					title = title + ", " + childElements[i];
 				}
-			}
+			}			
 		} else{
 			title = 'No child elements, only text';
 		}
@@ -134,48 +92,4 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
 		return simpleNames;
 	}
-}]).controller('attribute-description', ['$scope', function($scope) {
-	let enumFields = $scope.enums[$scope.attr.enum];
-	$scope.descriptiveEnum = false; //has at least 1 enum field with a description
-	for(let i in enumFields) {
-		let field = enumFields[i];
-		if(field.description != undefined) {
-			$scope.descriptiveEnum = true;
-			break;
-		}
-	}
 }]);
-
-function javaDocUrlOf(element) {
-	if(element.fullName && element.fullName.includes(".")) {
-		return 'https://javadoc.ibissource.org/latest/' + element.fullName.replaceAll(".", "/") + '.html'	
-	} else {
-		// We only have a JavaDoc URL if we have an element with a Java class. The
-		// exception we handle here is <Module>.
-		return null;
-	}
-}
-function copyOf(attr1, attr2, fieldName) {
-	if(attr1 && !attr2) {
-		return attr1;
-	} else if(attr2 && !attr1) {
-		return attr2;
-	} else if(!attr1 && !attr2) {
-		return null;
-	} else {
-		let newAttr = [];
-		let seen = [];
-		for(i in attr1) {
-			let at = attr1[i];
-			seen.push(at[fieldName])
-			newAttr.push(at);
-		}
-		for(i in attr2) {
-			let at = attr2[i];
-			if(seen.indexOf(at[fieldName]) === -1) {
-				newAttr.push(at);
-			}
-		}
-		return newAttr;
-	}
-}

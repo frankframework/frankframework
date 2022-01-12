@@ -34,8 +34,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Custom implementation that replaces the old digester-rules.xml file.
  * Where previously you had to specify a 'create', 'set-properties' and a 'set-next-rule'
  * In this implementation you only have to call 'createRule(rulesBinder, PATTERN, NEXT-RULE')
- * 
- * @author Niels Meijer
+ *
  */
 public class FrankDigesterRules implements RulesModule, ApplicationContextAware {
 	public static final String DIGESTER_RULES_FILE = "digester-rules.xml";

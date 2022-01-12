@@ -39,7 +39,7 @@
 
 			<pipe name="switchCleanFilesystem" 
 				className="nl.nn.adapterframework.pipes.XmlSwitch"
-				forwardNameSessionKey="cleanFilesystem" 
+				sessionKey="cleanFilesystem" 
 				notFoundForwardName="uploadFiles">
 				<forward name="on" path="deleteFilesystem" />
 			</pipe>

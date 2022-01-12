@@ -32,8 +32,15 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbUtils;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -182,9 +189,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 						if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
 							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
 							return;
-						} 
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
+						}
 					}
 
 					receiver.stopRunning();
@@ -204,9 +212,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 						if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
 							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
 							return;
+						} else {
+							adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
+							return;
 						}
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
 					}
 
 					receiver.startRunning();
@@ -237,7 +246,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
 					if (receiver.isThreadCountControllable()) {
 						receiver.increaseThreadCount();
 					}
@@ -250,7 +259,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			for (Configuration configuration : configurations) {
 				if (configuration.getRegisteredAdapter(adapterName) != null) {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
 					if (receiver.isThreadCountControllable()) {
 						receiver.decreaseThreadCount();
 					}
@@ -259,6 +268,50 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 			}
 			break;
 
+		case SENDMESSAGE:
+			try {
+				// send job
+				IbisLocalSender localSender = new IbisLocalSender();
+				localSender.setJavaListener(receiverName);
+				localSender.setIsolated(false);
+				localSender.setName("AdapterJob");
+				localSender.configure();
+				localSender.open();
+				try {
+					localSender.sendMessage(new Message(""), null);
+				} finally {
+					localSender.close();
+				}
+			} catch(Exception e) {
+				log.error("Error while sending message (as part of scheduled job execution)", e);
+			}
+			break;
+
+		case MOVEMESSAGE:
+			for (Configuration configuration : configurations) {
+				if (configuration.getRegisteredAdapter(adapterName) != null) {
+					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
+					Receiver receiver = adapter.getReceiverByName(receiverName);
+					ITransactionalStorage errorStorage = receiver.getErrorStorage();
+					if (errorStorage == null) {
+						log.error("action [" + action + "] is only allowed for receivers with an ErrorStorage");
+					} else {
+						if (errorStorage instanceof JdbcTransactionalStorage) {
+							JdbcTransactionalStorage jdbcErrorStorage = (JdbcTransactionalStorage) receiver.getErrorStorage();
+							IListener listener = receiver.getListener();
+							if (listener instanceof EsbJmsListener) {
+								EsbJmsListener esbJmsListener = (EsbJmsListener) listener;
+								EsbUtils.receiveMessageAndMoveToErrorStorage(esbJmsListener, jdbcErrorStorage);
+							} else {
+								log.error("action [" + action + "] is currently only allowed for EsbJmsListener, not for type [" + listener.getClass().getName() + "]");
+							}
+						} else {
+							log.error("action [" + action + "] is currently only allowed for JdbcTransactionalStorage, not for type [" + errorStorage.getClass().getName() + "]");
+						}
+					}
+				}
+			}
+			break;
 
 		default:
 			throw new NotImplementedException("action ["+action.name()+"] not implemented");

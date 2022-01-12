@@ -38,7 +38,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.XmlSwitch" name="SwitchIfsaServiceName" getInputFromSessionKey="ifsaServiceName" notFoundForwardName="UnknownIfsaServiceName">
+			<pipe className="nl.nn.adapterframework.pipes.XmlSwitch" name="SwitchIfsaServiceName" sessionKey="ifsaServiceName" notFoundForwardName="UnknownIfsaServiceName">
 				<forward name="GETPARTIESONAGREEMENT" path="fixedSelect" />
 			</pipe>
 			<pipe name="fixedSelect" className="nl.nn.adapterframework.pipes.SenderPipe">

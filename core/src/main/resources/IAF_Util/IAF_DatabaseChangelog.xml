@@ -51,14 +51,6 @@ TagDatabase
 		</createIndex>
 	</changeSet>
 
-	<changeSet id="IAF_Util:1b" author="Gerrit van Brakel">
-		<comment>Additional index to support duplicate checks</comment>
-		<createIndex tableName="IBISSTORE" indexName="IX_IBISSTORE_03">
-			<column name="SLOTID"/>
-			<column name="MESSAGEID"/>
-		</createIndex>
-	</changeSet>
-
 	<changeSet id="IAF_Util:2" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<validCheckSum>7:f2e6c27a19d68a25b1944853432979c4</validCheckSum>
 		<comment>Set sequence for IBISSTORE Table</comment>

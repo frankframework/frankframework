@@ -1,24 +1,17 @@
 <div>
 	<h1 class="element__name">{{element.name}} <span class="label label-warning" ng-if="element.deprecated">Deprecated</span></h1>
 	<h4 class="element__fullname">
-		<a ng-if="javaDocURL" href="{{javaDocURL}}" target="_blank" rel="noreferrer">
+		<a href="{{javaDocURL}}" target="_blank" rel="noreferrer">
 			{{element.fullName}}
 		</a>
 	</h4>
-	<p class="element__tags">Elements: <span ng-repeat="tag in element.elementNames"><a href="https://github.com/ibissource/iaf/wiki/{{tag}}" target="_blank" rel="noreferrer"><code>{{tag}}</code></a><span ng-if="!$last">, </span></span></p>
-
-	<div ng-if="::element.description" class="block">
-		<h4>JavaDoc</h4>
-		<p ng-bind-html="::element.description | javadoc:this" />
-	</div>
-
+	Elements: <span ng-repeat="tag in element.elementNames"><code>{{tag}}</code><span ng-if="!$last">, </span></span>
+	<br />
+	<p ng-bind-html="::element.descriptionHeader | javadoc:this"></p>
+	<br />
 	<div ng-if="element.children" element-children></div>
-
-	<div ng-if="element.parameters || element.parametersDescription" parameters></div>
-
-	<div ng-if="element.forwards" element-forwards></div>
-
-	<div ng-if="element.attributes || element.nonInheritedAttributes" element-attributes></div>
+	<br />
+	<div ng-if="element.attributes" element-attributes></div>
 
 	<parent-element ng-if="element.parent" parent="element.parent"></parent-element>
 </div>

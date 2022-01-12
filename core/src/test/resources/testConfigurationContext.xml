@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 	Beans defined in this file are unique for every configuration. If you want 
-	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
+	to reuse a bean over multiple configurations, add it to the SpringCommon.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -37,8 +37,4 @@
 
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
-	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
-	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
-
-	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" />
 </beans>

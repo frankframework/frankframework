@@ -1,1 +1,34 @@
-<result>cannot obtain credentials from authentication alias [dummy]: alias not found</result>
+<throwable>
+  <class>nl.nn.adapterframework.core.SenderException</class>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-authentication]: (RequestProcessorException) RequestProcessor [ibis4test-authentication] caught exception: Uncaught runtime exception running pipe &#39;dummy&#39;: (NoSuchElementException) cannot obtain credentials from authentication alias [dummy]: (LoginException) No LoginModules configured for DefaultPrincipalMapping</message>
+  <cause>
+    <throwable>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <message>RequestProcessor [ibis4test-authentication] caught exception</message>
+      <cause>
+        <throwable>
+          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <message>Uncaught runtime exception running pipe &#39;dummy&#39;: (NoSuchElementException) cannot obtain credentials from authentication alias [dummy]: (LoginException) No LoginModules configured for DefaultPrincipalMapping</message>
+          <cause>
+            <throwable>
+              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <message>Uncaught runtime exception running pipe &#39;dummy&#39;: (NoSuchElementException) cannot obtain credentials from authentication alias [dummy]: (LoginException) No LoginModules configured for DefaultPrincipalMapping</message>
+              <cause>
+                <throwable>
+                  <class>java.util.NoSuchElementException</class>
+                  <message>cannot obtain credentials from authentication alias [dummy]</message>
+                  <cause>
+                    <throwable>
+                      <class>javax.security.auth.login.LoginException</class>
+                      <message>No LoginModules configured for DefaultPrincipalMapping</message>
+                    </throwable>
+                  </cause>
+                </throwable>
+              </cause>
+            </throwable>
+          </cause>
+        </throwable>
+      </cause>
+    </throwable>
+  </cause>
+</throwable>

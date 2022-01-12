@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="JdbcSenders" description="Test the functioning of the FixedQuerySender and DirectQuerySender">
 		<receiver>
 			<listener name="JdbcQuerySenderTest"
@@ -49,4 +49,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

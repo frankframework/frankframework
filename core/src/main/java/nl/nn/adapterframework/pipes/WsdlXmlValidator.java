@@ -247,7 +247,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	@Override
 	public Set<XSD> getXsds() throws ConfigurationException {
 		Set<XSD> xsds = new HashSet<XSD>();
-		SoapVersion soapVersion = getSoapVersion();
+		SoapVersion soapVersion = getSoapVersionEnum();
 		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
 			XSD xsd = new XSD();
 			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);

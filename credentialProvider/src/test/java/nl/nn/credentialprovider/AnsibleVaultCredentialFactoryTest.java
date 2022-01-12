@@ -1,7 +1,6 @@
 package nl.nn.credentialprovider;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -42,7 +40,6 @@ public class AnsibleVaultCredentialFactoryTest {
 		System.setProperty("credentialFactory.ansibleVault.keyFile", keyFile);
 		
 		credentialFactory = new AnsibleVaultCredentialFactory();
-		credentialFactory.initialize();
 	}
 	
 	public void setupVault(Properties aliases, String title) throws IOException {
@@ -152,33 +149,6 @@ public class AnsibleVaultCredentialFactoryTest {
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
-
-	@Test
-	public void testUnknownAliasNoDefaults() {
-		
-		String alias = "fakeAlias";
-		String username = null;
-		String password = null;
-
-		assertThrows(NoSuchElementException.class, () -> {
-			ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-			assertEquals(username, mc.getUsername());
-			assertEquals(password, mc.getPassword());
-		});
-	}
-
-	@Test
-	public void testUnknownAlias() {
-		
-		String alias = "fakeAlias";
-		String username = "fakeUsername";
-		String password = "fakePassword";
-
-		ICredentials mc = credentialFactory.getCredentials(alias, username, password);
-		assertEquals(username, mc.getUsername());
-		assertEquals(password, mc.getPassword());
-	}
-
 
 	@Test
 	public void testPlainCredential() {

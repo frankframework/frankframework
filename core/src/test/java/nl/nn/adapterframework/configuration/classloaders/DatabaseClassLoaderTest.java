@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -31,24 +28,20 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
 
-import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ClassLoaderManager;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
-import nl.nn.adapterframework.testutil.TestAppender;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.testutil.TestAppender;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
-	private static final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
-	private static final String ERROR_SUFFIX = "]";
+	private final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
+	private final String ERROR_SUFFIX = "]";
 
 	@Override
 	public DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
@@ -92,24 +85,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
-
-		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
-		Answer answer = new Answer() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				String message = invocation.getArgument(0);
-				MessageKeeperLevel level = invocation.getArgument(1);
-				Exception exception = invocation.getArgument(2);
-				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
-				return null;
-			}
-		};
-		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a 
-		//new ApplicationContext if non exists. This functionality should be removed sometime in the future.
-		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The 
-		//creation of the ApplicationContext during the test phase causes IllegalStateExceptions
-		//In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
-		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
@@ -138,7 +113,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try {
 			config = manager.get(getConfigurationName());
 		}
-		catch (ClassLoaderException e) {
+		catch (ConfigurationException e) {
 			String msg = e.getMessage();
 			assertTrue(msg.startsWith("Could not get config"));
 			assertTrue(msg.endsWith("from database"));
@@ -209,9 +184,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		List<LogEvent> log = appender.getLogEvents();
 		LogEvent firstLogEntry = log.get(log.size()-1);
-		assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
+		assertEquals(IbisContext.class.getCanonicalName(), firstLogEntry.getLoggerName());
 		assertEquals(Level.INFO, firstLogEntry.getLevel());
-
 		String msg = firstLogEntry.getMessage().getFormattedMessage();
 		assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
 		assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));

@@ -50,7 +50,6 @@ import nl.nn.adapterframework.monitoring.AdapterFilter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.ITrigger;
-import nl.nn.adapterframework.monitoring.ITrigger.TriggerType;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -151,7 +150,7 @@ public final class ShowMonitors extends Base {
 		}
 		monitorMap.put("triggers", triggers);
 
-		List<String> destinations = new ArrayList<>();
+		List<String> destinations = new ArrayList<String>();
 		Set<String> d = monitor.getDestinationSet();
 		for(Iterator<String> it = d.iterator(); it.hasNext();) {
 			destinations.add(it.next());
@@ -164,7 +163,7 @@ public final class ShowMonitors extends Base {
 	private Map<String, Object> mapTrigger(ITrigger trigger) {
 		Map<String, Object> triggerMap = new HashMap<String, Object>();
 
-		triggerMap.put("type", trigger.getTriggerType().name());
+		triggerMap.put("type", trigger.getType());
 		triggerMap.put("events", trigger.getEventCodes());
 		triggerMap.put("severity", trigger.getSeverity());
 		triggerMap.put("threshold", trigger.getThreshold());
@@ -405,7 +404,7 @@ public final class ShowMonitors extends Base {
 	@SuppressWarnings("unchecked")
 	private void handleTrigger(ITrigger trigger, Map<String, Object> json) {
 		List<String> eventList = null;
-		TriggerType type = null;
+		String type = null;
 		SeverityEnum severity = null;
 		int threshold = 0;
 		int period = 0;
@@ -418,7 +417,7 @@ public final class ShowMonitors extends Base {
 			if(key.equalsIgnoreCase("events") && entry.getValue() instanceof List<?>) {
 				eventList = (List<String>) entry.getValue();
 			} else if(key.equalsIgnoreCase("type")) {
-				type = EnumUtils.parse(TriggerType.class, entry.getValue().toString());
+				type = entry.getValue().toString();
 			} else if(key.equalsIgnoreCase("severity")) {
 				severity = EnumUtils.parse(SeverityEnum.class, entry.getValue().toString());
 			} else if(key.equalsIgnoreCase("threshold")) {
@@ -442,7 +441,7 @@ public final class ShowMonitors extends Base {
 
 		// If no parse errors have occured we can continue!
 		trigger.setEventCodes(eventList.toArray(new String[eventList.size()]));
-		trigger.setTriggerType(type);
+		trigger.setType(type);
 		trigger.setSeverityEnum(severity);
 		trigger.setThreshold(threshold);
 		trigger.setPeriod(period);

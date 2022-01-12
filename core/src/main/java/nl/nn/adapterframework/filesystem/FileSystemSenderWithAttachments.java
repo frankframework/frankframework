@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -37,10 +36,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * FileSystem Sender extension to handle Attachments.
+ * 
+ * 
+ * <p><b>Actions:</b></p>
+ * <br/>
  */
-public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
 
-	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
+public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F,A>> extends FileSystemSender<F,FS> {
+	
+	public final String[] ACTIONS_FS_WITH_ATTACHMENTS= {"listAttachments"};
 
 	private boolean attachmentsAsSessionKeys=false;
 
@@ -49,10 +53,10 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 		addActions(Arrays.asList(ACTIONS_FS_WITH_ATTACHMENTS));
 		super.configure();
 	}
-
+	
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		if (getAction()!=FileSystemAction.LISTATTACHMENTS) {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+		if (!getAction().equalsIgnoreCase("listAttachments")) {
 			return super.sendMessage(message, session, next);
 		} else {
 
@@ -92,7 +96,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 					}
 				}
 			} catch (Exception e) {
-				log.error("unable to list all attachments", e);
+				log.error(e);
 				throw new SenderException(e);
 			}
 			return new PipeRunResult(null, attachments.toString());

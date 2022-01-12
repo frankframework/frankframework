@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -76,14 +76,8 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 	 * @return className + name of the ISender
 	 */
 	protected String getLogPrefix() {
-		return ClassUtils.nameOf(this) + " ";
+		return ClassUtils.nameOf(this) +" ["+getName()+"] ";
 	}
-
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return false;
-	}
-
 
 	@IbisDoc({"name of the sender", ""})
 	@Override

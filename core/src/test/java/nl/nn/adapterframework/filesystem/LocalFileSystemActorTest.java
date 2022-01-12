@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -55,7 +54,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		actor.setAction(FileSystemAction.MOVE);
+		actor.setAction("move");
 		ParameterList params = new ParameterList();
 		Parameter p = new Parameter();
 		p.setName("destination");
@@ -94,7 +93,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
-		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.getRoot().getAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+"/folder] does not exist");
+		thrown.expectMessage("unable to process [move] action for File ["+folder.getRoot().getAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+"/folder] does not exist");
 		fileSystemActorMoveActionTestNoRoot("folder",false,false);
 	}
 	@Test

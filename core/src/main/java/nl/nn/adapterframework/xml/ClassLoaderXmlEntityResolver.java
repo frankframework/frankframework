@@ -76,8 +76,10 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 		} catch (TransformerException e) {
 			throw new XNIException(e);
 		}
-
-		return resource.asXMLInputSource();
+	
+		
+		InputStream inputStream = resource.getURL().openStream();
+		return new XMLInputSource(null, resource.getSystemId(), null, inputStream, null);
 	}
 
 }

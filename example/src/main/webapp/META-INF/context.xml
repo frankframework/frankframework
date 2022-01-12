@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
-	<!-- DB_CLOSE_ON_EXIT=FALSE keeps the in-memory H2 database active till the JVM terminates -->
 	<Resource
 		name="jdbc/ibis4example"
 		type="javax.sql.DataSource"

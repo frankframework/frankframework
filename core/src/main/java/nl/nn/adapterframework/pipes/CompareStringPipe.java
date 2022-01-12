@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,23 +21,23 @@ import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that compares lexicographically two strings.
- * 
- * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
- * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
- * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
+ * <table>
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link Parameter param}</td><td>the parameters <code>operand1</code> and <code>operand2</code> are compared. If one of these parameters doesn't exist the input message is taken.
+ * If parameter <code>ignorepatterns</code> exists it contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
  * <br/><code><pre>
  *	&lt;ignores&gt;
  *		&lt;ignore&gt;
@@ -49,22 +49,27 @@ import nl.nn.adapterframework.util.XmlUtils;
  *			&lt;before&gt;...&lt;/before&gt;
  *		&lt;/ignore&gt;
  *	&lt;/ignores&gt;
- * </pre></code><br/>Substrings between "after" and "before" are ignored
- *
- * @ff.forward lessthan operand1 &lt; operand2
- * @ff.forward greaterthan operand1 &gt; operand2
- * @ff.forward equals operand1 = operand2
- *
+ * </pre></code><br/>Substrings between "after" and "before" are ignored</td></tr>
+ * </table>
+ * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
+ * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
+ * <tr><td>equals</td><td>when v1 = v2</td></tr>
+ * </table>
+ * </p>
  * @author  Peter Leeuwenburgh
  */
 public class CompareStringPipe extends AbstractPipe {
 
-	private static final String LESSTHANFORWARD = "lessthan";
-	private static final String GREATERTHANFORWARD = "greaterthan";
-	private static final String EQUALSFORWARD = "equals";
-	private static final String OPERAND1 = "operand1";
-	private static final String OPERAND2 = "operand2";
-	private static final String IGNOREPATTERNS = "ignorepatterns";
+	private final static String LESSTHANFORWARD = "lessthan";
+	private final static String GREATERTHANFORWARD = "greaterthan";
+	private final static String EQUALSFORWARD = "equals";
+	private final static String OPERAND1 = "operand1";
+	private final static String OPERAND2 = "operand2";
+	private final static String IGNOREPATTERNS = "ignorepatterns";
 
 	private String sessionKey1 = null;
 	private String sessionKey2 = null;
@@ -220,19 +225,15 @@ public class CompareStringPipe extends AbstractPipe {
 	private String getParameterValue(ParameterValueList pvl, String parameterName) {
 		ParameterList parameterList = getParameterList();
 		if (pvl != null && parameterList != null) {
-			ParameterValue pv = pvl.findParameterValue(parameterName);
-			if(pv != null) {
-				return pv.asStringValue(null);
+			for (int i = 0; i < parameterList.size(); i++) {
+				Parameter parameter = parameterList.getParameter(i);
+				if (parameter.getName().equalsIgnoreCase(parameterName)) {
+					return pvl.getParameterValue(i).asStringValue(null);
+				}
 			}
 		}
 		return null;
 	}
-
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey1()) || sessionKey.equals(getSessionKey2());
-	}
-
 
 	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
 	@Deprecated

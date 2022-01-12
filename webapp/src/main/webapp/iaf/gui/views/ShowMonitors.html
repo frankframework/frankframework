@@ -102,8 +102,8 @@
 								</thead>
 								<tbody>
 									<tr ng-repeat="trigger in monitor.triggers">
-										<td ng-if="trigger.type == 'ALARM'"><i class="fa fa-warning m-r-xs"></i> Alarm</td>
-										<td ng-if="trigger.type == 'CLEARING'"><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
+										<td ng-if="trigger.type == 'Alarm'"><i class="fa fa-warning m-r-xs"></i> {{trigger.type}}</td>
+										<td ng-if="trigger.type == 'Clearing'"><i class="fa fa-eraser m-r-xs"></i> {{trigger.type}}</td>
 										<td><ul class="unstyled no-margins"><li ng-repeat="event in trigger.events">{{event}}</li></ul></td>
 										<td ng-if="trigger.filter!='none'"><ul class="unstyled no-margins"><li ng-repeat="(adapter,sources) in trigger.sources">{{adapter}}<ul ng-if="sources"><li ng-repeat="source in sources">{{source}}</li></ul></li></ul></td>
 										<td ng-if="trigger.filter=='none'">All</td>

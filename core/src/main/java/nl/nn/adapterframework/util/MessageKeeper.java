@@ -79,7 +79,8 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void info(INamedObject namedObject, String msg) {
-		info(ClassUtils.nameOf(namedObject) + ": " + msg);
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		info(prefix + msg);
 	}
 
 	public void warn(String msg) {
@@ -87,7 +88,8 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void warn(INamedObject namedObject, String msg) {
-		warn(ClassUtils.nameOf(namedObject) + ": " + msg);
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		warn(prefix + msg);
 	}
 
 	public void error(String msg) {
@@ -95,6 +97,7 @@ public class MessageKeeper extends SizeLimitedVector {
 	}
 
 	public void error(INamedObject namedObject, String msg) {
-		error(ClassUtils.nameOf(namedObject) + ": " + msg);
+		String prefix = ClassUtils.nameOf(namedObject) + " ["+namedObject.getName()+"] ";
+		error(prefix + msg);
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,15 @@ import nl.nn.adapterframework.stream.Message;
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * 
- * @ff.forward failure if a validation error occurred, probably caused by non-well-formed JSON
- * 
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td>"failure"</td><td>if a validation error occurred, probably caused by non-well-formed JSON</td></tr>
+ * </table>
+ * <br>
  * @author  Tom van der Heijden
  */
+
 public class JsonWellFormedChecker extends FixedForwardPipe {
 	
 	@Override

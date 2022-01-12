@@ -151,8 +151,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String content = new String(baos.toByteArray());
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
-		}
-		else if(entity != null) {
+		} else {
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
 				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
@@ -177,16 +176,13 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 
 		appendHeaders(request, response);
 
-		if(request.getEntity() != null) { //If an entity is present
-			Header contentTypeHeader = request.getEntity().getContentType();
-			if(contentTypeHeader != null) {
-				response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
-			}
-
-			response.append(lineSeparator);
-			response.append(EntityUtils.toString(request.getEntity()));
+		Header contentTypeHeader = request.getEntity().getContentType();
+		if(contentTypeHeader != null) {
+			response.append(contentTypeHeader.getName() + ": " + contentTypeHeader.getValue() + lineSeparator);
 		}
 
+		response.append(lineSeparator);
+		response.append(EntityUtils.toString(request.getEntity()));
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 

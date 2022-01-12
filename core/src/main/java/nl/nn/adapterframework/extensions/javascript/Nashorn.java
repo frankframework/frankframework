@@ -27,11 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class Nashorn implements JavascriptEngine<ScriptEngine> {
 

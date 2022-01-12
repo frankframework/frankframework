@@ -304,7 +304,7 @@ public class WsdlGenerator {
         }
         this.fileName = fileName;
         this.targetNamespace = WsdlGeneratorUtils.validUri(tns);
-        if (inputValidator instanceof SoapValidator && ((SoapValidator)inputValidator).getSoapVersion()==SoapVersion.SOAP12) {
+        if (inputValidator instanceof SoapValidator && ((SoapValidator)inputValidator).getSoapVersionEnum()==SoapVersion.SOAP12) {
             wsdlSoapNamespace = WSDL_SOAP12_NAMESPACE;
             wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
         }
@@ -847,7 +847,7 @@ public class WsdlGenerator {
                         w.writeEndElement();
                     }
                     w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
-                        w.writeAttribute("destination", listener.getDestinationType().name().toLowerCase());
+                        w.writeAttribute("destination", listener.getDestinationTypeEnum().name().toLowerCase());
                         String queueName = listener.getPhysicalDestinationShortName();
                         if (queueName == null) {
                             queueName = "queueName-for-"

@@ -42,8 +42,21 @@ import nl.nn.adapterframework.util.Misc;
  * This pipe takes all input and pushes it into javascript runtime.
  * The invoke method is called to initialize the runtime
  * Afterward the results are evaluated.
- * 
- * @ff.parameters Any parameters defined on the pipe will be concatenated into one string and added to the input
+ * <table border="1">
+ * <p>
+ * <b>Parameters:</b>
+ * <tr>
+ * <th>name</th>
+ * <th>type</th>
+ * <th>remarks</th>
+ * </tr>
+ * <tr>
+ * <td><i>any</i></td>
+ * <td><i>any</i></td>
+ * <td>Any parameters defined on the pipe will be Concatenated into one string and added to input</td>
+ * </tr>
+ * </table>
+ * </p>
  * 
  * @author Barry Jacobs
  * @deprecated Please use {@link JavascriptSender} instead
@@ -136,7 +149,8 @@ public class RhinoPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for(ParameterValue pv : pvl) {
+			for (int i=0; i<pvl.size(); i++) {
+				ParameterValue pv = pvl.getParameterValue(i);
 				paramsInput = pv.asStringValue("") + eol + paramsInput ;
 			}
 		}

@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="WsdlXmlValidator" description="Test the functioning of the WsdlXmlValidator">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -9,7 +9,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch"
-				forwardNameSessionKey="switch" />
+				sessionKey="switch" />
 			<!-- gpbdb -->
 			<pipe name="gpbdb" className="nl.nn.adapterframework.pipes.WsdlXmlValidator"
 				soapBody="GetPartyBasicDataBanking_Request" soapHeader="MessageHeader"
@@ -57,4 +57,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

@@ -85,7 +85,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
-		receiver.setOnError(Receiver.OnError.RECOVER);
+		receiver.setOnErrorEnum(Receiver.OnError.RECOVER);
 		// Recover will be triggered when connectionLost was called or listener 
 		// could not start in which case client is already disconnected.
 

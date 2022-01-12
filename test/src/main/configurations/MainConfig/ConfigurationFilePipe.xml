@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="FilePipe" description="Test the functioning of the FilePipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-FilePipe" />
@@ -174,4 +174,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

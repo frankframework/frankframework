@@ -77,19 +77,14 @@ public class ContentHandlerOutputStream extends PipedOutputStream implements Thr
 	
 	@Override
 	public void close() throws IOException {
+		super.close();
 		try {
-			super.close();
-		} finally {
-			try {
-				pipeReader.join();
-				if (getException()!=null) {
-					throw new IOException(getException());
-				}
-			} catch (InterruptedException e) {
-				log.warn("thread interrupted", e);
-			} finally {
-				threadConnector.close();
+			pipeReader.join();
+			if (getException()!=null) {
+				throw new IOException(getException());
 			}
+		} catch (InterruptedException e) {
+			log.warn(e);
 		}
 	}
 

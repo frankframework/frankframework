@@ -15,12 +15,9 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,15 +32,7 @@ public class StringResolver {
 
 	public static final String DELIM_START = "${";
 	public static final String DELIM_STOP = "}";
-	
-	public static final String CREDENTIAL_PREFIX="credential:";
-	public static final String USERNAME_PREFIX="username:"; // username and password prefixes must be of same length
-	public static final String PASSWORD_PREFIX="password:";
 
-	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
-			
-	private static Set<String> authAliasesAllowedToExpand=null;
-	
 	/**
 	 * Very similar to <code>System.getProperty</code> except that the
 	 * {@link SecurityException} is hidden.
@@ -124,26 +113,6 @@ public class StringResolver {
 			}
 			// first try in System properties
 			String replacement = getSystemProperty(key, null);
-
-			boolean mustHideCredential=false;
-			// then check if we search for a credential
-			if (replacement == null && key.startsWith(CREDENTIAL_PREFIX)) {
-				mustHideCredential=true;
-				key = key.substring(CREDENTIAL_PREFIX.length());
-				boolean username = key.startsWith(USERNAME_PREFIX);
-				boolean password = key.startsWith(PASSWORD_PREFIX);
-				if (username||password) {
-					key = key.substring(USERNAME_PREFIX.length()); // username and password prefixes must be of same length
-				}
-				if (username || mayExpandAuthAlias(key, props1)) {
-					String defaultValue = delimStart + key+ delimStop;
-					CredentialFactory cf = new CredentialFactory(key, defaultValue, defaultValue);
-					replacement = username ? cf.getUsername() : cf.getPassword();
-				} else {
-					replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
-				}
-			}
-			
 			// then try props parameter
 			if (replacement == null && props1 != null) {
 				if (props1 instanceof Properties) {
@@ -167,7 +136,7 @@ public class StringResolver {
 			}
 
 			if (replacement != null) {
-				if (propsToHide != null && (propsToHide.contains(key) || mustHideCredential)) {
+				if (propsToHide != null && propsToHide.contains(key)) {
 					replacement = Misc.hide(replacement);
 				}
 				// Do variable substitution on the replacement string
@@ -214,18 +183,5 @@ public class StringResolver {
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;
-	}
-	
-	private static boolean mayExpandAuthAlias(String aliasName, Map props1) {
-		if (authAliasesAllowedToExpand==null) {
-			Set<String> aliases = new HashSet<>();
-			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
-			if(StringResolver.needsResolution(property)) {
-				property = StringResolver.substVars(property, props1);
-			}
-			aliases.addAll(Arrays.asList(property.split(",")));
-			authAliasesAllowedToExpand = aliases;
-		}
-		return authAliasesAllowedToExpand.contains(aliasName);
 	}
 }

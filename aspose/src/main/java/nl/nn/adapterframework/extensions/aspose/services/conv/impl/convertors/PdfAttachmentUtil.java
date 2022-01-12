@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +36,6 @@ import com.aspose.pdf.SaveFormat;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -50,7 +50,7 @@ public class PdfAttachmentUtil {
 	private List<CisConversionResult> cisConversionResultList;
 
 	private File rootPdf;
-
+	
 	private Document pdfDocument;
 
 	public PdfAttachmentUtil(CisConversionResult cisConversionResultAttachment, File rootFile) {
@@ -63,8 +63,9 @@ public class PdfAttachmentUtil {
 		this.rootPdf = pdfResultFile;
 	}
 
-	protected void addAttachmentToPdf(Message fileToAttach, String filename, String extension) throws IOException {
-		try (InputStream attachmentDocumentStream = fileToAttach.asInputStream()) {
+	protected void addAttachmentToPdf(InputStream fileToAttach, String filename, String extension)
+			throws IOException {
+		try (BufferedInputStream attachmentDocumentStream = new BufferedInputStream(fileToAttach)) {
 			addFileToPdf(attachmentDocumentStream, filename, extension);
 		} finally {
 			finish();
@@ -84,10 +85,16 @@ public class PdfAttachmentUtil {
 	protected void addAttachmentInSinglePdf() throws IOException {
 		try {
 			for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
+
 				if (cisConversionResultAttachment.getPdfResultFile() != null) {
-					try (InputStream attachmentDocumentStream = new BufferedInputStream(new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
-						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
+
+					try (InputStream attachmentDocumentStream = new BufferedInputStream(
+							new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
+
+						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(),
+								ConvertorUtil.PDF_FILETYPE);
 					}
+
 				} else {
 					LOGGER.debug("Skipping file because it is not available.");
 				}
@@ -95,6 +102,7 @@ public class PdfAttachmentUtil {
 		}finally {
 			finish();
 		}
+		
 	}
 
 	private void finish() {
@@ -117,7 +125,8 @@ public class PdfAttachmentUtil {
 		LOGGER.debug("Adding attachment with document name \"" + documentName + "\" (original: \"" + fileName + "\")");
 
 		// Add an attachment to document's attachment collection
-		getPdfDocument(rootPdf.getAbsolutePath()).getEmbeddedFiles().add(new FileSpecification(attachmentDocumentStream, documentName));
+		getPdfDocument(rootPdf.getAbsolutePath()).getEmbeddedFiles()
+				.add(new FileSpecification(attachmentDocumentStream, documentName));
 	}
 
 	private String convertToValidFileName(String value) {
@@ -134,6 +143,7 @@ public class PdfAttachmentUtil {
 	private Document getPdfDocument(String filePath) {
 
 		if (pdfDocument == null) {
+
 			// Open the base pdf.
 			pdfDocument = new Document(filePath);
 
@@ -145,15 +155,15 @@ public class PdfAttachmentUtil {
 		return pdfDocument;
 	}
 
-	public static Message combineFiles(Message parent, Message attachment, String fileNameToAttach, String charset) throws IOException {
-		Document pdfDoc = new Document(parent.asInputStream(charset));
+	public static InputStream combineFiles(InputStream parent, InputStream attachment, String fileNameToAttach) {
+		Document pdfDoc = new Document(parent);
 		pdfDoc.setPageMode(PageMode.UseAttachments);
 
-		pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachment.asInputStream(charset), fileNameToAttach));
+		pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachment, fileNameToAttach));
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		pdfDoc.save(baos, SaveFormat.Pdf);
-
-		return new Message(baos.toByteArray());
+		return new ByteArrayInputStream(baos.toByteArray());
 	}
 
 }

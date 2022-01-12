@@ -35,7 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -75,8 +75,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		private boolean sElem = false;
 		private Exception rootException = null;
 		private int startLength;
-		private StopReason stopReason;
-		private TimeoutException timeOutException;
+		private boolean stopRequested;
+		private TimeOutException timeOutException;
 
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback = callback;
@@ -88,7 +88,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		public void startDocument() throws SAXException {
 			try {
 				callback.startIterating();
-			} catch (SenderException | TimeoutException | IOException e) {
+			} catch (SenderException | TimeOutException | IOException e) {
 				throw new SaxException(e);
 			}
 			super.startDocument();
@@ -100,7 +100,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			super.endDocument();
 			try {
 				callback.endIterating();
-			} catch (SenderException | TimeoutException | IOException e) {
+			} catch (SenderException | TimeOutException | IOException e) {
 				throw new SaxException(e);
 			}
 		}
@@ -134,12 +134,12 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 			if ((getElementName() != null && localName.equals(getElementName()))
 					|| (getElementChain() != null && elementsToString().equals(getElementChain()))) {
 				try {
-					stopReason = callback.handleItem(elementBuffer.toString());
+					stopRequested = !callback.handleItem(elementBuffer.toString());
 					elementBuffer.setLength(startLength);
 					sElem = false;
 				} catch (Exception e) {
-					if (e instanceof TimeoutException) {
-						timeOutException = (TimeoutException) e;
+					if (e instanceof TimeOutException) {
+						timeOutException = (TimeOutException) e;
 					}
 					rootException = e;
 					Throwable rootCause = e;
@@ -151,7 +151,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 					throw se;
 
 				}
-				if (isStopRequested()) {
+				if (stopRequested) {
 					throw new SAXException("stop maar");
 				}
 			}
@@ -183,16 +183,16 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		}
 
 		public boolean isStopRequested() {
-			return stopReason != null;
+			return stopRequested;
 		}
 
-		public TimeoutException getTimeOutException() {
+		public TimeOutException getTimeOutException() {
 			return timeOutException;
 		}
 	}
 
 	@Override
-	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
+	protected void iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		InputStream xmlInput;
 		try {
 			xmlInput = new FileInputStream(input.asString());
@@ -220,7 +220,6 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 				throw new SenderException("could not endDocument after stop was requested",e1);
 			}
 		}
-		return handler.stopReason;
 	}
 
 	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})

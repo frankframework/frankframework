@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.cmis.server;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
@@ -43,8 +42,7 @@ public class CmisEventDispatcher {
 	private Logger log = LogUtil.getLogger(this);
 
 	private static CmisEventDispatcher self = null;
-	public static final String CMIS_EVENT_KEY = "CmisEvent";
-	private Map<CmisEvent, CmisEventListener> eventListeners = new ConcurrentHashMap<>();
+	private Map<CmisEvent, CmisEventListener> eventListeners = new HashMap<>();
 	private String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"adapterDispatcher");
 
 	public static synchronized CmisEventDispatcher getInstance() {
@@ -87,7 +85,7 @@ public class CmisEventDispatcher {
 		CmisUtils.populateCmisAttributes(messageContext);
 
 		try {
-			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
+			messageContext.put("CmisEvent", event.name());
 			CmisEventListener listener = eventListeners.get(event);
 			String result = listener.processRequest(null, new Message(message), messageContext).asString();
 			if(StringUtils.isEmpty(result))
@@ -124,10 +122,10 @@ public class CmisEventDispatcher {
 			}
 
 			HashMap<String, Object> messageContext = new HashMap<>();
-			messageContext.put(CMIS_EVENT_KEY, event.getLabel());
+			messageContext.put("CmisEvent", event.name());
 
 			try {
-				String result = listener.processRequest(null, event.getLabel(), messageContext);
+				String result = listener.processRequest(null, event.name(), messageContext);
 				return Boolean.parseBoolean(result); // Result should determine if we should proceed, an exception may be thrown.
 			} catch (ListenerException e) {
 				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); //Append the message so it becomes visible in the soap-fault (when using WS)
@@ -138,6 +136,6 @@ public class CmisEventDispatcher {
 	}
 
 	public boolean hasEventListeners() {
-		return !eventListeners.isEmpty();
+		return eventListeners.size() > 0;
 	}
 }

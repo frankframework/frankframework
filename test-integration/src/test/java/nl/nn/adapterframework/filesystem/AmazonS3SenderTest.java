@@ -1,18 +1,30 @@
 package nl.nn.adapterframework.filesystem;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestName;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.AmazonS3Sender;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
 
@@ -40,7 +52,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 	private boolean forceGlobalBucketAccessEnabled = false;
 
 	private String bucketName = UUID.randomUUID().toString();//"iaf.s3sender.ali.test";
-//	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
+	private String bucketNameTobeCreatedAndDeleted = "bucket-name-tobe-created-and-deleted";
 	private Regions clientRegion = Regions.EU_WEST_1;
 	
 	private int waitMilis = 1000;
@@ -58,7 +70,7 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 			accessKey = properties.getProperty("accessKey");
 			secretKey = properties.getProperty("secretKey");
 			proxyHost = properties.getProperty("proxyHost");
-			if (StringUtils.isNotEmpty(properties.getProperty("proxyPort"))) {
+			if (properties.getProperty("proxyHost") != null) {
 				proxyPort = Integer.parseInt(properties.getProperty("proxyPort"));
 			}
 		} catch (Exception e) {
@@ -97,69 +109,69 @@ public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3O
 		return s3;
 	}
 
-//	@Test
-//	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
-//		fileSystemSender.setAction("createBucket");
-//
-//		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
-//
-//		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
-//		assertTrue(exists);
-//		assertEquals(result, bucketNameTobeCreatedAndDeleted);
-//	}
+	@Test
+	public void amazonS3SenderTestCreateBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
+		fileSystemSender.setAction("createBucket");
 
-//	@Test
-//	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
-//		fileSystemSender.setAction("deleteBucket");
-//
-//		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
-//
-//		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
-//		assertFalse(exists);
-//		assertEquals(bucketNameTobeCreatedAndDeleted, result);
-//
-//	}
+		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
+		fileSystemSender.configure();
+		fileSystemSender.getFileSystem().open();
+		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
 
-//	@Test
-//	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
-//
-//		fileSystemSender.setBucketName(bucketName);
-//		fileSystemSender.setDestinationBucketName(bucketName);
-//
-//		fileSystemSender.setAction(FileSystemAction.COPY.toString());
-//		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
-//		PipeLineSession session = new PipeLineSession();
-//		String dest = "copiedObject.txt";
-//		session.put("destinationFileName", dest);
-//
-////		Parameter p = new Parameter();
-////		p.setName("destinationFileName");
-////		p.setSessionKey("destinationFileName");
-//
-//		if (_fileExists(dest)) {
-//			_deleteFile(null, dest);
-//		}
-//		String fileName = "testcopy/testCopy.txt";
-//
-//		Parameter param = new Parameter();
-//		param.setName("destinationFileName");
-//		param.setValue(dest);
-//		fileSystemSender.addParameter(param);
-//		
-//		fileSystemSender.configure();
-//		fileSystemSender.getFileSystem().open();
-//		S3Object objectTobeCopied = new S3Object();
-//		objectTobeCopied.setKey(fileName);
-//		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
-//		out.close();
-//		String result = fileSystemSender.sendMessage(new Message(fileName), session).asString();
-//		assertEquals(dest, result);
-//	}
+		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
+		assertTrue(exists);
+		assertEquals(result, bucketNameTobeCreatedAndDeleted);
+	}
+
+	@Test
+	public void amazonS3SenderTestRemoveBucket() throws SenderException, ConfigurationException, TimeOutException, IOException, FileSystemException {
+		fileSystemSender.setAction("deleteBucket");
+
+		fileSystemSender.setBucketName(bucketNameTobeCreatedAndDeleted);
+		fileSystemSender.configure();
+		fileSystemSender.getFileSystem().open();
+		String result = fileSystemSender.sendMessage(new Message(bucketNameTobeCreatedAndDeleted), null).asString();
+
+		boolean exists = ((AmazonS3FileSystemTestHelper)helper).getS3Client().doesBucketExistV2(bucketNameTobeCreatedAndDeleted);
+		assertFalse(exists);
+		assertEquals(bucketNameTobeCreatedAndDeleted, result);
+
+	}
+
+	@Test
+	public void amazonS3SenderTestCopyObjectSuccess() throws Exception {
+
+		fileSystemSender.setBucketName(bucketName);
+		fileSystemSender.setDestinationBucketName(bucketName);
+
+		fileSystemSender.setAction("copy");
+		fileSystemSender.setForceGlobalBucketAccessEnabled(true);
+		PipeLineSession session = new PipeLineSession();
+		String dest = "copiedObject.txt";
+		session.put("destinationFileName", dest);
+
+		Parameter p = new Parameter();
+		p.setName("destinationFileName");
+		p.setSessionKey("destinationFileName");
+
+		if (_fileExists(dest)) {
+			_deleteFile(null, dest);
+		}
+		String fileName = "testcopy/testCopy.txt";
+
+		Parameter param = new Parameter();
+		param.setName("destinationFileName");
+		param.setValue(dest);
+		fileSystemSender.addParameter(param);
+		
+		fileSystemSender.configure();
+		fileSystemSender.getFileSystem().open();
+		S3Object objectTobeCopied = new S3Object();
+		objectTobeCopied.setKey(fileName);
+		OutputStream out = fileSystemSender.getFileSystem().createFile(objectTobeCopied);
+		out.close();
+		String result = fileSystemSender.sendMessage(new Message(fileName), session).asString();
+		assertEquals(dest, result);
+	}
 
 }

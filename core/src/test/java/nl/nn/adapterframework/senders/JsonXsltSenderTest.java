@@ -12,7 +12,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 
@@ -55,7 +54,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 	@Test
 	public void testXPath() throws Exception {
 		sender.setXpathExpression("j:map/j:map/j:map[j:string[@key='department']='Security']/j:string[@key='firstname']");
-		sender.setOutputType(OutputType.TEXT);
+		sender.setOutputType("text");
 		sender.setJsonResult(false);
 		sender.configure();
 		sender.open();

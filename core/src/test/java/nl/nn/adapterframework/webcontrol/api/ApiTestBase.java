@@ -61,10 +61,10 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
 
 public abstract class ApiTestBase<M extends Base> extends Mockito {
 	private Logger log = LogUtil.getLogger(ApiTestBase.class);
@@ -94,10 +94,11 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 		configuration = new TestConfiguration();
 		IbisManager ibisManager = configuration.getIbisManager();
 		ibisManager.setIbisContext(ibisContext);
+		MessageKeeper messageKeeper = new MessageKeeper();
+		doReturn(messageKeeper).when(ibisContext).getMessageKeeper();
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
 		doReturn(ibisContext).when(jaxRsResource).getIbisContext();
 		doReturn(configuration.getBean("applicationWarnings")).when(ibisContext).getBean(eq("applicationWarnings"), any());
-		doReturn(new MessageEventListener()).when(ibisContext).getBean(eq("MessageEventListener"), any()); //we don't test the messages
 		registerAdapter(configuration);
 
 		dispatcher.register(jaxRsResource);

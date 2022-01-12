@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -57,8 +56,10 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  *
  */
-public class IbisApplicationContext implements Closeable {
+public class IbisApplicationContext {
 	private Exception startupException;
+	public static final String APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Application";
+	public static final String CONFIGURATION_PROPERTIES_PROPERTY_SOURCE_NAME = "Configuration";
 
 	public enum BootState {
 		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
@@ -124,7 +125,7 @@ public class IbisApplicationContext implements Closeable {
 	}
 
 	/**
-	 * Loads springUnmanagedDeployment, SpringApplicationContext and files specified by the SPRING.CONFIG.LOCATIONS
+	 * Loads springContext, springUnmanagedDeployment, springCommon and files specified by the SPRING.CONFIG.LOCATIONS
 	 * property in AppConstants.properties
 	 * 
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
@@ -132,7 +133,8 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	private String[] getSpringConfigurationFiles(ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
-		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
+		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springUnmanagedDeployment.xml");
+		springConfigurationFiles.add(ResourceUtils.CLASSPATH_URL_PREFIX + "/springCommon.xml");
 
 		StringTokenizer locationTokenizer = AppConstants.getInstance().getTokenizedProperty("SPRING.CONFIG.LOCATIONS");
 		while(locationTokenizer.hasMoreTokens()) {
@@ -165,11 +167,10 @@ public class IbisApplicationContext implements Closeable {
 		MutablePropertySources propertySources = classPathapplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
+		propertySources.addFirst(new PropertiesPropertySource(APPLICATION_PROPERTIES_PROPERTY_SOURCE_NAME, APP_CONSTANTS));
 		classPathapplicationContext.setConfigLocations(getSpringConfigurationFiles(classPathapplicationContext.getClassLoader()));
-		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
-		classPathapplicationContext.setId(instanceName);
-		classPathapplicationContext.setDisplayName("IbisApplicationContext ["+instanceName+"]");
+		classPathapplicationContext.setId("IbisApplicationContext");
+		classPathapplicationContext.setDisplayName("IbisApplicationContext");
 
 		return classPathapplicationContext;
 	}
@@ -177,8 +178,7 @@ public class IbisApplicationContext implements Closeable {
 	/**
 	 * Destroys the Spring context
 	 */
-	@Override
-	public void close() {
+	protected void destroyApplicationContext() {
 		if (applicationContext != null) {
 			String oldContextName = applicationContext.getDisplayName();
 			log.debug("destroying Ibis Application Context ["+oldContextName+"]");

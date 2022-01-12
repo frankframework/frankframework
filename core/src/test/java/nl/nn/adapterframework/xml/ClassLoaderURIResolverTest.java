@@ -30,8 +30,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 @RunWith(Parameterized.class)
 public class ClassLoaderURIResolverTest {
 
-	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
-	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
+	private enum BaseType { LOCAL, BYTES, FILE_SCHEME, NULL }
+	private enum RefType  { ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, FILE_SCHEME(TransformerException.class);
 		private Class<? extends Exception> exception;
 		RefType() {
 			this(null);
@@ -78,7 +78,7 @@ public class ClassLoaderURIResolverTest {
 		}
 	}
 
-	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws Exception {
+	private IScopeProvider getClassLoaderProvider(BaseType baseType) throws ConfigurationException, IOException {
 		if (baseType==BaseType.BYTES) {
 			return getBytesClassLoader();
 		}
@@ -93,8 +93,6 @@ public class ClassLoaderURIResolverTest {
 		case BYTES:
 			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
-		case CLASSPATH:
-			return "classpath:ClassLoader/Xslt/root.xsl";
 		case FILE_SCHEME:
 			result = ClassUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
 			return result.toExternalForm();
@@ -123,8 +121,6 @@ public class ClassLoaderURIResolverTest {
 			return "names.xsl";
 		case OVERRIDABLE:
 			return "/ClassLoader/overridablefile.xml";
-		case CLASSPATH:
-			return "classpath:/ClassLoader/overridablefile.xml";
 		case FILE_SCHEME:
 			return ClassUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
 		default:
@@ -143,7 +139,6 @@ public class ClassLoaderURIResolverTest {
 		case SAME_FOLDER: 
 			return null;
 		case OVERRIDABLE: 
-		case CLASSPATH:
 			if (baseType==BaseType.BYTES) {
 				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
 			}
@@ -156,7 +151,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void test() throws ConfigurationException, IOException, TransformerException {
 		IScopeProvider classLoaderProvider = getClassLoaderProvider(baseType);
 		String baseUrl = getBase(classLoaderProvider, baseType);
 		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoaderProvider+"] BaseUrl ["+baseUrl+"]");
@@ -176,7 +171,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 
-	private IScopeProvider getBytesClassLoader() throws Exception {
+	private IScopeProvider getBytesClassLoader() throws IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

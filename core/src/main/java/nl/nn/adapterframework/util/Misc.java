@@ -66,9 +66,7 @@ import javax.json.stream.JsonGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
-import org.xml.sax.InputSource;
 
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -198,28 +196,6 @@ public class Misc {
 		return System.currentTimeMillis();
 	}
 
-	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
-		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
-			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
-			int posPrefixEnd;
-			String prefix;
-			String tail;
-			if ((posPrefixEnd=url.indexOf("://"))>0) {
-				prefix=url.substring(0, posPrefixEnd+3);
-				tail=url.substring(posPrefixEnd+3);
-			} else {
-				prefix="";
-				tail=url;
-			}
-			int posTail2Start;
-			if ((posTail2Start=tail.indexOf("@"))>0) {
-				tail=tail.substring(posTail2Start+1);
-			}
-			url=prefix+cf.getUsername()+":"+cf.getPassword()+"@"+tail;
-		}
-		return url;
-	}
-	
 	/**
 	 * Copies the content of the specified file to a writer.
 	 *
@@ -839,13 +815,13 @@ public class Misc {
 		return localHost;
 	}
 
-	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to, INamedObject requester) {
+	public static void copyContext(String keys, Map<String,Object> from, PipeLineSession to) {
 		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
 			StringTokenizer st = new StringTokenizer(keys,",;");
 			while (st.hasMoreTokens()) {
 				String key=st.nextToken();
 				Object value=from.get(key);
-				Message.asMessage(value).closeOnCloseOf(to, requester);
+				Message.asMessage(value).closeOnCloseOf(to);
 				to.put(key,value);
 			}
 		}
@@ -1394,9 +1370,9 @@ public class Misc {
 	
 	public static String urlDecode(String input) {
 		try {
-			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			return URLDecoder.decode(input,StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			log.warn("unable to parse input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
+			log.warn(e);
 			return null;
 		}
 	}
@@ -1436,11 +1412,5 @@ public class Misc {
 		}
 
 		return sw.toString().trim();
-	}
-
-	public static InputSource asInputSource(URL url) throws IOException {
-		InputSource inputSource = new InputSource(url.openStream());
-		inputSource.setSystemId(url.toExternalForm());
-		return inputSource;
 	}
 }

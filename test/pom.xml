@@ -32,6 +32,15 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
 <!--
 			<plugin>
 				<groupId>org.ibissource</groupId>
@@ -53,6 +62,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>zip-context</id>
@@ -105,6 +115,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -116,8 +127,7 @@
 				<configuration>
 					<packagingExcludes>.gitignore</packagingExcludes>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<attachClasses>true</attachClasses>
-					<classesClassifier>full-configuration</classesClassifier>
+
 					<archive>
 						<manifestEntries>
 							<Ibis-Project>${project.name}</Ibis-Project>

@@ -37,10 +37,10 @@
 		<property name="properties">
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
-				<prop key="CoreEnvironmentBean.nodeIdentifier">${transactionmanager.uid}</prop>
-				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
-				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
-				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="CoreEnvironmentBean.nodeIdentifier">${instance.name.lc}.tm</prop>
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionlog.dir}/narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionlog.dir}/narayana</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionlog.dir}/narayana</prop>
 			</props>
 		</property>
 	</bean>

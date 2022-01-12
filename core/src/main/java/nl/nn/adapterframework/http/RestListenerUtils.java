@@ -63,4 +63,12 @@ public class RestListenerUtils {
 			response.setContentType(contentType);
 		}
 	}
+
+	public static String formatEtag(String restPath, String uriPattern, int hash) {
+		return formatEtag(restPath, uriPattern, ""+hash );
+	}
+
+	public static String formatEtag(String restPath, String uriPattern, String hash) {
+		return Integer.toOctalString(restPath.hashCode()) + "_" +Integer.toHexString(uriPattern.hashCode()) + "_" + hash;
+	}
 }

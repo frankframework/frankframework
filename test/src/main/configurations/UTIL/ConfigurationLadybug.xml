@@ -17,7 +17,7 @@
 	</adapter>
 
 	<scheduler>
-		<job name="Ladybug" adapterName="Ladybug" javaListener="Ladybug"
+		<job name="Ladybug" adapterName="Ladybug" receiverName="Ladybug"
 			cronExpression="${ladybug.adapter.scheduler.cron}" function="sendMessage"
 			active="${ladybug.adapter.scheduler.active}" />
 	</scheduler>

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -256,34 +255,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			// an exception will do too, to signal that the file cannot be moved again.
 			log.debug("exception caught after trying to move file: "+e.getMessage());
 		}
-	}
-
-	@Test
-	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
-		String filename = "fileTobeMoved.txt";
-		String srcContents = "fakeSourceContents";
-		String dstContents = "fakeDestinationContents";
-		String srcFolder = "srcFolder";
-		String dstFolder = "dstFolder";
-		
-		fileSystem.configure();
-		fileSystem.open();
-
-		_createFolder(srcFolder);
-		createFile(srcFolder,filename, srcContents);
-		_createFolder(dstFolder);
-		createFile(dstFolder,filename, dstContents);
-		waitForActionToFinish();
-		
-		assertFileExistsWithContents(srcFolder, filename, srcContents);
-		assertFileExistsWithContents(dstFolder, filename, dstContents);
-		
-		F f = fileSystem.toFile(srcFolder, filename);
-		F f2 = fileSystem.toFile(srcFolder, filename);
-
-		assertThrows(FileSystemException.class, ()->{
-			fileSystem.moveFile(f, dstFolder, false);
-		});
 	}
 
 	@Test

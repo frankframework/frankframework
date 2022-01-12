@@ -30,14 +30,7 @@
 				<forward name="success" path="Send2WS" />
 			</pipe>
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe" name="Send2WS">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					soap="false"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
-					namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2"
-					allowSelfSignedCertificates="true"
-					verifyHostname="false"
-					authAlias="${framework.api.user.alias}"
-				/>
+				<sender className="nl.nn.adapterframework.http.WebServiceSender" soap="false" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" namespaceDefs="ns1=http://www.ing.com/namespace1 ns2=http://www.ing.com/namespace2" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

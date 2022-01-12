@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
@@ -71,13 +71,13 @@ public abstract class SenderTestBase<S extends ISender> extends Mockito {
 		}
 	}
 
-	public Message sendMessage(String message) throws SenderException, TimeoutException {
+	public Message sendMessage(String message) throws SenderException, TimeOutException {
 		return sendMessage(new Message(message), session);
 	}
-	public Message sendMessage(Message message) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message) throws SenderException, TimeOutException {
 		return sendMessage(message, session);
 	}
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return sender.sendMessage(message, session);
 	}
 }

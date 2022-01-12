@@ -15,6 +15,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
@@ -207,7 +208,7 @@ public class ClassUtilsTest {
 	}
 
 	@Test
-	public void localClassLoader5UrlWithFileScheme() throws Exception {
+	public void localClassLoader5UrlWithFileScheme() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
@@ -222,7 +223,7 @@ public class ClassUtilsTest {
 	}
 
 	@Test
-	public void localClassLoader6UrlWithFileSchemeButNotAllowed() throws Exception {
+	public void localClassLoader6UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
@@ -233,50 +234,50 @@ public class ClassUtilsTest {
 	}
 
 	@Test
-	public void bytesClassLoader01Root() throws Exception {
+	public void bytesClassLoader01Root() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 	@Test
-	public void bytesClassLoader02RootNoSlash() throws Exception {
+	public void bytesClassLoader02RootNoSlash() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "ClassLoaderTestFile","-- /ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void bytesClassLoader03Folder() throws Exception {
+	public void bytesClassLoader03Folder() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 	@Test
-	public void bytesClassLoader04FolderNoSlash() throws Exception {
+	public void bytesClassLoader04FolderNoSlash() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void bytesClassLoader05ResourceFromLocalClasspath() throws Exception {
+	public void bytesClassLoader05ResourceFromLocalClasspath() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
-	public void bytesClassLoader06ResourceFromLocalClasspathNoSlash() throws Exception {
+	public void bytesClassLoader06ResourceFromLocalClasspathNoSlash() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "ClassLoader/fileOnlyOnLocalClassPath.txt","-- /ClassLoader/fileOnlyOnLocalClassPath.txt --");
 	}
 
 	@Test
-	public void bytesClassLoader07Overridable() throws Exception {
+	public void bytesClassLoader07Overridable() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/overridablefile","zip:/overrideablefile");
 	}
 
 
 	@Test
-	public void bytesClassLoader07WithScheme() throws Exception {
+	public void bytesClassLoader07WithScheme() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 	@Test
-	public void bytesClassLoader08WithSchemeNoSlash() throws Exception {
+	public void bytesClassLoader08WithSchemeNoSlash() throws IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "classpath:ClassLoader/ClassLoaderTestFile","-- /ClassLoader/ClassLoaderTestFile --");
 	}
 
 	@Test
-	public void bytesClassLoader09UrlWithFileScheme() throws Exception {
+	public void bytesClassLoader09UrlWithFileScheme() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/fileOnlyOnLocalClassPath.txt";
 		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
@@ -286,7 +287,7 @@ public class ClassUtilsTest {
 	}
 
 	@Test
-	public void bytesClassLoader10UrlWithFileSchemeButNotAllowed() throws Exception {
+	public void bytesClassLoader10UrlWithFileSchemeButNotAllowed() throws IOException, ConfigurationException {
 		String resource="/ClassLoader/fileOnlyOnLocalClassPath.xml";
 		URL url = ClassUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();
@@ -296,7 +297,7 @@ public class ClassUtilsTest {
 		assertNull("file protocol was allowed but should not", actual);
 	}
 
-	private IScopeProvider getBytesClassLoaderProvider() throws Exception {
+	private IScopeProvider getBytesClassLoaderProvider() throws IOException, ConfigurationException {
 
 		URL file = this.getClass().getResource(JAR_FILE);
 		assertNotNull("jar url ["+JAR_FILE+"] not found", file);

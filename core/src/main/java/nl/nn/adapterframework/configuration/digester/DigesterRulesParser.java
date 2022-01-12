@@ -31,9 +31,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 
-/**
- * @author Niels Meijer
- */
 public class DigesterRulesParser extends DigesterRulesHandler {
 	private Digester digester;
 	private RulesBinder rulesBinder;
@@ -73,9 +70,6 @@ public class DigesterRulesParser extends DigesterRulesHandler {
 			ruleBuilder.addRule(new ObjectCreateRule(rule.getObject()));
 		} else {
 			ObjectCreationFactory<Object> factory = getFactory(rule.getFactory());
-			if(factory instanceof IDigesterRuleAware) {
-				((IDigesterRuleAware)factory).setDigesterRule(rule);
-			}
 			if(factory != null) {
 				factory.setDigester(digester); //When using a custom factory you have to inject the digester manually... Sigh
 				ruleBuilder.factoryCreate().usingFactory(factory); //If a factory is specified, use the factory to create the object

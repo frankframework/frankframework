@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
@@ -89,7 +89,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -136,7 +136,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
 			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+				Misc.copyContext(getReturnedSessionKeys(),context, session);
 			}
 		}
 		return new Message(result);

@@ -22,17 +22,10 @@ import java.util.function.Function;
 
 import nl.nn.adapterframework.doc.DocumentedEnum;
 
-/**
- * @author Niels Meijer
- */
 public abstract class EnumUtils {
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
-		return parse(enumClass, value, false);
-	}
-
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value, boolean fallbackToStandardEnumParsing) {
-		return parse(enumClass, getFieldName(enumClass), value, fallbackToStandardEnumParsing);
+		return parse(enumClass, getFieldName(enumClass), value);
 	}
 
 	private static String getFieldName(Class<?> enumClass) {
@@ -43,33 +36,16 @@ public abstract class EnumUtils {
 	}
 
 	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
-		return parse(enumClass, fieldName, value, false);
-	}
-
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value, boolean fallbackToStandardEnumParsing) {
 		if(DocumentedEnum.class.isAssignableFrom(enumClass)) {
-			try {
-				return parseDocumented(enumClass, fieldName, value);
-			} catch (IllegalArgumentException e1) {
-				if(fallbackToStandardEnumParsing) {
-					try {
-						return parseNormal(enumClass, fieldName, value);
-					} catch (IllegalArgumentException e2) {
-						e1.addSuppressed(e2);
-						throw e1;
-					}
-				} else {
-					throw e1;
-				}
-			}
+			return parseDocumented(enumClass, fieldName, value);
 		}
 		return parseNormal(enumClass, fieldName, value);
 	}
 
-	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, String fieldName, String value) {
+	public static <E extends Enum<E>> E parseNormal(Class<E> enumClass, String fieldName, String value) {
 		E result = parseIgnoreCase(enumClass, value);
 		if (result==null) {
-			throw new IllegalArgumentException((fieldName!=null?"cannot set field ["+fieldName+"] to ":"")+"unparsable value ["+value+"]. Must be one of "+ getEnumList(enumClass));
+			throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ getEnumList(enumClass));
 		}
 		return result;
 	}
@@ -77,7 +53,7 @@ public abstract class EnumUtils {
 	/**
 	 * Solely for DocumentedEnums !
 	 */
-	protected static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
+	public static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
 		return parseFromField(enumClass, fieldName, value, e -> ((DocumentedEnum)e).getLabel());
 	}
 
@@ -90,7 +66,7 @@ public abstract class EnumUtils {
 			}
 			fieldValues.add(fieldValue);
 		}
-		throw new IllegalArgumentException((fieldName!=null?"cannot set field ["+fieldName+"] to ":"")+"unparsable value ["+value+"]. Must be one of "+ fieldValues);
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
 	}
 
 	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E,Integer> field) {
@@ -102,7 +78,7 @@ public abstract class EnumUtils {
 			}
 			fieldValues.add(fieldValue);
 		}
-		throw new IllegalArgumentException((fieldName!=null?"cannot set field ["+fieldName+"] to ":"")+"unparsable value ["+value+"]. Must be one of "+ fieldValues);
+		throw new IllegalArgumentException("unknown "+(fieldName!=null?fieldName:"")+" value ["+value+"]. Must be one of "+ fieldValues);
 	}
 
 	public static <E extends Enum<E>> List<E> getEnumList(final Class<E> enumClass) {

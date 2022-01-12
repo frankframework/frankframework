@@ -1,11 +1,9 @@
 package nl.nn.credentialprovider;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,27 +37,14 @@ public class MapCredentialsTest {
 	}
 
 	@Test
-	public void testUnknownAliasNoDefaults() {
-		
-		String alias = "fakeAlias";
-		String username = null;
-		String password = null;
-
-		assertThrows(NoSuchElementException.class, () -> {
-			MapCredentials mc = new MapCredentials(alias, username, password, null);
-			assertEquals(username, mc.getUsername());
-			assertEquals(password, mc.getPassword());
-		});
-	}
-
-	@Test
-	public void testUnknownAlias() {
+	public void testNoFileSystem() {
 		
 		String alias = "fakeAlias";
 		String username = "fakeUsername";
 		String password = "fakePassword";
-
+		
 		MapCredentials mc = new MapCredentials(alias, username, password, null);
+		
 		assertEquals(username, mc.getUsername());
 		assertEquals(password, mc.getPassword());
 	}

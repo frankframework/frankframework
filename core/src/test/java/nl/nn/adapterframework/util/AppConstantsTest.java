@@ -2,7 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -11,6 +10,7 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,8 +76,8 @@ public class AppConstantsTest {
 		AppConstants constants3 = AppConstants.getInstance(classLoader);
 		constants3.put("constants3", "3");
 
-		assertTrue("Singleton instance is not identical", constants == constants1);
-		assertTrue("Singleton instance is not identical", constants2 == constants3);
+		Assert.assertEquals(constants, constants1);
+		Assert.assertEquals(constants2, constants3);
 
 		assertEquals("1", constants.get("constants1"));
 		assertEquals("2", constants.get("constants2"));

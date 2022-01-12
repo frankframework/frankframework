@@ -18,9 +18,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -49,13 +47,13 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test
 	public void fileSystemSenderTestConfigure() throws Exception {
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 	}
 
 	@Test
 	public void fileSystemSenderTestOpen() throws Exception {
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 	}
@@ -77,7 +75,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setSessionKey("uploadActionTargetwString");
 
 		fileSystemSender.addParameter(p);
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
+		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -110,7 +108,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setSessionKey("uploadActionTargetwByteArray");
 
 		fileSystemSender.addParameter(p);
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
+		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -145,7 +143,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setSessionKey("uploadActionTarget");
 
 		fileSystemSender.addParameter(p);
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
+		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -177,7 +175,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		param.setValue(filename);
 		fileSystemSender.addParameter(param);
 
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
+		fileSystemSender.setAction("upload");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -209,7 +207,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
+		fileSystemSender.setAction("download");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -230,9 +228,9 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		createFile(null, filename, contents);
 		waitForActionToFinish();
 
-		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
+		fileSystemSender.setAction("download");
 		fileSystemSender.configure();
-		fileSystemSender.setBase64(Base64Pipe.Direction.ENCODE);
+		fileSystemSender.setBase64("encode");
 		fileSystemSender.open();
 		
 		PipeLineSession session = new PipeLineSession();
@@ -259,7 +257,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 //		deleteFile(folder2, filename);
 		waitForActionToFinish();
 
-		fileSystemSender.setAction(FileSystemAction.MOVE);
+		fileSystemSender.setAction("move");
 		Parameter p = new Parameter();
 		p.setName("destination");
 		p.setValue(folder2);
@@ -296,7 +294,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	}
 	@Test
 	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
-		thrown.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
+		thrown.expectMessage("unable to process [move] action for File [sendermovefile1.txt]: destination folder [folder] does not exist");
 		fileSystemSenderMoveActionTest(null,"folder",false,false);
 	}
 //	@Test
@@ -316,7 +314,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_deleteFolder(folder);
 		}
 
-		fileSystemSender.setAction(FileSystemAction.MKDIR);
+		fileSystemSender.setAction("mkdir");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -342,7 +340,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			_createFolder(folder);
 		}
 
-		fileSystemSender.setAction(FileSystemAction.RMDIR);
+		fileSystemSender.setAction("rmdir");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -378,7 +376,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		}
 		
 		fileSystemSender.setRemoveNonEmptyFolder(true);
-		fileSystemSender.setAction(FileSystemAction.RMDIR);
+		fileSystemSender.setAction("rmdir");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -402,7 +400,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			createFile(null, filename, "is not empty");
 		}
 
-		fileSystemSender.setAction(FileSystemAction.DELETE);
+		fileSystemSender.setAction("delete");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		
@@ -433,7 +431,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setValue(dest);
 
 		fileSystemSender.addParameter(p);
-		fileSystemSender.setAction(FileSystemAction.RENAME);
+		fileSystemSender.setAction("rename");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 
@@ -467,7 +465,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			}
 		}
 		
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		if (inputFolder!=null) {
 			fileSystemSender.setInputFolder(inputFolder);
 		}
@@ -525,7 +523,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	
 	@Test(expected = SenderException.class)
 	public void fileSystemSenderTestForFolderExistenceWithNonExistingFolder() throws Exception {
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.setInputFolder("NonExistentFolder");
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -534,7 +532,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	@Test
 	public void fileSystemSenderTestForFolderExistenceWithExistingFolder() throws Exception {
 		_createFolder("folder");
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.setInputFolder("folder");
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -542,7 +540,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 	@Test()
 	public void fileSystemSenderTestForFolderExistenceWithRoot() throws Exception {
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 	}
@@ -569,7 +567,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		p.setSessionKey("listWithInputFolderAsParameter");
 
 		fileSystemSender.addParameter(p);
-		fileSystemSender.setAction(FileSystemAction.LIST);
+		fileSystemSender.setAction("list");
 		fileSystemSender.configure();
 		fileSystemSender.open();
 		

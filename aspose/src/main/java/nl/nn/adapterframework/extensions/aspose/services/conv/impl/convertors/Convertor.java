@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019 Integration Partners
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
+import java.io.File;
 import java.util.List;
 
 import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.stream.Message;
 
+/**
+ * 
+ * @author M64D844
+ *
+ */
 public interface Convertor {
 
 	/**
@@ -34,9 +39,12 @@ public interface Convertor {
 	 * Converts the given file to a pdf. MediaType is the detected media type of the
 	 * file. The convertor should support the given mediatype (otherwise it gives
 	 * programming error).
-	 * @param charset 
 	 * 
+	 * @param mediaType
+	 * @param filename
+	 * @param file
+	 * @param conversionOption
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset);
+	CisConversionResult convertToPdf(MediaType mediaType, String filename, File file, ConversionOption conversionOption);
 
 }

@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -84,19 +84,30 @@ public class WsdlXmlValidatorMixedModeTest {
         return new Message(new StringReader(string.toString()));
     }
 
-
-    protected void validate(IPipe val, String msg, String failureReason) throws Exception {
+    
+    protected void validate(IPipe val, String msg, String failureReason) throws IOException {
         Message messageToValidate = getTestXml(msg);
-    	if (failureReason!=null) {
-    		assertThrows(failureReason, Exception.class, () -> val.doPipe(messageToValidate, session));
-    	} else {
-    		val.doPipe(messageToValidate, session);
-    	}
+        try {
+        	val.doPipe(messageToValidate, session);
+        	if (failureReason!=null) {
+        		fail("expected failure, reason ["+failureReason+"]");
+        	}
+        } catch (Exception e) {
+        	if (failureReason!=null) {
+        		if (e.getMessage().indexOf(failureReason)<0) {
+            		fail("expected failure to contain ["+failureReason+"], but was ["+e.getMessage()+"]");
+        		}       		
+        	} else {
+        		fail("unexpetectd failure: ["+e.getMessage()+"]");
+        	}    	
+        }
     }
+    
+    
 
     public final boolean ooMode=true;
 
-    public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws Exception {
+    public void testPipeLineProcessorProcessOutputValidation(IPipe inputValidator, IPipe outputValidator, String msg, String failureReason) throws IOException {
     	if (ooMode) {
     		IPipe responseValidator;
     		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {

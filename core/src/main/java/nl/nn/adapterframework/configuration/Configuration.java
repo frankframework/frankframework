@@ -27,11 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.LifecycleProcessor;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
@@ -41,34 +39,29 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.ProtectedAttribute;
-import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
-import nl.nn.adapterframework.lifecycle.SpringContextScope;
-import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.scheduler.job.IJob;
-import nl.nn.adapterframework.scheduler.job.Job;
+import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
- * The Configuration is the container of all configuration objects.
+ * The Configuration is placeholder of all configuration objects. Besides that, it provides
+ * functions for starting and stopping adapters as a facade.
  *
  * @author Johan Verrips
+ * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.Adapter
  */
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
-	private static final Logger secLog = LogUtil.getLogger("SEC");
 
 	private Boolean autoStart = null;
 	private boolean enabledAutowiredPostProcessing = false;
@@ -76,16 +69,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
 
-	private @Getter BootState state = BootState.STOPPED;
+	private BootState state = BootState.STOPPED;
 
-	private @Getter String version;
-	private @Getter IbisManager ibisManager;
-	private @Getter String originalConfiguration;
-	private @Getter String loadedConfiguration;
+	private String version;
+	private IbisManager ibisManager;
+	private String originalConfiguration;
+	private String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
-	private @Getter boolean configured = false;
+	private @Getter @Setter boolean configured = false;
 
-	private @Getter ConfigurationException configurationException = null;
+	private ConfigurationException configurationException = null;
 
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
@@ -143,7 +136,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+		setConfigLocation("FrankFrameworkConfigurationContext.xml"); //Don't call the super(..), it will trigger a refresh.
 	}
 
 	@Override
@@ -196,8 +189,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
-		setId(getId()); // Update the setIdCalled flag in AbstractRefreshableConfigApplicationContext. When wired through spring it calls the setBeanName method.
-
 		super.refresh();
 
 		if(adapterManager == null) { //Manually set the AdapterManager bean
@@ -231,7 +222,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(!isConfigured()) {
 			throw new IllegalStateException("cannot start configuration that's not configured");
 		}
-
 		super.start();
 		state = BootState.STARTED;
 	}
@@ -240,61 +230,31 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * Digest the configuration and generate flow diagram.
 	 */
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		log.info("configuring configuration ["+getId()+"]");
 		state = BootState.STARTING;
-		long start = System.currentTimeMillis();
 
+		ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 		try {
-			runMigrator();
-
-			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
-
-			FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
-			try {
-				flowDiagramManager.generate(this);
-			} catch (Exception e) { //Don't throw an exception when generating the flow fails
-				ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
-			}
-
-			//Trigger a configure on all Lifecycle beans
-			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
-			if(lifecycle instanceof ConfigurableLifecycle) {
-				((ConfigurableLifecycle) lifecycle).configure();
-			}
 		} catch (ConfigurationException e) {
-			state = BootState.STOPPED;
-			throw e;
+			throw new IllegalStateException(e);
 		}
 
-		configured = true;
+		FlowDiagramManager flowDiagramManager = getBean(FlowDiagramManager.class);
+		try {
+			flowDiagramManager.generate(this);
+		} catch (Exception e) { //Don't throw an exception when generating the flow fails
+			ConfigurationWarnings.add(this, log, "Error generating flow diagram for configuration ["+getName()+"]", e);
+		}
 
-		String msg;
-		if (isAutoStart()) {
-			getIbisManager().startConfiguration(this);
-			msg = "startup in " + (System.currentTimeMillis() - start) + " ms";
+		//Trigger a configure on all Lifecycle beans
+		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
+		if(lifecycle instanceof ConfigurableLifecycle) {
+			((ConfigurableLifecycle) lifecycle).configure();
 		}
-		else {
-			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
-		}
-		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
-		publishEvent(new ConfigurationMessageEvent(this, msg));
-	}
 
-	/** Execute any database changes before calling {@link #configure()}. */
-	protected void runMigrator() {
-		// For now explicitly call configure, fix this once ConfigurationDigester implements ConfigurableLifecycle
-		DatabaseMigratorBase databaseMigrator = getBean("jdbcMigrator", DatabaseMigratorBase.class);
-		if(databaseMigrator.isEnabled()) {
-			try {
-				if(databaseMigrator.validate()) {
-					databaseMigrator.update();
-				}
-			} catch (Exception e) {
-				log("unable to run JDBC migration", e);
-			}
-		}
+		setConfigured(true);
 	}
 
 	@Override
@@ -307,38 +267,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	// capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
-	@Override
-	public void publishEvent(ApplicationEvent event) {
-		if(event instanceof ContextClosedEvent) {
-			secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] closed");
-			publishEvent(new ConfigurationMessageEvent(this, "closed"));
-		}
-
-		super.publishEvent(event);
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message) {
-		log(message, (MessageKeeperLevel) null);
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, MessageKeeperLevel level) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, level));
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, Exception e) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, e));
-	}
-
 	public boolean isUnloadInProgressOrDone() {
 		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
 	}
@@ -348,7 +276,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return inState(BootState.STARTED) && super.isRunning();
 	}
 
-	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
+	@Override
+	public BootState getState() {
+		return state;
+	}
+
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -415,17 +347,17 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Register an {@link IJob job} for scheduling at the configuration.
-	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
+	 * Register an {@link JobDef job} for scheduling at the configuration.
+	 * The configuration will create an {@link JobDef AdapterJob} instance and a JobDetail with the
 	 * information from the parameters, after checking the
-	 * parameters of the job. (basically, it checks whether the adapter and the
+	 * parameters of the job. (basically, it checks wether the adapter and the
 	 * receiver are registered.
-	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
+	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
-	public void registerScheduledJob(IJob jobdef) {
+	public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
 		scheduleManager.register(jobdef);
 	}
 
@@ -435,38 +367,32 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		handler.configure();
 	}
 
-	/*
-	 * Configurations should be wired through Spring, which in turn should call {@link #setBeanName(String)}.
-	 * Once the ConfigurationContext has a name it should not be changed anymore, hence 
-	 * {@link AbstractRefreshableConfigApplicationContext#setBeanName(String) super.setBeanName(String)} only sets the name once.
-	 * If not created by Spring, the setIdCalled flag in AbstractRefreshableConfigApplicationContext wont be set, allowing the name to be updated.
-	 * 
-	 * The DisplayName will always be updated, which is purely used for logging purposes.
-	 */
-	/** Name of the Configuration */
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
-			if(state == BootState.STARTING && !getName().equals(name)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
-			}
-			setBeanName(name);
+			setId(name); //ID should never be NULL
 		}
 	}
+
 	@Override
 	public String getName() {
 		return getId();
 	}
 
-	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
+	@Deprecated
+	@ConfigurationWarning("Please use attribute name instead")
+	public void setConfigurationName(String name) {
+		this.setName(name);
+	}
+
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
-			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
-				publishEvent(new ConfigurationMessageEvent(this, "configuration version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
-			}
-
 			this.version = version;
 		}
+	}
+
+	public String getVersion() {
+		return version;
 	}
 
 	/**
@@ -478,8 +404,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { //We may not return an empty String
 				return type;
+			} else {
+				return null;
 			}
-			return null;
 		}
 
 		return getClassLoader().getClass().getSimpleName();
@@ -489,28 +416,40 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		this.ibisManager = ibisManager;
 	}
 
-	/** The entire (raw) configuration */
-	@ProtectedAttribute
+	public IbisManager getIbisManager() {
+		return ibisManager;
+	}
+
 	public void setOriginalConfiguration(String originalConfiguration) {
 		this.originalConfiguration = originalConfiguration;
 	}
 
-	/** The loaded (with resolved properties) configuration */
-	@ProtectedAttribute
+	public String getOriginalConfiguration() {
+		return originalConfiguration;
+	}
+
 	public void setLoadedConfiguration(String loadedConfiguration) {
 		this.loadedConfiguration = loadedConfiguration;
 	}
 
-	public IJob getScheduledJob(String name) {
+	public String getLoadedConfiguration() {
+		return loadedConfiguration;
+	}
+
+	public JobDef getScheduledJob(String name) {
 		return scheduleManager.getSchedule(name);
 	}
 
-	public List<IJob> getScheduledJobs() {
+	public List<JobDef> getScheduledJobs() {
 		return scheduleManager.getSchedulesList();
 	}
 
 	public void setConfigurationException(ConfigurationException exception) {
 		configurationException = exception;
+	}
+
+	public ConfigurationException getConfigurationException() {
+		return configurationException;
 	}
 
 	public ConfigurationWarnings getConfigurationWarnings() {
@@ -531,15 +470,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getClassLoader();
 	}
 
-	/**
-	 * Specifies event monitoring 
-	 */
-	// above comment is used in FrankDoc
-	public void registerMonitoring(MonitorManager factory) {
-	}
-
 	@Override
-	@ProtectedAttribute
 	public void setBeanName(String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");

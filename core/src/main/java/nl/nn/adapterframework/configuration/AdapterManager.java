@@ -191,23 +191,6 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	public void close() {
 		log.info("destroying AdapterManager ["+this+"]");
 
-		try {
-			doClose();
-		} catch(Exception e) {
-			if(!getAdapterList().isEmpty()) {
-				Configuration config = (Configuration) applicationContext;
-				config.log("not all adapters have been unregistered " + getAdapterList(), e);
-			}
-		}
-	}
-
-	/**
-	 * - wait for StartAdapterThreads to finish
-	 * - try to stop all adapters
-	 * - wait for StopAdapterThreads to finish
-	 * - unregister all adapters from this manager
-	 */
-	private void doClose() {
 		while (!getStartAdapterThreads().isEmpty()) {
 			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
 			try {

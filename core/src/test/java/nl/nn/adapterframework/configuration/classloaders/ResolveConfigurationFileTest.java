@@ -30,7 +30,7 @@ public class ResolveConfigurationFileTest extends Mockito {
 	@Parameters(name = "{0} - {1}") //Name - BasePath - ConfigurationFile
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{ "Config", null, "Config/Configuration.xml" }, //No basepath should be derived from configurationFile
+				{ "Config", null, "Config/Configuration.xml" }, //No basepath should be derrived from configurationFile
 				{ "Config", null, "Configuration.xml" }, //No basepath should be derrived from configurationName
 				{ "Config", "Config/", "Configuration.xml" }, //setting both shouldn't matter
 				{ "Config", "Config/", "Config/Configuration.xml" }, //configurationFile with basepath should be stripped

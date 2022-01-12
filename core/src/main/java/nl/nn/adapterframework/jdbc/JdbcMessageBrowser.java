@@ -40,7 +40,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -111,7 +110,6 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	public void copyFacadeSettings(JdbcFacade facade) throws JdbcException {
 		if (facade!=null) {
-			SpringUtils.autowireByName(facade.getApplicationContext(), this);
 			datasource=facade.getDatasource();
 			setAuthAlias(facade.getAuthAlias());
 			setUsername(facade.getUsername());
@@ -124,6 +122,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		return datasource!=null ? datasource : super.getDatasource();
 	}
 
+	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -344,18 +343,17 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		// result set needs to stay open to access the fields of a record
-		// The caller may use try-with-resources to call the close method of IMessageBrowsingIteratorItem to close the open resources
-		try {
-			Connection conn = getConnection();
-			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
-			applyStandardParameters(stmt, storageKey, true);
-			ResultSet rs = stmt.executeQuery();
-			if (!rs.next()) {
-				throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
+		try (Connection conn = getConnection()) {
+			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
+				applyStandardParameters(stmt, storageKey, true);
+				try (ResultSet rs =  stmt.executeQuery()) {
+	
+					if (!rs.next()) {
+						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
+					}
+					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
+				}
 			}
-
-			return new JdbcMessageBrowserIteratorItem(conn, rs, true);
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}

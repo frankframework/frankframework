@@ -21,9 +21,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -49,7 +47,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String formattedDate = formatter.format(date);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}
@@ -129,11 +127,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-	@Override
-	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-		String query = ("DELETE FROM " + tableName 
-					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" LIMIT "+maxRows : ""));
-		return query;
-	}
 }

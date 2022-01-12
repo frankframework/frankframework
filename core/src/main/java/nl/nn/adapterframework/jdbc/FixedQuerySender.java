@@ -24,7 +24,7 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
@@ -32,9 +32,14 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
- * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
+ * </table>
+ * </p>
  * 
- * @ff.parameters All parameters present are applied to the query to be executed.
+ * <p><b>NOTE:</b> See {@link nl.nn.adapterframework.util.DB2XMLWriter DB2XMLWriter} for Resultset!</p>
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
@@ -66,7 +71,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 
 	@Override
-	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
+	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeOutException {
 		try {
 			Connection connection = getConnectionForSendMessage(null);
 			QueryExecutionContext result = super.prepareStatementSet(null, connection, null, session);
@@ -95,7 +100,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 			} finally {
 				try {
 					closeConnectionForSendMessage(blockHandle.getConnection(), session);
-				} catch (JdbcException | TimeoutException e) {
+				} catch (JdbcException | TimeOutException e) {
 					throw new SenderException("cannot close connection", e);
 				}
 			}
@@ -115,13 +120,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		return executeStatementSet(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
 	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		QueryExecutionContext blockHandle = openBlock(session);
 		try {
 			return executeStatementSet(blockHandle, message, session, next);
@@ -131,7 +136,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	protected final PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
 		throw new IllegalStateException("This method should not be used or overriden for this class. Override or use sendMessage(QueryExecutionContext,...)");
 	}
 

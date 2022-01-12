@@ -55,7 +55,7 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 
 	/**
 	 * Retrieves the message context as an iteratorItem.
-	 * The result can be used in the methods above that use an iteratorItem. Use this method as try-with-resources to close the connections. 
+	 * The result can be used in the methods above that use an iteratorItem as 
 	 */
 	IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException;
 

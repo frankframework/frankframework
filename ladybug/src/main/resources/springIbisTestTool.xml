@@ -5,13 +5,24 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans classpath:xml/xsd/spring-beans-3.2.xsd"
 	>
 
-	<bean
-		name="lowerCasePropertySourcePostProcessor"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
-		autowire="byName"
-	/>
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:META-INF/maven/org.ibissource/ibis-adapterframework-ladybug/pom.properties</value>
+				<!-- Other properties like ibistesttool.* are provided by IAF (AppConstants is added as PropertySources to the Spring configuration) -->
+			</list>
+		</property>
+	</bean>
 
 	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
+
+	<bean name="configName" class="java.lang.String">
+		<constructor-arg value="Ibis Test Tool"/>
+	</bean>
+
+	<bean name="configVersion" class="java.lang.String">
+		<constructor-arg value="${version}"/>
+	</bean>
 
 	<bean name="maxCheckpoints" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
@@ -30,6 +41,8 @@
 	</bean>
 
 	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
+		<property name="configName"><ref bean="configName"/></property>
+		<property name="configVersion"><ref bean="configVersion"/></property>
 		<property name="maxCheckpoints"><ref bean="maxCheckpoints"/></property>
 		<property name="maxMemoryUsage"><ref bean="maxMemoryUsage"/></property>
 		<property name="maxMessageLength"><ref bean="maxMessageLength"/></property>
@@ -164,18 +177,14 @@
 
 	<bean name="treePane" class="nl.nn.testtool.echo2.reports.TreePane" autowire="byName" init-method="initBean" scope="prototype"/>
 
-	<bean name="changeReportGeneratorEnabledRoles" class="java.util.ArrayList">
-		<constructor-arg>
+	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
+		<property name="changeReportGeneratorEnabledRoles">
 			<list>
 				<value>IbisTester</value>
 				<value>IbisAdmin</value>
 				<value>IbisDataAdmin</value>
 			</list>
-		</constructor-arg>
-	</bean>
-
-	<bean name="reportsComponent" class="nl.nn.testtool.echo2.reports.ReportsComponent" autowire="byName" init-method="initBean" scope="prototype">
-		<property name="changeReportGeneratorEnabledRoles" ref="changeReportGeneratorEnabledRoles"/>
+		</property>
 		<property name="testTool">
 			<ref bean="testTool"/>
 		</property>
@@ -293,9 +302,6 @@
 		<property name="tabs">
 			<ref bean="tabs"/>
 		</property>
-		<property name="testStorage">
-			<ref bean="#{testStorageActive}"/>
-		</property>
 	</bean>
 
 	<bean name="reportsTreeCellRenderer" class="nl.nn.testtool.echo2.reports.ReportsTreeCellRenderer"/>
@@ -317,5 +323,7 @@
 	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
 
 	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+
+	<import resource="springIbisDebuggerAdvice.xml"/>
 
 </beans>

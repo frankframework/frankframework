@@ -57,7 +57,7 @@ public class HttpListenerServlet extends HttpServlet {
 	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
-			messageContext.setSecurityHandler(securityHandler);
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 			messageContext.put("httpListenerServletRequest", request);
 			messageContext.put("httpListenerServletResponse", response);
 			String service=request.getParameter(SERVICE_ID_PARAM);

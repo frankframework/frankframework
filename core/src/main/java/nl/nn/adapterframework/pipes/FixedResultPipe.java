@@ -46,12 +46,26 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Provides an example of a pipe. It may return the contents of a file
  * (in the classpath) when <code>filename</code> or <code>filenameSessionKey</code> is specified, otherwise the
  * input of <code>returnString</code> is returned.
- * 
- * @ff.parameters Any parameters defined on the pipe will be used for replacements. Each occurrence of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} will be replaced by its corresponding <i>value-of-parameter</i>. This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}
  *
- * @ff.forward filenotfound the configured file was not found (when this forward isn't specified an exception will be thrown)
- *
- * 
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr>
+ *   <td><i>any</i></td><td><i>any</i></td>
+ * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
+ * 		 of <code>${name-of-parameter}</code> in the file {@link #setFilename(String) filename} 
+ *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
+ *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
+ * </tr>
+ * </table>
+ * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td>"filenotfound"</td><td>file not found (when this forward isn't specified an exception will be thrown)</td></tr>
+ * </table>
+ * </p>
  * @author Johan Verrips
  */
 public class FixedResultPipe extends FixedForwardPipe {
@@ -147,7 +161,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 			} catch (ParameterException e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 			}
-			for(ParameterValue pv : pvl) {
+			for (int i=0; i<pvl.size(); i++) {
+				ParameterValue pv = pvl.getParameterValue(i);
 				String replaceFrom;
 				if (isReplaceFixedParams()) {
 					replaceFrom=pv.getDefinition().getName();
@@ -158,7 +173,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 		}
 
-		message.closeOnCloseOf(session, this); // avoid connection leaking when the message itself is not consumed.
+		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session, appConstants);
 		}

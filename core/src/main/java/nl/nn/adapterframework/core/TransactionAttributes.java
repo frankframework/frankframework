@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,27 +19,27 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 public class TransactionAttributes implements HasTransactionAttribute {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private @Getter @Setter TransactionAttribute transactionAttribute = TransactionAttribute.SUPPORTS;
+	private int transactionAttribute = TransactionDefinition.PROPAGATION_SUPPORTS;
 	private @Getter int transactionTimeout = 0;
 
 	private @Getter TransactionDefinition txDef = null;
 
 	public void configure() throws ConfigurationException {
-		txDef = configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
+		txDef = configureTransactionAttributes(log, getTransactionAttributeNum(), getTransactionTimeout());
 	}
 	
-	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) throws ConfigurationException {
+	public static TransactionDefinition configureTransactionAttributes(Logger log, int transactionAttribute, int transactionTimeout) throws ConfigurationException {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
 			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
 			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
@@ -47,30 +47,51 @@ public class TransactionAttributes implements HasTransactionAttribute {
 			}
 		}
 
-		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
-		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
+		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+JtaUtil.getTransactionAttributeString(transactionAttribute)+"], timeout ["+transactionTimeout+"]");
+		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute,transactionTimeout);
 	}
 	
 	
+	@Override
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
+	}
+	@Override
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+
+	@Override
+	@Deprecated
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	@Override
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
+	}
 
 	//@IbisDoc({"4", "If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
 	@Deprecated
 	@ConfigurationWarning("implemented as setting of transacted=true as transactionAttribute=Required and transacted=false as transactionAttribute=Supports")
 	public void setTransacted(boolean transacted) {
 		if (transacted) {
-			setTransactionAttribute(TransactionAttribute.REQUIRED);
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			setTransactionAttribute(TransactionAttribute.SUPPORTS);
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
 	public boolean isTransacted() {
-		return isTransacted(getTransactionAttribute());
+		return isTransacted(getTransactionAttributeNum());
 	}
 
-	public static boolean isTransacted(TransactionAttribute txAtt) {
-		return  txAtt==TransactionAttribute.REQUIRED || 
-				txAtt==TransactionAttribute.REQUIRESNEW ||
-				txAtt==TransactionAttribute.MANDATORY;
+	public static boolean isTransacted(int txAtt) {
+		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
+				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
 	}
 
 	@Override

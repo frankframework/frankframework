@@ -1,55 +1,58 @@
 <module>
-	<adapter name="ReturnedSessionKeys" description="Test the functioning of the attribute returnedSessionKeys">
-		<receiver returnedSessionKeys="returnCode,reasonCode">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" />
-		</receiver>
-		<pipeline firstPipe="SetReturnCode">
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="SetReturnCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode">
-				<forward name="success" path="SetReasonCode" />
-			</pipe>
-			<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
-				<forward name="success" path="SwitchThrowException" />
-			</pipe>
-			<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
-				<forward name="true" path="ThrowExceptionTrue" />
-			</pipe>
-			<pipe name="ThrowExceptionTrue" className="nl.nn.adapterframework.pipes.ExceptionPipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
-			<pipe name="ThrowExceptionFalse" className="nl.nn.adapterframework.pipes.ExceptionPipe" throwException="false">
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
-
-	<adapter name="ReturnedSessionKeysCaller" description="Test the functioning of the attribute returnedSessionKeys">
-		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeysCaller" />
-		</receiver>
-		<pipeline firstPipe="ReturnedSessionKeys">
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="ReturnedSessionKeys" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode" />
-				<forward name="success" path="Reply_success" />
-				<forward name="exception" path="Reply_exception" />
-			</pipe>
-			<pipe name="Reply_success" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
-				<param name="returnCode" sessionKey="returnCode"/>
-				<param name="reasonCode" sessionKey="reasonCode"/>
-				<param name="forward" value="success"/>
-				<forward name="success" path="EXIT" />
-			</pipe>
-			<pipe name="Reply_exception" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
-				<param name="returnCode" sessionKey="returnCode"/>
-				<param name="reasonCode" sessionKey="reasonCode"/>
-				<param name="forward" value="exception"/>
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
+	<ibis>
+		<adapter name="ReturnedSessionKeys" description="Test the functioning of the attribute returnedSessionKeys">
+			<receiver returnedSessionKeys="returnCode,reasonCode">
+				<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" />
+			</receiver>
+			<pipeline firstPipe="SetReturnCode">
+				<exits>
+					<exit path="EXIT" state="success" />
+				</exits>
+				<pipe name="SetReturnCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode">
+					<forward name="success" path="SetReasonCode" />
+				</pipe>
+				<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
+					<forward name="success" path="SwitchThrowException" />
+				</pipe>
+				<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
+					<forward name="true" path="ThrowExceptionTrue" />
+				</pipe>
+				<pipe name="ThrowExceptionTrue" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+					<forward name="success" path="EXIT" />
+				</pipe>
+				<pipe name="ThrowExceptionFalse" className="nl.nn.adapterframework.pipes.ExceptionPipe" throwException="false">
+					<forward name="success" path="EXIT" />
+				</pipe>
+			</pipeline>
+		</adapter>
+	</ibis>
+	<ibis>
+		<adapter name="ReturnedSessionKeysCaller" description="Test the functioning of the attribute returnedSessionKeys">
+			<receiver>
+				<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeysCaller" />
+			</receiver>
+			<pipeline firstPipe="ReturnedSessionKeys">
+				<exits>
+					<exit path="EXIT" state="success" />
+				</exits>
+				<pipe name="ReturnedSessionKeys" className="nl.nn.adapterframework.pipes.SenderPipe">
+					<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode" />
+					<forward name="success" path="Reply_success" />
+					<forward name="exception" path="Reply_exception" />
+				</pipe>
+				<pipe name="Reply_success" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+					<param name="returnCode" sessionKey="returnCode"/>
+					<param name="reasonCode" sessionKey="reasonCode"/>
+					<param name="forward" value="success"/>
+					<forward name="success" path="EXIT" />
+				</pipe>
+				<pipe name="Reply_exception" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+					<param name="returnCode" sessionKey="returnCode"/>
+					<param name="reasonCode" sessionKey="reasonCode"/>
+					<param name="forward" value="exception"/>
+					<forward name="success" path="EXIT" />
+				</pipe>
+			</pipeline>
+		</adapter>
+	</ibis>
 </module>

@@ -59,43 +59,45 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		if (sapSystem == null) {
 			log.warn("Could not find destination name");
 			return null;
-		}
-		CredentialFactory cf = new CredentialFactory(sapSystem.getAuthAlias(), sapSystem.getUserid(), sapSystem.getPasswd());
-		Properties destinationProperties = new Properties();
-		// See Javadoc DestinationDataProvider for available properties and their description.
-		if (StringUtils.isEmpty(sapSystem.getGroup())) {
-			destinationProperties.setProperty(DestinationDataProvider.JCO_ASHOST, sapSystem.getAshost());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SYSNR, sapSystem.getSystemnr());
 		} else {
-			destinationProperties.setProperty(DestinationDataProvider.JCO_R3NAME, sapSystem.getR3name());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_MSHOST, sapSystem.getMshost());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_MSSERV, sapSystem.getMsserv());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_GROUP, sapSystem.getGroup());
-		}
-		destinationProperties.setProperty(DestinationDataProvider.JCO_CLIENT, sapSystem.getMandant());
-		if(cf.getUsername() != null) {
-			destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
-		}
-		destinationProperties.setProperty(DestinationDataProvider.JCO_LANG, sapSystem.getLanguage());
-		destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode()?"2":"1");
-		destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, ""+sapSystem.getMaxConnections());
-
-		if(sapSystem.isSncEnabled()) {
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, sapSystem.getSncAuthMethod());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
-			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
-			if(sapSystem.getSncAuthMethod().equals("1")) {
-				destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); //Automatically order a SSO ticket after logon
-				if(sapSystem.getSncSSO2().equals("1"))
-					destinationProperties.setProperty(DestinationDataProvider.JCO_MYSAPSSO2, sapSystem.getSncSSO2());
+			CredentialFactory cf = new CredentialFactory(sapSystem.getAuthAlias(), sapSystem.getUserid(), sapSystem.getPasswd());
+			Properties destinationProperties = new Properties();
+			// See Javadoc DestinationDataProvider for available properties and their description.
+			if (StringUtils.isEmpty(sapSystem.getGroup())) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_ASHOST, sapSystem.getAshost());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SYSNR, sapSystem.getSystemnr());
+			} else {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_R3NAME, sapSystem.getR3name());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_MSHOST, sapSystem.getMshost());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_MSSERV, sapSystem.getMsserv());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_GROUP, sapSystem.getGroup());
 			}
-		}
+			destinationProperties.setProperty(DestinationDataProvider.JCO_CLIENT, sapSystem.getMandant());
+			if(cf.getUsername() != null) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_USER, cf.getUsername());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_PASSWD, cf.getPassword());
+			}
+			destinationProperties.setProperty(DestinationDataProvider.JCO_LANG, sapSystem.getLanguage());
+			destinationProperties.setProperty(DestinationDataProvider.JCO_PCS, sapSystem.isUnicode()?"2":"1");
+			destinationProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, ""+sapSystem.getMaxConnections());
 
-		return destinationProperties;
+			if(sapSystem.isSncEncrypted()) {
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MODE, "1");
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_LIBRARY, sapSystem.getSncLibrary());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_QOP, sapSystem.getSncQop()+"");
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_SSO, sapSystem.getSncAuthMethod());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
+				destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
+				if(sapSystem.getSncAuthMethod().equals("1")) {
+					destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); //Automatically order a SSO ticket after logon
+					if(sapSystem.getSncSSO2().equals("1"))
+						destinationProperties.setProperty(DestinationDataProvider.JCO_MYSAPSSO2, sapSystem.getSncSSO2());
+				}
+			}
+
+
+			return destinationProperties;
+		}
 	}
 
 	@Override

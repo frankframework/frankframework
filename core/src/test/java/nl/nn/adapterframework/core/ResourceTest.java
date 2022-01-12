@@ -9,15 +9,14 @@ import java.util.jar.JarFile;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.xml.ClassLoaderURIResolver;
 
 public class ResourceTest {
 
@@ -42,17 +41,17 @@ public class ResourceTest {
 
 
 	@Test
-	public void localClassLoaderPlainRef() throws Exception {
+	public void localClassLoaderPlainRef() throws TransformerException, SAXException, IOException {
 		testUri(null, "/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void localClassLoaderClasspathRef() throws Exception {
+	public void localClassLoaderClasspathRef() throws TransformerException, SAXException, IOException {
 		testUri(null, "classpath:/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void localClassLoaderFileRef() throws Exception {
+	public void localClassLoaderFileRef() throws TransformerException, SAXException, IOException {
 		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
@@ -60,39 +59,23 @@ public class ResourceTest {
 	}
 
 	@Test
-	public void bytesClassLoaderPlainRef() throws Exception {
+	public void bytesClassLoaderPlainRef() throws TransformerException, SAXException, IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 	
 	@Test
-	public void bytesClassLoaderClasspathRef() throws Exception {
+	public void bytesClassLoaderClasspathRef() throws TransformerException, SAXException, IOException, ConfigurationException {
 		testUri(getBytesClassLoaderProvider(), "classpath:/ClassLoader/ClassLoaderTestFile.xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", "classpath:/ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
-	public void bytesClassLoaderFileRef() throws Exception {
+	public void bytesClassLoaderFileRef() throws TransformerException, SAXException, IOException, ConfigurationException {
 		URL url = ClassUtils.getResourceURL(testScopeProvider, "/ClassLoader/ClassLoaderTestFile.xml");
 		assertNotNull(url);
 		String ref=url.toExternalForm();
 		testUri(getBytesClassLoaderProvider(), ref, "file", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>", ref);
 	}
 
-	@Test
-	@Ignore("we do not see this as a problem for situations outside ConfigurationClassLoaded classes")
-	public void testResolveOutsideParentsFolder() throws TransformerException {
-		
-		String baseResource = "/org/apache/xerces/impl/Constants.class";
-		String relativeResource = "../dom/CommentImpl.class";
-		
-		URL url = this.getClass().getResource(baseResource);
-		//System.out.println("url ["+url.toExternalForm()+"]");
-		Resource resource = Resource.getResource(baseResource);
-		//System.out.println("resource ["+resource.getSystemId()+"]");
-		
-		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(resource);
-		
-		assertNotNull(resolver.resolve(relativeResource, url.toExternalForm()));
-	}
 
 //	private ClassLoader getClassLoader(BaseType baseType) throws ConfigurationException, IOException {
 //		if (baseType==BaseType.BYTES) {
@@ -181,7 +164,7 @@ public class ResourceTest {
 //	}
 
 
-	private IScopeProvider getBytesClassLoaderProvider() throws Exception {
+	private IScopeProvider getBytesClassLoaderProvider() throws IOException, ConfigurationException {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);

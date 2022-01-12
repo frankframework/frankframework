@@ -42,7 +42,11 @@ import nl.nn.adapterframework.util.SpringUtils;
 /**
  * Baseclass for batch {@link nl.nn.adapterframework.batch.IResultHandler resultHandler} that writes the transformed record to a LOB.
  * 
- * @ff.parameters any parameters defined on the resultHandler will be applied to the SQL statement
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
+ * </table>
+ * <p/>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7

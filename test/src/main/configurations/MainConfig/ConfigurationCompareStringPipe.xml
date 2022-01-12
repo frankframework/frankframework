@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="CompareStringPipe" description="Test the functioning of the CompareStringPipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="CompareStringPipe" serviceName="ibis4test-CompareStringPipe" />
@@ -28,4 +28,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

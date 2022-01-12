@@ -169,7 +169,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return memoryStoreEvictionPolicy;
 	}
 
-	@IbisDoc({"3", "If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "false"})
+	@IbisDoc({"3", "If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "<code>false</code>"})
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
 	}
@@ -177,7 +177,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return eternal;
 	}
 
-	@IbisDoc({"4", "The amount of time <i>in seconds</i> to live for an element from its creation date", "36000"})
+	@IbisDoc({"4", "The amount of time to live for an element from its creation date", "36000 (=10 hours)"})
 	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
 		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
@@ -185,7 +185,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToLiveSeconds;
 	}
 
-	@IbisDoc({"5", "The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date", "36000"})
+	@IbisDoc({"5", "The amount of time to live for an element from its last accessed or modified date", "36000 (=10 hours)"})
 	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
 		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
@@ -193,7 +193,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToIdleSeconds;
 	}
 
-	@IbisDoc({"6", "If <code>true</code>, the elements that are evicted from memory are spooled to disk", "false"})
+	@IbisDoc({"6", "If <code>true</code>, the elements that are evicted from memory are spooled to disk", "<code>false</code>"})
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
 	}
@@ -209,7 +209,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return maxElementsOnDisk;
 	}
 
-	@IbisDoc({"8", "If <code>true</code>, the the cache is reloaded after the JVM restarts", "false"})
+	@IbisDoc({"8", "If <code>true</code>, the the cache is reloaded after the JVM restarts", "<code>false</code>"})
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}

@@ -15,7 +15,6 @@
 */
 package nl.nn.ibistesttool;
 
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
@@ -30,8 +29,6 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
 public interface IbisDebugger {
-
-	public void setIbisManager(IbisManager ibisManager);
 
 	public Message pipeLineInput(PipeLine pipeLine, String correlationId, Message input);
 	public Message pipeLineOutput(PipeLine pipeLine, String correlationId, Message output);
@@ -48,7 +45,7 @@ public interface IbisDebugger {
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
 	public String replyListenerInput(IListener<?> listener, String messageId, String correlationId);
-	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output);
+	public String replyListenerOutput(IListener<?> listener, String correlationId, String output);
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable);
 
 	public void createThread(Object sourceObject, String threadId, String correlationId);

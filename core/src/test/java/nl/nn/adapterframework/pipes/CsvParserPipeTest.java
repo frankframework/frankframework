@@ -7,7 +7,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.pipes.CsvParserPipe.HeaderCase;
 
 public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
@@ -75,7 +74,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	@Test
 	public void testHeaderCaseUpper() throws Exception {
 		pipe.setFieldNames("p,q,r");
-		pipe.setHeaderCase(HeaderCase.UPPERCASE);
+		pipe.setHeaderCase("uppercase");
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
 		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
@@ -88,7 +87,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	@Test
 	public void testHeaderCaseLower() throws Exception {
 		pipe.setFieldNames("P,q,R");
-		pipe.setHeaderCase(HeaderCase.LOWERCASE);
+		pipe.setHeaderCase("lowercase");
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
 		String csv ="a,b,c\n1,2,3\nx,\"y,y\"";
@@ -112,7 +111,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 
 	@Test
 	public void testHeaderFromFileCaseLower() throws Exception {
-		pipe.setHeaderCase(HeaderCase.LOWERCASE);
+		pipe.setHeaderCase("lowercase");
 		pipe.setFileContainsHeader(true);
 		configureAndStartPipe();
 		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
@@ -124,7 +123,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	
 	@Test
 	public void testNoHeaderFromFileCaseLower() throws Exception {
-		pipe.setHeaderCase(HeaderCase.LOWERCASE);
+		pipe.setHeaderCase("lowercase");
 		configureAndStartPipe();
 		String csv ="A,b,c\n1,2,3\nx,\"y,y\"";
 		String expected="<csv><record><a>1</a><b>2</b><c>3</c></record><record><a>x</a><b>y,y</b></record></csv>";

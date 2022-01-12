@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -289,7 +289,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				cmhVersion = 0;
 			}
 		}
-		if (getDirection()==Direction.WRAP) {
+		if ("wrap".equalsIgnoreCase(getDirection())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}
@@ -645,7 +645,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return mode.toString();
 	}
 
-	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
+	@IbisDoc({"(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)", "1 when <code>mode=reg</code>, 0 otherwise"})
 	public void setCmhVersion(int i) {
 		cmhVersion = i;
 	}
@@ -654,7 +654,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return cmhVersion;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')", "false"})
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')", "<code>false</code>"})
 	public void setAddOutputNamespace(boolean b) {
 		addOutputNamespace = b;
 	}
@@ -683,7 +683,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "true"})
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "<code>true</code>"})
 	public void setRetrievePhysicalDestination(boolean b) {
 		retrievePhysicalDestination = b;
 	}
@@ -760,7 +760,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
-	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "false"})
+	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "<code>false</code>"})
 	public void setUseFixedValues(boolean b) {
 		useFixedValues = b;
 	}
@@ -769,7 +769,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return useFixedValues;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "false"})
+	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "<code>false</code>"})
 	public void setFixResultNamespace(boolean b) {
 		fixResultNamespace = b;
 	}
@@ -778,12 +778,12 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return fixResultNamespace;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", ""})
+	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", "<code></code>"})
 	public void setP2pAlias(String p2pAlias) {
 		this.p2pAlias = p2pAlias;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", ""})
+	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", "<code></code>"})
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
 	}

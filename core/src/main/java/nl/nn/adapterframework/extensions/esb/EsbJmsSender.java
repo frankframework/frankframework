@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,43 +15,56 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
-import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * ESB (Enterprise Service Bus) extension of JmsSender.
  *
+ * <p><b>Configuration </b><i>(where deviating from JmsSender)</i><b>:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
+ * <ul>
+ *   <li>"FF": Fire & Forget protocol</li>
+ *   <li>"RR": Request-Reply protocol</li>
+ * </ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 (20s)</td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
+ * <tr><td>{@link #setDeliveryMode(String) deliveryMode}</td><td></td><td>if messageProtocol=<code>RR</code>: </td><td><code>"NON_PERSISTENT"</code></td></tr>
+ * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>if messageProtocol=<code>RR</code>: </td><td>{@link #setTimeOut(long) timeOut}</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>&nbsp;</td><td>if empty then derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</td></tr>
+ * </table></p>
+ * 
  * @author  Peter Leeuwenburgh
  */
 public class EsbJmsSender extends JmsSender {
+	private final static String REQUEST_REPLY = "RR";
+	private final static String FIRE_AND_FORGET = "FF";
 
-	public enum MessageProtocol {
-		/** Fire & Forget protocol */
-		FF,
-		/** Request-Reply protocol */
-		RR;
-	}
-	
-	private @Getter MessageProtocol messageProtocol = null;
-	private @Getter long timeOut = 20000;
+	private String messageProtocol = null;
+	private long timeOut = 20000;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == null) {
 			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
 		}
-		if (getMessageProtocol() == MessageProtocol.RR) {
-			setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+		if (!getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY) && !getMessageProtocol().equalsIgnoreCase(FIRE_AND_FORGET)) {
+			throw new ConfigurationException(getLogPrefix() + "illegal value for messageProtocol [" + getMessageProtocol() + "], must be '" + REQUEST_REPLY + "' or '" + FIRE_AND_FORGET + "'");
+		}
+		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
+			setDeliveryModeEnum(DeliveryMode.NON_PERSISTENT);
 			setMessageTimeToLive(getTimeOut());
 			setReplyTimeout((int) getTimeOut());
 			setSynchronous(true);
 		} else {
-			if (getReplyToName() != null) {
-				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyToName() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
+			if (getReplyTo() != null) {
+				throw new ConfigurationException(getLogPrefix() + "replyToName [" + getReplyTo() + "] must not be set for messageProtocol [" + getMessageProtocol() + "]");
 			}
 		}
 		if (StringUtils.isEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
@@ -65,38 +78,19 @@ public class EsbJmsSender extends JmsSender {
 		super.configure();
 	}
 
-	/** protocol of ESB service to be called */
-	public void setMessageProtocol(MessageProtocol protocol) {
-		messageProtocol = protocol;
+	public void setMessageProtocol(String string) {
+		messageProtocol = string;
 	}
 
-	/** receiver timeout, in milliseconds
-	 * ff.default 20000 (20s) */
+	public String getMessageProtocol() {
+		return messageProtocol;
+	}
+
+	public long getTimeOut() {
+		return timeOut;
+	}
+
 	public void setTimeOut(long l) {
 		timeOut = l;
 	}
-	
-	
-	/** if messageProtocol=<code>RR</code> then <code>deliveryMode</code> defaults to <code>NON_PERSISTENT</code> */
-	@Override
-	public void setDeliveryMode(DeliveryMode deliveryMode) {
-		super.setDeliveryMode(deliveryMode);
-	}
-	
-	/** if messageProtocol=<code>RR</code> then <code>replyTimeout</code> defaults to <code>timeOut</code> */
-	@Override
-	public void setReplyTimeout(int replyTimeout) {
-		super.setReplyTimeout(replyTimeout);
-	}
-	/** if messageProtocol=<code>RR</code> then <code>synchronous</code> defaults to <code>true</code> */
-	@Override
-	public void setSynchronous(boolean synchronous) {
-		super.setSynchronous(synchronous);
-	}
-	/** if messageProtocol=<code>RR</code> then if <code>soapAction</code> is empty then it is derived from the element MessageHeader/To/Location in the SOAP header of the input message (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion) */
-	@Override
-	public void setSoapAction(String soapAction) {
-		super.setSoapAction(soapAction);
-	}
-	
 }

@@ -15,7 +15,8 @@ public class PropertyUtil {
 	protected static Logger log = LogUtil.getLogger(PropertyUtil.class);
 
 	public static Map<String,Properties> propertiesMap = new HashMap<>();
-
+	
+	
 	public static String getProperty(String propertyFile, String property) {
 		Properties properties = propertiesMap.get(propertyFile);
 		if (properties == null) {
@@ -29,29 +30,13 @@ public class PropertyUtil {
 		}
 		return properties.getProperty(property);
 	}
-
+	
 	public static String getProperty(String propertyFile, String property, String defaultValue) {
 		String result = getProperty(propertyFile, property);
 		if (StringUtils.isEmpty(result)) {
 			return defaultValue;
 		}
 		return result;
-	}
-
-	public static boolean getProperty(String propertyFile, String property, boolean defaultValue) {
-		String result = getProperty(propertyFile, property);
-		if (StringUtils.isEmpty(result)) {
-			return defaultValue;
-		}
-		return Boolean.parseBoolean(result);
-	}
-
-	public static int getProperty(String propertyFile, String property, int defaultValue) {
-		String result = getProperty(propertyFile, property);
-		if (StringUtils.isEmpty(result)) {
-			return defaultValue;
-		}
-		return Integer.parseInt(result);
 	}
 
 }

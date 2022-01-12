@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -73,14 +73,14 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private StringBuffer items = new StringBuffer();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
-
+			
 			@Override
-			public void endIterating() throws SenderException, TimeoutException, IOException {
+			public void endIterating() throws SenderException, TimeOutException, IOException {
 				finalizeBlock();
 				super.endIterating();
 			}
 			@Override
-			public void startBlock() throws SenderException, TimeoutException, IOException {
+			public void startBlock() throws SenderException, TimeOutException, IOException {
 				processingInBlocks=true;
 				super.startBlock();
 				if (isCombineBlocks()) {
@@ -88,35 +88,34 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 			}
 			
-			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
+			private boolean finalizeBlock() throws SenderException, TimeOutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());
-					StopReason stopReason = super.handleItem(items.toString());
+					boolean result = super.handleItem(items.toString());
 					items.setLength(0);
-					return stopReason;
+					return result;
 				}
-				return null;
+				return false;
 			}
 			
 			@Override
-			public StopReason handleItem(String item) throws SenderException, TimeoutException, IOException {
+			public boolean handleItem(String item) throws SenderException, TimeOutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
 				} 
 				if (processInBlocksByKey) {
 					String key = getKey(item);
 					if (!key.equals(previousKey)) { 
-						StopReason stopReason = finalizeBlock();
-						if(stopReason != null) {
-							return stopReason;
+						if (previousKey!=null && !finalizeBlock()) {
+							return false;
 						}
 						startBlock();
 						previousKey=key;
 					}
 				}
 				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
-				StopReason result = null;
+				boolean result = true;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
 					++itemCounter;
@@ -128,7 +127,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
 					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
-					return StopReason.MAX_ITEMS_REACHED;
+					return false;
 				}
 				return result;
 			}

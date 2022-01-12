@@ -2,7 +2,6 @@ package nl.nn.adapterframework.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -11,10 +10,8 @@ import org.hamcrest.core.StringEndsWith;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.extensions.esb.DirectWrapperPipe;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
@@ -225,52 +222,4 @@ public class PipeLineTest {
 	}
 
 	//Should add tests to assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has no pipe forwards defined"));
-
-
-	@Test
-	public void testDirectWrapperPipeSuccessForward() throws ConfigurationException, PipeRunException {
-		TestConfiguration configuration = new TestConfiguration();
-		PipeLine pipeline = configuration.createBean(PipeLine.class);
-
-		PipeForward pf = configuration.createBean(PipeForward.class);
-		pf.setName("success");
-		pf.setPath("nextPipe");
-
-		PipeForward toExit = configuration.createBean(PipeForward.class);
-		toExit.setName("success");
-		toExit.setPath("EXIT");
-
-		DirectWrapperPipe pipe = configuration.createBean(DirectWrapperPipe.class);
-		pipe.setName("DirectWrapperPipe");
-		pipe.registerForward(pf);
-		pipeline.addPipe(pipe);
-
-		EchoPipe echoPipe = configuration.createBean(EchoPipe.class);
-		echoPipe.setName("nextPipe");
-		echoPipe.setPipeLine(pipeline);
-		echoPipe.registerForward(toExit);
-		pipeline.addPipe(echoPipe);
-
-		PipeLineExit exit = configuration.createBean(PipeLineExit.class);
-		exit.setPath("exit");
-		exit.setState("success");
-		pipeline.registerPipeLineExit(exit);
-
-		pipeline.setOwner(pipe);
-		pipeline.configure();
-
-		CorePipeProcessor cpp = configuration.createBean(CorePipeProcessor.class);
-		PipeLineSession ps = configuration.createBean(PipeLineSession.class);
-
-		PipeRunResult pipeRunResult=cpp.processPipe(pipeline, pipe, new Message("<dummy/>"), ps);
-
-		PipeForward pipeForward=pipeRunResult.getPipeForward();
-
-		IForwardTarget target = pipeline.resolveForward(pipe, pipeForward);
-
-		assertNotNull(target);
-
-		configuration.close();
-		configuration = null;
-	}
 }

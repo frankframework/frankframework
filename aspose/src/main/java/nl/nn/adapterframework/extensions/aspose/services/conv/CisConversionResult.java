@@ -24,9 +24,10 @@ import org.apache.tika.mime.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
+ *         Hoorn</a> (d937275)
  */
 public class CisConversionResult {
 

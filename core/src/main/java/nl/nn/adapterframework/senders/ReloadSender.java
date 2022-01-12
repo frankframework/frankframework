@@ -22,18 +22,23 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Performs a reload on database configuration.
- * 
+ * Performs a reload on database config .
+ *
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * </table>
+ * </p>
  * <p>It is possible to set the name of the configuration with the parameter 'name'.</p>
  * <p>You can dynamically set 'forceReload' attribute with the parameter 'forceReload'.</p>
- * 
  * @author	Lars Sinke
  * @author	Niels Meijer
  */
@@ -43,20 +48,19 @@ public class ReloadSender extends SenderWithParametersBase {
 	private @Setter IbisManager ibisManager;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		String configName = null;
 		String activeVersion = null;
-		boolean forceReload = getForceReload();
 
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
 				pvl = paramList.getValues(message, session);
 				if(pvl.getParameterValue("name") != null)
-					configName = pvl.getParameterValue("name").asStringValue();
+					configName = (String) pvl.getParameterValue("name").getValue();
 				if(pvl.getParameterValue("forceReload") != null)
-					forceReload = pvl.getParameterValue("forceReload").asBooleanValue(false);
+					setForceReload(Boolean.parseBoolean((String)pvl.getParameterValue("forceReload").getValue()));
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
@@ -70,9 +74,8 @@ public class ReloadSender extends SenderWithParametersBase {
 		}
 
 		try {
-			if(!forceReload) {
+			if(!getForceReload())
 				activeVersion = XmlUtils.evaluateXPathNodeSetFirstElement(message.asString(), "row/field[@name='VERSION']");
-			}
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"error evaluating Xpath expression activeVersion", e);
 		}
@@ -81,7 +84,7 @@ public class ReloadSender extends SenderWithParametersBase {
 
 		if (configuration != null) {
 			String latestVersion = configuration.getVersion();
-			if (forceReload || (latestVersion != null && !activeVersion.equals(latestVersion))) {
+			if (getForceReload() || (latestVersion != null && !activeVersion.equals(latestVersion))) {
 				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
 				return new Message("Reload " + configName + " succeeded");

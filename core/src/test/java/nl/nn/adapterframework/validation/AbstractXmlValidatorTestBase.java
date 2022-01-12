@@ -48,9 +48,14 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 			instance.configure("init");
 			instance.start();
 
-			RootValidations rootvalidations = null;
+			Set<List<String>> rootvalidations = null;
 			if(rootElement != null) {
-				rootvalidations = new RootValidations("Envelope", "Body", rootElement);
+				List<String> rootvalidation = new ArrayList<String>();
+				rootvalidation.add("Envelope");
+				rootvalidation.add("Body");
+				rootvalidation.add(rootElement);
+				rootvalidations = new HashSet<List<String>>();
+				rootvalidations.add(rootvalidation);
 			}
 			String result = instance.validate(testXml, session, "test", rootvalidations, null);
 			evaluateResult(result, session, null, expectedFailureReasons);

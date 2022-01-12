@@ -16,13 +16,11 @@
 package nl.nn.credentialprovider.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,31 +57,6 @@ public class ClassUtils {
 		return theConstructor;
 	}
 
-	public static URL getResourceURL(String resource) throws FileNotFoundException {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-		String resourceToUse = resource; //Don't change the original resource name for logging purposes
-
-		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader. 
-		// Resources retrieved from ClassLoaders should never start with a leading slash
-		if (resourceToUse.startsWith("/")) {
-			resourceToUse = resourceToUse.substring(1);
-		}
-		URL url = classLoader.getResource(resourceToUse);
-
-		// then try to get it as a URL
-		if (url == null && resourceToUse.contains(":")) {
-			try {
-				url = new URL(Misc.replace(resourceToUse, " ", "%20"));
-			} catch (MalformedURLException e) {
-				FileNotFoundException fnfe = new FileNotFoundException("Cannot find resource ["+resourceToUse+"]");
-				fnfe.initCause(e);
-				throw fnfe;
-			}
-		}
-
-		return url;
-	}
 
 	
     /**

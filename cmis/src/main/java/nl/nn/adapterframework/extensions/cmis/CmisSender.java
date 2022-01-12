@@ -64,13 +64,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.encryption.HasKeystore;
-import nl.nn.adapterframework.encryption.HasTruststore;
-import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
-import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
@@ -88,33 +84,52 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  *
  * <p>
+ * <table border="1">
+ * <b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>authAlias</td><td>string</td><td>When a parameter with name authAlias is present, it is used instead of the authAlias specified by the attribute</td></tr>
+ * <tr><td>userName</td><td>string</td><td>When a parameter with name userName is present, it is used instead of the userName specified by the attribute</td></tr>
+ * <tr><td>password</td><td>string</td><td>When a parameter with name password is present, it is used instead of the password specified by the attribute</td></tr>
+ * </table>
+ * </p>
+ *
+ * <p>
  * When <code>action=get</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>Example:</b>
- * <pre><code>
+ * <b>example:</b>
+ * <code>
+ * <pre>
  *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
+ *      &lt;id&gt;
+ *         documentId
+ *      &lt;/id&gt;
  *   &lt;/cmis&gt;
- * </code></pre>
+ * </pre>
+ * </code>
  * </p>
  * <p>
  * When <code>action=delete</code> the input (xml string) indicates the id of the document to get. This input is mandatory.
  * </p>
  * <p>
- * <b>Example:</b>
- * <pre><code>
+ * <b>example:</b>
+ * <code>
+ * <pre>
  *   &lt;cmis&gt;
- *      &lt;id&gt;documentId&lt;/id&gt;
+ *      &lt;id&gt;
+ *         documentId
+ *      &lt;/id&gt;
  *   &lt;/cmis&gt;
- * </code></pre>
+ * </pre>
+ * </code>
  * </p>
  * <p>
  * When <code>action=create</code> the input (xml string) indicates document properties to set. This input is optional.
  * </p>
  * <p>
- * <b>Example:</b>
- * <pre><code>
+ * <b>example:</b>
+ * <code>
+ * <pre>
  *   &lt;cmis&gt;
  *      &lt;name&gt;Offerte&lt;/name&gt;
  *      &lt;objectTypeId&gt;NNB_Geldlening&lt;/objectTypeId&gt;
@@ -125,7 +140,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </code></pre>
+ * </pre>
+ * </code>
  * </p>
  *
  * <p>
@@ -151,8 +167,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * When <code>action=find</code> the input (xml string) indicates the query to perform.
  * </p>
  * <p>
- * <b>Example:</b>
- * <pre><code>
+ * <b>example:</b>
+ * <code>
+ * <pre>
  *   &lt;query&gt;
  *      &lt;statement&gt;select * from cmis:document&lt;/statement&gt;
  *      &lt;maxItems&gt;10&lt;/maxItems&gt;
@@ -160,14 +177,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  *      &lt;searchAllVersions&gt;true&lt;/searchAllVersions&gt;
  *      &lt;includeAllowableActions&gt;true&lt;/includeAllowableActions&gt;
  *   &lt;/query&gt;
- * </code></pre>
+ * </pre>
+ * </code>
  * </p>
  * <p>
  * When <code>action=update</code> the input (xml string) indicates document properties to update.
  * </p>
  * <p>
- * <b>Example:</b>
- * <pre><code>
+ * <b>example:</b>
+ * <code>
+ * <pre>
  *   &lt;cmis&gt;
  *      &lt;id&gt;123456789&lt;/id&gt;
  *      &lt;properties&gt;
@@ -176,7 +195,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  *         &lt;property name="DocumentType"&gt;Geldlening&lt;/property&gt;
  *      &lt;/properties&gt;
  *   &lt;/cmis&gt;
- * </code></pre>
+ * </pre>
+ * </code>
  * </p>
  *
  * <p>
@@ -187,17 +207,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table>
  * </p>
  *
- * @ff.parameter authAlias overrides authAlias specified by the attribute <code>authAlias</code>
- * @ff.parameter username overrides username specified by the attribute <code>username</code>
- * @ff.parameter password overrides password specified by the attribute <code>password</code>
- *
  * @author	Peter Leeuwenburgh
  * @author	Niels Meijer
  */
-public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
+public class CmisSender extends SenderWithParametersBase {
 
 	private String authAlias;
-	private String username;
+	private String userName;
 	private String password;
 	private String filenameSessionKey;
 	private String defaultMediaType = "application/octet-stream";
@@ -252,15 +268,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
 		}
 
-		if (getParameterList() != null) {
-			if (getParameterList().findParameter("userName") != null) {
-				ConfigurationWarnings.add(this, log, "parameter 'userName' has been replaced by 'username'");
-			}
-			
-			// Legacy; check if the session should be created runtime (and thus for each call)
-			if(getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("username") != null || getParameterList().findParameter("userName") != null ) {
-				runtimeSession = true;
-			}
+		// Legacy; check if the session should be created runtime (and thus for each call)
+		if(getParameterList() != null && (getParameterList().findParameter("authAlias") != null || getParameterList().findParameter("userName") != null )) {
+			runtimeSession = true;
 		}
 		if(!isKeepSession()) {
 			runtimeSession = true;
@@ -269,41 +279,39 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	/**
 	 * Creates a session during JMV runtime, tries to retrieve parameters and falls back on the defaults when they can't be found
+	 * @param pvl TODO
 	 */
 	public Session createCmisSession(ParameterValueList pvl) throws SenderException {
 		String authAlias_work = null;
-		String username_work = null;
+		String userName_work = null;
 		String password_work = null;
 
 		if (pvl != null) {
 			ParameterValue pv = pvl.getParameterValue("authAlias");
 			if (pv != null) {
-				authAlias_work = pv.asStringValue();
+				authAlias_work = (String) pv.getValue();
 			}
-			pv = pvl.getParameterValue("username");
-			if (pv == null) {
-				pv = pvl.getParameterValue("userName");
-			}
+			pv = pvl.getParameterValue("userName");
 			if (pv != null) {
-				username_work = pv.asStringValue();
+				userName_work = (String) pv.getValue();
 			}
 			pv = pvl.getParameterValue("password");
 			if (pv != null) {
-				password_work = pv.asStringValue();
+				password_work = (String) pv.getValue();
 			}
 		}
 
 		if (authAlias_work == null) {
 			authAlias_work = getAuthAlias();
 		}
-		if (username_work == null) {
-			username_work = getUsername();
+		if (userName_work == null) {
+			userName_work = getUserName();
 		}
 		if (password_work == null) {
 			password_work = getPassword();
 		}
 
-		CredentialFactory cf = new CredentialFactory(authAlias_work, username_work, password_work);
+		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
 		try {
 			return getSessionBuilder().build(cf.getUsername(), cf.getPassword());
 		}
@@ -338,7 +346,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
@@ -383,7 +391,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeoutException {
+	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -395,8 +403,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
+			} else {
+				throw new SenderException(e);
 			}
-			throw new SenderException(e);
 		}
 
 		Document document = (Document) object;
@@ -405,9 +414,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			boolean getProperties = isGetProperties();
 			boolean getDocumentContent = isGetDocumentContent();
 			if (pvl != null) {
-				if(pvl.contains("getProperties"))
+				if(pvl.parameterExists("getProperties"))
 					getProperties = pvl.getParameterValue("getProperties").asBooleanValue(isGetProperties());
-				if(pvl.contains("getDocumentContent"))
+				if(pvl.parameterExists("getDocumentContent"))
 					getDocumentContent = pvl.getParameterValue("getDocumentContent").asBooleanValue(isGetDocumentContent());
 			}
 
@@ -468,16 +477,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					}
 					return Message.nullMessage();
 				}
-				session.put("contentStream:MimeType", contentStream.getMimeType());
-				session.put("contentStream:Filename", contentStream.getFileName());
-				return new Message(inputStream);
+				else {
+					session.put("contentStream:MimeType", contentStream.getMimeType());
+					session.put("contentStream:Filename", contentStream.getFileName());
+					return new Message(inputStream);
+				}
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String fileName = null;
 		try {
 			fileName = session.getMessage(getFilenameSessionKey()).asString();
@@ -544,10 +555,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			Document document = folder.createDocument(props, contentStream, VersioningState.NONE);
 			log.debug(getLogPrefix() + "created new document [ " + document.getId() + "]");
 			return new Message(document.getId());
+		} else {
+			ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
+			log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
+			return new Message(objectId.getId());
 		}
-		ObjectId objectId = cmisSession.createDocument(props, null, contentStream, VersioningState.NONE);
-		log.debug(getLogPrefix() + "created new document [ " + objectId.getId() + "]");
-		return new Message(objectId.getId());
 	}
 
 	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
@@ -609,7 +621,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -620,8 +632,9 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
+			} else {
+				throw new SenderException(e);
 			}
-			throw new SenderException(e);
 		}
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
@@ -629,12 +642,12 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			String correlationID = session==null ? null : session.getMessageId();
 			return new Message(correlationID);
 
+		} else {  //// You can't delete
+			throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 		}
-		//// You can't delete
-		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 	}
 
-	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeoutException {
+	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeOutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -724,12 +737,13 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if(objectIdstr != null) {
 			return cmisSession.getObject(cmisSession.createObjectId(objectIdstr), operationContext);
 		}
-		//Ok, id can still be null, perhaps its a path?
-		String path = XmlUtils.getChildTagAsString(queryElement, "path");
-		return cmisSession.getObjectByPath(path, operationContext);
+		else { //Ok, id can still be null, perhaps its a path?
+			String path = XmlUtils.getChildTagAsString(queryElement, "path");
+			return cmisSession.getObjectByPath(path, operationContext);
+		}
 	}
 
-	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -743,15 +757,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			throw new SenderException(e);
 		}
 
+		String cmisEvent = (String) session.get("CmisEvent");
 		CmisEvent event = CmisEvent.GET_OBJECT;
-		try {
-			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
-			if(StringUtils.isNotEmpty(cmisEvent)) {
-				event = EnumUtils.parse(CmisEvent.class, cmisEvent, true);
-			}
-		} catch (IOException | IllegalArgumentException e) {
-			throw new SenderException("unable to parse CmisEvent", e);
-		}
+		if(StringUtils.isNotEmpty(cmisEvent))
+			event = CmisEvent.valueOf(cmisEvent);
 
 		switch (event) {
 			case DELETE_OBJECT:
@@ -760,7 +769,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				break;
 
 			case CREATE_DOCUMENT:
-				Map<String, Object> props = new HashMap<>();
+				Map<String, Object> props = new HashMap<String, Object>();
 				Element propertiesElement = XmlUtils.getFirstChildTag(requestElement, "properties");
 				if (propertiesElement != null) {
 					processProperties(propertiesElement, props);
@@ -775,17 +784,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				VersioningState state = VersioningState.valueOf(versioningStatestr);
 
 				Element contentStreamXml = XmlUtils.getFirstChildTag(requestElement, "contentStream");
-				Message stream = session.getMessage("ContentStream");
+				InputStream stream = (InputStream) session.get("ContentStream");
 				String fileName = contentStreamXml.getAttribute("filename");
 				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length"));
 				String mediaType = contentStreamXml.getAttribute("mimeType");
-				ContentStream contentStream;
-
-				try {
-					contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream.asInputStream());
-				} catch (IOException e) {
-					throw new SenderException("unable to parse ContentStream as InputStream", e);
-				}
+				ContentStream contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, stream);
 
 				ObjectId createdDocumentId = cmisSession.createDocument(props, folderId, contentStream, state);
 				XmlBuilder cmisId = new XmlBuilder("id");
@@ -927,7 +930,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return new Message(resultXml.toXML());
 	}
 
-	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeoutException {
+	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeOutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;
@@ -956,8 +959,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
 				log.info(getLogPrefix() + "document with id [" + message + "] not found", e);
 				return new Message(getResultOnNotFound());
+			} else {
+				throw new SenderException(e);
 			}
-			throw new SenderException(e);
+
 		}
 		object.updateProperties(props);
 		return new Message(object.getId());
@@ -969,168 +974,69 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setOverrideEntryPointWSDL(overrideEntryPointWSDL);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystore'")
-	public void setCertificateUrl(String certificate) {
-		setKeystore(certificate);
+	@IbisDoc({"Accept self signed certificates", "false"})
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		sessionBuilder.setAllowSelfSignedCertificates(allowSelfSignedCertificates);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystoreAuthAlias'")
-	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		setKeystoreAuthAlias(certificateAuthAlias);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystorePassword'")
-	public void setCertificatePassword(String certificatePassword) {
-		setKeystorePassword(certificatePassword);
-	}
-
-	@Override
-	public void setKeystore(String keystore) {
-		sessionBuilder.setKeystore(keystore);
-	}
-	@Override
-	public String getKeystore() {
-		return sessionBuilder.getKeystore();
-	}
-
-	@Override
-	public void setKeystoreType(KeystoreType keystoreType) {
-		sessionBuilder.setKeystoreType(keystoreType);
-	}
-	@Override
-	public KeystoreType getKeystoreType() {
-		return sessionBuilder.getKeystoreType();
-	}
-
-	@Override
-	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
-	}
-	@Override
-	public String getKeystoreAuthAlias() {
-		return sessionBuilder.getKeystoreAuthAlias();
-	}
-
-	@Override
-	public void setKeystorePassword(String keystorePassword) {
-		sessionBuilder.setKeystorePassword(keystorePassword);
-	}
-	@Override
-	public String getKeystorePassword() {
-		return sessionBuilder.getKeystorePassword();
-	}
-
-	@Override
-	public void setKeystoreAlias(String keystoreAlias) {
-		sessionBuilder.setKeystoreAlias(keystoreAlias);
-	}
-	@Override
-	public String getKeystoreAlias() {
-		return sessionBuilder.getKeystoreAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	}
-	@Override
-	public String getKeystoreAliasAuthAlias() {
-		return sessionBuilder.getKeystoreAliasAuthAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
-	}
-	@Override
-	public String getKeystoreAliasPassword() {
-		return sessionBuilder.getKeystoreAliasPassword();
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-	@Override
-	public String getKeyManagerAlgorithm() {
-		return sessionBuilder.getKeyManagerAlgorithm();
-	}
-
-	
-	@Override
-	public void setTruststore(String truststore) {
-		sessionBuilder.setTruststore(truststore);
-	}
-	@Override
-	public String getTruststore() {
-		return sessionBuilder.getTruststore();
-	}
-
-	@Override
-	public void setTruststoreType(KeystoreType truststoreType) {
-		sessionBuilder.setTruststoreType(truststoreType);
-	}
-	@Override
-	public KeystoreType getTruststoreType() {
-		return sessionBuilder.getTruststoreType();
-	}
-
-
-	@Override
-	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-	@Override
-	public String getTruststoreAuthAlias() {
-		return sessionBuilder.getTruststoreAuthAlias();
-	}
-
-	@Override
-	public void setTruststorePassword(String truststorePassword) {
-		sessionBuilder.setTruststorePassword(truststorePassword);
-	}
-	@Override
-	public String getTruststorePassword() {
-		return sessionBuilder.getTruststorePassword();
-	}
-
-	@Override
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		sessionBuilder.setTrustManagerAlgorithm(trustManagerAlgorithm);
-	}
-	@Override
-	public String getTrustManagerAlgorithm() {
-		return sessionBuilder.getTrustManagerAlgorithm();
-	}
-
-	@Override
+	@IbisDoc({"Ignore certificate hostname validation", "true"})
 	public void setVerifyHostname(boolean verifyHostname) {
 		sessionBuilder.setVerifyHostname(verifyHostname);
 	}
-	@Override
-	public boolean isVerifyHostname() {
-		return sessionBuilder.isVerifyHostname();
-	}
 
-	@Override
-	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
-		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
-	}
-	@Override
-	public boolean isAllowSelfSignedCertificates() {
-		return sessionBuilder.isAllowSelfSignedCertificates();
-	}
-
-	@Override
+	@IbisDoc({"Ignore expired certificate exceptions", "false"})
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
-	@Override
-	public boolean isIgnoreCertificateExpiredException() {
-		return sessionBuilder.isIgnoreCertificateExpiredException();
+
+	@IbisDoc({"Path (or resource url) to certificate to be used for authentication", ""})
+	public void setCertificateUrl(String certificate) {
+		sessionBuilder.setCertificateUrl(certificate);
+	}
+
+	@IbisDoc({"Auth Alias used to obtain certificate password", ""})
+	public void setCertificateAuthAlias(String certificateAuthAlias) {
+		sessionBuilder.setCertificateAuthAlias(certificateAuthAlias);
+	}
+
+	@IbisDoc({"Certificate Password", ""})
+	public void setCertificatePassword(String certificatePassword) {
+		sessionBuilder.setCertificatePassword(certificatePassword);
+	}
+
+	@IbisDoc({"Path (or resource url) to truststore to be used for authentication", ""})
+	public void setTruststore(String truststore) {
+		sessionBuilder.setTruststore(truststore);
+	}
+
+	@IbisDoc({"Alias used to obtain truststore password", ""})
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+
+	@IbisDoc({"Truststore Password", ""})
+	public void setTruststorePassword(String truststorePassword) {
+		sessionBuilder.setTruststorePassword(truststorePassword);
+	}
+
+	@IbisDoc({"Keystore Type", "pkcs12"})
+	public void setKeystoreType(String keystoreType) {
+		sessionBuilder.setKeystoreType(keystoreType);
+	}
+
+	@IbisDoc({"KeyManager Algorithm", "pkix"})
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
+
+	@IbisDoc({"Truststore Type", "jks"})
+	public void setTruststoreType(String truststoreType) {
+		sessionBuilder.setTruststoreType(truststoreType);
+	}
+
+	@IbisDoc({"TrustManager Algorithm", "pkix"})
+	public void setTrustManagerAlgorithm(String getTrustManagerAlgorithm) {
+		sessionBuilder.setTrustManagerAlgorithm(getTrustManagerAlgorithm);
 	}
 
 	@IbisDoc({"Proxy host url", ""})
@@ -1153,7 +1059,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setProxyUsername(proxyUsername);
 	}
 	@Deprecated
-	@ConfigurationWarning("Please use attribute proxyUsername instead")
+	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String proxyUsername) {
 		setProxyUsername(proxyUsername);
 	}
@@ -1210,15 +1116,15 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@IbisDoc({"username used in authentication to host", ""})
 	public void setUsername(String userName) {
 		sessionBuilder.setUsername(userName);
-		this.username = userName;
+		this.userName = userName;
 	}
 	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
+	@ConfigurationWarning("Please use \"username\" instead")
 	public void setUserName(String userName) {
 		setUsername(userName);
 	}
-	public String getUsername() {
-		return username;
+	public String getUserName() {
+		return userName;
 	}
 
 	@IbisDoc({"", ""})
@@ -1283,7 +1189,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
+	@ConfigurationWarning("Please return document content (as sender output) to the listener")
 	@IbisDoc({"(Only used when <code>action=get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher", "false"})
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;

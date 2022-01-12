@@ -19,7 +19,7 @@ import javax.transaction.TransactionManager;
 
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;

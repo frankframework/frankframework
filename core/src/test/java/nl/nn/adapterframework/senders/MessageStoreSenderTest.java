@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.MessageStoreSender;
 import nl.nn.adapterframework.stream.Message;
 
@@ -29,7 +29,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 	}
 
 	@Test
-	public void basic() throws SenderException, TimeoutException, ConfigurationException, IOException {
+	public void basic() throws SenderException, TimeOutException, ConfigurationException, IOException {
 		sender.configure();
 		sender.open();
 
@@ -40,7 +40,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 	}
 
 	@Test
-	public void withSessionKeys() throws SenderException, TimeoutException, ConfigurationException, IOException {
+	public void withSessionKeys() throws SenderException, TimeOutException, ConfigurationException, IOException {
 		session.put("sessionKey1", "value1");
 		session.put("sessionKey2", new Message("value2"));
 		session.put("sessionKey3", "value3".getBytes());

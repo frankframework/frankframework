@@ -72,7 +72,7 @@ public class MessageKeeperMessage {
 		return messageText;
 	}
 	public String getMessageLevel() {
-		return messageLevel!=null ? messageLevel.name() : null;
+		return messageLevel.name();
 	}
 
 	@Override

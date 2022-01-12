@@ -16,11 +16,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.mongodb.MongoDbSender.MongoAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.document.DocumentFormat;
 
 public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
@@ -29,7 +27,8 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private String password="testiaf_user00";
 	private String database="testdb";
 	private String collection="Students";
-
+	private String action="FINDONE";
+	
 	private JndiMongoClientFactory mongoClientFactory;
 
 	@Override
@@ -53,20 +52,20 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testConfigure() throws ConfigurationException {
-		sender.setAction(MongoAction.FINDONE);
+		sender.setAction(action);
 		sender.configure();
 	}
 
 	@Test
 	public void testOpen() throws Exception {
-		sender.setAction(MongoAction.FINDONE);
+		sender.setAction(action);
 		sender.configure();
 		sender.open();
 	}
 
 	@Test
 	public void testInsertOne() throws Exception {
-		sender.setAction(MongoAction.INSERTONE);
+		sender.setAction("InsertOne");
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
@@ -79,7 +78,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testInsertOneNoObjectId() throws Exception {
-		sender.setAction(MongoAction.INSERTONE);
+		sender.setAction("InsertOne");
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
@@ -91,7 +90,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testInsertMany() throws Exception {
-		sender.setAction(MongoAction.INSERTMANY);
+		sender.setAction("InsertMany");
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
@@ -105,7 +104,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	
 	@Test
 	public void testFindOne() throws Exception {
-		sender.setAction(MongoAction.FINDONE);
+		sender.setAction("FindOne");
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
@@ -117,9 +116,9 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindOneXml() throws Exception {
-		sender.setAction(MongoAction.FINDONE);
+		sender.setAction("FindOne");
 		sender.setCollection("Students");
-		sender.setOutputFormat(DocumentFormat.XML);
+		sender.setOutputFormat("xml");
 		sender.configure();
 		sender.open();
 
@@ -130,7 +129,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindMany() throws Exception {
-		sender.setAction(MongoAction.FINDMANY);
+		sender.setAction("FindMany");
 		sender.setCollection("Students");
 		sender.configure();
 		sender.open();
@@ -142,9 +141,9 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindManyXml() throws Exception {
-		sender.setAction(MongoAction.FINDMANY);
+		sender.setAction("FindMany");
 		sender.setCollection("Students");
-		sender.setOutputFormat(DocumentFormat.XML);
+		sender.setOutputFormat("xml");
 		sender.configure();
 		sender.open();
 
@@ -155,7 +154,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindManyUsingParameter() throws Exception {
-		sender.setAction(MongoAction.FINDMANY);
+		sender.setAction("FindMany");
 		sender.setCollection("Students");
 		Parameter param = new Parameter();
 		param.setName("searchTarget");
@@ -171,7 +170,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindManyCountOnly() throws Exception {
-		sender.setAction(MongoAction.FINDMANY);
+		sender.setAction("FindMany");
 		sender.setCollection("Students");
 		sender.setCountOnly(true);
 		sender.configure();
@@ -185,7 +184,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
 	@Test
 	public void testFindManyLimit() throws Exception {
-		sender.setAction(MongoAction.FINDMANY);
+		sender.setAction("FindMany");
 		sender.setCollection("Students");
 		sender.setCountOnly(true);
 		sender.setLimit(1);
@@ -202,7 +201,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		String filter = "{ \"student_id\": \"Evert\" }";
 		String update = "{\"$set\": {\"seatno\":"+10+"}}";
 
-		sender.setAction(MongoAction.UPDATEONE);
+		sender.setAction("UpdateOne");
 		sender.setCollection("Students");
 		sender.setFilter(filter);
 		sender.configure();
@@ -218,7 +217,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		String filter = "{ \"student_id\": \"Evert\" }";
 		String update = "{\"$set\": {\"seatno\":"+10+"}}";
 
-		sender.setAction(MongoAction.UPDATEMANY);
+		sender.setAction("UpdateMany");
 		sender.setCollection("Students");
 		sender.setFilter(filter);
 		sender.configure();
@@ -234,10 +233,10 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		String filter = "{ \"student_id\": \"Evert\" }";
 		String update = "{\"$set\": {\"seatno\":"+10+"}}";
 
-		sender.setAction(MongoAction.UPDATEMANY);
+		sender.setAction("UpdateMany");
 		sender.setCollection("Students");
 		sender.setFilter(filter);
-		sender.setOutputFormat(DocumentFormat.XML);
+		sender.setOutputFormat("xml");
 		sender.configure();
 		sender.open();
 

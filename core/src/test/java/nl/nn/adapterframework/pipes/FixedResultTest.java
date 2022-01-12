@@ -40,6 +40,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     public static Parameter setUp(PipeLineSession session){
         Parameter param = new Parameter();
+        param.setName("param1");
         param.setValue("abs");
         param.setSessionKey("*");
         session.put("param1","yarr");

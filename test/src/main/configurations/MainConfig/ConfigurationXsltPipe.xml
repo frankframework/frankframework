@@ -1,4 +1,4 @@
-<module>
+<ibis>
 	<adapter name="XsltPipe" description="Test the XsltPipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -69,4 +69,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</module>
+</ibis>

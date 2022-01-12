@@ -16,6 +16,7 @@
 package nl.nn.credentialprovider;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +28,7 @@ import java.util.Properties;
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.Misc;
 import nl.nn.credentialprovider.util.StreamUtil;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
@@ -40,18 +42,30 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	private String vaultKeyFile = ".secure-vault-keyfile";
 	
 	
+	public AnsibleVaultCredentialFactory() throws IOException {
+		super();
+	}
+
 	@Override
 	public String getPropertyBase() {
 		return PROPERTY_BASE;
 	}
 
 
+	private InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+		String filename = appConstants.getProperty(key, defaultValue);
+		if (Misc.isEmpty(filename)) {
+			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
+		}
+		return new FileInputStream(filename);
+	}
+
 	@Override
 	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException {
 		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, vaultFile, "Ansible Vault")) {
 			try (InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, vaultKeyFile, "Ansible Vault Key")) {
 	
-				String vaultKey = StreamUtil.readerToString(new InputStreamReader(keyStream), null).trim();
+				String vaultKey = StreamUtil.readerToString(new InputStreamReader(keyStream), null);
 				String encrypted = StreamUtil.readerToString(new InputStreamReader(vaultStream), null);
 				
 				VaultInfo vaultInfo = Util.getVaultInfo(encrypted);

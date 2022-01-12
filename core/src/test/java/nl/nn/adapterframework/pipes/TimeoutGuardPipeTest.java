@@ -11,7 +11,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
@@ -62,7 +62,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 			fail("an exception should occur!");
 		} catch(PipeRunException e) {
-			assertTrue(e.getCause() instanceof TimeoutException);
+			assertTrue(e.getCause() instanceof TimeOutException);
 		}
 	}
 

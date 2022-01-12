@@ -11,6 +11,7 @@ import org.junit.rules.TemporaryFolder;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
 
 /**
  * FilePipe Tester.
@@ -42,9 +43,13 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 
     @Test
     public void doTestSuccess() throws Exception {
+        Parameter p = new Parameter();
+        p.setSessionKey("key"); p.setName("p1"); p.setValue("15"); p.setType("int"); p.configure();
+        session.put("key", p);
         PipeForward fw = new PipeForward();
         fw.setName("test");
         pipe.registerForward(fw);
+        pipe.addParameter(p);
         pipe.setCharset("/");
         pipe.setDirectory(sourceFolderPath);
         pipe.setOutputType("stream");
@@ -63,11 +68,17 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
     public void doTestFailAsEncodingNotSupportedBase64() throws Exception {
         exception.expect(PipeRunException.class);
         exception.expectMessage("Pipe [FilePipe under test] msgId [null] Error while executing file action(s): (UnsupportedEncodingException) /");
-
-
+        Parameter p = new Parameter();
+        p.setSessionKey("key");
+        p.setName("p1");
+        p.setValue("15");
+        p.setType("int");
+        p.configure();
+        session.put("key", p);
         PipeForward fw = new PipeForward();
         fw.setName("test");
         pipe.registerForward(fw);
+        pipe.addParameter(p);
         pipe.setCharset("/");
         pipe.setDirectory(sourceFolderPath);
         pipe.setOutputType("base64");

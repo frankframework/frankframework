@@ -27,8 +27,6 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.http.HttpSender.PostType;
-import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
@@ -46,9 +44,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		exception.expect(ConfigurationException.class);
 		exception.expectMessage("must use an absolute url starting with http(s)://");
 
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 		sender.setUrl("relative/path");
 
 		sender.configure();
@@ -59,9 +57,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		exception.expect(SenderException.class);
 		exception.expectMessage("must use an absolute url starting with http(s)://");
 
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 		sender.setUrl(null);
 		Parameter urlParam = new Parameter();
 		urlParam.setName("url");
@@ -76,10 +74,10 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetWithoutPRC() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -90,7 +88,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testContentType() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getFullContentType().toString());
@@ -98,16 +96,16 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test()
 	public void testCharset() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("post");
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
 	}
 
 	@Test
 	public void testContentTypeAndCharset1() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setCharSet("IsO-8859-1");
 		sender.setContentType("text/xml");
 		sender.configure();
@@ -118,7 +116,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testContentTypeAndCharset2() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("application/xml");
 		sender.setCharSet("uTf-8");
 		sender.configure();
@@ -129,7 +127,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void parseContentTypeWithCharset() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
 		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
@@ -137,14 +135,14 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void notContentTypeUnlessExplicitlySet() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test
 		sender.configure();
 		assertNull(sender.getFullContentType());
 	}
 
 	@Test()
 	public void notCharsetUnlessContentTypeExplicitlySet() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
 		sender.configure();
 		assertNull(sender.getFullContentType());
@@ -152,12 +150,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGet() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -168,12 +166,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetEncodeMessage() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("this is my dynamic url");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 		sender.setEncodeMessages(true);
 
 		sender.configure();
@@ -185,12 +183,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetWithContentType() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
+		sender.setMethodType("GET"); //Make sure its a GET request
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -202,12 +200,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.GET); //Make sure its a GET request
+		sender.setMethodType("GET"); //Make sure its a GET request
 		sender.setContentType("application/json");
 		sender.setCharSet("ISO-8859-1");
 
@@ -221,12 +219,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPost() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
 		sender.configure();
 		sender.open();
@@ -237,12 +235,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPostEncodeMessage() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo dit is mijn bericht");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType("Post"); //should handle both upper and lowercase methodtypes :)
 		sender.setEncodeMessages(true);
 
 		sender.configure();
@@ -254,13 +252,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPostAppendParamsToBody() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -281,13 +279,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPostAppendParamsToBodyAndEmptyBody() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		sender.setUrl("http://127.0.0.1/something&dummy=true");
 		Message input = new Message("");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
+		sender.setMethodType("post"); //should handle both upper and lowercase methodtypes :)
 
 		Parameter param1 = new Parameter();
 		param1.setName("key");
@@ -308,12 +306,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPut() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.PUT); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType("pUT"); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
@@ -324,12 +322,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPatch() throws Throwable {
-		sender = getSender(false); //Cannot add headers (aka parameters) for this test!
+		HttpSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo patch request");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.PATCH); //should handle a mix of upper and lowercase characters :)
+		sender.setMethodType("patCH"); //should handle a mix of upper and lowercase characters :)
 
 		sender.configure();
 		sender.open();
@@ -340,7 +338,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetWithParams() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -355,7 +353,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -366,7 +364,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpGetWithUrlParamAndPath() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		sender.setUrl(null); //unset URL
 		Message input = new Message("hallo");
 
@@ -387,7 +385,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("helloWorld");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -398,13 +396,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpCharset() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
 		sender.setCharSet("ISO-8859-1");
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 
 		sender.configure();
 		sender.open();
@@ -415,7 +413,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpUnknownHeaderParam() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -430,7 +428,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 		sender.setHeadersParams("custom-header, doesn-t-exist");
 
 		sender.configure();
@@ -442,7 +440,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPostUrlEncoded() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -457,7 +455,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
@@ -470,7 +468,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void postTypeUrlEncoded() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -485,8 +483,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.URLENCODED);
+		sender.setMethodType("POST");
+		sender.setPostType("urlencoded");
 		sender.setInputMessageParam("nameOfTheFirstContentId");
 
 		sender.configure();
@@ -498,12 +496,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPostJSON() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -515,15 +513,15 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void binaryHttpPostJSON() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setContentType("application/json");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType("binary");
 
 		sender.configure();
 		sender.open();
@@ -534,16 +532,16 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void binaryHttpPostPDF() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
 		Message input = new UrlMessage(url);
 		assertTrue("input message has to be a binary file", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setContentType("application/pdf");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType("binary");
 
 		sender.configure();
 		sender.open();
@@ -554,12 +552,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpPutJSON() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("{\"key\": \"value\"}");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.PUT);
+		sender.setMethodType("PUT");
 		sender.setContentType("application/json");
 
 		sender.configure();
@@ -571,15 +569,15 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void binaryHttpPutJSON() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
 		assertTrue("input message has to be of type binary", input.isBinary());
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.PUT);
+		sender.setMethodType("PUT");
 		sender.setContentType("application/json");
-		sender.setPostType(PostType.BINARY);
+		sender.setPostType("binary");
 
 		sender.configure();
 		sender.open();
@@ -590,12 +588,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpMultipart() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -616,13 +614,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void postTypeMultipart() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.FORMDATA);
+		sender.setMethodType("POST");
+		sender.setPostType("FORMDATA");
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -642,12 +640,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void simpleMockedHttpMtom() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -669,13 +667,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void postTypeMtom() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
-		sender.setPostType(PostType.MTOM);
+		sender.setMethodType("POST");
+		sender.setPostType("mtom");
 		sender.setInputMessageParam("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -696,12 +694,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void parametersToSkip() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.setMethodType(HttpMethod.POST);
+		sender.setMethodType("POST");
 		sender.setParamsInUrl(false);
 		sender.setInputMessageParam("request");
 
@@ -734,7 +732,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void specialCharactersInURLParam() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -749,7 +747,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -760,7 +758,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void specialCharactersDoubleEscaped() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -775,7 +773,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("otherValue");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -786,7 +784,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test(expected = SenderException.class)
 	public void unsupportedScheme() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("hallo");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -796,7 +794,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param1.setValue("ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
 		sender.addParameter(param1);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
@@ -809,7 +807,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void paramsWithoutValue() throws Throwable {
-		sender = getSender();
+		HttpSender sender = getSender();
 		Message input = new Message("paramterValue");
 
 		PipeLineSession pls = new PipeLineSession(session);
@@ -824,97 +822,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		param2.setValue("");
 		sender.addParameter(param2);
 
-		sender.setMethodType(HttpMethod.GET);
+		sender.setMethodType("GET");
 
 		sender.configure();
 		sender.open();
 
 		String result = sender.sendMessage(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("paramsWithoutValue.txt"), result.trim());
-	}
-
-	@Test
-	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Throwable { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
-
-		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-		sender.setKeystoreAliasPassword("test");
-
-		sender.setMethodType(HttpMethod.GET);
-
-		sender.configure();
-		sender.open();
-
-	}
-
-	@Test
-	public void testUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
-
-		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-
-		sender.setMethodType(HttpMethod.GET);
-		exception.expect(SenderException.class);
-		exception.expectMessage("cannot create or initialize SocketFactory");
-		sender.configure();
-		sender.open();
-
-	}
-
-	@Test
-	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception { // keystore and the key pairs have the same password
-		String keystore = "/Signature/ks_multientry_samepassword.pfx";
-
-		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-		sender.setKeystoreAliasPassword("test");
-
-		sender.setMethodType(HttpMethod.GET);
-
-		sender.configure();
-		sender.open();
-
-	}
-
-	@Test
-	public void testWithKeystoreHavingMultipleEntriesAndEachWithDifferentPasswords() throws Throwable {
-		// It would be difficult to provide password for each entry in a keystore 
-		//which has multiple entries each with a different password
-
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
-
-		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-		sender.setKeystoreAliasPassword("test");
-
-		sender.setMethodType(HttpMethod.GET);
-		exception.expect(SenderException.class);
-		exception.expectMessage("cannot create or initialize SocketFactory");
-		sender.configure();
-		sender.open();
-
-	}
-	
-	@Test
-	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Throwable {
-
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
-
-		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-		sender.setKeystoreAlias("2nd");
-		sender.setKeystoreAliasPassword("test2");
-
-		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
-		sender.open();
-
 	}
 }

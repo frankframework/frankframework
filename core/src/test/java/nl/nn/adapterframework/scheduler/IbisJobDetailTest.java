@@ -8,28 +8,33 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.scheduler.job.SendMessageJob;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.Locker;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class IbisJobDetailTest {
 
-	private SendMessageJob jobDef1;
-	private SendMessageJob jobDef2;
+	private JobDef jobDef1;
+	private JobDef jobDef2;
 
 	@Before
 	public void setup() throws ConfigurationException {
 		Configuration configuration = new TestConfiguration();
+		Adapter adapter = new Adapter();
+		adapter.setName("fakeAdapter");
+		configuration.registerAdapter(adapter);
 
-		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);
+		jobDef1 = SpringUtils.createBean(configuration, JobDef.class);
 		jobDef1.setName("fakeName");
-		jobDef1.setJavaListener("fakeListener");
+		jobDef1.setFunction("StopAdapter");
+		jobDef1.setAdapterName("fakeAdapter");
 		configuration.registerScheduledJob(jobDef1);
 
-		jobDef2 = SpringUtils.createBean(configuration, SendMessageJob.class);
+		jobDef2 = SpringUtils.createBean(configuration, JobDef.class);
 		jobDef2.setName("fakeName2");
-		jobDef2.setJavaListener("fakeListener");
+		jobDef2.setFunction("StopAdapter");
+		jobDef2.setAdapterName("fakeAdapter");
 		configuration.registerScheduledJob(jobDef2);
 }
 	

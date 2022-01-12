@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<digester-rules>
+  <rule pattern="*/roleNameItemSingular" registerMethod="setItemSingular"/>
+  <rule pattern="*/roleNameItemPluralAdd" registerMethod="addItemPlural"/>
+  <rule pattern="*/roleNameItemPluralRegister" registerMethod="registerItemPlural"/>
+  <rule pattern="*/jmsRealms" factory="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
+  <rule pattern="*/roleNameText" registerTextMethod="registerText" />
+  <!-- Ignored as config child setter descriptor because it has registerTextMethod and because the method name starts with "set" -->
+  <rule pattern="*/roleNameIgnored" registerTextMethod="setIgnored" />
+</digester-rules>

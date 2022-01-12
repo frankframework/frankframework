@@ -354,7 +354,7 @@ public class FileRecordListener implements IPullingListener {
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
 	 */
-	@IbisDoc({"The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file", "1000"})
+	@IbisDoc({"set the time to delay when no records are to be processed and this class has to look for the arrival of a new file", "1000 [ms]"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

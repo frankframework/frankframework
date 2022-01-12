@@ -21,13 +21,11 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
-import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -36,15 +34,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  *
  */
-public abstract class Resource implements IScopeProvider {
-	protected IScopeProvider scopeProvider;
+public class Resource {
 
-	public Resource(IScopeProvider scopeProvider) {
-		if(scopeProvider == null) {
-			throw new IllegalStateException("a scopeProvider must be present");
-		}
+	private IScopeProvider scopeProvider;
+	private URL url;
+	private String systemId;
 
-		this.scopeProvider = scopeProvider;
+	private Resource(IScopeProvider scopeProvider, URL url, String systemId) {
+		this.scopeProvider=scopeProvider;
+		this.url=url;
+		this.systemId=systemId;
 	}
 
 	public static Resource getResource(String resource) {
@@ -71,52 +70,43 @@ public abstract class Resource implements IScopeProvider {
 		} else {
 			systemId=url.toExternalForm();
 		}
-
-		return new URLResource(scopeProvider, url, systemId);
+		return new Resource(scopeProvider, url, systemId);
 	}
 
-	public static class GlobalScopeProvider implements IScopeProvider {
+	private static class GlobalScopeProvider implements IScopeProvider {
 		@Override
 		public ClassLoader getConfigurationClassLoader() {
 			return this.getClass().getClassLoader();
 		}
 	}
 
-	/**
-	 * @return Name of the resource
-	 */
-	public String getName() {
-		return FilenameUtils.getName(getSystemId());
+	public String getCacheKey() {
+		return url.toExternalForm();
+	}
+
+	public InputStream openStream() throws IOException {
+		return url.openStream();
+	}
+
+	public InputSource asInputSource() throws IOException {
+		InputSource inputSource = new InputSource(openStream());
+		inputSource.setSystemId(systemId);
+		return inputSource;
 	}
 
 	public Source asSource() throws SAXException, IOException {
 		return XmlUtils.inputSourceToSAXSource(this);
 	}
 
-	public InputSource asInputSource() throws IOException {
-		InputSource inputSource = new InputSource(openStream());
-		inputSource.setSystemId(getSystemId());
-		return inputSource;
+	public IScopeProvider getScopeProvider() {
+		return scopeProvider;
 	}
 
-	public XMLInputSource asXMLInputSource() throws IOException {
-		return new XMLInputSource(null, getSystemId(), null, openStream(), null);
+	public String getSystemId() {
+		return systemId;
 	}
 
-	/**
-	 * @return Canonical path of the resource
-	 */
-	public abstract String getSystemId();
-
-	public abstract InputStream openStream() throws IOException;
-
-	@Override
-	public final ClassLoader getConfigurationClassLoader() {
-		return scopeProvider.getConfigurationClassLoader();
-	}
-
-	@Override
-	public String toString() {
-		return "ResourceHolder systemId ["+getSystemId()+"] scope ["+scopeProvider+"]";
+	public URL getURL() {
+		return url;
 	}
 }

@@ -18,13 +18,13 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.stream.Message;
 
 public abstract class BlockEnabledSenderBase<H> extends SenderWithParametersBase implements IBlockEnabledSender<H> {
 
 	@Override
-	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		H blockHandle = openBlock(session);
 		try {
 			return sendMessage(blockHandle, message, session);

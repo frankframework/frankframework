@@ -15,12 +15,21 @@
 */
 package nl.nn.adapterframework.core;
 
-import lombok.Getter;
 import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
  * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver).
+ * 
+ * <p>An exit consists out of two mandatory and two optional parameters:
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setPath(String) path}</td><td>name of the pipeline exit</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setState(String) state}</td><td>The exit state defines possible exists to the pipeline. The state can be one of the following: <code>success, error</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCode(String) code}</td><td>http statuscode e.g. <code>500</code></td><td>200</td></tr>
+ * <tr><td>{@link #setEmpty(String) empty}</td><td>when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool</td><td>false</td></tr>
+ * </table>
+ * </p>
  * 
  * <p>
  * <b>example:</b> <code><pre>
@@ -44,20 +53,18 @@ public class PipeLineExit implements IForwardTarget {
 
 	public static final String EXIT_STATE_SUCCESS = "success";
 
-	private @Getter String path;
-	private @Getter String state;
-	private @Getter int exitCode = 0;
-	private @Getter String responseRoot;
-	private @Getter boolean emptyResult = false;
+	private String path;
+	private String state;
+	private int exitCode = 0;
+	private boolean emptyResult = false;
+	private String responseRoot;
 
-
-	public boolean isSuccessExit() {
-		return EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
-	}
-
-	@IbisDoc({"1", "name of the pipeline exit", ""})
+	@IbisDoc({"name of the pipeline exit", ""})
 	public void setPath(String newPath) {
 		path = newPath;
+	}
+	public String getPath() {
+		return path;
 	}
 	@Override
 	// getName() is required by {@link IForwardTarget}. It is required that it returns the path,
@@ -66,24 +73,39 @@ public class PipeLineExit implements IForwardTarget {
 		return getPath();
 	}
 
-	@IbisDoc({"2", "The exit state defines possible exists to the Pipeline. The state can be one of the following: <code>success, error</code>", ""})
+	@IbisDoc({"the exit state defines possible exists to the pipeline. the state can be one of the following: <code>success, error</code>", ""})
 	public void setState(String newState) {
 		state = newState;
 	}
+	public String getState() {
+		return state;
+	}
 
-	@IbisDoc({"3", "HTTP statusCode e.g. <code>500</code>", "0"})
+	@IbisDoc({"http statuscode e.g. <code>500</code>", "200"})
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}
-
-	@IbisDoc({"4", "Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state 'success', the last for the other exits.", ""})
-	public void setResponseRoot(String responseRoot) {
-		this.responseRoot = responseRoot;
+	public int getExitCode() {
+		return exitCode;
 	}
 
-	@IbisDoc({"5", "when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
+	@IbisDoc({"when using restlistener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
 	public void setEmpty(String b) {
 		emptyResult = Boolean.parseBoolean(b);
 	}
+	public boolean getEmptyResult() {
+		return emptyResult;
+	}
+	// TODO: validate the output by looking at this responseRoot
+	@IbisDoc({"Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state 'success', the last for the other exits.", ""})
+	public void setResponseRoot(String responseRoot) {
+		this.responseRoot = responseRoot;
+	}
+	public String getResponseRoot() {
+		return responseRoot;
+	}
 
+	public boolean isSuccessExit() {
+		return EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
+	}
 }

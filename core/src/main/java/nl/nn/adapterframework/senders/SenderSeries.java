@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,13 +20,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -36,6 +34,12 @@ import nl.nn.adapterframework.util.ClassUtils;
 /**
  * Series of Senders, that are executed one after another.
  * 
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link ISender sender}</td><td>one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input</td></tr>
+ * </table>
+ * </p>
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -43,7 +47,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	private List<ISender> senderList = new LinkedList<ISender>();
 	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
-	private @Getter @Setter boolean synchronous=true;
+	private boolean synchronous=true;
 
 	@Override
 	protected boolean isSenderConfigured() {
@@ -75,7 +79,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
@@ -102,27 +106,18 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		if (super.consumesSessionVariable(sessionKey)) {
-			return true;
-			
-		}
-		for (ISender sender:senderList) {
-			if (sender.consumesSessionVariable(sessionKey)) {
-				return true;
-			}
-		}
-		return false;
+	public boolean isSynchronous() {
+		return synchronous;
+	}
+	public void setSynchronous(boolean value) {
+		synchronous = value;
 	}
 
-
-
-	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
+	@Override
+	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. 
 	public final void setSender(ISender sender) {
 		registerSender(sender);
 	}
-	
-	/** one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. */
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added

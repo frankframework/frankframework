@@ -10,8 +10,6 @@
 		"
 	>
 
-	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.ResourceBasedMongoClientFactory" />
-
 	<bean
 		id="txManagerReal"
 		class="org.springframework.transaction.jta.WebSphereUowTransactionManager"

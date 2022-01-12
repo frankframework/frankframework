@@ -54,7 +54,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends JmsMessageB
 		super();
 		setTransacted(true);
 		setPersistent(true);
-		setDestinationType(DestinationType.QUEUE);
+		setDestinationTypeEnum(DestinationType.QUEUE);
 	}
 
 	@Override

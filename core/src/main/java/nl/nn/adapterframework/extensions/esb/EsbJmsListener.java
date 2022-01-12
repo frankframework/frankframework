@@ -35,7 +35,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
@@ -136,7 +135,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		if(message != null && message.length() > 0) {
 			if(XmlUtils.isWellFormed(message)) {
 				try {
-					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
+					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, "text", false));
 					found = test.transform(message, null);
 					
 					//xPath not found and message length is 0 but not null nor ""

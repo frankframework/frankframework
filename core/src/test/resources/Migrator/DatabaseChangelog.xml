@@ -5,10 +5,10 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
 	<changeSet id="one" author="Niels Meijer">
-		<comment>Create DUMMYTABLE</comment>
-		<createTable tableName="DUMMYTABLE">
+		<comment>Create DummyTable</comment>
+		<createTable tableName="DummyTable">
 			<column name="TKEY" type="BIGINT" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISSTORE"/>
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
@@ -16,7 +16,7 @@
 	</changeSet>
 
 	<changeSet id="two" author="Niels Meijer">
-		<comment>Drop DUMMYTABLE</comment>
-		<dropTable tableName="DUMMYTABLE" cascadeConstraints="true"/>
+		<comment>Drop DummyTable</comment>
+		<dropTable tableName="DummyTable"/>
 	</changeSet>
 </databaseChangeLog>

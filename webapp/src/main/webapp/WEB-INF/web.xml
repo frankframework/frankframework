@@ -63,7 +63,7 @@
 
 	<!--
 		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
-		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
+		After loading the ROOT context with all HTTP/CXF servlets (endpoints), the all servlets will be initialized.
 		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
 	-->
 	<listener>
@@ -179,35 +179,13 @@
 	</login-config>
 
 	<!--
-	When a security-constraint element is present Tomcat will authenticate the
+	When a security-constraint element is present Tomcat will autenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
 	-->
 
 	<!-- security-constraint>
-		<web-resource-collection>
-			<web-resource-name>GUI login</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/</url-pattern>
-			<url-pattern>/iaf/index.jsp</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-			<role-name>IbisWebService</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
-	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>IAFAPI</web-resource-name>
 			<description></description>
@@ -245,7 +223,6 @@
 			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
 			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
 			<url-pattern>/*</url-pattern>
-			<url-pattern>/iaf/api/server/health</url-pattern>
 		</web-resource-collection>
 		<user-data-constraint>
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
@@ -263,6 +240,37 @@
 		<auth-constraint>
 			<description></description>
 			<role-name>IbisObserver</role-name>
+			<role-name>IbisAdmin</role-name>
+			<role-name>IbisDataAdmin</role-name>
+			<role-name>IbisTester</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<security-constraint>
+		<display-name>AdminAccess</display-name>
+		<web-resource-collection>
+			<web-resource-name>AdminAccessResourceCollection</web-resource-name>
+			<description>collection of url's for administrator access</description>
+		</web-resource-collection>
+		<auth-constraint>
+			<description></description>
+			<role-name>IbisAdmin</role-name>
+			<role-name>IbisTester</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<security-constraint>
+		<display-name>DataAdminAccess</display-name>
+		<web-resource-collection>
+			<web-resource-name>DataAdminAccessResourceCollection</web-resource-name>
+			<description>collection of url's for data administrator access</description>
+		</web-resource-collection>
+		<auth-constraint>
+			<description></description>
 			<role-name>IbisAdmin</role-name>
 			<role-name>IbisDataAdmin</role-name>
 			<role-name>IbisTester</role-name>
@@ -318,15 +326,15 @@
 		<role-name>IbisObserver</role-name>
 	</security-role>
 	<security-role>
-		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions</description>
+		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions too</description>
 		<role-name>IbisDataAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can do a full reload and has all IbisDataAdmin permissions</description>
+		<description>can do a full reload and test a pipeline, has all IbisDataAdmin permissions too</description>
 		<role-name>IbisAdmin</role-name>
 	</security-role>
 	<security-role>
-		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
+		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions too</description>
 		<role-name>IbisTester</role-name>
 	</security-role -->
 

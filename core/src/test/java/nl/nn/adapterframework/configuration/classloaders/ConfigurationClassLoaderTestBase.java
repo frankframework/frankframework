@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -26,7 +25,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -268,7 +266,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
 
 		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
-		assertThat(classLoader.toString(), Matchers.startsWith(logPrefix+"["+getConfigurationName()+"]"));
+		assertEquals(logPrefix+"["+getConfigurationName()+"]", classLoader.toString());
 	}
 
 	@Test

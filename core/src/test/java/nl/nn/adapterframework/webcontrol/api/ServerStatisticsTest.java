@@ -60,8 +60,7 @@ public class ServerStatisticsTest extends ApiTestBase<ServerStatistics> {
 		assertEquals(503, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		//We never start the configuration, so it will always stay in state STARTING
-		assertEquals("{\"errors\":[\"configuration[TestConfiguration] is in state[STARTING]\",\"adapter[dummyAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", response.getEntity());
+		assertEquals("{\"errors\":[\"adapter[dummyAdapter] is in state[STOPPED]\"],\"status\":\"SERVICE_UNAVAILABLE\"}", response.getEntity());
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,44 +15,31 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+import org.apache.commons.lang3.StringUtils;
+import javax.servlet.HttpConstraintElement;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import javax.servlet.annotation.ServletSecurity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.ServletSecurity;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-
 /**
- * <p>
- * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
- * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
- * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
- * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} init phase.
- * </p>
- * <p>
- * When <code>dtap.stage</code> is set to LOC, the default behaviour of each servlet is not-secured (no authentication) on HTTP.<br/>
- * When <code>dtap.stage</code> is NOT set to LOC, the default behaviour of each servlet is secured (authentication enforced) on HTTPS.
- * </p>
- * <p>
- * To change this behaviour the following properties can be used;
- * <code>servlet.servlet-name.transportGuarantee</code> - forces HTTPS when set to CONFIDENTIAL, or HTTP when set to NONE<br/>
- * <code>servlet.servlet-name.securityRoles</code> - use the default IBIS roles or create your own<br/>
- * <code>servlet.servlet-name.urlMapping</code> - path the servlet listens to<br/>
- * <code>servlet.servlet-name.loadOnStartup</code> - automatically load or use lazy-loading (affects application startup time)<br/>
- * </p>
+ * Enables the use of programmatically adding servlets to the given ServletContext<br/>
+ * <br/>
+ * The following properties can be set to change the DynamicRegistration.Servlet registration behaviour<br/>
+ * <code>servlet.<name>.transportGuarantee</code> - forces https when set to CONFIDENTIAL<br/>
+ * <code>servlet.<name>.securityRoles</code> - use the default IBIS roles or create your own<br/>
+ * <code>servlet.<name>.urlMapping</code> - path the servlet listens to<br/>
+ * <code>servlet.<name>.loadOnStartup</code> - automatically load or use lazyloading<br/>
  * 
  * @author Niels Meijer
  *
@@ -60,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ServletManager {
 
 	private ServletContext servletContext = null;
-	private List<String> registeredRoles = new ArrayList<>();
+	private List<String> registeredRoles = new ArrayList<String>();
 	private Logger log = LogUtil.getLogger(this);
 
 	private ServletContext getServletContext() {
@@ -93,8 +80,8 @@ public class ServletManager {
 		registerServlet(servletName, servletClass, urlMapping, new String[0], -1, null);
 	}
 
-	public void registerServlet(String servletName, Servlet servlet, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servlet+"] loadOnStartup ["+loadOnStartup+"]");
+	public void registerServlet(String servletName, Servlet servletClass, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
+		log.info("instantiating IbisInitializer servlet name ["+servletName+"] servletClass ["+servletClass+"] loadOnStartup ["+loadOnStartup+"]");
 		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
 
 
@@ -104,7 +91,7 @@ public class ServletManager {
 		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
 			return;
 
-		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
+		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servletClass);
 		ServletSecurity.TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
 
 		String stage = appConstants.getString("dtap.stage", null);
@@ -145,7 +132,7 @@ public class ServletManager {
 			}
 		}
 
-		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servlet+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
+		if(log.isDebugEnabled()) log.debug("registered servlet ["+servletName+"] class ["+servletClass+"] url ["+urlMapping+"] loadOnStartup ["+loadOnStartup+"]");
 	}
 
 	private void log(String msg, Level level) {

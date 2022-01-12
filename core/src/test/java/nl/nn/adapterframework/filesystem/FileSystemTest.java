@@ -3,7 +3,6 @@ package nl.nn.adapterframework.filesystem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -534,39 +533,4 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 	}
 	
-	@Test
-	public void writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderFalse() throws Exception {
-		String filename = "filetobecopied.txt";
-		String folderName = "dummyFolder";
-		fileSystem.configure();
-		fileSystem.open();
-
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
-		}
-		createFile(folderName, filename, "dummy");
-		waitForActionToFinish();
-		assertThrows("Cannot copy file", FileSystemException.class, () -> fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", false));
-	}
-	
-	@Test
-	public void writableFileSystemTestCopyFileToNonExistentDirectoryCreateFolderTrue() throws Exception {
-		String filename = "filetobecopied.txt";
-		String folderName = "dummyFolder";
-		fileSystem.configure();
-		fileSystem.open();
-
-		if (!_folderExists(folderName)) {
-			_createFolder(folderName);
-			waitForActionToFinish();
-			assertTrue("could not create folder before test", _folderExists(folderName));
-		}
-		createFile(folderName, filename, "dummy");
-		waitForActionToFinish();
-		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true);
-
-		assertNotNull("Copied file cannot be null", f);
-	}
 }

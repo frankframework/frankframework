@@ -31,11 +31,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.transformer.AbstractQueryOutputTransformer;
 import nl.nn.adapterframework.jdbc.transformer.QueryOutputToCSV;
 import nl.nn.adapterframework.jdbc.transformer.QueryOutputToJson;
@@ -72,12 +72,6 @@ public final class ExecuteJdbcQuery extends Base {
 		resultTypes.add("json");
 		result.put("resultTypes", resultTypes);
 
-		List<String> queryTypes = new ArrayList<String>();
-		queryTypes.add("AUTO");
-		queryTypes.add(QueryType.SELECT.toString());
-		queryTypes.add(QueryType.OTHER.toString());
-		result.put("queryTypes", queryTypes);
-
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
@@ -113,12 +107,12 @@ public final class ExecuteJdbcQuery extends Base {
 			if(key.equalsIgnoreCase("query")) {
 				query = entry.getValue().toString();
 			}
-			if(key.equalsIgnoreCase("queryType")) {
+			if(key.equalsIgnoreCase("type")) {
 				queryType = entry.getValue().toString();
 			}
 		}
 
-		if("AUTO".equals(queryType)) {
+		if(StringUtils.isEmpty(queryType)) {
 			queryType = "other"; // defaults to other
 
 			String[] commands = new String[] {"select", "show"}; //if it matches, set it to select

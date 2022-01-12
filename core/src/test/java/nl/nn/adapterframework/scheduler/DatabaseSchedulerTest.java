@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.testutil.FixedQuerySenderMock;
 import nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -22,15 +22,16 @@ public class DatabaseSchedulerTest extends Mockito {
 
 	protected Logger log = LogUtil.getLogger(this);
 	private TestConfiguration configuration;
-	private LoadDatabaseSchedulesJob job;
+	private JobDef job;
 
 	@Before
 	public void setup() throws Exception {
-		configuration = new TestConfiguration();
+		configuration = new TestConfiguration(true);
 		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
 
-		job = configuration.createBean(LoadDatabaseSchedulesJob.class);
+		job = configuration.createBean(JobDef.class);
 		job.setName("testJob");
+		job.setFunction(JobDefFunctions.LOAD_DATABASE_SCHEDULES.getLabel());
 		job.configure();
 	}
 
@@ -41,7 +42,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	}
 
 	@Test
-	public void executeJob() throws Exception {
+	public void test() throws Exception {
 		ResultSetBuilder builder = FixedQuerySenderMock.ResultSetBuilder.create();
 		builder.setValue("JOBNAME", "dummy name");
 		builder.setValue("JOBGROUP", "dummy group");
@@ -54,9 +55,10 @@ public class DatabaseSchedulerTest extends Mockito {
 		adapter.setName("testAdapter");
 		configuration.registerAdapter(adapter);
 
-		configuration.mockQuery("SELECT COUNT(*) FROM IBISSCHEDULES", builder.build());
+		FixedQuerySenderMock mock = new FixedQuerySenderMock(builder.build());
+		configuration.mockCreateBean(FixedQuerySender.class, mock);
 
-		job.execute(configuration.getIbisManager());
+		job.runJob(configuration.getIbisManager());
 
 		MessageKeeper messageKeeper = job.getMessageKeeper();
 		for (int i = 0; i < messageKeeper.size(); i++) {

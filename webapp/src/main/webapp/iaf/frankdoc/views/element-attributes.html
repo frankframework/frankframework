@@ -1,7 +1,8 @@
-<div class="block">
+<div>
 	<h4>Attributes</h4>
 	<p ng-if="element.nonInheritedAttributes"><span suppress-attribute-inheritance></span></p>
-	<table ng-if="element.attributes" class="table table-sm table-striped">
+	<p>The following attributes can be configured:</p>
+	<table class="table table-sm table-striped">
 		<thead>
 			<tr>
 				<th class="tbl-15">Name</th>
@@ -12,14 +13,12 @@
 		</thead>
 		<tbody>
 			<tr ng-repeat="attr in element.attributes" ng-if="!attr.deprecated || showDeprecatedElements">
-				<td colspan="4" ng-if="attr.from" class="attribute__from">From {{attr.from}}:</td>
-
-				<td ng-if-start="!attr.from" ng-class="{ 'deprecated': attr.deprecated }">
+				<td ng-class="{ 'deprecated': attr.deprecated }">
 					{{::attr.name}} 
 				</td>
 				<td><div attribute-description /></td>
 				<td ng-bind-html="::attr.default"></td>
-				<td ng-if-end>{{::attr.type}}</td>
+				<td>{{::attr.type}}</td>
 			</tr>
 		</tbody>
 	</table>
