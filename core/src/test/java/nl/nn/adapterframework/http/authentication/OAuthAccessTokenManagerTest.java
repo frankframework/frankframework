@@ -12,6 +12,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.nimbusds.oauth2.sdk.Scope;
+
 public class OAuthAccessTokenManagerTest {
 
 	@Rule
@@ -98,6 +100,17 @@ public class OAuthAccessTokenManagerTest {
 		
 		Thread.sleep(100);
 		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
+	}
+
+	
+	@Test
+	public void scopeTest() {
+		Scope scope1 = new Scope("read", "write");
+		Scope scope2 = Scope.parse("read write");
+		Scope scope3 = Scope.parse("read, write");
+		assertEquals("read write", scope1.toString());
+		assertEquals("read write", scope2.toString());
+		assertEquals("read write", scope3.toString());
 	}
 
 }

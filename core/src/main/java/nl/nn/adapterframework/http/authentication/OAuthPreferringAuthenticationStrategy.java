@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
 	protected Logger log = LogUtil.getLogger(this);
 	
-	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
+//	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 
 	@Override
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
@@ -62,6 +62,7 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME);
 		final Credentials credentials = credsProvider.getCredentials(authScope);
 		if (credentials != null) {
+			// always add OAuth as an authentication option, if any challenges are returned by server
 			options.add(new AuthOption(new OAuthAuthenticationScheme(), credentials));
 		}
 
@@ -69,14 +70,19 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 		return options;
 	}
 
-	@Override
-	public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
-		Map<String, Header> result = super.getChallenges(authhost, response, context);
-		if (refreshTokenOn401 && !result.containsKey(AUTH.WWW_AUTH)) {
-			// retrying unchallenged request/responses might cause endless authentication loops
-			result.put(AUTH.WWW_AUTH, new BasicHeader(AUTH.WWW_AUTH,"oauth"));
-		}
-		return result;
-	}
+	/*
+	 * The (currently commented) EXPERIMENTAL code below could be used to insert a challenge in the response when the server did not send a challenge.
+	 * The inserted challenge will then trigger a new authentication attempt.
+	 * This could help refreshing expired accessTokens for servers that act not conform rfc6750.
+	 */
+//	@Override
+//	public Map<String, Header> getChallenges(HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
+//		Map<String, Header> result = super.getChallenges(authhost, response, context);
+//		if (refreshTokenOn401 && !result.containsKey(AUTH.WWW_AUTH)) {
+//			// retrying unchallenged request/responses might cause endless authentication loops
+//			result.put(AUTH.WWW_AUTH, new BasicHeader(AUTH.WWW_AUTH,"oauth"));
+//		}
+//		return result;
+//	}
 
 }

@@ -93,6 +93,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
  * @author Gerrit van Brakel
+ * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
 public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

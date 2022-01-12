@@ -36,91 +36,91 @@ public class MockAuthenticatedService extends WireMockRule {
 	public void start() {
 		stubFor(any(urlPathMatching("/*"))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withHeader("WWW-Authenticate", "Basic realm=test")
-				  .withHeader("WWW-Authenticate", "Bearer realm=test")
-				  .withBody("{\"message\":\"no authorization header\"}")));
+					  .withStatus(401)
+					  .withHeader("WWW-Authenticate", "Basic realm=test")
+					  .withHeader("WWW-Authenticate", "Bearer realm=test")
+					  .withBody("{\"message\":\"no authorization header\"}")));
 		stubFor(any(urlPathMatching("/*"))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Basic ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 		stubFor(any(urlPathMatching("/*"))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 		stubFor(any(urlPathMatching("/*"))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withHeader("WWW-Authenticate", "Basic realm=test")
-				  .withHeader("WWW-Authenticate", "Bearer realm=test")
-				  .withBody("{\"message\":\"token expired\"}")));
+					  .withStatus(401)
+					  .withHeader("WWW-Authenticate", "Basic realm=test")
+					  .withHeader("WWW-Authenticate", "Bearer realm=test")
+					  .withBody("{\"message\":\"token expired\"}")));
 
 		stubFor(any(urlPathMatching(basicPath))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withHeader("WWW-Authenticate", "Basic realm=test")
-				  .withBody("{\"message\":\"no basic authorization header\"}")));
+					  .withStatus(401)
+					  .withHeader("WWW-Authenticate", "Basic realm=test")
+					  .withBody("{\"message\":\"no basic authorization header\"}")));
 		stubFor(any(urlPathMatching(basicPath))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Basic ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 
 		stubFor(any(urlPathMatching(oauthPath))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withHeader("WWW-Authenticate", "Bearer realm=test")
-				  .withBody("{\"message\":\"no bearer authorization header\"}")));
+					  .withStatus(401)
+					  .withHeader("WWW-Authenticate", "Bearer realm=test")
+					  .withBody("{\"message\":\"no bearer authorization header\"}")));
 		stubFor(any(urlPathMatching(oauthPath))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 		stubFor(any(urlPathMatching(oauthPath))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withHeader("WWW-Authenticate", "Bearer realm=test")
-				  .withBody("{\"message\":\"token expired\"}")));
+					  .withStatus(401)
+					  .withHeader("WWW-Authenticate", "Bearer realm=test")
+					  .withBody("{\"message\":\"token expired\"}")));
 
 		stubFor(any(urlPathMatching(basicPathUnchallenged))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withBody("{\"message\":\"no basic authorization header\"}")));
+					  .withStatus(401)
+					  .withBody("{\"message\":\"no basic authorization header\"}")));
 		stubFor(any(urlPathMatching(basicPathUnchallenged))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Basic ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 
 		stubFor(any(urlPathMatching(oauthPathUnchallenged))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withBody("{\"message\":\"no bearer authorization header\"}")));
+					  .withStatus(401)
+					  .withBody("{\"message\":\"no bearer authorization header\"}")));
 		stubFor(any(urlPathMatching(oauthPathUnchallenged))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody("{}")));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody("{}")));
 		stubFor(any(urlPathMatching(oauthPathUnchallenged))
 				  .withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withBody("{\"message\":\"token expired\"}")));
+					  .withStatus(401)
+					  .withBody("{\"message\":\"token expired\"}")));
 
 		stubFor(any(urlPathMatching(failing))
 				  .willReturn(aResponse()
-				  .withStatus(401)
-				  .withBody("{\"message\":\"on this endpoint the authentication will always fail\"}")));
+					  .withStatus(401)
+					  .withBody("{\"message\":\"on this endpoint the authentication will always fail\"}")));
 		super.start();
 	}
 

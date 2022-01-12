@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.Credentials;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
@@ -39,14 +40,14 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 public class OAuthAccessTokenManager {
 
 	private String tokenEndpoint;
-	private String scope[];
+	private Scope scope;
 	
 	private AccessToken accessToken;
 	private long accessTokenIssuedAt;
 	
-	public OAuthAccessTokenManager(String tokenEndpoint, String...scope) {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope) {
 		this.tokenEndpoint = tokenEndpoint;
-		this.scope = scope;
+		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
 	}
 		
 	public synchronized void retrieveAccessToken(Credentials credentials) throws HttpAuthenticationException {
@@ -58,14 +59,11 @@ public class OAuthAccessTokenManager {
 		Secret clientSecret = new Secret(credentials.getPassword());
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
-		// The request scope for the token (may be optional)
-		Scope _scope = scope.length>1 && scope[0]!=null ? new Scope(scope) : null;
-
 		try {
 			// The token endpoint
 			URI _tokenEndpoint = new URI(tokenEndpoint);
 			// Make the token request
-			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, _scope);
+			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, clientGrant, scope);
 
 			try {
 				// TODO: should use proxy configured in HttpSender.

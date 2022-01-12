@@ -43,21 +43,21 @@ public class MockTokenServer extends WireMockRule {
 	public void start() {
 		stubFor(any(urlPathMatching(path))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody(accessTokenResponseValid)));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody(accessTokenResponseValid)));
 		stubFor(any(urlEqualTo("/firstExpired"))
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody(accessTokenResponseValid)));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody(accessTokenResponseValid)));
 		stubFor(any(urlEqualTo("/firstExpired")).inScenario("expiration")
 				  .whenScenarioStateIs(Scenario.STARTED)
 				  .willSetStateTo("valid")
 				  .willReturn(aResponse()
-				  .withStatus(200)
-				  .withHeader("Content-Type", "application/json")
-				  .withBody(accessTokenResponseExpired)));
+					  .withStatus(200)
+					  .withHeader("Content-Type", "application/json")
+					  .withBody(accessTokenResponseExpired)));
 		super.start();
 	}
 	

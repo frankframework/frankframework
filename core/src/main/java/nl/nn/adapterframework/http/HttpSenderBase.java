@@ -89,6 +89,7 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
 import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
@@ -458,18 +459,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 	private void setupAuthentication(CredentialFactory cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
-		String scopeList = getScope();
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (!StringUtils.isEmpty(cf.getUsername())) {
 
 			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
 
-			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(getPreferredAuthSchemeName()));
+			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
+			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(preferredAuthenticationScheme.getSchemeName()));
 			requestConfigBuilder.setAuthenticationEnabled(true);
-			
-			if (StringUtils.isNotEmpty(getTokenEndpoint())) {
-				String[] scope = StringUtils.isNotEmpty(scopeList) ? scopeList.split(",") : new String[0];
-				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, new OAuthAccessTokenManager(getTokenEndpoint(), scope));
+
+			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
+				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, new OAuthAccessTokenManager(getTokenEndpoint(), getScope()));
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
@@ -508,8 +508,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
-			authState.update(getPreferredAuthScheme(), getCredentials());
-			AuthOption authOption = new AuthOption(getPreferredAuthScheme(), getCredentials());
+			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
 			Queue<AuthOption> authOptionQueue = new LinkedList<>();
 			authOptionQueue.add(authOption);
 			authState.update(authOptionQueue);
@@ -527,14 +526,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return new UsernamePasswordCredentials(uname, credentials.getPassword());
 	}
 	
-	private String getPreferredAuthSchemeName() {
-		return StringUtils.isNotEmpty(getTokenEndpoint()) ? OAuthAuthenticationScheme.SCHEME_NAME : AuthSchemes.BASIC;
+	private AuthenticationScheme getPreferredAuthenticationScheme() {
+		return StringUtils.isNotEmpty(getTokenEndpoint()) ? AuthenticationScheme.OAUTH : AuthenticationScheme.BASIC;
 	}
 
-	private AuthScheme getPreferredAuthScheme() {
-		return StringUtils.isNotEmpty(getTokenEndpoint()) ? new OAuthAuthenticationScheme() :new BasicScheme();
-	}
-	
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
 		SSLConnectionSocketFactory sslSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
@@ -847,11 +842,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		authDomain = string;
 	}
 
-	/** endpoint to obtain OAuth accessToken using ClientCredentials grant. ClientID/ClientSecret are taken from authAlias, username and password. */
+	/** Endpoint to obtain OAuth accessToken using ClientCredentials grant. ClientID/ClientSecret are taken from <code>authAlias</code>, <code>username</code> and <code>password</code>. */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
 	}
-	/** comma separated list of scope items, only used when tokenEndpoint is specified */
+	/** Space or comma separated list of scope items, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
 	public void setScope(String string) {
 		scope = string;
 	}
