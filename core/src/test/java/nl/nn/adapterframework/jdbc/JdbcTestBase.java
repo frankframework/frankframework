@@ -111,6 +111,7 @@ public abstract class JdbcTestBase {
 	protected void runMigrator(String changeLogFile) throws Exception {
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.dropAll();
 		liquibase.update(new Contexts());
 	}
 
