@@ -11,12 +11,12 @@
 				<exit path="ERROR" state="error" />
 			</exits>
 
-			<inputValidator>
+			<inputValidator className="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator">
 				<forward name="exception" path="ERROR" />
 			</inputValidator>
-			<inputWrapper/>
-			<outputWrapper/>
-			<outputValidator>
+			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"/>
+			<outputValidator className="nl.nn.adapterframework.soap.SoapValidator">
 				<forward name="exception" path="ERROR" />
 			</outputValidator>
 
@@ -56,7 +56,7 @@
 				  elementXPathExpression="test">
 			</pipe>
 
-			<pipe name="TestCompareString" className="nl.nn.adapterframework.pipes.TestCompareString"
+			<pipe name="TestCompareString" className="nl.nn.adapterframework.pipes.CompareStringPipe"
 				  operand1="test" operand2="test">
 				<forward name="lessthan" path="EXIT" />
 				<forward name="greaterthan" path="EXIT" />

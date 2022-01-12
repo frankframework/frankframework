@@ -1,28 +1,29 @@
 graph
-	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;
-	d1e5{{Receiver<br/>JavaListener}}
-	d1e19([InputValidator<br/>])
-	d1e26-ERROR([OutputWrapper<br/>])
-	d1e28-ERROR([OutputValidator<br/>])
-	d1e24([InputWrapper<br/>])
-	d1e34{TestXmlIfWithForwards<br/>XmlIf}
-	d1e41{TestXmlIfWithAttributes<br/>XmlIf}
-	d1e51{TestXmlSwitchWithForwards<br/>XmlSwitch}
-	d1e85{TestCompareInteger<br/>CompareIntegerPipe}
-	d1e26-EXIT([OutputWrapper<br/>])
-	d1e28-EXIT([OutputValidator<br/>])
-	d1e58{TestXmlSwitchWithAttributes<br/>XmlSwitch}
-	d1e44{TestXmlIfWithBoth<br/>XmlIf}
-	d1e61{TestXmlSwitchWithBoth<br/>XmlSwitch}
-	d1e69{TestXmlSwitchWithNone<br/>XmlSwitch}
-	d1e72(TestCompareString<br/>TestCompareString)
-	d1e14{{success}}
-	d1e16{{error}}
+	d1e5((Receiver<br/>JavaListener)):::normal
+	d1e19([InputValidator<br/>ApiWsdlXmlValidator]):::normal
+	d1e26-ERROR[[OutputWrapper<br/>FxfWrapperPipe]]:::normal
+	d1e28-ERROR([OutputValidator<br/>SoapValidator]):::normal
+	d1e16((error)):::normal
+	d1e24[[InputWrapper<br/>ApiSoapWrapperPipe]]:::normal
+	d1e34{{TestXmlIfWithForwards<br/>XmlIf}}:::normal
+	d1e41{{TestXmlIfWithAttributes<br/>XmlIf}}:::normal
+	d1e51{{TestXmlSwitchWithForwards<br/>XmlSwitch}}:::normal
+	d1e85{{TestCompareInteger<br/>CompareIntegerPipe}}:::normal
+	d1e26-EXIT[[OutputWrapper<br/>FxfWrapperPipe]]:::normal
+	d1e28-EXIT([OutputValidator<br/>SoapValidator]):::normal
+	d1e14((success)):::normal
+	d1e58{{TestXmlSwitchWithAttributes<br/>XmlSwitch}}:::normal
+	d1e44{{TestXmlIfWithBoth<br/>XmlIf}}:::normal
+	d1e61{{TestXmlSwitchWithBoth<br/>XmlSwitch}}:::normal
+	d1e69{{TestXmlSwitchWithNone<br/>XmlSwitch}}:::normal
+	d1e72{{TestCompareString<br/>CompareStringPipe}}:::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
 	d1e5 --> |success| d1e19
-	d1e19 -. exception<br/>ERROR .-> d1e26-ERROR
+	d1e19 --> |exception<br/>ERROR| d1e26-ERROR
 	d1e19 --> |success| d1e24
 	d1e26-ERROR --> |success<br/>ERROR| d1e28-ERROR
-	d1e28-ERROR -. exception<br/>ERROR .-> d1e16
+	d1e28-ERROR --> |exception<br/>ERROR| d1e16
 	d1e28-ERROR --> |success<br/>ERROR| d1e16
 	d1e24 --> |success| d1e34
 	d1e34 --> |then| d1e41
@@ -35,9 +36,9 @@ graph
 	d1e85 --> |greaterthan<br/>EXIT| d1e26-EXIT
 	d1e85 --> |equals<br/>EXIT| d1e26-EXIT
 	d1e85 --> |success<br/>EXIT| d1e26-EXIT
-	d1e85 -. exception<br/>ERROR .-> d1e26-ERROR
+	d1e85 --> |exception<br/>ERROR| d1e26-ERROR
 	d1e26-EXIT --> |success<br/>EXIT| d1e28-EXIT
-	d1e28-EXIT -. exception<br/>ERROR .-> d1e16
+	d1e28-EXIT --> |exception<br/>ERROR| d1e16
 	d1e28-EXIT --> |success<br/>EXIT| d1e14
 	d1e58 --> |notFoundForwardName<br/>ERROR| d1e26-ERROR
 	d1e58 --> |emptyForwardName| d1e85
@@ -51,4 +52,6 @@ graph
 	d1e72 --> |greaterthan<br/>EXIT| d1e26-EXIT
 	d1e72 --> |equals<br/>EXIT| d1e26-EXIT
 	d1e72 --> |success<br/>EXIT| d1e26-EXIT
-	d1e72 -. exception<br/>ERROR .-> d1e26-ERROR
+	d1e72 --> |exception<br/>ERROR| d1e26-ERROR
+	linkStyle 0,2,3,5,6,7,8,9,10,11,12,13,14,15,16,18,20,21,22,23,24,25,26,27,28,29,30,31,32 stroke:#8bc34a,stroke-width:3px,fill:none;
+	linkStyle 1,4,17,19,33 stroke:#ec4758,stroke-width:3px,fill:none;

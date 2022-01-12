@@ -3,7 +3,6 @@
 		<receiver name="Document_GET"
 				  className="nl.nn.adapterframework.receivers.GenericReceiver">
 
-			<!-- GUID is passed over query param-->
 			<listener
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="test"
@@ -11,15 +10,9 @@
 				produces="JSON"
 			/>
 		</receiver>
-		<pipeline firstPipe="Select_Document">
-			<inputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseREQ">
-				<forward name="failure" path="Create_Response_Busy" />
-				<forward name="parserError" path="error2json" />
-			</inputValidator>
-			<outputValidator className="nl.nn.adapterframework.pipes.XmlValidator" schema="test.xsd" root="manageDatabaseRLY">
-				<forward name="failure" path="Create_Response_Busy" />
-				<forward name="parserError" path="Create_Response_Busy" />
-			</outputValidator>
+		<pipeline firstPipe="inputValidatorPipe">
+			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe"/>
 			<exits>
 				<exit path="READY" state="success" code="200"/>
 				<exit path="NotModified" state="success" code="304" empty="true" />
@@ -94,7 +87,10 @@
 				  xpathExpression="test"
 			>
 				<forward name="then" path="Check_If_Conversion_Finished" />
-				<forward name="else" path="NotAllowed" />
+				<forward name="else" path="ExceptionPipe" />
+			</pipe>
+
+			<pipe name="ExceptionPipe" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 			</pipe>
 
 			<pipe name="Get_Principal" className="nl.nn.adapterframework.pipes.GetPrincipalPipe"
@@ -188,51 +184,6 @@
 			>
 				<forward name="success" path="ServerError" />
 				<forward name="failure" path="ServerError"/>
-			</pipe>
-
-		</pipeline>
-	</adapter>
-	<adapter name="Select_Attachments" description="test" active="${test}">
-
-		<receiver name="Select_Attachments" className="nl.nn.adapterframework.receivers.GenericReceiver">
-			<listener name="Select_Attachments" className="nl.nn.adapterframework.receivers.JavaListener"/>
-		</receiver>
-
-		<pipeline firstPipe="Select_Attachments">
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-
-			<pipe name="Select_Attachments" className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" storeResultInSessionKey="documentInformation">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-						queryType="select"
-						jmsRealm="test"
-						query="test"
-				>
-					<param name="test" sessionKey="test" />
-				</sender>
-
-				<forward name="success" path="Find_Nested_Attachments" />
-				<forward name="exception" path="EXIT" />
-			</pipe>
-
-			<pipe name="Find_Nested_Attachments" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
-				  storeResultInSessionKey="attachmentsResult" elementXPathExpression="test" preserveInput="true">
-
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="Select_Attachments">
-					<param name="test" xpathExpression="test"/>
-				</sender>
-
-				<forward name="success" path="Map_Attachment" />
-				<forward name="exception" path="EXIT" />
-			</pipe>
-
-			<pipe name="Map_Attachment" className="nl.nn.adapterframework.pipes.XsltPipe"
-				  styleSheetName="test.xsl"
-			>
-				<param name="test" sessionKey="test" type="domdoc" defaultValue="&lt;dummy/&gt;"/>
-
-				<forward name="success" path="EXIT" />
 			</pipe>
 
 		</pipeline>
