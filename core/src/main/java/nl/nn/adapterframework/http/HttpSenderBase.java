@@ -88,7 +88,6 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
 import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
@@ -358,8 +357,11 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-			
-			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+				credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			} else {
+				credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+			}
 			if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
 				throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 			}
@@ -658,49 +660,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(e);
 		}
 
-		Message result = executeMethod(targetUri, httpRequestBase, r -> {
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
-					session.put(getResultStatusCodeSessionKey(), Integer.toString(r.getStatusLine().getStatusCode()));
-				}
-				return extractResult(r, session);
-			});
-
-		if (isXhtml() && !result.isEmpty()) {
-			String resultString;
-			try {
-				resultString = result.asString();
-			} catch (IOException e) {
-				throw new SenderException("error reading http response as String", e);
-			}
-
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
-
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
-				}
-			}
-			result = Message.asMessage(xhtml);
-		}
-
-		return result;
-	}
-
-	public <V> V executeMethod(URI targetUri, HttpRequestBase httpRequestBase, ThrowingFunction<HttpResponseHandler, V, Exception> resultExtractor) throws TimeoutException, SenderException {
-		V result = null;
+		Message result = null;
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
 		String msg = null;
-
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		while (count-- >= 0 && statusCode == -1) {
@@ -721,6 +684,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				StatusLine statusline = httpResponse.getStatusLine();
 				statusCode = statusline.getStatusCode();
 
+				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
+				}
+
 				// Only give warnings for 4xx (client errors) and 5xx (server errors)
 				if (statusCode >= 400 && statusCode < 600) {
 					log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
@@ -728,7 +695,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 
-				result = resultExtractor.apply(responseHandler);
+				result = extractResult(responseHandler, session);
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
@@ -744,7 +711,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				msgBuilder.append(" executeRetries left [" + count + "]");
 
 				log.warn(msgBuilder.toString());
-			} catch (Exception e) {
+			} catch (IOException e) {
 				httpRequestBase.abort();
 				if (e instanceof SocketTimeoutException) {
 					throw new TimeoutException(e);
@@ -774,6 +741,33 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new TimeoutException("Failed to recover from timeout exception");
 			}
 			throw new SenderException("Failed to recover from exception");
+		}
+
+		if (isXhtml() && !result.isEmpty()) {
+			String resultString;
+			try {
+				resultString = result.asString();
+			} catch (IOException e) {
+				throw new SenderException("error reading http response as String", e);
+			}
+
+			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
+			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
+				CleanerProperties props = new CleanerProperties();
+				HtmlCleaner cleaner = new HtmlCleaner(props);
+				TagNode tagNode = cleaner.clean(xhtml);
+				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
+
+				if (transformerPool != null) {
+					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+					try {
+						xhtml = transformerPool.transform(Message.asSource(xhtml));
+					} catch (Exception e) {
+						throw new SenderException("Exception on transforming input", e);
+					}
+				}
+			}
+			result = Message.asMessage(xhtml);
 		}
 
 		return result;

@@ -16,16 +16,20 @@
 package nl.nn.adapterframework.http.authentication;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.Credentials;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -47,7 +51,9 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSenderBase;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.credentialprovider.util.Misc;
 
 public class OAuthAccessTokenManager {
@@ -109,34 +115,69 @@ public class OAuthAccessTokenManager {
 				}
 				httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
 
-				HTTPResponse httpResponse = httpSender.executeMethod(uri, apacheHttpRequest, r -> {
-					StatusLine s = r.getStatusLine();
-					if (s.getStatusCode()!=200) {
-						throw new HttpAuthenticationException("Could not retrieve token: ("+s.getStatusCode()+") "+s.getReasonPhrase()+": "+r.getResponseMessage().asString());
-					}
-					HTTPResponse result = new HTTPResponse(s.getStatusCode());
-					result.setContent(r.getResponseMessage().asString());
-					result.setStatusMessage(s.getReasonPhrase());
-					return result;
-				});
-				
-				
-				try {
-					TokenResponse response = TokenResponse.parse(httpResponse);
-					if (! response.indicatesSuccess()) {
-						// We got an error response...
-						TokenErrorResponse errorResponse = response.toErrorResponse();
-						throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
+				CloseableHttpClient apacheHttpClient = httpSender.getHttpClient();
+				TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000,"token retrieval") {
+
+					@Override
+					protected void abort() {
+						apacheHttpRequest.abort();
 					}
 
-					AccessTokenResponse successResponse = response.toSuccessResponse();
+				};
+				try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
 					
-					// Get the access token
-					accessToken = successResponse.getTokens().getAccessToken();
-					// accessToken will be refreshed when it is half way expiration
-					accessTokenRefreshTime = System.currentTimeMillis() + 500 * accessToken.getLifetime();
-				} catch (ParseException e) {
-					throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
+					StatusLine statusLine = apacheHttpResponse.getStatusLine();
+					String responseBody = StreamUtil.streamToString(apacheHttpResponse.getEntity().getContent(), null, null);
+			
+					if (statusLine.getStatusCode()!=200) {
+						throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
+					}
+
+					HTTPResponse httpResponse = new HTTPResponse(statusLine.getStatusCode());
+					httpResponse.setStatusMessage(statusLine.getReasonPhrase());
+					for(Header header:apacheHttpResponse.getAllHeaders()) {
+						httpResponse.setHeader(header.getName(), header.getValue());
+					}
+					httpResponse.setContent(responseBody);
+					
+					try {
+						TokenResponse response = TokenResponse.parse(httpResponse);
+						if (! response.indicatesSuccess()) {
+							// We got an error response...
+							TokenErrorResponse errorResponse = response.toErrorResponse();
+							throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
+						}
+	
+						AccessTokenResponse successResponse = response.toSuccessResponse();
+						
+						// Get the access token
+						accessToken = successResponse.getTokens().getAccessToken();
+						// accessToken will be refreshed when it is half way expiration
+						accessTokenRefreshTime = System.currentTimeMillis() + 500 * accessToken.getLifetime();
+					} catch (ParseException e) {
+						throw new HttpAuthenticationException("Could not parse TokenResponse: "+responseBody, e);
+					}
+				} catch (IOException e) {
+					apacheHttpRequest.abort();
+					if (e instanceof SocketTimeoutException) {
+						throw new TimeoutException(e);
+					}
+					throw new SenderException(e);
+				} finally {
+					
+					// By forcing the use of the HttpResponseHandler the resultStream 
+					// will automatically be closed when it has been read.
+					// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
+					// We cannot close the connection as the response might be kept
+					// in a sessionKey for later use in the pipeline.
+					// 
+					// IMPORTANT: It is possible that poorly written implementations
+					// wont read or close the response.
+					// This will cause the connection to become stale..
+					
+					if (tg.cancel()) {
+						throw new TimeoutException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
+					}
 				}
 			} catch (IOException | TimeoutException | SenderException e) {
 				throw new HttpAuthenticationException("Could not send TokenRequest", e);

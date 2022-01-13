@@ -1,12 +1,16 @@
 package nl.nn.adapterframework.http.authentication;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
@@ -76,8 +80,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.getOAuthEndpoint());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 
 		sender.configure();
 		sender.open();
@@ -92,8 +96,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 
 		sender.configure();
 		sender.open();
@@ -109,12 +113,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
 
-		sender.configure();
-		sender.open();
-		
-		Message result = sendMessage("");
-		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
-		assertNotNull(result.asString());
+		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
+		assertThat(exception.getMessage(), containsString("clientAuthAlias or ClientId and ClientSecret must be specifie"));
 	}
 
 	@Test
@@ -122,8 +122,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.getOAuthEndpoint());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 
 		sender.configure();
 		sender.open();
@@ -139,8 +139,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.getOAuthEndpointUnchallenged());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpointFirstExpired());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 
 		sender.configure();
 		sender.open();
@@ -155,8 +155,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.gethEndpointFailing());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 
 		sender.configure();
@@ -202,27 +202,14 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(tokenServer.getEndpoint());
-		sender.setUsername(tokenServer.getClientId());
-		sender.setPassword(tokenServer.getClientSecret());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
 
 		sender.configure();
 		sender.open();
 		
 		Message result = sendMessage("");
 		assertEquals("200", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
-		assertNotNull(result.asString());
-	}
-	@Test
-	public void testFlexibleAuthenticationOAuthNoCredentials() throws Exception {
-		sender.setUrl(authtenticatedService.getMultiAuthEndpoint());
-		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
-		sender.setTokenEndpoint(tokenServer.getEndpoint());
-
-		sender.configure();
-		sender.open();
-		
-		Message result = sendMessage("");
-		assertEquals("401", session.getMessage(RESULT_STATUS_CODE_SESSIONKEY).asString());
 		assertNotNull(result.asString());
 	}
 	
