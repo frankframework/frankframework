@@ -41,7 +41,7 @@ public class MockTokenServer extends WireMockRule {
 
 	@Override
 	public void start() {
-		stubFor(any(urlPathMatching(path))
+		stubFor(any(urlEqualTo(path))
 				  .willReturn(aResponse()
 					  .withStatus(200)
 					  .withHeader("Content-Type", "application/json")

@@ -9,16 +9,29 @@ import static org.junit.Assert.assertThrows;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.nimbusds.oauth2.sdk.Scope;
 
+import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.util.CredentialFactory;
+
 public class OAuthAccessTokenManagerTest {
 
 	@Rule
 	public MockTokenServer tokenServer = new MockTokenServer();
-		
+	
+	private HttpSender httpSender = new HttpSender();
+
+	@Before
+	public void setup() throws Exception {
+		httpSender = new HttpSender();
+		httpSender.setUrl("https://dummy");
+		httpSender.configure();
+		httpSender.open();
+	}
 	
 	@Test
 	public void testAttributes() {
@@ -26,31 +39,49 @@ public class OAuthAccessTokenManagerTest {
 	}
 	
 	@Test
-	public void testRetrieveAccessToken() throws Exception {
+	public void testRetrieveAccessTokenWithClientCredentialsGrant() throws Exception {
 		String scope = "email";
 		String clientId = tokenServer.getClientId();
 		String clientSecret = tokenServer.getClientSecret();
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender);
+				
+		String accessToken = accessTokenManager.getAccessToken(null);
+		
+		assertThat(accessToken,startsWith("Bearer"));
+	}
+	
+	@Test
+	public void testRetrieveAccessTokenWithResourceOwnerPasswordGrant() throws Exception {
+		String scope = "email";
+		String clientId = tokenServer.getClientId();
+		String clientSecret = tokenServer.getClientSecret();
+		String username = "fakeUsername";
+		String password = "fakePassword";
+		
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
+		Credentials credentials = new UsernamePasswordCredentials(username, password);
+
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, false, httpSender);
 				
 		String accessToken = accessTokenManager.getAccessToken(credentials);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
-	
+
 	@Test
 	public void testRetrieveAccessTokenNoScope() throws Exception {
 		String scope = null;
 		String clientId = tokenServer.getClientId();
 		String clientSecret = tokenServer.getClientSecret();
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender);
 				
-		String accessToken = accessTokenManager.getAccessToken(credentials);
+		String accessToken = accessTokenManager.getAccessToken(null);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
@@ -61,11 +92,12 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = tokenServer.getClientId();
 		String clientSecret = tokenServer.getClientSecret();
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getServer()+"/xxxx", scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint()+"/xxxxx", scope, client_cf, true, httpSender);
 
-		assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
+		HttpAuthenticationException actualException = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		assertThat(actualException.getMessage(), containsString("Could not retrieve token"));
 	}
 
 	@Test
@@ -74,15 +106,15 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = tokenServer.getClientId();
 		String clientSecret = tokenServer.getClientSecret();
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender);
 				
 		tokenServer.resetScenarios();
-		assertThat(accessTokenManager.getAccessToken(credentials), containsString("Expired"));
+		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
 		
-		accessTokenManager.retrieveAccessToken(credentials);
-		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
+		accessTokenManager.retrieveAccessToken(null);
+		assertThat(accessTokenManager.getAccessToken(null), not(containsString("Expired")));
 	}
 
 	@Test
@@ -91,15 +123,15 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = tokenServer.getClientId();
 		String clientSecret = tokenServer.getClientSecret();
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender);
 
 		tokenServer.resetScenarios();
-		assertThat(accessTokenManager.getAccessToken(credentials), containsString("Expired"));
+		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
 		
 		Thread.sleep(100);
-		assertThat(accessTokenManager.getAccessToken(credentials), not(containsString("Expired")));
+		assertThat(accessTokenManager.getAccessToken(null), not(containsString("Expired")));
 	}
 
 	

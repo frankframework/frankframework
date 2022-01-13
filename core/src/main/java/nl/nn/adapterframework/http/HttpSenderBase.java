@@ -41,7 +41,6 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthOption;
 import org.apache.http.auth.AuthProtocolState;
-import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
@@ -89,6 +88,7 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
 import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
@@ -204,6 +204,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String password;
 	private @Getter String authDomain;
 	private @Getter String tokenEndpoint;
+	private @Getter String clientAuthAlias;
+	private @Getter String clientId;
+	private @Getter String clientSecret;
 	private @Getter String scope;
 
 	/** PROXY **/
@@ -357,6 +360,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			
 			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+				throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+			}
 			HttpHost proxy = null;
 			CredentialFactory pcf = null;
 			if (StringUtils.isNotEmpty(getProxyHost())) {
@@ -458,9 +464,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		}
 	}
 
-	private void setupAuthentication(CredentialFactory cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
+	private void setupAuthentication(CredentialFactory user_cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		if (!StringUtils.isEmpty(cf.getUsername())) {
+		if (StringUtils.isNotEmpty(user_cf.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
 			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
 
@@ -469,7 +475,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			requestConfigBuilder.setAuthenticationEnabled(true);
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
-				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, new OAuthAccessTokenManager(getTokenEndpoint(), getScope()));
+				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this);
+				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
@@ -607,22 +615,19 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
-		HttpHost httpTarget;
-		URI uri;
+		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
 				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
-				uri = getURI(url);
+				targetUri = getURI(url);
 			} else {
-				uri = staticUri;
+				targetUri = staticUri;
 			}
-
-			httpTarget = new HttpHost(uri.getHost(), getPort(uri), uri.getScheme());
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<String, String>();
-			if (headersParams != null) {
+			if (headersParams != null && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
 				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
@@ -633,7 +638,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, session);
+			httpRequestBase = getMethod(targetUri, message, pvl, session);
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
@@ -647,16 +652,56 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			preAuthenticate();
 
-			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");
+			log.info(getLogPrefix()+"configured httpclient for host ["+targetUri.getHost()+"]");
 
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 
-		Message result = null;
+		Message result = executeMethod(targetUri, httpRequestBase, r -> {
+				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
+					session.put(getResultStatusCodeSessionKey(), Integer.toString(r.getStatusLine().getStatusCode()));
+				}
+				return extractResult(r, session);
+			});
+
+		if (isXhtml() && !result.isEmpty()) {
+			String resultString;
+			try {
+				resultString = result.asString();
+			} catch (IOException e) {
+				throw new SenderException("error reading http response as String", e);
+			}
+
+			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
+			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
+				CleanerProperties props = new CleanerProperties();
+				HtmlCleaner cleaner = new HtmlCleaner(props);
+				TagNode tagNode = cleaner.clean(xhtml);
+				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
+
+				if (transformerPool != null) {
+					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+					try {
+						xhtml = transformerPool.transform(Message.asSource(xhtml));
+					} catch (Exception e) {
+						throw new SenderException("Exception on transforming input", e);
+					}
+				}
+			}
+			result = Message.asMessage(xhtml);
+		}
+
+		return result;
+	}
+
+	public <V> V executeMethod(URI targetUri, HttpRequestBase httpRequestBase, ThrowingFunction<HttpResponseHandler, V, Exception> resultExtractor) throws TimeoutException, SenderException {
+		V result = null;
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
 		String msg = null;
+
+		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		while (count-- >= 0 && statusCode == -1) {
 			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -669,16 +714,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			};
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
-				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
+				HttpResponse httpResponse = getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
 				log.debug(getLogPrefix()+"executed method");
 
 				HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
 				StatusLine statusline = httpResponse.getStatusLine();
 				statusCode = statusline.getStatusCode();
-
-				if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey()) && session != null) {
-					session.put(getResultStatusCodeSessionKey(), Integer.toString(statusCode));
-				}
 
 				// Only give warnings for 4xx (client errors) and 5xx (server errors)
 				if (statusCode >= 400 && statusCode < 600) {
@@ -687,7 +728,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 					log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 
-				result = extractResult(responseHandler, session);
+				result = resultExtractor.apply(responseHandler);
 
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (ClientProtocolException e) {
@@ -703,7 +744,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				msgBuilder.append(" executeRetries left [" + count + "]");
 
 				log.warn(msgBuilder.toString());
-			} catch (IOException e) {
+			} catch (Exception e) {
 				httpRequestBase.abort();
 				if (e instanceof SocketTimeoutException) {
 					throw new TimeoutException(e);
@@ -733,33 +774,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new TimeoutException("Failed to recover from timeout exception");
 			}
 			throw new SenderException("Failed to recover from exception");
-		}
-
-		if (isXhtml() && !result.isEmpty()) {
-			String resultString;
-			try {
-				resultString = result.asString();
-			} catch (IOException e) {
-				throw new SenderException("error reading http response as String", e);
-			}
-
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
-
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
-				}
-			}
-			result = Message.asMessage(xhtml);
 		}
 
 		return result;
@@ -842,11 +856,27 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		authDomain = string;
 	}
 
-	/** Endpoint to obtain OAuth accessToken using ClientCredentials grant. ClientID/ClientSecret are taken from <code>authAlias</code>, <code>username</code> and <code>password</code>. */
+	/** 
+	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant.
+	 */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
 	}
-	/** Space or comma separated list of scope items, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
+	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
+	public void setClientAlias(String clientAuthAlias) {
+		this.clientAuthAlias = clientAuthAlias;
+	}
+	/** Client_id used in authentication to <code>tokenEndpoint</code> */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	/** Client_secret used in authentication to <code>tokenEndpoint</code> */
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+	/** Space or comma separated list of scope items requested for accessToken, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
 	public void setScope(String string) {
 		scope = string;
 	}

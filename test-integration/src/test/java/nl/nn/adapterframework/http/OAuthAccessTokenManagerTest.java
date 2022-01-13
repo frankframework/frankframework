@@ -1,15 +1,16 @@
 package nl.nn.adapterframework.http;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.junit.Before;
 import org.junit.Test;
 
+import nl.nn.adapterframework.http.authentication.HttpAuthenticationException;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 public class OAuthAccessTokenManagerTest {
 
@@ -23,6 +24,16 @@ public class OAuthAccessTokenManagerTest {
 	String serviceClientId = "testiaf-service";
 	String serviceClientSecret = "testiaf-service-pwd";
 
+	private HttpSender httpSender = new HttpSender();
+
+	@Before
+	public void setup() throws Exception {
+		httpSender = new HttpSender();
+		httpSender.setUrl("https://dummy");
+		httpSender.configure();
+		httpSender.open();
+	}
+	
 	@Test
 	public void testRetrieveAccessToken() throws Exception {
 		String tokenEndpoint = TOKENENDPOINT;
@@ -30,11 +41,11 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = clientClientId;
 		String clientSecret= clientClientSecret;
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
 				
-		String accessToken = accessTokenManager.getAccessToken(credentials);
+		String accessToken = accessTokenManager.getAccessToken(null);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
@@ -46,11 +57,11 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = clientClientId;
 		String clientSecret= clientClientSecret;
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
 				
-		String accessToken = accessTokenManager.getAccessToken(credentials);
+		String accessToken = accessTokenManager.getAccessToken(null);
 		
 		assertThat(accessToken,startsWith("Bearer"));
 	}
@@ -62,11 +73,12 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = clientClientId;
 		String clientSecret="xxx";
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
 
-		assertThrows(AuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		assertThat(exception.getMessage(), containsString("unauthorized_client"));
 	}
 	
 	@Test
@@ -76,11 +88,12 @@ public class OAuthAccessTokenManagerTest {
 		String clientId = clientClientId;
 		String clientSecret=clientClientSecret;
 
-		Credentials credentials = new UsernamePasswordCredentials(clientId, clientSecret);
+		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenEndpoint, scope, client_cf, true, httpSender);
 
-		assertThrows(AuthenticationException.class, ()->accessTokenManager.getAccessToken(credentials));
+		HttpAuthenticationException exception = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
+		assertThat(exception.getMessage(), containsString("404"));
 	}
 
 }
