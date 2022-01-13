@@ -2,15 +2,18 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<deployment/>
 	<sub-deployment name="adapterframework.war">
-		<dependencies>
+<dependencies>
 			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
+			<module name="javax.jms.api" export="true"/>
 			<module name="org.codehaus.jackson.jackson-xc" />	<!-- java.lang.NoClassDefFoundError: Could not initialize class org.codehaus.jackson.map.ObjectMapper  -->
 			<module name="org.codehaus.jackson.jackson-mapper-asl" />
-			<module name="module.frankframework.resources" /> 	<!--  -->
 		</dependencies>
 		<exclude-subsystems>
 			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
-			<subsystem name="logging" />
+			<subsystem name="jaxrs" />	<!-- To avoid apache CXF conflict -->
 		</exclude-subsystems>
+		<local-last value="true" />
+		<resources/>
+		<transformers />
 	</sub-deployment>
 </jboss-deployment-structure>
