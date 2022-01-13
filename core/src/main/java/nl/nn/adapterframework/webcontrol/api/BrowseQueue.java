@@ -118,7 +118,7 @@ public final class BrowseQueue extends Base {
 		try {
 			JmsBrowser<javax.jms.Message> jmsBrowser = getIbisContext().createBeanAutowireByName(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
-			if(type.equals("QUEUE")) {
+			if(type == DestinationType.QUEUE) {
 				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);
 			} else {
 				jmsBrowser.setTopicConnectionFactoryName(connectionFactory);

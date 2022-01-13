@@ -47,7 +47,7 @@ TagDatabase
 			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
 		<modifySql dbms="mssql" >
-			<replace replace="[int] IDENTITY (1, 1)" with="INT"/>
+			<replace replace="IDENTITY (1, 1)" with=""/> <!-- required to be able to use/test SQL translation -->
 		</modifySql>
 	</changeSet>
 

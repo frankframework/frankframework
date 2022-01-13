@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -408,7 +408,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		xmlStreamWriter.writeEndElement();
 	}
 
-	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeOutException, IOException {
+	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
 		HttpSender httpSender = null;
 		try {
 			httpSender = new HttpSender();

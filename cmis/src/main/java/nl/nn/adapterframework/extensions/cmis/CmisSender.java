@@ -64,7 +64,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -338,7 +338,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Session cmisSession = null;
 		try {
 			ParameterValueList pvl=null;
@@ -383,7 +383,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeOutException {
+	private Message sendMessageForActionGet(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException, TimeoutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -609,7 +609,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForActionDelete(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException(getLogPrefix() + "input string cannot be empty but must contain a documentId");
 		}
@@ -634,7 +634,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		throw new SenderException(getLogPrefix() + "Document cannot be deleted");
 	}
 
-	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeOutException {
+	private Message sendMessageForActionFind(Session cmisSession, Message message) throws SenderException, TimeoutException {
 		Element queryElement = null;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
@@ -729,7 +729,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return cmisSession.getObjectByPath(path, operationContext);
 	}
 
-	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	private Message sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
 		Element requestElement = null;
@@ -927,7 +927,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return new Message(resultXml.toXML());
 	}
 
-	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeOutException {
+	private Message sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException, TimeoutException {
 		String objectId = null;
 		Map<String, Object> props = new HashMap<String, Object>();
 		Element cmisElement;

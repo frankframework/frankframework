@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.extensions.ifsa.jms.IfsaFacade;
 import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -120,7 +120,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
-	private javax.jms.Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeOutException {
+	private javax.jms.Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeoutException {
 	
 		String selector=null;
 		javax.jms.Message msg = null;
@@ -148,10 +148,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 		}
 		if (msg == null) {
-			throw new TimeOutException(getLogPrefix() + " timed out waiting for reply using selector [" + selector + "]");
+			throw new TimeoutException(getLogPrefix() + " timed out waiting for reply using selector [" + selector + "]");
 		}
 		if (msg instanceof IFSATimeOutMessage) {
-			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply using selector ["+selector+"]");
+			throw new TimeoutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply using selector ["+selector+"]");
 		}
 		return msg;
 //		try {
@@ -164,7 +164,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		
 		try {
 			if (isSynchronous()) {
@@ -209,7 +209,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		}
 	}
 
-	public String sendMessage(String dummyCorrelationId, String message, Map<String, String> params) throws SenderException, TimeOutException {
+	public String sendMessage(String dummyCorrelationId, String message, Map<String, String> params) throws SenderException, TimeoutException {
 		return sendMessage(message, params, null, null);
 	}
 
@@ -217,7 +217,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String message, Map<String, String> params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
+	public String sendMessage(String message, Map<String, String> params, String bifName, byte btcData[]) throws SenderException, TimeoutException {
 		String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;
