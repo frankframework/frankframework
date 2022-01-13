@@ -66,7 +66,7 @@ public class OAuthAccessTokenManager {
 	
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
-	
+
 	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender) {
 		this.tokenEndpoint = tokenEndpoint;
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
@@ -74,10 +74,10 @@ public class OAuthAccessTokenManager {
 		this.useClientCredentialsGrant = useClientCredentialsGrant;
 		this.httpSender = httpSender;
 	}
-		
+
 	public synchronized void retrieveAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		AuthorizationGrant grant;
-		
+
 		if (useClientCredentialsGrant) {
 			grant = new ClientCredentialsGrant();
 		} else {
@@ -85,7 +85,7 @@ public class OAuthAccessTokenManager {
 			Secret password = new Secret(credentials.getPassword());
 			grant = new ResourceOwnerPasswordCredentialsGrant(username, password);
 		}
-		
+
 		// The credentials to authenticate the client at the token endpoint
 		ClientID clientID = new ClientID(client_cf.getUsername());
 		Secret clientSecret = new Secret(client_cf.getPassword());
@@ -125,10 +125,10 @@ public class OAuthAccessTokenManager {
 
 				};
 				try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
-					
+
 					StatusLine statusLine = apacheHttpResponse.getStatusLine();
 					String responseBody = StreamUtil.streamToString(apacheHttpResponse.getEntity().getContent(), null, null);
-			
+
 					if (statusLine.getStatusCode()!=200) {
 						throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
 					}
@@ -147,7 +147,7 @@ public class OAuthAccessTokenManager {
 							TokenErrorResponse errorResponse = response.toErrorResponse();
 							throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
 						}
-	
+
 						AccessTokenResponse successResponse = response.toSuccessResponse();
 						
 						// Get the access token
@@ -159,34 +159,20 @@ public class OAuthAccessTokenManager {
 					}
 				} catch (IOException e) {
 					apacheHttpRequest.abort();
-					if (e instanceof SocketTimeoutException) {
-						throw new TimeoutException(e);
-					}
-					throw new SenderException(e);
+					throw new HttpAuthenticationException(e);
 				} finally {
-					
-					// By forcing the use of the HttpResponseHandler the resultStream 
-					// will automatically be closed when it has been read.
-					// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
-					// We cannot close the connection as the response might be kept
-					// in a sessionKey for later use in the pipeline.
-					// 
-					// IMPORTANT: It is possible that poorly written implementations
-					// wont read or close the response.
-					// This will cause the connection to become stale..
-					
 					if (tg.cancel()) {
-						throw new TimeoutException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
+						throw new HttpAuthenticationException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
 					}
 				}
-			} catch (IOException | TimeoutException | SenderException e) {
+			} catch (IOException e) {
 				throw new HttpAuthenticationException("Could not send TokenRequest", e);
 			}
 		} catch (URISyntaxException e) {
 			throw new HttpAuthenticationException("illegal token endpoint", e);
 		}
 	}
-	
+
 	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		if (accessToken==null || System.currentTimeMillis() > accessTokenRefreshTime) {
 			// retrieve a fresh token if there is none, or it needs to be refreshed
