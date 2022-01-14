@@ -29,31 +29,36 @@ TagDatabase
 			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
 		</addColumn>
  	</changeSet>
+
+	<changeSet id="Cleanup SEQ_IBISTEMP" author="Gerrit van Brakel" failOnError="false">
+		<dropSequence sequenceName="SEQ_IBISTEMP"/>
+ 	</changeSet>
+
+	<changeSet id="Cleanup IBISTEMP" author="Gerrit van Brakel" failOnError="false">
+		<dropTable tableName="IBISTEMP"/>
+ 	</changeSet>
  	
-	<changeSet id="IBISTEMP" author="Robert Karajev">
-		<validCheckSum>7:4e0dba09800e08930e4d452e11f83566</validCheckSum>
+	<changeSet id="IBISTEMP" author="Gerrit van Brakel">
 		<comment>Add IBISTEMP Table</comment>
 		<createTable tableName="IBISTEMP">
 			<column name="TKEY" type="INT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISTEMP"/>
 			</column>
-			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TINT" type="INT"/>
+			<column name="TCHAR" type="CHAR"/>
 			<column name="TVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
 			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/>
-			<column name="TTIMESTAMP" type="DATETIME"/>
-			<column name="TDATE" type="TIME"/>
-			<column name="TBLOB1" type="LONGBLOB"/>
+			<column name="TDATETIME" type="DATETIME"/>
+			<column name="TTIMESTAMP" type="TIMESTAMP"/>
+			<column name="TDATE" type="DATE"/>
+			<column name="TTIME" type="TIME"/>
+			<column name="TBLOB" type="LONGBLOB"/>
 			<column name="TCLOB" type="CLOB"/> <!-- is set as LONGTEXT for MySQL and MariaDB -->
-			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
+		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 		<modifySql dbms="mssql" >
 			<replace replace="IDENTITY (1, 1)" with=""/> <!-- required to be able to use/test SQL translation -->
 		</modifySql>
-	</changeSet>
-
-	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
-		<comment>Set sequence for IBISTEMP Table</comment>
-		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
 	<changeSet id="IAF_Util:8" author="Niels Meijer">

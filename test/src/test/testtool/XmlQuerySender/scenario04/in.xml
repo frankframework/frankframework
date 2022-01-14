@@ -20,7 +20,7 @@
 				<type>function</type>
 			</column>
 			<column>
-				<name>tblob1</name>
+				<name>TBLOB</name>
 				<value>EMPTY_BLOB()</value>
 				<type>function</type>
 			</column>
