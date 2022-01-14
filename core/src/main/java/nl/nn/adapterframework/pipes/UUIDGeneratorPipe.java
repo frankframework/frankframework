@@ -19,7 +19,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -54,7 +53,10 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@IbisDoc({"", "alphanumeric"})
+	/**
+	 * Format of generated string.
+	 * @ff.default alphanumeric
+	 */
 	public void setType(Type value) {
 		this.type = value;
 	}
