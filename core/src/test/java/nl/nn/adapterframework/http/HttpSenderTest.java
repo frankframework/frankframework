@@ -27,6 +27,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -835,11 +836,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Throwable { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
+		String keystore = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -851,11 +853,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
+		String keystore = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 
 		sender.setMethodType(HttpMethod.GET);
 		exception.expect(SenderException.class);
@@ -867,11 +870,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception { // keystore and the key pairs have the same password
-		String keystore = "/Signature/ks_multientry_samepassword.pfx";
+		String keystore = "/Signature/ks_multientry_samepassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -886,11 +890,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		// It would be difficult to provide password for each entry in a keystore 
 		//which has multiple entries each with a different password
 
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -904,11 +909,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Throwable {
 
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAlias("2nd");
 		sender.setKeystoreAliasPassword("test2");
 

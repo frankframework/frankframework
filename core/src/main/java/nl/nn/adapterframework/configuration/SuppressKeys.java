@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2021 WeAreFrank!
+Copyright 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ public enum SuppressKeys {
 	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck"),
 	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true),
 	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation", false), 
-	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true);
+	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true), 
+	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true);
 
 	private @Getter String key;
 	private @Getter boolean allowGlobalSuppression = false;
