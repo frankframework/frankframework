@@ -373,7 +373,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				requestConfigBuilder.setProxy(proxy);
 				httpClientBuilder.setProxy(proxy);
 			}
-			
+
 			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
