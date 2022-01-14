@@ -17,13 +17,17 @@ package nl.nn.adapterframework.http.authentication;
 
 import org.apache.http.impl.auth.AuthSchemeBase;
 import org.apache.http.impl.auth.BasicScheme;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
+import nl.nn.adapterframework.util.LogUtil;
 
 public enum AuthenticationScheme {
 	OAUTH(OAuthAuthenticationScheme.class),
 	BASIC(BasicScheme.class);
 	
+	protected Logger log = LogUtil.getLogger(this);
+
 	private @Getter String schemeName;
 	private Class<? extends AuthSchemeBase> schemeClass;
 
@@ -36,8 +40,7 @@ public enum AuthenticationScheme {
 		try {
 			return schemeClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			System.err.println("Cannot Instantiate object from class "+schemeClass.getName());
-			e.printStackTrace();
+			log.warn("Cannot Instantiate object from class "+schemeClass.getName(), e);
 			return null;
 		}
 	}
