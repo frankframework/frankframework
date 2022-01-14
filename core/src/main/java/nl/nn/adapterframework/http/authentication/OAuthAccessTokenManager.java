@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http.authentication;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -48,13 +47,11 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.credentialprovider.util.Misc;
 
 public class OAuthAccessTokenManager {
 
@@ -99,7 +96,6 @@ public class OAuthAccessTokenManager {
 				HTTPRequest httpRequest = request.toHTTPRequest();
 
 				// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
-				URI uri = httpRequest.getURI();
 				HttpRequestBase apacheHttpRequest;
 				switch (httpRequest.getMethod()) {
 					case GET:
