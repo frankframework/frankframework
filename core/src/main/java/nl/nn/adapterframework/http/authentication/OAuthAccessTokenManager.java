@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http.authentication;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -72,7 +73,35 @@ public class OAuthAccessTokenManager {
 		this.httpSender = httpSender;
 	}
 
+
 	public synchronized void retrieveAccessToken(Credentials credentials) throws HttpAuthenticationException {
+		TokenRequest request = createRequest(credentials);
+		HttpRequestBase apacheHttpRequest = convertToApacheHttpRequest(request.toHTTPRequest());
+
+		CloseableHttpClient apacheHttpClient = httpSender.getHttpClient();
+		TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000,"token retrieval") {
+
+			@Override
+			protected void abort() {
+				apacheHttpRequest.abort();
+			}
+
+		};
+		try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
+			String responseBody = StreamUtil.streamToString(apacheHttpResponse.getEntity().getContent(), null, null);
+			HTTPResponse httpResponse = convertFromApacheHttpResponse(apacheHttpResponse, responseBody);
+			parseResponse(httpResponse, responseBody);
+		} catch (IOException e) {
+			apacheHttpRequest.abort();
+			throw new HttpAuthenticationException(e);
+		} finally {
+			if (tg.cancel()) {
+				throw new HttpAuthenticationException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
+			}
+		}
+	}
+
+	private TokenRequest createRequest(Credentials credentials) throws HttpAuthenticationException {
 		AuthorizationGrant grant;
 
 		if (useClientCredentialsGrant) {
@@ -90,85 +119,72 @@ public class OAuthAccessTokenManager {
 
 		try {
 			URI _tokenEndpoint = new URI(tokenEndpoint);
-			TokenRequest request = new TokenRequest(_tokenEndpoint, clientAuth, grant, scope);
-
-			try {
-				HTTPRequest httpRequest = request.toHTTPRequest();
-
-				// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
-				HttpRequestBase apacheHttpRequest;
-				switch (httpRequest.getMethod()) {
-					case GET:
-						String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", httpRequest.getQuery());
-						apacheHttpRequest = new HttpGet(url);
-						break;
-					case POST:
-						apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-						((HttpPost)apacheHttpRequest).setEntity(new StringEntity(httpRequest.getQuery()));
-						break;
-					default:
-						throw new IllegalStateException("Illegal Method, must be GET or POST");
-				}
-				httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
-
-				CloseableHttpClient apacheHttpClient = httpSender.getHttpClient();
-				TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000,"token retrieval") {
-
-					@Override
-					protected void abort() {
-						apacheHttpRequest.abort();
-					}
-
-				};
-				try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
-
-					StatusLine statusLine = apacheHttpResponse.getStatusLine();
-					String responseBody = StreamUtil.streamToString(apacheHttpResponse.getEntity().getContent(), null, null);
-
-					if (statusLine.getStatusCode()!=200) {
-						throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
-					}
-
-					HTTPResponse httpResponse = new HTTPResponse(statusLine.getStatusCode());
-					httpResponse.setStatusMessage(statusLine.getReasonPhrase());
-					for(Header header:apacheHttpResponse.getAllHeaders()) {
-						httpResponse.setHeader(header.getName(), header.getValue());
-					}
-					httpResponse.setContent(responseBody);
-					
-					try {
-						TokenResponse response = TokenResponse.parse(httpResponse);
-						if (! response.indicatesSuccess()) {
-							// We got an error response...
-							TokenErrorResponse errorResponse = response.toErrorResponse();
-							throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
-						}
-
-						AccessTokenResponse successResponse = response.toSuccessResponse();
-						
-						// Get the access token
-						accessToken = successResponse.getTokens().getAccessToken();
-						// accessToken will be refreshed when it is half way expiration
-						accessTokenRefreshTime = System.currentTimeMillis() + 500 * accessToken.getLifetime();
-					} catch (ParseException e) {
-						throw new HttpAuthenticationException("Could not parse TokenResponse: "+responseBody, e);
-					}
-				} catch (IOException e) {
-					apacheHttpRequest.abort();
-					throw new HttpAuthenticationException(e);
-				} finally {
-					if (tg.cancel()) {
-						throw new HttpAuthenticationException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
-					}
-				}
-			} catch (IOException e) {
-				throw new HttpAuthenticationException("Could not send TokenRequest", e);
-			}
+			return new TokenRequest(_tokenEndpoint, clientAuth, grant, scope);
 		} catch (URISyntaxException e) {
 			throw new HttpAuthenticationException("illegal token endpoint", e);
 		}
 	}
+	
+	private void parseResponse(HTTPResponse httpResponse, String responseBody) throws HttpAuthenticationException {
+		try {
+			TokenResponse response = TokenResponse.parse(httpResponse);
+			if (! response.indicatesSuccess()) {
+				// We got an error response...
+				TokenErrorResponse errorResponse = response.toErrorResponse();
+				throw new HttpAuthenticationException(errorResponse.toJSONObject().toString());
+			}
 
+			AccessTokenResponse successResponse = response.toSuccessResponse();
+			
+			// Get the access token
+			accessToken = successResponse.getTokens().getAccessToken();
+			// accessToken will be refreshed when it is half way expiration
+			accessTokenRefreshTime = System.currentTimeMillis() + 500 * accessToken.getLifetime();
+		} catch (ParseException e) {
+			throw new HttpAuthenticationException("Could not parse TokenResponse: "+responseBody, e);
+		}
+	}
+	
+	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
+	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
+		HttpRequestBase apacheHttpRequest;
+		switch (httpRequest.getMethod()) {
+			case GET:
+				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", httpRequest.getQuery());
+				apacheHttpRequest = new HttpGet(url);
+				break;
+			case POST:
+				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
+			try {
+				((HttpPost)apacheHttpRequest).setEntity(new StringEntity(httpRequest.getQuery()));
+			} catch (UnsupportedEncodingException e) {
+				throw new HttpAuthenticationException("Could not create TokenRequest", e);
+			}
+				break;
+			default:
+				throw new IllegalStateException("Illegal Method, must be GET or POST");
+		}
+		httpRequest.getHeaderMap().forEach((k,l) -> l.forEach(v -> apacheHttpRequest.addHeader(k, v)));
+		return apacheHttpRequest;
+	}
+
+	private HTTPResponse convertFromApacheHttpResponse(CloseableHttpResponse apacheHttpResponse, String responseBody) throws HttpAuthenticationException {
+		StatusLine statusLine = apacheHttpResponse.getStatusLine();
+
+		if (statusLine.getStatusCode()!=200) {
+			throw new HttpAuthenticationException("Could not retrieve token: ("+statusLine.getStatusCode()+") "+statusLine.getReasonPhrase()+": "+responseBody);
+		}
+
+		HTTPResponse httpResponse = new HTTPResponse(statusLine.getStatusCode());
+		httpResponse.setStatusMessage(statusLine.getReasonPhrase());
+		for(Header header:apacheHttpResponse.getAllHeaders()) {
+			httpResponse.setHeader(header.getName(), header.getValue());
+		}
+		httpResponse.setContent(responseBody);
+		return httpResponse;
+	}
+	
+	
 	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
 		if (accessToken==null || System.currentTimeMillis() > accessTokenRefreshTime) {
 			// retrieve a fresh token if there is none, or it needs to be refreshed
