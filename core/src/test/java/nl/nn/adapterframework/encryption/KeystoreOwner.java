@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.encryption;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +16,8 @@ public class KeystoreOwner implements HasKeystore {
 	private @Getter @Setter String keystoreAliasAuthAlias;
 	private @Getter @Setter String keystoreAliasPassword;
 	private @Getter @Setter String keyManagerAlgorithm=null;
+	private @Getter @Setter String name=null;
+	private @Getter @Setter ApplicationContext applicationContext=null;
 	
 	public KeystoreOwner(String keystore) {
 		this.keystore = keystore;
