@@ -39,6 +39,8 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -63,6 +65,10 @@ public class AuthSSLContextFactory {
 				throw new ConfigurationException("cannot find URL for keystore resource ["+keystoreOwner.getKeystore()+"]");
 			}
 			log.debug("resolved keystore-URL to ["+keystoreUrl.toString()+"]");
+
+			if(keystoreOwner.getKeystoreType()==KeystoreType.PKCS12 && (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()))) {
+				ConfigurationWarnings.add(keystoreOwner, log, "KeystoreType ["+KeystoreType.PKCS12+"] does not guarantee to support using different passwords for the keys and the keystore.", SuppressKeys.MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY);
+			}
 		}
 		if (trustoreOwner!=null && StringUtils.isNotEmpty(trustoreOwner.getTruststore())) {
 			truststoreUrl = ClassUtils.getResourceURL(trustoreOwner, trustoreOwner.getTruststore());
