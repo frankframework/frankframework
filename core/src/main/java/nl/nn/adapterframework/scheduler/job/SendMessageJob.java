@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ public class SendMessageJob extends JobDef {
 
 	/**
 	 * JavaListener to send the message to
+	 * @ff.mandatory
 	 */
 	public void setJavaListener(String javaListener) {
 		this.javaListener = javaListener;

@@ -21,7 +21,8 @@ import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.Misc;
+
 
 /**
  * Reference to an byte[]. Can be accessed multiple times.

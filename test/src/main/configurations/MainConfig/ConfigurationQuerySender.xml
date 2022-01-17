@@ -70,7 +70,7 @@
 				<forward name="success" path="fixedInsertRollback3" />
 			</pipe>
 			<pipe name="fixedInsertRollback3">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" />
 				<forward name="success" path="generateException" />
 			</pipe>
 			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">

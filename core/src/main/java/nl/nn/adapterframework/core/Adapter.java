@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -731,6 +731,8 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see PipeLine
+	 * 
+	 * @ff.mandatory
 	 */
 	@Override
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {

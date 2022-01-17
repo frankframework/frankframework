@@ -513,7 +513,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsBlobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {
@@ -529,7 +529,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsClobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {

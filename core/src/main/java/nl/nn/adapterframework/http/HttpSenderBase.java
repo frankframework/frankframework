@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -37,7 +39,10 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthOption;
+import org.apache.http.auth.AuthProtocolState;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
@@ -83,6 +88,10 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.authentication.AuthenticationScheme;
+import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;
+import nl.nn.adapterframework.http.authentication.OAuthAuthenticationScheme;
+import nl.nn.adapterframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -186,13 +195,18 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter int maxExecuteRetries = 1;
 	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
 	private HttpClientContext httpClientContext = HttpClientContext.create();
-	private CloseableHttpClient httpClient;
+	private @Getter CloseableHttpClient httpClient;
 
 	/** SECURITY */
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
 	private @Getter String authDomain;
+	private @Getter String tokenEndpoint;
+	private @Getter String clientAuthAlias;
+	private @Getter String clientId;
+	private @Getter String clientSecret;
+	private @Getter String scope;
 
 	/** PROXY **/
 	private @Getter String proxyHost;
@@ -303,10 +317,10 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 //		httpClientBuilder.disableAuthCaching();
 		httpClientBuilder.disableAutomaticRetries();
 
-		Builder requestConfig = RequestConfig.custom();
-		requestConfig.setConnectTimeout(getTimeout());
-		requestConfig.setConnectionRequestTimeout(getTimeout());
-		requestConfig.setSocketTimeout(getTimeout());
+		Builder requestConfigBuilder = RequestConfig.custom();
+		requestConfigBuilder.setConnectTimeout(getTimeout());
+		requestConfigBuilder.setConnectionRequestTimeout(getTimeout());
+		requestConfigBuilder.setSocketTimeout(getTimeout());
 
 		if (paramList!=null) {
 			paramList.configure();
@@ -343,53 +357,24 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-			
-			credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
-			CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-			if (!StringUtils.isEmpty(credentials.getUsername())) {
-				String uname;
-				if (StringUtils.isNotEmpty(getAuthDomain())) {
-					uname = getAuthDomain() + "\\" + credentials.getUsername();
-				} else {
-					uname = credentials.getUsername();
-				}
-
-				credentialsProvider.setCredentials(
-					new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), 
-					new UsernamePasswordCredentials(uname, credentials.getPassword())
-				);
-
-				requestConfig.setTargetPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-				requestConfig.setAuthenticationEnabled(true);
+			if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername())) {
+				credentials = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			} else {
+				credentials = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
 			}
+			if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getClientAuthAlias()) && StringUtils.isEmpty(getClientId())) {
+				throw new ConfigurationException("To obtain accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
+			}
+			HttpHost proxy = null;
+			CredentialFactory pcf = null;
 			if (StringUtils.isNotEmpty(getProxyHost())) {
-				HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
-				AuthScope scope = new AuthScope(proxy, getProxyRealm(), AuthScope.ANY_SCHEME);
-
-				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
-
-				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					Credentials credentials = new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword());
-					credentialsProvider.setCredentials(scope, credentials);
-				}
-				log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
-
-				if(prefillProxyAuthCache()) {
-					requestConfig.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
-
-					AuthCache authCache = httpClientContext.getAuthCache();
-					if(authCache == null)
-						authCache = new BasicAuthCache();
-	
-					authCache.put(proxy, new BasicScheme());
-					httpClientContext.setAuthCache(authCache);
-				}
-
-				requestConfig.setProxy(proxy);
+				proxy = new HttpHost(getProxyHost(), getProxyPort());
+				pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUsername(), getProxyPassword());
+				requestConfigBuilder.setProxy(proxy);
 				httpClientBuilder.setProxy(proxy);
 			}
 
-			httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
 		}
@@ -408,7 +393,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			}
 		}
 
-		httpClientBuilder.setDefaultRequestConfig(requestConfig.build());
+		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
 		if(areCookiesDisabled()) {
 			httpClientBuilder.disableCookieManagement();
@@ -465,6 +450,96 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		httpClient = httpClientBuilder.build();
 	}
 
+	@Override
+	public void close() throws SenderException {
+		try {
+			//Close the HttpClient and ConnectionManager to release resources and potential open connections
+			if(httpClient != null) {
+				httpClient.close();
+			}
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
+
+		if (transformerPool!=null) {
+			transformerPool.close();
+		}
+	}
+
+	private void setupAuthentication(CredentialFactory user_cf, CredentialFactory proxyCredentials, HttpHost proxy, Builder requestConfigBuilder) {
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		if (StringUtils.isNotEmpty(user_cf.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
+
+			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getCredentials());
+
+			AuthenticationScheme preferredAuthenticationScheme = getPreferredAuthenticationScheme();
+			requestConfigBuilder.setTargetPreferredAuthSchemes(Arrays.asList(preferredAuthenticationScheme.getSchemeName()));
+			requestConfigBuilder.setAuthenticationEnabled(true);
+
+			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
+				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this);
+				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
+				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
+			}
+		}
+		if (proxy!=null) {
+			AuthScope scope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
+
+
+			if (StringUtils.isNotEmpty(proxyCredentials.getUsername())) {
+				Credentials credentials = new UsernamePasswordCredentials(proxyCredentials.getUsername(), proxyCredentials.getPassword());
+				credentialsProvider.setCredentials(scope, credentials);
+			}
+			//log.trace("setting credentialProvider [" + credentialsProvider.toString() + "]");
+
+			if(prefillProxyAuthCache()) {
+				requestConfigBuilder.setProxyPreferredAuthSchemes(Arrays.asList(AuthSchemes.BASIC));
+
+				AuthCache authCache = httpClientContext.getAuthCache();
+				if(authCache == null)
+					authCache = new BasicAuthCache();
+
+				authCache.put(proxy, new BasicScheme());
+				httpClientContext.setAuthCache(authCache);
+			}
+
+		}
+
+		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+		
+	}
+
+	private void preAuthenticate() {
+		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
+			AuthState authState = httpClientContext.getTargetAuthState();
+			if (authState==null) {
+				authState = new AuthState();
+				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+			}
+			authState.setState(AuthProtocolState.CHALLENGED);
+			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
+			Queue<AuthOption> authOptionQueue = new LinkedList<>();
+			authOptionQueue.add(authOption);
+			authState.update(authOptionQueue);
+		}
+	}
+	
+	private Credentials getCredentials() {
+		String uname;
+		if (StringUtils.isNotEmpty(getAuthDomain())) {
+			uname = getAuthDomain() + "\\" + credentials.getUsername();
+		} else {
+			uname = credentials.getUsername();
+		}
+
+		return new UsernamePasswordCredentials(uname, credentials.getPassword());
+	}
+	
+	private AuthenticationScheme getPreferredAuthenticationScheme() {
+		return StringUtils.isNotEmpty(getTokenEndpoint()) ? AuthenticationScheme.OAUTH : AuthenticationScheme.BASIC;
+	}
+
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws SenderException {
 		SSLConnectionSocketFactory sslSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
@@ -483,26 +558,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return sslSocketFactory;
 	}
 	
-	public CloseableHttpClient getHttpClient() {
-		return httpClient;
-	}
-
-	@Override
-	public void close() throws SenderException {
-		try {
-			//Close the HttpClient and ConnectionManager to release resources and potential open connections
-			if(httpClient != null) {
-				httpClient.close();
-			}
-		} catch (IOException e) {
-			throw new SenderException(e);
-		}
-
-		if (transformerPool!=null) {
-			transformerPool.close();
-		}
-	}
-
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
@@ -562,22 +617,19 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 
-		HttpHost httpTarget;
-		URI uri;
+		URI targetUri;
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
 				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
-				uri = getURI(url);
+				targetUri = getURI(url);
 			} else {
-				uri = staticUri;
+				targetUri = staticUri;
 			}
-
-			httpTarget = new HttpHost(uri.getHost(), getPort(uri), uri.getScheme());
 
 			// Resolve HeaderParameters
 			Map<String, String> headersParamsMap = new HashMap<String, String>();
-			if (headersParams != null) {
+			if (headersParams != null && pvl!=null) {
 				log.debug("appending header parameters "+headersParams);
 				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
@@ -588,7 +640,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 			}
 
-			httpRequestBase = getMethod(uri, message, pvl, session);
+			httpRequestBase = getMethod(targetUri, message, pvl, session);
 			if(httpRequestBase == null)
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
 
@@ -600,18 +652,9 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				httpRequestBase.setHeader(param, headersParamsMap.get(param));
 			}
 
-			if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
-				AuthCache authCache = httpClientContext.getAuthCache();
-				if(authCache == null)
-					authCache = new BasicAuthCache();
+			preAuthenticate();
 
-				if(authCache.get(httpTarget) == null)
-					authCache.put(httpTarget, new BasicScheme());
-
-				httpClientContext.setAuthCache(authCache);
-			}
-
-			log.info(getLogPrefix()+"configured httpclient for host ["+uri.getHost()+"]");
+			log.info(getLogPrefix()+"configured httpclient for host ["+targetUri.getHost()+"]");
 
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -621,6 +664,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
 		String msg = null;
+		HttpHost targetHost = new HttpHost(targetUri.getHost(), getPort(targetUri), targetUri.getScheme());
 
 		while (count-- >= 0 && statusCode == -1) {
 			TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
@@ -633,7 +677,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			};
 			try {
 				log.debug(getLogPrefix()+"executing method [" + httpRequestBase.getRequestLine() + "]");
-				HttpResponse httpResponse = getHttpClient().execute(httpTarget, httpRequestBase, httpClientContext);
+				HttpResponse httpResponse = getHttpClient().execute(targetHost, httpRequestBase, httpClientContext);
 				log.debug(getLogPrefix()+"executed method");
 
 				HttpResponseHandler responseHandler = new HttpResponseHandler(httpResponse);
@@ -738,17 +782,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 
 
-	@IbisDoc({"1", "URL or base of URL to be used", ""})
+	@IbisDoc({"URL or base of URL to be used", ""})
 	public void setUrl(String string) {
 		url = string;
 	}
 
-	@IbisDoc({"2", "parameter that is used to obtain url; overrides url-attribute.", "url"})
+	@IbisDoc({"parameter that is used to obtain url; overrides url-attribute.", "url"})
 	public void setUrlParam(String urlParam) {
 		this.urlParam = urlParam;
 	}
 
-	@IbisDoc({"3", "The HTTP Method used to execute the request", "GET"})
+	@IbisDoc({"The HTTP Method used to execute the request", "GET"})
 	public void setMethodType(HttpMethod method) {
 		this.httpMethod = method;
 	}
@@ -756,37 +800,37 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	/**
 	 * This is a superset of mimetype + charset + optional payload metadata.
 	 */
-	@IbisDoc({"4", "content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
+	@IbisDoc({"content-type (superset of mimetype + charset) of the request, for POST and PUT methods", "text/html"})
 	public void setContentType(String string) {
 		contentType = string;
 	}
 
-	@IbisDoc({"6", "charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
+	@IbisDoc({"charset of the request. Typically only used on PUT and POST requests.", "UTF-8"})
 	public void setCharSet(String string) {
 		charSet = string;
 	}
 
-	@IbisDoc({"10", "timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
 	public void setTimeout(int i) {
 		timeout = i;
 	}
 
-	@IbisDoc({"11", "the maximum number of concurrent connections", "10"})
+	@IbisDoc({"the maximum number of concurrent connections", "10"})
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"12", "the maximum number of times it the execution is retried", "1"})
+	@IbisDoc({"the maximum number of times it the execution is retried", "1"})
 	public void setMaxExecuteRetries(int i) {
 		maxExecuteRetries = i;
 	}
 
-	@IbisDoc({"20", "alias used to obtain credentials for authentication to host", ""})
+	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"21", "username used in authentication to host", ""})
+	@IbisDoc({"username used in authentication to host", ""})
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -796,33 +840,58 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setUsername(username);
 	}
 
-	@IbisDoc({"22", "password used in authentication to host", " "})
+	@IbisDoc({"password used in authentication to host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"23", "domain used in authentication to host", " "})
+	@IbisDoc({"domain used in authentication to host", " "})
 	public void setAuthDomain(String string) {
 		authDomain = string;
 	}
 
+	/** 
+	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant.
+	 */
+	public void setTokenEndpoint(String string) {
+		tokenEndpoint = string;
+	}
+	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
+	public void setClientAlias(String clientAuthAlias) {
+		this.clientAuthAlias = clientAuthAlias;
+	}
+	/** Client_id used in authentication to <code>tokenEndpoint</code> */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
 
-	@IbisDoc({"30", "proxy host", " "})
+	/** Client_secret used in authentication to <code>tokenEndpoint</code> */
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+	/** Space or comma separated list of scope items requested for accessToken, e.g. <code>read write</code>. Only used when <code>tokenEndpoint</code> is specified */
+	public void setScope(String string) {
+		scope = string;
+	}
+
+
+	@IbisDoc({"proxy host", " "})
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
 
-	@IbisDoc({"31", "proxy port", "80"})
+	@IbisDoc({"proxy port", "80"})
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
 
-	@IbisDoc({"32", "alias used to obtain credentials for authentication to proxy", ""})
+	@IbisDoc({"alias used to obtain credentials for authentication to proxy", ""})
 	public void setProxyAuthAlias(String string) {
 		proxyAuthAlias = string;
 	}
 
-	@IbisDoc({"33", "proxy username", " "})
+	@IbisDoc({"proxy username", " "})
 	public void setProxyUsername(String string) {
 		proxyUsername = string;
 	}
@@ -832,12 +901,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setProxyUsername(string);
 	}
 
-	@IbisDoc({"34", "proxy password", " "})
+	@IbisDoc({"proxy password", " "})
 	public void setProxyPassword(String string) {
 		proxyPassword = string;
 	}
 
-	@IbisDoc({"35", "proxy realm", " "})
+	@IbisDoc({"proxy realm", " "})
 	public void setProxyRealm(String string) {
 		proxyRealm = StringUtils.isNotEmpty(string) ? string : null;
 	}
@@ -850,7 +919,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		return false;
 	}
 
-	@IbisDoc({"36", "Disables the use of cookies, making the sender completely stateless", "false"})
+	@IbisDoc({"Disables the use of cookies, making the sender completely stateless", "false"})
 	public void setDisableCookies(boolean disableCookies) {
 		this.disableCookies = disableCookies;
 	}
@@ -961,42 +1030,42 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	}
 	
 	
-	@IbisDoc({"60", "comma separated list of parameter names which should be set as http headers", ""})
+	@IbisDoc({"comma separated list of parameter names which should be set as http headers", ""})
 	public void setHeadersParams(String headersParams) {
 		this.headersParams = headersParams;
 	}
 	
-	@IbisDoc({"61", "when true, a redirect request will be honoured, e.g. to switch to https", "true"})
+	@IbisDoc({"when true, a redirect request will be honoured, e.g. to switch to https", "true"})
 	public void setFollowRedirects(boolean b) {
 		followRedirects = b;
 	}
 	
-	@IbisDoc({"62", "controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
+	@IbisDoc({"controls whether connections checked to be stale, i.e. appear open, but are not.", "true"})
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
 	}
 	
-	@IbisDoc({"63", "Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
+	@IbisDoc({"Used when StaleChecking=true. Timeout when stale connections should be closed.", "5000"})
 	public void setStaleTimeout(int timeout) {
 		staleTimeout = timeout;
 	}
 
-	@IbisDoc({"65", "when true, the html response is transformed to xhtml", "false"})
+	@IbisDoc({"when true, the html response is transformed to xhtml", "false"})
 	public void setXhtml(boolean xHtml) {
 		xhtml = xHtml;
 	}
 
-	@IbisDoc({"66", "(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
+	@IbisDoc({"(only used when <code>xhtml=true</code>) stylesheet to apply to the html response", ""})
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	@IbisDoc({"67", "Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. If empty the protocol 'SSL' is used", "SSL"})
+	@IbisDoc({"Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.", "SSL"})
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
 
-	@IbisDoc({"68", "if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
+	@IbisDoc({"if set, the status code of the http response is put in specified in the sessionkey and the (error or okay) response message is returned", ""})
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
 	}

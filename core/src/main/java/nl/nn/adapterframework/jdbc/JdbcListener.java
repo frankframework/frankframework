@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -53,19 +54,19 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class JdbcListener<M extends Object> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M> {
 
-	private String selectQuery;
-	private String peekQuery;
+	private @Getter String selectQuery;
+	private @Getter String peekQuery;
 
-	private String keyField;
-	private String messageField;
-	private String messageFieldType="String";
+	private @Getter String keyField;
+	private @Getter String messageField;
+	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
 
-	private String blobCharset = null;
-	private boolean blobsCompressed=true;
-	private boolean blobSmartGet=false;
+	private @Getter String blobCharset = null;
+	private @Getter boolean blobsCompressed=true;
+	private @Getter boolean blobSmartGet=false;
 	
-	private boolean trace=false;
-	private boolean peekUntransacted=true;
+	private @Getter boolean trace=false;
+	private @Getter boolean peekUntransacted=true;
 
 	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
 	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
@@ -74,6 +75,12 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
+	
+	public enum MessageFieldType {
+		STRING,
+		CLOB,
+		BLOB
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -208,10 +215,11 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				Message message;
-				if ("clob".equalsIgnoreCase(getMessageFieldType())) {
-					message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
-				} else {
-					if ("blob".equalsIgnoreCase(getMessageFieldType())) {
+				switch (getMessageFieldType()) {
+					case CLOB:
+						message=new Message(JdbcUtil.getClobAsString(getDbmsSupport(), rs,getMessageField(),false));
+						break;
+					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) {
 							message=new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(),getBlobCharset(),isBlobsCompressed(),isBlobSmartGet(),false));
 						} else {
@@ -220,9 +228,12 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 								message.preserve();
 							}
 						}
-					} else {
+						break;
+					case STRING:
 						message=new Message(rs.getString(getMessageField()));
-					}
+						break;
+					default:
+						throw new IllegalArgumentException("Illegal messageFieldType ["+getMessageFieldType()+"]");
 				}
 				// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 				MessageWrapper<?> mw = new MessageWrapper<Object>();
@@ -354,25 +365,15 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
 	}
-	public String getSelectQuery() {
-		return selectQuery;
-	}
 
 	@Override
 	public void setPeekUntransacted(boolean b) {
 		peekUntransacted = b;
 	}
-	@Override
-	public boolean isPeekUntransacted() {
-		return peekUntransacted;
-	}
 
 	@IbisDoc({"(only used when <code>peekUntransacted=true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock", "selectQuery"})
 	public void setPeekQuery(String string) {
 		peekQuery = string;
-	}
-	public String getPeekQuery() {
-		return peekQuery;
 	}
 
 
@@ -380,32 +381,20 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
-	public String getKeyField() {
-		return keyField;
-	}
 
 	@IbisDoc({"2", "(Optional) field containing the message data", "<i>same as keyField</i>"})
 	public void setMessageField(String fieldname) {
 		messageField = fieldname;
 	}
-	public String getMessageField() {
-		return messageField;
-	}
 
-	@IbisDoc({"3", "Type of the field containing the message data: either String, clob or blob", "<i>String</i>"})
-	public void setMessageFieldType(String string) {
-		messageFieldType = string;
-	}
-	public String getMessageFieldType() {
-		return messageFieldType;
+	@IbisDoc({"3", "Type of the field containing the message data", "<i>String</i>"})
+	public void setMessageFieldType(MessageFieldType value) {
+		messageFieldType = value;
 	}
 
 	@IbisDoc({"4", "Controls whether BLOB is considered stored compressed in the database", "true"})
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
-	}
-	public boolean isBlobsCompressed() {
-		return blobsCompressed;
 	}
 
 	@IbisDoc({"5", "Charset used to read BLOB. When specified, then the BLOB will be converted into a string", ""})
@@ -413,21 +402,12 @@ public class JdbcListener<M extends Object> extends JdbcFacade implements IPeeka
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
-	public String getBlobCharset() {
-		return blobCharset;
-	}
 
 	@IbisDoc({"6", "Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string", "false"})
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}
-	public boolean isBlobSmartGet() {
-		return blobSmartGet;
-	}
 
-	public boolean isTrace() {
-		return trace;
-	}
 	public void setTrace(boolean trace) {
 		this.trace = trace;
 	}

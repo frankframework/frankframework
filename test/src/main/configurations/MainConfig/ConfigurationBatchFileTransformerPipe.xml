@@ -48,23 +48,23 @@
 				- originalBlock
 			-->
 			<pipe name="InsertData1" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData2" />
 			</pipe>
 
 			<pipe name="InsertData2" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="InsertData3" />
 			</pipe>
 			<pipe name="InsertData3" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData4" />
 			</pipe>
 
 			<pipe name="InsertData4" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalBlock">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
