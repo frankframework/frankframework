@@ -29,8 +29,8 @@ public abstract class OracleToMsSqlTranslatorTestBase {
 
 	@Test
 	public void testConvertQueryInsertInto() throws JdbcException, SQLException {
-		String query = "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
-		String expected = "INSERT INTO IBISTEMP(tkey, tblob1) VALUES(NEXT VALUE FOR SEQ_IBISTEMP, 0x);";
+		String query = "INSERT INTO IBISTEMP (tkey,tblob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
+		String expected = "INSERT INTO IBISTEMP(tkey, tblob) VALUES(NEXT VALUE FOR SEQ_IBISTEMP, 0x);";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		String result = convertQuery(queryExecutionContext, false);
 		assertEquals(query, skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));
@@ -48,8 +48,8 @@ public abstract class OracleToMsSqlTranslatorTestBase {
 
 	@Test
 	public void testSelectForUpdate() throws JdbcException, SQLException {
-		String query    = "SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE;";
-		String expected = "SELECT tblob1 FROM ibistemp WHERE tkey=? FOR UPDATE;";
+		String query    = "SELECT tblob FROM ibistemp WHERE tkey=? FOR UPDATE;";
+		String expected = "SELECT tblob FROM ibistemp WHERE tkey=? FOR UPDATE;";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		String result = convertQuery(queryExecutionContext, false);
 		assertEquals(query, skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));

@@ -138,8 +138,8 @@ public abstract class OracleToH2TranslatorTestBase {
 
 	@Test
 	public void testConvertQueryInsertInto() throws JdbcException, SQLException {
-		String query = "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
-		String expected = "INSERT INTO IBISTEMP(tkey, tblob1) VALUES(SEQ_IBISTEMP.NEXTVAL, '');";
+		String query = "INSERT INTO IBISTEMP (tkey,tblob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
+		String expected = "INSERT INTO IBISTEMP(tkey, tblob) VALUES(SEQ_IBISTEMP.NEXTVAL, '');";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		String result = convertQuery(queryExecutionContext, false);
 		assertEquals(query,  skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));
@@ -156,8 +156,8 @@ public abstract class OracleToH2TranslatorTestBase {
 
 	@Test
 	public void testConvertQueryUpdateSet() throws JdbcException, SQLException {
-		String query = "UPDATE IBISTEMP SET tblob1=EMPTY_BLOB() WHERE tkey=?;";
-		String expected = "UPDATE IBISTEMP SET tblob1='' WHERE tkey=?;";
+		String query = "UPDATE IBISTEMP SET tblob=EMPTY_BLOB() WHERE tkey=?;";
+		String expected = "UPDATE IBISTEMP SET tblob='' WHERE tkey=?;";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		String result = convertQuery(queryExecutionContext, false);
 		assertEquals(query,  skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));

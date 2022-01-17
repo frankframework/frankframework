@@ -37,7 +37,7 @@
 			</pipe>
 
 			<pipe name="selectBlob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
 			</pipe>
 		</pipeline>
 	</adapter>
@@ -112,7 +112,7 @@
 			<pipe name="DualXsltPipeBeforeUpdateBlob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
 			<pipe name="XsltPipeBeforeUpdateBlob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
 			<pipe name="UpdateBlob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" blobCharset="utf8"/>
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" blobCharset="utf8"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -158,7 +158,7 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />
 			</pipe>
 			<pipe name="insertIntoIbisTemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR,TCLOB,TBLOB1) VALUES (999,'a',EMPTY_CLOB(),EMPTY_BLOB())" />
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR,TCLOB,TBLOB) VALUES (999,'a',EMPTY_CLOB(),EMPTY_BLOB())" />
 			</pipe>
 
 		</pipeline>
