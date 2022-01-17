@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -897,7 +897,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		groupingSeparator = string;
 	}
 
-	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded", "-1"})
+	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter subceeds this minimum length, the value is padded", "-1"})
 	public void setMinLength(int i) {
 		minLength = i;
 	}
@@ -912,7 +912,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		maxInclusiveString = string;
 	}
 	
-	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
+	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter subceeds this minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}
