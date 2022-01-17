@@ -19,8 +19,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 	private final String resultColumnsReturned = "<result><fielddefinition>"
-			+ "<field name=\"TKEY\" type=\"INTEGER\" columnDisplaySize=\"11\" precision=\"10\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"INTEGER\" columnClassName=\"java.lang.Integer\"/>"
-			+ "<field name=\"TVARCHAR\" type=\"VARCHAR\" columnDisplaySize=\"100\" precision=\"100\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"VARCHAR\" columnClassName=\"java.lang.String\"/></fielddefinition>"
+			+ "<field name=\"TKEY\" type=\"INTEGER\" columnDisplaySize=\"11\" precision=\"32\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"INTEGER\" columnClassName=\"java.lang.Integer\"/>"
+			+ "<field name=\"TVARCHAR\" type=\"VARCHAR\" columnDisplaySize=\"100\" precision=\"100\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"CHARACTER VARYING\" columnClassName=\"java.lang.String\"/></fielddefinition>"
 			+ "<rowset><row number=\"0\"><"
 			+ "field name=\"TKEY\">1</field>"
 			+ "<field name=\"TVARCHAR\">value</field></row></rowset></result>";

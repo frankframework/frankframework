@@ -51,7 +51,7 @@ createProvider('H2 JDBC Driver (XA)', 'org.h2.jdbcx.JdbcDataSource', 'classpath=
 createProvider('MySQL JDBC Driver', 'com.mysql.cj.jdbc.MysqlXADataSource', 'classpath=/work/drivers/mysql-connector-java.jar')
 
 createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
-		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
+		[['name', 'URL'],['value', 'jdbc:h2:file:/work/ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE']]
 	])
 
 authAliasName = 'jdbcTestIaf'
