@@ -232,11 +232,14 @@ angular.module('iaf.beheerconsole')
 				$compile(elem.contents())(scope);
 			});
 
-			scope.$watch(function() {
+			let destroyWatch = scope.$watch(function() {
 				return elem.children().length;
 			}, function() {
 				scope.$evalAsync(function() {
-					mermaid.init();
+					if (elem.children().length === 1) {
+						mermaid.init();
+						destroyWatch();
+					}
 				});
 			});
 		},
