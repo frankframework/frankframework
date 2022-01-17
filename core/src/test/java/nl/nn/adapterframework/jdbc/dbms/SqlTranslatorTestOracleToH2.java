@@ -144,8 +144,8 @@ public class SqlTranslatorTestOracleToH2 {
 
 	@Test
 	public void testConvertQueryInsertInto() throws JdbcException, SQLException {
-		String query = "INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
-		String expected = "INSERT INTO IBISTEMP(tkey, tblob1) VALUES(NEXT VALUE FOR SEQ_IBISTEMP, '');";
+		String query = "INSERT INTO IBISTEMP (tkey,tblob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB());";
+		String expected = "INSERT INTO IBISTEMP(tkey, tblob) VALUES(NEXT VALUE FOR SEQ_IBISTEMP, '');";
 		QueryExecutionContext queryExecutionContext = new QueryExecutionContext(query, null, null);
 		String result = convertQuery(queryExecutionContext, false);
 		assertEquals(query,  skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));
