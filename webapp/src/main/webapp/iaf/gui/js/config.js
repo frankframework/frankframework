@@ -32,6 +32,7 @@ angular.module('iaf.beheerconsole').config(['$cookiesProvider', '$locationProvid
 			serie: true,
 			files: [
 				'js/plugins/mermaid/mermaid.min.js',
+				'js/plugins/mermaid/ng-mermaid.js',
 			]
 		}],
 		// Set to true if you want to see what and when is dynamically loaded
