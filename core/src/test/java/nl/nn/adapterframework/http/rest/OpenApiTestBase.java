@@ -40,7 +40,7 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -288,7 +288,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (!adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				while (adapter.getRunState()!=RunState.STARTED) {
 					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
 					try {
 						Thread.sleep(1000);

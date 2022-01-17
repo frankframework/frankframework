@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.jmx.JmxOperation;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 /**
  * Models starting and stopping of objects that support such behaviour.
  *
@@ -26,9 +26,9 @@ import nl.nn.adapterframework.util.RunStateEnum;
 public interface IManagable extends IConfigurable {
     /**
      * returns the runstate of the object.
-     * Possible values are defined by {@link RunStateEnum}.
+     * Possible values are defined by {@link RunState}.
      */
-    RunStateEnum getRunState();
+    RunState getRunState();
 
     /**
      * Instruct the object that implements <code>IManagable</code> to start working.

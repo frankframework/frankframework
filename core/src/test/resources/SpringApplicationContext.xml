@@ -20,6 +20,8 @@
 
 	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.MockIbisManager" />
 
+	<bean name="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" />
+
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 	<bean name="flowGenerator" class="nl.nn.adapterframework.testutil.DummyFlowGenerator" scope="prototype" lazy-init="true" />
 

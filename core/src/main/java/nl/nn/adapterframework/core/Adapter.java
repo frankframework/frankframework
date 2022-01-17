@@ -56,7 +56,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -217,8 +217,8 @@ public class Adapter implements IAdapter, NamedBean {
 			composedHideRegex = sb.toString();
 		}
 
-		if(runState.isInState(RunStateEnum.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
-			runState.setRunState(RunStateEnum.STOPPED);
+		if(runState.getRunState()==RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+			runState.setRunState(RunState.STOPPED);
 		}
 
 		configurationSucceeded = true; //Only if there are no errors mark the adapter as `configurationSucceeded`!
@@ -525,7 +525,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public RunStateEnum getRunState() {
+	public RunState getRunState() {
 		return runState.getRunState();
 	}
 
@@ -603,8 +603,8 @@ public class Adapter implements IAdapter, NamedBean {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never now....
-		RunStateEnum currentRunState = getRunState();
-		if (!currentRunState.equals(RunStateEnum.STARTED) && !currentRunState.equals(RunStateEnum.STOPPING)) {
+		RunState currentRunState = getRunState();
+		if (currentRunState!=RunState.STARTED && currentRunState!=RunState.STOPPING) {
 
 			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
@@ -763,9 +763,16 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@Override
 	public void startRunning() {
-		if(RunStateEnum.STARTING == getRunState() || RunStateEnum.STARTED == getRunState() || RunStateEnum.STOPPING == getRunState()) {
-			log.warn("cannot start adapter ["+getName()+"] that is stopping, starting or already started");
-			return;
+		switch(getRunState()) {
+			case STARTING:
+			case EXCEPTION_STARTING:
+			case STARTED:
+			case STOPPING:
+			case EXCEPTION_STOPPING:
+				log.warn("cannot start adapter ["+getName()+"] that is stopping, starting or already started");
+				return;
+			default:
+				break;
 		}
 
 		Runnable runnable = new Runnable() {
@@ -777,7 +784,7 @@ public class Adapter implements IAdapter, NamedBean {
 					if (!configurationSucceeded) {
 						log.error("configuration of adapter [" + getName() + "] did not succeed, therefore starting the adapter is not possible");
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
-						runState.setRunState(RunStateEnum.ERROR);
+						runState.setRunState(RunState.ERROR);
 						return;
 					}
 					if (configuration.isUnloadInProgressOrDone()) {
@@ -786,13 +793,13 @@ public class Adapter implements IAdapter, NamedBean {
 						return;
 					}
 					synchronized (runState) {
-						RunStateEnum currentRunState = getRunState();
-						if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+						RunState currentRunState = getRunState();
+						if (currentRunState!=RunState.STOPPED) {
 							String msg = "currently in state [" + currentRunState + "], ignoring start() command";
 							warn(msg);
 							return;
 						}
-						runState.setRunState(RunStateEnum.STARTING);
+						runState.setRunState(RunState.STARTING);
 					}
 
 					// start the pipeline
@@ -801,7 +808,7 @@ public class Adapter implements IAdapter, NamedBean {
 						pipeline.start();
 					} catch (PipeStartException pre) {
 						addErrorMessageToMessageKeeper("got error starting PipeLine", pre);
-						runState.setRunState(RunStateEnum.ERROR);
+						runState.setRunState(RunState.ERROR);
 						return;
 					}
 
@@ -811,7 +818,7 @@ public class Adapter implements IAdapter, NamedBean {
 					// as from version 3.0 the adapter is started,
 					// regardless of receivers are correctly started.
 					// this allows the use of test-pipeline without (running) receivers
-					runState.setRunState(RunStateEnum.STARTED);
+					runState.setRunState(RunState.STARTED);
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
 					log.info("Adapter [" + getName() + "] up and running");
 
@@ -821,7 +828,7 @@ public class Adapter implements IAdapter, NamedBean {
 					}
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error starting Adapter", t);
-					runState.setRunState(RunStateEnum.ERROR);
+					runState.setRunState(RunState.ERROR);
 				} finally {
 					configuration.removeStartAdapterThread(this);
 				}
@@ -855,17 +862,16 @@ public class Adapter implements IAdapter, NamedBean {
 				Thread.currentThread().setName("stopping Adapter " +getName());
 				try {
 					// See also Receiver.stopRunning()
-					synchronized (runState) {
-						RunStateEnum currentRunState = getRunState();
-						if (currentRunState.equals(RunStateEnum.STARTING)
-								|| currentRunState.equals(RunStateEnum.STOPPING)
-								|| currentRunState.equals(RunStateEnum.STOPPED)) {
-							String msg = "currently in state [" + currentRunState + "], ignoring stop() command";
-							warn(msg);
+					switch(getRunState()) {
+						case STARTING:
+						case STOPPING:
+						case STOPPED:
+							log.warn("adapter ["+getName()+"] currently in state [" + getRunState() + "], ignoring stop() command");
 							return;
-						}
-						runState.setRunState(RunStateEnum.STOPPING);
+						default:
+							break;
 					}
+					runState.setRunState(RunState.STOPPING);
 					log.debug("Adapter [" + name + "] is stopping receivers");
 					for (Receiver<?> receiver: receivers) {
 						receiver.stopRunning();
@@ -873,10 +879,10 @@ public class Adapter implements IAdapter, NamedBean {
 					// IPullingListeners might still be running, see also
 					// comment in method Receiver.tellResourcesToStop()
 					for (Receiver<?> receiver: receivers) {
-						if(receiver.getRunState() == RunStateEnum.ERROR) {
+						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
-						while (receiver.getRunState() != RunStateEnum.STOPPED) {
+						while (receiver.getRunState() != RunState.STOPPED) {
 							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
 							try {
 								Thread.sleep(1000);
@@ -896,11 +902,11 @@ public class Adapter implements IAdapter, NamedBean {
 					pipeline.stop();
 					//Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
-					runState.setRunState(RunStateEnum.STOPPED);
+					runState.setRunState(RunState.STOPPED);
 					getMessageKeeper().add("Adapter [" + name + "] stopped");
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
-					runState.setRunState(RunStateEnum.ERROR);
+					runState.setRunState(RunState.ERROR);
 				} finally {
 					configuration.removeStopAdapterThread(this);
 				}

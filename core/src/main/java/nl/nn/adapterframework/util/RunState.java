@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021,2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,27 +19,14 @@ package nl.nn.adapterframework.util;
  * Enumeration of states for IManagable
  * @author Gerrit van Brakel
  */
-public enum RunStateEnum {
+public enum RunState {
 
-	ERROR("**ERROR**"),
-	STARTING("Starting"),
-	STARTED("Started"),
-	STOPPING("Stopping"),
-	STOPPED("Stopped");
+	ERROR,
+	STARTING,
+	EXCEPTION_STARTING,
+	STARTED,
+	STOPPING,
+	EXCEPTION_STOPPING,
+	STOPPED;
 
-	private final String stateDescriptor;
-
-	private RunStateEnum(String stateDescriptor) {
-		this.stateDescriptor = stateDescriptor;
-	}
-
-	public boolean isState(String state) {
-		if(state == null) return false;
-
-		return this.equals(valueOf(state.toUpperCase()));
-	}
-
-	public String getName() {
-		return stateDescriptor;
-	}
 }

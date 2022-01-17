@@ -36,7 +36,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -177,18 +177,22 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum currentRunState = receiver.getRunState();
-					if (!currentRunState.equals(RunStateEnum.STARTED)) {
-						if (currentRunState.equals(RunStateEnum.STOPPING) || currentRunState.equals(RunStateEnum.STOPPED)) {
-							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
-							return;
-						} 
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
+					RunState receiverRunState = receiver.getRunState();
+					switch(receiverRunState) {
+						case STOPPING:
+						case STOPPED:
+							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+							break;
+						case STARTED:
+						case EXCEPTION_STARTING:
+						case EXCEPTION_STOPPING:
+							receiver.stopRunning();
+							log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
+							break;
+						default:
+							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring stop() command");
+							break;
 					}
-
-					receiver.stopRunning();
-					log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
 				}
 			}
 			break;
@@ -199,18 +203,20 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 					Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
 					Receiver<?> receiver = adapter.getReceiverByName(receiverName);
-					RunStateEnum currentRunState = receiver.getRunState();
-					if (!currentRunState.equals(RunStateEnum.STOPPED)) {
-						if (currentRunState.equals(RunStateEnum.STARTING) || currentRunState.equals(RunStateEnum.STARTED)) {
-							adapter.getMessageKeeper().info(receiver, "already in state [" + currentRunState + "]");
-							return;
-						}
-						adapter.getMessageKeeper().warn(receiver, "currently in state [" + currentRunState + "], ignoring start() command");
-						return;
+					RunState receiverRunState = receiver.getRunState();
+					switch(receiverRunState) {
+						case STARTING:
+						case STARTED:
+							adapter.getMessageKeeper().info(receiver, "already in state [" + receiverRunState + "]");
+							break;
+						case STOPPED:
+							receiver.startRunning();
+							log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
+							break;
+						default:
+							log.warn("receiver [" + receiverName + "] currently in state [" + receiverRunState + "], ignoring start() command");
+							break;
 					}
-
-					receiver.startRunning();
-					log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
 				}
 			}
 			break;
@@ -329,6 +335,10 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 		if(requiresDatabase) {
+			if(transactionManager == null) {
+				throw new IllegalStateException("no TransactionManager found or configured");
+			}
+
 			//Try to create a new transaction to check if there is a connection to the database
 			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 			if(status != null) { //If there is a transaction (read connection) close it!
