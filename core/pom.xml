@@ -384,6 +384,13 @@
 			<version>2.7</version>
 		</dependency>
 
+		<!-- oidc and oauth library -->
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>oauth2-oidc-sdk</artifactId>
+			<version>9.20</version>
+		</dependency>
+
 		<!-- TransactionManagers: BTM + NARAYANA -->
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
@@ -620,6 +627,12 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.tomakehurst</groupId>
+			<artifactId>wiremock</artifactId>
+			<version>1.58</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
