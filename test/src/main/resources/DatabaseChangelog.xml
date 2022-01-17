@@ -30,11 +30,8 @@ TagDatabase
 		</addColumn>
  	</changeSet>
 
-	<changeSet id="Cleanup SEQ_IBISTEMP" author="Gerrit van Brakel" failOnError="false">
-		<dropSequence sequenceName="SEQ_IBISTEMP"/>
- 	</changeSet>
-
-	<changeSet id="Cleanup IBISTEMP" author="Gerrit van Brakel" failOnError="false">
+	<changeSet id="Cleanup IBISTEMP" author="Gerrit van Brakel">
+		<preConditions onFail="MARK_RAN"><tableExists tableName="IBISTEMP"/></preConditions>
 		<dropTable tableName="IBISTEMP"/>
  	</changeSet>
  	
@@ -55,10 +52,14 @@ TagDatabase
 			<column name="TBLOB" type="LONGBLOB"/>
 			<column name="TCLOB" type="CLOB"/> <!-- is set as LONGTEXT for MySQL and MariaDB -->
 		</createTable>
-		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 		<modifySql dbms="mssql" >
 			<replace replace="IDENTITY (1, 1)" with=""/> <!-- required to be able to use/test SQL translation -->
 		</modifySql>
+	</changeSet>
+
+	<changeSet id="IBISTEMP_SEQ" author="Robert Karajev" onValidationFail="MARK_RAN">
+		<comment>Set sequence for IBISTEMP Table</comment>
+		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
 	<changeSet id="IAF_Util:8" author="Niels Meijer">
