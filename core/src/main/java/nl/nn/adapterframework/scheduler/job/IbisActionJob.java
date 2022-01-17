@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,17 +79,19 @@ public class IbisActionJob extends JobDef {
 		jobAction = action;
 	}
 
-	@IbisDoc({"Configuration on which job operates", ""})
+	/** Configuration on which job operates */
 	public void setConfigurationName(String configurationName) {
 		this.configurationName = configurationName;
 	}
 
-	@IbisDoc({"Adapter on which job operates", ""})
+	/** Adapter on which job operates
+	 * @ff.mandatory
+	 */
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}
 
-	@IbisDoc({"Receiver on which job operates", ""})
+	/** Receiver on which job operates */
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
 	}

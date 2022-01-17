@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -976,19 +976,22 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 
 
 
-	@IbisDoc({"10", "The sender that should send the message"})
+	/** 
+	 * The sender that should send the message
+	 * @ff.mandatory
+	 */
 	protected void setSender(ISender sender) {
 		this.sender = sender;
 		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
 	}
 
-	@IbisDoc({"20", "Listener for responses on the request sent"})
+	/** Listener for responses on the request sent */
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
 		log.debug("pipe [" + getName() + "] registered listener [" + listener.toString() + "]");
 	}
 
-	@IbisDoc({"30", "log of all messages sent"})
+	/** log of all messages sent */
 	public void setMessageLog(ITransactionalStorage messageLog) {
 		this.messageLog = messageLog;
 		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
@@ -1000,13 +1003,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		}
 	}
 
-	@IbisDoc({"40", "specification of Pipe to validate request messages, or request and response message if configured as mixed mode validator"})
+	/** specification of Pipe to validate request messages, or request and response message if configured as mixed mode validator */
 	public void setInputValidator(IValidator inputValidator) {
 		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
 		this.inputValidator = inputValidator;
 	}
 
-	@IbisDoc({"50", "specification of Pipe to validate response messages"})
+	/** specification of Pipe to validate response messages */
 	public void setOutputValidator(IValidator outputValidator) {
 		if (outputValidator!=null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
@@ -1014,13 +1017,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		this.outputValidator = outputValidator;
 	}
 
-	@IbisDoc({"60", "specification of Pipe to wrap or unwrap request messages"})
+	/** specification of Pipe to wrap or unwrap request messages */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
 		this.inputWrapper = inputWrapper;
 	}
 
-	@IbisDoc({"70", "specification of Pipe to wrap or unwrap response messages"})
+	/** specification of Pipe to wrap or unwrap response messages */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
 		this.outputWrapper = outputWrapper;

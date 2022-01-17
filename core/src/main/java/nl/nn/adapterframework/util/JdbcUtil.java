@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,14 +52,15 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -245,27 +246,27 @@ public class JdbcUtil {
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
 	}
 
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
 			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
 		}
 	}
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
 			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
 		}
 	}
-	public static void streamBlob(final InputStream blobIntputStream, String charset, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final InputStream blobIntputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
 		OutputStream outputStream=StreamUtil.getOutputStream(target);
 		if (outputStream!=null) {
-			if ("decode".equalsIgnoreCase(blobBase64Direction)){
+			if (blobBase64Direction == Direction.DECODE){
 				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			}
-			else if ("encode".equalsIgnoreCase(blobBase64Direction)){
+			else if (blobBase64Direction == Direction.ENCODE){
 				Base64InputStream base64EncodedStream = new Base64InputStream (blobIntputStream, true);
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			}
