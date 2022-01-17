@@ -193,7 +193,7 @@
 					</security>
 				</datasource>
 				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
-					<connection-url>jdbc:h2:file:./ibis4test;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
+					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="true" use-java-context="true" spy="false" use-ccm="true" statistics-enabled="false">
