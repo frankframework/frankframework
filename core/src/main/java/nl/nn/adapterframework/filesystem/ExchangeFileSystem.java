@@ -117,6 +117,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 
+	private final String SEPARATOR = "\\|";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getFilter())) {
@@ -245,8 +247,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		String mailbox = seperateMailbox(folder);
-		folder = seperateFolderName(folder);
+		String mailbox = separateMailbox(folder);
+		folder = separateFolderName(folder);
 
 		ExchangeService exchangeService = getConnection(mailbox);
 		try {
@@ -289,8 +291,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		String mailbox = seperateMailbox(folder);
-		folder = seperateFolderName(folder);
+		String mailbox = separateMailbox(folder);
+		folder = separateFolderName(folder);
 
 		FolderId folderId;
 		try {
@@ -347,8 +349,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String mailbox = seperateMailbox(destinationFolder);
-		destinationFolder = seperateFolderName(destinationFolder);
+		String mailbox = separateMailbox(destinationFolder);
+		destinationFolder = separateFolderName(destinationFolder);
 
 		ExchangeService exchangeService = getConnection(mailbox);
 		try {
@@ -364,8 +366,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String mailbox = seperateMailbox(destinationFolder);
-		destinationFolder = seperateFolderName(destinationFolder);
+		String mailbox = separateMailbox(destinationFolder);
+		destinationFolder = separateFolderName(destinationFolder);
 
 		ExchangeService exchangeService = getConnection(mailbox);
 		try {
@@ -620,8 +622,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
-		String mailbox = seperateMailbox(folderName);
-		folderName = seperateFolderName(folderName);
+		String mailbox = separateMailbox(folderName);
+		folderName = separateFolderName(folderName);
 
 		findResults = exchangeService.findFolders(cache.getBaseFolderId(mailbox), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		if (create && findResults.getTotalCount()==0) {
@@ -643,8 +645,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		String mailbox = seperateMailbox(folderName);
-		folderName = seperateFolderName(folderName);
+		String mailbox = separateMailbox(folderName);
+		folderName = separateFolderName(folderName);
 
 		ExchangeService exchangeService = getConnection(mailbox);
 		try {
@@ -662,8 +664,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		String mailbox = seperateMailbox(folderName);
-		folderName = seperateFolderName(folderName);
+		String mailbox = separateMailbox(folderName);
+		folderName = separateFolderName(folderName);
 
 		ExchangeService exchangeService = getConnection(mailbox);
 		try {
@@ -795,12 +797,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
-	private String seperateFolderName(String concatenatedString){
-		return concatenatedString.split("\\|")[1];
+	private String separateFolderName(String concatenatedString){
+		return concatenatedString.split(SEPARATOR)[1];
 	}
 
-	private String seperateMailbox(String concatenatedString){
-		return concatenatedString.split("\\|")[0];
+	private String separateMailbox(String concatenatedString){
+		return concatenatedString.split(SEPARATOR)[0];
 	}
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
