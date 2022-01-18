@@ -66,7 +66,9 @@ public class TestPipeline extends Base {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
-	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
+	public static final String PIPELINE_RESULT_STATE_ERROR="ERROR";
+	public static final String PIPELINE_RESULT_STATE="state";
+	public static final String PIPELINE_RESULT="result";
 
 	@Data
 	public static class PostedSessionKey {
@@ -98,6 +100,7 @@ public class TestPipeline extends Base {
 		if(adapter == null) {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
+		// resolve session keys
 		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "[]");
 		Map<String, String> sessionKeyMap = null;
 		if(!sessionKeys.equals("[]")) {
@@ -129,29 +132,23 @@ public class TestPipeline extends Base {
 			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
 
-		if(message == null && file == null) {
-			throw new ApiException("must provide either a message or file", 400);
-		}
-
-		if (StringUtils.isNotEmpty(message)) {
-			result.put("message", message);
+		result.put("message", message);
+		try {
+			PipeLineResult plr = processMessage(adapter, message, sessionKeyMap, secLogMessage);
 			try {
-				PipeLineResult plr = processMessage(adapter, message, sessionKeyMap, secLogMessage);
-				try {
-					result.put("state", plr.getState());
-					result.put("result", plr.getResult().asString());
-				} catch (Exception e) {
-					String msg = "An Exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
-					log.warn(msg, e);
-					result.put("state", PIPELINE_RESULT_STATE_ERROR);
-					result.put("result", msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
-				}
+				result.put(PIPELINE_RESULT_STATE, plr.getState());
+				result.put(PIPELINE_RESULT, plr.getResult().asString());
 			} catch (Exception e) {
-				String msg = "An Exception occurred while processing the message"; 
+				String msg = "An exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
 				log.warn(msg, e);
-				result.put("state", PIPELINE_RESULT_STATE_ERROR);
-				result.put("result", msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
+				result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
+				result.put(PIPELINE_RESULT, msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
 			}
+		} catch (Exception e) {
+			String msg = "An exception occurred while processing the message"; 
+			log.warn(msg, e);
+			result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
+			result.put(PIPELINE_RESULT, msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
@@ -163,7 +160,7 @@ public class TestPipeline extends Base {
 		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
 			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 				String name = entry.getName();
-				byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(archive), true);
+				byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(archive), true);
 				String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
 				if (result.length() > 0) {
 					result.append("\n");
@@ -173,8 +170,8 @@ public class TestPipeline extends Base {
 				archive.closeEntry();
 			}
 		}
-		returnResult.put("state", lastState);
-		returnResult.put("result", result);
+		returnResult.put(PIPELINE_RESULT_STATE, lastState);
+		returnResult.put(PIPELINE_RESULT, result);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -206,9 +203,9 @@ public class TestPipeline extends Base {
 			}
 			Date now = new Date();
 			PipeLineSession.setListenerParameters(pls, messageId, technicalCorrelationId, now, now);
-	
+
 			secLog.info(String.format("testing pipeline of adapter [%s] %s", adapter.getName(), (writeSecLogMessage ? "message [" + message + "]" : "")));
-	
+
 			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
 			plr.getResult().unscheduleFromCloseOnExitOf(pls);
 			return plr;

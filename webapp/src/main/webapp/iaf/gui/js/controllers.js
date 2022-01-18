@@ -2689,10 +2689,6 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
-		if(!formData.message && !$scope.file) {
-			$scope.addNote("warning", "Please specify a file or message!");
-			return;
-		}
 
 		let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
 		if(incompleteKeyIndex < 0) {

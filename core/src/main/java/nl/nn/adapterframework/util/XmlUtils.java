@@ -1804,7 +1804,7 @@ public class XmlUtils {
 	}
 
 	public static Map<String, String> getIbisContext(String input) {
-		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
+		if (StringUtils.isEmpty(input) || (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!"))) {
 			return null;
 		}
 		if (isWellFormed(input)) {
