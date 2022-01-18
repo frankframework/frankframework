@@ -248,8 +248,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			return null;
 		}
 		boolean containsSeparator = folder.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(folder) : folder;
-		String mailbox = containsSeparator ? separateMailbox(folder) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(folder);
+		String mailbox = getMailboxToUse(folder);
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
@@ -289,12 +289,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		boolean containsSeparator = folder.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(folder) : folder;
-		String mailbox = containsSeparator ? separateMailbox(folder) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(folder);
+		String mailbox = getMailboxToUse(folder);
 
 		FolderId folderId;
 		try {
@@ -352,8 +352,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		boolean containsSeparator = destinationFolder.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(destinationFolder) : destinationFolder;
-		String mailbox = containsSeparator ? separateMailbox(destinationFolder) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(destinationFolder);
+		String mailbox = getMailboxToUse(destinationFolder);
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
@@ -369,9 +369,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		boolean containsSeparator = destinationFolder.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(destinationFolder) : destinationFolder;
-		String mailbox = containsSeparator ? separateMailbox(destinationFolder) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(destinationFolder);
+		String mailbox = getMailboxToUse(destinationFolder);
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
@@ -622,13 +621,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return result;
 	}
 
-	
-	
+
+
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
-		boolean containsSeparator = folderName.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
-		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(folderName);
+		String mailbox = getMailboxToUse(folderName);
 
 		FolderId basefolderId = cache.getBaseFolderId(mailbox);
 
@@ -652,9 +650,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		boolean containsSeparator = folderName.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
-		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(folderName);
+		String mailbox = getMailboxToUse(folderName);
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
@@ -672,9 +669,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		boolean containsSeparator = folderName.contains(SEPARATOR);
-		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
-		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
+		String folderNameToUse = getFolderNameToUse(folderName);
+		String mailbox = getMailboxToUse(folderName);
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
@@ -804,6 +800,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			log.warn("Could not get url", e);
 		}
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
+	}
+
+	private String getFolderNameToUse(String folderName){
+		boolean containsSeparator = folderName.contains(SEPARATOR);
+		return containsSeparator ? separateFolderName(folderName) : folderName;
+	}
+
+	private String getMailboxToUse(String folderName){
+		boolean containsSeparator = folderName.contains(SEPARATOR);
+		return containsSeparator ? separateMailbox(folderName) : getMailAddress();
 	}
 
 	private String separateFolderName(String concatenatedString){
