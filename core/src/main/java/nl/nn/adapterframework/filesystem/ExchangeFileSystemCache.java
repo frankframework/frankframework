@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Acts as a cache for EWS components.
@@ -41,9 +43,9 @@ import java.util.HashMap;
 public class ExchangeFileSystemCache {
 	private Logger log = LogUtil.getLogger(this);
 
-	private final HashMap<String, FolderId> baseFolders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
+	private final Map<String, FolderId> baseFolders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
 	private final HashMap<String, Folder> folders = new HashMap<>(); // <Mailbox+FolderNaam, Folder>
-	private final ArrayList<String> mailboxesList = new ArrayList<>();
+	private final List<String> mailboxesList = new ArrayList<>();
 
 	/**
 	 * Ensures that all Folder objects are present in cache.
