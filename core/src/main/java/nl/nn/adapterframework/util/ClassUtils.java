@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -274,7 +274,13 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
-		return Misc.concatStrings(org.springframework.util.ClassUtils.getUserClass(o).getSimpleName()," ",tail);
+		Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(o);
+		String simpleName = clazz.getSimpleName();
+
+		if (StringUtils.isEmpty(simpleName)) {
+			simpleName = clazz.getTypeName();
+		}
+		return Misc.concatStrings(simpleName, " ", tail);
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {

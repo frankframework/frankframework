@@ -765,7 +765,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.0-20220110.134541-15</version>
+								<version>1.0-SNAPSHOT</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
