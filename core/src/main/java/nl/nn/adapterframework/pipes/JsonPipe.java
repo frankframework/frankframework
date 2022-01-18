@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -39,13 +38,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class JsonPipe extends FixedForwardPipe {
-	private Direction direction = Direction.JSON2XML;
+	private @Getter Direction direction = Direction.JSON2XML;
 	private @Getter String version = "2";
 	private @Getter boolean addXmlRootElement=true;
 
 	private TransformerPool tpXml2Json;
 	
-	private enum Direction {
+	public enum Direction {
 		JSON2XML,
 		XML2JSON;
 	}
@@ -53,7 +52,7 @@ public class JsonPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Direction dir = getDirectionEnum();
+		Direction dir = getDirection();
 		if (dir == null) {
 			throw new ConfigurationException("direction must be set");
 		}
@@ -73,7 +72,7 @@ public class JsonPipe extends FixedForwardPipe {
 			String stringResult=null;
 			String actualVersion = getVersion();
 			
-			switch (getDirectionEnum()) {
+			switch (getDirection()) {
 			case JSON2XML:
 				stringResult = message.asString();
 				JSONTokener jsonTokener = new JSONTokener(stringResult);
@@ -102,7 +101,7 @@ public class JsonPipe extends FixedForwardPipe {
 				}
 				break;
 			default:
-				throw new IllegalStateException("unknown direction ["+getDirectionEnum()+"]");
+				throw new IllegalStateException("unknown direction ["+getDirection()+"]");
 			}
 			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
@@ -111,11 +110,8 @@ public class JsonPipe extends FixedForwardPipe {
 	}
 
 	@IbisDoc({"Direction of the transformation.", "json2xml"})
-	public void setDirection(String string) {
-		direction = Misc.parse(Direction.class, "direction", string);
-	}
-	public Direction getDirectionEnum() {
-		return direction;
+	public void setDirection(Direction value) {
+		direction = value;
 	}
 
 	@IbisDoc({"Version of the jsonpipe. Either 1 or 2.", "2"})

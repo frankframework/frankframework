@@ -51,9 +51,9 @@
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="attachment1" 
-				preserveInput="true" createDirectory="true"
+				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="attachment1" 
+				preserveInput="true"
 				>
 				
 				<forward name="success" path="EXIT"/>
@@ -75,14 +75,14 @@
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.FilePipe" actions="read" outputType="string" 
-				directory="${testdata.dir}/webservices" filename="filetext.txt" storeResultInSessionKey="file" 
-				preserveInput="true" createDirectory="true"
+				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
+				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="file" 
+				preserveInput="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
 			<pipe name="SetMultipartSessionKey" preserveInput="true"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession" getInputFromFixedValue="hello world" 
+				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world" 
 			>
 				<param name="multipartXml" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -103,9 +103,13 @@
 			</exits> 
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+					firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					postType="MTOM"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<param name='file' value="&lt;xml&gt;I just sent some text! :)&lt;/xml&gt;"/>
 				<forward name="success" path="EXIT" />
@@ -122,29 +126,32 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits> 
-			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt" storeResultInSessionKey="file"
-				createDirectory="true"
+			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read" filename="${testdata.dir}/webservices/textfile.txt" storeResultInSessionKey="file"
 			>
 				<forward name="success" path="GetAttachment2" />
 			</pipe> 
-			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.FilePipe"
-				actions="read" outputType="string" directory="${testdata.dir}/webservices" filename="textfile.txt"  storeResultInSessionKey="file2"
-				createDirectory="true"
+			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="read" filename="${testdata.dir}/webservices/textfile.txt"  storeResultInSessionKey="file2"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
 			</pipe>	
 			<pipe name="PutMultipartInSessionKey"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession" getInputFromFixedValue="hello world"
+				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world"
 			>
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />
 			</pipe> 
 			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" paramsInUrl="false" inputMessageParam="file"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart" multipart="true"
-					allowSelfSignedCertificates="true" verifyHostname="false" mtomEnabled="true" multipartXmlSessionKey="multipart"
+				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+					firstBodyPartName="file"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					postType="MTOM"
+					multipartXmlSessionKey="multipart"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -166,7 +173,9 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="WriteStream" />
 			</pipe>
@@ -198,7 +207,9 @@
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
-					allowSelfSignedCertificates="true" verifyHostname="false" multipartResponse="true"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>

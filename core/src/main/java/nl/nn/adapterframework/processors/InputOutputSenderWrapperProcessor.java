@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
 
@@ -32,7 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
 			try {
@@ -71,7 +71,7 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				}
 			}
 			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject());
+			session.put(senderWrapperBase.getStoreResultInSessionKey(), result.asObject()); //TODO Store raw (repeatable?) Message!
 		}
 		return senderWrapperBase.isPreserveInput()?message:result;
 	}

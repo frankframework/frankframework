@@ -32,6 +32,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
@@ -45,7 +46,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	private @Getter String xpathExpression=null;
 	private @Getter String namespaceDefs = null; 
 	private @Getter String styleSheetName;
-	private @Getter String outputType="text";
+	private @Getter OutputType outputType=OutputType.TEXT;
 	private @Getter boolean omitXmlDeclaration=true;
 	private @Getter String endOfRecord;
 
@@ -69,7 +70,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
-			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ", this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 
@@ -146,9 +147,9 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"5", "Either 'text' or 'xml'. Only valid for xpathexpression", "text"})
-	public void setOutputType(String string) {
-		outputType = string;
+	@IbisDoc({"5", "Only valid for <code>xpathExpression</code>", "text"})
+	public void setOutputType(OutputType outputType) {
+		this.outputType = outputType;
 	}
 
 	@IbisDoc({"6", "Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})

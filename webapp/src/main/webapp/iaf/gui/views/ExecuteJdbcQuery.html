@@ -13,44 +13,55 @@
                 </div>
                 <div class="ibox-content">
                     <form role="form">
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Datasource</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Datasource</label>
                             <div class="col-sm-9">
-                                <select class="form-control m-b" name="datasource" ng-model="form.datasource">
+                                <select class="form-control" name="datasource" ng-model="form.datasource">
                                     <option ng-repeat="datasource in datasources">{{datasource}}</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Result format</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Query Type</label>
                             <div class="col-sm-9">
-                                <select class="form-control m-b" name="resultType" ng-model="form.resultType">
+                                <select class="form-control" name="queryType" ng-model="form.queryType">
+                                    <option ng-repeat="queryType in queryTypes">{{queryType}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Result format</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="resultType" ng-model="form.resultType">
                                     <option ng-repeat="resultType in resultTypes" selected="{{$first ? 'selected' : ''}}">{{resultType}}</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Avoid Locking</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Avoid Locking</label>
                             <div class="col-sm-9">
-                                <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.avoidLocking" /></span>
-                            </div>
-                        </div><div class="form-group">
-                            <label class="col-sm-3 control-label">Trim Spaces</label>
-                            <div class="col-sm-9">
-                                <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" ng-model="form.trimSpaces" /></span>
+                                <span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.avoidLocking" /></span>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Query</label>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Trim Spaces</label>
+                            <div class="col-sm-9">
+                                <span class="form-control" style="border: none;"><input icheck type="checkbox" ng-model="form.trimSpaces" /></span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <label class="col-sm-3 control-label label-height-30">Query</label>
                             <div class="col-sm-9">
                                 <textarea class="form-control" quick-submit-form="submit(form)" name="query" rows="5" style="resize:none;" ng-model="form.query"></textarea>
                             </div>
                         </div>
-                        <div class="col-sm-3 m-t-md">
-                            <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
-                        </div>
-                        <div class="col-sm-9 m-t-md">
-                            <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+                        <div class="row form-group">
+                            <div class="col-sm-3 m-t-md">
+                                <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="reset()">Reset</button>
+                            </div>
+                            <div class="col-sm-3 m-t-md">
+                                <button ladda="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" ng-click="submit(form)">Send</button>
+                            </div>
                         </div>
                     </form>
                 </div>

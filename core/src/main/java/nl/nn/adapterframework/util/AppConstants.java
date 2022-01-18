@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +55,6 @@ public final class AppConstants extends Properties implements Serializable {
 	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
 
-	private VariableExpander variableExpander;
 	private static Properties additionalProperties = new Properties();
 
 	private static ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
@@ -477,15 +475,5 @@ public final class AppConstants extends Properties implements Serializable {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
-	}
-
-	/*
-	 *	The variableExpander is set from the SpringContext.
-	 */
-	public void setVariableExpander(VariableExpander expander) {
-		variableExpander = expander;
-	}
-	public VariableExpander getVariableExpander() {
-		return variableExpander;
 	}
 }

@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Streaming Test">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -27,4 +27,4 @@
 			
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

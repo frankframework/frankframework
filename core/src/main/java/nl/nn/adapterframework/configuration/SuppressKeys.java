@@ -1,5 +1,5 @@
 /*
-Copyright 2020 WeAreFrank!
+Copyright 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,17 +29,21 @@ public enum SuppressKeys {
 	DEPRECATION_SUPPRESS_KEY("warnings.suppress.deprecated", true),
 	DEFAULT_VALUE_SUPPRESS_KEY("warnings.suppress.defaultvalue", true),
 	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction"),
-	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck");
+	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck"),
+	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true),
+	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation", false), 
+	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true), 
+	MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY("warnings.suppress.multiPasswordKeystore", true);
 
 	private @Getter String key;
 	private @Getter boolean allowGlobalSuppression = false;
 
+	private SuppressKeys(String key) {
+		this(key, false);
+	}
+
 	private SuppressKeys(String key, boolean allowGlobalSuppression) {
 		this.key = key;
 		this.allowGlobalSuppression = allowGlobalSuppression;
-	}
-
-	private SuppressKeys(String key) {
-		this.key = key;
 	}
 }

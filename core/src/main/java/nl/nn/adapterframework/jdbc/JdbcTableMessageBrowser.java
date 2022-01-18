@@ -34,22 +34,20 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	private @Getter String tableName="IBISSTORE";
 	private @Getter String indexName="IX_IBISSTORE";
 	private String selectCondition=null;
-	
+
 	private JdbcFacade parent=null;
-	
 	private JdbcTableListener<M> tableListener;
-	
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
-	
+
 	protected boolean useIndexHint;
 	private boolean useFirstRowsHint;
 
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener) {
 		this.tableListener = tableListener;
 	}
-	
+
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener, String statusValue, StorageType storageType) {
 		this(tableListener);
 		parent=tableListener;
@@ -83,7 +81,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		createQueryTexts(getDbmsSupport());
 	}
-	
+
 	@Override
 	protected void setOperationControls() {
 		super.setOperationControls();

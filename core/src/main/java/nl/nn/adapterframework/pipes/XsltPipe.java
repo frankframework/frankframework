@@ -37,15 +37,14 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 
 /**
  * Perform an XSLT transformation with a specified stylesheet.
  *
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link Parameter param}</td><td>any parameters defined on the pipe will be applied to the created transformer</td></tr>
- * </table>
- * </p>
+ * @ff.parameters any parameters defined on the pipe will be applied to the created transformer
+ * 
  * @author Johan Verrips
  */
 
@@ -69,7 +68,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	protected XsltSender createXsltSender() {
 		return new XsltSender();
 	}
-	
+
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -108,8 +107,13 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	}
 
 	@Override
+	protected boolean canProvideOutputStream() {
+		return super.canProvideOutputStream() && StringUtils.isEmpty(getSessionKey());
+	}
+
+	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if (input==null) {
+		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
 		}
 		try {
@@ -198,8 +202,8 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	}
 
 	@IbisDocRef({"7", XSLTSENDER})
-	public void setOutputType(String string) {
-		sender.setOutputType(string);
+	public void setOutputType(OutputType outputType) {
+		sender.setOutputType(outputType);
 	}
 
 	@IbisDocRef({"8", XSLTSENDER})
@@ -241,10 +245,13 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.isNamespaceAware();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	@IbisDoc({"15", "If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+	@Deprecated
 	public String getSessionKey() {
 		return sessionKey;
 	}

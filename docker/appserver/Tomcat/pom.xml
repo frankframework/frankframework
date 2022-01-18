@@ -16,6 +16,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
+			<version>${revision}</version> <!-- Make the version overridable -->
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
@@ -61,6 +62,31 @@
 			<artifactId>geronimo-jta_1.1_spec</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
+		<!-- required for ActiveMQ -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+			<version>${activemq.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.31</version>
+		</dependency>
+		<dependency>
+			<groupId>org.fusesource.hawtbuf</groupId>
+			<artifactId>hawtbuf</artifactId>
+			<version>1.11</version>
+		</dependency>
+		
+		<!-- Required for NARAYANA -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>3.4.2.Final</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

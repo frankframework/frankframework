@@ -18,10 +18,10 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -50,12 +50,17 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
 
 		@Override
 		public void configure() throws ConfigurationException {
-			super.configure(query!=null);
+			//In case a query is specified, return the Adapter, else return true to suppress the SQL Injection warning
+			if(query!=null) {
+				super.configure(getAdapter());
+			} else {
+				super.configure(true);
+			}
 		}
 
 		@Override
@@ -97,7 +102,6 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 	protected abstract IDataIterator<String> getIterator(IDbmsSupport dbmsSupport, Connection conn, ResultSet rs) throws SenderException; 
 
-	@SuppressWarnings("finally")
 	@Override
 	protected IDataIterator<String> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		Connection connection = null;
@@ -122,21 +126,12 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 				if (rs!=null) {
 					JdbcUtil.fullClose(connection, rs);
 				} else {
-					if (statement!=null) {
-						JdbcUtil.fullClose(connection, statement);
-					} else {
-						if (connection!=null) {
-							try {
-								connection.close();
-							} catch (SQLException e1) {
-								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
-							}
-						}
-					}
+					JdbcUtil.fullClose(connection, statement);
 				}
-			} finally {
-				throw new SenderException(getLogPrefix(session),t);
+			} catch (Throwable t2) {
+				t.addSuppressed(t2);
 			}
+			throw new SenderException(getLogPrefix(session), t);
 		}
 	}
 
@@ -150,6 +145,8 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 		return querySender.getPhysicalDestinationName();
 	}
 
+	@Deprecated
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

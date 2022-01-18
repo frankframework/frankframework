@@ -22,9 +22,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import javax.sql.DataSource;
-
-import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
@@ -35,20 +32,10 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
-	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
-
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
-	private boolean testSkipLocked;
-
-
-	public DbmsSupportTest(DataSource dataSource) throws SQLException {
-		super(dataSource);
-		testSkipLocked = dbmsSupport.hasSkipLockedFunctionality();
-	}
 
 	@Test
 	public void testGetDbmsSupport() {
@@ -456,7 +443,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 					assertEquals(40,rs1.getInt(1));			// find the first record
 					if (testPeekShouldSkipRecordsAlreadyLocked) assertFalse("Peek should skip records already locked, but it found one", peek(peekQueueQuery));	// assert no more records found
 
-					if (testSkipLocked) {
+					if (dbmsSupport.hasSkipLockedFunctionality()) {
 						try (Connection workConn2=getConnection()) {
 							workConn2.setAutoCommit(false);
 							try (Statement stmt2= workConn2.createStatement()) {
@@ -526,7 +513,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsBlobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {
@@ -542,7 +529,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsClobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {

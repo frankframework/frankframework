@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapSender;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -32,45 +35,24 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of {@link nl.nn.adapterframework.core.ISender sender} that calls a SAP RFC-function.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
- * <tr><td>{@link #setFunctionName(String) functionName}</td><td>Name of the RFC-function to be called in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFunctionNameParam(String) functionNameParam}</td><td>name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty</td><td>functionName</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>true</td></tr>
- * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a {@link SapLUWHandle LUW-handle} will be executed using the same destination. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
- * <tr><td>functionName</td><td>String</td><td>defines functionName; required when attribute <code>functionName</code> is empty</td></tr>
- * <tr><td><i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the (simple) input field</td></tr>
- * <tr><td><i>structurename</i>/<i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the named field of the named structure</td></tr>
- * </table>
- * </p>
+ * 
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
- * </p>
+ * 
+ * @ff.parameter functionName   defines functionName; required when attribute <code>functionName</code> is empty
+ * @ff.parameter <i>inputfieldname</i> The value of the parameter is set to the (simple) input field
+ * @ff.parameter <i>structurename</i>/<i>inputfieldname</i> The value of the parameter is set to the named field of the named structure
+ * 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
  */
+@Deprecated
+@ConfigurationWarning("Please do not specify jco version in package name")
 public class SapSender extends SapSenderBase implements ISapSender {
 	
-	private String functionName=null;
-	private String functionNameParam="functionName";
+	private @Getter String functionName=null;
+	private @Getter String functionNameParam="functionName";
 
 	public SapSender() {
 		super();
@@ -116,7 +98,7 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String tid=null;
 		try {
 			ParameterValueList pvl = null;
@@ -128,10 +110,10 @@ public class SapSender extends SapSenderBase implements ISapSender {
 			JCoFunction function=getFunction(sapSystem, pvl);
 
 			if (StringUtils.isEmpty(getSapSystemName())) {
-				pvl.removeParameterValue(getSapSystemNameParam());
+				pvl.remove(getSapSystemNameParam());
 			}
 			if (StringUtils.isEmpty(getFunctionName())) {
-				pvl.removeParameterValue(getFunctionNameParam());
+				pvl.remove(getFunctionNameParam());
 			}
 			String correlationID = session==null ? null : session.getMessageId();
 			message2FunctionCall(function, message.asString(), correlationID, pvl);
@@ -147,9 +129,8 @@ public class SapSender extends SapSenderBase implements ISapSender {
 
 			if (isSynchronous()) {
 				return functionResult2message(function);
-			} else {
-				return new Message(tid);
 			}
+			return new Message(tid);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -161,22 +142,17 @@ public class SapSender extends SapSenderBase implements ISapSender {
 	}
 
 
-	@Override
-	public String getFunctionName() {
-		return functionName;
-	}
+	@IbisDoc({"1", "Name of the RFC-function to be called in the SAP system", ""})
 	@Override
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
 
 
+	@IbisDoc({"2", "name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty", "functionName"})
 	@Override
 	public void setFunctionNameParam(String string) {
 		functionNameParam = string;
-	}
-	public String getFunctionNameParam() {
-		return functionNameParam;
 	}
 
 }

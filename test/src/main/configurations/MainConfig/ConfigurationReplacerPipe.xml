@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="ReplacerPipe" description="Test the functioning of the ReplacerPipe">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReplacerPipe" />
@@ -12,4 +12,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

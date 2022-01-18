@@ -29,7 +29,10 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
 					soap="false"
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" 
+					verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -77,11 +80,12 @@
 			<pipe name="Send2WS"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
-					proxyHost="${proxy.host}" proxyPort="${proxy.port}" proxyUserName="${proxy.username}"
+					proxyHost="${proxy.host}" proxyPort="${proxy.port}" proxyUsername="${proxy.username}"
 					proxyPassword="${proxy.password}" url="${web.protocol}://www.webservicex.net/CurrencyConvertor.asmx"
 					soapAction="${web.protocol}://www.webserviceX.NET/ConversionRate"
-					allowSelfSignedCertificates="true" verifyHostname="false" 
-					/>
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -101,7 +105,9 @@
 					serviceNamespace="urn:ws"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					namespaceDefs="ns1=${web.protocol}://www.ing.com/namespace1 ns2=${web.protocol}://www.ing.com/namespace2"
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -121,7 +127,9 @@
 				<sender className="nl.nn.adapterframework.http.WebServiceSender"
 					serviceNamespace="urn:ws_error"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -148,7 +156,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -158,7 +168,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -199,7 +211,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false"/>
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout -->
@@ -209,7 +223,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false" 
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -220,7 +236,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000"
-					allowSelfSignedCertificates="true" verifyHostname="false"  />
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -231,7 +249,9 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -243,7 +263,10 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" 
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
@@ -255,7 +278,10 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- send2ws_forward_timeout_resultOnTimeOut -->
@@ -265,7 +291,10 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -276,7 +305,10 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true" 
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -287,7 +319,10 @@
 					serviceNamespace="urn:ws_timeout"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
 					timeout="1000" 
-					allowSelfSignedCertificates="true" verifyHostname="false" />
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
 				<forward name="timeout" path="error_timeout" />
 				<forward name="exception" path="error_exception" />
 				<forward name="success" path="EXIT" />

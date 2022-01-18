@@ -56,15 +56,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 @Path("/")
-public final class TestPipeline extends Base {
+public class TestPipeline extends Base {
 
 	protected Logger secLog = LogUtil.getLogger("SEC");
 	private boolean secLogMessage = AppConstants.getInstance().getBoolean("sec.log.includeMessage", false);
 
 	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
-	
+
 	@POST
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester")
 	@Path("/test-pipeline")
 	@Relation("pipeline")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -141,7 +141,7 @@ public final class TestPipeline extends Base {
 		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
 			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 				String name = entry.getName();
-				byte contentBytes[] = StreamUtil.streamToByteArray(archive, true);
+				byte contentBytes[] = StreamUtil.streamToByteArray(StreamUtil.dontClose(archive), true);
 				String message = XmlUtils.readXml(contentBytes, fileEncoding, false);
 				if (result.length() > 0) {
 					result.append("\n");

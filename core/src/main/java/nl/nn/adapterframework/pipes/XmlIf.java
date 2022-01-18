@@ -34,6 +34,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Selects an exitState, based on xpath evaluation
  * 
+ * @ff.forward then The configured condition is met
+ * @ff.forward else The configured condition is not met
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -94,7 +96,7 @@ public class XmlIf extends AbstractPipe {
 		String forward = "";
 		PipeForward pipeForward = null;
 
-		String sInput;
+		String sInput = null;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (message==null || message.asObject()==null) {
 				sInput="";
@@ -107,7 +109,11 @@ public class XmlIf extends AbstractPipe {
 			}
 		} else {
 			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
-			sInput=(String) session.get(getSessionKey());
+			try {
+				sInput=session.getMessage(getSessionKey()).asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, getLogPrefix(session) + "unable to resolve session key ["+getSessionKey()+"]", e);
+			}
 		}
 
 		// log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");
@@ -152,6 +158,12 @@ public class XmlIf extends AbstractPipe {
 		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
 		return new PipeRunResult(pipeForward, message);
 	}
+
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
 
 	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
 	public void setSessionKey(String sessionKey){

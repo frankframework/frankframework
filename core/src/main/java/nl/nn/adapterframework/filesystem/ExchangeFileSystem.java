@@ -342,7 +342,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 			if (findResults.getTotalCount() == 0) {
 				releaseConnection(exchangeService);
-				return FileSystemUtils.getDirectoryStream((Iterator)null);
+				return FileSystemUtils.getDirectoryStream((Iterator<EmailMessage>)null);
 			} else {
 				Iterator<Item> itemIterator = findResults.getItems().iterator();
 				return FileSystemUtils.getDirectoryStream(new Iterator<EmailMessage>() {
@@ -942,7 +942,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return proxyHost;
 	}
 
-	@IbisDoc({"14", "proxy port", ""})
+	@IbisDoc({"14", "proxy port", "8080"})
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}

@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -277,7 +278,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		} else if (getMessageType().equalsIgnoreCase(FF_REQUEST)) {
 			p.setValue("8");
 		}
-		p.setType(Parameter.TYPE_INTEGER);
+		p.setType(ParameterType.INTEGER);
 		addParameter(p);
 
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {

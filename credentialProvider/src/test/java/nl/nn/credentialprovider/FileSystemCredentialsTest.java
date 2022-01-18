@@ -81,7 +81,7 @@ public class FileSystemCredentialsTest {
 	@Test
 	public void testPlainCredential() {
 		
-		String alias = "plainText";
+		String alias = "singleValue";
 		String username = null;
 		String password = "fakePassword";
 		String expectedUsername = null;

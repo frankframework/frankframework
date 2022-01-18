@@ -1,0 +1,61 @@
+<!-- 
+	This configuration was added to test (ObjectClosedException) DSRA9110E: ResultSet is closed. #2015
+	The problem was seen when the main adapter has no transationAttribute and the sub-adapter set to required,
+	When a commit is called in the sub-adapter.
+-->
+<module>
+	<adapter name="ResultSetIteratingPipeTest" 
+		description="Get unprocessed from database and send each record to child adapter">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ResultSetIteratingPipeWithDBcall" />
+		</receiver>
+
+		<pipeline firstPipe="Get records to be processed from database and iterate">
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe name="Get records to be processed from database and iterate" 
+				className="nl.nn.adapterframework.jdbc.ResultSetIteratingPipe" 
+				query="SELECT * FROM IBISTEMP WHERE TCHAR = 'I' AND TNUMBER = '1' ORDER BY TKEY" 
+				styleSheetName="xsl/CreateMessage.xsl" 
+				collectResults="false"
+				ignoreExceptions="true">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" 
+					javaListener="ResultSetIteratingPipeChildListener" />
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="ResultSetIteratingPipeChild" description="Convert raw xml and update db">
+		<receiver>
+			<listener name="ResultSetIteratingPipeChildListener" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+
+		<pipeline firstPipe="Echo message" transactionAttribute="Required" >
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe name="Echo message"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.EchoSender" />
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+						jmsRealm="jdbc"
+						slotId="${applicationId}/ResultSetIteratingPipe/sent-message"/>
+				<forward name="success" path="Update policy status to processed" />
+			</pipe>
+
+			<pipe name="Update policy status to processed" 
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				getInputFromSessionKey="originalMessage">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" 
+					query="UPDATE IBISTEMP SET TNUMBER = '2', TTIMESTAMP = CURRENT_TIMESTAMP WHERE TKEY = ?">
+					<param name="ID" xpathExpression="result/id" sessionKey="originalMessage"/>
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

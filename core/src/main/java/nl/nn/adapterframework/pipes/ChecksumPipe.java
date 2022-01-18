@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import java.util.zip.Checksum;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
@@ -42,49 +41,34 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class ChecksumPipe extends FixedForwardPipe {
 	
-	public static final String CHECKSUM_MD5="MD5";
-	public static final String CHECKSUM_SHA="SHA";
-	public static final String CHECKSUM_CRC32="CRC32";
-	public static final String CHECKSUM_ADLER32="Adler32";
 	
-	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String type=CHECKSUM_MD5;
-	private boolean inputIsFile=false;
+	private @Getter String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter ChecksumType type=ChecksumType.MD5;
+	private @Getter boolean inputIsFile=false;
 	
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		if (StringUtils.isEmpty(getType())) {
-			throw new ConfigurationException("type must be specified");
-		}
-		if (!CHECKSUM_MD5.equals(getType()) && 
-			!CHECKSUM_SHA.equals(getType()) && 
-			!CHECKSUM_CRC32.equals(getType()) && 
-			!CHECKSUM_ADLER32.equals(getType())) {
-			throw new ConfigurationException("type ["+getType()+"] must be one of ["+
-				CHECKSUM_MD5+","+
-				CHECKSUM_SHA+","+
-				CHECKSUM_CRC32+","+
-				CHECKSUM_ADLER32+"]");
-		}
+	public enum ChecksumType {
+		MD5,
+		SHA,
+		CRC32,
+		ADLER32
 	}
 
 	protected interface ChecksumGenerator {
 		public void update(byte b[], int length);
 		public String getResult();
 	}
-	
+
 	protected ChecksumGenerator createChecksumGenerator() throws NoSuchAlgorithmException {
-		if (CHECKSUM_MD5.equals(getType())) {
-			return new MessageDigestChecksumGenerator(getType());
-		} else if (CHECKSUM_CRC32.equals(getType())) {
-			return new ZipChecksumGenerator(new CRC32());
-		} else if (CHECKSUM_ADLER32.equals(getType())) {
-			return new ZipChecksumGenerator(new Adler32());
-		} else if (CHECKSUM_SHA.equals(getType())) {
-			return new MessageDigestChecksumGenerator(getType());
-		} else {
-			throw new NoSuchAlgorithmException("unsupported algorithm ["+getType()+"]");
+		switch(getType()) {
+			case MD5:
+			case SHA:
+				return new MessageDigestChecksumGenerator(getType());
+			case CRC32:
+				return new ZipChecksumGenerator(new CRC32());
+			case ADLER32:
+				return new ZipChecksumGenerator(new Adler32());
+			default:
+				throw new NoSuchAlgorithmException("unsupported algorithm ["+getType()+"]");
 		}
 	}
 
@@ -114,9 +98,9 @@ public class ChecksumPipe extends FixedForwardPipe {
 		
 		private MessageDigest messageDigest;
 
-		MessageDigestChecksumGenerator(String type) throws NoSuchAlgorithmException {
+		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
 			super();
-			this.messageDigest=MessageDigest.getInstance(type);
+			this.messageDigest=MessageDigest.getInstance(type.name());
 		}
 
 		@Override
@@ -160,28 +144,28 @@ public class ChecksumPipe extends FixedForwardPipe {
 	}
 
 
-	@IbisDoc({"character encoding to be used to encode message before calculating checksum", "utf-8"})
+	/**
+	 * Character encoding to be used to encode message before calculating checksum.
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
+
+	/**
+	 * Type of checksum to be calculated
+	 * @ff.default MD5
+	 */
+	public void setType(ChecksumType value) {
+		type = value;
 	}
 
-	@IbisDoc({"type of checksum to be calculated. must be one of md5, sha, crc32, adler32", "md5"})
-	public void setType(String string) {
-		type = string;
-	}
-	public String getType() { // NB this overrides the IPipe.getType() method, but is not related.
-		return type;
-	}
-
-	@IbisDoc({"when set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations", "false"})
+	/**
+	 * If set <code>true</code>, the input is assumed to be a filename; otherwise the input itself is used in the calculations.
+	 * @ff.default false
+	 */
 	public void setInputIsFile(boolean b) {
 		inputIsFile = b;
-	}
-	public boolean isInputIsFile() {
-		return inputIsFile;
 	}
 
 }

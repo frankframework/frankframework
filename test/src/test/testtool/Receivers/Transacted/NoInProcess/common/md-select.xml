@@ -16,5 +16,6 @@
 			</column>
 		</columns>
 		<where>TNUMBER=${jdbc.receivertest.key}2</where>
+		<order>TKEY</order>
 	</select>
 </manageDatabaseREQ>

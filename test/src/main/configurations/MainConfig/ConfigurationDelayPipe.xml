@@ -20,7 +20,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="5000">
+			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

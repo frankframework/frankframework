@@ -21,12 +21,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -134,7 +134,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		}
 		ldapSender.setPrincipal(principal);
 		ldapSender.setCredentials(credentials);
-		ldapSender.setOperation(LdapSender.OPERATION_READ);
+		ldapSender.setOperation(Operation.READ);
 		try {
 			log.debug("Looking up context for principal ["+principal+"]");
 			ldapSender.configure();

@@ -18,7 +18,7 @@
 				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n%iEx</Pattern>
 			</Layout>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
@@ -90,12 +90,20 @@
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />
+		<Logger name="org.apache.cxf.interceptor" level="WARN" />
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
+		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
 
-		
+		<Logger name="liquibase.migrationLog" level="INFO">
+			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="config"/>
+		</Logger>
+
 		<Logger name="GALM" additivity="false" level="INFO">
 			<AppenderRef ref="galm"/>
 		</Logger>

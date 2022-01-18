@@ -27,9 +27,12 @@ public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
 	private final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
+	private final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
 	private final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
 	private final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
 
+	private static String optionalPrefix;
+	
 	private ICredentialFactory delegate;
 
 	private static CredentialFactory self;
@@ -42,6 +45,10 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
+		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
+		if (optionalPrefix!=null) {
+			optionalPrefix=optionalPrefix.toLowerCase();
+		}
 		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;
@@ -66,6 +73,7 @@ public class CredentialFactory {
 			try {
 				Class<ICredentialFactory> factoryClass = (Class<ICredentialFactory>)Class.forName(factoryClassName);
 				delegate = factoryClass.newInstance();
+				delegate.initialize();
 				log.info("installed CredentialFactory ["+factoryClassName+"]");
 				return true;
 			} catch (Exception e) {
@@ -75,20 +83,27 @@ public class CredentialFactory {
 		return false;
 	}
 	
-	public static boolean hasCredential(String alias) {
-		ICredentialFactory delegate = getInstance().delegate;
-		return delegate==null || delegate.hasCredentials(alias);
+	private static String findAlias(String rawAlias) {
+		if (optionalPrefix!=null && rawAlias!=null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
+			return rawAlias.substring(optionalPrefix.length());
+		}
+		return rawAlias;
 	}
 	
-	public static ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword) {
+	public static boolean hasCredential(String rawAlias) {
+		ICredentialFactory delegate = getInstance().delegate;
+		return delegate==null || delegate.hasCredentials(findAlias(rawAlias));
+	}
+	
+	public static ICredentials getCredentials(String rawAlias, String defaultUsername, String defaultPassword) {
 		ICredentialFactory delegate = getInstance().delegate;
 		if (delegate!=null) {
-			ICredentials result = delegate.getCredentials(alias, defaultUsername, defaultPassword);
+			ICredentials result = delegate.getCredentials(findAlias(rawAlias), defaultUsername, defaultPassword);
 			if (result!=null) {
 				return result;
 			}
 		}
-		return new Credentials(alias, defaultUsername, defaultPassword);
+		return new Credentials(findAlias(rawAlias), defaultUsername, defaultPassword);
 	}
 
 }

@@ -6,20 +6,160 @@ Ibis AdapterFramework release notes
 
 
 
-Upcoming
+Upcoming (7.7)
 --------
 
 [Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...HEAD)
 [![Build Status](https://travis-ci.org/ibissource/iaf.png)](https://travis-ci.org/ibissource/iaf)
 
-- 'fileName' in attributes is replaced with 'filename'
+- New FrankDoc XSD and website
+- LCM Dependencies
+  - Apache Commons Lang
+  - Apache Commons Digester
+  - Apache Commons Beanutils
+  - Apache Commons Fileupload
+  - Apache Commons IO
+  - Apache Commons Codec
+  - Apache Http Components
+  - Apache Ant
+  - Apache CXF
+  - EhCache
+  - Quartz
+  - Log4J2
+  - Spring 5
+  - Jackson JSON Provider
+- Add Narayana Transaction Manager
+- Create new Spring context per configuration
+- SoapErrorMessage has been renamed to SoapErrorMessageFormatter
+- FixedErrorMessage has been renamed to FixedErrorMessageFormatter
+- Enable validators and wrappers to forward to Exits
+- Attribute 'fileName' has been renamed to 'filename'
+- Support reading JMS bytes messages (#1733)
+- Attribute 'wildCard' has been renamed to 'wildcard'
+- Refactor Configuration and Application Warnings
+- Add log settings page
+- Add validator and wrapper statistics
+- Auto detect namedParameters in the query
+- Add plugable CredentialProviders, including FileSystemCredentialProvider/AnsibleVaultCredentialFactory
+- Fix default datasource support for JdbcTableListener
+- Refactor Monitoring
+- Support programmatic retry
+- Fix and refactor ftpSession/ftpFileSystem
+- Fix log statements with throwables
+- Enable use of Tibco JNDI
+- Deduplicate stacktraces in the log files
+- Fix Tibet2 storage when retrieving blob values
+- Add index for duplicates checks
+- Rename databaseAutoLoad property to configurations.database.autoLoad
+- Introduce special stop condition forwards to IteratingPipe
+- Add status file to Bitronix TransactionManager
+- Refactor Job Definitions
+- Add ability to find absolute resources in local ClassLoader
+- Add Json2XmlValidator ability to determine outputFormat from sessionkey
+- Refactor configuraition parsing
+- Avoid log4j2 getSource() method call
+- Remove autoreload check when autoDatabaseClassLoader is enabled
+- Add line numbers on GUI Configurations page
+- Introduce jms.lookupDestination property
+- Change adapter status to warning in case Listener connection fails
+- Deprecate PutParametersInSession pipe
+- Don't pass HttpInputStream when no content is available
+- Add JDK 11 support
+- Add link with configuration and line to configuration warnings
+
 
 ### Non backwards compatible changes
 
-- SoapErrorMessage is renamed to SoapErrorMessageFormatter.
-- FixedErrorMessage is renamed to FixedErrorMessageFormatter.
+- IbisTester is the only role that can execute test-a-pipeline
 - ManageDatabase adapter has been disabled by default on ACC and PRD environments
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1"
+- CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
+- Remove Struts management console (including the IAF-WebControl Configuration)
+- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+  It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
+
+
+
+7.6.2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+
+- Fix gui log error message when more then x files (#2426)
+- Ladybug report keeps in progress while adapter is finished (#2496)
+- Remove Rownum max value upper limit when using Browse Tables (#2515)
+- Update log4j2 (CVE-2021-44228) (#2527)
+
+7.6.1
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
+
+- Do not close zip archive during processing (#2109)
+- Fix log statements with throwables (#2135)
+- Fix ByteStream readers in JsonXMLReader (#2155)
+- Add ability to filter messages by message text (#2138)
+- Fix errorstore download message action (#2200)
+- Support classpath protocol in ClassLoaderURIResolver (#2193)
+- Add index for duplicates checks (#2208)
+- Fix Tibet2 storage when retrieving blob values (#2209)
+- Fix TransformerPool initialization with different xslt versions in XmlSwitch pipe (#2221)
+- Use configured success forward in DirectWrapperPipe (#2229)
+- Skip forward path validation if there is no pipeline (#2239)
+- JmsFacade send Message properties as String (#2241)
+- Add ability to find absolute resources in local ClassLoader (#2253)
+- Avoid log4j2 getSource() method call (#2339)
+- Fix migrator resources being found in other classloaders (#2342)
+- Remove autoreload check when autoDatabaseClassLoader is enabled (#2362)
+- Escape URL in GUI logging page (#2370)
+- Fix tiff file conversion (Aspose) (#2371)
+- Fix incompatible types for the inputstream parameters (#2368)
+
+
+7.6
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...v7.6)
+
+- Add writeLineSeparator attribute to FileSystemPipe (#1916)
+- Fix exception pipe should to not follow exception forward (#1913)
+- Fix Single item combined blocks handling (#1928)
+- Fix ForEachChildElementPipe exception handling (#1956)
+- Only append FF! version to API endpoints when it's a HTML file (#1961)
+- Fix FTP filesystem (#1971)
+- Add charset attribute for the filesystems (#1945)
+- Browse messages from external jdbc errorStorage (#2000)
+- Add option to use ServerFileName as the filename to FxfWrapperPipe (#2019)
+- Throw exception when unable to load Promise.JS (#2037)
+- Skip ACL when no user or empty username is found (#2062)
+
+
+7.6-RC2
+--------
+[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...v7.6-RC2)
+[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC2)](https://travis-ci.org/ibissource/iaf)
+
+- Reduce debug logging and fix JBoss project names (#1592)
+- Fix 'Move to InProcess' in transaction (#1603)
+- Avoid recursion explosion in IbisException.getMessage() (#1623)
+- Do not canonicalize SenderPipe to GenericMesageSendingPipe (#1631)
+- Fix bytearray support for SOAPProviderBase (#1682)
+- Skip proprietary projects when building external PRs (#1642 + #1646)
+- Fix Out of memory using maxConcurrentThreads in ParallelSenders (#1688)
+- Fix IOException in UnzipPip when collectFileContents=true (#1678)
+- Fix NPE on Exit with empty=true (#1679)
+- Make filenames mandatory in onCompletedTransferNotify (#1665)
+- Enable validators and wrappers to forward to Exits (#1695)
+- Fix 'resend message' for JdbcListeners browsed wrong message (#1732)
+- Fix Http Streams not always closed (#1741)
+- JdbcTableListener must specify statusValueError (#1754)
+- Backport Docker changes to 7.6 (#1781)
+- Fix calculating root validations from message root attributes (#1799)
+- Backport closeOnExit mechanism + message.toString() (#1806)
+- Add validator and wrapper statistics 7.6 (#1858)
+- Throw Exception when JmsRealm cannot be found (#1857)
+- Show error warning only when server in state error (#1860)
+- Trim columnsReturned in FixedQuerySender (#1870)
+
+
+
 
 7.6-RC1
 --------
@@ -69,6 +209,7 @@ Upcoming
 
 ### Breaking changes
 
+- If a DSRA9110E (ObjectClosedException) is encountered see issue #2015 (DSRA9110E: ResultSet is closed)
 - It is highly recommended not to use any custom file which overrides a file from the framework itself. In case it was required to override a file, do not forget to update the changes when upgrading the framework version! It is a good practice to keep the `.orig` suffixed original file also in the project to understand what change have been made. The changes in the custom file might have been included in the new version of the framework and the file may be no longer needed. If the changes are complicated to understand please consult the Frank!Framework Team.
 
 7.5

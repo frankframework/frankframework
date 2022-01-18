@@ -68,9 +68,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ConfigurationUtils {
 	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
-	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
-	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
+	public static final String STUB4TESTTOOL_XSLT_VALIDATORS_PARAM = "disableValidators";
+	public static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
+	
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
 	private static final String CANONICALIZE_XSLT = "/xml/xsl/canonicalize.xsl";
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
@@ -87,11 +89,11 @@ public class ConfigurationUtils {
 		return AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_CONFIGURATION_KEY, false);
 	}
 
-	public static String getStubbedConfiguration(Configuration configuration, String originalConfig) throws ConfigurationException {
+	public static String getStubbedConfiguration(ClassLoader classLoader, String originalConfig) throws ConfigurationException {
 		Map<String, Object> parameters = new Hashtable<String, Object>();
 		// Parameter disableValidators has been used to test the impact of
 		// validators on memory usage.
-		parameters.put("disableValidators", AppConstants.getInstance(configuration.getClassLoader()).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
+		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, AppConstants.getInstance(classLoader).getBoolean(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 		return transformConfiguration(originalConfig, STUB4TESTTOOL_XSLT, parameters);
 	}
 
@@ -473,7 +475,7 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (Exception e) {
-				ibisContext.log("*ALL*", null, "failed to autoload configurations", MessageKeeperLevel.WARN, e);
+				ibisContext.log("failed to autoload configurations", MessageKeeperLevel.WARN, e);
 			}
 		}
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
@@ -494,7 +496,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				ibisContext.log("*ALL*", null, "error retrieving database configurations", MessageKeeperLevel.WARN, e);
+				ibisContext.log("error retrieving database configurations", MessageKeeperLevel.WARN, e);
 			}
 		}
 
@@ -504,10 +506,6 @@ public class ConfigurationUtils {
 	}
 
 	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext) throws ConfigurationException {
-		return retrieveConfigNamesFromDatabase(ibisContext, false);
-	}
-
-	public static List<String> retrieveConfigNamesFromDatabase(IbisContext ibisContext, boolean onlyAutoReload) throws ConfigurationException {
 		Connection conn = null;
 		ResultSet rs = null;
 		FixedQuerySender qs = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
@@ -518,9 +516,6 @@ public class ConfigurationUtils {
 			qs.open();
 			conn = qs.getConnection();
 			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG='"+(qs.getDbmsSupport().getBooleanValue(true))+"'";
-			if (onlyAutoReload) {
-				query = query + " AND AUTORELOAD='"	+ (qs.getDbmsSupport().getBooleanValue(true)) + "'";
-			}
 			PreparedStatement stmt = conn.prepareStatement(query);
 			rs = stmt.executeQuery();
 			List<String> stringList = new ArrayList<String>();

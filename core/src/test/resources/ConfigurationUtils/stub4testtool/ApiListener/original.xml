@@ -1,0 +1,12 @@
+<configuration>
+	<adapter name="ApiListener">
+		<receiver>
+			<listener
+				name="ApiListener"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				method="post"
+				uriPattern="insert"/>
+			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+		</receiver>
+	</adapter>
+</configuration>

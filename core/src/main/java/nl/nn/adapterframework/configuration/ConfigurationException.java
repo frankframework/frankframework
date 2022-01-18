@@ -24,13 +24,15 @@ import nl.nn.adapterframework.core.IbisException;
  * @author Johan Verrips
  */
 public class ConfigurationException extends IbisException {
-public ConfigurationException(String msg) {
-	super(msg);
-}
-public ConfigurationException(String msg, Throwable th) {
-	super(msg,th);
+	public ConfigurationException(String msg) {
+		super(msg);
 	}
-public ConfigurationException(Throwable e) {
-	super(e);
-}
+
+	public ConfigurationException(String msg, Throwable th) {
+		super(msg, th);
+	}
+
+	public ConfigurationException(Throwable e) {
+		super(e);
+	}
 }

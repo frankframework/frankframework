@@ -1,0 +1,22 @@
+<configuration>
+	<!-- This comments is not removed -->
+	<adapter name="Comments">
+      <receiver name="testtool-Comments">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-Comments"/>
+      </receiver>
+		    <!-- This comments is not removed -->
+		<!--<receiver name="Comments">
+			
+			      <listener name="Comments" className="nl.nn.adapterframework.jms.JmsListener">
+				
+				        <sender name="Comments-ReplySender"
+                    className="nl.nn.adapterframework.jms.JmsSender"
+                    lookupDestination="false"/>
+			      </listener>
+		    </receiver>--><receiver name="testtool-Comments-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-Comments-1"/>
+      </receiver>
+	  </adapter>
+</configuration>

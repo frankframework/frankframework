@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.ibissource</groupId>
 	<artifactId>ibis-adapterframework-parent</artifactId>
@@ -8,7 +8,10 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.13.1</log4j2.version>
+		<log4j2.version>2.17.0</log4j2.version>
+		<h2.version>2.0.206</h2.version>
+		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
+		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -144,16 +147,7 @@
 				<artifactId>ibis-adapterframework-aspose</artifactId>
 				<version>7.7-SNAPSHOT</version>
 			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-frankDoc</artifactId>
-				<version>7.7-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<version>2.6</version>
-			</dependency>
+
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
@@ -165,12 +159,25 @@
 				<artifactId>log4j-web</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
-			<!-- LOG4J SLF4J bridge -->
+			<!-- SLF4J Binding -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<version>${log4j2.version}</version>
 			</dependency>
+			<!-- Apache Commons Logging Binding-->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-jcl</artifactId>
+				<version>${log4j2.version}</version>
+			</dependency>
+			<!-- Java Util Logging Binding-->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-jul</artifactId>
+				<version>${log4j2.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>javax.ejb</groupId>
 				<artifactId>ejb-api</artifactId>
@@ -200,24 +207,19 @@
 				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>commons-digester</groupId>
-				<artifactId>commons-digester</artifactId>
-				<version>1.8.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
-				<version>2.9.0</version>
+				<version>2.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.11</version>
+				<version>3.12.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.13</version>
+				<version>1.15</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
@@ -227,7 +229,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.8.0</version>
+				<version>2.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -246,6 +248,16 @@
 				<artifactId>junit</artifactId>
 				<version>[4.13.1,)</version>
 			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>2.24.5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-all</artifactId>
+				<version>1.3</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -254,61 +266,40 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<archive>
-						<addMavenDescriptor>true</addMavenDescriptor>
-						<manifest>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<packagingExcludes>.gitignore</packagingExcludes>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.commonjava.maven.plugins</groupId>
+				<artifactId>directory-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.glassfish.copyright</groupId>
+				<artifactId>glassfish-copyright-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<!-- requires version 2.22.1 -->
+					<reuseForks>true</reuseForks>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>-Dfile.encoding=CP-1252</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -335,6 +326,51 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<archive>
+							<addMavenDescriptor>true</addMavenDescriptor>
+							<manifest>
+								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>3.3.0</version>
+					<configuration>
+						<packagingExcludes>.gitignore</packagingExcludes>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.2.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>prepare-package</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
 					<version>1.18.16.0</version>
@@ -350,6 +386,121 @@
 							</configuration>
 						</execution>
 					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.glassfish.copyright</groupId>
+					<artifactId>glassfish-copyright-maven-plugin</artifactId>
+					<version>2.4</version>
+					<executions>
+						<execution>
+							<?m2e ignore?> <!-- Eclipse doesn't seem to like this plugin, it doesn't need to be executed by Eclipse so ignore it -->
+							<id>Check-CopyRight-Notice</id>
+							<goals>
+								<goal>copyright</goal><!-- Checks for Copyright notices -->
+								<goal>check</goal><!-- Fails the build -->
+							</goals>
+							<phase>process-sources</phase>
+						</execution>
+					</executions>
+					<configuration>
+						<excludeFile>${iaf.rootdir}/copyrightExcludeFile.txt</excludeFile>
+						<exclude>
+							DataSourceXAResourceRecoveryHelper.java,NarayanaRecoveryManager.java,FilenameUtils.java,PasswordHash.java
+						</exclude>
+						<ignoreYear>true</ignoreYear>
+						<useDash>true</useDash>
+						<templateFile>${iaf.rootdir}/copyrightTemplateFile.txt</templateFile>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.commonjava.maven.plugins</groupId>
+					<artifactId>directory-maven-plugin</artifactId>
+					<version>1.0</version>
+					<executions>
+						<execution>
+							<?m2e ignore?>
+							<id>find-project-root-directory</id>
+							<goals>
+								<goal>directory-of</goal>
+							</goals>
+							<phase>initialize</phase>
+							<configuration>
+								<property>iaf.rootdir</property>
+								<project>
+									<groupId>org.ibissource</groupId>
+									<artifactId>ibis-adapterframework-parent</artifactId>
+								</project>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<doclint>none</doclint>
+						<tags>
+							<tag>
+								<name>ff.parameters</name>
+								<placement>a</placement>
+								<head>Parameters</head>
+							</tag>
+							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
+							     The standard doclet does not properly format JavaDoc tags in this case. This
+							     can be solved with a taglet, but WeAreFrank! does not want that complexity.
+							     We therefore accept that all occurrences of ff.parameter are formatted on the
+							     same line.
+
+								 The ff.parameter tag was introduced for the Frank!Doc. The Frank!Doc formats
+								 it properly.
+							-->
+							<tag>
+								<name>ff.parameter</name>
+								<placement>a</placement>
+								<head>Specific parameters</head>
+							</tag>
+							<tag>
+								<name>ff.default</name>
+								<placement>a</placement>
+								<head>Default value</head>
+							</tag>
+							<tag>
+								<name>ff.defaultElement</name>
+								<placement>a</placement>
+								<head>Default element</head>
+							</tag>
+							<tag>
+								<name>ff.forward</name>
+								<placement>X</placement>
+							</tag>
+							<tag>
+								<name>ff.noAttribute</name>
+								<placement>X</placement>
+							</tag>
+						</tags>
+						<useStandardDocletOptions>true</useStandardDocletOptions>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<failOnError>false</failOnError>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<configuration>
+						<skip>true</skip>
+						<skipDeploy>true</skipDeploy>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -370,14 +521,12 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.2.0</version>
-				<configuration>
-					<doclint>none</doclint>
-				</configuration>
+				<inherited>false</inherited>
 				<reportSets>
 					<reportSet>
 						<id>javadoc</id>
 						<reports>
-							<report>javadoc</report>
+							<report>aggregate</report>
 						</reports>
 					</reportSet>
 				</reportSets>
@@ -401,6 +550,16 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.6</version>
+						<configuration>
+							<passphrase>${gpg.passphrase}</passphrase>
+							<gpgArguments>
+								<!-- This is necessary for gpg to not try to use the pinentry programs -->
+								<arg>--batch</arg>
+								<arg>--no-tty</arg>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -478,7 +637,6 @@
 				<module>test</module>
 				<module>akamai</module>
 				<module>example</module>
-				<module>frankDoc</module>
 				<module>credentialProvider</module>
 			</modules>
 		</profile>
@@ -497,7 +655,7 @@
 			<id>cmis</id>
 			<activation>
 				<property>
-					<name>cmis</name>
+					<name>!no-cmis</name>
 				</property>
 			</activation>
 			<modules>
@@ -524,6 +682,10 @@
 				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.ibissource.org/content/repositories/private/</url>
+					<snapshots>
+						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
+						<enabled>false</enabled>
+					</snapshots>
 				</repository>
 			</repositories>
 		</profile>
@@ -555,22 +717,6 @@
 						<version>3.2.0</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
-							<doclint>none</doclint>
-							<tags>
-								<tag>
-									<name>IbisDoc.required</name>
-									<!-- The value X makes javadoc ignoring the tag. See: https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags -->
-									<placement>X</placement>
-								</tag>
-								<tag>
-									<name>IbisDoc.default</name>
-									<placement>X</placement>
-								</tag>
-								<tag>
-									<name>IbisDoc.optional</name>
-									<placement>X</placement>
-								</tag>
-							</tags>
 						</configuration>
 						<executions>
 							<execution>
@@ -592,6 +738,16 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>ibissource</id>
+					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
 			<build>
 				<plugins>
 					<plugin>
@@ -605,21 +761,26 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
-							<doclet>nl.nn.adapterframework.frankdoc.front.DocletBuilder</doclet>
+							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
-								<artifactId>ibis-adapterframework-frankDoc</artifactId>
-								<version>${project.version}</version>
+								<artifactId>frank-doc</artifactId>
+								<version>1.0-20220110.134541-15</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
+								<additionalOption>-digesterRulesPath</additionalOption>
+								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
+								<additionalOption>-rootClass</additionalOption>
+								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
 							</additionalOptions>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>1.8</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
 							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
 						</configuration>
 						<executions>
 							<execution>
@@ -629,7 +790,7 @@
 									<goal>aggregate-jar</goal>
 								</goals>
 								<configuration>
-									<failOnError>false</failOnError>
+									<failOnError>true</failOnError>
 								</configuration>
 							</execution>
 						</executions>
@@ -644,15 +805,17 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.5</version>
+						<version>0.8.6</version>
 						<executions>
 							<execution>
+								<id>prepare-jacoco</id>
+								<phase>initialize</phase>
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
 							</execution>
 							<execution>
-								<id>report</id>
+								<id>generate-jacoco-report</id>
 								<phase>test</phase>
 								<goals>
 									<goal>report</goal>
@@ -667,7 +830,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.5</version>
+						<version>0.8.6</version>
 						<reportSets>
 							<reportSet>
 								<reports>
@@ -678,6 +841,44 @@
 					</plugin>
 				</plugins>
 			</reporting>
+		</profile>
+		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
+			<id>jdk11</id>
+			<activation>
+				<jdk>11</jdk>
+				<property>
+					<name>jdk11</name>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<configuration>
+								<release>11</release>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.2</version>
+						<configuration>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile>
+							<reuseForks>true</reuseForks>
+							<includes>
+								<include>**/*.java</include>
+							</includes>
+							<excludes>
+								<exclude>it.**</exclude>
+							</excludes>
+							<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

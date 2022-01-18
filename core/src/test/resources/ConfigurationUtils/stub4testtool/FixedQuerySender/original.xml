@@ -1,0 +1,27 @@
+<configuration>
+	<adapter name="FixedQuerySender">
+		<receiver name="FixedQuerySender">
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="FixedQuerySender"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+			<pipe
+				name="Call Sender"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					queryType="select"
+					query="SELECT TKEY, TCLOB FROM IBISTEMP WHERE TCHAR = '1' AND TNUMBER=${jdbc.querylistener.key}"
+				/>
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

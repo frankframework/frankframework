@@ -113,7 +113,7 @@ public class PgpPipeTest {
 	 * Creates pipes and pipeline session base for testing.
 	 */
 	@Before
-	public void setup() {
+	public void setup() throws ConfigurationException {
 		session = new PipeLineSession();
 
 		encryptPipe = new PGPPipe();

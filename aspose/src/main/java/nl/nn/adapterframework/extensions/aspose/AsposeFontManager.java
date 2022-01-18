@@ -91,7 +91,7 @@ public class AsposeFontManager {
 
 	public void load(boolean unzipArchive) throws IOException {
 		if(unzipArchive) {
-			unpackFontsZip(); //unpack the fonts.zip archive in the supplied font directory
+			unpackDefaultFontArchive();
 		}
 
 		loadFonts(); //load all the newly unpacked fonts into the systems GraphicsEnvironment
@@ -101,7 +101,8 @@ public class AsposeFontManager {
 		loadFontsForCells();
 	}
 
-	private void unpackFontsZip() throws IOException {
+	/** unpack the fonts.zip archive in the supplied font directory. Does not override existing files */
+	public void unpackDefaultFontArchive() throws IOException {
 		URL fontsUrl = ClassUtils.getResourceURL(FONTS_RESOURCE_NAME);
 		if(fontsUrl == null) {
 			throw new IllegalStateException("font archive ["+FONTS_RESOURCE_NAME+"] cannot be found");

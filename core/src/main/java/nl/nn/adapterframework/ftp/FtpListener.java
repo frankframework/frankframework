@@ -32,7 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Listener that polls a directory via FTP for files according to a wildcard. 
@@ -166,7 +166,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 	}
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
 
 	@Override
@@ -174,7 +174,7 @@ public class FtpListener extends FtpSession implements IPullingListener<String>,
 		runStateEnquirer=enquirer;
 	}
 
-	@IbisDoc({"time between pollings", "3600000 (one hour)"})
+	@IbisDoc({"Time <i>in milliseconds</i> between each poll interval", "3600000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}

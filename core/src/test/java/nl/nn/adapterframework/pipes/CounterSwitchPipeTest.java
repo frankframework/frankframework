@@ -11,7 +11,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 
 	@Override
-	public CounterSwitchPipe createPipe() {
+	public CounterSwitchPipe createPipe() throws ConfigurationException {
 		CounterSwitchPipe pipe = new CounterSwitchPipe();
 		pipe.registerForward(new PipeForward("1", null));
 		pipe.registerForward(new PipeForward("2", null));

@@ -65,12 +65,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.dom4j.DocumentException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import com.sun.syndication.io.XmlReader;
 
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
@@ -79,12 +79,14 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.http.IbisWebServiceSender;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
@@ -98,8 +100,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CaseInsensitiveComparator;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -111,7 +115,7 @@ public class TestTool {
 	private static Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
-	protected static final int DEFAULT_TIMEOUT = 30000;
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
 	protected static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
@@ -129,7 +133,7 @@ public class TestTool {
 	 * Those results cannot be saved to the inline expected value, however.
 	 */
 	private static final boolean allowReadlineSteps = false; 
-	private static int globalTimeout=DEFAULT_TIMEOUT;
+	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
@@ -159,6 +163,14 @@ public class TestTool {
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
 		String paramWaitBeforeCleanUp = request.getParameter("waitbeforecleanup");
+		String paramGlobalTimeout = request.getParameter("timeout");
+		int timeout=globalTimeout;
+		if(paramGlobalTimeout != null) {
+			try {
+				timeout = Integer.parseInt(paramGlobalTimeout);
+			} catch(NumberFormatException e) {
+			}
+		}
 		String servletPath = request.getServletPath();
 		int i = servletPath.lastIndexOf('/');
 		String realPath = application.getRealPath(servletPath.substring(0, i));
@@ -166,7 +178,7 @@ public class TestTool {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		runScenarios(ibisContext, appConstants, paramLogLevel,
-				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp,
+				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
 	}
 
@@ -179,7 +191,7 @@ public class TestTool {
 	 */
 	public static int runScenarios(IbisContext ibisContext, AppConstants appConstants, String paramLogLevel,
 			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
-			String realPath, String paramScenariosRootDirectory,
+			int timeout, String realPath, String paramScenariosRootDirectory,
 			Writer out, boolean silent) {
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
@@ -235,8 +247,9 @@ public class TestTool {
 			} catch(NumberFormatException e) {
 			}
 		}
+
 		debugMessage("Write html form", writers);
-		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+		printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 		debugMessage("Stop logging to logbuffer", writers);
 		if (writers!=null) {
 			writers.put("uselogbuffer", "stop");
@@ -302,7 +315,7 @@ public class TestTool {
 						if (steps != null) {
 							synchronized(STEP_SYNCHRONIZER) {
 								debugMessage("Open queues", writers);
-								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers);
+								Map<String, Map<String, Object>> queues = openQueues(scenarioDirectory, steps, properties, ibisContext, appConstants, writers, timeout);
 								if (queues != null) {
 									debugMessage("Execute steps", writers);
 									boolean allStepsPassed = true;
@@ -319,7 +332,7 @@ public class TestTool {
 										String step = (String)iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
-										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers);
+										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout);
 										if (stepPassed==RESULT_OK) {
 											stepPassedMessage("Step '" + stepDisplayName + "' passed", writers);
 										} else if (stepPassed==RESULT_AUTOSAVED) {
@@ -441,7 +454,7 @@ public class TestTool {
 				}
 				writeHtml("<br/>", writers, false);
 				writeHtml("<br/>", writers, false);
-				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, paramExecute, autoScroll, writers);
+				printHtmlForm(scenariosRootDirectories, scenariosRootDescriptions, currentScenariosRootDirectory, appConstants, allScenarioFiles, waitBeforeCleanUp, timeout, paramExecute, autoScroll, writers);
 				debugMessage("Stop logging to htmlbuffer", writers);
 				if (writers!=null) {
 					writers.put("usehtmlbuffer", "stop");
@@ -452,7 +465,7 @@ public class TestTool {
 		return scenariosFailed;
 	}
 
-	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, String paramExecute, String autoScroll, Map<String, Object> writers) {
+	public static void printHtmlForm(List<String> scenariosRootDirectories, List<String> scenariosRootDescriptions, String scenariosRootDirectory, AppConstants appConstants, List<File> scenarioFiles, int waitBeforeCleanUp, int timeout, String paramExecute, String autoScroll, Map<String, Object> writers) {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
@@ -554,6 +567,19 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// timeout box
+			writeHtml("<table align=\"left\">", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>Default timeout (ms)</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("<tr>", writers, false);
+			writeHtml("<td>", writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
+			writeHtml("</td>", writers, false);
+			writeHtml("</tr>", writers, false);
+			writeHtml("</table>", writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>Log level</td>", writers, false);
@@ -594,6 +620,7 @@ public class TestTool {
 			writeHtml("</table>", writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// submit button
 			writeHtml("<table align=\"left\">", writers, false);
 			writeHtml("<tr>", writers, false);
 			writeHtml("<td>&nbsp;</td>", writers, false);
@@ -1206,7 +1233,7 @@ public class TestTool {
 
 	public static Map<String, Map<String, Object>> openQueues(String scenarioDirectory, List<String> steps,
 			Properties properties, IbisContext ibisContext,
-			AppConstants appConstants, Map<String, Object> writers) {
+			AppConstants appConstants, Map<String, Object> writers, int parameterTimeout) {
 		Map<String, Map<String, Object>> queues = new HashMap<String, Map<String, Object>>();
 		debugMessage("Get all queue names", writers);
 		List<String> jmsSenders = new ArrayList<String>();
@@ -1302,7 +1329,7 @@ public class TestTool {
 				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
-				jmsSender.setDestinationTypeEnum(DestinationType.QUEUE);
+				jmsSender.setDestinationType(DestinationType.QUEUE);
 				jmsSender.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1320,7 +1347,7 @@ public class TestTool {
 				debugMessage("Property '" + queueName + ".replyToName': " + replyToName, writers);
 				if (deliveryMode != null) {
 					debugMessage("Set deliveryMode to " + deliveryMode, writers);
-					jmsSender.setDeliveryMode(deliveryMode);
+					jmsSender.setDeliveryMode(EnumUtils.parse(DeliveryMode.class, deliveryMode));
 				}
 				if ("true".equals(persistent)) {
 					debugMessage("Set persistent to true", writers);
@@ -1358,10 +1385,10 @@ public class TestTool {
 			String queue = (String)properties.get(queueName + ".queue");
 			String timeout = (String)properties.get(queueName + ".timeout");
 
-			int nTimeout = globalTimeout;
+			int nTimeout = parameterTimeout;
 			if (timeout != null && timeout.length() > 0) {
 				nTimeout = Integer.parseInt(timeout);
-				debugMessage("Overriding default timeout setting of "+globalTimeout+" with "+ nTimeout, writers);
+				debugMessage("Overriding default timeout setting of "+parameterTimeout+" with "+ nTimeout, writers);
 			}
 
 			if (queue == null) {
@@ -1372,7 +1399,7 @@ public class TestTool {
 				PullingJmsListener pullingJmsListener = (PullingJmsListener)ibisContext.createBeanAutowireByName(PullingJmsListener.class);
 				pullingJmsListener.setName("Test Tool JmsListener");
 				pullingJmsListener.setDestinationName(queue);
-				pullingJmsListener.setDestinationTypeEnum(DestinationType.QUEUE);
+				pullingJmsListener.setDestinationType(DestinationType.QUEUE);
 				pullingJmsListener.setAcknowledgeMode("auto");
 				String jmsRealm = (String)properties.get(queueName + ".jmsRealm");
 				if (jmsRealm!=null) {
@@ -1454,7 +1481,7 @@ public class TestTool {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
-						} catch(TimeOutException e) {
+						} catch(TimeoutException e) {
 							closeQueues(queues, properties, writers);
 							queues = null;
 							errorMessage("Time out on execute pre delete query for '" + name + "': " + e.getMessage(), e, writers);
@@ -1501,7 +1528,7 @@ public class TestTool {
 								String result = prePostFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
 								querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 								querySendersInfo.put("prePostQueryResult", result);
-							} catch(TimeOutException e) {
+							} catch(TimeoutException e) {
 								closeQueues(queues, properties, writers);
 								queues = null;
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
@@ -1624,8 +1651,10 @@ public class TestTool {
 			String url = (String)properties.get(name + ".url");
 			String userName = (String)properties.get(name + ".userName");
 			String password = (String)properties.get(name + ".password");
+			String authAlias = (String)properties.get(name + ".authAlias");
 			String soap = (String)properties.get(name + ".soap");
-			String allowSelfSignedCertificates = (String)properties.get(name + ".allowSelfSignedCertificates");
+			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
@@ -1634,14 +1663,14 @@ public class TestTool {
 				WebServiceSender webServiceSender = new WebServiceSender();
 				webServiceSender.setName("Test Tool WebServiceSender");
 				webServiceSender.setUrl(url);
-				webServiceSender.setUserName(userName);
+				webServiceSender.setUsername(userName);
 				webServiceSender.setPassword(password);
+				webServiceSender.setAuthAlias(authAlias);
 				if (soap != null) {
 					webServiceSender.setSoap(new Boolean(soap));
 				}
-				if (allowSelfSignedCertificates != null) {
-					webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
-				}
+				webServiceSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+				webServiceSender.setVerifyHostname(new Boolean(verifyHostname));
 				String serviceNamespaceURI = (String)properties.get(name + ".serviceNamespaceURI");
 				if (serviceNamespaceURI != null) {
 					webServiceSender.setServiceNamespaceURI(serviceNamespaceURI);
@@ -1688,18 +1717,16 @@ public class TestTool {
 				errorMessage("Could not find property '" + name + ".serviceNamespaceURI'", writers);
 			} else {
 				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				listenerMessageHandler.setRequestTimeOut(globalTimeout);
-				listenerMessageHandler.setResponseTimeOut(globalTimeout);
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				listenerMessageHandler.setTimeout(parameterTimeout);
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				WebServiceListener webServiceListener = new WebServiceListener();
@@ -1737,6 +1764,7 @@ public class TestTool {
 			String url = (String)properties.get(name + ".url");
 			String userName = (String)properties.get(name + ".userName");
 			String password = (String)properties.get(name + ".password");
+			String authAlias = (String)properties.get(name + ".authAlias");
 			String headerParams = (String)properties.get(name + ".headersParams");
 			String xhtmlString = (String)properties.get(name + ".xhtml");
 			String methodtype = (String)properties.get(name + ".methodType");
@@ -1744,6 +1772,8 @@ public class TestTool {
 			String inputMessageParam = (String)properties.get(name + ".inputMessageParam");
 			String multipartString = (String)properties.get(name + ".multipart");
  			String styleSheetName = (String)properties.get(name + ".styleSheetName");
+ 			String allowSelfSignedCertificates = properties.getProperty(name + ".allowSelfSignedCertificates", "true");
+ 			String verifyHostname = properties.getProperty(name + ".verifyHostname", "false");
 			if (url == null) {
 				closeQueues(queues, properties, writers);
 				queues = null;
@@ -1764,14 +1794,16 @@ public class TestTool {
 					httpSender = new HttpSender();
 					httpSender.setName("Test Tool HttpSender");
 					httpSender.setUrl(url);
-					httpSender.setUserName(userName);
+					httpSender.setUsername(userName);
 					httpSender.setPassword(password);
+					httpSender.setAuthAlias(authAlias);
 					httpSender.setHeadersParams(headerParams);
 					if (StringUtils.isNotEmpty(xhtmlString)) {
 						httpSender.setXhtml(Boolean.valueOf(xhtmlString).booleanValue());
 					}
 					if (StringUtils.isNotEmpty(methodtype)) {
-						httpSender.setMethodType(methodtype);
+						HttpMethod method = EnumUtils.parse(HttpMethod.class, methodtype);
+						httpSender.setMethodType(method);
 					}
 					if (StringUtils.isNotEmpty(paramsInUrlString)) {
 						httpSender.setParamsInUrl(Boolean.valueOf(paramsInUrlString).booleanValue());
@@ -1785,6 +1817,8 @@ public class TestTool {
 					if (StringUtils.isNotEmpty(styleSheetName)) {
 						httpSender.setStyleSheetName(styleSheetName);
 					}
+					httpSender.setAllowSelfSignedCertificates(new Boolean(allowSelfSignedCertificates));
+					httpSender.setVerifyHostname(new Boolean(verifyHostname));
 					session = new PipeLineSession();
 					Map<String, Object> paramPropertiesMap = createParametersMapFromParamProperties(properties, name, writers, true, session);
 					Iterator<String> parameterNameIterator = paramPropertiesMap.keySet().iterator();
@@ -1794,6 +1828,10 @@ public class TestTool {
 						httpSender.addParameter(parameter);
 					}
 					httpSender.configure();
+				} catch(ClassLoaderException e) {
+					errorMessage("Could not create classloader: " + e.getMessage(), e, writers);
+					closeQueues(queues, properties, writers);
+					queues = null;
 				} catch(ConfigurationException e) {
 					errorMessage("Could not configure '" + name + "': " + e.getMessage(), e, writers);
 					closeQueues(queues, properties, writers);
@@ -1900,17 +1938,16 @@ public class TestTool {
 				queues = null;
 				errorMessage("Could not find property '" + name + ".serviceName'", writers);
 			} else {
-				ListenerMessageHandler listenerMessageHandler = new ListenerMessageHandler();
-				try {
-					long requestTimeOut = Long.parseLong((String)properties.get(name + ".requestTimeOut"));
-					listenerMessageHandler.setRequestTimeOut(requestTimeOut);
-					debugMessage("Request time out set to '" + requestTimeOut + "'", writers);
-				} catch(Exception e) {
+				ListenerMessageHandler<String> listenerMessageHandler = new ListenerMessageHandler<>();
+
+				if(properties.contains(name + ".requestTimeOut") || properties.contains(name + ".responseTimeOut")) {
+					errorMessage("properties "+name+".requestTimeOut/"+name+".responseTimeOut have been replaced with "+name+".timeout", writers);
 				}
+
 				try {
-					long responseTimeOut = Long.parseLong((String)properties.get(name + ".responseTimeOut"));
-					listenerMessageHandler.setResponseTimeOut(responseTimeOut);
-					debugMessage("Response time out set to '" + responseTimeOut + "'", writers);
+					long timeout = Long.parseLong((String)properties.get(name + ".timeout"));
+					listenerMessageHandler.setTimeout(timeout);
+					debugMessage("Timeout set to '" + timeout + "'", writers);
 				} catch(Exception e) {
 				}
 				JavaListener javaListener = new JavaListener();
@@ -2183,7 +2220,7 @@ public class TestTool {
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
 								message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-							} catch(TimeOutException e) {
+							} catch(TimeoutException e) {
 								errorMessage("Time out on execute query for '" + name + "': " + e.getMessage(), e, writers);
 							} catch(IOException | SenderException e) {
 								errorMessage("Could not execute query for '" + name + "': " + e.getMessage(), e, writers);
@@ -2196,7 +2233,7 @@ public class TestTool {
 							
 						}
 						prePostFixedQuerySender.close();
-					} catch(TimeOutException e) {
+					} catch(TimeoutException e) {
 						errorMessage("Time out on close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
 					} catch(IOException | SenderException e) {
 						errorMessage("Could not close (pre/post) '" + name + "': " + e.getMessage(), e, writers);
@@ -2224,7 +2261,7 @@ public class TestTool {
 					if (ioException != null) {
 						errorMessage("Found remaining IOException: " + ioException.getMessage(), ioException, writers);
 					}
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2257,7 +2294,7 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2286,19 +2323,19 @@ public class TestTool {
 				debugMessage("Closed web service listener '" + queueName + "'", writers);
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)webServiceListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2319,7 +2356,7 @@ public class TestTool {
 					if (senderException != null) {
 						errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException, writers);
 					}
-					TimeOutException timeOutException = ibisJavaSenderThread.getTimeOutException();
+					TimeoutException timeOutException = ibisJavaSenderThread.getTimeOutException();
 					if (timeOutException != null) {
 						errorMessage("Found remaining TimeOutException: " + timeOutException.getMessage(), timeOutException, writers);
 					}
@@ -2368,19 +2405,19 @@ public class TestTool {
 				}
 				ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)javaListenerInfo.get("listenerMessageHandler");
 				if (listenerMessageHandler != null) {
-					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage(0);
+					ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining request message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getRequestMessage(0);
+						listenerMessage = listenerMessageHandler.getRequestMessage();
 					}
-					listenerMessage = listenerMessageHandler.getResponseMessage(0);
+					listenerMessage = listenerMessageHandler.getResponseMessage();
 					while (listenerMessage != null) {
 						String message = listenerMessage.getMessage();
 						wrongPipelineMessage("Found remaining response message on '" + queueName + "'", message, writers);
 						remainingMessagesFound = true;
-						listenerMessage = listenerMessageHandler.getResponseMessage(0);
+						listenerMessage = listenerMessageHandler.getResponseMessage();
 					}
 				}
 			}
@@ -2468,7 +2505,7 @@ public class TestTool {
 				remainingMessagesFound = true;
 				wrongPipelineMessage("Found remaining message on '" + queueName + "'", message, writers);
 			}
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 		} catch(ListenerException e) {
 			errorMessage("Could read message from file listener '" + queueName + "': " + e.getMessage(), e, writers);
 		}
@@ -2516,7 +2553,7 @@ public class TestTool {
 			jmsSender.sendMessage(new nl.nn.adapterframework.stream.Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
-		} catch(TimeOutException e) {
+		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		} catch(SenderException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2668,7 +2705,7 @@ public class TestTool {
 			if (senderException == null) {
 				IOException ioException = senderThread.getIOException();
 				if (ioException == null) {
-					TimeOutException timeOutException = senderThread.getTimeOutException();
+					TimeoutException timeOutException = senderThread.getTimeOutException();
 					if (timeOutException == null) {
 						String message = senderThread.getResponse();
 						if (message == null) {
@@ -2698,7 +2735,7 @@ public class TestTool {
 		return result;
 	}
 
-	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
+	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Map<String, Object>> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
 		Map listenerInfo = (Map)queues.get(queueName);
@@ -2707,7 +2744,20 @@ public class TestTool {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+			ListenerMessage listenerMessage = null;
+			Long timeout = Long.parseLong(""+parameterTimeout);
+			try {
+				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
+				debugMessage("Timeout set to '" + timeout + "'", writers);
+			} catch (Exception e) {
+			}
+			try {
+				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
+			} catch (TimeoutException e) {
+				errorMessage("Could not read listenerMessageHandler message (timeout of ["+parameterTimeout+"] reached)", writers);
+				return RESULT_ERROR;
+			}
+
 			if (listenerMessage != null) {
 				message = listenerMessage.getMessage();
 				listenerInfo.put("listenerMessage", listenerMessage);
@@ -2767,7 +2817,7 @@ public class TestTool {
 				 * are remaining messages left.
 				 */
 				querySendersInfo.put("prePostQueryResult", postResult);
-			} catch(TimeOutException e) {
+			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2780,7 +2830,7 @@ public class TestTool {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.businessCorrelationIdKey, TestTool.TESTTOOL_CORRELATIONID);
 				message = readQueryFixedQuerySender.sendMessage(TESTTOOL_DUMMY_MESSAGE, session).asString();
-			} catch(TimeOutException e) {
+			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			} catch(IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
@@ -2873,7 +2923,7 @@ public class TestTool {
 		return result;	
 	}
 
-	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers) {
+	public static int executeStep(String step, Properties properties, String stepDisplayName, Map<String, Map<String, Object>> queues, Map<String, Object> writers, int parameterTimeout) {
 		int stepPassed = RESULT_ERROR;
 		String fileName = properties.getProperty(step);
 		String fileNameAbsolutePath = properties.getProperty(step + ".absolutepath");
@@ -2912,13 +2962,13 @@ public class TestTool {
 					} else if ("nl.nn.adapterframework.http.WebServiceSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "webService", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.http.WebServiceListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.http.HttpSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "http", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.senders.IbisJavaSender".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeSenderRead(step, stepDisplayName, properties, queues, writers, queueName, "ibisJava", fileName, fileContent);
 					} else if ("nl.nn.adapterframework.receivers.JavaListener".equals(properties.get(queueName + ".className"))) {
-						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
+						stepPassed = executeJavaListenerOrWebServiceListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent, parameterTimeout);
 					} else if ("nl.nn.adapterframework.testtool.FileListener".equals(properties.get(queueName + ".className"))) {
 						stepPassed = executeFileListenerRead(step, stepDisplayName, properties, queues, writers, queueName, fileName, fileContent);
 					} else if ("nl.nn.adapterframework.testtool.FileSender".equals(properties.get(queueName + ".className"))) {
@@ -3019,7 +3069,7 @@ public class TestTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, DocumentException, SenderException {
+	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		IbisContext ibisContext = getIbisContext(application);
 		AppConstants appConstants = getAppConstants(ibisContext);
 		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
@@ -3041,7 +3091,7 @@ public class TestTool {
 		ProcessUtil.executeCommand(command);
 	}
 
-	private static File writeTempFile(String originalFileName, String content) throws IOException, DocumentException {
+	private static File writeTempFile(String originalFileName, String content) throws IOException {
 		String encoding = getEncoding(originalFileName, content);
 
 		String baseName = FileUtils.getBaseName(originalFileName);
@@ -3112,9 +3162,19 @@ public class TestTool {
 			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
 			return RESULT_OK;
 		}
+
 		int ok = RESULT_ERROR;
-		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
-		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+		String printableExpectedResult;
+		String printableActualResult;
+		String diffType = properties.getProperty(step + ".diffType");
+		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
+			printableExpectedResult = Misc.jsonPretty(expectedResult);
+			printableActualResult = Misc.jsonPretty(actualResult);
+		} else {
+			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
+			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+		}
+		
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
 
@@ -3724,7 +3784,6 @@ public class TestTool {
 		}
 		
 		debugMessage("Check ignoreContentAfterKey properties", writers);
-		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff

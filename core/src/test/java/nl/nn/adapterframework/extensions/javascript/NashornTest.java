@@ -15,16 +15,17 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import nl.nn.adapterframework.extensions.graphviz.ResultHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class NashornTest {
 	private Nashorn engine;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws JavascriptException {
 		engine = new Nashorn();
 		engine.startRuntime();
 	}
@@ -73,7 +74,7 @@ public class NashornTest {
 	}
 
 	@Test
-	public void testExecuteFunction() {
+	public void testExecuteFunction() throws JavascriptException {
 		String script = "function plusTwo(x) { return x + 2;}";
 		engine.executeScript(script);
 		Double out = (Double) engine.executeFunction("plusTwo", 5);
@@ -81,16 +82,15 @@ public class NashornTest {
 	}
 
 	@Test
-	public void testExecuteFunctionNoParam() {
+	public void testExecuteFunctionNoParam() throws JavascriptException {
 		String script = "function plusTwo(x) { return x + 2;}";
 		engine.executeScript(script);
 		Double out = (Double) engine.executeFunction("plusTwo");
 		Assert.assertTrue(out.isNaN());
 	}
 
-	@Test
-	public void testExecuteFunctionUnknownFunc() {
-		Double out = (Double) engine.executeFunction("plusTwo");
-		Assert.assertNull(out);
+	@Test(expected = JavascriptException.class)
+	public void testExecuteFunctionUnknownFunc() throws JavascriptException {
+		engine.executeFunction("plusTwo");
 	}
 }

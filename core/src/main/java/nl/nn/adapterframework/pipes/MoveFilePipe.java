@@ -97,7 +97,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 					if (StringUtils.isEmpty(getMove2fileSessionKey())) {
 						dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
 					} else {
-						dstFile = new File(getMove2dir(), retrieveDestinationChild((String)session.get(getMove2fileSessionKey())));
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getMessage(getMove2fileSessionKey()).asString()));
 					}
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
@@ -117,7 +117,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (StringUtils.isEmpty(getWildcardSessionKey())) {
 					wc = getWildcard();
 				} else {
-					wc = (String)session.get(getWildcardSessionKey());
+					wc = session.getMessage(getWildcardSessionKey()).asString();
 				}
 				//WildCardFilter filter = new WildCardFilter(wc);
 				//File[] srcFiles = srcFile.listFiles(filter);
@@ -282,7 +282,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-	@IbisDoc({"time between attempts", "1000 [ms]"})
+	@IbisDoc({"Time <i>in milliseconds</i> between attempts", "1000"})
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}

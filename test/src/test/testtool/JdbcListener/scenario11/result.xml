@@ -48,12 +48,6 @@
 						<field name="TNUMBER">IGNORE</field>
 						<field name="TVARCHAR" null="true"/>
 					</row>
-					<row number="6">
-						<field name="TCHAR">X</field>
-						<field name="TCLOB" null="true"/>
-						<field name="TNUMBER">IGNORE</field>
-						<field name="TVARCHAR" null="true"/>
-					</row>
 				</rowset>
 			</result>
 		</result>

@@ -1,0 +1,17 @@
+<configuration>
+	<adapter name="DirectoryListener">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.DirectoryListener"
+				name="DirectoryListener" 
+				wildcard="*" />
+		</receiver>
+		<pipeline firstPipe="EchoPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

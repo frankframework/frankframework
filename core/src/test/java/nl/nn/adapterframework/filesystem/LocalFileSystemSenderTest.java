@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.LocalFileSystemSender;
 import nl.nn.adapterframework.stream.Message;
@@ -47,7 +48,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
-		sender.setAction("rename");
+		sender.setAction(FileSystemAction.RENAME);
 		Parameter param1 = new Parameter();
 		param1.setName("filename");
 		param1.setValue(src.getPath());
@@ -81,7 +82,7 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 		assertFalse(dest.exists());
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
-		sender.setAction("rename");
+		sender.setAction(FileSystemAction.RENAME);
 		Parameter param1 = new Parameter();
 		param1.setName("filename");
 		param1.setValue(src.getPath());

@@ -37,12 +37,16 @@ import org.xml.sax.SAXParseException;
 public class ExceptionInsertingFilter extends FullXmlFilter {
 
 	private SAXException insertedException=null;
-	
+
 	public ExceptionInsertingFilter(ContentHandler handler) {
 		super(handler);
 	}
 
 	public void insertException(SAXException exception) {
+		if(insertedException != null) {
+			log.error("exception ("+exception.getClass().getCanonicalName()+") ["+exception.getMessage()+"] overwrites existing exception", insertedException);
+		}
+
 		insertedException = exception;
 	}
 
@@ -54,148 +58,215 @@ public class ExceptionInsertingFilter extends FullXmlFilter {
 			throw exceptionToThrow;
 		}
 	}
-	
+
 	@Override
 	public void startDocument() throws SAXException {
-		super.startDocument();
-		checkInserted();
+		try {
+			super.startDocument();
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
-		super.endDocument();
-		checkInserted();
+		try {
+			super.endDocument();
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		super.startElement(uri, localName, qName, atts);
-		checkInserted();
+		try {
+			super.startElement(uri, localName, qName, atts);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		super.characters(ch, start, length);
-		checkInserted();
+		try {
+			super.characters(ch, start, length);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		super.endElement(uri, localName, qName);
-		checkInserted();
+		try {
+			super.endElement(uri, localName, qName);
+		} finally {
+			checkInserted();
+		}
 	}
-	
-	
+
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		super.comment(ch, start, length);
-		checkInserted();
+		try {
+			super.comment(ch, start, length);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void startCDATA() throws SAXException {
-		super.startCDATA();
-		checkInserted();
+		try {
+			super.startCDATA();
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endCDATA() throws SAXException {
-		super.endCDATA();
-		checkInserted();
+		try {
+			super.endCDATA();
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void startDTD(String name, String publicId, String systemId) throws SAXException {
-		super.startDTD(name, publicId, systemId);
-		checkInserted();
+		try {
+			super.startDTD(name, publicId, systemId);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endDTD() throws SAXException {
-		super.endDTD();
-		checkInserted();
+		try {
+			super.endDTD();
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void startEntity(String name) throws SAXException {
-		super.startEntity(name);
-		checkInserted();
+		try {
+			super.startEntity(name);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endEntity(String name) throws SAXException {
-		super.endEntity(name);
-		checkInserted();
+		try {
+			super.endEntity(name);
+		} finally {
+			checkInserted();
+		}
 	}
 
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		super.startPrefixMapping(prefix, uri);
-		checkInserted();
+		try {
+			super.startPrefixMapping(prefix, uri);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		super.endPrefixMapping(prefix);
-		checkInserted();
+		try {
+			super.endPrefixMapping(prefix);
+		} finally {
+			checkInserted();
+		}
 	}
 
 
 	@Override
 	public void warning(SAXParseException e) throws SAXException {
-		super.warning(e);
-		checkInserted();
+		try {
+			super.warning(e);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void error(SAXParseException e) throws SAXException {
-		super.error(e);
-		checkInserted();
+		try {
+			super.error(e);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void fatalError(SAXParseException e) throws SAXException {
-		super.fatalError(e);
-		checkInserted();
+		try {
+			super.fatalError(e);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-		super.ignorableWhitespace(ch, start, length);
-		checkInserted();
+		try {
+			super.ignorableWhitespace(ch, start, length);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void notationDecl(String name, String publicId, String systemId) throws SAXException {
-		super.notationDecl(name, publicId, systemId);
-		checkInserted();
+		try {
+			super.notationDecl(name, publicId, systemId);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void processingInstruction(String target, String data) throws SAXException {
-		super.processingInstruction(target, data);
-		checkInserted();
+		try {
+			super.processingInstruction(target, data);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-		InputSource result = super.resolveEntity(publicId, systemId);
-		checkInserted();
-		return result;
+		try {
+			return super.resolveEntity(publicId, systemId);
+		} finally {
+			checkInserted();
+		}
 	}
 
 	@Override
 	public void skippedEntity(String name) throws SAXException {
-		super.skippedEntity(name);
-		checkInserted();
+		try {
+			super.skippedEntity(name);
+		} finally {
+			checkInserted();
+		}
 	}
 
 
 	@Override
 	public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
-		super.unparsedEntityDecl(name, publicId, systemId, notationName);
-		checkInserted();
+		try {
+			super.unparsedEntityDecl(name, publicId, systemId, notationName);
+		} finally {
+			checkInserted();
+		}
 	}
 
 }

@@ -1,0 +1,30 @@
+<configuration>
+	  <adapter name="GenericMessageSendingPipe">
+      <receiver name="testtool-GenericMessageSendingPipe">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-GenericMessageSendingPipe"/>
+      </receiver>
+		    <receiver name="GenericMessageSendingPipe">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="GenericMessageSendingPipe"/>
+		    </receiver>
+      <receiver name="testtool-GenericMessageSendingPipe-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-GenericMessageSendingPipe-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+                    javaListener="TEST"/>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

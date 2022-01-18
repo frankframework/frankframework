@@ -1,8 +1,8 @@
-<ibis>
+<module>
 	<adapter name="EsbSoapValidator" description="Test the functioning of the EsbSoapValidator">
 
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" />
 
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
@@ -106,7 +106,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="switch" />
+			<pipe name="Switch" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="switch" />
 			<!-- request -->
 			<pipe name="request"
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
@@ -145,4 +145,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

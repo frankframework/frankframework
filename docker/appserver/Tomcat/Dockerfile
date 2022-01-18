@@ -18,7 +18,9 @@ RUN set -eux \
 	&& groupadd -r tomcat -g ${TOMCAT_GROUPID} \
 	&& useradd -u ${TOMCAT_USERID} -g tomcat -d ${CATALINA_HOME} -s /usr/sbin/nologin tomcat \
 	# create default directory for configurations and properties
-	&& mkdir -p /opt/frank
+	&& mkdir -p /opt/frank \
+	# prepare root/mountpoint for credential filesystem
+	&& mkdir /opt/frank/secrets
 
 # Copy entrypoint script
 COPY src/scripts/*.sh /
@@ -30,9 +32,6 @@ RUN cat /tmp/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.pr
 
 # copy JDBC and JMS drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
-
-# prepare root/mountpoint for credential filesystem
-RUN mkdir -p /opt/frank/secrets/testiaf_user
 
 # entrypoint.sh is used to set file permissions and change user to "tomcat"
 ENTRYPOINT ["/entrypoint.sh"]

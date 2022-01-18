@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Marker interface for Validators
@@ -24,5 +25,7 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  */
 @FrankDocGroup(order = 40, name = "Validators")
 public interface IValidator extends IPipe {
+
+	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
 
 }

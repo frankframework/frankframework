@@ -29,25 +29,31 @@ TagDatabase
 			<column name="LASTMODBY" type="java.sql.Types.VARCHAR(100)"/>
 		</addColumn>
  	</changeSet>
+
+	<changeSet id="Cleanup IBISTEMP" author="Gerrit van Brakel">
+		<preConditions onFail="MARK_RAN"><tableExists tableName="IBISTEMP"/></preConditions>
+		<dropTable tableName="IBISTEMP"/>
+ 	</changeSet>
  	
-	<changeSet id="IBISTEMP" author="Robert Karajev">
-		<validCheckSum>7:4e0dba09800e08930e4d452e11f83566</validCheckSum>
+	<changeSet id="IBISTEMP" author="Gerrit van Brakel">
 		<comment>Add IBISTEMP Table</comment>
 		<createTable tableName="IBISTEMP">
 			<column name="TKEY" type="INT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISTEMP"/>
 			</column>
-			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TINT" type="INT"/>
+			<column name="TCHAR" type="CHAR"/>
 			<column name="TVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
 			<column name="TNUMBER" type="java.sql.Types.DECIMAL(17, 5)"/>
-			<column name="TTIMESTAMP" type="DATETIME"/>
-			<column name="TDATE" type="TIME"/>
-			<column name="TBLOB1" type="LONGBLOB"/>
+			<column name="TDATETIME" type="DATETIME"/>
+			<column name="TTIMESTAMP" type="TIMESTAMP"/>
+			<column name="TDATE" type="DATE"/>
+			<column name="TTIME" type="TIME"/>
+			<column name="TBLOB" type="LONGBLOB"/>
 			<column name="TCLOB" type="CLOB"/> <!-- is set as LONGTEXT for MySQL and MariaDB -->
-			<column name="TBLOB2" type="LONGBLOB"/>
 		</createTable>
 		<modifySql dbms="mssql" >
-			<replace replace="[int] IDENTITY (1, 1)" with="INT"/>
+			<replace replace="IDENTITY (1, 1)" with=""/> <!-- required to be able to use/test SQL translation -->
 		</modifySql>
 	</changeSet>
 
@@ -56,4 +62,30 @@ TagDatabase
 		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
+	<changeSet id="IAF_Util:8" author="Niels Meijer">
+		<comment>Add IBISFILETRIGGER Table</comment>
+		<createTable tableName="IBISFILETRIGGER">
+			<column name="ID" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_IBISFILETRIGGER" />
+			</column>
+			<column name="MESSAGEID" type="java.sql.Types.VARCHAR(256)">	<!-- uniquely identifying the content of the file -->
+				<constraints unique="true" uniqueConstraintName="UQ_IBISFILETRIGGER_MESSAGEID" nullable="false" />
+			</column>
+			<column name="FILENAME" type="java.sql.Types.VARCHAR(100)" />	<!-- name of the file that will be processed -->
+			<column name="FILEURI" type="java.sql.Types.VARCHAR(256)" >			<!-- canonical name of the file points to the location of the file in the filesystem-->
+				<constraints unique="true" uniqueConstraintName="UQ_IBISFILETRIGGER_URI" nullable="false" />
+			</column>
+			<column name="CREATED_AT" type="DATETIME" />
+			<column name="FILESIZE" type="INTEGER" />
+			<column name="FLOWID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="MESSAGE" type="java.sql.Types.VARCHAR(1000)" />	<!-- an xml that contains information about the file and the flow. An example can be found in src\test\testtool\ManagedFileHandler\scenario01\message.xml -->
+			<column name="STATUS" type="java.sql.Types.CHAR(1)" />	<!-- status of the record. Statuses A,I,P,E,H mean AVAILABLE, INPROCESS, PROCESSED, ERROR and HOLD respectively -->
+			<column name="UPDATED_AT" type="DATETIME" />
+		</createTable>
+		<createIndex tableName="IBISFILETRIGGER" indexName="IX_IBISFILETRIGGER"> <!-- supposed to be used when the table listener's select query is being executed -->
+			<column name="STATUS"/>
+			<column name="CREATED_AT"/>
+		</createIndex>
+		<createSequence sequenceName="SEQ_IBISFILETRIGGER" startValue="1"/>
+	</changeSet>
 </databaseChangeLog>

@@ -34,6 +34,7 @@ import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -98,8 +99,7 @@ public abstract class WsdlGeneratorUtils {
     }
 
     public static XMLStreamWriter getWriter(OutputStream out, boolean indentWsdl) throws XMLStreamException {
-        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY
-                .createXMLStreamWriter(out, XmlUtils.STREAM_FACTORY_ENCODING);
+        XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(out, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
         if (indentWsdl) {
             IndentingXMLStreamWriter iw = new IndentingXMLStreamWriter(w);
             iw.setIndent("\t");

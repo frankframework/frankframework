@@ -256,5 +256,22 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				+ " http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", 
 				getConfigurationWarnings().get(0));
 	}
+	
+	@Test
+	public void warnSetAddNamespaceToSchemaTrue() throws Exception {
+		pipe.setWsdl(SIMPLE);
+		pipe.setSoapBody("TradePriceRequest");
+		pipe.setSchemaLocation("dummy schema1");
+		pipe.setThrowException(true);
+		pipe.registerForward(new PipeForward("success", null));
+		configureAndStartPipe();
+
+		assertEquals(1, getConfigurationWarnings().size());
+		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]"
+				+ " should only be set when addNamespaceToSchema=true", 
+				getConfigurationWarnings().get(0));
+		
+        pipe.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
+	}
 }
 

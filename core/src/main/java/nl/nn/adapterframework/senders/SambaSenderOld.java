@@ -34,7 +34,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -68,6 +68,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author	Niels Meijer
  * @since	7.1-B4
  */
+@Deprecated
 public class SambaSenderOld extends SenderWithParametersBase {
 
 	private String domain = null;
@@ -128,7 +129,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 		try {
 			if (paramList != null) {
@@ -154,21 +155,11 @@ public class SambaSenderOld extends SenderWithParametersBase {
 			} else if (getAction().equalsIgnoreCase("list")) {
 				return new Message(listFilesInDirectory(file));
 			} else if (getAction().equalsIgnoreCase("upload")) {
-				Object paramValue = pvl.getParameterValue("file").getValue();
-				byte[] fileBytes = null;
-				if (paramValue instanceof InputStream)
-					fileBytes = Misc.streamToBytes((InputStream) paramValue);
-				else if (paramValue instanceof byte[])
-					fileBytes = (byte[]) paramValue;
-				else if (paramValue instanceof String)
-					fileBytes = ((String) paramValue).getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING);
-				else
-					throw new SenderException("expected InputStream, ByteArray or String but got ["
-							+ paramValue.getClass().getName() + "] instead");
+				Message paramValue = pvl.getParameterValue("file").asMessage();
 
-				SmbFileOutputStream out = new SmbFileOutputStream(file);
-				out.write(fileBytes);
-				out.close();
+				try(SmbFileOutputStream out = new SmbFileOutputStream(file)) {
+					out.write(paramValue.asByteArray());
+				}
 
 				return new Message(getFileAsXmlBuilder(new SmbFile(smbContext, message.asString())).toXML());
 			} else if (getAction().equalsIgnoreCase("delete")) {
@@ -193,7 +184,7 @@ public class SambaSenderOld extends SenderWithParametersBase {
 				else
 					throw new SenderException("trying to remove a file instead of a directory");
 			} else if (getAction().equalsIgnoreCase("rename")) {
-				String destination = pvl.getParameterValue("destination").asStringValue(null);
+				String destination = pvl.getParameterValue("destination").asStringValue();
 				if (destination == null)
 					throw new SenderException("unknown destination[+destination+]");
 

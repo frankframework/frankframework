@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.xml;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,16 @@ public class AttributesWrapper implements Attributes {
 		public String type;
 		public String value;
 	}
-	
 
 	public AttributesWrapper(Attributes source, String localNameToSkip) {
+		this(source, localNameToSkip, false);
+	}
+
+	public AttributesWrapper(Attributes source, boolean sortAttributeOrder) {
+		this(source, null, sortAttributeOrder);
+	}
+
+	private AttributesWrapper(Attributes source, String localNameToSkip, boolean sortAttributeOrder) {
 		for(int i=0;i<source.getLength();i++) {
 			if (localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i))) {
 				Attribute a = new Attribute();
@@ -50,6 +58,24 @@ public class AttributesWrapper implements Attributes {
 				indexByUriAndLocalName.put(a.uri+":"+a.localName, i);
 				attributes.add(a);
 			}
+		}
+
+		if(sortAttributeOrder) {
+			attributes.sort(new Comparator<Attribute>() {
+				@Override
+				public int compare(Attribute o1, Attribute o2) {
+					String o1Name = o1.localName;
+					if ("".equals(o1Name)) {
+						o1Name = o1.uri;
+					}
+	
+					String o2Name = o2.localName;
+					if ("".equals(o2Name)) {
+						o2Name = o2.uri;
+					}
+					return o1Name.compareTo(o2Name);
+				}
+			});
 		}
 	}
 

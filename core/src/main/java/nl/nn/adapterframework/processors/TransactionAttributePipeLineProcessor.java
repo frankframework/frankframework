@@ -73,9 +73,8 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					if (tg.cancel()) {
 						if (tCaught==null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
-						} else {
-							log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-						}
+						} 
+						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 					}
 				}
 			} catch (Throwable t) {

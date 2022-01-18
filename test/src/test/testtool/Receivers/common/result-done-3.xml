@@ -1,0 +1,43 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+					<field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+					<field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="TKEY">58151</field>
+						<field name="TCHAR">D</field>
+						<field name="TTIMESTAMP">2021-07-02 15:40:13</field>
+						<field name="TVARCHAR">exitState [success], result [String: &lt;root forward="ready"/&gt;]</field>
+					</row>
+					<row number="1">
+						<field name="TKEY">58152</field>
+						<field name="TCHAR">T</field>
+						<field name="TTIMESTAMP" null="true"/>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+					<row number="2">
+						<field name="TKEY">58153</field>
+						<field name="TCHAR">T</field>
+						<field name="TTIMESTAMP" null="true"/>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+					<row number="3">
+						<field name="TKEY">58154</field>
+						<field name="TCHAR">T</field>
+						<field name="TTIMESTAMP" null="true"/>
+						<field name="TVARCHAR" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>

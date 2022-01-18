@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
@@ -42,30 +41,34 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 
-public class CmisHttpSender extends HttpSenderBase {
-
-	public CmisHttpSender() {
-	}
+/**
+ * Abstract class to prevent Frank!Developers from including/using this Sender in their configurations.
+ * It should solely be used by the @{link CmisHttpInvoker}.
+ */
+public abstract class CmisHttpSender extends HttpSenderBase {
 
 	@Override
 	public HttpRequestBase getMethod(URI uri, Message message, ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
-		String methodType = (String) session.get("method");
-		if(StringUtils.isEmpty(methodType))
+		HttpMethod methodType = (HttpMethod) session.get("method");
+		if(methodType == null) {
 			throw new SenderException("unable to determine method from pipeline session");
+		}
 
 		try {
-			if(methodType.equals("GET")) {
+			switch (methodType) {
+			case GET:
 				method = new HttpGet(uri);
-			}
-			else if (methodType.equals("POST")) {
+				break;
+
+			case POST:
 				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
@@ -87,8 +90,9 @@ public class CmisHttpSender extends HttpSenderBase {
 
 					method = httpPost;
 				}
-			}
-			else if (methodType.equals("PUT")) {
+				break;
+
+			case PUT:
 				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
@@ -110,11 +114,12 @@ public class CmisHttpSender extends HttpSenderBase {
 
 					method = httpPut;
 				}
-			}
-			else if (methodType.equals("DELETE")) {
+				break;
+			case DELETE:
 				method = new HttpDelete(uri);
-			}
-			else {
+				break;
+
+			default:
 				throw new MethodNotSupportedException("method ["+methodType+"] not implemented");
 			}
 		}
@@ -145,7 +150,7 @@ public class CmisHttpSender extends HttpSenderBase {
 			responseCode = statusline.getStatusCode();
 
 			Message responseMessage = responseHandler.getResponseMessage();
-			responseMessage.closeOnCloseOf(session);
+			responseMessage.closeOnCloseOf(session, this);
 
 			InputStream responseStream = null;
 			InputStream errorStream = null;
@@ -166,7 +171,7 @@ public class CmisHttpSender extends HttpSenderBase {
 		return new Message("response");
 	}
 
-	public Response invoke(String method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeOutException {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeoutException {
 		//Prepare the message. We will overwrite things later...
 
 		int responseCode = -1;

@@ -30,6 +30,7 @@ import com.sap.conn.jco.JCoStructure;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapFunctionFacade;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.handlers.Handler;
@@ -40,18 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
- * </table>
+ *
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
  * </p>
@@ -64,15 +54,15 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private String name;
-	private String sapSystemName;
-
-	private int correlationIdFieldIndex=0;
-	private String correlationIdFieldName;
-	private int requestFieldIndex=0;
-	private String requestFieldName;
-	private int replyFieldIndex=0;
-	private String replyFieldName;
+	private @Getter String name;
+	private @Getter String sapSystemName;
+	
+	private @Getter int correlationIdFieldIndex=0;
+	private @Getter String correlationIdFieldName;
+	private @Getter int requestFieldIndex=0;
+	private @Getter String requestFieldName;
+	private @Getter int replyFieldIndex=0;
+	private @Getter String replyFieldName;
 
 	private JCoFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
@@ -81,6 +71,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		return this.getClass().getName()+" ["+getName()+"] ";
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {
 //		if (StringUtils.isEmpty(getSapSystemName())) {
 //			throw new ConfigurationException("attribute sapSystemName must be specified");
@@ -296,8 +287,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 		int requestFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
 		setParameters(input, function.getTableParameterList(), request, requestFieldIndex);
 		if (pvl!=null) {
-			for (int i=0; i<pvl.size(); i++) {
-				ParameterValue pv = pvl.getParameterValue(i);
+			for(ParameterValue pv : pvl) {
 				String name = pv.getDefinition().getName();
 				String value = pv.asStringValue("");
 				int slashPos=name.indexOf('/');
@@ -358,77 +348,52 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 	}
 
 	
-	public int getCorrelationIdFieldIndex() {
-		return correlationIdFieldIndex;
-	}
-
-	public String getCorrelationIdFieldName() {
-		return correlationIdFieldName;
-	}
-
-	public int getReplyFieldIndex() {
-		return replyFieldIndex;
-	}
-
-	public String getReplyFieldName() {
-		return replyFieldName;
-	}
-
-	public int getRequestFieldIndex() {
-		return requestFieldIndex;
-	}
-
-	public String getRequestFieldName() {
-		return requestFieldName;
-	}
-
-	@Override
-	public void setCorrelationIdFieldIndex(int i) {
-		correlationIdFieldIndex = i;
-	}
-
-	@Override
-	public void setCorrelationIdFieldName(String string) {
-		correlationIdFieldName = string;
-	}
-
-	@Override
-	public void setReplyFieldIndex(int i) {
-		replyFieldIndex = i;
-	}
-
-	@Override
-	public void setReplyFieldName(String string) {
-		replyFieldName = string;
-	}
-
-	@Override
-	public void setRequestFieldIndex(int i) {
-		requestFieldIndex = i;
-	}
-
-	@Override
-	public void setRequestFieldName(String string) {
-		requestFieldName = string;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
+	@IbisDoc({"1", "Name of the Ibis-object", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	public String getSapSystemName() {
-		return sapSystemName;
-	}
-
+	@IbisDoc({"2", "name of the {@link SapSystem} used by this object", ""})
 	@Override
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
+	}
+	
+	@IbisDoc({"3", "Index of the field in the ImportParameterList of the RFC function that contains the correlationId", "0"})
+	@Override
+	public void setCorrelationIdFieldIndex(int i) {
+		correlationIdFieldIndex = i;
+	}
+
+	@IbisDoc({"4", "Name of the field in the ImportParameterList of the RFC function that contains the correlationId", ""})
+	@Override
+	public void setCorrelationIdFieldName(String string) {
+		correlationIdFieldName = string;
+	}
+
+	@IbisDoc({"5", "Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents", "0"})
+	@Override
+	public void setRequestFieldIndex(int i) {
+		requestFieldIndex = i;
+	}
+
+	@IbisDoc({"6", "Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents", ""})
+	@Override
+	public void setRequestFieldName(String string) {
+		requestFieldName = string;
+	}
+
+	@IbisDoc({"7", "Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", "0"})
+	@Override
+	public void setReplyFieldIndex(int i) {
+		replyFieldIndex = i;
+	}
+
+	@IbisDoc({"8", "Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents", ""})
+	@Override
+	public void setReplyFieldName(String string) {
+		replyFieldName = string;
 	}
 
 	/**

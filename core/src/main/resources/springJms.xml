@@ -6,7 +6,7 @@
 	>
 
 	<bean
-		class="nl.nn.adapterframework.configuration.OverwritePropertyPlaceholderConfigurer"
+		class="nl.nn.adapterframework.configuration.OverwritePropertySourcePostProcessor"
 		autowire="byName"
 		>
 		<property name="propertyName" value="jms.createDestination"/>

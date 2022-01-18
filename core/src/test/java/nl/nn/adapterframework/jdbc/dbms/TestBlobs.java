@@ -12,10 +12,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.function.Consumer;
-
-import javax.sql.DataSource;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.Ignore;
@@ -30,10 +27,6 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class TestBlobs extends JdbcTestBase {
 
 	boolean testBigBlobs = false;
-	
-	public TestBlobs(DataSource dataSource) throws SQLException {
-		super(dataSource);
-	}
 
 	public static void getBigString(int numBlocks, int blockSize, Consumer<String> consumer) {
 		String tenChars="0123456789";

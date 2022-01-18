@@ -1,0 +1,6 @@
+PUT https://dummy.url.com/ HTTP/1.1
+test-header: test-value
+User-Agent: Mockito mock-agent
+Content-Type: text/plain
+
+Content goes here!

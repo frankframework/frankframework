@@ -6,7 +6,7 @@
 				<name>TVARCHAR</name>
 			</column>
 			<column>
-				<name>LENGTH(TBLOB1) as LENGTH</name>
+				<name>LENGTH(TBLOB) as LENGTH</name>
 			</column>
 		</columns>
 		<order>TKEY</order>

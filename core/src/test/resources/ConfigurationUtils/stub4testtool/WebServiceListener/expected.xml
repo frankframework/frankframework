@@ -1,0 +1,24 @@
+<configuration>
+	  <adapter name="WebServiceListener">
+      <receiver name="testtool-WebServiceListener">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-WebServiceListener"/>
+      </receiver>
+		    <receiver>
+			      <listener className="nl.nn.adapterframework.http.WebServiceListener"
+                   name="urn:ws"/>
+		    </receiver>
+      <receiver name="testtool-WebServiceListener-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-WebServiceListener-1"/>
+      </receiver>
+		    <pipeline firstPipe="EchoPipe">
+			      <exits>
+				        <exit path="EXIT" state="success"/>
+			      </exits>
+			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+				        <forward name="success" path="EXIT"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

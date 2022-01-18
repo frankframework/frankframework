@@ -34,8 +34,11 @@ permission java.lang.RuntimePermission "getFileSystemAttributes";
 
 // required to read the ibm-application-bnd.xmi from within the Ibis Console
 permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}applications${/}-", "read";
+//permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}applications${/}${APPLICATION_NAME}.ear${/}deployments${/}${APPLICATION_NAME}${/}META-INF${/}ibm-application-bnd.xmi", "read";
 // required to read the resources.xml from within the Ibis Console
-permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}-", "read";
+permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}${current.node.name}${/}servers${/}${current.server.name}${/}resources.xml", "read";
+// required to read the maximum Transaction Timeout
+permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}${current.node.name}${/}servers${/}${current.server.name}${/}server.xml", "read";
 
 permission java.util.logging.LoggingPermission "control";
 
@@ -58,6 +61,8 @@ permission java.net.SocketPermission "*", "connect,resolve";
 // Needed for MAIL
 permission java.io.FilePermission "${user.home}${/}.mailcap", "read";
 permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}mailcap", "read";
+permission java.io.FilePermission "${java.home}${/}conf", "read";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.registries";
 
 // property * write required for Quartz scheduler and SpringFramework,
 // as they call java.System.getProperties()
@@ -67,6 +72,7 @@ permission java.util.PropertyPermission "*", "write";
 // required to for CredentialFactory to obtain credentials from JAAS Authentication Entries:
 permission javax.security.auth.AuthPermission "createLoginContext.DefaultPrincipalMapping";
 permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.credentialprovider.WebSphereCredentials$FrankPrincipal "Frank"", "read";
+permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.adapterframework.util.CredentialFactory$IbisPrincipal "Ibis"", "read"; // for 7.6 compatiblity
 
 // required for Spring AbstractAutowireCapableBeanFactory:
 permission java.lang.RuntimePermission "getProtectionDomain";
@@ -85,13 +91,36 @@ permission com.ibm.oti.shared.SharedClassPermission "java.net.URLClassLoader", "
 permission java.lang.RuntimePermission "accessClassInPackage.sun.misc";
 permission java.lang.RuntimePermission "accessClassInPackage.sun.beans.infos";
 
+// required for Spring AOP
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.jmx.mbeanserver";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.proxy";
+
 permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
+
+// required for CXF jaxrs spring bean parser
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp";
+
+// required for SUN SAAJ library
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.xml.*";
+// required to find SAAJ factory
+permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}conf${/}-", "read";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
-// required for nashhorn
+// required for Apache XML libraries
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xml.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xerces.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xalan.*";
+permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xpath.*";
+
+
+// required for the Nashorn javascript engine
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
+permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
 permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
+permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig", "read";
 
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
@@ -160,13 +189,20 @@ permission java.net.URLPermission "https:*", "*";
 
 // required for Aspose libary's fonts
 permission java.io.FilePermission "/usr/share/fonts/-", "read";
+permission java.io.FilePermission "/System Folder/Fonts", "read";
+permission java.io.FilePermission "/System/Library/Fonts", "read";
+permission java.io.FilePermission "/Network/Library/Fonts", "read";
+permission java.io.FilePermission "/Library/Fonts", "read";
 
 // required for ladybug retrieving userprincipal
 permission java.security.SecurityPermission "printIdentity";
 
-// required for Log4j stacktrace rendering
+// required for Log4J stacktrace rendering and JavaAssist PipeLineSessionDebugger proxying
 permission java.lang.RuntimePermission "createSecurityManager";
+// required for Log4J
+permission java.lang.RuntimePermission "accessClassInPackage.sun.nio.fs";
 
-// required for cxf
+// required for CXF
 permission java.lang.RuntimePermission "shutdownHooks";
+
 };

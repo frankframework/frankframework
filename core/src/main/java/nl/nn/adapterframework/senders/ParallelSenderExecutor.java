@@ -65,7 +65,9 @@ public class ParallelSenderExecutor extends RequestReplyExecutor {
 			if (semaphore!=null) {
 				semaphore.release();
 			}
-			guard.releaseResource();
+			if(guard != null) {
+				guard.releaseResource();
+			}
 		}
 	}
 

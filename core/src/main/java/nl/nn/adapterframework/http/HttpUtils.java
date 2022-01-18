@@ -61,10 +61,9 @@ public class HttpUtils {
 						+ message);
 	}
 
-	private static String getParametersAsString(HttpServletRequest request,
-			List<String> secLogParamNames) {
+	private static String getParametersAsString(HttpServletRequest request, List<String> secLogParamNames) {
 		String result = "";
-		Enumeration paramnames = request.getParameterNames();
+		Enumeration<String> paramnames = request.getParameterNames();
 		while (paramnames.hasMoreElements()) {
 			String paramname = (String) paramnames.nextElement();
 			if (secLogParamNames == null || secLogParamNames.contains(paramname)) {

@@ -206,8 +206,8 @@ public class FileHandler implements IScopeProvider {
 			if ("stream".equals(outputType) && isStreamResultToServlet()) {
 				InputStream inputStream = (InputStream) output;
 				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-				String contentType = (String) session.get("contentType");
-				String contentDisposition = (String) session.get("contentDisposition");
+				String contentType = session.getMessage("contentType").asString();
+				String contentDisposition = session.getMessage("contentDisposition").asString();
 				if (StringUtils.isNotEmpty(contentType)) {
 					response.setHeader("Content-Type", contentType); 
 				}
@@ -278,7 +278,7 @@ public class FileHandler implements IScopeProvider {
 	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
-			name = Message.asString(session.get(filenameSessionKey));
+			name = session.getMessage(filenameSessionKey).asString();
 		}
 		if (in != null && StringUtils.isEmpty(name)) {
 			name = new String(in);
@@ -634,9 +634,6 @@ public class FileHandler implements IScopeProvider {
 	protected String getLogPrefix(PipeLineSession session){
 		StringBuilder sb = new StringBuilder();
 		sb.append(ClassUtils.nameOf(this)).append(' ');
-		if (this instanceof INamedObject) {
-			sb.append("[").append(((INamedObject)this).getName()).append("] ");
-		}
 		if (session != null) {
 			sb.append("msgId [").append(session.getMessageId()).append("] ");
 		}

@@ -69,7 +69,11 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					for(i in groupMembers) {
 						let memberName = groupMembers[i];
 						if($scope.elements[memberName].name == elementSimpleName) {
-							$rootScope.$broadcast('element', $scope.elements[memberName]);
+							let el = $scope.elements[memberName];
+							if($scope.showInheritance) {
+								el = $scope.flattenElements(el);
+							}
+							$rootScope.$broadcast('element', el);
 						}
 					}
 				} else {
@@ -85,14 +89,18 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 }])
 .filter('matchElement', function() {
 	return function(elements, $scope, searchText) {
+		let searchTextLC = null;
+		if(searchText && searchText != "") {
+			searchTextLC = searchText.toLowerCase();
+		}
 		if(!elements || elements.length < 1 || !$scope.group) return []; //Cannot filter elements if no group has been selected
 		let r = {};
 		let groupMembers = getGroupMembers($scope.types, $scope.group.types);
 		for(element in elements) {
 			if(groupMembers.indexOf(element) > -1) {
 				let obj = elements[element];
-				if(searchText && searchText != "") {
-					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1) {
+				if(searchTextLC) {
+					if(JSON.stringify(obj).replace(/"/g, '').toLowerCase().indexOf(searchTextLC) > -1) {
 						r[element] = obj;
 					}
 				} else {
@@ -102,7 +110,70 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 		}
 		return r;
 	};
+}).filter('javadoc', function($sce) {
+	return function(input, $scope) {
+		if(!input || !$scope.elements) return;
+		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
+		input = input.replaceAll('\\"', '"');
+		input = input.replace(/(?:{@link\s(.*?)})/g, function(match, captureGroup) {
+			// {@link PipeLineSession pipeLineSession}
+			// {@link IPipe#configure()}
+			// {@link #doPipe(Message, PipeLineSession) doPipe}
+			let referencedElement = captureGroup;
+			let hash = captureGroup.indexOf("#");
+			if(hash > -1) {
+				referencedElement = captureGroup.split("#")[0];
+
+				if(referencedElement == '') { //if there is no element ref then it's a method
+					let method = captureGroup.substring(hash);
+					let nameOrAlias = method.split(") ");
+					if(nameOrAlias.length == 2) {
+						return nameOrAlias[1]; //If it's an alias
+					}
+					return method.substring(1, method.indexOf("("))
+				}
+			}
+			let captures = referencedElement.split(" ");
+			let name = captures[captures.length-1];
+			if(hash > -1) {
+				let method = captureGroup.split("#")[1];
+				name = name +"."+ (method.substring(method.indexOf(") ")+1)).trim();
+			}
+			let element = findElement($scope.elements, captures[0]);
+			if(!element) {
+				return name;
+			}
+
+			return '<a href="#!/All/'+element.name+'">'+name+'</a>';
+		});
+
+		return $sce.trustAsHtml(input);
+	};
 });
+
+function findElement(allElements, simpleName) {
+	if(!allElements || allElements.length < 1) return null; //Cannot find anything if we have nothing to search in
+	let arr = [];
+	for(element in allElements) {
+		if(fullNameToSimpleName(element) == simpleName) {
+			arr.push(allElements[element]);
+		}
+	}
+	if(arr.length == 1) {
+		return arr[0];
+	}
+
+	if(arr.length == 0) {
+		console.warn("could not find element ["+simpleName+"]");
+	} else {
+		console.warn("found multiple elements, playing safe, returning null", arr);
+	}
+	return null;
+}
+
+function fullNameToSimpleName(fullName) {
+	return fullName.substr(fullName.lastIndexOf(".")+1)
+}
 
 function getGroupMembers(allTypes, typesToFilterOn) {
 	let memberNames = [];

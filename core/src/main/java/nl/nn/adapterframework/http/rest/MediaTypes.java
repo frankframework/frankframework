@@ -17,8 +17,8 @@ package nl.nn.adapterframework.http.rest;
 
 import java.nio.charset.Charset;
 
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.EnumUtils;
 
 public enum MediaTypes {
 
@@ -78,6 +78,6 @@ public enum MediaTypes {
 	}
 
 	public static MediaTypes fromValue(String contentType) {
-		return Misc.parseFromField(MediaTypes.class, contentType, m -> m.mediaType);
+		return EnumUtils.parseFromField(MediaTypes.class, "content-type", contentType, e -> e.mediaType);
 	}
 }

@@ -15,20 +15,10 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
-/**
- * 
- * 
- * @author  Tim van der Leeuw
- * @since   4.8
- */
-public class RecordHandlingFlowFactory
-    extends AbstractSpringPoweredDigesterFactory {
+public class RecordHandlingFlowFactory extends AbstractSpringPoweredDigesterFactory {
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
-     */
-    public String getSuggestedBeanName() {
-        return "proto-RecordHandlingFlow";
-    }
-
+	@Override
+	public String getSuggestedBeanName() {
+		return "proto-RecordHandlingFlow";
+	}
 }

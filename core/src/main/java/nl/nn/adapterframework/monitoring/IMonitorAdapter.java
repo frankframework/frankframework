@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@FrankDocGroup(name = "Monitoring")
 public interface IMonitorAdapter {
 
 	void configure() throws ConfigurationException;

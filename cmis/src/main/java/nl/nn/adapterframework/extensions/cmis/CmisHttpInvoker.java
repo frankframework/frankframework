@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,12 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.chemistry.opencmis.client.bindings.impl.ClientVersion;
 import org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper;
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
@@ -41,25 +35,36 @@ import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.apache.chemistry.opencmis.commons.spi.AuthenticationProvider;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
+
 public class CmisHttpInvoker implements HttpInvoker {
 
 	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
 
-	CmisHttpSender sender = null;
+	private CmisHttpSender sender = null;
 
-	public CmisHttpInvoker() {
+	//To stub during testing
+	protected CmisHttpSender createSender() {
+		return new CmisHttpSender() {};
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {
 		if(sender == null) {
 			log.debug("creating new CmisHttpInvoker");
-			sender = new CmisHttpSender();
+			sender = createSender();
 
 			sender.setUrlParam("url");
 
 			//Auth
 			if(session.get(SessionParameter.USER) != null)
-				sender.setUserName((String) session.get(SessionParameter.USER));
+				sender.setUsername((String) session.get(SessionParameter.USER));
 			if(session.get(SessionParameter.PASSWORD) != null)
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
@@ -75,12 +80,16 @@ public class CmisHttpInvoker implements HttpInvoker {
 			}
 
 			//SSL
-			if(session.get("certificateUrl") != null)
-				sender.setCertificate((String) session.get("certificateUrl"));
-			if(session.get("certificatePassword") != null)
-				sender.setCertificatePassword((String) session.get("certificatePassword"));
+			if(session.get("keystoreUrl") != null)
+				sender.setKeystore((String) session.get("keystoreUrl"));
+			if(session.get("keystorePassword") != null)
+				sender.setKeystorePassword((String) session.get("keystorePassword"));
+			if(session.get("keystoreAlias") != null)
+				sender.setKeystoreAlias((String) session.get("keystoreAlias"));
+			if(session.get("keystoreAliasPassword") != null)
+				sender.setKeystoreAliasPassword((String) session.get("keystoreAliasPassword"));
 			if(session.get("keystoreType") != null)
-				sender.setKeystoreType((String) session.get("keystoreType"));
+				sender.setKeystoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("keystoreType")));
 			if(session.get("keyManagerAlgorithm") != null)
 				sender.setKeyManagerAlgorithm((String) session.get("keyManagerAlgorithm"));
 			if(session.get("truststoreUrl") != null)
@@ -88,7 +97,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			if(session.get("truststorePassword") != null)
 				sender.setTruststorePassword((String) session.get("truststorePassword"));
 			if(session.get("truststoreType") != null)
-				sender.setTruststoreType((String) session.get("truststoreType"));
+				sender.setTruststoreType(EnumUtils.parse(KeystoreType.class, (String)session.get("truststoreType")));
 			if(session.get("trustManagerAlgorithm") != null)
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
@@ -129,7 +138,6 @@ public class CmisHttpInvoker implements HttpInvoker {
 				sender.setMaxConnections(maxConnections);
 			}
 
-			sender.setMethodType("custom");
 			sender.configure();
 			sender.open();
 		}
@@ -138,31 +146,31 @@ public class CmisHttpInvoker implements HttpInvoker {
 
 	@Override
 	public Response invokeGET(UrlBuilder url, BindingSession session) {
-		return invoke(url, "GET", null, null, null, session, null, null);
+		return invoke(url, HttpMethod.GET, null, null, null, session, null, null);
 	}
 
 	@Override
 	public Response invokeGET(UrlBuilder url, BindingSession session, BigInteger offset, BigInteger length) {
-		return invoke(url, "GET", null, null, null, session, offset, length);
+		return invoke(url, HttpMethod.GET, null, null, null, session, offset, length);
 	}
 
 	@Override
 	public Response invokePOST(UrlBuilder url, String contentType, Output writer, BindingSession session) {
-		return invoke(url, "POST", contentType, null, writer, session, null, null);
+		return invoke(url, HttpMethod.POST, contentType, null, writer, session, null, null);
 	}
 
 	@Override
 	public Response invokePUT(UrlBuilder url, String contentType, Map<String, String> headers, Output writer,
 			BindingSession session) {
-		return invoke(url, "PUT", contentType, headers, writer, session, null, null);
+		return invoke(url, HttpMethod.PUT, contentType, headers, writer, session, null, null);
 	}
 
 	@Override
 	public Response invokeDELETE(UrlBuilder url, BindingSession session) {
-		return invoke(url, "DELETE", null, null, null, session, null, null);
+		return invoke(url, HttpMethod.DELETE, null, null, null, session, null, null);
 	}
 
-	private Response invoke(UrlBuilder url, String method, String contentType, Map<String, String> headers,
+	private Response invoke(UrlBuilder url, HttpMethod method, String contentType, Map<String, String> headers,
 			Output writer, BindingSession session, BigInteger offset, BigInteger length) {
 
 		log.debug("Session "+session.getSessionId()+": "+method+" "+url);
@@ -171,7 +179,7 @@ public class CmisHttpInvoker implements HttpInvoker {
 			try {
 				Map<String, List<String>> headerFields = new HashMap<String, List<String>>();
 				String wsdl = (String) session.get(CmisSessionBuilder.OVERRIDE_WSDL_KEY);
-				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+				InputStream inputStream = new ByteArrayInputStream(wsdl.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 				return new Response(200, "ok", headerFields, inputStream, null);
 			} catch (UnsupportedEncodingException e) {
 				// This should never happen, but in case it does...

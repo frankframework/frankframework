@@ -1,0 +1,95 @@
+<configuration>
+	<adapter name="EsbSoapWrapperPipe (mode='reg')">
+		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" throwException="false" />
+		</receiver>
+		<pipeline firstPipe="switch">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
+			<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
+			
+			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
+			<!-- unwrap -->
+			<pipe name="unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap -->
+			<pipe name="wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+				<param name="businessDomain" value="Publishing" />
+				<param name="serviceName" value="Document" />
+				<param name="serviceContext" value="SalesDocument" />
+				<param name="serviceContextVersion" value="1" />
+				<param name="operationName" value="GetDocuments" />
+				<param name="operationVersion" value="1" />
+				<param name="paradigm" value="Request" />
+				<param name="messagingLayer" value="ESB" />
+				<param name="serviceLayer" value="BS" />
+				<param name="fromId" value="Ibis4Tryout" />
+				<param name="conversationId" pattern="{hostname}_{uid}" />
+				<param name="cpaId" value="cpaid1" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap2 -->
+			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
+				<param name="namespace" value="http://www.ibis.com/iaf" />
+				<param name="errorCode" value="ERROR1234" />
+				<param name="errorDetailCode" value="errorDetailCode" />
+				<param name="errorDetailText" value="errorDetailText" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap3 -->
+			<pipe name="wrap3" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap4 -->
+			<pipe name="wrap4" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap5 -->
+			<pipe name="wrap5" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" fixResultNamespace="true" cmhVersion="1">
+				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- unwrap & wrap -->
+			<pipe name="unwrap_wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader" cmhVersion="1">
+				<forward name="success" path="unwrap_wrap2" />
+			</pipe>
+			<pipe name="unwrap_wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+				<param name="businessDomain" value="BusinessDomain" />
+				<param name="serviceName" value="ServiceName" />
+				<param name="serviceContext" value="ServiceContext" />
+				<param name="serviceContextVersion" value="ServiceContextVersion" />
+				<param name="operationName" value="OperationName" />
+				<param name="operationVersion" value="OperationVersion" />
+				<param name="paradigm" value="Response" />
+				<param name="messagingLayer" value="MessagingLayer" />
+				<param name="serviceLayer" value="ServiceLayer" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<!-- wrap & unwrap -->
+			<pipe name="wrap_unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+				<param name="businessDomain" value="Publishing" />
+				<param name="serviceName" value="Document" />
+				<param name="serviceContext" value="SalesDocument" />
+				<param name="serviceContextVersion" value="1" />
+				<param name="operationName" value="GetDocuments" />
+				<param name="operationVersion" value="1" />
+				<param name="paradigm" value="Request" />
+				<param name="messagingLayer" value="ESB" />
+				<param name="serviceLayer" value="BS" />
+				<param name="fromId" value="Ibis4Tryout" />
+				<param name="conversationId" pattern="{hostname}_{uid}" />
+				<param name="cpaId" value="cpaid1" />
+			</pipe>
+			<pipe name="wrap_unwrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

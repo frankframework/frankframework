@@ -41,7 +41,7 @@ public abstract class PipeTestBase<P extends IPipe> {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	public abstract P createPipe();
+	public abstract P createPipe() throws ConfigurationException;
 
 	@Before
 	public void setup() throws Exception {

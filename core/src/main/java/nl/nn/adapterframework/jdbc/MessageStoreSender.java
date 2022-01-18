@@ -25,11 +25,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.TextStringBuilder;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -70,20 +71,14 @@ import nl.nn.adapterframework.stream.Message;
 		/>
 </pre></code>
  * 
- * 
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>messageId</td><td>string</td><td>messageId to check for duplicates, when this parameter isn't present the messageId it read from sessionKey messageId</td></tr>
- * </table>
- * </p>
+ * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
  * 
  * @author Jaco de Groot
  */
+@FrankDocGroup(name = "Senders")
 public class MessageStoreSender extends JdbcTransactionalStorage<String> implements ISenderWithParameters {
-	
-	public final String PARAM_MESSAGEID = "messageId";
-	
+	public static final String PARAM_MESSAGEID = "messageId";
+
 	private ParameterList paramList = null;
 	private String sessionKeys = null;
 
@@ -119,11 +114,11 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Message messageToStore=message;
 			if (sessionKeys != null) {
-				List<String> list = new ArrayList<String>();
+				List<String> list = new ArrayList<>();
 				list.add(StringEscapeUtils.escapeCsv(message.asString()));
 				StringTokenizer tokenizer = new StringTokenizer(sessionKeys, ",");
 				while (tokenizer.hasMoreElements()) {
@@ -143,7 +138,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 			if (paramList != null && paramList.findParameter(PARAM_MESSAGEID) != null) {
 				try {
 					// the messageId to be inserted can also be specified via the parameter messageId
-					messageId = (String)paramList.getValues(message, session).getValue(PARAM_MESSAGEID);
+					messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
 				} catch (ParameterException e) {
 					throw new SenderException("Could not resolve parameter messageId", e);
 				}

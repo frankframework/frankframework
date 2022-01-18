@@ -124,7 +124,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 		try {
 			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), credentialFactory,
-					destination, getExceptionListener(), getCacheMode(), getAckModeEnum().getAcknowledgeMode(),
+					destination, getExceptionListener(), getCacheMode(), getAcknowledgeModeEnum().getAcknowledgeMode(),
 					isJmsTransacted(), getMessageSelector(), getTimeOut(), getPollGuardInterval());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
@@ -185,7 +185,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 					}
 				}
 				Map<String, Object> properties = getMessageProperties(threadContext);
-				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryModeEnum().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
@@ -374,7 +374,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		}
 	}
 
-	@IbisDoc({"interval in milliseconds for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. when polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. polling might stop due to bugs in the jms driver/implementation which should be fixed by the supplier. as the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. set to -1 to disable", "ten times the specified timeout"})
+	@IbisDoc({"Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. when polling has stopped this will be logged and the listener will be stopped and started in an attempt to workaround problems with polling. polling might stop due to bugs in the jms driver/implementation which should be fixed by the supplier. as the poll time includes reading and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence while messages are being processed the check on last successful poll will be skipped. set to -1 to disable", "ten times the specified timeout"})
 	public void setPollGuardInterval(long pollGuardInterval) {
 		this.pollGuardInterval = pollGuardInterval;
 	}

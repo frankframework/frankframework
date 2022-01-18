@@ -27,6 +27,7 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -38,12 +39,11 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that performs base64 encoding and decoding.
- *
  *
  * @since   4.4
  * @author  Niels Meijer
@@ -51,10 +51,11 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class Base64Pipe extends StreamingPipe {
 
-	private Direction direction = Direction.ENCODE;
-	private int lineLength = 76;
-	private String lineSeparator = "auto";
-	private String charset = null;
+	private @Getter Direction direction = Direction.ENCODE;
+	private @Getter String charset = null;
+	private @Getter String lineSeparator = "auto";
+	private @Getter int lineLength = 76;
+	
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
@@ -72,7 +73,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Direction dir=getDirectionEnum();
+		Direction dir=getDirection();
 		if (dir==Direction.ENCODE) {
 			if (StringUtils.isEmpty(getLineSeparator())) {
 				setLineSeparatorArray("");
@@ -103,7 +104,7 @@ public class Base64Pipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 
 		InputStream binaryInputStream;
 		try {
@@ -129,7 +130,7 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirectionEnum()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
 		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
@@ -148,13 +149,9 @@ public class Base64Pipe extends StreamingPipe {
 		return new MessageOutputStream(this, base64, target);
 	}
 
-	
-	@IbisDoc({"1", "Either <code>encode</code> or <code>decode</code>", "encode"})
-	public void setDirection(String direction) {
-		this.direction = Misc.parse(Direction.class, direction);
-	}
-	public Direction getDirectionEnum() {
-		return direction;
+	/** @ff.default ENCODE */
+	public void setDirection(Direction direction) {
+		this.direction = direction;
 	}
 
 	@Deprecated
@@ -164,11 +161,13 @@ public class Base64Pipe extends StreamingPipe {
 	}
 
 	@IbisDoc({"2", "Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
+	@Deprecated
+	@ConfigurationWarning("It should not be necessary to specify outputType. If you encounter a situation where it is, please report to Frank!Framework Core Team")
 	public void setOutputType(String outputType) {
 		if (outputType.equalsIgnoreCase("Stream")) {
 			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used. Streaming is automatic where possible");
 		} else {
-			this.outputType = Misc.parse(OutputTypes.class, outputType);
+			this.outputType = EnumUtils.parse(OutputTypes.class, outputType);
 		}
 	}
 	public OutputTypes getOutputTypeEnum() {
@@ -179,23 +178,14 @@ public class Base64Pipe extends StreamingPipe {
 	public void setCharset(String string) {
 		charset = string;
 	}
-	public String getCharset() {
-		return charset;
-	}
 
 	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
-	public String getLineSeparator() {
-		return lineSeparator;
-	}
 
 	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
-	}
-	public int getLineLength() {
-		return lineLength;
 	}
 }

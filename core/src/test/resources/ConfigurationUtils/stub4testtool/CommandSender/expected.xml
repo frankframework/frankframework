@@ -1,0 +1,30 @@
+<configuration>
+	  <adapter name="CommandSender">
+      <receiver name="testtool-CommandSender">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-CommandSender"/>
+      </receiver>
+		    <receiver name="CommandSender">
+			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   name="CommandSender"/>
+		    </receiver>
+      <receiver name="testtool-CommandSender-1">
+         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+                   serviceName="testtool-CommandSender-1"/>
+      </receiver>
+
+		    <pipeline>
+			      <exits>
+				        <exit path="READY" state="success"/>
+			      </exits>
+			      <pipe name="Call Sender"
+               className="nl.nn.adapterframework.pipes.SenderPipe"
+               timeOutOnResult="[timeout]"
+               exceptionOnResult="[error]">
+				        <sender className="nl.nn.adapterframework.senders.CommandSender"
+                    command="echo hello"/>
+				        <forward name="success" path="READY"/>
+			      </pipe>
+		    </pipeline>
+	  </adapter>
+</configuration>

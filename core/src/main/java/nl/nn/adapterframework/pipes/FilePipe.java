@@ -28,14 +28,6 @@ import nl.nn.adapterframework.util.FileHandler;
 /**
  * <p>See {@link FileHandler}</p>
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"exception"</td><td>if an error occurred</td></tr>
- * </table>
- * </p>
- * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  * 
@@ -43,7 +35,7 @@ import nl.nn.adapterframework.util.FileHandler;
  *
  */
 @Deprecated
-@ConfigurationWarning("Please use LocalFileSystemPipe instead")
+@ConfigurationWarning("Please use LocalFileSystemPipe instead, or when retrieving files from the classpath use the FixedResultPipe")
 public class FilePipe extends FixedForwardPipe {
 	FileHandler fileHandler;
 

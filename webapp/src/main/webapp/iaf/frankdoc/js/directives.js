@@ -41,6 +41,7 @@ angular.module('iaf.frankdoc')
 	return {
 		restrict: 'A',
 		replace: true,
+		controller: 'element-children',
 		templateUrl: 'views/element-children.html'
 	}
 }]).directive('elementAttributes', [function() {
@@ -49,4 +50,28 @@ angular.module('iaf.frankdoc')
 		replace: true,
 		templateUrl: 'views/element-attributes.html'
 	};
+}]).directive('elementForwards', [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: 'views/element-forwards.html'
+	};
+}]).directive("suppressAttributeInheritance", [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: "views/suppress-attribute-inheritance.html"
+	}
+}]).directive("attributeDescription", [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: "views/attribute-description.html"
+	}
+}]).directive("parameters", [function() {
+	return {
+		restrict: 'A',
+		replace: true,
+		templateUrl: "views/element-parameters.html"
+	}
 }]);

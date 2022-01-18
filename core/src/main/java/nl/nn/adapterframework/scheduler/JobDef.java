@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,112 +15,48 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.senders.IbisLocalSender;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.DirectoryCleaner;
 import nl.nn.adapterframework.util.Locker;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Definition / configuration of scheduler jobs.
  * 
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
- * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute concurrently</td><td>1</td></tr>
- * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * </table>
- * </p>
+ * <br/>
+ * All registered jobs are displayed in the IbisConsole under 'Scheduler'.
  * <p>
- * <table border="1">
- * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
- * <tr><td>{@link Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.util.DirectoryCleaner directoryCleaner}</td><td>optional: specification of the directories to clean when function is cleanupfilesystem</td></tr>
- * </table>
- * </p>
- * <p> 
  * <br>
  * Operation of scheduling:
  * <ul>
- *   <li>at configuration time {@link Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link SchedulerHelper#scheduleJob(JobDef) SchedulerHelper.scheduleJob()};</li>
- *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
+ *   <li>at configuration time {@link Configuration#registerScheduledJob(IJob) Configuration.registerScheduledJob()} is called; </li>
+ *   <li>this calls {@link SchedulerHelper#scheduleJob(IJob) SchedulerHelper.scheduleJob()};</li>
+ *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
  * </ul>
- * 
- * Operation the job is triggered:
- * <ul>
- *   <li>AdapterJob.execute is called</li>
- *   <li>AdapterJob.execute calls config.handleAdapter()</li>
- *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent</li>
- *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!</li>
- * </ul>
- *
- * All registered jobs are displayed in the IbisConsole under 'Show Scheduler Status'.
- * <p>
- * N.B.: Jobs can only be specified in the Configuration.xml <i>BELOW</i> the adapter called. It must be already defined!
+ * </p>
  *
  * <b>CronExpressions</b>
- *  * <p>A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
- * white space. The 6 mandatory and 1 optional fields are as follows:<br>
- *
+ * <p>
+ * A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
+ * white space. The 6 mandatory and 1 optional fields are as follows:<br/>
+ *</p>
  * <table cellspacing="8">
  *   <tr>
  *     <th align="left">Field Name</th>
@@ -348,154 +284,72 @@ import nl.nn.adapterframework.util.SpringUtils;
  * </ul>
  * </p>
  * 
- * @author  Johan  Verrips
  */
-public class JobDef extends TransactionAttributes implements ApplicationContextAware {
-	protected Logger heartbeatLog = LogUtil.getLogger("HEARTBEAT");
+public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.autoDatabaseClassLoader", false);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter @Setter AdapterManager adapterManager;
 	private @Getter boolean configured;
 
-	private String name;
-	private String cronExpression;
-	private long interval = -1;
-	private JobDefFunctions function;
-	private String configurationName;
-	private String adapterName;
-	private String description;
-	private String receiverName;
-	private String query;
-	private int queryTimeout = 0;
-	private String jmsRealm;
+	private @Getter String name;
+	private @Getter String description;
+	private @Getter String jobGroup = null;
+	private @Getter String cronExpression;
+	private @Getter long interval = -1;
+
 	private Locker locker = null;
-	private int numThreads = 1;
+	private @Getter int numThreads = 1;
 	private int countThreads = 0;
-	private String message = null;
 
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
 
 	private StatisticsKeeper statsKeeper;
 
-	private String jobGroup = null;
-
-	private List<DirectoryCleaner> directoryCleaners = new ArrayList<DirectoryCleaner>();
-
-	private class MessageLogObject {
-		private String datasourceName;
-		private String tableName;
-		private String expiryDateField;
-		private String keyField;
-		private String typeField;
-
-		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
-			this.datasourceName = datasourceName;
-			this.tableName = tableName;
-			this.expiryDateField = expiryDateField;
-			this.keyField = keyField;
-			this.typeField = typeField;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if(o == null || !(o instanceof MessageLogObject)) return false;
-
-			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getDatasourceName().equals(datasourceName) &&
-				mlo.getTableName().equals(tableName) &&
-				mlo.expiryDateField.equals(expiryDateField)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		public String getDatasourceName() {
-			return datasourceName;
-		}
-
-		public String getTableName() {
-			return tableName;
-		}
-
-		public String getExpiryDateField() {
-			return expiryDateField;
-		}
-
-		public String getKeyField() {
-			return keyField;
-		}
-
-		public String getTypeField() {
-			return typeField;
-		}
-	}
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
-		MessageKeeper messageKeeper = getMessageKeeper();
-		statsKeeper = new StatisticsKeeper(getName());
-
 		if (StringUtils.isEmpty(getName())) {
-			throw new ConfigurationException("jobdef function ["+getFunction()+"] name must be specified");
-		}
-		if (StringUtils.isEmpty(getFunction())) {
-			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
+			throw new ConfigurationException("a name must be specified");
 		}
 
-		if(StringUtils.isEmpty(getJobGroup())) //If not explicitly set, configure this JobDef under the config it's specified in
+		if(StringUtils.isEmpty(getJobGroup())) { //If not explicitly set, configure this JobDef under the config it's specified in
 			setJobGroup(applicationContext.getId());
-
-		if (function.equals(JobDefFunctions.QUERY)) {
-			if (StringUtils.isEmpty(getJmsRealm())) {
-				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a jmsRealm must be specified");
-			}
-		} else if(!function.isServiceJob()) {
-			if (StringUtils.isEmpty(getAdapterName())) {
-				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a adapterName must be specified");
-			}
-			Adapter adapter = adapterManager.getAdapter(getAdapterName());
-			if(adapter == null) { //Make sure the adapter is registered in this configuration
-				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
-				throw new ConfigurationException(msg);
-			}
-			if (function.isEqualToAtLeastOneOf(JobDefFunctions.STOP_RECEIVER, JobDefFunctions.START_RECEIVER, JobDefFunctions.SEND_MESSAGE)) {
-				if (StringUtils.isEmpty(getReceiverName())) {
-					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
-				}
-				if (adapter.getReceiverByName(getReceiverName()) == null) {
-					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
-					throw new ConfigurationException(msg);
-				}
-			}
 		}
+
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
+
+		MessageKeeper messageKeeper = getMessageKeeper();
+		statsKeeper = new StatisticsKeeper(getName());
 
 		super.configure();
 		messageKeeper.add("job successfully configured");
 		configured = true;
 	}
 
+	@Override
 	public JobDetail getJobDetail() {
 		IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
 
-		JobDetail jobDetail = IbisJobBuilder.fromJobDef(this)
-				.setIbisManager(ibisManager)
-				.build();
-
-		return jobDetail;
+		return IbisJobBuilder.fromJobDef(this).setIbisManager(ibisManager).build();
 	}
 
-	protected void executeJob(IbisManager ibisManager) {
+	public synchronized boolean incrementCountThreads() {
+		if (countThreads < getNumThreads()) {
+			countThreads++;
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized void decrementCountThreads() {
+		countThreads--;
+	}
+
+	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
+	@Override
+	public final void executeJob(IbisManager ibisManager) {
 		if (!incrementCountThreads()) { 
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
@@ -539,57 +393,19 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		}
 	}
 
-	public synchronized boolean incrementCountThreads() {
-		if (countThreads < getNumThreads()) {
-			countThreads++;
-			return true;
-		} else
-		{
-			return false;
-		}
-	}
-
-	public synchronized void decrementCountThreads() {
-		countThreads--;
-	}
-
-	protected void runJob(IbisManager ibisManager) {
+	/**
+	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
+	 */
+	private void runJob(IbisManager ibisManager) {
 		long startTime = System.currentTimeMillis();
 		getMessageKeeper().add("starting to run the job");
 
-		switch(function) {
-		case DUMPSTATS:
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
-			break;
-		case DUMPSTATSFULL:
-			ibisManager.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
-			break;
-		case CLEANUPDB:
-			cleanupDatabase(ibisManager);
-			break;
-		case CLEANUPFS:
-			cleanupFileSystem(ibisManager);
-			break;
-		case RECOVER_ADAPTERS:
-			recoverAdapters(ibisManager);
-			break;
-		case CHECK_RELOAD:
-			checkReload(ibisManager);
-			break;
-		case QUERY:
-			executeQueryJob(ibisManager);
-			break;
-		case SEND_MESSAGE:
-			executeSendMessageJob(ibisManager);
-			break;
-		case LOAD_DATABASE_SCHEDULES:
-			loadDatabaseSchedules(ibisManager);
-			break;
-
-		default:
-			IbisAction action = Misc.parse(IbisAction.class, getFunction()); //If it's none of the above actions, try and parse the function as an IbisAction
-			ibisManager.handleAction(action, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
-			break;
+		try {
+			execute(ibisManager);
+		} catch (Exception e) {
+			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+			log.error(getLogPrefix()+msg, e);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -598,659 +414,80 @@ public class JobDef extends TransactionAttributes implements ApplicationContextA
 		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
-	/**
-	 * Locate all Lockers, and find out which datasources are used.
-	 * @return distinct list of all datasourceNames used by lockers
-	 */
-	private List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
-		List<String> datasourceNames = new ArrayList<>();
-
-		for (Configuration configuration : ibisManager.getConfigurations()) {
-			for (JobDef jobdef : configuration.getScheduledJobs()) {
-				if (jobdef.getLocker()!=null) {
-					String datasourceName = jobdef.getLocker().getDatasourceName();
-					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
-						datasourceNames.add(datasourceName);
-					}
-				}
-			}
-		}
-
-		for (IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			PipeLine pipeLine = adapter.getPipeLine();
-			if (pipeLine != null) {
-				for (IPipe pipe : pipeLine.getPipes()) {
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
-						if (extendedPipe.getLocker() != null) {
-							String datasourceName = extendedPipe.getLocker().getDatasourceName();
-							if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
-								datasourceNames.add(datasourceName);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return datasourceNames;
-	}
-
-	
-	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
-		if (transactionalStorage!=null && transactionalStorage instanceof JdbcTransactionalStorage) {
-			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>)transactionalStorage;
-			String datasourceName = messageLog.getDatasourceName();
-			String expiryDateField = messageLog.getExpiryDateField();
-			String tableName = messageLog.getTableName();
-			String keyField = messageLog.getKeyField();
-			String typeField = messageLog.getTypeField();
-			MessageLogObject mlo = new MessageLogObject(datasourceName, tableName, expiryDateField, keyField, typeField);
-			if (!messageLogs.contains(mlo)) {
-				messageLogs.add(mlo);
-			}
-		}
-	}
-	
-	private List<MessageLogObject> getAllMessageLogs(IbisManager ibisManager) {
-		List<MessageLogObject> messageLogs = new ArrayList<>();
-		for(IAdapter adapter : ibisManager.getRegisteredAdapters()) {
-			for (Receiver<?> receiver: adapter.getReceivers()) {
-				collectMessageLogs(messageLogs, receiver.getMessageLog());
-			}
-			PipeLine pipeline = adapter.getPipeLine();
-			for (int i=0; i<pipeline.getPipes().size(); i++) {
-				IPipe pipe = pipeline.getPipe(i);
-				if (pipe instanceof MessageSendingPipe) {
-					MessageSendingPipe msp=(MessageSendingPipe)pipe;
-					collectMessageLogs(messageLogs, msp.getMessageLog());
-				}
-			}
-		}
-		return messageLogs;
-	}
-
-	private void cleanupDatabase(IbisManager ibisManager) {
-		Date date = new Date();
-
-		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
-
-		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
-
-		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
-			String datasourceName = iter.next();
-			FixedQuerySender qs = null;
-			try {
-				qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-				qs.setDatasourceName(datasourceName);
-				qs.setName("cleanupDatabase-IBISLOCK");
-				qs.setQueryType("other");
-				qs.setTimeout(getQueryTimeout());
-				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
-				qs.setQuery(query);
-				Parameter param = new Parameter();
-				param.setName("now");
-				param.setType(Parameter.TYPE_TIMESTAMP);
-				param.setValue(DateUtils.format(date));
-				qs.addParameter(param);
-				qs.configure();
-				qs.open();
-
-				Message result = qs.sendMessage(Message.nullMessage(), null);
-				log.info("result [" + result + "]");
-			} catch (Exception e) {
-				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
-			} finally {
-				if(qs != null) {
-					qs.close();
-				}
-			}
-		}
-
-		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
-
-		for (MessageLogObject mlo: messageLogs) {
-			FixedQuerySender qs = null;
-			try {
-				qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-				qs.setDatasourceName(mlo.getDatasourceName());
-				qs.setName("cleanupDatabase-"+mlo.getTableName());
-				qs.setQueryType("other");
-				qs.setTimeout(getQueryTimeout());
-				qs.setScalar(true);
-
-				Parameter param = new Parameter();
-				param.setName("now");
-				param.setType(Parameter.TYPE_TIMESTAMP);
-				param.setValue(DateUtils.format(date));
-				qs.addParameter(param);
-
-				String query;
-				if (qs.getDatabaseType() == Dbms.MSSQL) {
-					query = "DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT "+(maxRows>0?"TOP "+maxRows+" ":"") + mlo.getKeyField() + " FROM " + mlo.getTableName()
-							+ " WITH (readpast) WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-							+ "') AND " + mlo.getExpiryDateField() + " < ?)";
-					qs.setSqlDialect(Dbms.MSSQL.getKey());
-				}
-				else {
-					query = ("DELETE FROM " + mlo.getTableName() + " WHERE " + mlo.getKeyField() + " IN (SELECT " + mlo.getKeyField() + " FROM " + mlo.getTableName()
-					+ " WHERE " + mlo.getTypeField() + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + mlo.getExpiryDateField() + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
-					qs.setSqlDialect(Dbms.ORACLE.getKey());
-				}
-				qs.setQuery(query);
-				qs.configure();
-				qs.open();
-
-				boolean deletedAllRecords = false;
-				while(!deletedAllRecords) {
-					Message result = qs.sendMessage(Message.nullMessage(), null);
-					String resultString = result.asString();
-					log.info("deleted [" + resultString + "] rows");
-					int numberOfRowsAffected = Integer.valueOf(resultString);
-					if(numberOfRowsAffected<maxRows) {
-						deletedAllRecords = true;
-					} else {
-						log.info("executing the query again for job [cleanupDatabase]!");
-					}
-				}
-			} catch (Exception e) {
-				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
-			} finally {
-				if(qs != null) {
-					qs.close();
-				}
-			}
-		}
-	}
-
-	private void cleanupFileSystem(IbisManager ibisManager) {
-		for (DirectoryCleaner directoryCleaner: directoryCleaners) {
-			directoryCleaner.cleanup();
-		}
-	}
-
-	private void checkReload(IbisManager ibisManager) {
-		if (ibisManager.getIbisContext().isLoadingConfigs()) {
-			String msg = "skipping checkReload because one or more configurations are currently loading";
-			getMessageKeeper().add(msg, MessageKeeperLevel.INFO);
-			log.info(getLogPrefix() + msg);
-			return;
-		}
-
-		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-		List<String> configNames = new ArrayList<String>();
-		List<String> configsToReload = new ArrayList<String>();
-
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		qs.setDatasourceName(dataSource);
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
-		try {
-			qs.configure();
-			qs.open();
-			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
-				for (Configuration configuration : ibisManager.getConfigurations()) {
-					String configName = configuration.getName();
-					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-						stmt.setString(1, configName);
-						try (ResultSet rs = stmt.executeQuery()) {
-							if (rs.next()) {
-								String ibisConfigVersion = rs.getString(1);
-								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-								}
-								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-									configsToReload.add(configName);
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			getMessageKeeper().add("error while executing query [" + selectQuery	+ "] (as part of scheduled job execution)", e);
-		} finally {
-			qs.close();
-		}
-
-		if (!configsToReload.isEmpty()) {
-			for (String configToReload : configsToReload) {
-				ibisManager.getIbisContext().reload(configToReload);
-			}
-		}
-		
-		if (CONFIG_AUTO_DB_CLASSLOADER) {
-			// load new (activated) configs
-			List<String> dbConfigNames = null;
-			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext(), true);
-			} catch (ConfigurationException e) {
-				getMessageKeeper().add("error while retrieving configuration names from database", e);
-			}
-			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
-				for (String currentDbConfigurationName : dbConfigNames) {
-					if (!configNames.contains(currentDbConfigurationName)) {
-						ibisManager.getIbisContext().load(currentDbConfigurationName);
-					}
-				}
-				// unload old (deactivated) configurations
-				for (String currentConfigurationName : configNames) {
-					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
-						ibisManager.getIbisContext().unload(currentConfigurationName);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * 1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
-	 * 2. It then loops through all records found in the database.
-	 * 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
-	 *    Only if they differ, it overwrites the current job.
-	 *    If it is not present it add the job to the scheduler.
-	 * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
-	 *    Since they have been removed from the database, remove them from the Quartz Scheduler
-	 */
-	private void loadDatabaseSchedules(IbisManager ibisManager) {
-		Map<JobKey, IbisJobDetail> databaseJobDetails = new HashMap<JobKey, IbisJobDetail>();
-		Scheduler scheduler = null;
-		SchedulerHelper sh = applicationContext.getBean(SchedulerHelper.class);
-		try {
-			scheduler = sh.getScheduler();
-
-			// Fill the databaseJobDetails Map with all IbisJobDetails that have been stored in the database
-			Set<JobKey> jobKeys = scheduler.getJobKeys(GroupMatcher.anyJobGroup());
-			for(JobKey jobKey : jobKeys) {
-				IbisJobDetail detail = (IbisJobDetail) scheduler.getJobDetail(jobKey);
-				if(detail.getJobType() == JobType.DATABASE) {
-					databaseJobDetails.put(detail.getKey(), detail);
-				}
-			}
-		} catch (SchedulerException e) {
-			getMessageKeeper().add("unable to retrieve jobkeys from scheduler", e);
-		}
-
-		// Get all IbisSchedules that have been stored in the database
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
-
-		try {
-			qs.configure();
-			qs.open();
-			try (Connection conn = qs.getConnection()) {
-				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
-					try (ResultSet rs = stmt.executeQuery()) {
-						while(rs.next()) {
-							String jobName = rs.getString("JOBNAME");
-							String jobGroup = rs.getString("JOBGROUP");
-							String adapterName = rs.getString("ADAPTER");
-							String receiverName = rs.getString("RECEIVER");
-							String cronExpression = rs.getString("CRON");
-							int interval = rs.getInt("EXECUTIONINTERVAL");
-							String message = rs.getString("MESSAGE");
-							boolean hasLocker = rs.getBoolean("LOCKER");
-							String lockKey = rs.getString("LOCK_KEY");
-
-							JobKey key = JobKey.jobKey(jobName, jobGroup);
-
-							Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
-							if(adapter == null) {
-								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found");
-								continue;
-							}
-
-							//Create a new JobDefinition so we can compare it with existing jobs
-							DatabaseJobDef jobdef = SpringUtils.createBean(adapter.getApplicationContext(), DatabaseJobDef.class);
-							jobdef.setCronExpression(cronExpression);
-							jobdef.setName(jobName);
-							jobdef.setInterval(interval);
-							jobdef.setJobGroup(jobGroup);
-							jobdef.setAdapterName(adapterName);
-							jobdef.setReceiverName(receiverName);
-							jobdef.setMessage(message);
-			
-							if(hasLocker) {
-								Locker locker = SpringUtils.createBean(applicationContext, Locker.class);
-			
-								locker.setName(lockKey);
-								locker.setObjectId(lockKey);
-								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-								jobdef.setLocker(locker);
-							}
-			
-							try {
-								jobdef.configure();
-							} catch (ConfigurationException e) {
-								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
-							}
-			
-							// If the job is found, find out if it is different from the existing one and update if necessarily
-							if(databaseJobDetails.containsKey(key)) {
-								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
-								if(!oldJobDetails.compareWith(jobdef)) {
-									log.debug("updating DatabaseSchedule ["+key+"]");
-									try {
-										sh.scheduleJob(jobdef);
-									} catch (SchedulerException e) {
-										getMessageKeeper().add("unable to update schedule ["+key+"]", e);
-									}
-								}
-								// Remove the key that has been found from the databaseJobDetails Map
-								databaseJobDetails.remove(key);
-							} else {
-								// The job was not found in the databaseJobDetails Map, which indicates it's new and has to be added
-								log.debug("add DatabaseSchedule ["+key+"]");
-								try {
-									sh.scheduleJob(jobdef);
-								} catch (SchedulerException e) {
-									getMessageKeeper().add("unable to add schedule ["+key+"]", e);
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) { // Only catch database related exceptions!
-			getMessageKeeper().add("unable to retrieve schedules from database", e);
-		} finally {
-			qs.close();
-		}
-
-		// Loop through all remaining databaseJobDetails, which were not present in the database. Since they have been removed, unschedule them!
-		for(JobKey key : databaseJobDetails.keySet()) {
-			log.debug("delete DatabaseSchedule ["+key+"]");
-			try {
-				scheduler.deleteJob(key);
-			} catch (SchedulerException e) {
-				getMessageKeeper().add("unable to remove schedule ["+key+"]", e);
-			}
-		}
-	}
-
-	private void executeQueryJob(IbisManager ibisManager) {
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext, FixedQuerySender.class);
-		try {
-			qs.setQuery(getQuery());
-			qs.setName("executeQueryJob");
-			qs.setJmsRealm(getJmsRealm());
-			qs.setQueryType("other");
-			qs.setTimeout(getQueryTimeout());
-			qs.configure();
-			qs.open();
-			Message result = qs.sendMessage(Message.nullMessage(), null);
-			log.info("result [" + result + "]");
-		} catch (Exception e) {
-			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg);
-		} finally {
-			qs.close();
-		}
-	}
-
-	private void executeSendMessageJob(IbisManager ibisManager) {
-		try {
-			// send job
-			IbisLocalSender localSender = SpringUtils.createBean(applicationContext, IbisLocalSender.class);
-			localSender.setJavaListener(getReceiverName());
-			localSender.setIsolated(false);
-			localSender.setName("AdapterJob");
-			if (getInterval() == 0) {
-				localSender.setDependencyTimeOut(-1);
-			}
-			if (StringUtils.isNotEmpty(getAdapterName())) {
-				IAdapter iAdapter = ibisManager.getRegisteredAdapter(getAdapterName());
-				if (iAdapter == null) {
-					log.warn("Cannot find adapter ["+getAdapterName()+"], cannot execute job");
-					return;
-				}
-			}
-			localSender.configure();
-			localSender.open();
-			try {
-				//sendMessage message cannot be NULL
-				Message message = new Message((getMessage()==null) ? "" : getMessage());
-				localSender.sendMessage(message, null);
-			}
-			finally {
-				localSender.close();
-			}
-		}
-		catch(Exception e) {
-			String msg = "error while sending message (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg, e);
-		}
-	}
-
-	private void recoverAdapters(IbisManager ibisManager) {
-		int countAdapter=0;
-		int countAdapterStateStarted=0;
-		int countReceiver=0;
-		int countReceiverStateStarted=0;
-		for (Adapter adapter: ibisManager.getRegisteredAdapters()) {
-			countAdapter++;
-			RunStateEnum adapterRunState = adapter.getRunState();
-			boolean startAdapter = false;
-			if (adapterRunState.equals(RunStateEnum.ERROR)) { //if not previously configured, there is no point in trying to do this again.
-				log.debug("trying to recover adapter [" + adapter.getName() + "]");
-
-				if (!adapter.configurationSucceeded()) { //This should only happen once, so only try to (re-)configure if it failed in the first place!
-					try {
-						adapter.configure();
-					} catch (ConfigurationException e) {
-						// log the warning and do nothing, it couldn't configure before, it still can't...
-						log.warn("error configuring adapter [" + adapter.getName() + "] while trying to recover", e);
-					} 
-				}
-
-				if (adapter.configurationSucceeded()) {
-					startAdapter = adapter.isAutoStart(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
-				}
-
-				log.debug("finished recovering adapter [" + adapter.getName() + "]");
-			}
-
-			String message = "adapter [" + adapter.getName() + "] has state [" + adapterRunState + "]";
-			if (adapterRunState.equals(RunStateEnum.STARTED)) {
-				countAdapterStateStarted++;
-				heartbeatLog.info(message);
-			} else if (adapterRunState.equals(RunStateEnum.ERROR)) {
-				heartbeatLog.error(message);
-			} else {
-				heartbeatLog.warn(message);
-			}
-
-			for (Receiver<?> receiver: adapter.getReceivers()) {
-				countReceiver++;
-
-				RunStateEnum receiverRunState = receiver.getRunState();
-				if (adapterRunState.equals(RunStateEnum.STARTED) && receiverRunState.equals(RunStateEnum.ERROR) && receiver.configurationSucceeded()) { //Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
-					log.debug("trying to recover receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
-
-					receiver.startRunning();
-
-					log.debug("finished recovering receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "]");
-				}
-
-				receiverRunState = receiver.getRunState();
-				message = "receiver [" + receiver.getName() + "] of adapter [" + adapter.getName() + "] has state [" + receiverRunState + "]";
-				if (receiverRunState.equals(RunStateEnum.STARTED)) {
-					countReceiverStateStarted++;
-					heartbeatLog.info(message);
-				} else if (receiverRunState.equals(RunStateEnum.ERROR)) {
-					heartbeatLog.error(message);
-				} else {
-					heartbeatLog.warn(message);
-				}
-			}
-
-			if (startAdapter) { // can only be true if adapter was in error before and AutoStart is enabled
-				adapter.startRunning(); //ASync startup can still cause the Adapter to end up in an ERROR state
-			}
-		}
-		heartbeatLog.info("[" + countAdapterStateStarted + "/" + countAdapter + "] adapters and [" + countReceiverStateStarted + "/" + countReceiver + "] receivers have state [" + RunStateEnum.STARTED + "]");
-	}
-
-	public String getLogPrefix() {
+	protected String getLogPrefix() {
 		return "Job ["+getName()+"] ";
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder(this.getClass().getSimpleName());
+		if(name != null) builder.append(" name ["+name+"]");
+		if(jobGroup != null) builder.append(" jobGroup ["+jobGroup+"]");
+		if(cronExpression != null) builder.append(" cronExpression ["+cronExpression+"]");
+		if(interval > -1) builder.append(" interval ["+interval+"]");
+		return builder.toString();
 	}
 
 	public void setJobGroup(String jobGroup) {
 		this.jobGroup = jobGroup;
 	}
-	public String getJobGroup() {
-		return jobGroup;
-	}
 
-	@IbisDoc({"name of the job", ""})
+	@Override
+	/** Name of the job" 
+	 * @ff.mandatory
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getName() {
-		return name;
-	}
-	
-	@IbisDoc({"optional description of the job", ""})
+
+	/** (Optional) Description of the job */
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public String getDescription() {
-		return description;
-	}
 
-	@IbisDoc({"cron expression that determines the frequency of execution (see below)", ""})
+	@Override
 	public void setCronExpression(String cronExpression) {
 		this.cronExpression = cronExpression;
 	}
-	public String getCronExpression() {
-		return cronExpression;
-	}
 
-	@IbisDoc({"repeat the job at the specified number of ms. keep cronexpression empty to use interval. set to 0 to only run once at startup of the application. a value of 0 in combination with function 'sendmessage' will set dependencytimeout on the ibislocalsender to -1 to keep waiting indefinitely instead of max 60 seconds for the adapter to start.", ""})
+	@Override
 	public void setInterval(long interval) {
 		this.interval = interval;
 	}
 
-	public long getInterval() {
-		return interval;
-	}
-
-	@IbisDoc({"one of: stopadapter, startadapter, stopreceiver, startreceiver, sendmessage, executequery, cleanupfilesystem", ""})
-	public void setFunction(String function) {
-		this.function = Misc.parseFromField(JobDefFunctions.class, "function", function, e -> e.getName());
-	}
-	public String getFunction() {
-		return function==null?null:function.getName();
-	}
-	public JobDefFunctions getFunctionEnum() {
-		return function;
-	}
-
-	@IbisDoc({"configuration on which job operates", ""})
-	public void setConfigurationName(String configurationName) {
-		this.configurationName = configurationName;
-	}
-	public String getConfigurationName() {
-		return configurationName;
-	}
-
-	@IbisDoc({"adapter on which job operates", ""})
-	public void setAdapterName(String adapterName) {
-		this.adapterName = adapterName;
-	}
-	public String getAdapterName() {
-		return adapterName;
-	}
-
-	@IbisDoc({"receiver on which job operates. If function is 'sendmessage' this should be the name of the javalistener you wish to call", ""})
-	public void setReceiverName(String receiverName) {
-		this.receiverName = receiverName;
-	}
-	public String getReceiverName() {
-		return receiverName;
-	}
-
-	@IbisDoc({"the sql query text to be executed", ""})
-	public void setQuery(String query) {
-		this.query = query;
-	}
-	public String getQuery() {
-		return query;
-	}
-
-	public int getQueryTimeout() {
-		return queryTimeout;
-	}
-
-	@IbisDoc({"the number of seconds the driver will wait for a statement object to execute. if the limit is exceeded, a timeoutexception is thrown. 0 means no timeout", "0"})
-	public void setQueryTimeout(int i) {
-		queryTimeout = i;
-	}
-
-	@IbisDoc({"", " "})
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
-	}
-	public String getJmsRealm() {
-		return jmsRealm;
-	}
-
-	@IbisDoc({"Optional Locker, to avoid parallel execution of the Job by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained, " +
-				"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. "})
+	@Override
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 		locker.setName("Locker of job ["+getName()+"]");
 	}
+	@Override
 	public Locker getLocker() {
 		return locker;
 	}
 
-	@IbisDoc({"the number of threads that may execute concurrently", "1"})
+	/** Number of threads that may execute concurrently
+	 * @ff.default 1
+	 */
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
-	public int getNumThreads() {
-		return numThreads;
-	}
 
+	@Override
 	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
 			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
 		return messageKeeper;
 	}
 
-	@IbisDoc({"number of message displayed in ibisconsole", "10"})
+	/** Number of message displayed in ibisconsole
+	 * @ff.default 10
+	 */
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}
 
+	@Override
 	public synchronized StatisticsKeeper getStatisticsKeeper() {
 		return statsKeeper;
-	}
-	
-	public void addDirectoryCleaner(DirectoryCleaner directoryCleaner) {
-		directoryCleaners.add(directoryCleaner);
-	}
-
-	@IbisDoc({"message to be send into the pipeline", ""})
-	public void setMessage(String message) {
-		if(StringUtils.isNotEmpty(message)) {
-			this.message = message;
-		}
-	}
-	public String getMessage() {
-		return message;
 	}
 }

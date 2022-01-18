@@ -3,7 +3,9 @@
 		<receiver name="HelloWorlds" >
 			<listener
 				name="HelloWorlds"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="hello-worlds"
+				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="CheckInputIsXml">
@@ -68,8 +70,7 @@
 	<scheduler>
 		<job
 			name="HelloWorlds"
-			adapterName="HelloWorlds"
-			receiverName="HelloWorlds"
+			javaListener ="HelloWorlds"
 			cronExpression="0 55 2 * * ?"
 			function="sendMessage"
 			active="${HelloWorlds.active}"

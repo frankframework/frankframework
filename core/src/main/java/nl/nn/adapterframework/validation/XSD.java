@@ -47,6 +47,7 @@ import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -216,7 +217,7 @@ public class XSD implements Schema, Comparable<XSD> {
 	private void init() throws ConfigurationException {
 		try {
 			InputStream in = getInputStream();
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			int elementDepth = 0;
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
@@ -376,7 +377,7 @@ public class XSD implements Schema, Comparable<XSD> {
 			if (in == null) {
 				return null;
 			}
-			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, XmlUtils.STREAM_FACTORY_ENCODING);
+			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(in, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 			while (er.hasNext()) {
 				XMLEvent e = er.nextEvent();
 				switch (e.getEventType()) {

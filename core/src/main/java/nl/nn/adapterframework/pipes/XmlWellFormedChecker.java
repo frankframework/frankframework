@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,13 +32,9 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
  * 
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case
+ * @ff.forward failure The document is not well formed.
+ * 
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
@@ -55,13 +51,18 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		return validate(message, session, getRoot());
+	}
+
+	@Override
+	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
-		if (XmlUtils.isWellFormed(input, getRoot())) {
+		if (XmlUtils.isWellFormed(input, messageRoot)) {
 			throwEvent(AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
 			return new PipeRunResult(getSuccessForward(), message);
 		}

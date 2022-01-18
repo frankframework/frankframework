@@ -1,0 +1,17 @@
+<configuration>
+	<adapter name="GetPrincipalPipe">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="GetPrincipalPipe" />
+		</receiver>
+		<pipeline firstPipe="GetPrincipalPipe">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe
+				name="GetPrincipalPipe"
+				className="nl.nn.adapterframework.pipes.GetPrincipalPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

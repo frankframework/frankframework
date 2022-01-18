@@ -18,28 +18,27 @@ package nl.nn.adapterframework.extensions.aspose.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import com.aspose.pdf.Document;
+import com.aspose.pdf.exceptions.InvalidPasswordException;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.StreamUtil;
-
-import com.aspose.pdf.Document;
-import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 /**
  * Returns the amount of pages of a PDF file.
  * 
+ * @ff.forward passwordProtected the File is password protected
  * 
  * @author Laurens Mäkel
  * @since  7.6
  *
  */
 public class AmountOfPagesPipe extends FixedForwardPipe {
-	private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private String charset = null;
 
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
@@ -53,7 +52,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 		} catch (InvalidPasswordException ip) {
 			return new PipeRunResult(findForward("passwordProtected"), "File is password protected." );
 		}
-      
+
 		return new PipeRunResult(getSuccessForward(), Integer.toString(result) );
 	}
 
