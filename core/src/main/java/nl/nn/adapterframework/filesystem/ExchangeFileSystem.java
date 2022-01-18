@@ -645,14 +645,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		String mailbox = separateMailbox(folderName);
-		folderName = separateFolderName(folderName);
+		boolean containsSeparator = folderName.contains(SEPARATOR);
+		ExchangeService exchangeService = containsSeparator ? getConnection(separateMailbox(folderName)) : getConnection();
 
-		ExchangeService exchangeService = getConnection(mailbox);
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
-			folder.save(new FolderId(cache.getBaseFolderId(mailbox).getUniqueId()));
+			if(containsSeparator){
+				folder.save(new FolderId(cache.getBaseFolderId(separateMailbox(folderName)).getUniqueId()))
+			} else {
+				// TODO: baseFolderId is currently only available when you know mailbox.. folder.save(new FolderId(baseFolderId);
+			}
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
@@ -664,12 +667,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		String mailbox = separateMailbox(folderName);
-		folderName = separateFolderName(folderName);
+		boolean containsSeparator = folderName.contains(SEPARATOR);
+		ExchangeService exchangeService = containsSeparator ? getConnection(separateMailbox(folderName)) : getConnection();
 
-		ExchangeService exchangeService = getConnection(mailbox);
 		try {
-			Folder folder = cache.getFolder(mailbox, folderName);
+			Folder folder;
+			if(containsSeparator){
+				folder = cache.getFolder(separateMailbox(folderName), separateFolderName(folderName));
+			} else {
+				FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
+				folder = Folder.bind(exchangeService, folderId);
+			}
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
 			}
