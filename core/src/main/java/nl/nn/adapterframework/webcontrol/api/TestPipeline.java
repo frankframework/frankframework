@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020, 2021 WeAreFrank!
+Copyright 2016-2017, 2020, 2021-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -98,9 +98,9 @@ public class TestPipeline extends Base {
 		if(adapter == null) {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
-		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, null);
+		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "[]");
 		Map<String, String> sessionKeyMap = null;
-		if(StringUtils.isNotEmpty(sessionKeys) && !sessionKeys.equals("[]")) {
+		if(!sessionKeys.equals("[]")) {
 			try {
 				sessionKeyMap = Stream.of(new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class))
 						.collect(Collectors.toMap(item -> item.key, item-> item.value));
