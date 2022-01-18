@@ -810,6 +810,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			cache.ensureMailboxIsRegistered(mailbox, getBaseFolder(), service);
 		} catch (Exception e) {
+			invalidateConnection(service);
+			releaseConnection(service);
 			throw new FileSystemException("An error occurred whilst loading mailbox ["+mailbox+"] into cache.");
 		}
 
