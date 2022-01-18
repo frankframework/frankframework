@@ -102,6 +102,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
  *
  */
 public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachment,ExchangeService> {
+	private ExchangeFileSystemCache cache = new ExchangeFileSystemCache();
 
 	private String mailAddress;
 	private boolean validateAllRedirectUrls=true;
@@ -116,8 +117,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 
-	private FolderId basefolderId;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getFilter())) {
@@ -129,43 +128,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			throw new ConfigurationException("either url or mailAddress needs to be specified");
 		}
 	}
-	
-	@Override
-	public void open() throws FileSystemException {
-		super.open();
-		log.debug("searching inbox");
-		FolderId inboxId;
-		if (StringUtils.isNotEmpty(getMailAddress())) {
-			Mailbox mailbox = new Mailbox(getMailAddress());
-			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
-		} else {
-			inboxId = new FolderId(WellKnownFolderName.Inbox);
-		}
-		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
-
-		if (StringUtils.isNotEmpty(getBaseFolder())) {
-			try {
-				basefolderId=findFolder(inboxId,getBaseFolder());
-			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
-			}	
-			if (basefolderId==null) {
-				log.debug("Could not get baseFolder ["+getBaseFolder()+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,getBaseFolder());
-			}
-			if (basefolderId==null) {
-				throw new FileSystemException("Could not find baseFolder ["+getBaseFolder()+"]");
-			}
-		} else {
-			basefolderId=inboxId;
-		}
-	}
-
 
 	@Override
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-		
+
 		String defaultUsername = StringUtils.isEmpty(getAccessToken())? getUsername() : null;
 		String defaultPassword = StringUtils.isEmpty(getAccessToken())? getPassword() : getAccessToken();
 
@@ -221,56 +188,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		log.debug("using url ["+exchangeService.getUrl()+"]");
 		return exchangeService;
 	}
-
-	
-	public FolderId findFolder(String folderName) throws Exception {
-		return findFolder(basefolderId, folderName);
-	}
-	
-	public FolderId findFolder(FolderId baseFolderId, String folderName) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
-		try {
-			FindFoldersResults findFoldersResultsIn;
-			FolderId result;
-			FolderView folderViewIn = new FolderView(10);
-			if (StringUtils.isNotEmpty(folderName)) {
-				log.debug("searching folder ["+folderName+"]");
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
-				if (baseFolderId==null) {
-					findFoldersResultsIn = exchangeService.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
-				} else {
-					findFoldersResultsIn = exchangeService.findFolders(baseFolderId, searchFilterIn, folderViewIn);
-				}
-				if (findFoldersResultsIn.getTotalCount() == 0) {
-					if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
-					return null;
-				} 
-				if (findFoldersResultsIn.getTotalCount() > 1) {
-					if (log.isDebugEnabled()) {
-						for (Folder folder:findFoldersResultsIn.getFolders()) {
-							log.debug("found folder ["+folder.getDisplayName()+"]");
-						}
-					}
-					throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
-				}
-			} else {
-				//findFoldersResultsIn = getExchangeService().findFolders(baseFolderId, folderViewIn);
-				return baseFolderId;
-			}
-			if (findFoldersResultsIn.getFolders().isEmpty()) {
-				result=baseFolderId;
-			} else {
-				result=findFoldersResultsIn.getFolders().get(0).getId();
-			}
-			return result;
-		} catch (Exception e) {
-			invalidateConnection(exchangeService);
-			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
-		} finally {
-			releaseConnection(exchangeService);
-		}
-	}
-
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
@@ -328,9 +245,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		ExchangeService exchangeService = getConnection();
+		String mailbox = seperateMailbox(folder);
+		folder = seperateFolderName(folder);
+
+		ExchangeService exchangeService = getConnection(mailbox);
 		try {
-			FolderId folderId = findFolder(basefolderId,folder);
+			FolderId folderId = cache.getFolder(mailbox, folder).getId();
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -369,9 +289,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
+		String mailbox = seperateMailbox(folder);
+		folder = seperateFolderName(folder);
+
 		FolderId folderId;
 		try {
-			folderId = findFolder(folder);
+			folderId = cache.getFolder(mailbox, folder).getId();
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -424,9 +347,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		String mailbox = seperateMailbox(destinationFolder);
+		destinationFolder = seperateFolderName(destinationFolder);
+
+		ExchangeService exchangeService = getConnection(mailbox);
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
+			FolderId destinationFolderId = cache.getFolder(mailbox, destinationFolder).getId();
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -438,9 +364,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		String mailbox = seperateMailbox(destinationFolder);
+		destinationFolder = seperateFolderName(destinationFolder);
+
+		ExchangeService exchangeService = getConnection(mailbox);
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, destinationFolder, createFolder);
+			FolderId destinationFolderId = cache.getFolder(mailbox, destinationFolder).getId();
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -691,11 +620,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
-		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		String mailbox = seperateMailbox(folderName);
+		folderName = seperateFolderName(folderName);
+
+		findResults = exchangeService.findFolders(cache.getBaseFolderId(mailbox), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		if (create && findResults.getTotalCount()==0) {
 			log.debug("creating folder [" + folderName + "]");
-			createFolder(folderName);
-			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+			createFolder(mailbox+"|"+folderName);
+			findResults = exchangeService.findFolders(cache.getBaseFolderId(mailbox), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
 		}
 		if (findResults.getTotalCount()==0) {
 			log.debug("folder [" + folderName + "] not found");
@@ -711,11 +643,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		String mailbox = seperateMailbox(folderName);
+		folderName = seperateFolderName(folderName);
+
+		ExchangeService exchangeService = getConnection(mailbox);
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderName);
-			folder.save(new FolderId(basefolderId.getUniqueId()));
+			folder.save(new FolderId(cache.getBaseFolderId(mailbox).getUniqueId()));
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
@@ -727,10 +662,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		ExchangeService exchangeService = getConnection();
+		String mailbox = seperateMailbox(folderName);
+		folderName = seperateFolderName(folderName);
+
+		ExchangeService exchangeService = getConnection(mailbox);
 		try {
-			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
-			Folder folder = Folder.bind(exchangeService, folderId);
+			Folder folder = cache.getFolder(mailbox, folderName);
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
 			}
@@ -858,6 +795,26 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return Misc.concatStrings("url [" + url + "] mailAddress [" + (getMailAddress() == null ? "" : getMailAddress()) + "]", " ", result);
 	}
 
+	private String seperateFolderName(String concatenatedString){
+		return concatenatedString.split("\\|")[1];
+	}
+
+	private String seperateMailbox(String concatenatedString){
+		return concatenatedString.split("\\|")[0];
+	}
+
+	private ExchangeService getConnection(String mailbox) throws FileSystemException {
+		ExchangeService service = super.getConnection();
+		service.getHttpHeaders().put("X-AnchorMailbox", mailbox);
+
+		try {
+			cache.ensureMailboxIsRegistered(mailbox, getBaseFolder(), service);
+		} catch (Exception e) {
+			throw new FileSystemException("An error occurred whilst loading mailbox ["+mailbox+"] into cache.");
+		}
+
+		return service;
+	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
 		
