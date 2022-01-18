@@ -7,10 +7,10 @@
 			<listener className="nl.nn.adapterframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item" method="GET"/>
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/item"/>
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" method="GET" operationId="UniqueIdSoapValidator"/>
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="soapvalidator/{subPath}/items/{subPath2}" operationId="UniqueIdSoapValidator"/>
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
@@ -67,7 +67,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" method="GET"/>
+			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" />
 		</receiver>
 		<receiver>
 			<listener className="nl.nn.adapterframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item/post" method="POST"/>

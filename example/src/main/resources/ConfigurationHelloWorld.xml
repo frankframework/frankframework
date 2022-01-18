@@ -5,7 +5,6 @@
 				name="HelloWorld"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="hello-world"
-				method="GET"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
