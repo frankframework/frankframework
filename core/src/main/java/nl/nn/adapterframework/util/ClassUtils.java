@@ -274,14 +274,13 @@ public abstract class ClassUtils {
 				tail = "["+ name +"]";
 			}
 		}
-		String simpleName = org.springframework.util.ClassUtils.getUserClass(o).getSimpleName();
+		Class<?> clazz = org.springframework.util.ClassUtils.getUserClass(o);
+		String simpleName = clazz.getSimpleName();
+
 		if (StringUtils.isEmpty(simpleName)) {
-			simpleName=o.getClass().getSimpleName();
+			simpleName = clazz.getTypeName();
 		}
-		if (StringUtils.isEmpty(simpleName)) {
-			simpleName=o.getClass().getTypeName();
-		}
-		return Misc.concatStrings(simpleName," ",tail);
+		return Misc.concatStrings(simpleName, " ", tail);
 	}
 
 	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
