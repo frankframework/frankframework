@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -670,5 +673,53 @@ public class ParameterTest {
 			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
 		}
 	}
+
+	@Test
+	public void testFixedDate() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{fixedDate}");
+			p.setType(ParameterType.DATE);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
 	
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+	
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+	
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			assertEquals("2001-12-17", formattedDate);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testFixedDateWithSession() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		session.put("fixedDate", "1995-01-23");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof Date);
+
+		Date resultDate = (Date) result;
+		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
+	}
 }
