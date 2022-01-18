@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,6 +39,9 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Data;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -63,6 +68,13 @@ public class TestPipeline extends Base {
 
 	public final String PIPELINE_RESULT_STATE_ERROR="ERROR";
 
+	@Data
+	public static class PostedSessionKey {
+		int index;
+		String key;
+		String value;
+	}
+
 	@POST
 	@RolesAllowed("IbisTester")
 	@Path("/test-pipeline")
@@ -86,6 +98,16 @@ public class TestPipeline extends Base {
 		if(adapter == null) {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
+		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, null);
+		Map<String, String> sessionKeyMap = null;
+		if(StringUtils.isNotEmpty(sessionKeys) && !sessionKeys.equals("[]")) {
+			try {
+				sessionKeyMap = Stream.of(new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class))
+						.collect(Collectors.toMap(item -> item.key, item-> item.value));
+			} catch (Exception e) {
+				throw new ApiException("An exception occurred while parsing session keys", e);
+			}
+		}
 
 		String fileEncoding = resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
@@ -96,7 +118,7 @@ public class TestPipeline extends Base {
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
 					file = filePart.getObject(InputStream.class);
-					processZipFile(result, file, fileEncoding, adapter, secLogMessage);
+					processZipFile(result, file, fileEncoding, adapter, sessionKeyMap, secLogMessage);
 				} catch (Exception e) {
 					throw new ApiException("An exception occurred while processing zip file", e);
 				}
@@ -114,7 +136,7 @@ public class TestPipeline extends Base {
 		if (StringUtils.isNotEmpty(message)) {
 			result.put("message", message);
 			try {
-				PipeLineResult plr = processMessage(adapter, message, secLogMessage);
+				PipeLineResult plr = processMessage(adapter, message, sessionKeyMap, secLogMessage);
 				try {
 					result.put("state", plr.getState());
 					result.put("result", plr.getResult().asString());
@@ -135,7 +157,7 @@ public class TestPipeline extends Base {
 		return Response.status(Response.Status.CREATED).entity(result).build();
 	}
 
-	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, boolean writeSecLogMessage) throws IOException {
+	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, Map<String, String> sessionKeyMap, boolean writeSecLogMessage) throws IOException {
 		StringBuilder result = new StringBuilder();
 		String lastState = null;
 		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
@@ -146,7 +168,7 @@ public class TestPipeline extends Base {
 				if (result.length() > 0) {
 					result.append("\n");
 				}
-				lastState = processMessage(adapter, message, writeSecLogMessage).getState();
+				lastState = processMessage(adapter, message, sessionKeyMap, writeSecLogMessage).getState();
 				result.append(name + ":" + lastState);
 				archive.closeEntry();
 			}
@@ -156,9 +178,12 @@ public class TestPipeline extends Base {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private PipeLineResult processMessage(IAdapter adapter, String message, boolean writeSecLogMessage) {
+	private PipeLineResult processMessage(IAdapter adapter, String message, Map<String, String> sessionKeyMap, boolean writeSecLogMessage) {
 		String messageId = "testmessage" + Misc.createSimpleUUID();
 		try (PipeLineSession pls = new PipeLineSession()) {
+			if(sessionKeyMap != null) {
+				pls.putAll(sessionKeyMap);
+			}
 			Map ibisContexts = XmlUtils.getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {

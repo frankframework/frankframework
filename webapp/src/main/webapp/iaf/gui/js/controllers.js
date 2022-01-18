@@ -2633,6 +2633,38 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	$scope.sessionKeyIndex=1;
+	$scope.sessionKeyIndices = [$scope.sessionKeyIndex];
+	var sessionKeys = [];
+
+	$scope.updateSessionKeys = function(sessionKey, sessionKeyValue, index) {
+
+		let sessionKeyIndex = sessionKeys.findIndex(f => f.index===index);	// find by index
+		if(sessionKeyIndex >= 0) {	
+			if(sessionKey=="" && sessionKeyValue=="") { // remove row if row is empty
+				sessionKeys.splice(sessionKeyIndex, 1);
+				$scope.sessionKeyIndices.splice(sessionKeyIndex, 1);
+			} else { // update existing key value pair
+				sessionKeys[sessionKeyIndex].key = sessionKey;
+				sessionKeys[sessionKeyIndex].value = sessionKeyValue;
+			}
+			$scope.state = [];
+		} else if(sessionKey && sessionKey!="" && sessionKeyValue && sessionKeyValue!="") {
+			let keyIndex = sessionKeys.findIndex(f => f.key===sessionKey);	// find by key
+			// add new key
+			if(keyIndex < 0) {
+				$scope.sessionKeyIndex+=1;
+				$scope.sessionKeyIndices.push($scope.sessionKeyIndex);
+				sessionKeys.push({index:index, key:sessionKey, value:sessionKeyValue});
+				$scope.state = [];
+			} else { // key with the same name already exists show warning
+				if($scope.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
+					$scope.addNote("warning", "Session keys cannot have the same name!");
+			}
+		}
+		
+	}
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
@@ -2659,6 +2691,14 @@ angular.module('iaf.beheerconsole')
 		}
 		if(!formData.message && !$scope.file) {
 			$scope.addNote("warning", "Please specify a file or message!");
+			return;
+		}
+
+		let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
+		if(incompleteKeyIndex < 0) {
+			fd.append("sessionKeys", JSON.stringify(sessionKeys));
+		} else {
+			$scope.addNote("warning", "Please make sure all sessionkeys have name and value!");
 			return;
 		}
 

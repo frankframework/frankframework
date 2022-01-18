@@ -19,6 +19,15 @@
                                 </select>
                             </div>
                         </div>
+						<div class="row form-group test-pipeline-session-keys" ng-repeat="order in sessionKeyIndices">
+							<label class="col-sm-3 control-label label-height-30"><span ng-if="$index==0">Session Key</span> </label>
+							<div class="col-sm-4">
+								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKey[order], form.sessionKeyValue[order], order)" name="sessionKey" placeholder="Name" type="text" ng-model="form.sessionKey[order]"/>
+							</div>
+							<div class="col-sm-5">
+								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKey[order], form.sessionKeyValue[order], order)" name="sessionKeyValue" placeholder="Value" type="text" ng-model="form.sessionKeyValue[order]"/>
+							</div>
+						</div>
 						<div class="row form-group">
 							<label class="col-sm-3 control-label label-height-30">Upload File</label>
 							<div class="col-sm-9 col-md-4">
