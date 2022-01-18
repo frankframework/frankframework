@@ -18,8 +18,8 @@ import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.SimpleParameter;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
@@ -66,11 +66,11 @@ public class JdbcUtilTest {
 
 		query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT, TDATETIME) VALUES (?, ?, ?, ?)";
 		ParameterList params = new ParameterList();
-		params.add(new SimpleParameter("6", ParameterType.INTEGER));
-		params.add(new SimpleParameter("5th text"));
-		params.add(new SimpleParameter("15092002", ParameterType.INTEGER));
-		params.add(new SimpleParameter("2018-04-12 03:05:06", ParameterType.DATETIME));
-		JdbcUtil.executeStatement(dbmsSupport, connection, query, SimpleParameter.getPVL(params));
+		params.add(ParameterBuilder.create().withValue("6").withType(ParameterType.INTEGER));
+		params.add(ParameterBuilder.create().withValue("5th text"));
+		params.add(ParameterBuilder.create().withValue("15092002").withType(ParameterType.INTEGER));
+		params.add(ParameterBuilder.create().withValue("2018-04-12 03:05:06").withType(ParameterType.DATETIME));
+		JdbcUtil.executeStatement(dbmsSupport, connection, query, ParameterBuilder.getPVL(params));
 
 		query = "SELECT COUNT(*) FROM TEMP";
 		int intResult = JdbcUtil.executeIntQuery(connection, query);
@@ -91,8 +91,8 @@ public class JdbcUtilTest {
 
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
 		params = new ParameterList();
-		params.add(new SimpleParameter("3", ParameterType.INTEGER));
-		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, SimpleParameter.getPVL(params));
+		params.add(ParameterBuilder.create().withValue("3").withType(ParameterType.INTEGER));
+		List<Object> listResult = (List<Object>) JdbcUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params));
 		assertEquals("just a third text", listResult.get(0));
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
 

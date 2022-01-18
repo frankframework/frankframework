@@ -222,14 +222,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public Parameter() {
 		super();
 	}
-	
+
 	/** utility constructor, useful for unit testing */
 	public Parameter(String name, String value) {
 		this();
 		this.name = name;
 		this.value = value;
 	}
-	
+
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
