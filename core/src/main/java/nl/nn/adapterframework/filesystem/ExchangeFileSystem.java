@@ -247,7 +247,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		boolean containsSeparator = folder.contains(SEPARATOR);
 		String folderNameToUse = getFolderNameToUse(folder);
 		String mailbox = getMailboxToUse(folder);
 		ExchangeService exchangeService = getConnection(mailbox);
@@ -292,7 +291,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		boolean containsSeparator = folder.contains(SEPARATOR);
 		String folderNameToUse = getFolderNameToUse(folder);
 		String mailbox = getMailboxToUse(folder);
 
