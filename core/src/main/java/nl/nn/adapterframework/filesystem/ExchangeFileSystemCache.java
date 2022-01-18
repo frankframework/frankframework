@@ -115,7 +115,7 @@ public class ExchangeFileSystemCache {
 		}
 	}
 
-	private FolderId getBaseFolderId(String emailAddress, String baseFolderName, ExchangeService service) throws FileSystemException {
+	public FolderId getBaseFolderId(String emailAddress, String baseFolderName, ExchangeService service) throws FileSystemException {
 		FolderId basefolderId;
 
 		log.debug("searching inbox");

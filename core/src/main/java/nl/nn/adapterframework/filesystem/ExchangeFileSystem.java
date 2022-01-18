@@ -247,12 +247,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		if (!isOpen()) {
 			return null;
 		}
-		String mailbox = separateMailbox(folder);
-		folder = separateFolderName(folder);
-
+		boolean containsSeparator = folder.contains(SEPARATOR);
+		String folderNameToUse = containsSeparator ? separateMailbox(folder) : folder;
+		String mailbox = containsSeparator ? separateMailbox(folder) : getMailAddress();
 		ExchangeService exchangeService = getConnection(mailbox);
+
 		try {
-			FolderId folderId = cache.getFolder(mailbox, folder).getId();
+			FolderId folderId = cache.getFolder(mailbox, folderNameToUse).getId();
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -284,19 +285,20 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
+			throw new FileSystemException("Cannot list messages in folder ["+folderNameToUse+"]", e);
 		}
 	}
 
 	
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		String mailbox = separateMailbox(folder);
-		folder = separateFolderName(folder);
+		boolean containsSeparator = folder.contains(SEPARATOR);
+		String folderNameToUse = containsSeparator ? separateMailbox(folder) : folder;
+		String mailbox = containsSeparator ? separateMailbox(folder) : getMailAddress();
 
 		FolderId folderId;
 		try {
-			folderId = cache.getFolder(mailbox, folder).getId();
+			folderId = cache.getFolder(mailbox, folderNameToUse).getId();
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -349,12 +351,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String mailbox = separateMailbox(destinationFolder);
-		destinationFolder = separateFolderName(destinationFolder);
-
+		boolean containsSeparator = destinationFolder.contains(SEPARATOR);
+		String folderNameToUse = containsSeparator ? separateMailbox(destinationFolder) : destinationFolder;
+		String mailbox = containsSeparator ? separateMailbox(destinationFolder) : getMailAddress();
 		ExchangeService exchangeService = getConnection(mailbox);
+
 		try {
-			FolderId destinationFolderId = cache.getFolder(mailbox, destinationFolder).getId();
+			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse).getId();
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -366,12 +369,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public EmailMessage copyFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		String mailbox = separateMailbox(destinationFolder);
-		destinationFolder = separateFolderName(destinationFolder);
-
+		boolean containsSeparator = destinationFolder.contains(SEPARATOR);
+		String folderNameToUse = containsSeparator ? separateMailbox(destinationFolder) : destinationFolder;
+		String mailbox = containsSeparator ? separateMailbox(destinationFolder) : getMailAddress();
 		ExchangeService exchangeService = getConnection(mailbox);
+
 		try {
-			FolderId destinationFolderId = cache.getFolder(mailbox, destinationFolder).getId();
+			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse).getId();
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -622,21 +626,24 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	
 	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception{
 		FindFoldersResults findResults;
-		String mailbox = separateMailbox(folderName);
-		folderName = separateFolderName(folderName);
+		boolean containsSeparator = folderName.contains(SEPARATOR);
+		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
+		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
 
-		findResults = exchangeService.findFolders(cache.getBaseFolderId(mailbox), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+		FolderId basefolderId = cache.getBaseFolderId(mailbox);
+
+		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderNameToUse), new FolderView(Integer.MAX_VALUE));
 		if (create && findResults.getTotalCount()==0) {
-			log.debug("creating folder [" + folderName + "]");
-			createFolder(mailbox+"|"+folderName);
-			findResults = exchangeService.findFolders(cache.getBaseFolderId(mailbox), new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName), new FolderView(Integer.MAX_VALUE));
+			log.debug("creating folder [" + folderNameToUse + "]");
+			createFolder(folderName); // Pass incoming folderName to createFolder, separator check needs to be done there as well.
+			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderNameToUse), new FolderView(Integer.MAX_VALUE));
 		}
 		if (findResults.getTotalCount()==0) {
-			log.debug("folder [" + folderName + "] not found");
+			log.debug("folder [" + folderNameToUse + "] not found");
 			return null;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
+			log.debug("amount of folders with name: " + folderNameToUse + " = " + findResults.getTotalCount());
 			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
 		}
 		FolderId folderId = findResults.getFolders().get(0).getId();
@@ -646,19 +653,17 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void createFolder(String folderName) throws FileSystemException {
 		boolean containsSeparator = folderName.contains(SEPARATOR);
-		ExchangeService exchangeService = containsSeparator ? getConnection(separateMailbox(folderName)) : getConnection();
+		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
+		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
+		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
 			Folder folder = new Folder(exchangeService);
-			folder.setDisplayName(folderName);
-			if(containsSeparator){
-				folder.save(new FolderId(cache.getBaseFolderId(separateMailbox(folderName)).getUniqueId()))
-			} else {
-				// TODO: baseFolderId is currently only available when you know mailbox.. folder.save(new FolderId(baseFolderId);
-			}
+			folder.setDisplayName(folderNameToUse);
+			folder.save(new FolderId(cache.getBaseFolderId(folderNameToUse).getUniqueId()));
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			throw new FileSystemException("cannot create folder ["+folderName+"]", e);
+			throw new FileSystemException("cannot create folder ["+folderNameToUse+"]", e);
 		} finally {
 			releaseConnection(exchangeService);
 		}
@@ -668,16 +673,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
 		boolean containsSeparator = folderName.contains(SEPARATOR);
-		ExchangeService exchangeService = containsSeparator ? getConnection(separateMailbox(folderName)) : getConnection();
+		String folderNameToUse = containsSeparator ? separateMailbox(folderName) : folderName;
+		String mailbox = containsSeparator ? separateMailbox(folderName) : getMailAddress();
+		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
-			Folder folder;
-			if(containsSeparator){
-				folder = cache.getFolder(separateMailbox(folderName), separateFolderName(folderName));
-			} else {
-				FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
-				folder = Folder.bind(exchangeService, folderId);
-			}
+			Folder folder = cache.getFolder(mailbox, folderNameToUse);;
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
 			}
