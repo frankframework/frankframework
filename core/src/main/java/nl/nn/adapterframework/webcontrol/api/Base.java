@@ -155,7 +155,8 @@ public abstract class Base implements ApplicationContextAware {
 			InputStream is = msg.getObject(InputStream.class);
 
 			try {
-				return Misc.streamToString(is, "\n", encoding, false);
+				String inputMessage = Misc.streamToString(is, "\n", encoding, false);
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {

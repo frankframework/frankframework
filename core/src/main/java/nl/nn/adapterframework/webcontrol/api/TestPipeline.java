@@ -93,6 +93,7 @@ public class TestPipeline extends Base {
 
 		String message = null;
 		InputStream file = null;
+		boolean isZipFile = false;
 
 		String adapterName = resolveStringFromMap(inputDataMap, "adapter");
 		//Make sure the adapter exists!
@@ -120,6 +121,7 @@ public class TestPipeline extends Base {
 
 			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
 				try {
+					isZipFile = true;
 					file = filePart.getObject(InputStream.class);
 					processZipFile(result, file, fileEncoding, adapter, sessionKeyMap, secLogMessage);
 				} catch (Exception e) {
@@ -131,24 +133,25 @@ public class TestPipeline extends Base {
 		} else {
 			message = resolveStringWithEncoding(inputDataMap, "message", fileEncoding);
 		}
-
-		result.put("message", message);
-		try {
-			PipeLineResult plr = processMessage(adapter, message, sessionKeyMap, secLogMessage);
+		if(!isZipFile) {
+			result.put("message", message);
 			try {
-				result.put(PIPELINE_RESULT_STATE, plr.getState());
-				result.put(PIPELINE_RESULT, plr.getResult().asString());
+				PipeLineResult plr = processMessage(adapter, message, sessionKeyMap, secLogMessage);
+				try {
+					result.put(PIPELINE_RESULT_STATE, plr.getState());
+					result.put(PIPELINE_RESULT, plr.getResult().asString());
+				} catch (Exception e) {
+					String msg = "An exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
+					log.warn(msg, e);
+					result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
+					result.put(PIPELINE_RESULT, msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
+				}
 			} catch (Exception e) {
-				String msg = "An exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
+				String msg = "An exception occurred while processing the message"; 
 				log.warn(msg, e);
 				result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
-				result.put(PIPELINE_RESULT, msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
+				result.put(PIPELINE_RESULT, msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
 			}
-		} catch (Exception e) {
-			String msg = "An exception occurred while processing the message"; 
-			log.warn(msg, e);
-			result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
-			result.put(PIPELINE_RESULT, msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
 		}
 
 		return Response.status(Response.Status.CREATED).entity(result).build();
