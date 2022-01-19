@@ -154,13 +154,23 @@ public class ExchangeFileSystemCache {
 	 * @param mailbox - The name of the mailbox to cache.
 	 * @param folder - The Folder object to store in cache.
 	 */
-	private void registerFolder(String mailbox, Folder folder) throws Exception {
+	public void registerFolder(String mailbox, Folder folder) throws Exception {
 		String folderName = folder.getDisplayName();
 		String key = mailbox + folderName;
 		if(!folders.containsKey(key)){
 			log.debug("Creating a local cache of folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"].");
 
 			folders.put(key, folder);
+		}
+	}
+
+	public void removeFolder(String mailbox, Folder folder) throws Exception {
+		String folderName = folder.getDisplayName();
+		String key = mailbox + folderName;
+		if(folders.containsKey(key)){
+			log.debug("Removing folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"] from cache.");
+
+			folders.remove(key);
 		}
 	}
 

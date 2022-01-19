@@ -117,7 +117,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 
-	private final String SEPARATOR = "\\|";
+	private final String SEPARATOR = "|";
+	private final String SEPARATOR_PATTERN = "\\|";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -293,10 +294,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public boolean folderExists(String folder) throws FileSystemException {
 		String folderNameToUse = getFolderNameToUse(folder);
 		String mailbox = getMailboxToUse(folder);
+		registerMailbox(mailbox);
 
-		FolderId folderId;
+		FolderId folderId = null;
 		try {
-			folderId = cache.getFolder(mailbox, folderNameToUse).getId();
+			Folder folderObject = cache.getFolder(mailbox, folderNameToUse);
+			if(folderObject != null){
+				folderId = folderObject.getId();
+			}
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
@@ -349,7 +354,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 	@Override
 	public EmailMessage moveFile(EmailMessage f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		boolean containsSeparator = destinationFolder.contains(SEPARATOR);
 		String folderNameToUse = getFolderNameToUse(destinationFolder);
 		String mailbox = getMailboxToUse(destinationFolder);
 		ExchangeService exchangeService = getConnection(mailbox);
@@ -655,10 +659,11 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			Folder folder = new Folder(exchangeService);
 			folder.setDisplayName(folderNameToUse);
-			folder.save(new FolderId(cache.getBaseFolderId(folderNameToUse).getUniqueId()));
+			folder.save(cache.getBaseFolderId(mailbox));
+			cache.registerFolder(mailbox, folder);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			throw new FileSystemException("cannot create folder ["+folderNameToUse+"]", e);
+			throw new FileSystemException("cannot create folder ["+folderNameToUse+"] in mailbox ["+mailbox+"]", e);
 		} finally {
 			releaseConnection(exchangeService);
 		}
@@ -677,6 +682,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				folder.empty(DeleteMode.HardDelete, true);
 			}
 			folder.delete(DeleteMode.HardDelete);
+			cache.removeFolder(mailbox, folder);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
@@ -811,26 +817,34 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private String separateFolderName(String concatenatedString){
-		return concatenatedString.split(SEPARATOR)[1];
+		return concatenatedString.split(SEPARATOR_PATTERN)[1];
 	}
 
 	private String separateMailbox(String concatenatedString){
-		return concatenatedString.split(SEPARATOR)[0];
+		return concatenatedString.split(SEPARATOR_PATTERN)[0];
 	}
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
 		ExchangeService service = super.getConnection();
 		service.getHttpHeaders().put("X-AnchorMailbox", mailbox);
 
+		registerMailbox(mailbox, service);
+
+		return service;
+	}
+
+	private void registerMailbox(String mailbox) throws FileSystemException {
+		registerMailbox(mailbox, getConnection());
+	}
+
+	private void registerMailbox(String mailbox, ExchangeService service) throws FileSystemException {
 		try {
 			cache.ensureMailboxIsRegistered(mailbox, getBaseFolder(), service);
 		} catch (Exception e) {
 			invalidateConnection(service);
 			releaseConnection(service);
-			throw new FileSystemException("An error occurred whilst loading mailbox ["+mailbox+"] into cache.");
+			throw new FileSystemException("An error occurred whilst loading mailbox ["+mailbox+"] into cache.", e);
 		}
-
-		return service;
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
