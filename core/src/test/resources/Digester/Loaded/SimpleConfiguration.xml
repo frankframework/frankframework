@@ -1,5 +1,5 @@
 <configuration name="SimpleConfiguration">
-	<adapter name="HelloBeautifulWorld" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<adapter name="HelloBeautifulWorld">
 		<receiver name="HelloBeautifulWorld">
 			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
