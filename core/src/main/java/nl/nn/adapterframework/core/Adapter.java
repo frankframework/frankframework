@@ -117,7 +117,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
-	private @Getter PipeLine pipeline;
+	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
 

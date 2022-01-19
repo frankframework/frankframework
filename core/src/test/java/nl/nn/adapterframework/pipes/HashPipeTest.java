@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.SimpleParameter;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
 import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -104,7 +104,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void paramSha512hex() throws Exception {
 		pipe.setBinaryToTextEncoding(HashEncoding.Hex); //also tests deprecated BinaryToTextEncoding. same output as above test
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.addParameter(new SimpleParameter("secret", "Potato"));
+		pipe.addParameter(new Parameter("secret", "Potato"));
 		pipe.configure();
 		pipe.start();
 
@@ -118,7 +118,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		pipe.setSecret("Aardappel");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(HashAlgorithm.HmacSHA512);
-		pipe.addParameter(new SimpleParameter("secret", ""));
+		pipe.addParameter(new Parameter("secret", ""));
 		pipe.configure();
 		pipe.start();
 

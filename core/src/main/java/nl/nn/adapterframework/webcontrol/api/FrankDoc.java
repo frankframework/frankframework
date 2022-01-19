@@ -46,7 +46,7 @@ public final class FrankDoc extends Base {
 	public Response fetchFrankDocJSON() throws ApiException, IOException {
 		URL frankDoc = ClassUtils.getResourceURL(FRANKDOC_JSON);
 		if(frankDoc != null) {
-			return Response.status(Response.Status.OK).entity(Message.asString(frankDoc)).build();
+			return Response.status(Response.Status.OK).entity(Message.asInputStream(frankDoc)).build();
 		}
 
 		throw new ApiException("Frank!Doc JSON not found", Response.Status.NOT_FOUND);
@@ -55,15 +55,16 @@ public final class FrankDoc extends Base {
 	@GET
 	@PermitAll
 	@Path("frankdoc.xsd")
-	@Produces(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response fetchFrankDocXSD() throws ApiException, IOException {
 		URL frankDoc = ClassUtils.getResourceURL(FRANKDOC_XSD);
 		if(frankDoc != null) {
 			String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 			String xsdName = String.format("FrankFramework%s.xsd", applicationVersion!=null ? "-"+applicationVersion : "");
 			return Response.status(Response.Status.OK)
-					.entity(Message.asString(frankDoc))
+					.entity(Message.asInputStream(frankDoc))
 					.header("Content-Disposition", "attachment; filename=\"" + xsdName + "\"")
+					.header("Content-Transfer-Encoding", "binary")
 					.build();
 		}
 
