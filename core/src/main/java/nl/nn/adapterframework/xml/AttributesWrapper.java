@@ -54,7 +54,7 @@ public class AttributesWrapper implements Attributes {
 
 	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder) {
 		for(int i=0;i<source.getLength();i++) {
-			if (filter!=null && filter.apply(i)) {
+			if (filter==null || filter.apply(i)) {
 				Attribute a = new Attribute();
 				a.uri=source.getURI(i);
 				a.localName=source.getLocalName(i);
