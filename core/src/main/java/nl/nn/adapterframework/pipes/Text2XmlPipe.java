@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author J. Dekker
  */
-public class Text2XmlPipe extends FixedForwardPipe {
+public class Text2XmlPipe extends FixedForwardPipe { //TODO use streaming pipe
 	private @Getter String xmlTag;
 	private @Getter boolean includeXmlDeclaration = true;
 	private @Getter boolean splitLines = false;
@@ -55,10 +55,10 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
-		try {
+		try {// TODO use xml writer
 			if (isSplitLines() && !Message.isEmpty(message)) {
 				Reader reader = message.asReader();
-				if (replaceNonXmlChars) {
+				if (replaceNonXmlChars) { //TODO remove this, it should ALWAYS be valid XML
 					reader = new EncapsulatingReader(reader, "", "", true);
 				}
 				try (BufferedReader br = new BufferedReader(reader)) {
@@ -68,7 +68,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 					while ((l = br.readLine()) != null) {
 						buffer.append("<line>"+addCdataSection(l)+"</line>");
 					}
-	
+
 					result = buffer.toString();
 				}
 			} else if (replaceNonXmlChars && !Message.isEmpty(message)) {
@@ -81,7 +81,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		}
 
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
-		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
+		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";
 		return new PipeRunResult(getSuccessForward(), resultString);
 	}
 

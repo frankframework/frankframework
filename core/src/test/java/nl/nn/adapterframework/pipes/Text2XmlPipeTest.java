@@ -93,6 +93,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult res = doPipe(Message.nullMessage());
-		assertEquals("<tests><![CDATA[null]]></tests>", res.getResult().asString());
+		assertEquals("<tests nil=\"true\" />", res.getResult().asString());
 	}
 }
