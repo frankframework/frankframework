@@ -42,7 +42,6 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	private boolean splitLines = false;
 	private boolean replaceNonXmlChars = true;
 	private boolean useCdataSection = true;
-	
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -52,13 +51,12 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			throw new ConfigurationException("You have not defined xmlTag");
 		}
 	}
-	
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
-			if (isSplitLines() && message != null) {
+			if (isSplitLines() && !Message.isEmpty(message)) {
 				Reader reader = message.asReader();
 				if (replaceNonXmlChars) {
 					reader = new EncapsulatingReader(reader, "", "", true);
@@ -71,10 +69,10 @@ public class Text2XmlPipe extends FixedForwardPipe {
 				while ((l = br.readLine()) != null) {
 					buffer.append("<line>"+addCdataSection(l)+"</line>");
 				}
-					
+
 				result = buffer.toString();
 				br.close();
-			} else if (replaceNonXmlChars && message != null) {
+			} else if (replaceNonXmlChars && !Message.isEmpty(message)) {
 				result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
 			} else {
 				result = addCdataSection((message == null ? null : message.asString()));
@@ -82,8 +80,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "Unexpected exception during splitting", e); 
 		}
-		
-			
+
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
 		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";	
 		return new PipeRunResult(getSuccessForward(), resultString);
@@ -96,7 +93,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			return input;
 		}
 	}
-	
+
 	/**
 	 * Returns the xmltag to encapsulate the text in.
 	 */
