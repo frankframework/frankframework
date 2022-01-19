@@ -21,6 +21,7 @@ import org.w3c.dom.Node;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -652,7 +653,7 @@ public class ParameterTest {
 	
 			PipeLineExit exit = new PipeLineExit();
 			exit.setPath("exit");
-			exit.setState("success");
+			exit.setState(ExitState.SUCCESS);
 			pipeline.registerPipeLineExit(exit);
 			pipeline.configure();
 	

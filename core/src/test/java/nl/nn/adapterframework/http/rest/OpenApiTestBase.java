@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -233,13 +234,13 @@ public class OpenApiTestBase extends Mockito {
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
 				case "200":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				case "201":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
-					ple.setState("error");
+					ple.setState(ExitState.ERROR);
 					break;
 			}
 			this.exits.add(ple);

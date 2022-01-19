@@ -11,6 +11,7 @@ import org.hamcrest.core.StringEndsWith;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.extensions.esb.DirectWrapperPipe;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.EchoPipe;
@@ -28,7 +29,7 @@ public class PipeLineTest {
 		pipeline.setApplicationContext(configuration);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("success");
-		exit.setState("SUCCESS");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.registerPipeLineExit(exit);
 		adapter.setPipeLine(pipeline);
@@ -57,7 +58,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
@@ -92,7 +93,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
@@ -131,7 +132,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
@@ -166,7 +167,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("special exit name");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
@@ -209,7 +210,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
@@ -253,7 +254,7 @@ public class PipeLineTest {
 
 		PipeLineExit exit = configuration.createBean(PipeLineExit.class);
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 
 		pipeline.setOwner(pipe);

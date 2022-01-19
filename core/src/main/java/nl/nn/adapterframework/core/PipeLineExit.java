@@ -16,8 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
-import nl.nn.adapterframework.doc.DocumentedEnum;
-import nl.nn.adapterframework.doc.EnumLabel;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 
 /**
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
@@ -50,11 +49,6 @@ public class PipeLineExit implements IForwardTarget {
 	private @Getter int exitCode = 0;
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
-
-	public enum ExitState implements DocumentedEnum {
-		@EnumLabel("success") SUCCESS,
-		@EnumLabel("error") ERROR;
-	}
 
 	public boolean isSuccessExit() {
 		return getState()==ExitState.SUCCESS;
