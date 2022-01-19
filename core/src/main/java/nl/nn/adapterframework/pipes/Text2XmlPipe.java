@@ -16,8 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,7 +26,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author J. Dekker
  */
-public class Text2XmlPipe extends FixedForwardPipe { //TODO use streaming pipe
+public class Text2XmlPipe extends StreamingPipe {
 	private @Getter String xmlTag;
 	private @Getter boolean includeXmlDeclaration = true;
 	private @Getter boolean splitLines = false;
@@ -48,41 +48,46 @@ public class Text2XmlPipe extends FixedForwardPipe { //TODO use streaming pipe
 		super.configure();
 
 		if (StringUtils.isEmpty(getXmlTag())) {
-			throw new ConfigurationException("You have not defined xmlTag");
+			throw new ConfigurationException("Attribute [xmlTag] must be specified");
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
-		try {// TODO use xml writer
-			if (isSplitLines() && !Message.isEmpty(message)) {
-				Reader reader = message.asReader();
-				if (replaceNonXmlChars) { //TODO remove this, it should ALWAYS be valid XML
-					reader = new EncapsulatingReader(reader, "", "", true);
-				}
-				try (BufferedReader br = new BufferedReader(reader)) {
-					StringBuilder buffer = new StringBuilder();
+		try (MessageOutputStream target = getTargetStream(session)) {
+			try (Writer writer = target.asWriter()) {
+				if (isSplitLines() && !Message.isEmpty(message)) {
+					try (BufferedReader reader = new BufferedReader(message.asReader())) {
+						String line;
+						while ((line = reader.readLine()) != null) {
+							writer.append("<line>"+addCdataSection(line)+"</line>");
+						}
 
-					String l;
-					while ((l = br.readLine()) != null) {
-						buffer.append("<line>"+addCdataSection(l)+"</line>");
+						result = writer.toString();
 					}
-
-					result = buffer.toString();
+				} else if (isReplaceNonXmlChars() && !Message.isEmpty(message)) {
+					result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
+				} else {
+					result = addCdataSection(message.asString());
 				}
-			} else if (replaceNonXmlChars && !Message.isEmpty(message)) {
-				result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
-			} else {
-				result = addCdataSection((Message.isEmpty(message) ? null : message.asString()));
 			}
-		} catch (IOException e) {
+		} catch(Exception e) {
 			throw new PipeRunException(this, "Unexpected exception during splitting", e); 
 		}
 
-		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
-		"<" + getXmlTag() + ">"+result+"</" + xmlTag + ">";
-		return new PipeRunResult(getSuccessForward(), resultString);
+		return new PipeRunResult(getSuccessForward(), prepareResult(result));
+	}
+
+	private String prepareResult(String result) {
+		StringBuilder builder = new StringBuilder(isIncludeXmlDeclaration() ? "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" : "");
+		builder.append("<" + getXmlTag());
+		if(result == null) {
+			builder.append(" nil=\"true\" />");
+		} else {
+			builder.append(">"+result+"</" + getXmlTag() + ">");
+		}
+		return builder.toString();
 	}
 
 	private String addCdataSection(String input) {
@@ -91,6 +96,11 @@ public class Text2XmlPipe extends FixedForwardPipe { //TODO use streaming pipe
 		} else {
 			return input;
 		}
+	}
+
+	@Override
+	protected boolean canProvideOutputStream() {
+		return false;
 	}
 
 	/**
@@ -102,7 +112,7 @@ public class Text2XmlPipe extends FixedForwardPipe { //TODO use streaming pipe
 	}
 
 	/**
-	 * Controls whether a declation is included above the xml text
+	 * Controls whether a declaration is included above the xml text
 	 * @ff.default true
 	 */
 	public void setIncludeXmlDeclaration(boolean b) {
