@@ -540,13 +540,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		Message request = Message.asMessage(message);
 		Object result = message;
 		try {
+			Object requestObject = request.asObject();
 			switch(getType()) {
 				case NODE:
 					try {
 						if (transformerPoolRemoveNamespaces != null) {
 							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
 						}
-						Object requestObject = request.asObject();
 						if(requestObject instanceof Document) {
 							return ((Document)requestObject).getDocumentElement();
 						}
@@ -564,7 +564,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if (transformerPoolRemoveNamespaces != null) {
 							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
 						}
-						Object requestObject = request.asObject();
 						if(requestObject instanceof Document) {
 							return requestObject;
 						}
@@ -578,6 +577,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 				case DATETIME:
 				case TIMESTAMP:
 				case TIME:
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to date using formatString ["+getFormatString()+"]" );
 					DateFormat df = new SimpleDateFormat(getFormatString());
 					try {
@@ -587,10 +589,16 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					break;
 				case XMLDATETIME:
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] from xml dateTime to date" );
 					result = DateUtils.parseXmlDateTime(request.asString());
 					break;
 				case NUMBER:
+					if(requestObject instanceof Number) {
+						return requestObject;
+					}
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
@@ -602,6 +610,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					break;
 				case INTEGER:
+					if(requestObject instanceof Integer) {
+						return requestObject;
+					}
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to integer" );
 					try {
 						Integer i = Integer.parseInt(request.asString());
@@ -611,6 +622,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					break;
 				case BOOLEAN:
+					if(requestObject instanceof Boolean) {
+						return requestObject;
+					}
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to boolean" );
 					Boolean i = Boolean.parseBoolean(request.asString());
 					result = i;
@@ -680,13 +694,21 @@ public class Parameter implements IConfigurable, IWithParameters {
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			substitutionValue = session.get(name);
+			substitutionValue = session.getMessage(name);
 		}
 		if (substitutionValue instanceof Message) {
-			try {
-				substitutionValue = ((Message)substitutionValue).asString();
-			} catch (IOException e) {
-				throw new ParameterException("Cannot get substitution value", e);
+			Message substitutionValueMessage = (Message)substitutionValue;
+			if (substitutionValueMessage.isEmpty()) {
+				substitutionValue = null;
+			} else if (substitutionValueMessage.asObject() instanceof Date) {
+				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+				substitutionValue = formatterFrom.format((Date)substitutionValueMessage.asObject());
+			} else { 
+				try {
+					substitutionValue = ((Message)substitutionValue).asString();
+				} catch (IOException e) {
+					throw new ParameterException("Cannot get substitution value", e);
+				}
 			}
 		}
 		if (substitutionValue == null) {
@@ -703,23 +725,22 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
-				Date d;
-				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 				String fixedDateTime = null;
 				try {
-					fixedDateTime = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY).asString();
+					Message sessionValue = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+					if (sessionValue.asObject() instanceof Date) {
+						SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+						fixedDateTime = formatterFrom.format((Date)sessionValue.asObject());
+					} else {
+						fixedDateTime = sessionValue.asString();
+					}
 				} catch (IOException e) {
 					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]", e);
 				}
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}
-				try {
-					d = formatterFrom.parse(fixedDateTime);
-				} catch (ParseException e) {
-					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
-				}
-				substitutionValue = d;
+				substitutionValue = fixedDateTime;
 			} else if ("fixeduid".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
@@ -774,12 +795,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+ 
 			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+ 
 			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+ 
-			"value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
+			"value '*' then all existing sessionkeys are added as parameter (except tsReceived)", ""})
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
 
-	@IbisDoc({"5", "Instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression applied to the input message to extract the name of the session-variable.", ""})
+	@IbisDoc({"5", "Instead of a fixed <code>sessionKey</code> it's also possible to use a xpath expression applied to the input message to extract the name of the session-variable.", ""})
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
@@ -795,7 +816,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	/**
 	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
 	 */
-	@IbisDoc({"7", "the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
+	@IbisDoc({"7", "the XPath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
 	}
@@ -822,7 +843,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
-		"stylesheet/xpathexpression is executed", "false"})
+		"stylesheet/xpathExpression is executed", "false"})
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}

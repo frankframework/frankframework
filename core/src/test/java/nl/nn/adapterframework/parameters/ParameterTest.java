@@ -722,4 +722,26 @@ public class ParameterTest {
 		String formattedDate = sdf.format(resultDate);
 		assertEquals("1995-01-23", formattedDate);
 	}
+
+	@Test
+	public void testFixedDateWithDateObjectInSession() throws Exception {
+		Parameter p = new Parameter();
+		p.setName("date");
+		p.setPattern("{fixedDate}");
+		p.setType(ParameterType.DATE);
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+		SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+		session.put("fixedDate",sdf.parse("1995-01-23"));
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		assertTrue(result instanceof Date);
+
+		Date resultDate = (Date) result;
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1995-01-23", formattedDate);
+	}
 }
