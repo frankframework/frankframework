@@ -13,10 +13,20 @@
 			<xsl:apply-templates select="*" mode="preprocess"/>
 		</xsl:variable>
 
+		<xsl:text>
+			&lt;div class="inmodal">
+				&lt;div class="modal-body" ng-if="!error">
+					&lt;ng-mermaid>
+		</xsl:text>
 		<xsl:text>graph&#10;</xsl:text>
-		<xsl:text>	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
+		<xsl:text> classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
+		<xsl:text>
+					&lt;/ng-mermaid>
+				&lt;/div>
+			&lt;/div>
+		</xsl:text>
 <!--		<xsl:copy-of select="$preproccessedConfiguration"/>-->
 	</xsl:template>
 
@@ -502,7 +512,7 @@
 		<xsl:value-of select="$shapeStart"/>
 		<xsl:value-of select="$text"/>
 		<xsl:if test="$subText != ''">
-			<xsl:text>&lt;br/></xsl:text>
+			<xsl:text>&amp;lt;br></xsl:text>
 			<xsl:value-of select="$subText"/>
 		</xsl:if>
 		<xsl:value-of select="$shapeEnd"/>
@@ -515,7 +525,7 @@
 		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' -. ') else (' --> |')"/>
 		<xsl:value-of select="@name"/>
 		<xsl:if test="exists(@customText)">
-			<xsl:text>&lt;br/></xsl:text>
+			<xsl:text>&amp;lt;br></xsl:text>
 			<xsl:value-of select="@customText"/>
 		</xsl:if>
 		<xsl:value-of select="if (xs:boolean(@errorHandling)) then (' .-> ') else ('| ')"/>
