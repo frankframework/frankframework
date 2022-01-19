@@ -186,7 +186,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						pf.setPath(nextPipeName);
 						pipe.registerForward(pf);
 					} else {
-						PipeLineExit plexit = findExitByState(PipeLineExit.EXIT_STATE_SUCCESS);
+						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
@@ -339,10 +339,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return configurationSucceeded;
 	}
 
-	public PipeLineExit findExitByState(String state) {
+	public PipeLineExit findExitByState(ExitState state) {
 		for (String exitPath : pipeLineExits.keySet()) {
 			PipeLineExit pe = pipeLineExits.get(exitPath);
-			if (pe.getState().equals(state)) {
+			if (pe.getState()==state) {
 				return pe;
 			}
 		}
