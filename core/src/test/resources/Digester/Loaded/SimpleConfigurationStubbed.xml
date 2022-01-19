@@ -3,13 +3,13 @@
 		<receiver name="testtool-HelloBeautifulWorld">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
 		</receiver>
-		<receiver name="HelloBeautifulWorld" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<receiver name="HelloBeautifulWorld">
 			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
 		<receiver name="testtool-HelloBeautifulWorld-1">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld-1"/>
 		</receiver>
-		<pipeline firstPipe="HelloBeautifulWorld" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit path="EXIT" state="success"/>
 			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World" className="nl.nn.adapterframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
