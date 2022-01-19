@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
  * @author Gerrit van Brakel
+ * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
 public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
@@ -216,6 +217,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 			this.requiresTypeConversion = requiresTypeConverion;
 		}
 
+	}
+
+	public Parameter() {
+		super();
+	}
+
+	/** utility constructor, useful for unit testing */
+	public Parameter(String name, String value) {
+		this();
+		this.name = name;
+		this.value = value;
 	}
 
 	@Override
@@ -492,7 +504,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
 				if (((String)result).length()<getMinLength()) {
-					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] deceeds minLength ["+getMinLength()+"]" );
+					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] falls short of minLength ["+getMinLength()+"]" );
 					result = StringUtils.rightPad(((String)result), getMinLength());
 				}
 			}
@@ -508,7 +520,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		if (result !=null && result instanceof Number) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
-				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusiveString()+"]" );
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusiveString()+"]" );
 				result = minInclusive;
 			}
 			if (getMaxInclusiveString()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
@@ -602,6 +614,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to boolean" );
 					Boolean i = Boolean.parseBoolean(request.asString());
 					result = i;
+					break;
 				default:
 					break;
 			}
@@ -695,8 +708,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 				String fixedDateTime = null;
 				try {
 					fixedDateTime = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY).asString();
-				} catch (IOException e1) {
-					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]");
+				} catch (IOException e) {
+					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]", e);
 				}
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
@@ -885,7 +898,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		groupingSeparator = string;
 	}
 
-	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded", "-1"})
+	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded", "-1"})
 	public void setMinLength(int i) {
 		minLength = i;
 	}
@@ -900,7 +913,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		maxInclusiveString = string;
 	}
 	
-	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
+	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken", ""})
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}

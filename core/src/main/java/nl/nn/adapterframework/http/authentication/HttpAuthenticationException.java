@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,27 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.http.authentication;
 
-public enum OracleKeyWords {
+import nl.nn.adapterframework.core.IbisException;
 
-	NEXTVAL(".NEXTVAL"),
-	CURRVAL(".CURRVAL"),
-	FOR_UPDATE("FOR UPDATE"),
-	EMPTY_CLOB("EMPTY_CLOB"),
-	SYSDATE("SYSDATE"),
-	SYSTIMESTAMP("SYSTIMESTAMP"),
-	EMPTY_BLOB("EMPTY_BLOB"),
-	DUAL("DUAL");
-	
-	private final String key;
-	
-	OracleKeyWords(String key) {
-		this.key = key;
+public class HttpAuthenticationException extends IbisException {
+
+	public HttpAuthenticationException() {
+		super();
 	}
-	
-	public String key() {
-		return this.key;
+
+	public HttpAuthenticationException(String message) {
+		super(message);
 	}
-	
+
+	public HttpAuthenticationException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public HttpAuthenticationException(Throwable cause) {
+		super(cause);
+	}
+
 }

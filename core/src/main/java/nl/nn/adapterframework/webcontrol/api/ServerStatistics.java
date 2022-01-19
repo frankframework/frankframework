@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Collection of server and application statistics and information.
@@ -301,7 +301,7 @@ public class ServerStatistics extends Base {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
-		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
@@ -312,26 +312,26 @@ public class ServerStatistics extends Base {
 				} else {
 					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
 				}
-				stateCount.put(RunStateEnum.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
+				stateCount.put(RunState.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
 			}
 		}
 
 		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state.equals(RunStateEnum.STARTED)) {
+			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+					RunState rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -344,7 +344,7 @@ public class ServerStatistics extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty()) {

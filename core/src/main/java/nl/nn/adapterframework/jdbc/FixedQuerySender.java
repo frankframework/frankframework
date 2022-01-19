@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import java.sql.Connection;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.stream.Message;
 
@@ -41,8 +41,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext> {
 
-	private String query=null;
-	private int batchSize;
+	private @Getter String query=null;
+	private @Getter int batchSize;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -136,21 +136,18 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 
-	@IbisDoc({"1", "The SQL query text to be excecuted each time sendMessage() is called", ""})
+	/** The SQL query text to be excecuted each time sendMessage() is called 
+	 * @ff.mandatory
+	 */
 	public void setQuery(String query) {
 		this.query = query;
 	}
-	public String getQuery() {
-		return query;
-	}
 
-	@IbisDoc({"2", "When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.", "0"})
+	/** When set larger than 0 and used as a child of an IteratingPipe, then the database calls are made in batches of this size. Only for queryType=other.
+	  * @ff.default 0
+	  */
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
-	}
-	@Override
-	public int getBatchSize() {
-		return batchSize;
 	}
 
 }

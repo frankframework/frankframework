@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class ParameterValueListTest {
 
@@ -56,14 +57,14 @@ public class ParameterValueListTest {
 	@Test
 	public void testDuplicateNames() throws Exception {
 		ParameterList list = new ParameterList();
-		list.add(new SimpleParameter("name", "dummy-1"));
-		list.add(new SimpleParameter("name", "dummy-2"));
-		list.add(new SimpleParameter("name", "dummy-3"));
+		list.add(new Parameter("name", "dummy-1"));
+		list.add(new Parameter("name", "dummy-2"));
+		list.add(new Parameter("name", "dummy-3"));
 		list.configure();
 
 		assertEquals(3, list.size());
 
-		ParameterValueList pvl = SimpleParameter.getPVL(list);
+		ParameterValueList pvl = ParameterBuilder.getPVL(list);
 		assertEquals(3, pvl.size());
 	}
 }

@@ -67,7 +67,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		setTableName("IBISSTORE");
 		setKeyField("MESSAGEKEY");
 		setMessageField("MESSAGE");
-		setMessageFieldType("blob");
+		setMessageFieldType(MessageFieldType.BLOB);
 		setBlobSmartGet(true);
 		setStatusField("TYPE");
 		setTimestampField("MESSAGEDATE");

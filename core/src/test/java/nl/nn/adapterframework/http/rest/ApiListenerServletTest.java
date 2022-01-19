@@ -808,8 +808,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
-		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertTrue(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -823,8 +823,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
-		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertTrue(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -887,8 +887,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
-		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertTrue(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -904,8 +904,8 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(prepareJWTRequest(null));
 
-		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
 		assertTrue(result.containsHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -982,7 +982,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		SignedJWT signedJWT = new SignedJWT(jwsHeader, builder.build());
 
-		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/Signature/certificate.pfx"), "geheim", KeystoreType.PKCS12, "Keys for signing");
+		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12, "Keys for signing");
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, "geheim", null);
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");

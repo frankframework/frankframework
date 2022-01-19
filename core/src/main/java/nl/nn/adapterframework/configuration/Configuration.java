@@ -303,6 +303,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			state = BootState.STOPPING;
 			super.close();
 		} finally {
+			configured = false;
 			state = BootState.STOPPED;
 		}
 	}

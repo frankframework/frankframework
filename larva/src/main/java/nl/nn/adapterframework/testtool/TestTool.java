@@ -103,6 +103,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -3161,9 +3162,19 @@ public class TestTool {
 			debugMessage("ignoring compare for filename '"+fileName+"'", writers);
 			return RESULT_OK;
 		}
+
 		int ok = RESULT_ERROR;
-		String printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
-		String printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+		String printableExpectedResult;
+		String printableActualResult;
+		String diffType = properties.getProperty(step + ".diffType");
+		if ((diffType != null && diffType.equals(".json")) || (diffType == null && fileName.endsWith(".json"))) {
+			printableExpectedResult = Misc.jsonPretty(expectedResult);
+			printableActualResult = Misc.jsonPretty(actualResult);
+		} else {
+			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
+			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+		}
+		
 		String preparedExpectedResult = printableExpectedResult;
 		String preparedActualResult = printableActualResult;
 
@@ -3773,7 +3784,6 @@ public class TestTool {
 		}
 		
 		debugMessage("Check ignoreContentAfterKey properties", writers);
-		String diffType = properties.getProperty(step + ".diffType");
 		if ((diffType != null && (diffType.equals(".xml") || diffType.equals(".wsdl")))
 				|| (diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl")))) {
 			// xml diff
