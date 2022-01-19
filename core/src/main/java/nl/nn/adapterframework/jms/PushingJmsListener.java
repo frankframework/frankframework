@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -215,9 +215,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
-			} else {
-				throw new ListenerException(e);
-			}
+			} 
+			throw new ListenerException(e);
 		}
 	}
 
@@ -381,6 +380,15 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	public long getPollGuardInterval() {
 		return pollGuardInterval;
+	}
+
+	/**
+	 * The name of the destination to listen to, this may be a <code>queue</code> or <code>topic</code> name.
+	 * @ff.mandatory
+	 */
+	@Override
+	public void setDestinationName(String destinationName) {
+		super.setDestinationName(destinationName);
 	}
 
 }

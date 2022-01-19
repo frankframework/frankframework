@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,6 +65,9 @@ public class SoapValidator extends Json2XmlValidator {
 			super.setRoot(getRoot());
 		}
 		if (addSoapEnvelopeToSchemaLocation) {
+			if (StringUtils.isEmpty(getSchemaLocation())) {
+				throw new ConfigurationException("schemaLocation must be specified");
+			}
 			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
 		}
 		if (StringUtils.isEmpty(soapBody)) {
@@ -127,6 +130,7 @@ public class SoapValidator extends Json2XmlValidator {
 
 	@IbisDoc({ "always envelope (not allowed to change)", "envelope" })
 	@Override
+	@Deprecated
 	public void setRoot(String r) {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}

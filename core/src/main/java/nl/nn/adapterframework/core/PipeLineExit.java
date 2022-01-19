@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 package nl.nn.adapterframework.core;
 
 import lombok.Getter;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 
 /**
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
@@ -42,20 +43,27 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public class PipeLineExit implements IForwardTarget {
 
-	public static final String EXIT_STATE_SUCCESS = "success";
+	public static final String EXIT_STATE_SUCCESS = ExitState.SUCCESS.getLabel();
 
 	private @Getter String path;
-	private @Getter String state;
+	private @Getter ExitState state;
 	private @Getter int exitCode = 0;
 	private @Getter String responseRoot;
 	private @Getter boolean emptyResult = false;
 
-
-	public boolean isSuccessExit() {
-		return EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
+	public enum ExitState implements DocumentedEnum {
+		@EnumLabel("success") SUCCESS,
+		@EnumLabel("error") ERROR;
 	}
 
-	@IbisDoc({"1", "name of the pipeline exit", ""})
+	public boolean isSuccessExit() {
+		return getState()==ExitState.SUCCESS;
+	}
+
+	/**
+	 * Name of the pipeline exit
+	 * @ff.mandatory
+	 */
 	public void setPath(String newPath) {
 		path = newPath;
 	}
@@ -66,22 +74,33 @@ public class PipeLineExit implements IForwardTarget {
 		return getPath();
 	}
 
-	@IbisDoc({"2", "The exit state defines possible exists to the Pipeline. The state can be one of the following: <code>success, error</code>", ""})
-	public void setState(String newState) {
-		state = newState;
+	/**
+	 * The exit state defines possible exists to the Pipeline.
+	 * @ff.mandatory
+	 */
+	public void setState(ExitState value) {
+		state = value;
 	}
 
-	@IbisDoc({"3", "HTTP statusCode e.g. <code>500</code>", "0"})
+	/**
+	 * HTTP statusCode e.g. <code>500</code>
+	 * @ff.default 200
+	 */
 	public void setCode(String code) {
 		this.exitCode = Integer.parseInt(code);
 	}
 
-	@IbisDoc({"4", "Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state 'success', the last for the other exits.", ""})
+	/**
+	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>success</code>, the last for the other exits.
+	 */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
 	}
 
-	@IbisDoc({"5", "when using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool", "false"})
+	/**
+	 * If using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool
+	 * @ff.default <code>false</code>
+	 */
 	public void setEmpty(String b) {
 		emptyResult = Boolean.parseBoolean(b);
 	}

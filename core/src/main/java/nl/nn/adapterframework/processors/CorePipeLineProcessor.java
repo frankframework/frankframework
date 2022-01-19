@@ -37,6 +37,7 @@ import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLineExit.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -208,8 +209,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 						ready=true;
 					}
 					if (ready) {
-						String state=plExit.getState();
-						pipeLineResult.setState(state);
+						ExitState state=plExit.getState();
+						pipeLineResult.setState(state.getLabel());
 						pipeLineResult.setExitCode(plExit.getExitCode());
 						if (message.asObject()!=null && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 							pipeLineResult.setResult(message);
