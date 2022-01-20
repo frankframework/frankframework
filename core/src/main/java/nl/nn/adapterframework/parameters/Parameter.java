@@ -770,7 +770,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
 			if ("now".equals(name.toLowerCase())) {
-				substitutionValue = new Date();
+				DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+				substitutionValue = df.format(new Date());
 			} else if ("uid".equals(namelc)) {
 				substitutionValue = Misc.createSimpleUUID();
 			} else if ("uuid".equals(namelc)) {

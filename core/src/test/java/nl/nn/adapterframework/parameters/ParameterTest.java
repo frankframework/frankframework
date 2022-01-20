@@ -1088,6 +1088,58 @@ public class ParameterTest {
 	}
 	
 	@Test
+	public void testPatternNowWithDateType() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{now}");
+			p.setType(ParameterType.DATE);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+	
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+	
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+	
+			Date resultDate = (Date) result;
+			SimpleDateFormat sdf = new SimpleDateFormat(Parameter.TYPE_DATE_PATTERN);
+			String formattedDate = sdf.format(resultDate);
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			assertEquals(expectedDate, formattedDate);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternNowWithStringType() throws Exception {
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("date");
+			p.setPattern("{now}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+	
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+	
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+	
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+	@Test
 	public void testDefaultValueMethodDefaultNoDefaultValue() throws Exception {
 		Parameter p = new Parameter();
 		p.setXpathExpression("*/*");
