@@ -138,7 +138,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool transformerPoolRemoveNamespaces;
-	private TransformerPool sessionKeyTransformerPool = null;
+	private TransformerPool tpDynamicSessionKey = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 	private CredentialFactory cf;
@@ -265,7 +265,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			sessionKeyTransformerPool = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
 		}
 		if(getType()==null) {
 			log.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");
@@ -337,7 +337,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	
 	
 	public boolean requiresInputValueForResolution() {
-		if (sessionKeyTransformerPool != null) { // sessionKeyTransformerPool is applied to the input message to retrieve the session key
+		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
 		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
@@ -364,9 +364,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		
 		String requestedSessionKey;
-		if (sessionKeyTransformerPool != null) {
+		if (tpDynamicSessionKey != null) {
 			try {
-				requestedSessionKey = sessionKeyTransformerPool.transform(message.asSource());
+				requestedSessionKey = tpDynamicSessionKey.transform(message.asSource());
 			} catch (Exception e) {
 				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
@@ -376,6 +376,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
+				/*
+				 * determine source for XSLT transformation from
+				 * 1) value attribute
+				 * 2) requestedSessionKey
+				 * 3) pattern
+				 * 4) input message
+				 * 
+				 * N.B. this order differs from untransformed parameters
+				 */
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
@@ -447,6 +456,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
+			/*
+			 * No XSLT transformation, determine primary result from
+			 * 1) requestedSessionKey
+			 * 2) pattern
+			 * 3) value attribute
+			 * 4) input message
+			 * 
+			 * N.B. this order differs from transformed parameters. 
+			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
 				if (log.isDebugEnabled() && (result==null || 
@@ -470,13 +488,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
+		
 		if (result !=null && result instanceof Message) {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
-			// if value is null then return specified default value
+			// if result is null then return specified default value
+			// N.B. 
 			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
 			while (result == null && stringTokenizer.hasMoreElements()) {
 				String token = stringTokenizer.nextToken();
@@ -853,7 +873,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		defaultValue = string;
 	}
 
-	@IbisDoc({"13", "Comma separated list of methods (defaultvalue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.", "defaultvalue"})
+	@IbisDoc({"13", "Comma separated list of methods (defaultValue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.", "defaultValue"})
 	public void setDefaultValueMethods(String string) {
 		defaultValueMethods = string;
 	}
