@@ -203,6 +203,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String password;
 	private @Getter String authDomain;
 	private @Getter String tokenEndpoint;
+	private @Getter int tokenExpiry=-1;
 	private @Getter String clientAuthAlias;
 	private @Getter String clientId;
 	private @Getter String clientSecret;
@@ -478,7 +479,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this);
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this, getTokenExpiry());
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
@@ -852,10 +853,20 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/** 
 	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
-	 * then a PasswordGrant is used, otherwise a ClientCredentials grant.
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant. The obtained accessToken will be added to the regular requests
+	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix. 
 	 */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
+	}
+	/**
+	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token 
+	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response, 
+	 * or when the regular server returns a 401 status with a challenge.
+	 * @ff.default -1
+	 */
+	public void setTokenExpiry(int value) {
+		tokenExpiry = value;
 	}
 	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
 	public void setClientAlias(String clientAuthAlias) {
