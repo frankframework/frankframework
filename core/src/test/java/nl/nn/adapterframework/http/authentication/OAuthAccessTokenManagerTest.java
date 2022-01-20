@@ -46,7 +46,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender, -1);
 				
 		String accessToken = accessTokenManager.getAccessToken(null);
 		
@@ -64,7 +64,7 @@ public class OAuthAccessTokenManagerTest {
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 		Credentials credentials = new UsernamePasswordCredentials(username, password);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, false, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, false, httpSender, -1);
 				
 		String accessToken = accessTokenManager.getAccessToken(credentials);
 		
@@ -79,7 +79,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint(), scope, client_cf, true, httpSender, -1);
 				
 		String accessToken = accessTokenManager.getAccessToken(null);
 		
@@ -94,7 +94,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint()+"/xxxxx", scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpoint()+"/xxxxx", scope, client_cf, true, httpSender, -1);
 
 		HttpAuthenticationException actualException = assertThrows(HttpAuthenticationException.class, ()->accessTokenManager.getAccessToken(null));
 		assertThat(actualException.getMessage(), containsString("Could not retrieve token"));
@@ -108,7 +108,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender, -1);
 				
 		tokenServer.resetScenarios();
 		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
@@ -125,7 +125,7 @@ public class OAuthAccessTokenManagerTest {
 
 		CredentialFactory client_cf = new CredentialFactory(null, clientId, clientSecret);
 
-		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender);
+		OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(tokenServer.getEndpointFirstExpired(), scope, client_cf, true, httpSender, -1);
 
 		tokenServer.resetScenarios();
 		assertThat(accessTokenManager.getAccessToken(null), containsString("Expired"));
