@@ -578,4 +578,9 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		}
 	}
 
+	@Override
+	public void clear() throws StorageException {
+		throw new StorageException("Clear method is not implemented");
+	}
+
 }
