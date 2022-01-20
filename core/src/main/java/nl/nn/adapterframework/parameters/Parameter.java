@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -49,12 +50,15 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -142,6 +146,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 	private CredentialFactory cf;
+	
+	private List<DefaultValueMethods> defaultValueMethodsList;
 
 	public enum ParameterType {
 		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that 
@@ -219,6 +225,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	}
 
+	public enum DefaultValueMethods implements DocumentedEnum {
+		@EnumLabel("defaultValue")	DEFAULTVALUE,
+		@EnumLabel("sessionKey")	SESSIONKEY,
+		@EnumLabel("pattern")		PATTERN,
+		@EnumLabel("value")			VALUE,
+		@EnumLabel("input") 		INPUT;
+	}
+	
 	public Parameter() {
 		super();
 	}
@@ -328,6 +342,20 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 	}
 
+	private List<DefaultValueMethods>getDefaultValueMethodsList() {
+		if (defaultValueMethodsList==null) {
+			defaultValueMethodsList = new LinkedList<>();
+			if (StringUtils.isNotEmpty(getDefaultValueMethods())) {
+				StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ", ");
+				while (stringTokenizer.hasMoreTokens()) {
+					String token = stringTokenizer.nextToken();
+					defaultValueMethodsList.add(EnumUtils.parse(DefaultValueMethods.class, token));
+				}
+			}
+		}
+		return defaultValueMethodsList;
+	}
+	
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
@@ -341,7 +369,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			return true;
 		}
 		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
-				&& (StringUtils.isEmpty(getDefaultValueMethods()) || !getDefaultValueMethods().contains("input"))) {
+				&& (getDefaultValueMethodsList().isEmpty() || !getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT))) {
 			return false;
 		}
 		return true;
@@ -497,24 +525,32 @@ public class Parameter implements IConfigurable, IWithParameters {
 		} else {
 			// if result is null then return specified default value
 			// N.B. 
-			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
-			while (result == null && stringTokenizer.hasMoreElements()) {
-				String token = stringTokenizer.nextToken();
-				if ("defaultValue".equals(token)) {
-					result = getDefaultValue();
-				} else if ("sessionKey".equals(token)) {
-					result = session.get(requestedSessionKey);
-				} else if ("pattern".equals(token)) {
-					result = format(alreadyResolvedParameters, session);
-				} else if ("value".equals(token)) {
-					result = getValue();
-				} else if ("input".equals(token)) {
-					try {
-						message.preserve();
-						result=message.asString();
-					} catch (IOException e) {
-						throw new ParameterException(e);
-					}
+			Iterator<DefaultValueMethods> it = getDefaultValueMethodsList().iterator();
+			while (result == null && it.hasNext()) {
+				DefaultValueMethods method = it.next();
+				switch(method) {
+					case DEFAULTVALUE:
+						result = getDefaultValue();
+						break;
+					case SESSIONKEY:
+						result = session.get(requestedSessionKey);
+						break;
+					case PATTERN:
+						result = format(alreadyResolvedParameters, session);
+						break;
+					case VALUE:
+						result = getValue();
+						break;
+					case INPUT:
+						try {
+							message.preserve();
+							result=message.asString();
+						} catch (IOException e) {
+							throw new ParameterException(e);
+						}
+						break;
+					default:
+						throw new IllegalArgumentException("Unknown defaultValues method ["+method+"]");
 				}
 			}
 			if (result!=null) {

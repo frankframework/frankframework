@@ -1232,4 +1232,25 @@ public class ParameterTest {
 
 		assertEquals("<doc/>", result);
 	}
+
+	@Test
+	public void testDefaultValueMethodMultiLoose() throws Exception {
+		Parameter p = new Parameter();
+		p.setXpathExpression("*/*");
+		p.setValue("<doc/>");
+		p.setDefaultValue("fakeDefaultValue");
+		p.setPattern("{sessionKeyForPattern}");
+		p.setDefaultValueMethods("SessionKey, VALUE, Pattern");
+		p.configure();
+		PipeLineSession session = new PipeLineSession();
+
+		session.put("sessionKeyForDefaultValue", "fakeDefaultValueSessionKey");
+		session.put("sessionKeyForPattern", "fakePatternSessionKey");
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		String result = (String)p.getValue(alreadyResolvedParameters, message, session, false);
+
+		assertEquals("<doc/>", result);
+	}
 }
