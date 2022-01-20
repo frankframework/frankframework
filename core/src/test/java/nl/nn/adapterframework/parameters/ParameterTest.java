@@ -664,7 +664,7 @@ public class ParameterTest {
 			pipeline.setOwner(pipe);
 			PipeLineResult pipeRunResult=cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
 	
-			assertEquals("success", pipeRunResult.getState());
+			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
 			
 			assertEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());

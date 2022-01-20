@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,8 +67,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	
 	private @Getter boolean forceMessageIdAsCorrelationId=false;
  
-	private @Getter String commitOnState="success";
-
 	private @Getter boolean soap=false;
 	private @Getter String replyEncodingStyleURI=null;
 	private @Getter String replyNamespaceURI=null;
@@ -359,16 +357,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	   forceMessageIdAsCorrelationId=force;
 	}
 
-	/**
-	 * Controls when the JmsListener will commit it's local transacted session, that is created when
-	 * jmsTransacted = <code>true</code>. This is probably not what you want. 
-	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
-	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
-	 */
-	@IbisDoc({"<i>deprecated</i> exit state to control commit or rollback of jmssession. only used if <code>jmstransacted</code> is set true.", "success"})
-	public void setCommitOnState(String newCommitOnState) {
-		commitOnState = newCommitOnState;
-	}
 
 	@IbisDoc({"Receive timeout <i>in milliseconds</i> as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long-", "1000"})
 	public void setTimeOut(long newTimeOut) {

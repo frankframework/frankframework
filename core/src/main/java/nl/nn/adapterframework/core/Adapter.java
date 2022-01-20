@@ -38,6 +38,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
@@ -105,7 +106,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter String description;
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
-	private @Getter String errorState = "ERROR";
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
@@ -564,7 +564,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
 		} catch (Throwable t) {
 			PipeLineResult result = new PipeLineResult();
-			result.setState(getErrorState());
+			result.setState(ExitState.ERROR);
 			String msg = "Illegal exception ["+t.getClass().getName()+"]";
 			INamedObject objectInError = null;
 			if (t instanceof ListenerException) {
@@ -1010,11 +1010,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public void setReplaceNullMessage(boolean b) {
 		replaceNullMessage = b;
-	}
-
-	/** state to put in {@link PipeLineResult} when a PipeRunException occurs */
-	public void setErrorState(String newErrorState) {
-		errorState = newErrorState;
 	}
 
 	/**

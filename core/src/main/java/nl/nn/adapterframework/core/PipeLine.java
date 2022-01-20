@@ -96,7 +96,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
-	private @Getter String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
@@ -130,9 +129,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
 
-	public enum ExitState implements DocumentedEnum {
-		@EnumLabel("success") SUCCESS,
-		@EnumLabel("error") ERROR;
+	public enum ExitState {
+		SUCCESS,
+		ERROR,
+		REJECTED;
 	}
 
 	public IPipe getPipe(String pipeName) {
@@ -737,14 +737,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
-	}
-
-	/** 
-	 * If the exit state of the pipeline equals this value, the transaction is committed, otherwise it is rolled back.
-	 * @ff.default success
-	 */
-	public void setCommitOnState(String string) {
-		commitOnState = string;
 	}
 
 	/** 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,8 +41,6 @@ import nl.nn.adapterframework.core.PipeLine.ExitState;
  * @author Niels Meijer
  */
 public class PipeLineExit implements IForwardTarget {
-
-	public static final String EXIT_STATE_SUCCESS = ExitState.SUCCESS.getLabel();
 
 	private @Getter String path;
 	private @Getter ExitState state;
