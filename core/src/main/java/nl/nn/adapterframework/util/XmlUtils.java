@@ -279,27 +279,6 @@ public class XmlUtils {
 		return getUtilityTransformerPool(xslt,"RemoveNamespaces",omitXmlDeclaration,indent);
 	}
 
-	public static String makeGetIbisContextXslt() {
-		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
-			+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
-			+ "<xsl:text>{</xsl:text>"
-			+ "<xsl:value-of select=\"string-length($ic)\"/>"
-			+ "<xsl:text>}</xsl:text>"
-			+ "<xsl:value-of select=\"$ic\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
-	}
-
-	public static TransformerPool getGetIbisContextTransformerPool() throws ConfigurationException {
-		String xslt = makeGetIbisContextXslt();
-		return getUtilityTransformerPool(xslt,"GetIbisContext",true,false);
-	}
-
 	protected static String makeGetRootNamespaceXslt() {
 		return
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"

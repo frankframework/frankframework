@@ -220,16 +220,16 @@ public class TestPipeline extends Base {
 	 * Parses the 'ibisContext' processing instruction defined in the input
 	 * @return key value pair map
 	 */
-	public Map<String, String> getIbisContext(String input) {
-		if (StringUtils.isEmpty(input) || (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!"))) {
+	protected Map<String, String> getIbisContext(String input) {
+		if (StringUtils.isEmpty(input) || (!input.startsWith("<?") && !input.startsWith("<!"))) {
 			return null;
 		}
 		if (XmlUtils.isWellFormed(input)) {
-			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
+			String getIbisContext_xslt = makeGetIbisContextXslt();
 			try {
 				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
 				String str = XmlUtils.transformXml(t, input);
-				Map<String, String> ibisContexts = new LinkedHashMap<String, String>();
+				Map<String, String> ibisContexts = new LinkedHashMap<>();
 				int indexBraceOpen = str.indexOf("{");
 				int indexBraceClose = 0;
 				int indexStartNextSearch = 0;
@@ -267,5 +267,21 @@ public class TestPipeline extends Base {
 		} else {
 			return null;
 		}
+	}
+
+	private String makeGetIbisContextXslt() {
+		return
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"text\"/>"
+			+ "<xsl:template match=\"/\">"
+			+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
+			+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
+			+ "<xsl:text>{</xsl:text>"
+			+ "<xsl:value-of select=\"string-length($ic)\"/>"
+			+ "<xsl:text>}</xsl:text>"
+			+ "<xsl:value-of select=\"$ic\"/>"
+			+ "</xsl:for-each>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	}
 }
