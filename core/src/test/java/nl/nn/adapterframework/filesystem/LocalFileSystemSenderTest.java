@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.LocalFileSystemSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -49,9 +50,9 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
 		sender.setAction(FileSystemAction.RENAME);
-		sender.addParameter(new ParameterBuilder("filename", src.getPath()));
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		sender.addParameter(new ParameterBuilder("destination", dest.getPath()));
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();
@@ -77,9 +78,9 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
 		sender.setAction(FileSystemAction.RENAME);
-		sender.addParameter(new ParameterBuilder("filename", src.getPath()));
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		sender.addParameter(new ParameterBuilder("destination", dest.getPath()));
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();

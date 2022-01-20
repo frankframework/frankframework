@@ -15,6 +15,7 @@ import org.junit.Ignore;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SenderPipe;
 import nl.nn.adapterframework.senders.ParallelSenders;
 import nl.nn.adapterframework.senders.SenderSeries;
@@ -60,17 +61,17 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
 			
-			sender.addParameter(new ParameterBuilder("header", "header"+i));
+			sender.addParameter(new Parameter("header", "header"+i));
 			
 			session.put("sessionKey"+i,"sessionKeyValue"+i);
-			sender.addParameter(new ParameterBuilder().withName("sessionKey").withSessionKey("sessionKey"+i));
+			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
 
 			autowireByType(sender);
 			psenders.registerSender(sender);
 			xsltSenders.add(sender);
 		}
 		session.put("sessionKeyGlobal","sessionKeyGlobalValue");
-		psenders.addParameter(new ParameterBuilder().withName("sessionKeyGlobal").withSessionKey("sessionKeyGlobal"));
+		psenders.addParameter(ParameterBuilder.create().withName("sessionKeyGlobal").withSessionKey("sessionKeyGlobal"));
 		pipe.setSender(psenders);
 		return pipe;
 	}

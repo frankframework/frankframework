@@ -24,6 +24,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
@@ -182,7 +183,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setVerifyHostname(false);
 			sender.setMtomEnabled(true);
 	
-			sender.addParameter(new ParameterBuilder("file", "<xml>I just sent some text! :)</xml>"));
+			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 	
 			sender.configure();
 			sender.open();

@@ -1,12 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
+import nl.nn.adapterframework.parameters.Parameter;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
@@ -34,8 +35,8 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void testLessThan() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "a"));
-		pipe.addParameter(new ParameterBuilder("operand2", "b"));
+		pipe.addParameter(new Parameter("operand1", "a"));
+		pipe.addParameter(new Parameter("operand2", "b"));
 
 		pipe.configure();
 		pipe.start();
@@ -46,7 +47,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	
 	@Test
 	public void testEquals() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "a"));
+		pipe.addParameter(new Parameter("operand1", "a"));
 
 		pipe.configure();
 		pipe.start();
@@ -57,7 +58,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void testgreaterThan() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand2", "a"));
+		pipe.addParameter(new Parameter("operand2", "a"));
 
 		pipe.configure();
 		pipe.start();
@@ -68,8 +69,8 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void textXmlCompareWithNewlines() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
-		pipe.addParameter(new ParameterBuilder("operand2", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
+		pipe.addParameter(new Parameter("operand1", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test>\n<a>9</a>\n<b>2</b>\n<c>7</c>\n</test>\n"));
 
 		pipe.setXml(true);
 		pipe.configure();
@@ -81,8 +82,8 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void textXmlCompareWithAttributes() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n"));
-		pipe.addParameter(new ParameterBuilder("operand2", "<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>"));
+		pipe.addParameter(new Parameter("operand1", "<test><a a=\"1\" b=\"2\">9</a><b>2</b><c>7</c></test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test><a b=\"2\" a=\"1\">9</a><b>2</b><c>7</c></test>"));
 
 		pipe.setXml(true);
 		pipe.configure();
@@ -94,8 +95,8 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void textXmlCompareWithSpaces() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "<test><a>9</a><b>2</b><c>7</c>    </test>\n"));
-		pipe.addParameter(new ParameterBuilder("operand2", "<test><a>9</a>    <b>2</b><c>7</c></test>"));
+		pipe.addParameter(new Parameter("operand1", "<test><a>9</a><b>2</b><c>7</c>    </test>\n"));
+		pipe.addParameter(new Parameter("operand2", "<test><a>9</a>    <b>2</b><c>7</c></test>"));
 
 		pipe.setXml(true);
 		pipe.configure();
@@ -107,10 +108,10 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
 	@Test
 	public void testIgnorePatterns() throws Exception {
-		pipe.addParameter(new ParameterBuilder("operand1", "<test><a>tralalala</a><b>1</b><c>ignore me</c></test>"));
-		pipe.addParameter(new ParameterBuilder("operand2", "<test><a>9</a><b>2</b><c>7</c></test>"));
+		pipe.addParameter(new Parameter("operand1", "<test><a>tralalala</a><b>1</b><c>ignore me</c></test>"));
+		pipe.addParameter(new Parameter("operand2", "<test><a>9</a><b>2</b><c>7</c></test>"));
 
-		pipe.addParameter(new ParameterBuilder("ignorePatterns", "<ignores><ignore><after>&lt;a&gt;</after><before>&lt;/a&gt;</before></ignore><ignore><after>&lt;c&gt;</after><before>&lt;/c&gt;</before></ignore></ignores>"));
+		pipe.addParameter(new Parameter("ignorePatterns", "<ignores><ignore><after>&lt;a&gt;</after><before>&lt;/a&gt;</before></ignore><ignore><after>&lt;c&gt;</after><before>&lt;/c&gt;</before></ignore></ignores>"));
 
 		pipe.configure();
 		pipe.start();

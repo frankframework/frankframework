@@ -110,7 +110,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
 	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, PipeLineSession session) {
 		session.put("httpRequest", request);
-		return new ParameterBuilder("httpRequest", null).withSessionKey("httpRequest");
+		return ParameterBuilder.create().withName("httpRequest").withSessionKey("httpRequest");
 	}
 
 	private MockMultipartHttpServletRequest createMultipartHttpRequest(StreamPipe pipe, boolean addAntiVirusParts, boolean antiVirusLastPartFailed) throws Exception {

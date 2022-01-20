@@ -17,6 +17,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
@@ -77,9 +78,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		sender.addParameter(new ParameterBuilder("x", "1").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
 
-		sender.addParameter(new ParameterBuilder("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -100,8 +101,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		session.put("originalMessage", input);
 
-		sender.addParameter(new ParameterBuilder("x", null).withSessionKey("originalMessage").withType(ParameterType.INTEGER));
-		sender.addParameter(new ParameterBuilder("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -121,8 +122,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 		session.put("originalMessage", input);
 
-		sender.addParameter(new ParameterBuilder("x", null).withSessionKey("originalMessage"));
-		sender.addParameter(new ParameterBuilder("y"," World!"));
+		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage"));
+		sender.addParameter(new Parameter("y"," World!"));
 
 		sender.configure();
 		sender.open();
@@ -141,9 +142,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
 
-		sender.addParameter(new ParameterBuilder("x", "1").withType(ParameterType.INTEGER));
-		sender.addParameter(new ParameterBuilder("y", "2").withType(ParameterType.INTEGER));
-		sender.addParameter(new ParameterBuilder("z", "true").withType(ParameterType.BOOLEAN));
+		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("z", "true").withType(ParameterType.BOOLEAN));
 
 		sender.configure();
 		sender.open();
@@ -162,11 +163,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("f3");
 		sender.setEngineName(engine);
 
-		sender.addParameter(new ParameterBuilder("x", "1").withType(ParameterType.INTEGER));
-
-		sender.addParameter(new ParameterBuilder("y", "2").withType(ParameterType.INTEGER));
-
-		sender.addParameter(new ParameterBuilder("z", "false").withType(ParameterType.BOOLEAN));
+		sender.addParameter(ParameterBuilder.create("x", "1").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("z", "false").withType(ParameterType.BOOLEAN));
 
 		sender.configure();
 		sender.open();
@@ -271,8 +270,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		
 		session.put("originalMessage", input);
 		
-		sender.addParameter(new ParameterBuilder("x", null).withSessionKey("originalMessage").withType(ParameterType.INTEGER));
-		sender.addParameter(new ParameterBuilder("y", "2").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create().withName("x").withSessionKey("originalMessage").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "2").withType(ParameterType.INTEGER));
 		
 		sender.configure();
 		sender.open();
@@ -290,7 +289,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.setJsFunctionName("performance");
 		sender.setEngineName(engine);
 		
-		sender.addParameter(new ParameterBuilder("x", "100000").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("x", "100000").withType(ParameterType.INTEGER));
 		
 		sender.configure();
 		sender.open();

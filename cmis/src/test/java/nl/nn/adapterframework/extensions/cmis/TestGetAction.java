@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -148,8 +149,8 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	public void configureWithParameters() throws ConfigurationException, SenderException, TimeoutException {
-		sender.addParameter(new ParameterBuilder("getProperties", getProperties.toString()));
-		sender.addParameter(new ParameterBuilder("getDocumentContent", getDocumentContent.toString()));
+		sender.addParameter(new Parameter("getProperties", getProperties.toString()));
+		sender.addParameter(new Parameter("getDocumentContent", getDocumentContent.toString()));
 
 		configure();
 	}

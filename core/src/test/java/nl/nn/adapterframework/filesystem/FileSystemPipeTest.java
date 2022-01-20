@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -73,7 +74,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
-		fileSystemPipe.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTargetwString"));
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwString"));
 		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -103,7 +104,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
-		fileSystemPipe.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTargetwByteArray"));
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
 		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -135,7 +136,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
-		fileSystemPipe.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTarget"));
+		fileSystemPipe.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
 		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -166,7 +167,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		PipeLineSession session = new PipeLineSession();
 		//session.put("uploadActionTarget", stream);
 
-		fileSystemPipe.addParameter(new ParameterBuilder("filename", filename));
+		fileSystemPipe.addParameter(new Parameter("filename", filename));
 		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -230,7 +231,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		waitForActionToFinish();
 
 		fileSystemPipe.setAction(FileSystemAction.MOVE);
-		fileSystemPipe.addParameter(new ParameterBuilder("destination", folder2));
+		fileSystemPipe.addParameter(new Parameter("destination", folder2));
 		if (setCreateFolderAttribute) {
 			fileSystemPipe.setCreateFolder(true);
 		}
@@ -392,7 +393,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 			createFile(null, filename, "is not empty");
 		}
 
-		fileSystemPipe.addParameter(new ParameterBuilder("destination", dest));
+		fileSystemPipe.addParameter(new Parameter("destination", dest));
 		fileSystemPipe.setAction(FileSystemAction.RENAME);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
@@ -520,7 +521,7 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		}
 		_createFolder(inputFolder);
 
-		fileSystemPipe.addParameter(new ParameterBuilder("inputFolder", inputFolder));
+		fileSystemPipe.addParameter(new Parameter("inputFolder", inputFolder));
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.configure();
 		fileSystemPipe.start();

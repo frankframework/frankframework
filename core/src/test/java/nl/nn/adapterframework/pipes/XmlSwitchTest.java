@@ -89,7 +89,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("2","Path2"));
 
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
-		pipe.addParameter(new ParameterBuilder().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
+		pipe.addParameter(ParameterBuilder.create().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
 		session.put("sessionKey", input);
 
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
@@ -104,7 +104,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
 		session.put("sessionKey", input);
-		pipe.addParameter(new ParameterBuilder().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
+		pipe.addParameter(ParameterBuilder.create().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
 		pipe.setXpathExpression("$source/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
 

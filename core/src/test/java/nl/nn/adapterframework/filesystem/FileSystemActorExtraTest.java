@@ -43,7 +43,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
-		params.add(new ParameterBuilder("contents", null).withSessionKey("appendActionwString"));
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendActionwString"));
 		params.configure();
 		
 		actor.setAction(FileSystemAction.APPEND);

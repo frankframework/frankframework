@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -57,7 +58,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 
 		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
-		params.add(new ParameterBuilder("destination", srcFolder+"/"+destFolder));
+		params.add(new Parameter("destination", srcFolder+"/"+destFolder));
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}

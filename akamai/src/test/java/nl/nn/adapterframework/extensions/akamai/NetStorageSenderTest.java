@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.AppConstants;
@@ -402,7 +403,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.RENAME);
 		Message input = new Message("my/special/path/file1.txt");
 
-		sender.addParameter(new ParameterBuilder("destination", "my/other/special/path/file2.txt"));
+		sender.addParameter(new Parameter("destination", "my/other/special/path/file2.txt"));
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
@@ -426,7 +427,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.MTIME);
 		Message input = new Message("my/special/path/");
 
-		sender.addParameter(new ParameterBuilder("mtime", "1633945058"));
+		sender.addParameter(new Parameter("mtime", "1633945058"));
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 

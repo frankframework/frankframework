@@ -22,6 +22,7 @@ import org.junit.rules.ExpectedException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.IFileHandler;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -142,7 +143,7 @@ public abstract class FileHandlerTestBase {
 		if (suffix!=null) {
 			if (suffixViaParam) {
 				paramList=new ParameterList();
-				paramList.add(new ParameterBuilder("writeSuffix", suffix));
+				paramList.add(new Parameter("writeSuffix", suffix));
 				paramList.configure();
 				handler.setWriteSuffix(".wsx");
 			} else {

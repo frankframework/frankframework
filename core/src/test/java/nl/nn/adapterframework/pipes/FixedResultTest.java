@@ -41,7 +41,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 
     public static Parameter setUp(PipeLineSession session){
         session.put("param1","yarr");
-        return new ParameterBuilder(null, "abs").withSessionKey("*");
+        return ParameterBuilder.create().withValue("abs").withSessionKey("*");
     }
 
 

@@ -30,6 +30,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -64,7 +65,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl(null);
-		sender.addParameter(new ParameterBuilder("url", "relative/path"));
+		sender.addParameter(new Parameter("url", "relative/path"));
 
 		sender.configure();
 		sender.open();
@@ -260,9 +261,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
@@ -281,9 +282,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
@@ -331,9 +332,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -352,11 +353,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("url", "http://127.0.0.1/value%20value?path=tralala"));
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?path=tralala"));
 
-		sender.addParameter(new ParameterBuilder("illegalCharacters", "o@t&h=e+r$V,a/lue"));
+		sender.addParameter(new Parameter("illegalCharacters", "o@t&h=e+r$V,a/lue"));
 
-		sender.addParameter(new ParameterBuilder("normalCharacters", "helloWorld"));
+		sender.addParameter(new Parameter("normalCharacters", "helloWorld"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -391,9 +392,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setHeadersParams("custom-header, doesn-t-exist");
@@ -412,9 +413,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
@@ -434,9 +435,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("key", "value"));
+		sender.addParameter(new Parameter("key", "value"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType(PostType.URLENCODED);
@@ -667,9 +668,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMtomEnabled(true);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
-		sender.addParameter(new ParameterBuilder("url", "http://ignore.me"));
+		sender.addParameter(new Parameter("url", "http://ignore.me"));
 
-		sender.addParameter(new ParameterBuilder("my-beautiful-part", "<partContent/>"));
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
 
 		sender.configure();
 		sender.open();
@@ -686,9 +687,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("url", "http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter"));
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -706,9 +707,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("url", "HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
+		sender.addParameter(new Parameter("url", "HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
-		sender.addParameter(new ParameterBuilder("otherKey", "otherValue"));
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -726,7 +727,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("url", "ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
+		sender.addParameter(new Parameter("url", "ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -746,9 +747,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		sender.addParameter(new ParameterBuilder("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
 
-		sender.addParameter(new ParameterBuilder("myParam", ""));
+		sender.addParameter(new Parameter("myParam", ""));
 
 		sender.setMethodType(HttpMethod.GET);
 

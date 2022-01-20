@@ -26,6 +26,7 @@ import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
 
 import nl.nn.adapterframework.ldap.LdapSender.Operation;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -90,7 +91,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Test
 	public void readTwoAttributes() throws Exception {
 		sender.setOperation(Operation.READ);
-		sender.addParameter(new ParameterBuilder("entryName", null));
+		sender.addParameter(ParameterBuilder.create().withName("entryName"));
 		sender.setAttributesToReturn("gidNumber,mail");
 
 		sender.configure();
@@ -104,7 +105,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Test
 	public void readAllAttributes() throws Exception {
 		sender.setOperation(Operation.READ);
-		sender.addParameter(new ParameterBuilder("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
 		sender.open();
@@ -117,7 +118,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Test
 	public void updateAttribute() throws Exception {
 		sender.setOperation(Operation.UPDATE);
-		sender.addParameter(new ParameterBuilder("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
 		sender.open();
@@ -131,8 +132,8 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Test
 	public void updateNewEntry() throws Exception {
 		sender.setOperation(Operation.UPDATE);
-		sender.addParameter(new ParameterBuilder("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
-		sender.addParameter(new ParameterBuilder("newEntryName", "cn=LEA Administrator,ou=people,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("newEntryName", "cn=LEA Administrator,ou=people,ou=development," + baseDNs));
 
 		sender.configure();
 		sender.open();
@@ -146,7 +147,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	@Test
 	public void deleteAttribute() throws Exception {
 		sender.setOperation(Operation.DELETE);
-		sender.addParameter(new ParameterBuilder("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
+		sender.addParameter(new Parameter("entryName", "cn=LEA Administrator,ou=groups,ou=development," + baseDNs));
 
 		sender.configure();
 		sender.open();
@@ -162,7 +163,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		super.tearDown();
 		super.setUp();
 		sender.setOperation(Operation.GET_TREE);
-		sender.addParameter(new ParameterBuilder("entryName", baseDNs));
+		sender.addParameter(new Parameter("entryName", baseDNs));
 
 		sender.configure();
 		sender.open();

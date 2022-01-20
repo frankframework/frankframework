@@ -18,6 +18,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
@@ -50,9 +51,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		sender.addParameter(new ParameterBuilder("x", "3").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		sender.addParameter(new ParameterBuilder("y", "4").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -68,9 +69,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
-		sender.addParameter(new ParameterBuilder("x", "3").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		sender.addParameter(new ParameterBuilder("y", "4").withType(ParameterType.INTEGER));
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");

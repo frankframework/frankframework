@@ -26,6 +26,7 @@ import com.sun.mail.smtp.SMTPMessage;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.senders.MailSenderBase;
 import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
@@ -90,15 +91,15 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 		String recipientsXml = "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "<recipient type=\"to\" name=\"two\">me2@address.org</recipient>";
-		sender.addParameter(new ParameterBuilder("from", "myself@address.org"));
-		sender.addParameter(new ParameterBuilder("subject", "My Subject"));
-		sender.addParameter(new ParameterBuilder("message", "My Message Goes Here"));
-		sender.addParameter(new ParameterBuilder("messageBase64", "false"));
-		sender.addParameter(new ParameterBuilder("recipients", recipientsXml));
+		sender.addParameter(new Parameter("from", "myself@address.org"));
+		sender.addParameter(new Parameter("subject", "My Subject"));
+		sender.addParameter(new Parameter("message", "My Message Goes Here"));
+		sender.addParameter(new Parameter("messageBase64", "false"));
+		sender.addParameter(new Parameter("recipients", recipientsXml));
 	}
 
 	private void appendAttachmentParameter(ISenderWithParameters sender, String attachmentsXml) {
-		sender.addParameter(new ParameterBuilder("attachments", attachmentsXml));
+		sender.addParameter(new Parameter("attachments", attachmentsXml));
 	}
 
 	private void validateNDR(Session session, String ndr) {

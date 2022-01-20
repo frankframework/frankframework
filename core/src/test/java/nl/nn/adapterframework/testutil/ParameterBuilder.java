@@ -10,11 +10,11 @@ import nl.nn.adapterframework.stream.Message;
 
 public class ParameterBuilder extends Parameter {
 
-	public ParameterBuilder() {
+	private ParameterBuilder() {
 		super();
 	}
 
-	public ParameterBuilder(String name, String value) {
+	private ParameterBuilder(String name, String value) {
 		super(name, value);
 	}
 
@@ -40,6 +40,10 @@ public class ParameterBuilder extends Parameter {
 
 	public static ParameterBuilder create() {
 		return new ParameterBuilder();
+	}
+
+	public static ParameterBuilder create(String name, String value) {
+		return new ParameterBuilder(name, value);
 	}
 
 	public static ParameterValueList getPVL(ParameterList params) throws ConfigurationException, ParameterException {

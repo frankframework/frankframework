@@ -57,9 +57,9 @@ public class ParameterValueListTest {
 	@Test
 	public void testDuplicateNames() throws Exception {
 		ParameterList list = new ParameterList();
-		list.add(new ParameterBuilder("name", "dummy-1"));
-		list.add(new ParameterBuilder("name", "dummy-2"));
-		list.add(new ParameterBuilder("name", "dummy-3"));
+		list.add(new Parameter("name", "dummy-1"));
+		list.add(new Parameter("name", "dummy-2"));
+		list.add(new Parameter("name", "dummy-3"));
 		list.configure();
 
 		assertEquals(3, list.size());

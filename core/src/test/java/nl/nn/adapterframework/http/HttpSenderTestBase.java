@@ -25,6 +25,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -55,7 +56,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 		if(addCustomHeader) {
 			sender.setHeadersParams("custom-header");
-			sender.addParameter(new ParameterBuilder("custom-header", "value"));
+			sender.addParameter(new Parameter("custom-header", "value"));
 		}
 
 		return sender;

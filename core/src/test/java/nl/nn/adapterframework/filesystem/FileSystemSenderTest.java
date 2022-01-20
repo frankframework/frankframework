@@ -19,6 +19,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -72,7 +73,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwString", contents.getBytes());
 
-		fileSystemSender.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTargetwString"));
+		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwString"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -100,7 +101,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
-		fileSystemSender.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTargetwByteArray"));
+		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -130,7 +131,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		PipeLineSession session = new PipeLineSession();
 		session.put("uploadActionTarget", stream);
 
-		fileSystemSender.addParameter(new ParameterBuilder("file", null).withSessionKey("uploadActionTarget"));
+		fileSystemSender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -157,7 +158,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 
 		PipeLineSession session = new PipeLineSession();
 
-		fileSystemSender.addParameter(new ParameterBuilder("filename", filename));
+		fileSystemSender.addParameter(new Parameter("filename", filename));
 
 		fileSystemSender.setAction(FileSystemAction.UPLOAD);
 		fileSystemSender.configure();
@@ -240,7 +241,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		waitForActionToFinish();
 
 		fileSystemSender.setAction(FileSystemAction.MOVE);
-		fileSystemSender.addParameter(new ParameterBuilder("destination", folder2));
+		fileSystemSender.addParameter(new Parameter("destination", folder2));
 		if (setCreateFolderAttribute) {
 			fileSystemSender.setCreateFolder(true);
 		}
@@ -401,7 +402,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 			createFile(null, filename, "is not empty");
 		}
 
-		fileSystemSender.addParameter(new ParameterBuilder("destination", dest));
+		fileSystemSender.addParameter(new Parameter("destination", dest));
 		fileSystemSender.setAction(FileSystemAction.RENAME);
 		fileSystemSender.configure();
 		fileSystemSender.open();
@@ -531,7 +532,7 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		PipeLineSession session = new PipeLineSession();
 		session.put("listWithInputFolderAsParameter", inputFolder);
 
-		fileSystemSender.addParameter(new ParameterBuilder("inputFolder", null).withSessionKey("listWithInputFolderAsParameter"));
+		fileSystemSender.addParameter(ParameterBuilder.create().withName("inputFolder").withSessionKey("listWithInputFolderAsParameter"));
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.configure();
 		fileSystemSender.open();
