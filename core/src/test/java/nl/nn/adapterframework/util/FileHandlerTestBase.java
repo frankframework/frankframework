@@ -25,6 +25,7 @@ import nl.nn.adapterframework.filesystem.IFileHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class FileHandlerTestBase {
@@ -142,10 +143,7 @@ public abstract class FileHandlerTestBase {
 		if (suffix!=null) {
 			if (suffixViaParam) {
 				paramList=new ParameterList();
-				Parameter param=new Parameter();
-				param.setName("writeSuffix");
-				param.setValue(suffix);
-				paramList.add(param);
+				paramList.add(new Parameter("writeSuffix", suffix));
 				paramList.configure();
 				handler.setWriteSuffix(".wsx");
 			} else {

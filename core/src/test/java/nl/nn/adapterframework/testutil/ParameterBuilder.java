@@ -10,12 +10,26 @@ import nl.nn.adapterframework.stream.Message;
 
 public class ParameterBuilder extends Parameter {
 
-	public ParameterBuilder() {
+	private ParameterBuilder() {
 		super();
+	}
+
+	private ParameterBuilder(String name, String value) {
+		super(name, value);
+	}
+
+	public ParameterBuilder withName(String name) {
+		setName(name);
+		return this;
 	}
 
 	public ParameterBuilder withValue(String value) {
 		setValue(value);
+		return this;
+	}
+
+	public ParameterBuilder withSessionKey(String sessionKey) {
+		setSessionKey(sessionKey);
 		return this;
 	}
 
@@ -28,9 +42,15 @@ public class ParameterBuilder extends Parameter {
 		return new ParameterBuilder();
 	}
 
+	public static ParameterBuilder create(String name, String value) {
+		return new ParameterBuilder(name, value);
+	}
+
 	public static ParameterValueList getPVL(ParameterList params) throws ConfigurationException, ParameterException {
 		params.configure();
 
 		return params.getValues(Message.nullMessage(), new PipeLineSession());
 	}
+
+	
 }

@@ -33,6 +33,7 @@ import nl.nn.adapterframework.senders.MailSenderBase.MailSession;
 import nl.nn.adapterframework.senders.MailSenderBase.EMail;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -88,39 +89,17 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 	private void appendParameters(ISenderWithParameters sender) {
 
-		Parameter parameterFrom = new Parameter();
-		parameterFrom.setName("from");
-		parameterFrom.setValue("myself@address.org");
-		sender.addParameter(parameterFrom);
-
-		Parameter parameterSubject = new Parameter();
-		parameterSubject.setName("subject");
-		parameterSubject.setValue("My Subject");
-		sender.addParameter(parameterSubject);
-
-		Parameter parameterMessage = new Parameter();
-		parameterMessage.setName("message");
-		parameterMessage.setValue("My Message Goes Here");
-		sender.addParameter(parameterMessage);
-
-		Parameter parameterMessageBase64 = new Parameter();
-		parameterMessageBase64.setName("messageBase64");
-		parameterMessageBase64.setValue("false");
-		sender.addParameter(parameterMessageBase64);
-
 		String recipientsXml = "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "<recipient type=\"to\" name=\"two\">me2@address.org</recipient>";
-		Parameter parameterRecipients = new Parameter();
-		parameterRecipients.setName("recipients");
-		parameterRecipients.setValue(recipientsXml);
-		sender.addParameter(parameterRecipients);
+		sender.addParameter(new Parameter("from", "myself@address.org"));
+		sender.addParameter(new Parameter("subject", "My Subject"));
+		sender.addParameter(new Parameter("message", "My Message Goes Here"));
+		sender.addParameter(new Parameter("messageBase64", "false"));
+		sender.addParameter(new Parameter("recipients", recipientsXml));
 	}
 
 	private void appendAttachmentParameter(ISenderWithParameters sender, String attachmentsXml) {
-		Parameter parameter = new Parameter();
-		parameter.setName("attachments");
-		parameter.setValue(attachmentsXml);
-		sender.addParameter(parameter);
+		sender.addParameter(new Parameter("attachments", attachmentsXml));
 	}
 
 	private void validateNDR(Session session, String ndr) {

@@ -12,6 +12,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 
 /**
@@ -39,11 +40,8 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
     }
 
     public static Parameter setUp(PipeLineSession session){
-        Parameter param = new Parameter();
-        param.setValue("abs");
-        param.setSessionKey("*");
         session.put("param1","yarr");
-        return param;
+        return ParameterBuilder.create().withValue("abs").withSessionKey("*");
     }
 
 
