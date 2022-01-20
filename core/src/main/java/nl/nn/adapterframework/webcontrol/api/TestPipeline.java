@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -102,9 +104,9 @@ public class TestPipeline extends Base {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
 		// resolve session keys
-		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "[]");
+		String sessionKeys = resolveStringFromMap(inputDataMap, "sessionKeys", "");
 		Map<String, String> sessionKeyMap = null;
-		if(!sessionKeys.equals("[]")) {
+		if(StringUtils.isNotEmpty(sessionKeys)) {
 			try {
 				sessionKeyMap = Stream.of(new ObjectMapper().readValue(sessionKeys, PostedSessionKey[].class))
 						.collect(Collectors.toMap(item -> item.key, item-> item.value));
@@ -184,7 +186,7 @@ public class TestPipeline extends Base {
 			if(sessionKeyMap != null) {
 				pls.putAll(sessionKeyMap);
 			}
-			Map ibisContexts = XmlUtils.getIbisContext(message);
+			Map ibisContexts = getIbisContext(message);
 			String technicalCorrelationId = null;
 			if (ibisContexts != null) {
 				String contextDump = "ibisContext:";
@@ -212,6 +214,58 @@ public class TestPipeline extends Base {
 			PipeLineResult plr = adapter.processMessage(messageId, new Message(message), pls);
 			plr.getResult().unscheduleFromCloseOnExitOf(pls);
 			return plr;
+		}
+	}
+	/**
+	 * Parses the 'ibisContext' processing instruction defined in the input
+	 * @return key value pair map
+	 */
+	public Map<String, String> getIbisContext(String input) {
+		if (StringUtils.isEmpty(input) || (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!"))) {
+			return null;
+		}
+		if (XmlUtils.isWellFormed(input)) {
+			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
+			try {
+				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
+				String str = XmlUtils.transformXml(t, input);
+				Map<String, String> ibisContexts = new LinkedHashMap<String, String>();
+				int indexBraceOpen = str.indexOf("{");
+				int indexBraceClose = 0;
+				int indexStartNextSearch = 0;
+				while (indexBraceOpen >= 0) {
+					indexBraceClose = str.indexOf("}",indexBraceOpen+1);
+					if (indexBraceClose > indexBraceOpen) {
+						String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
+						int icLength = Integer.parseInt(ibisContextLength);
+						if (icLength > 0) {
+							indexStartNextSearch = indexBraceClose + 1 + icLength;
+							String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);
+							int indexEqualSign = ibisContext.indexOf("=");
+							String key;
+							String value;
+							if (indexEqualSign < 0) {
+								key = ibisContext;
+								value = "";
+							} else {
+								key = ibisContext.substring(0,indexEqualSign);
+								value = ibisContext.substring(indexEqualSign+1);
+							}
+							ibisContexts.put(key, value);
+						} else {
+							indexStartNextSearch = indexBraceClose + 1;
+						}
+					} else {
+						indexStartNextSearch = indexBraceOpen + 1;
+					}
+					indexBraceOpen = str.indexOf("{",indexStartNextSearch);
+				}
+				return ibisContexts;
+			} catch (Exception e) {
+				return null;
+			}
+		} else {
+			return null;
 		}
 	}
 }

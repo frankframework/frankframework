@@ -2669,7 +2669,7 @@ angular.module('iaf.beheerconsole')
 		$scope.result = "";
 		$scope.state = [];
 		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter and message!");
+			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
 
@@ -2689,13 +2689,14 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
-
-		let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
-		if(incompleteKeyIndex < 0) {
-			fd.append("sessionKeys", JSON.stringify(sessionKeys));
-		} else {
-			$scope.addNote("warning", "Please make sure all sessionkeys have name and value!");
-			return;
+		if(sessionKeys.length > 0){
+			let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
+			if(incompleteKeyIndex < 0) {
+				fd.append("sessionKeys", JSON.stringify(sessionKeys));
+			} else {
+				$scope.addNote("warning", "Please make sure all sessionkeys have name and value!");
+				return;
+			}
 		}
 
 		$scope.processingMessage = true;

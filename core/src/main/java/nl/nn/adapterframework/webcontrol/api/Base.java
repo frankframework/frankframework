@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -132,14 +132,7 @@ public abstract class Base implements ApplicationContextAware {
 	}
 
 	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
-		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
-		if(StringUtils.isEmpty(result)) {
-			if(defaultValue != null) {
-				return defaultValue;
-			}
-			throw new ApiException("Key ["+key+"] may not be empty");
-		}
-		return result;
+		return resolveTypeFromMap(inputDataMap, key, String.class, defaultValue);
 	}
 
 	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {
