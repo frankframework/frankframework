@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 /**
  * PutInSession Tester.
@@ -44,10 +44,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 	public void testSessionKeyWithOneParam() throws Exception {
 		pipe.setValue("value");
 		pipe.setSessionKey("sessionKey");
-		Parameter p = new Parameter();
-		p.setName("param");
-		p.setValue("test");
-		pipe.addParameter(p);
+		pipe.addParameter(new ParameterBuilder("param", "test"));
 
 		pipe.configure();
 		pipe.doPipe(null, session);
@@ -60,10 +57,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 	public void testParamFromConfiguredSessionKey() throws Exception {
 		pipe.setValue("value");
 		pipe.setSessionKey("sessionKey");
-		Parameter p = new Parameter();
-		p.setName("param");
-		p.setSessionKey("sessionKey");
-		pipe.addParameter(p);
+		pipe.addParameter(new ParameterBuilder("param", null).withSessionKey("sessionKey"));
 
 		pipe.configure();
 		pipe.doPipe(null, session);
@@ -74,10 +68,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSession> {
 	
 	@Test
 	public void testWithOneParam() throws Exception {
-		Parameter p = new Parameter();
-		p.setName("param");
-		p.setValue("test");
-		pipe.addParameter(p);
+		pipe.addParameter(new ParameterBuilder("param", "test"));
 
 		pipe.configure();
 		pipe.doPipe(null, session);

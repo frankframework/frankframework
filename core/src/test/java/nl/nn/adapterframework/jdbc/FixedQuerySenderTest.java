@@ -11,9 +11,9 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
@@ -75,10 +75,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testNamedParametersTrue() throws Exception {
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{namedParam1})");
-		Parameter param = new Parameter();
-		param.setName("namedParam1");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("namedParam1", "value"));
 		sender.setUseNamedParams(true);
 
 		sender.configure();
@@ -91,10 +88,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testNamedParameters() throws Exception {
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?{param})");
-		Parameter param = new Parameter();
-		param.setName("param");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("param", "value"));
 
 		sender.configure();
 		sender.open();
@@ -128,10 +122,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', '?{param}')");
 
-		Parameter param = new Parameter();
-		param.setName("param");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("param", "value"));
 
 		sender.configure();
 		sender.open();
@@ -190,10 +181,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testColumnsReturnedWithSpaceBetween() throws Exception {
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
-		Parameter param = new Parameter();
-		param.setName("param1");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("param1", "value"));
 
 		sender.setColumnsReturned("TKEY, TVARCHAR");
 
@@ -206,10 +194,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testColumnsReturnedWithDoubleSpace() throws Exception {
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
-		Parameter param = new Parameter();
-		param.setName("param1");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("param1", "value"));
 
 		sender.setColumnsReturned("  TKEY,  TVARCHAR  ");
 
@@ -222,10 +207,7 @@ public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {
 	@Test
 	public void testColumnsReturned() throws Exception {
 		sender.setQuery("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES ('1', ?)");
-		Parameter param = new Parameter();
-		param.setName("param1");
-		param.setValue("value");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("param1", "value"));
 
 		sender.setColumnsReturned("TKEY,TVARCHAR");
 

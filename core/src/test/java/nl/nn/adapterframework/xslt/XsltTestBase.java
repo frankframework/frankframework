@@ -20,11 +20,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.StreamingPipeTestBase;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
@@ -304,11 +304,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	public void xPathFromParameter() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 
-		Parameter inputParameter = new Parameter();
-		inputParameter.setName("source");
-		inputParameter.setValue(input);
-		inputParameter.setType(ParameterType.DOMDOC);
-		pipe.addParameter(inputParameter);
+		pipe.addParameter(new ParameterBuilder("source", input).withType(ParameterType.DOMDOC));
 		setXpathExpression("$source/request/b");
 
 		pipe.configure();

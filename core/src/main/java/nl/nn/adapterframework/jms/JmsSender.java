@@ -95,10 +95,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
-			Parameter p = new Parameter();
-			p.setName("SoapAction");
-			p.setValue(getSoapAction());
-			addParameter(p);
+			addParameter(new Parameter("SoapAction", getSoapAction()));
 		}
 		if (paramList!=null) {
 			paramList.configure();

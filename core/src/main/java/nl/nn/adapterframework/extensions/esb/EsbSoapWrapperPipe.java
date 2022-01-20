@@ -501,30 +501,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					addParameter(p);
 				}
 			} else {
-				p = new Parameter();
-				p.setName(MESSAGINGLAYER);
-				p.setValue("P2P");
-				addParameter(p);
+				addParameter(new Parameter(MESSAGINGLAYER, "P2P"));
 				//
-				p = new Parameter();
-				p.setName(BUSINESSDOMAIN);
-				p.setValue("?");
-				addParameter(p);
+				addParameter(new Parameter(BUSINESSDOMAIN, "?"));
 				//
-				p = new Parameter();
-				p.setName(APPLICATIONNAME);
-				p.setValue("?");
-				addParameter(p);
+				addParameter(new Parameter(APPLICATIONNAME, "?"));
 				//
-				p = new Parameter();
-				p.setName(APPLICATIONFUNCTION);
-				p.setValue(destination.replaceAll("\\W", "_"));
-				addParameter(p);
+				addParameter(new Parameter(APPLICATIONFUNCTION, destination.replaceAll("\\W", "_")));
 				//
-				p = new Parameter();
-				p.setName(PARADIGM);
-				p.setValue("?");
-				addParameter(p);
+				addParameter(new Parameter(PARADIGM, "?"));
 			}
 		}
 	}
@@ -538,10 +523,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			paradigm = p.getValue();
 		}
 		if (parameterList.findParameter(FROMID)==null) {
-			p = new Parameter();
-			p.setName(FROMID);
-			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
-			addParameter(p);
+			addParameter(new Parameter(FROMID, AppConstants.getInstance().getProperty("instance.name", "")));
 		}
 		if (mode != Mode.BIS) {
 			if (parameterList.findParameter(CPAID)==null) {
@@ -613,10 +595,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(FIXRESULTNAMESPACE)==null) {
-			p = new Parameter();
-			p.setName(FIXRESULTNAMESPACE);
-			p.setValue(String.valueOf(isFixResultNamespace()));
-			addParameter(p);
+			addParameter(new Parameter(FIXRESULTNAMESPACE, String.valueOf(isFixResultNamespace())));
 		}
 		if (parameterList.findParameter(TRANSACTIONID)==null) {
 			p = new Parameter();
@@ -626,14 +605,8 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
-		p = new Parameter();
-		p.setName(MODE);
-		p.setValue(getMode());
-		addParameter(p);
-		p = new Parameter();
-		p.setName(CMHVERSION);
-		p.setValue(String.valueOf(getCmhVersion()));
-		addParameter(p);
+		addParameter(new Parameter(MODE, getMode()));
+		addParameter(new Parameter(CMHVERSION, String.valueOf(getCmhVersion())));
 	}
 
 	@IbisDoc({"either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)", "reg"})
@@ -699,10 +672,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (physicalDestination==null) {
 				physicalDestination="?";
 			}
-			Parameter p = new Parameter();
-			p.setName(PHYSICALDESTINATION);
-			p.setValue(physicalDestination);
-			addParameter(p);
+			addParameter(new Parameter(PHYSICALDESTINATION, physicalDestination));
 			return true;
 		}
 		return false;
@@ -735,10 +705,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					physicalDestination = physicalDestination + ".?";
 				}
 			}
-			Parameter p = new Parameter();
-			p.setName(PHYSICALDESTINATION);
-			p.setValue(physicalDestination);
-			addParameter(p);
+			addParameter(new Parameter(PHYSICALDESTINATION, physicalDestination));
 			return true;
 		}
 		return false;

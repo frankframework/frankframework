@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 /**
  * IncreaseIntegerPipe Tester.
@@ -52,10 +52,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
     public void testIncrementParameter() throws Exception {
     	String numberSession = "number";
 		session.put(numberSession, "4");
-		Parameter inc = new Parameter();
-		inc.setName("increment");
-		inc.setValue("5");
-		pipe.addParameter(inc);
+		pipe.addParameter(new ParameterBuilder("increment", "5"));
 		pipe.setSessionKey(numberSession);
 		pipe.configure();
 		doPipe(pipe, "message", session);
@@ -66,10 +63,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
     public void testNullIncrementParameter() throws Exception {
     	String numberSession = "number";
 		session.put(numberSession, "4");
-		Parameter inc = new Parameter();
-		inc.setName("increment");
-		inc.setValue(null);
-		pipe.addParameter(inc);
+		pipe.addParameter(new ParameterBuilder("increment", null));
 		pipe.setSessionKey(numberSession);
 		pipe.configure();
 		doPipe(pipe, null, session);
@@ -81,10 +75,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 		Exception exception = assertThrows(NumberFormatException.class, () -> {
 			String numberSession = "number";
 			session.put(numberSession, "4");
-			Parameter inc = new Parameter();
-			inc.setName("increment");
-			inc.setValue("");
-			pipe.addParameter(inc);
+			pipe.addParameter(new ParameterBuilder("increment", ""));
 			pipe.setSessionKey(numberSession);
 			pipe.configure();
 			doPipe(pipe, "", session);

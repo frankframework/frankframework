@@ -14,8 +14,22 @@ public class ParameterBuilder extends Parameter {
 		super();
 	}
 
+	public ParameterBuilder(String name, String value) {
+		super(name, value);
+	}
+
+	public ParameterBuilder withName(String name) {
+		setName(name);
+		return this;
+	}
+
 	public ParameterBuilder withValue(String value) {
 		setValue(value);
+		return this;
+	}
+
+	public ParameterBuilder withSessionKey(String sessionKey) {
+		setSessionKey(sessionKey);
 		return this;
 	}
 
@@ -33,4 +47,6 @@ public class ParameterBuilder extends Parameter {
 
 		return params.getValues(Message.nullMessage(), new PipeLineSession());
 	}
+
+	
 }

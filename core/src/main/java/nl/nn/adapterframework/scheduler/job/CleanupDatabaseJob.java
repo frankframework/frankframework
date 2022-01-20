@@ -117,10 +117,8 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
-				Parameter param = new Parameter();
-				param.setName("now");
+				Parameter param = new Parameter("now", DateUtils.format(date));
 				param.setType(ParameterType.TIMESTAMP);
-				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 				qs.configure();
 				qs.open();
@@ -154,10 +152,8 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 
-				Parameter param = new Parameter();
-				param.setName("now");
+				Parameter param = new Parameter("now", DateUtils.format(date));
 				param.setType(ParameterType.TIMESTAMP);
-				param.setValue(DateUtils.format(date));
 				qs.addParameter(param);
 
 				String query = qs.getDbmsSupport().getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);

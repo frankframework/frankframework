@@ -59,10 +59,7 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			}
 		}
 		if (destination != null) {
-			Parameter p = new Parameter();
-			p.setName(DESTINATION);
-			p.setValue(destination);
-			eswPipe.addParameter(p);
+			eswPipe.addParameter(new Parameter(DESTINATION, destination));
 		}
 		if (cmhVersion != null) {
 			if (StringUtils.isNumeric(cmhVersion)) {

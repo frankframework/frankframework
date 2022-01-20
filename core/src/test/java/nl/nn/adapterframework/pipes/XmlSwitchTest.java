@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
@@ -88,11 +89,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("2","Path2"));
 
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
-		Parameter inputParameter = new Parameter();
-		inputParameter.setName("source");
-		inputParameter.setSessionKey("sessionKey");
-		inputParameter.setType(ParameterType.DOMDOC);
-		pipe.addParameter(inputParameter);
+		pipe.addParameter(new ParameterBuilder().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
 		session.put("sessionKey", input);
 
 		pipe.setXpathExpression("$source/*:Envelope/*:Body/*:SetRequest/*:CaseData/*:CASE_ID");
@@ -106,12 +103,8 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 		pipe.registerForward(new PipeForward("2","Path2"));
 
 		Message input=TestFileUtils.getTestFileMessage("/XmlSwitch/in.xml");
-		Parameter inputParameter = new Parameter();
-		inputParameter.setName("source");
-		inputParameter.setSessionKey("sessionKey");
-		inputParameter.setType(ParameterType.DOMDOC);
 		session.put("sessionKey", input);
-		pipe.addParameter(inputParameter);
+		pipe.addParameter(new ParameterBuilder().withName("source").withSessionKey("sessionKey").withType(ParameterType.DOMDOC));
 		pipe.setXpathExpression("$source/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
 

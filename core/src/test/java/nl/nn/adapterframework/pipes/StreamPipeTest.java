@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class StreamPipeTest extends PipeTestBase<StreamPipe> {
@@ -109,10 +110,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
 	private Parameter createHttpRequestParameter(MockMultipartHttpServletRequest request, PipeLineSession session) {
 		session.put("httpRequest", request);
-		Parameter parameter = new Parameter();
-		parameter.setName("httpRequest");
-		parameter.setSessionKey("httpRequest");
-		return parameter;
+		return new ParameterBuilder("httpRequest", null).withSessionKey("httpRequest");
 	}
 
 	private MockMultipartHttpServletRequest createMultipartHttpRequest(StreamPipe pipe, boolean addAntiVirusParts, boolean antiVirusLastPartFailed) throws Exception {

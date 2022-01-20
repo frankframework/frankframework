@@ -8,10 +8,10 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -43,10 +43,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
 		
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("appendActionwString");
-		params.add(p);
+		params.add(new ParameterBuilder("contents", null).withSessionKey("appendActionwString"));
 		params.configure();
 		
 		actor.setAction(FileSystemAction.APPEND);

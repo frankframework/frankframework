@@ -18,7 +18,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
@@ -26,6 +25,7 @@ import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 @RunWith(Parameterized.class)
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
@@ -50,17 +50,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType(ParameterType.INTEGER);
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType(ParameterType.INTEGER);
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(new ParameterBuilder("y", "4").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -76,17 +68,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType(ParameterType.INTEGER);
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(new ParameterBuilder("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType(ParameterType.INTEGER);
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(new ParameterBuilder("y", "4").withType(ParameterType.INTEGER));
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");

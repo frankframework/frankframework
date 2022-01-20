@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 
@@ -20,10 +20,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 
 	@Test
 	public void testParameterValue() throws Exception {
-		Parameter param1 = new Parameter();
-		param1.setName("param1");
-		param1.setValue("my-value");
-		pipe.addParameter(param1);
+		pipe.addParameter(new ParameterBuilder("param1", "my-value"));
 		pipe.configure();
 
 		PipeRunResult result = doPipe("dummy");
@@ -32,9 +29,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 
 	@Test
 	public void testParameterWithoutValue() throws Exception {
-		Parameter param1 = new Parameter();
-		param1.setName("param1");
-		pipe.addParameter(param1);
+		pipe.addParameter(new ParameterBuilder("param1", null));
 		pipe.configure();
 
 		PipeRunResult result = doPipe("dummy");
@@ -43,10 +38,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 
 	@Test
 	public void testParameterWithDefaultValue() throws Exception {
-		Parameter param2 = new Parameter();
-		param2.setName("param2");
-		param2.setValue("other-value");
-		pipe.addParameter(param2);
+		pipe.addParameter(new ParameterBuilder("param2", "other-value"));
 		pipe.configure();
 
 		PipeRunResult result = doPipe("dummy");
@@ -55,14 +47,8 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 
 	@Test
 	public void testParameterWithoutValueAndDefaultValue() throws Exception {
-		Parameter param1 = new Parameter();
-		param1.setName("param1");
-		param1.setValue("fallback-value");
-		pipe.addParameter(param1);
-
-		Parameter param2 = new Parameter();
-		param2.setName("param2");
-		pipe.addParameter(param2);
+		pipe.addParameter(new ParameterBuilder("param1", "fallback-value"));
+		pipe.addParameter(new ParameterBuilder("param2", null));
 		pipe.configure();
 
 		PipeRunResult result = doPipe("dummy");
