@@ -16,17 +16,10 @@
 package nl.nn.adapterframework.filesystem;
 
 import microsoft.exchange.webservices.data.core.ExchangeService;
-import microsoft.exchange.webservices.data.core.enumeration.property.WellKnownFolderName;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
-import microsoft.exchange.webservices.data.core.service.schema.FolderSchema;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
-import microsoft.exchange.webservices.data.property.complex.Mailbox;
-import microsoft.exchange.webservices.data.search.FindFoldersResults;
 import microsoft.exchange.webservices.data.search.FolderView;
-import microsoft.exchange.webservices.data.search.filter.SearchFilter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
@@ -44,7 +37,7 @@ public class ExchangeFileSystemCache {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final Map<String, FolderId> baseFolders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
-	private final HashMap<String, Folder> folders = new HashMap<>(); // <Mailbox+FolderNaam, Folder>
+	private final HashMap<String, FolderId> folders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
 	private final List<String> mailboxesList = new ArrayList<>();
 
 	/**
@@ -66,10 +59,10 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @return Folder - The EWS Folder object that matches parameters.
 	 */
-	public Folder getFolder(String mailbox, String folder) throws IllegalStateException {
+	public FolderId getFolder(String mailbox, String folder) throws IllegalStateException {
 		log.debug("Looking for folder ["+folder+"] in ["+mailbox+"]");
 
-		Folder result = folders.get(mailbox+folder);
+		FolderId result = folders.get(mailbox+folder);
 		if(result == null){
 			log.warn("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folder+"].");
 			// throw new IllegalStateException("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folder+"].");
@@ -126,7 +119,7 @@ public class ExchangeFileSystemCache {
 		if(!folders.containsKey(key)){
 			log.debug("Creating a local cache of folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"].");
 
-			folders.put(key, folder);
+			folders.put(key, folder.getId());
 		}
 	}
 

@@ -332,7 +332,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
-			FolderId folderId = cache.getFolder(mailbox, folderNameToUse).getId();
+			FolderId folderId = cache.getFolder(mailbox, folderNameToUse);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -377,17 +377,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		FolderId folderId = null;
 		try {
-			Folder folderObject = cache.getFolder(mailbox, folderNameToUse);
-			if(folderObject != null){
-				folderId = folderObject.getId();
-			}
+			folderId = cache.getFolder(mailbox, folderNameToUse);
 		} catch (Exception e) {
 			throw new FileSystemException(e);
 		}
 		return folderId!=null;
 	}
 
-	
+
 	@Override
 	public Message readFile(EmailMessage f, String charset) throws FileSystemException, IOException {
 		EmailMessage emailMessage;
@@ -438,7 +435,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
-			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse).getId();
+			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse);
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -455,7 +452,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
-			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse).getId();
+			FolderId destinationFolderId = cache.getFolder(mailbox, folderNameToUse);
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -756,7 +753,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(mailbox);
 
 		try {
-			Folder folder = cache.getFolder(mailbox, folderNameToUse);;
+			FolderId folderId = cache.getFolder(mailbox, folderNameToUse);
+			Folder folder = Folder.bind(exchangeService, folderId);
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
 			}
