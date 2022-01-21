@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -47,6 +46,7 @@ public abstract class JdbcTestBase {
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
+	protected Properties dataSourceInfo;
 
 	/** Only to be used for setup and teardown like actions */
 	protected Connection connection;
@@ -76,11 +76,26 @@ public abstract class JdbcTestBase {
 
 	@Before
 	public void setup() throws Exception {
-		Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
-		productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
-		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		dataSourceInfo = parseDataSourceInfo(dsInfo);
+		productKey = dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 
 		prepareDatabase();
+	}
+
+	private Properties parseDataSourceInfo(String dsInfo) {
+		Properties props = new Properties();
+		String[] parts = dsInfo.split("\\] ");
+		for (String part : parts) {
+			String[] kvPair = part.split(" \\[");
+			String key = kvPair[0];
+			String value = (kvPair.length == 1) ? "" : kvPair[1];
+			if(!props.containsKey(key)) {
+				props.put(key, value);
+			}
+		}
+		return props;
 	}
 
 	@After

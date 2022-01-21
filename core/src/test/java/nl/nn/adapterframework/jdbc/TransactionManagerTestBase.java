@@ -3,13 +3,11 @@ package nl.nn.adapterframework.jdbc;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
@@ -20,7 +18,6 @@ import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
 import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
-import nl.nn.adapterframework.testutil.URLDataSourceFactory;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
@@ -72,36 +69,21 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	@Override
 	@Before
 	public void setup() throws Exception {
-		computeProductKey();
+		super.setup();
 
 		setupDataSource();
 
 		prepareDatabase();
 	}
 
-	protected void computeProductKey() {
-		switch (transactionManagerType) {
-			case DATASOURCE:
-				Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
-				productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
-				testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
-				break;
-			default:
-				productKey = dataSource.toString();
-				break;
-		}
-	}
-
 	protected void setupDataSource() throws Exception {
 		switch (transactionManagerType) {
 			case DATASOURCE:
+			case NARAYANA:
 				setupSpringTransactionManager();
 				break;
 			case BTM:
 				setupBTM();
-				break;
-			case NARAYANA:
-				setupNarayana();
 				break;
 			default:
 				throw new IllegalArgumentException("Don't know how to setupTransactionManagerAndDataSource() for transactionManagerType ["+transactionManagerType+"]");
@@ -110,8 +92,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	private void setupSpringTransactionManager() {
 		// setup a TransactionManager like in springTOMCAT.xml
-		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager;
-		dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
+		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
 		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
 		txManager = dataSourceTransactionManager;
 	}
@@ -119,12 +100,6 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	private void setupBTM() {
 		BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
 		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
-	}
-
-	private void setupNarayana() throws Exception {
-		ThreadConnectableDataSourceTransactionManager dataSourceTransactionManager = new ThreadConnectableDataSourceTransactionManager(dataSource);
-		dataSourceTransactionManager.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION);
-		txManager = dataSourceTransactionManager;
 	}
 
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {

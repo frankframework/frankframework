@@ -11,6 +11,7 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -33,6 +34,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 	public URLDataSourceFactory() {
 		DriverManager.setLoginTimeout(DB_LOGIN_TIMEOUT);
+
 		for (Object[] datasource: TEST_DATASOURCES) {
 			String product = (String)datasource[0];
 			String url = (String)datasource[1];
@@ -41,18 +43,30 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			boolean testPeek = (boolean)datasource[4];
 			String xaImplClassName = (String)datasource[5];
 
-			add(createDataSource(product, url, userId, password, testPeek, xaImplClassName), product);
+			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
+				DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
+				add(namedDataSource(ds, product, testPeek), product);
+			} catch (Exception e) {
+				log.info("ignoring DataSource, cannot complete setup", e);
+				e.printStackTrace();
+			}
 		}
 	}
 
-	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password) {
+	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
+		return new DelegatingDataSource(ds) {
 			@Override
-			public String toString() { //Override toString so JunitTests are prefixed with the DataSource URL
-				return product;
+			public String toString() {
+				StringBuilder builder = new StringBuilder();
+				builder.append(String.format("%s [%s]", PRODUCT_KEY, name));
+				builder.append(String.format(" %s [%s]", TEST_PEEK_KEY, testPeek));
+				return builder.toString();
 			}
 		};
+	}
 
+	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource(url, userId, password);
 		Properties properties = new Properties();
 		properties.setProperty(PRODUCT_KEY, product);
 		properties.setProperty(TEST_PEEK_KEY, ""+testPeek);
