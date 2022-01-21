@@ -132,6 +132,40 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
+	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
+		FolderId basefolderId;
+
+		log.debug("searching inbox");
+		FolderId inboxId;
+		if (StringUtils.isNotEmpty(emailAddress)) {
+			Mailbox mailbox = new Mailbox(emailAddress);
+			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
+		} else {
+			inboxId = new FolderId(WellKnownFolderName.Inbox);
+		}
+		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
+
+		if (StringUtils.isNotEmpty(baseFolderName)) {
+			try {
+				basefolderId=findFolder(inboxId,baseFolderName);
+			} catch (Exception e) {
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
+			}
+			if (basefolderId==null) {
+				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
+				basefolderId=findFolder(null,baseFolderName);
+			}
+			if (basefolderId==null) {
+				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
+			}
+		} else {
+			basefolderId=inboxId;
+		}
+
+		return basefolderId;
+	}
+
+
 	@Override
 	protected ExchangeService createConnection() throws FileSystemException {
 		ExchangeService exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
@@ -236,38 +270,6 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
-	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
-		FolderId basefolderId;
-
-		log.debug("searching inbox");
-		FolderId inboxId;
-		if (StringUtils.isNotEmpty(emailAddress)) {
-			Mailbox mailbox = new Mailbox(emailAddress);
-			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
-		} else {
-			inboxId = new FolderId(WellKnownFolderName.Inbox);
-		}
-		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
-
-		if (StringUtils.isNotEmpty(baseFolderName)) {
-			try {
-				basefolderId=findFolder(inboxId,baseFolderName);
-			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
-			}
-			if (basefolderId==null) {
-				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(null,baseFolderName);
-			}
-			if (basefolderId==null) {
-				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
-			}
-		} else {
-			basefolderId=inboxId;
-		}
-
-		return basefolderId;
-	}
 
 	@Override
 	public EmailMessage toFile(String filename) throws FileSystemException {
