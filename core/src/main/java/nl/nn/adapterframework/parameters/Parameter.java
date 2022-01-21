@@ -592,16 +592,16 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/** Converts raw data to configured parameter type */
-	private Object getValueAsType(Object message, boolean namespaceAware) throws ParameterException {
-		Message request = Message.asMessage(message);
-		Object result = message;
+	private Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException {
+		Message requestMessage = Message.asMessage(request);
+		Object result = request;
 		try {
-			Object requestObject = request.asObject();
+			Object requestObject = requestMessage.asObject();
 			switch(getType()) {
 				case NODE:
 					try {
 						if (transformerPoolRemoveNamespaces != null) {
-							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
 						}
 						if(requestObject instanceof Document) {
 							return ((Document)requestObject).getDocumentElement();
@@ -609,24 +609,24 @@ public class Parameter implements IConfigurable, IWithParameters {
 						if(requestObject instanceof Node) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware).getDocumentElement();
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
 					}
 					break;
 				case DOMDOC:
 					try {
 						if (transformerPoolRemoveNamespaces != null) {
-							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
 						}
 						if(requestObject instanceof Document) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware);
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 					}
 					break;
 				case DATE:
@@ -636,53 +636,53 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if(requestObject instanceof Date) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to date using formatString ["+getFormatString()+"]" );
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to date using formatString ["+getFormatString()+"]" );
 					DateFormat df = new SimpleDateFormat(getFormatString());
 					try {
-						result = df.parseObject(request.asString());
+						result = df.parseObject(requestMessage.asString());
 					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to Date using formatString ["+getFormatString()+"]",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to Date using formatString ["+getFormatString()+"]",e);
 					}
 					break;
 				case XMLDATETIME:
 					if(requestObject instanceof Date) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] from xml dateTime to date" );
-					result = DateUtils.parseXmlDateTime(request.asString());
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] from xml dateTime to date" );
+					result = DateUtils.parseXmlDateTime(requestMessage.asString());
 					break;
 				case NUMBER:
 					if(requestObject instanceof Number) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
 					try {
-						Number n = decimalFormat.parse(request.asString());
+						Number n = decimalFormat.parse(requestMessage.asString());
 						result = n;
 					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 					}
 					break;
 				case INTEGER:
 					if(requestObject instanceof Integer) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to integer" );
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to integer" );
 					try {
-						Integer i = Integer.parseInt(request.asString());
+						Integer i = Integer.parseInt(requestMessage.asString());
 						result = i;
 					} catch (NumberFormatException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to integer",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to integer",e);
 					}
 					break;
 				case BOOLEAN:
 					if(requestObject instanceof Boolean) {
 						return requestObject;
 					}
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to boolean" );
-					Boolean i = Boolean.parseBoolean(request.asString());
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to boolean" );
+					Boolean i = Boolean.parseBoolean(requestMessage.asString());
 					result = i;
 					break;
 				default:
