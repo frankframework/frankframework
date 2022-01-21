@@ -84,14 +84,15 @@ public class TestLoggingSettings extends ApiTestBase<ShowLogging> {
 	@Test
 	public void updateLogLevel() {
 		Logger rootLogger = LogUtil.getRootLogger();
-		assertEquals("default loglevel should be INFO", Level.INFO, rootLogger.getLevel());
+		Level initialLevel = rootLogger.getLevel();
+		Level otherLevel = initialLevel == Level.INFO ? Level.ERROR : Level.INFO;
 
-		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/logging", "{\"loglevel\":\"ERROR\"}");
+		Response response = dispatcher.dispatchRequest(HttpMethod.PUT, "/server/logging", "{\"loglevel\":\""+otherLevel+"\"}");
 		assertEquals(204, response.getStatus());
 		assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
 
-		assertEquals("loglevel should have been changed to ERROR", Level.ERROR, rootLogger.getLevel());
+		assertEquals("loglevel should have been changed to "+otherLevel, otherLevel, rootLogger.getLevel());
 
-		Configurator.setLevel(rootLogger.getName(), Level.INFO); //Reset log level
+		Configurator.setLevel(rootLogger.getName(), initialLevel); //Reset log level
 	}
 }

@@ -734,10 +734,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (endNdx == -1) {
 				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
 			}
-			String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			//String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
 			
 			// get value
-			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionName);
+			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
@@ -745,33 +746,56 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String name) throws ParameterException {
+	private Object preFormatDateType(Object rawValue, String formatType) throws ParameterException {
+		if (formatType!=null && (formatType.equalsIgnoreCase("date") || formatType.equalsIgnoreCase("time"))) {
+			if (rawValue instanceof Date) {
+				return rawValue;
+			}
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			try {
+				return df.parse(Message.asString(rawValue));
+			} catch (ParseException | IOException e) {
+				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
+			}
+		} 
+		if (rawValue instanceof Date) {
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			return df.format(rawValue);
+		}
+		try {
+			return Message.asString(rawValue);
+		} catch (IOException e) {
+			throw new ParameterException("Cannot read date value ["+rawValue+"]", e);
+		}
+	}
+	
+	
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
+		String[] patternElements = targetPattern.split(",");
+		String name = patternElements[0].trim();
+		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
+		
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			substitutionValue = session.getMessage(name);
-		}
-		if (substitutionValue instanceof Message) {
-			Message substitutionValueMessage = (Message)substitutionValue;
-			if (substitutionValueMessage.isEmpty()) {
-				substitutionValue = null;
-			} else if (substitutionValueMessage.asObject() instanceof Date) {
-				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-				substitutionValue = formatterFrom.format((Date)substitutionValueMessage.asObject());
-			} else { 
-				try {
-					substitutionValue = ((Message)substitutionValue).asString();
-				} catch (IOException e) {
-					throw new ParameterException("Cannot get substitution value", e);
+			Message substitutionValueMessage = session.getMessage(name);
+			if (!substitutionValueMessage.isEmpty()) {
+				if (substitutionValueMessage.asObject() instanceof Date) {
+					substitutionValue = preFormatDateType(substitutionValueMessage.asObject(), formatType);
+				} else {
+					try {
+						substitutionValue = substitutionValueMessage.asString();
+					} catch (IOException e) {
+						throw new ParameterException("Cannot get substitution value", e);
+					}
 				}
 			}
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
 			if ("now".equals(name.toLowerCase())) {
-				DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
-				substitutionValue = df.format(new Date());
+				substitutionValue = preFormatDateType(new Date(), formatType);
 			} else if ("uid".equals(namelc)) {
 				substitutionValue = Misc.createSimpleUUID();
 			} else if ("uuid".equals(namelc)) {
@@ -782,22 +806,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
-				String fixedDateTime = null;
-				try {
-					Message sessionValue = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-					if (sessionValue.asObject() instanceof Date) {
-						SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-						fixedDateTime = formatterFrom.format((Date)sessionValue.asObject());
-					} else {
-						fixedDateTime = sessionValue.asString();
-					}
-				} catch (IOException e) {
-					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]", e);
-				}
-				if (StringUtils.isEmpty(fixedDateTime)) {
+				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				if (fixedDateTime==null) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}
-				substitutionValue = fixedDateTime;
+				substitutionValue = preFormatDateType(fixedDateTime, formatType);
 			} else if ("fixeduid".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
@@ -815,7 +828,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
+			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
 		}
 		return substitutionValue;
 	}
