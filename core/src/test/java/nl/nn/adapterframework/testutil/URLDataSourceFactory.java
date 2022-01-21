@@ -45,12 +45,24 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 			try { //Attempt to add the DataSource and skip it if it cannot be instantiated
 				DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
-				add(namedDataSource(ds, product, testPeek), product);
+				// Check if we can make a connection
+				if(validateConnection(ds)) {
+					add(namedDataSource(ds, product, testPeek), product);
+				}
 			} catch (Exception e) {
 				log.info("ignoring DataSource, cannot complete setup", e);
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private boolean validateConnection(DataSource ds) {
+		try(Connection connection = ds.getConnection()) {
+			return true;
+		} catch (Throwable e) {
+			log.warn("Cannot connect to ["+ds+"], skipping:"+e.getMessage());
+		}
+		return false;
 	}
 
 	private DataSource namedDataSource(DataSource ds, String name, boolean testPeek) {
@@ -87,12 +99,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 		List<DataSource> availableDatasources = new ArrayList<>();
 		for(String dataSourceName : getDataSourceNames()) {
 			try {
-				DataSource dataSource = getDataSource(dataSourceName);
-				try(Connection connection = dataSource.getConnection()) {
-					availableDatasources.add(dataSource);
-				} catch (Exception e) {
-					log.warn("Cannot connect to ["+dataSourceName+"], skipping:"+e.getMessage());
-				}
+				availableDatasources.add(getDataSource(dataSourceName));
 			} catch (NamingException e) {
 				fail(this.getClass().getSimpleName() +" should not look for DataSources in the JNDI");
 			}
