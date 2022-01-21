@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
@@ -79,11 +81,13 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	protected void setupDataSource() throws Exception {
 		switch (transactionManagerType) {
 			case DATASOURCE:
-			case NARAYANA:
 				setupSpringTransactionManager();
 				break;
 			case BTM:
 				setupBTM();
+				break;
+			case NARAYANA:
+				setupNarayana();
 				break;
 			default:
 				throw new IllegalArgumentException("Don't know how to setupTransactionManagerAndDataSource() for transactionManagerType ["+transactionManagerType+"]");
@@ -100,6 +104,12 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	private void setupBTM() {
 		BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
 		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
+	}
+
+	private void setupNarayana() throws Exception {
+		TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+		UserTransaction utx = com.arjuna.ats.jta.UserTransaction.userTransaction();
+		txManager = new ThreadConnectableJtaTransactionManager(utx, tm);
 	}
 
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
