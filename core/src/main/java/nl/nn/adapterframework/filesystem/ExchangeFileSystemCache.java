@@ -45,9 +45,9 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @param mailbox - Mailbox to ensure in cache.
 	 */
-	public void ensureMailboxIsRegistered(String mailbox, FolderId baseFolderId, ExchangeService service) throws Exception {
+	public void ensureMailboxIsRegistered(String mailbox, FolderId baseFolderId, List<Folder> folders) throws Exception {
 		if(!isMailboxRegistered(mailbox)){
-			registerMailbox(mailbox, baseFolderId, service);
+			registerMailbox(mailbox, baseFolderId, folders);
 		}
 	}
 
@@ -92,13 +92,12 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @param mailbox - The name of the mailbox to cache.
 	 */
-	private synchronized void registerMailbox(String mailbox, FolderId baseFolderId, ExchangeService service) throws Exception {
+	private synchronized void registerMailbox(String mailbox, FolderId baseFolderId, List<Folder> folders) throws Exception {
 		if(!isMailboxRegistered(mailbox)){
 			log.debug("Creating a local cache of folders for ["+mailbox+"].");
 
 			baseFolders.put(mailbox, baseFolderId);
 
-			ArrayList<Folder> folders = findFolders(service, baseFolderId, Integer.MAX_VALUE);
 			for (Folder localFolder : folders) {
 				registerFolder(mailbox, localFolder);
 			}
@@ -131,18 +130,6 @@ public class ExchangeFileSystemCache {
 
 			folders.remove(key);
 		}
-	}
-
-	/**
-	 * Standard method to retrieve a list of Folder objects within a parent Folder.
-	 *
-	 * @param service - An instance of Exchange Service to use to make the call
-	 * @param parentFolderId - The ID of the parent folder to check for sub Folders.
-	 *
-	 * @return ArrayList<Folder> - The list of found Folder objects within parent folder.
-	 */
-	private ArrayList<Folder> findFolders(ExchangeService service, FolderId parentFolderId, int folderViewCount) throws Exception {
-		return service.findFolders(parentFolderId, new FolderView(folderViewCount)).getFolders();
 	}
 
 }

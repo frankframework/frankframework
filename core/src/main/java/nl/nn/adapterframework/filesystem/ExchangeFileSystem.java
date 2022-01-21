@@ -905,12 +905,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService service = super.getConnection();
 		service.getHttpHeaders().put("X-AnchorMailbox", mailbox);
 
-		try {
-			registerMailbox(mailbox, service);
-		} catch (Exception e) {
-			invalidateConnection(service);
-			releaseConnection(service);
-			throw new FileSystemException(e);
+		if(!cache.isMailboxRegistered(mailbox)) {
+			try {
+				registerMailbox(mailbox, service);
+			} catch (Exception e) {
+				invalidateConnection(service);
+				releaseConnection(service);
+				throw new FileSystemException(e);
+			}
 		}
 
 		return service;
@@ -932,7 +934,22 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private void registerMailbox(String mailbox, ExchangeService service) throws Exception {
-		cache.ensureMailboxIsRegistered(mailbox, getBaseFolderId(mailbox, getBaseFolder()), service);
+		FolderId baseFolderId = getBaseFolderId(mailbox, getBaseFolder());
+		List<Folder> folders = findFolders(service, baseFolderId, Integer.MAX_VALUE);
+
+		cache.ensureMailboxIsRegistered(mailbox, baseFolderId, folders);
+	}
+
+	/**
+	 * Standard method to retrieve a list of Folder objects within a parent Folder.
+	 *
+	 * @param service - An instance of Exchange Service to use to make the call
+	 * @param parentFolderId - The ID of the parent folder to check for sub Folders.
+	 *
+	 * @return ArrayList<Folder> - The list of found Folder objects within parent folder.
+	 */
+	private ArrayList<Folder> findFolders(ExchangeService service, FolderId parentFolderId, int folderViewCount) throws Exception {
+		return service.findFolders(parentFolderId, new FolderView(folderViewCount)).getFolders();
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
