@@ -364,7 +364,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			}
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			throw new FileSystemException("Cannot list messages in folder ["+folderNameToUse+"]", e);
+			throw new FileSystemException("Cannot list messages in folder ["+folder+"]", e);
 		}
 	}
 
@@ -710,16 +710,16 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderNameToUse), new FolderView(Integer.MAX_VALUE));
 		if (create && findResults.getTotalCount()==0) {
-			log.debug("creating folder [" + folderNameToUse + "]");
+			log.debug("creating folder [" + folderName + "]");
 			createFolder(folderName); // Pass incoming folderName to createFolder, separator check needs to be done there as well.
 			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderNameToUse), new FolderView(Integer.MAX_VALUE));
 		}
 		if (findResults.getTotalCount()==0) {
-			log.debug("folder [" + folderNameToUse + "] not found");
+			log.debug("folder [" + folderName + "] not found");
 			return null;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("amount of folders with name: " + folderNameToUse + " = " + findResults.getTotalCount());
+			log.debug("amount of folders with name: " + folderName + " = " + findResults.getTotalCount());
 			log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
 		}
 		FolderId folderId = findResults.getFolders().get(0).getId();
@@ -739,7 +739,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			cache.registerFolder(mailbox, folder);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
-			throw new FileSystemException("cannot create folder ["+folderNameToUse+"] in mailbox ["+mailbox+"]", e);
+			throw new FileSystemException("cannot create folder ["+folderName+"] in mailbox ["+mailbox+"]", e);
 		} finally {
 			releaseConnection(exchangeService);
 		}
