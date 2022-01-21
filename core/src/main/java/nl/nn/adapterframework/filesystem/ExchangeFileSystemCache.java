@@ -52,9 +52,9 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @param mailbox - Mailbox to ensure in cache.
 	 */
-	public void ensureMailboxIsRegistered(String mailbox, String baseFolderName, ExchangeService service) throws Exception {
+	public void ensureMailboxIsRegistered(String mailbox, FolderId baseFolderId, ExchangeService service) throws Exception {
 		if(!isMailboxRegistered(mailbox)){
-			registerMailbox(mailbox, baseFolderName, service);
+			registerMailbox(mailbox, baseFolderId, service);
 		}
 	}
 
@@ -89,7 +89,7 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @return boolean - Confirmation or denial.
 	 */
-	private boolean isMailboxRegistered(String mailbox){
+	public boolean isMailboxRegistered(String mailbox){
 		return mailboxesList.contains(mailbox);
 	}
 
@@ -99,11 +99,10 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @param mailbox - The name of the mailbox to cache.
 	 */
-	private synchronized void registerMailbox(String mailbox, String baseFolderName, ExchangeService service) throws Exception {
+	private synchronized void registerMailbox(String mailbox, FolderId baseFolderId, ExchangeService service) throws Exception {
 		if(!isMailboxRegistered(mailbox)){
 			log.debug("Creating a local cache of folders for ["+mailbox+"].");
 
-			FolderId baseFolderId = getBaseFolderId(mailbox, baseFolderName, service);
 			baseFolders.put(mailbox, baseFolderId);
 
 			ArrayList<Folder> folders = findFolders(service, baseFolderId, Integer.MAX_VALUE);
@@ -113,39 +112,6 @@ public class ExchangeFileSystemCache {
 
 			mailboxesList.add(mailbox);
 		}
-	}
-
-	public FolderId getBaseFolderId(String emailAddress, String baseFolderName, ExchangeService service) throws FileSystemException {
-		FolderId basefolderId;
-
-		log.debug("searching inbox");
-		FolderId inboxId;
-		if (StringUtils.isNotEmpty(emailAddress)) {
-			Mailbox mailbox = new Mailbox(emailAddress);
-			inboxId = new FolderId(WellKnownFolderName.Inbox, mailbox);
-		} else {
-			inboxId = new FolderId(WellKnownFolderName.Inbox);
-		}
-		log.debug("determined inbox ["+inboxId+"] foldername ["+inboxId.getFolderName()+"]");
-
-		if (StringUtils.isNotEmpty(baseFolderName)) {
-			try {
-				basefolderId=findFolder(service,inboxId,baseFolderName);
-			} catch (Exception e) {
-				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]", e);
-			}
-			if (basefolderId==null) {
-				log.debug("Could not get baseFolder ["+baseFolderName+"] as subfolder of ["+inboxId.getFolderName()+"]");
-				basefolderId=findFolder(service,null,baseFolderName);
-			}
-			if (basefolderId==null) {
-				throw new FileSystemException("Could not find baseFolder ["+baseFolderName+"]");
-			}
-		} else {
-			basefolderId=inboxId;
-		}
-
-		return basefolderId;
 	}
 
 	/**
@@ -186,46 +152,4 @@ public class ExchangeFileSystemCache {
 		return service.findFolders(parentFolderId, new FolderView(folderViewCount)).getFolders();
 	}
 
-	private FolderId findFolder(ExchangeService service, FolderId baseFolderId, String folderName) throws FileSystemException {
-		try {
-			FindFoldersResults findFoldersResultsIn;
-			FolderId result;
-			FolderView folderViewIn = new FolderView(10);
-			if (StringUtils.isNotEmpty(folderName)) {
-				log.debug("searching folder ["+folderName+"]");
-				SearchFilter searchFilterIn = new SearchFilter.IsEqualTo(FolderSchema.DisplayName, folderName);
-				if (baseFolderId==null) {
-					findFoldersResultsIn = service.findFolders(WellKnownFolderName.MsgFolderRoot, searchFilterIn, folderViewIn);
-				} else {
-					findFoldersResultsIn = service.findFolders(baseFolderId, searchFilterIn, folderViewIn);
-				}
-				if (findFoldersResultsIn.getTotalCount() == 0) {
-					if(log.isDebugEnabled()) log.debug("no folder found with name [" + folderName + "] in basefolder ["+baseFolderId+"]");
-					return null;
-				}
-				if (findFoldersResultsIn.getTotalCount() > 1) {
-					if (log.isDebugEnabled()) {
-						for (Folder folder:findFoldersResultsIn.getFolders()) {
-							log.debug("found folder ["+folder.getDisplayName()+"]");
-						}
-					}
-					throw new ConfigurationException("multiple folders found with name ["+ folderName + "]");
-				}
-			} else {
-				//findFoldersResultsIn = getExchangeService().findFolders(baseFolderId, folderViewIn);
-				return baseFolderId;
-			}
-			if (findFoldersResultsIn.getFolders().isEmpty()) {
-				result=baseFolderId;
-			} else {
-				result=findFoldersResultsIn.getFolders().get(0).getId();
-			}
-			return result;
-		} catch (Exception e) {
-//			invalidateConnection(exchangeService);
-			throw new FileSystemException("Cannot find folder ["+folderName+"]", e);
-		} finally {
-//			releaseConnection(exchangeService);
-		}
-	}
 }
