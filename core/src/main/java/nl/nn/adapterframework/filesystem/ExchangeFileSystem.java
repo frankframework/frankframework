@@ -948,12 +948,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	 *
 	 * @return ArrayList<Folder> - The list of found Folder objects within parent folder.
 	 */
-	private ArrayList<Folder> findFolders(ExchangeService service, FolderId parentFolderId, int folderViewCount) throws Exception {
+	private List<Folder> findFolders(ExchangeService service, FolderId parentFolderId, int folderViewCount) throws Exception {
 		return service.findFolders(parentFolderId, new FolderView(folderViewCount)).getFolders();
 	}
 
 	private static class RedirectionUrlCallback implements IAutodiscoverRedirectionUrl {
-		
+
 		@Override
 		public boolean autodiscoverRedirectionUrlValidationCallback(String redirectionUrl) {
 			return redirectionUrl.toLowerCase().startsWith("https://"); //TODO: provide better test on how to trust this url
