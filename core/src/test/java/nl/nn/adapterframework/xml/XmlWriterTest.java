@@ -1,8 +1,12 @@
 package nl.nn.adapterframework.xml;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -71,4 +75,46 @@ public class XmlWriterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test
+	public void testBasicCheckClosedDefault() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = input;
+		CloseObservableWriter writer = new CloseObservableWriter();
+		XmlWriter xmlWriter = new XmlWriter(writer);
+		XmlUtils.parseXml(input, xmlWriter);
+		assertEquals(expected,writer.toString());
+		assertFalse(writer.closeCalled);
+	}
+
+	@Test
+	public void testBasicCheckClosed() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = input;
+		CloseObservableWriter writer = new CloseObservableWriter();
+		XmlWriter xmlWriter = new XmlWriter(writer, true);
+		XmlUtils.parseXml(input, xmlWriter);
+		assertEquals(expected,writer.toString());
+		assertTrue(writer.closeCalled);
+	}
+	
+	@Test
+	public void testBasicCheckNotClosed() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = input;
+		CloseObservableWriter writer = new CloseObservableWriter();
+		XmlWriter xmlWriter = new XmlWriter(writer, false);
+		XmlUtils.parseXml(input, xmlWriter);
+		assertEquals(expected,writer.toString());
+		assertFalse(writer.closeCalled);
+	}
+	
+	private class CloseObservableWriter extends StringWriter {
+		public boolean closeCalled;
+
+		@Override
+		public void close() throws IOException {
+			closeCalled = true;
+			super.close();
+		}
+	}
 }
