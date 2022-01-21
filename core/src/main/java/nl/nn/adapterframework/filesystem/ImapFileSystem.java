@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ import com.sun.mail.imap.IMAPMessage;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -66,7 +65,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private @Getter String host = "";
+	private @Getter String host;
 	private @Getter int port = 993;
 	
 	private Session emailSession = Session.getInstance(System.getProperties());
@@ -606,12 +605,18 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 		MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
 	}
 
-	@IbisDoc({ "1", "The hostname of the IMAP server" })
+	/**
+	 * The hostname of the IMAP server
+	 * @ff.mandatory
+	 */
 	public void setHost(String host) {
 		this.host = host;
 	}
 
-	@IbisDoc({ "2", "The port of the IMAP server", "993" })
+	/**
+	 * The port of the IMAP server
+	 * @ff.default 993
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}

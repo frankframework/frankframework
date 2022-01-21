@@ -234,7 +234,8 @@ public class LockerTest extends TransactionManagerTestBase {
 				// we do not consider this a failure condition:
 				// This test is not about the other thread to complete without problems, 
 				// only about this thread to wait at most <timeout> seconds for the lock.
-				log.warn("Ignoring exception waiting for other thread to complete", t);
+				boolean interrupted = Thread.interrupted();
+				log.warn("Ignoring exception waiting for other thread to complete, interrupted ["+interrupted+"]", t);
 			}
 			
 			// N.B. commented out test for other thread:

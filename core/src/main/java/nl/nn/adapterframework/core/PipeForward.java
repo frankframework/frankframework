@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import lombok.Getter;
 
 /**
  * Bean that knows a functional name of a Forward, to be referred by
@@ -34,48 +36,40 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  */
 public class PipeForward {
 
-	public final static String SUCCESS_FORWARD_NAME = PipeLineExit.EXIT_STATE_SUCCESS;
+	public final static String SUCCESS_FORWARD_NAME = "success";
 	public final static String EXCEPTION_FORWARD_NAME = "exception";
-    private String name;
-    private String path;
 
-    public PipeForward(String name, String path) {
-        this.name = name;
-        this.path = path;
-    }
-    public PipeForward() {
+	private @Getter String name;
+	private @Getter String path;
 
-    }
+	public PipeForward(String name, String path) {
+		this.name = name;
+		this.path = path;
+	}
+
+	public PipeForward() {
+
+	}
 
 	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
-    public String getName() {
-        return name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
 	 * The path is the name of the Pipe to execute/store
 	 */
-	public String getPath() {
-        return path;
-    }
-  	/**
-	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
-	 */
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setPath(String path) {
+		this.path = path;
+	}
+
 	/**
-	 * The path is the name of the Pipe to execute/store
+	 * uses reflection to return the value
 	 */
-    public void setPath(String path) {
-        this.path = path;
-    }
- 	/**
- 	 * uses reflection to return the value
- 	 */
 	@Override
-	public String toString(){
-      return ToStringBuilder.reflectionToString(this);
-    }
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 }

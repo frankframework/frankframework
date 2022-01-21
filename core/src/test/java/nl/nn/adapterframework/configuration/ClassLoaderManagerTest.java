@@ -23,6 +23,7 @@ import org.mockito.stubbing.Answer;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -179,7 +180,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		pl.addPipe(pipe);
 		PipeLineExit ple = new PipeLineExit();
 		ple.setPath("success");
-		ple.setState("success");
+		ple.setState(ExitState.SUCCESS);
 		pl.registerPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 

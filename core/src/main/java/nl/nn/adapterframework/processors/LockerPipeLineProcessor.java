@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Locker;
@@ -42,7 +42,7 @@ public class LockerPipeLineProcessor extends PipeLineProcessorBase {
 			if (objectId == null) {
 				log.info("could not obtain lock ["+locker+"]");
 				pipeLineResult = new PipeLineResult();
-				pipeLineResult.setState(PipeLineExit.EXIT_STATE_SUCCESS);
+				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {
 				try {
 					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

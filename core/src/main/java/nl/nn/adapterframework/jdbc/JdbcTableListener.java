@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -31,7 +32,6 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Database Listener that operates on a table having at least a key and a status field.
@@ -40,36 +40,36 @@ import nl.nn.adapterframework.doc.IbisDoc;
  */
 public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
 	
-	private String tableName;
-	private String tableAlias="t";
-	private String statusField;
-	private String orderField;
-	private String timestampField;
-	private String commentField;
-	private String selectCondition;
-	private int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
+	private @Getter String tableName;
+	private @Getter String tableAlias="t";
+	private @Getter String statusField;
+	private @Getter String orderField;
+	private @Getter String timestampField;
+	private @Getter String commentField;
+	private @Getter String selectCondition;
+	private @Getter int maxCommentLength=ITransactionalStorage.MAXCOMMENTLEN;
 	
 	private Map<ProcessState, String> statusValues = new HashMap<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getTableName())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify tableName");
+			throw new ConfigurationException("must specify tableName");
 		}
 		if (StringUtils.isEmpty(getKeyField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify keyField");
+			throw new ConfigurationException("must specify keyField");
 		}
 		if (StringUtils.isEmpty(getStatusField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify statusField");
+			throw new ConfigurationException("must specify statusField");
 		}
 		if (StringUtils.isEmpty(getMessageField())) {
 			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.ERROR))) {
-			throw new ConfigurationException(getLogPrefix()+"must specify statusValueError");
+			throw new ConfigurationException("must specify statusValueError");
 		}
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.DONE))) {
-			throw new ConfigurationException(getLogPrefix()+"must specify statusValueProcessed");
+			throw new ConfigurationException("must specify statusValueProcessed");
 		}
 		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
 		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
@@ -157,93 +157,101 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 
 
 
-	@IbisDoc({"1", "Name of the table to be used", ""})
+	/**
+	 * Name of the table to be used
+	 * @ff.mandatory
+	 */
 	public void setTableName(String string) {
 		tableName = string;
 	}
-	public String getTableName() {
-		return tableName;
-	}
 
-	@IbisDoc({"2", "Alias of the table, that can be used in selectCondition", "t"})
+	/**
+	 * Alias of the table, that can be used in selectCondition
+	 * @ff.default t
+	 */
 	public void setTableAlias(String string) {
 		tableAlias = string;
 	}
-	public String getTableAlias() {
-		return tableAlias;
-	}
 
-	@IbisDoc({"4", "Field containing the status of the message", ""})
+	/**
+	 * Field containing the status of the message
+	 * @ff.mandatory
+	 */
 	public void setStatusField(String fieldname) {
 		statusField = fieldname;
 	}
-	public String getStatusField() {
-		return statusField;
-	}
 
-	@IbisDoc({"5", "(optional) Comma separated list of fields determining the order in which messages are processed", ""})
+	/**
+	 * (optional) Comma separated list of fields determining the order in which messages are processed
+	 */
 	public void setOrderField(String string) {
 		orderField = string;
 	}
-	public String getOrderField() {
-		return orderField;
-	}
 
-	@IbisDoc({"6", "(optional) Field used to store the date and time of the last change of the statusField", ""})
+	/**
+	 * (optional) Field used to store the date and time of the last change of the statusField
+	 */
 	public void setTimestampField(String fieldname) {
 		timestampField = fieldname;
 	}
-	public String getTimestampField() {
-		return timestampField;
-	}
 
-	@IbisDoc({"6", "(optional) Field used to store the reason of the last change of the statusField", ""})
+	/**
+	 * (optional) Field used to store the reason of the last change of the statusField
+	 */
 	public void setCommentField(String commentField) {
 		this.commentField = commentField;
 	}
-	public String getCommentField() {
-		return commentField;
-	}
 
-	@IbisDoc({"6", "(optional) Maximum length of strings to be stored in commentField, or -1 for unlimited", ITransactionalStorage.MAXCOMMENTLEN+""})
+	/**
+	 * (optional) Maximum length of strings to be stored in commentField, or -1 for unlimited
+	 * @ff.default 1000
+	 */
 	public void setMaxCommentLength(int maxCommentLength) {
 		this.maxCommentLength = maxCommentLength;
 	}
-	public int getMaxCommentLength() {
-		return maxCommentLength;
-	}
 
-	@IbisDoc({"7", "(optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.", ""})
+	/**
+	 * (optional) Value of statusField indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.
+	 */
 	public void setStatusValueAvailable(String string) {
 		statusValues.put(ProcessState.AVAILABLE,string);
 	}
 
-	@IbisDoc({"8", "Value of statusField indicating the processing of the row resulted in an error", ""})
+	/**
+	 * "Value of statusField indicating the processing of the row resulted in an error
+	 * @ff.mandatory
+	 */
 	public void setStatusValueError(String string) {
 		statusValues.put(ProcessState.ERROR, string);
 	}
 
-	@IbisDoc({"9", "Value of status field indicating row is processed ok", ""})
+	/**
+	 * Value of status field indicating row is processed OK
+	 * @ff.mandatory
+	 */
 	public void setStatusValueProcessed(String string) {
 		statusValues.put(ProcessState.DONE, string);
 	}
 
-	@IbisDoc({"10", "Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.", ""})
+	/**
+	 * Value of status field indicating is being processed. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.
+	 */
 	public void setStatusValueInProcess(String string) {
 		statusValues.put(ProcessState.INPROCESS, string);
 	}
 
-	@IbisDoc({"11", "Value of status field indicating message is on Hold, temporarily", ""})
+	/**
+	 * Value of status field indicating message is on Hold, temporarily
+	 */
 	public void setStatusValueHold(String string) {
 		statusValues.put(ProcessState.HOLD, string);
 	}
 
-	@IbisDoc({"12", "Additional condition for a row to belong to this TableListener", ""})
+	/**
+	 * Additional condition for a row to belong to this TableListener
+	 */
 	public void setSelectCondition(String string) {
 		selectCondition = string;
-	}
-	public String getSelectCondition() {
-		return selectCondition;
 	}
 
 }

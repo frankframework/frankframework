@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
@@ -97,8 +98,8 @@ import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunState;
+import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -152,7 +153,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
- * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
+ * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to SUCCESS</li>
  * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
  * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
  * </ul>
@@ -908,7 +909,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		PipeLineResult plr = new PipeLineResult();
 		Message result=new Message("<error>"+XmlUtils.encodeChars(comments)+"</error>");
 		plr.setResult(result);
-		plr.setState("ERROR");
+		plr.setState(ExitState.ERROR);
 		if (getSender()!=null) {
 			String sendMsg = sendResultToSender(result);
 			if (sendMsg != null) {
@@ -1236,12 +1237,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which has a problematic history; aborting processing");
 				}
 				numRejected.increase();
-				setExitState(threadContext, "rejected", 500);
+				setExitState(threadContext, ExitState.REJECTED, 500);
 				return Message.nullMessage();
 			}
 			if (isDuplicateAndSkip(getMessageBrowser(ProcessState.DONE), messageId, businessCorrelationId)) {
-				numRejected.increase();
-				setExitState(threadContext, "success", 304);
+				setExitState(threadContext, ExitState.SUCCESS, 304);
 				return Message.nullMessage();
 			}
 			if (getCachedProcessResult(messageId)!=null) {
@@ -1325,11 +1325,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					}
 				}
 				if (!messageInError && !isTransacted()) {
-					String commitOnState = adapter.getPipeLine().getCommitOnState();
-
-					if (StringUtils.isNotEmpty(commitOnState) && !commitOnState.equalsIgnoreCase(pipeLineResult.getState())) {
-						messageInError=true;
-					}
+					messageInError = !pipeLineResult.isSuccessful();
 				}
 			} catch (Throwable t) {
 				if (TransactionSynchronizationManager.isActualTransactionActive()) {
@@ -1418,7 +1414,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return result;
 	}
 
-	private void setExitState(Map<String,Object> threadContext, String state, int code) {
+	private void setExitState(Map<String,Object> threadContext, ExitState state, int code) {
 		if (threadContext!=null) {
 			threadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, state);
 			threadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, code);
