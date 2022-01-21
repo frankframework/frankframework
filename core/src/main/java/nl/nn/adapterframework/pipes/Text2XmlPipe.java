@@ -16,9 +16,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;
-import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ext.LexicalHandler;
+import org.xml.sax.helpers.AttributesImpl;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -43,6 +45,8 @@ public class Text2XmlPipe extends StreamingPipe {
 	private @Getter boolean replaceNonXmlChars = true;
 	private @Getter boolean useCdataSection = true;
 
+	protected static final String SPLITTED_LINE_TAG="line";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -54,47 +58,47 @@ public class Text2XmlPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result;
+		if(message.asObject() == null) {
+			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+" nil=\"true\" />"));
+		} else if(message.isEmpty() && isUseCdataSection()) {
+			return new PipeRunResult(getSuccessForward(), new Message("<"+getXmlTag()+"><![CDATA[]]></"+getXmlTag()+">"));
+		}
 		try (MessageOutputStream target = getTargetStream(session)) {
-			try (Writer writer = target.asWriter()) {
-				if (isSplitLines() && !Message.isEmpty(message)) {
-					try (BufferedReader reader = new BufferedReader(message.asReader())) {
-						String line;
-						while ((line = reader.readLine()) != null) {
-							writer.append("<line>"+addCdataSection(line)+"</line>");
+			ContentHandler handler = target.asContentHandler();
+			try {
+				handler.startDocument();
+				handler.startElement("", getXmlTag(), getXmlTag(), new AttributesImpl());
+				try (BufferedReader reader = new BufferedReader(message.asReader())) {
+					String line;
+					boolean lineWritten=false;
+					while ((line = reader.readLine()) != null) {
+						if(lineWritten) {
+							handler.characters("\n".toCharArray(), 0, "\n".length());
 						}
-
-						result = writer.toString();
+						if (isSplitLines()) {
+							handler.startElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG, new AttributesImpl());
+						}
+						if(isUseCdataSection()) {
+							((LexicalHandler) handler).startCDATA();
+						}
+						line = isReplaceNonXmlChars() ? XmlUtils.encodeCdataString(line) : line;
+						handler.characters(line.toCharArray(), 0, line.length());
+						lineWritten=true;
+						if(isUseCdataSection()) {
+							((LexicalHandler) handler).endCDATA();
+						}
+						if (isSplitLines()) {
+							handler.endElement("", SPLITTED_LINE_TAG, SPLITTED_LINE_TAG);
+						}
 					}
-				} else if (isReplaceNonXmlChars() && !Message.isEmpty(message)) {
-					result = addCdataSection(XmlUtils.encodeCdataString(message.asString()));
-				} else {
-					result = addCdataSection(message.asString());
 				}
+				handler.endElement("", getXmlTag(), getXmlTag());
+			} finally {
+				handler.endDocument();
 			}
+			return target.getPipeRunResult();
 		} catch(Exception e) {
 			throw new PipeRunException(this, "Unexpected exception during splitting", e); 
-		}
-
-		return new PipeRunResult(getSuccessForward(), prepareResult(result));
-	}
-
-	private String prepareResult(String result) {
-		StringBuilder builder = new StringBuilder(isIncludeXmlDeclaration() ? "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" : "");
-		builder.append("<" + getXmlTag());
-		if(result == null) {
-			builder.append(" nil=\"true\" />");
-		} else {
-			builder.append(">"+result+"</" + getXmlTag() + ">");
-		}
-		return builder.toString();
-	}
-
-	private String addCdataSection(String input) {
-		if (isUseCdataSection()) {
-			return "<![CDATA["+ input +"]]>";
-		} else {
-			return input;
 		}
 	}
 
@@ -114,7 +118,9 @@ public class Text2XmlPipe extends StreamingPipe {
 	/**
 	 * Controls whether a declaration is included above the xml text
 	 * @ff.default true
+	 * @deprecated
 	 */
+	@Deprecated
 	public void setIncludeXmlDeclaration(boolean b) {
 		includeXmlDeclaration = b;
 	}

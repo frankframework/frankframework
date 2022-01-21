@@ -21,9 +21,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setSplitLines(true);
 		configureAndStartPipe();
 
-		String expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-					+ "<address>"
-					+ "<line><![CDATA[this is an example]]></line>"
+		String expectedOutput = "<address>"
+					+ "<line><![CDATA[this is an example]]></line>\n"
 					+ "<line><![CDATA[im in cdata]]></line>"
 					+ "</address>";
 
@@ -38,8 +37,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 		
-		String expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<address>this is an example\n" + "im not in cdata</address>";
+		String expectedOutput = "<address>this is an example\n" + "im not in cdata</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
 		assertEquals(expectedOutput, res.getResult().asString());
@@ -53,7 +51,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setIncludeXmlDeclaration(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<address>this is an example\n" + "im not in cdata</address>";
+		String expectedOutput = "<address>this is an example\nim not in cdata</address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim not in cdata", session);
 		assertEquals(expectedOutput, res.getResult().asString());
@@ -66,9 +64,8 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-					+ "<address>"
-					+ "<line>this is an example</line>"
+		String expectedOutput = "<address>"
+					+ "<line>this is an example</line>\n"
 					+ "<line>im not in cdata</line>"
 					+ "</address>";
 
@@ -96,8 +93,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setReplaceNonXmlChars(false);
 		configureAndStartPipe();
 
-		String expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<address></address>";
+		String expectedOutput = "<address/>";
 
 		PipeRunResult res = doPipe(pipe, "", session);
 		assertEquals(expectedOutput, res.getResult().asString());
@@ -109,7 +105,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult res = doPipe(pipe, "this will be in cdata tag\b", session);
-		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><address><![CDATA[this will be in cdata tag¿]]></address>", res.getResult().asString());
+		assertEquals("<address><![CDATA[this will be in cdata tag¿]]></address>", res.getResult().asString());
 	}
 
 	@Test
@@ -121,8 +117,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setReplaceNonXmlChars(false);
 		configureAndStartPipe();
 		
-		String expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<address><line><![CDATA[this is an example]]></line>"
+		String expectedOutput = "<address><line><![CDATA[this is an example]]></line>\n"
 				+ "<line><![CDATA[im in cdata]]></line></address>";
 
 		PipeRunResult res = doPipe(pipe, "this is an example\nim in cdata", session);
@@ -145,7 +140,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult res = doPipe(Message.asMessage(""));
-		assertEquals("<tests></tests>", res.getResult().asString());
+		assertEquals("<tests/>", res.getResult().asString());
 	}
 
 	@Test
@@ -168,16 +163,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 		PipeRunResult res = doPipe(Message.nullMessage());
 		assertEquals("<tests nil=\"true\" />", res.getResult().asString());
-	}
-
-	@Test
-	public void testNullInputInCDATA() throws Exception {
-		pipe.setIncludeXmlDeclaration(false);
-		pipe.setXmlTag("tests");
-		configureAndStartPipe();
-
-		PipeRunResult res = doPipe(Message.nullMessage());
-		assertEquals("<tests><![CDATA[null]]></tests>", res.getResult().asString());
 	}
 
 }
