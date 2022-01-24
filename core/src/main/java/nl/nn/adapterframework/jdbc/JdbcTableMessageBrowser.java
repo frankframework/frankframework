@@ -152,11 +152,10 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 
 	@Override
 	protected String createSelector() {
-		String result=super.createSelector();
 		if (StringUtils.isNotEmpty(selectCondition)) {
-			result +=" AND ("+selectCondition+")";
+			return Misc.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
 		}
-		return result;
+		return super.createSelector();
 	}
 
 
