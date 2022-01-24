@@ -12,9 +12,10 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
+public class ChecksumPipeTest extends StreamingPipeTestBase<ChecksumPipe> {
 
 	@Override
 	public ChecksumPipe createPipe() {
@@ -56,12 +57,12 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 		assertNotNull(result);
 	}
 	
-	@Test(expected = PipeRunException.class)
+	@Test(expected = Exception.class)
 	public void cantCalculate() throws Exception {
 		doPipe(pipe, new Message((String)null), session);
 	}
 
-	@Test(expected = PipeRunException.class)
+	@Test(expected = Exception.class)
 	public void wrongPathToFile() throws Exception {
 		pipe.setInputIsFile(true);
 		configureAndStartPipe();
