@@ -149,6 +149,7 @@ public class ChecksumPipe extends StreamingPipe {
 		return !isInputIsFile() && super.canProvideOutputStream();
 	}
 
+	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		ChecksumGenerator cg;
 		try {
