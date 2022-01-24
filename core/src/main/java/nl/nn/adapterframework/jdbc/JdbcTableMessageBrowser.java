@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
@@ -35,30 +36,35 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	private @Getter String indexName="IX_IBISSTORE";
 	private String selectCondition=null;
 
+	private String tableAlias;
+
 	private JdbcFacade parent=null;
-	
 	private JdbcTableListener<M> tableListener;
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
-	
+
 	protected boolean useIndexHint;
 	private boolean useFirstRowsHint;
 
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener) {
 		this.tableListener = tableListener;
 	}
-	
+
 	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener, String statusValue, StorageType storageType) {
 		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
 		setIdField(tableListener.getKeyField());
 		setTableName(tableListener.getTableName());
+		tableAlias = tableListener.getTableAlias();
 		setMessageField(StringUtils.isNotEmpty(tableListener.getMessageField())?tableListener.getMessageField():tableListener.getKeyField());
 		setDateField(tableListener.getTimestampField());
 		setType(storageType.getCode());
-		selectCondition=Misc.concatStrings(tableListener.getStatusField()+ "='"+statusValue+"'", " AND ", tableListener.getSelectCondition());
+		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
+		if (tableListener.getStatusValue(ProcessState.AVAILABLE).equals(statusValue) && StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
+			selectCondition += " AND ("+tableListener.getSelectCondition()+")";
+		}
 	}
 
 	@Override
@@ -82,7 +88,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		}
 		createQueryTexts(getDbmsSupport());
 	}
-	
+
 	@Override
 	protected void setOperationControls() {
 		super.setOperationControls();
@@ -107,7 +113,8 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
 		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
 		try {
-			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false));
+			String alias = StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"";
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName() +alias+ getWhereClause(null,false));
 		} catch (JdbcException e) {
 			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
 		}
@@ -142,12 +149,15 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 
-	
-	
-	
+
+
+
 	@Override
 	protected String createSelector() {
-		return Misc.concatStrings(super.createSelector()," AND ",selectCondition);
+		if (StringUtils.isNotEmpty(selectCondition)) {
+			return Misc.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
+		}
+		return super.createSelector();
 	}
 
 
