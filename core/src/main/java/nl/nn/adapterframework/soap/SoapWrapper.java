@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,15 +29,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSSConfig;
-import org.apache.ws.security.WSSecurityEngine;
-import org.apache.ws.security.message.WSSecHeader;
-import org.apache.ws.security.message.WSSecSignature;
-import org.apache.ws.security.message.WSSecTimestamp;
-import org.apache.ws.security.message.WSSecUsernameToken;
-import org.apache.ws.security.util.DOM2Writer;
-import org.apache.xml.security.signature.XMLSignature;
+import org.apache.wss4j.common.util.UsernameTokenUtil;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.message.WSSecHeader;
+import org.apache.wss4j.dom.message.WSSecSignature;
+import org.apache.wss4j.dom.message.WSSecTimestamp;
+import org.apache.wss4j.dom.message.WSSecUsernameToken;
+import org.apache.xml.security.algorithms.JCEMapper;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -48,8 +46,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -77,6 +75,8 @@ public class SoapWrapper {
 
 	private SoapWrapper() {
 		super();
+
+		JCEMapper.registerDefaultAlgorithms();
 	}
 
 	private void init() throws ConfigurationException {
@@ -252,10 +252,6 @@ public class SoapWrapper {
 
 	public Message signMessage(Message soapMessage, String user, String password, boolean passwordDigest) {
 		try {
-			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
-			WSSConfig config = secEngine.getWssConfig();
-			config.setPrecisionInMilliSeconds(false);
-
 			// We only support signing for soap1_1 ?
 			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
 			MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
@@ -268,38 +264,40 @@ public class SoapWrapper {
 			Document doc = unsignedEnvelope.getOwnerDocument();
 
 			// create security header and insert it into unsigned envelope
-			WSSecHeader secHeader = new WSSecHeader();
-			secHeader.insertSecurityHeader(doc);
+			WSSecHeader secHeader = new WSSecHeader(doc);
+			secHeader.insertSecurityHeader();
 
 			// add a UsernameToken
-			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken();
+			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken(secHeader);
 			if (passwordDigest) {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
 			} else {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
 			}
+			tokenBuilder.setPrecisionInMilliSeconds(true);
+			tokenBuilder.addDerivedKey(true, 1000);
 			tokenBuilder.setUserInfo(user, password);
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();
-			tokenBuilder.prepare(doc);
+			byte[] salt = UsernameTokenUtil.generateSalt(true);
+			tokenBuilder.prepare(salt);
 
-			WSSecSignature sign = new WSSecSignature();
-			sign.setUsernameToken(tokenBuilder);
-			sign.setKeyIdentifierType(WSConstants.UT_SIGNING);
-			sign.setSignatureAlgorithm(XMLSignature.ALGO_ID_MAC_HMAC_SHA1);
-			sign.build(doc, null, secHeader);
+			WSSecSignature sign = new WSSecSignature(secHeader);
+			sign.setCustomTokenValueType(WSConstants.USERNAMETOKEN_NS + "#UsernameToken");
+			sign.setCustomTokenId(tokenBuilder.getId());
+			sign.setSecretKey(tokenBuilder.getDerivedKey(salt));
+			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
+			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
+			sign.build(null);
 
-			tokenBuilder.prependToHeader(secHeader);
+			tokenBuilder.prependToHeader();
 
 			// add a Timestamp
-			WSSecTimestamp timestampBuilder = new WSSecTimestamp();
+			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
 			timestampBuilder.setTimeToLive(300);
-			timestampBuilder.prepare(doc);
-			timestampBuilder.prependToHeader(secHeader);
+			timestampBuilder.build();
 
-			Document signedDoc = doc;
-
-			return new Message(DOM2Writer.nodeToString(signedDoc));
+			return new Message(doc);
 
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);
