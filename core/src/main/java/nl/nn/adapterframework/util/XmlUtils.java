@@ -2058,12 +2058,12 @@ public class XmlUtils {
 
 	public static String toXhtml(String htmlString) {
 		if (StringUtils.isNotEmpty(htmlString)) {
-			String xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
+			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
 			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(xhtmlString);
-				return new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}
 		return null;
