@@ -45,7 +45,7 @@
 			<pipe name="extractErrorMessage" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/@message"/>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="result" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="result" useCdataSection="false">
 				<forward name="success" path="READY" />
 			</pipe>
 

@@ -48,7 +48,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(false);
 		pipe.setUseCdataSection(false);
-		pipe.setIncludeXmlDeclaration(false);
 		configureAndStartPipe();
 
 		String expectedOutput = "<address>this is an example\nim not in cdata</address>";
@@ -76,7 +75,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	@Test
 	public void testInvalidXmlCharsReplacedWithoutCDATA() throws Exception {
 		pipe.setXmlTag("address");
-		pipe.setIncludeXmlDeclaration(false);
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
 
@@ -113,7 +111,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(true);
 		pipe.setUseCdataSection(true);
-		pipe.setIncludeXmlDeclaration(true);
 		pipe.setReplaceNonXmlChars(false);
 		configureAndStartPipe();
 		
@@ -133,7 +130,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 	@Test
 	public void testEmptyInput() throws Exception {
-		pipe.setIncludeXmlDeclaration(false);
 		pipe.setXmlTag("tests");
 		pipe.setUseCdataSection(false);
 		pipe.setSplitLines(true);
@@ -145,7 +141,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 	@Test
 	public void testEmptyInputInCDATA() throws Exception {
-		pipe.setIncludeXmlDeclaration(false);
 		pipe.setXmlTag("tests");
 		configureAndStartPipe();
 
@@ -155,7 +150,6 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 
 	@Test
 	public void testNullInput() throws Exception {
-		pipe.setIncludeXmlDeclaration(false);
 		pipe.setXmlTag("tests");
 		pipe.setSplitLines(true);
 		pipe.setUseCdataSection(false);

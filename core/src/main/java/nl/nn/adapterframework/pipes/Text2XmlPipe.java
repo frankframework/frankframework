@@ -116,16 +116,6 @@ public class Text2XmlPipe extends StreamingPipe {
 	}
 
 	/**
-	 * Controls whether a declaration is included above the xml text
-	 * @ff.default true
-	 * @deprecated
-	 */
-	@Deprecated
-	public void setIncludeXmlDeclaration(boolean b) {
-		includeXmlDeclaration = b;
-	}
-
-	/**
 	 * Controls whether the lines of the input are places in separated &lt;line&gt; tags
 	 * @ff.default false
 	 */
