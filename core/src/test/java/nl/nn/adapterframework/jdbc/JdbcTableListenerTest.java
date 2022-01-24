@@ -111,6 +111,91 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		testGetRawMessage("NULL",false);
 	}
 
+	@Test
+	public void testGetRawMessageWithSelectConditionTrue() throws Exception {
+		listener.setSelectCondition("1=1");
+		testGetRawMessage("1",true);
+	}
+
+	@Test
+	public void testGetRawMessageWithSelectConditionFalse() throws Exception {
+		listener.setSelectCondition("1=0");
+		testGetRawMessage("1",false);
+	}
+
+	@Test
+	public void testGetRawMessageWithSelectConditionComplex() throws Exception {
+		listener.setSelectCondition("TKEY=(SELECT r.TKEY FROM TEMP r WHERE r.TINT = t.TINT)");
+		testGetRawMessage("1",true);
+	}
+
+	public void testGetMessageCount(String status, ProcessState state, int expectedCount) throws Exception {
+		listener.configure();
+		listener.open();
+
+		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT,TVARCHAR) VALUES (10,"+status+",'A')", null);
+
+		JdbcTableMessageBrowser browser = new JdbcTableMessageBrowser(listener, listener.getStatusValue(state), listener.getStorageType(state)) {
+			@Override
+			public Connection getConnection() throws JdbcException {
+				try {
+					return getDbConnection();
+				} catch (SQLException e) {
+					throw new JdbcException(e);
+				}
+			}
+
+			@Override
+			protected DataSource getDatasource() throws JdbcException {
+				try {
+					return new OracleDataSource(); // just return one, to have one.
+				} catch (SQLException e) {
+					throw new JdbcException(e);
+				} 
+			}
+			
+		};
+		browser.configure();
+		assertEquals(expectedCount, browser.getMessageCount());
+	}
+
+	@Test
+	public void testGetMessageCount() throws Exception {
+		testGetMessageCount("1",ProcessState.AVAILABLE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithTableAliasSelected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR='A'");
+		testGetMessageCount("1",ProcessState.AVAILABLE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithTableAliasUnselected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR!='A'");
+		testGetMessageCount("1",ProcessState.AVAILABLE, 0);
+	}
+
+	@Test
+	public void testGetMessageCountAvailableWithWithOrClauseUnselected() throws Exception {
+		listener.setSelectCondition("TVARCHAR!='A' OR 1=1");
+		// a record for state done is inserted, so there should be no record in state available. 
+		// Missing parentheses would cause the OR to select one
+		testGetMessageCount("2",ProcessState.AVAILABLE, 0);  
+	}
+
+	@Test
+	public void testGetMessageCountDoneWithWithTableAliasSelected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR='A'");
+		testGetMessageCount("2",ProcessState.DONE, 1);
+	}
+
+	@Test
+	public void testGetMessageCountDoneWithWithTableAliasUnselected() throws Exception {
+		listener.setSelectCondition("t.TVARCHAR!='A'");
+		testGetMessageCount("2",ProcessState.DONE, 1); // SelectCondition should have no impact on queries other then for 'Available'
+	}
+	
 	public void testPeekMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.open();
