@@ -69,10 +69,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -516,7 +512,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			AuthState authState = httpClientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
 			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
@@ -719,7 +715,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				throw new SenderException(e);
 			} finally {
-				
 				// By forcing the use of the HttpResponseHandler the resultStream 
 				// will automatically be closed when it has been read.
 				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
@@ -729,7 +724,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// IMPORTANT: It is possible that poorly written implementations
 				// wont read or close the response.
 				// This will cause the connection to become stale..
-				
+
 				if (tg.cancel()) {
 					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
@@ -752,22 +747,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
+			String xhtml = XmlUtils.toXhtml(resultString);
 
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
+			if (transformerPool != null && xhtml != null) {
+				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+				try {
+					xhtml = transformerPool.transform(Message.asSource(xhtml));
+				} catch (Exception e) {
+					throw new SenderException("Exception on transforming input", e);
 				}
 			}
+
 			result = Message.asMessage(xhtml);
 		}
 
