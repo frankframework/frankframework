@@ -275,7 +275,7 @@ public class SoapWrapper {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
 			}
 			tokenBuilder.setPrecisionInMilliSeconds(true);
-			tokenBuilder.addDerivedKey(true, 1000);
+			tokenBuilder.addDerivedKey(true, 0);
 			tokenBuilder.setUserInfo(user, password);
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();
