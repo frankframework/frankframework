@@ -1,10 +1,18 @@
 <module>
 	<adapter name="HelloWorld" active="${HelloWorld.active}">
 		<receiver name="HelloWorld" >
+			<!-- This listener is used when the API is called as specified in OpenAPI 3.0 at the Webservices page -->
 			<listener
 				name="HelloWorld"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="hello-world"
+			/>
+		</receiver>
+		<receiver name="HelloWorld">
+			<!-- This listener is used by the scheduler and IbisLocalSender in adapter HelloWorlds  -->
+			<listener
+				name="HelloWorld"
+				className="nl.nn.adapterframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">

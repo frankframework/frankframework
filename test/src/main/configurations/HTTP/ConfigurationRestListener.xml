@@ -61,7 +61,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="id" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="id" useCdataSection="false">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
@@ -71,7 +71,7 @@
 			</pipe>
 
 			<pipe name="text2Xml2" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -215,7 +215,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename2" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename2" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -280,7 +280,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
-				xmlTag="filename3" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename3" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
