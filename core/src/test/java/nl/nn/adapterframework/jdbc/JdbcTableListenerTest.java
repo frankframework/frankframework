@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.jdbc;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.Mockito.doAnswer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,10 +17,12 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.util.JdbcUtil;
 import oracle.jdbc.pool.OracleDataSource;
 
@@ -68,16 +73,102 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		return getConnection();
 	}
 	
+	public JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
+		JdbcTableMessageBrowser browser = Mockito.spy((JdbcTableMessageBrowser)listener.getMessageBrowser(state));
+		doAnswer(arg -> {
+			autowire(browser); 
+			return null;
+		}).when(browser).copyFacadeSettings(listener);
+		browser.configure();
+		return browser;
+	}
+	
 	@Test
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
 		listener.open();
 	}
 
+	@Test
+	public void testSelectQuery() throws ConfigurationException {
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM TEMP t WHERE TINT='1'";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@Test
+	public void testSelectQueryWithSelectCondition() throws ConfigurationException {
+		listener.setSelectCondition("t.TVARCHAR='x'");
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM TEMP t WHERE TINT='1' AND (t.TVARCHAR='x')";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+	@Test
+	public void testUpdateStatusQuery() throws ConfigurationException {
+		listener.configure();
+
+		String expected = "UPDATE TEMP SET TINT='3' WHERE TINT!='3' AND TKEY=?";
+
+		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
+	}
+
+	@Test
+	public void testGetMessageCountQueryAvailable() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM TEMP t WHERE (TINT='1')";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetMessageCountQueryError() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM TEMP t WHERE (TINT='3')";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+	
+	@Test
+	public void testGetMessageCountQueryAvailableWithSelectCondition() throws Exception {
+		listener.setSelectCondition("t.VARCHAR='A'");
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+
+		String expected = "SELECT COUNT(*) FROM TEMP t WHERE (TINT='1' AND (t.VARCHAR='A'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetMessageCountQueryErrorSelectCondition() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setSelectCondition("t.VARCHAR='A'");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
+
+		String expected = "SELECT COUNT(*) FROM TEMP t WHERE (TINT='3' AND (t.VARCHAR='A'))";
+
+		assertEquals(expected, browser.getMessageCountQuery);
+	}
 	public void testGetRawMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.open();
-		
+
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT) VALUES (10,"+status+")", null);
 		Object rawMessage = listener.getRawMessage(null);
 		if (expectMessage) {
@@ -100,7 +191,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	public void testGetRawMessageSkipStatusError() throws Exception {
 		testGetRawMessage("3",false);
 	}
-	
+
 	@Test
 	public void testGetRawMessageSkipOtherStatusvalue() throws Exception {
 		testGetRawMessage("4",false);
@@ -129,36 +220,18 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		testGetRawMessage("1",true);
 	}
 
+
 	public void testGetMessageCount(String status, ProcessState state, int expectedCount) throws Exception {
 		listener.configure();
 		listener.open();
-
+		
 		JdbcUtil.executeStatement(dbmsSupport,connection, "INSERT INTO TEMP (TKEY,TINT,TVARCHAR) VALUES (10,"+status+",'A')", null);
+		
+		JdbcTableMessageBrowser browser = getMessageBrowser(state);
 
-		JdbcTableMessageBrowser browser = new JdbcTableMessageBrowser(listener, listener.getStatusValue(state), listener.getStorageType(state)) {
-			@Override
-			public Connection getConnection() throws JdbcException {
-				try {
-					return getDbConnection();
-				} catch (SQLException e) {
-					throw new JdbcException(e);
-				}
-			}
-
-			@Override
-			protected DataSource getDatasource() throws JdbcException {
-				try {
-					return new OracleDataSource(); // just return one, to have one.
-				} catch (SQLException e) {
-					throw new JdbcException(e);
-				} 
-			}
-			
-		};
-		browser.configure();
 		assertEquals(expectedCount, browser.getMessageCount());
 	}
-
+	
 	@Test
 	public void testGetMessageCount() throws Exception {
 		testGetMessageCount("1",ProcessState.AVAILABLE, 1);
@@ -193,7 +266,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	@Test
 	public void testGetMessageCountDoneWithWithTableAliasUnselected() throws Exception {
 		listener.setSelectCondition("t.TVARCHAR!='A'");
-		testGetMessageCount("2",ProcessState.DONE, 1); // SelectCondition should have no impact on queries other then for 'Available'
+		testGetMessageCount("2",ProcessState.DONE, 0);
 	}
 	
 	public void testPeekMessage(String status, boolean expectMessage) throws Exception {

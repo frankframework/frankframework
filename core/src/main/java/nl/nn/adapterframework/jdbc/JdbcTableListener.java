@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		statusValues.put(ProcessState.HOLD, string);
 	}
 
-	@IbisDoc({"12", "Additional condition for a row to belong to this TableListener", ""})
+	@IbisDoc({"12", "Additional condition for a row to belong to this TableListener. Impacts all process states", ""})
 	public void setSelectCondition(String string) {
 		selectCondition = string;
 	}
