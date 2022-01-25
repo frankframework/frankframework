@@ -7,13 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -43,6 +46,8 @@ public abstract class JdbcTestBase {
 	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
+	protected static String singleDatasource = null; // "MariaDB";  // set to a specific datasource name, to speed up testing
+
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
@@ -60,18 +65,22 @@ public abstract class JdbcTestBase {
 	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
-	public static Collection data() {
+	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
-		List<DataSource> datasources = type.getAvailableDataSources();
-		Object[][] matrix = new Object[datasources.size()][];
+		List<DataSource> datasources;
+		if (StringUtils.isNotEmpty(singleDatasource)) {
+			datasources = new ArrayList<>();
+			datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+		} else {
+			datasources = type.getAvailableDataSources();
+		}
+		List<Object[]> matrix = new ArrayList<>();
 
-		int i = 0;
 		for(DataSource ds : datasources) {
-			matrix[i] = new Object[] {type, ds};
-			i++;
+			matrix.add(new Object[] {type, ds});
 		}
 
-		return Arrays.asList(matrix);
+		return matrix;
 	}
 
 	@Before

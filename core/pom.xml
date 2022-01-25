@@ -395,17 +395,18 @@
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
 			<artifactId>btm</artifactId>
-			<version>3.0.0-mk1</version>
+			<version>${btm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>
-			<version>5.11.0.Final</version>
+			<version>${narayana.version}</version>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
 			<artifactId>jboss-logging</artifactId>
-			<version>3.4.2.Final</version>
+			<version>${jboss-logging.version}</version>
 			<scope>test</scope>
 		</dependency>
 

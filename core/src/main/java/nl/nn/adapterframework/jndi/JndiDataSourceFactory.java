@@ -23,6 +23,8 @@ import javax.naming.NamingException;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 

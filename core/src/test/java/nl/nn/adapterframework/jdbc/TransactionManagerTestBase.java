@@ -1,20 +1,20 @@
 package nl.nn.adapterframework.jdbc;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
-import bitronix.tm.BitronixTransactionManager;
-import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
@@ -25,47 +25,30 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	protected IThreadConnectableTransactionManager txManager;
 
-/*
-	@Parameters(name= "{0}")
-	public static Collection data() {
-		TransactionManagerType[] tmt = TransactionManagerType.values();
-//		Object[][] matrix = new Object[tmt.length][];
-		List<List<ParameterHolder>> list = new ArrayList<>();
-
-		int i = 0;
-		for(TransactionManagerType type : TransactionManagerType.values()) {
-			List<ParameterHolder> transactionManagers = new ArrayList<>();
-			List<DataSource> datasources = type.getAvailableDataSources();
-			int j = 0;
-//			matrix[i] = new Object[datasources.size()][2];
-			for(DataSource ds : datasources) {
-//				matrix[i][j] = new ParameterHolder(type, ds);
-				transactionManagers.add(new ParameterHolder(type, ds));
-				j++;
-			}
-			i++;
-			System.err.println(transactionManagers);
-			list.add(transactionManagers);
-		}
-
-		return list;
-//		return Arrays.asList(matrix);
-	}
-*/
+	private static TransactionManagerType singleTransactionManagerType = null; 	// set to a specific transaction manager type, to speed up testing
 
 	@Parameters(name= "{0}: {1}")
-	public static Collection data() {
-		TransactionManagerType type = TransactionManagerType.BTM;
-		List<DataSource> datasources = type.getAvailableDataSources();
-		Object[][] matrix = new Object[datasources.size()][];
+	public static Collection data() throws NamingException {
+		TransactionManagerType[] transactionManagerTypes = { singleTransactionManagerType };
+		if (singleTransactionManagerType==null) {
+			transactionManagerTypes = TransactionManagerType.values();
+		}
+		List<Object[]> matrix = new ArrayList<>();
 
-		int i = 0;
-		for(DataSource ds : datasources) {
-			matrix[i] = new Object[] {type, ds};
-			i++;
+		for(TransactionManagerType type: transactionManagerTypes) {
+			List<DataSource> datasources;
+			if (StringUtils.isNotEmpty(singleDatasource)) {
+				datasources = new ArrayList<>();
+				datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+			} else {
+				datasources = type.getAvailableDataSources();
+			}
+			for(DataSource ds : datasources) {
+				matrix.add(new Object[] {type, ds});
+			}
 		}
 
-		return Arrays.asList(matrix);
+		return matrix;
 	}
 
 	@Override
@@ -102,7 +85,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	}
 
 	private void setupBTM() {
-		BitronixTransactionManager btm = TransactionManagerServices.getTransactionManager();
+		bitronix.tm.BitronixTransactionManager btm = bitronix.tm.TransactionManagerServices.getTransactionManager();
 		txManager = new ThreadConnectableJtaTransactionManager(btm, btm);
 	}
 
