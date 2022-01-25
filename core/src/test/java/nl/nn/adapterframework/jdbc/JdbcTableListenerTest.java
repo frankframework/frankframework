@@ -66,7 +66,10 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 	public JdbcTableMessageBrowser getMessageBrowser(ProcessState state) throws JdbcException, ConfigurationException {
 		JdbcTableMessageBrowser browser = Mockito.spy((JdbcTableMessageBrowser)listener.getMessageBrowser(state));
-		doAnswer(arg -> {autowire(browser); return null;}).when(browser).copyFacadeSettings(listener);
+		doAnswer(arg -> {
+			autowire(browser); 
+			return null;
+		}).when(browser).copyFacadeSettings(listener);
 		browser.configure();
 		return browser;
 	}
