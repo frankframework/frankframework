@@ -1874,6 +1874,7 @@ public class XmlUtils {
 		if (omitXmlDeclaration) {
 			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 		}
+		t.setOutputProperty(OutputKeys.INDENT, "yes");
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
