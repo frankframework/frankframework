@@ -203,6 +203,8 @@ public class LockerTest extends TransactionManagerTestBase {
 		locker.setLockWaitTimeout(1);
 		locker.configure();
 		
+		boolean lockerUnderTestReturned = false;
+		
 		log.debug("Creating Timeout Guard");
 		TimeoutGuard testTimeout = new TimeoutGuard(20,"Testtimeout");
 		try {
@@ -226,6 +228,8 @@ public class LockerTest extends TransactionManagerTestBase {
 
 			log.debug("Locker returned, releasing process in other thread to finish");
 
+			lockerUnderTestReturned = true;
+			
 			otherContinue.release();
 			log.debug("Other threads process released, waiting to finish");
 			try {
@@ -253,7 +257,9 @@ public class LockerTest extends TransactionManagerTestBase {
 			log.debug("cancel timeout guard");
 			if (testTimeout.cancel()) {
 				log.debug("test timed out");
-				fail("test timed out");
+				if (!lockerUnderTestReturned) {
+					fail("test timed out");
+				}
 			}
 			log.debug("test did not time out");
 		}

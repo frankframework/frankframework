@@ -60,7 +60,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		setDateField(tableListener.getTimestampField());
 		setType(storageType.getCode());
 		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
-		if (tableListener.getStatusValue(ProcessState.AVAILABLE).equals(statusValue) && StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
+		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
 			selectCondition += " AND ("+tableListener.getSelectCondition()+")";
 		}
 	}
