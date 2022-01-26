@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -61,7 +62,8 @@ public class OAuthAccessTokenManager {
 	private CredentialFactory client_cf;
 	private boolean useClientCredentialsGrant;
 	private HttpSenderBase httpSender;
-	private int expiryMs; // 
+	private int expiryMs;
+	private boolean basicAuthenticateWithClientCredentials = false;
 	
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
@@ -150,18 +152,24 @@ public class OAuthAccessTokenManager {
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
 	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
+		String query = httpRequest.getQuery();
+		if (!basicAuthenticateWithClientCredentials) {
+			query = Misc.concatStrings(query, "&", "client_id="+URLEncoder.encode(client_cf.getUsername())+"&client_secret="+URLEncoder.encode(client_cf.getPassword()));
+		}
 		switch (httpRequest.getMethod()) {
 			case GET:
-				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", httpRequest.getQuery());
+				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
 				apacheHttpRequest = new HttpGet(url);
 				break;
 			case POST:
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-			try {
-				((HttpPost)apacheHttpRequest).setEntity(new StringEntity(httpRequest.getQuery()));
-			} catch (UnsupportedEncodingException e) {
-				throw new HttpAuthenticationException("Could not create TokenRequest", e);
-			}
+				apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				try {
+					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
+				} catch (UnsupportedEncodingException e) {
+					throw new HttpAuthenticationException("Could not create TokenRequest", e);
+				}
+				
 				break;
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");
