@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Read messages from the ibisstore previously stored by a
@@ -53,6 +55,20 @@ import nl.nn.adapterframework.stream.Message;
 		/>
  * </pre></code>
  * 
+ * The following defaults apply:
+ * <table>
+ * 	<tr><td>tableName</td><td>IBISSTORE</td></tr>
+ * 	<tr><td>keyField</td><td>MESSAGEKEY</td></tr>
+ * 	<tr><td>messageField</td><td>MESSAGE</td></tr>
+ * 	<tr><td>messageFieldType</td><td>BLOB</td></tr>
+ * 	<tr><td>blobSmartGet</td><td>true</td></tr>
+ * 	<tr><td>statusField</td><td>TYPE</td></tr>
+ * 	<tr><td>timestampField</td><td>MESSAGEDATE</td></tr>
+ * 	<tr><td>commentField</td><td>COMMENTS</td></tr>
+ * 	<tr><td>statusValueAvailable</td><td>M</td></tr>
+ * 	<tr><td>statusValueProcessed</td><td>A</td></tr>
+ * 	<tr><td>statusValueError</td><td>E</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  */
@@ -78,7 +94,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	
 	@Override
 	public void configure() throws ConfigurationException {
-		setSelectCondition("SLOTID = '" + slotId + "'");
 		super.configure();
 		if (sessionKeys != null) {
 			sessionKeysList = new ArrayList<String>();
@@ -136,7 +151,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 		return null;
 	}
 
-
+	@Override
+	public String getSelectCondition() {
+		String conditionClause = super.getSelectCondition();
+		if (StringUtils.isNotEmpty(conditionClause)) {
+			conditionClause = "("+conditionClause+")";
+		}
+		String slotIdClause = StringUtils.isNotEmpty(getSlotId()) ? "SLOTID='"+slotId+"'" : null;
+		return Misc.concatStrings(slotIdClause, " AND ", conditionClause);
+	}
+	
 	@IbisDoc({"1", "Identifier for this service", ""})
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;

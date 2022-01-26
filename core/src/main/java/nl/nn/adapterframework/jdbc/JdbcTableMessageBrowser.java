@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
@@ -62,7 +61,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		setDateField(tableListener.getTimestampField());
 		setType(storageType.getCode());
 		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
-		if (tableListener.getStatusValue(ProcessState.AVAILABLE).equals(statusValue) && StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
+		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
 			selectCondition += " AND ("+tableListener.getSelectCondition()+")";
 		}
 	}

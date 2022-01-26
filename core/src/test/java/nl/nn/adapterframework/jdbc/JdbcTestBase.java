@@ -79,6 +79,13 @@ public abstract class JdbcTestBase {
 		}
 	}
 
+	/** Populates all database related fields that are normally wired through Spring */
+	protected void autowire(JdbcFacade jdbcFacade) {
+		jdbcFacade.setDatasourceName(getDataSourceName());
+		jdbcFacade.setDataSourceFactory(dataSourceFactory);
+		jdbcFacade.setDbmsSupportFactory(new DbmsSupportFactory());
+	}
+
 	public String getDataSourceName() {
 		return productKey;
 	}
