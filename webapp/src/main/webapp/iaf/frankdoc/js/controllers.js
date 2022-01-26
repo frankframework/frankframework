@@ -7,7 +7,7 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 		$scope.showDeprecatedElements = !$scope.showDeprecatedElements;
 	}
 	$scope.downloadXSD = function() {
-		window.open(getURI() + "frankConfig.xsd", 'Frank!Config XSD');
+		window.open(getURI() + "FrankConfig.xsd", 'Frank!Config XSD');
 	}
 
 	$scope.showInheritance = true;

@@ -54,7 +54,7 @@ public final class FrankDoc extends Base {
 
 	@GET
 	@PermitAll
-	@Path("frankConfig.xsd")
+	@Path("FrankConfig.xsd")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response fetchFrankDocXSD() throws ApiException, IOException {
 		URL frankDoc = ClassUtils.getResourceURL(FRANKDOC_XSD);

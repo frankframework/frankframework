@@ -59,7 +59,7 @@ public class IbisDocPipe extends FixedForwardPipe {
 					+ "  <br/>\n"
 					+ "  <br/>\n"
 					+ "  <a href=\"../iaf/frankdoc\">The Frank!Doc</a><br/>\n"
-					+ "  <a href=\"../iaf/api/frankdoc/files/frankConfig.xsd\">The Frank!Config XSD</a><br/>\n"
+					+ "  <a href=\"../iaf/api/frankdoc/files/FrankConfig.xsd\">The Frank!Config XSD</a><br/>\n"
 					+ "</html>";
 		} else {
 			try {
