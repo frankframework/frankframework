@@ -366,8 +366,14 @@
 	<xsl:template name="disable">
 		<xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
 		<xsl:copy>
-			<xsl:apply-templates select="*|@*|processing-instruction()|text()" />
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
 		</xsl:copy>
 		<xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
+	</xsl:template>
+
+    <xsl:template match="*|@*|processing-instruction()|text()" mode="disable">
+		<xsl:copy>
+			<xsl:apply-templates select="*|@*|processing-instruction()|text()" mode="disable"/>
+		</xsl:copy>
 	</xsl:template>
 </xsl:stylesheet>
