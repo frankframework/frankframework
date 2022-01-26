@@ -46,7 +46,8 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	protected boolean shutdownTransactionManager() {
 		BitronixTransactionManager transactionManager = (BitronixTransactionManager)getTransactionManager();
 		transactionManager.shutdown();
-		
+
+		// unregister existing resources, to avoid problems registering them again, e.g. in fullReload()
 		for (String name:ResourceRegistrar.getResourcesUniqueNames()) {
 			log.debug("Unregistering resource ["+name+"]");
 			XAResourceProducer<?,?> resourceProducer = ResourceRegistrar.get(name);
