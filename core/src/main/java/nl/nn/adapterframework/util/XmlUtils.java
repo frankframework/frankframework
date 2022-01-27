@@ -1866,15 +1866,15 @@ public class XmlUtils {
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
-		return nodeToString(node, true);
+		return nodeToString(node, false);
 	}
 
-	public static String nodeToString(Node node, boolean omitXmlDeclaration) throws TransformerException {
+	public static String nodeToString(Node node, boolean useIndentation) throws TransformerException {
 		Transformer t = getTransformerFactory().newTransformer();
-		if (omitXmlDeclaration) {
-			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		if (useIndentation) {
+			t.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
-		t.setOutputProperty(OutputKeys.INDENT, "yes");
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
