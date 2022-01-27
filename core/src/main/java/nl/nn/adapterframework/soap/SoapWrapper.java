@@ -290,7 +290,8 @@ public class SoapWrapper {
 			sign.setCustomTokenId(tokenBuilder.getId());
 			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
-			sign.setSecretKey("test".getBytes());
+			byte[] salt = UsernameTokenUtil.generateSalt(true);
+			sign.setSecretKey(salt);
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
 			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
 			sign.build(null);
