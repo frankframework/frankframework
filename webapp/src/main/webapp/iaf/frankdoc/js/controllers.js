@@ -131,7 +131,15 @@ angular.module('iaf.frankdoc').controller("main", ['$scope', '$http', 'propertie
 	$scope.getElementsOfType = function(type) {
 		let fullNames = $scope.types[type];
 		let simpleNames = [];
-		fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
+		if($scope.showDeprecatedElements) {
+			fullNames.forEach(fullName => simpleNames.push(fullNameToSimpleName(fullName)));
+		} else {
+			fullNames.forEach(function(fullName) {
+				if(!$scope.elements[fullName].deprecated) {
+					simpleNames.push(fullNameToSimpleName(fullName))
+				}
+			});
+		}
 		return simpleNames;
 	}
 }]).controller('attribute-description', ['$scope', function($scope) {
