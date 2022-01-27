@@ -3,10 +3,11 @@
 
 	<groupId>org.ibissource</groupId>
 	<artifactId>ibis-adapterframework-parent</artifactId>
-	<version>7.7-SNAPSHOT</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<properties>
+		<revision>7.7-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.17.1</log4j2.version>
 		<h2.version>2.0.206</h2.version>
@@ -66,89 +67,89 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>credentialprovider</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ifsa</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-tibco</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-sap</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-coolgen</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ibm</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-larva</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-akamai</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-cmis</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-webapp</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ear</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 				<type>ear</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test-integration</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-idin</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ladybug</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-aspose</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
@@ -323,6 +324,31 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.9.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

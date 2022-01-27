@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
-			<version>${revision}</version> <!-- Make the version overridable -->
+			<version>${project.version}</version> <!-- Make the version overridable -->
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>

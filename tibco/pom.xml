@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.ibissource</groupId>
     <artifactId>ibis-adapterframework-parent</artifactId>
-    <version>7.7-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
 
   <artifactId>ibis-adapterframework-tibco</artifactId>
@@ -14,6 +14,7 @@
     <dependency>
       <groupId>org.ibissource</groupId>
       <artifactId>ibis-adapterframework-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.tibco</groupId>
