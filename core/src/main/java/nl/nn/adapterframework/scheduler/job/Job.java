@@ -25,7 +25,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.JobDefFunctions;
 
 /**
- * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Doc XSD.
+ * Placeholder class to allow old-school <code>&lt;job function='SendMessage' /&gt;</code> in the new Frank!Config XSD.
  * 
  * Should never be instantiated directly. See {@link JobFactory} and {@link JobDefFunctions} for more information.
  * 
