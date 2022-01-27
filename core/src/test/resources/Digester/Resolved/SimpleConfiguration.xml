@@ -25,7 +25,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">
 		<receiver name="HelloBeautifulWorld">
 			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>

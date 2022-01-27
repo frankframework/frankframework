@@ -36,7 +36,6 @@ import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecSignature;
 import org.apache.ws.security.message.WSSecTimestamp;
 import org.apache.ws.security.message.WSSecUsernameToken;
-import org.apache.ws.security.util.DOM2Writer;
 import org.apache.xml.security.signature.XMLSignature;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -48,8 +47,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -297,10 +296,7 @@ public class SoapWrapper {
 			timestampBuilder.prepare(doc);
 			timestampBuilder.prependToHeader(secHeader);
 
-			Document signedDoc = doc;
-
-			return new Message(DOM2Writer.nodeToString(signedDoc));
-
+			return new Message(doc);
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);
 		}

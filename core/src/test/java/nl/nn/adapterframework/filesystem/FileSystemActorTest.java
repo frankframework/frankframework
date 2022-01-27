@@ -31,6 +31,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -115,10 +116,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("action");
-		p.setValue("");
-		params.add(p);
+		params.add(new Parameter("action", ""));
 		params.configure();
 
 		actor.configure(fileSystem,params,owner);
@@ -139,10 +137,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("action");
-		p.setValue(null);
-		params.add(p);
+		params.add(ParameterBuilder.create().withName("action"));
 		params.configure();
 		actor.setAction(FileSystemAction.READ);
 		actor.configure(fileSystem,params,owner);
@@ -164,14 +159,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		ParameterList params = new ParameterList();
-		Parameter pAction = new Parameter();
-		pAction.setName("action");
-		pAction.setValue("read");
-		params.add(pAction);
-		Parameter pFilename = new Parameter();
-		pFilename.setName("filename");
-		pFilename.setValue(filename);
-		params.add(pFilename);
+		params.add(new Parameter("action", "read"));
+
+		params.add(new Parameter("filename", filename));
 		params.configure();
 
 		actor.setAction(FileSystemAction.WRITE);
@@ -233,10 +223,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder1");
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("inputFolder");
-		p.setValue("folder2");
-		params.add(p);
+		params.add(new Parameter("inputFolder", "folder2"));
 		thrown.expectMessage("inputFolder [folder1], canonical name [");
 		thrown.expectMessage("does not exist");
 		actor.configure(fileSystem,params,owner);
@@ -429,11 +416,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("inputFolder");
-		p.setValue(inputFolder);
 
-		params.add(p);
+		params.add(new Parameter("inputFolder", inputFolder));
 		actor.setAction(FileSystemAction.LIST);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
@@ -515,10 +499,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("action");
-		p.setValue("read");
-		params.add(p);
+		params.add(new Parameter("action", "read"));
 		params.configure();
 		
 		actor.configure(fileSystem,params,owner);
@@ -625,10 +606,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		session.put("senderwriteWithCharsetUseDefault", contents);
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("senderwriteWithCharsetUseDefault");
-		params.add(p);
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("senderwriteWithCharsetUseDefault"));
 		params.configure();
 
 		waitForActionToFinish();
@@ -660,11 +638,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		session.put("uploadActionTargetwString", contents);
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("uploadActionTargetwString");
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("uploadActionTargetwString"));
 
-		params.add(p);
 		actor.setAction(FileSystemAction.UPLOAD);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
@@ -698,11 +673,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		session.put("writeLineSeparator", contents);
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("writeLineSeparator");
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("writeLineSeparator"));
 
-		params.add(p);
 		actor.setWriteLineSeparator(true);
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
@@ -737,11 +709,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		session.put("uploadActionTargetwByteArray", contents.getBytes());
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("file");
-		p.setSessionKey("uploadActionTargetwByteArray");
+		params.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTargetwByteArray"));
 
-		params.add(p);
 		actor.setAction(FileSystemAction.WRITE);
 		params.configure();
 		actor.configure(fileSystem,params,owner);
@@ -777,13 +746,10 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		session.put("uploadActionTarget", stream);
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("file");
-		p.setSessionKey("uploadActionTarget");
-
-		params.add(p);
-		actor.setAction(FileSystemAction.WRITE);
+		params.add(ParameterBuilder.create().withName("file").withSessionKey("uploadActionTarget"));
 		params.configure();
+
+		actor.setAction(FileSystemAction.WRITE);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
@@ -816,10 +782,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		PipeLineSession session = new PipeLineSession();
 
 		ParameterList paramlist = new ParameterList();
-		Parameter param = new Parameter();
-		param.setName("filename");
-		param.setValue(filename);
-		paramlist.add(param);
+		paramlist.add(new Parameter("filename", filename));
 		paramlist.configure();
 		
 		actor.setAction(FileSystemAction.WRITE);
@@ -859,14 +822,11 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		PipeLineSession session = new PipeLineSession();
 
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("fileSystemActorWriteActionWithBackupKey");
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("fileSystemActorWriteActionWithBackupKey"));
+		params.configure();
 
-		params.add(p);
 		actor.setAction(FileSystemAction.WRITE);
 		actor.setNumberOfBackups(numOfBackups);
-		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 
@@ -926,11 +886,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
-
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("appendWriteLineSeparatorTest");
-		params.add(p);
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendWriteLineSeparatorTest"));
 		params.configure();
 		
 		actor.setWriteLineSeparator(isWriteLineSeparator);
@@ -966,11 +922,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		
 		PipeLineSession session = new PipeLineSession();
 		ParameterList params = new ParameterList();
-		
-		Parameter p = new Parameter();
-		p.setName("contents");
-		p.setSessionKey("appendActionwString");
-		params.add(p);
+		params.add(ParameterBuilder.create().withName("contents").withSessionKey("appendActionwString"));
 		params.configure();
 		
 		actor.setAction(FileSystemAction.APPEND);
@@ -1022,12 +974,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setWildCard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(destFolderName);
-		params.add(p);
-		actor.setCreateFolder(true);
+		params.add(new Parameter("destination", destFolderName));
 		params.configure();
+		actor.setCreateFolder(true);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -1068,12 +1017,9 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(destFolderName);
-		params.add(p);
-		actor.setCreateFolder(true);
+		params.add(new Parameter("destination", destFolderName));
 		params.configure();
+		actor.setCreateFolder(true);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -1111,14 +1057,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(destFolder);
-		params.add(p);
+		params.add(new Parameter("destination", destFolder));
+		params.configure();
+
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}
-		params.configure();
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -1188,15 +1132,14 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 		
 		actor.setAction(FileSystemAction.COPY);
-		actor.setWildCard("tobemoved*");
+		actor.setWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
+
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(destFolderName);
-		params.add(p);
-		actor.setCreateFolder(true);
+		params.add(new Parameter("destination", destFolderName));
 		params.configure();
+
+		actor.setCreateFolder(true);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -1236,13 +1179,12 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		actor.setAction(FileSystemAction.COPY);
 		actor.setExcludeWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
+
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(destFolderName);
-		params.add(p);
-		actor.setCreateFolder(true);
+		params.add(new Parameter("destination", destFolderName));
 		params.configure();
+
+		actor.setCreateFolder(true);
 		actor.configure(fileSystem,params,owner);
 		actor.open();
 		
@@ -1525,11 +1467,8 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		}
 		
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(dest);
 
-		params.add(p);
+		params.add(new Parameter("destination", dest));
 		actor.setAction(FileSystemAction.RENAME);
 		params.configure();
 		actor.configure(fileSystem,params,owner);

@@ -6,10 +6,11 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
@@ -24,10 +25,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 	
 	public void addParam(String name, String value) {
-		Parameter param = new Parameter();
-		param.setName(name);
-		param.setValue(value);
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter(name, value));
 	}
 	
 	

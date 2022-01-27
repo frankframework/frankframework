@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
@@ -106,10 +107,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String uri="/simpleEndpointQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
-		Parameter param = new Parameter();
-		param.setName("parameter");
-		param.setValue("parameter");
-		param.setSessionKey("parameter");
+		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null)
@@ -136,10 +134,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String uri="/pathParamQueryParamTest";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
-		Parameter param = new Parameter();
-		param.setName("parameter");
-		param.setValue("parameter");
-		param.setSessionKey("parameter");
+		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri+"/{pattern}", "get", null)
@@ -170,10 +165,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String uri="/envelope";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
-		Parameter param = new Parameter();
-		param.setName("parameter");
-		param.setValue("parameter");
-		param.setSessionKey("parameter");
+		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		String responseRoot = "EnvelopeResponse,EnvelopeError403,EnvelopeError500";
 		new AdapterBuilder("myAdapterName", "each exit have specific element name")
@@ -404,10 +396,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String uri="/validatorParamFromHeaderNotQuery";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
-		Parameter param = new Parameter();
-		param.setName("parameter");
-		param.setValue("parameter");
-		param.setSessionKey("parameter");
+		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null, null)
@@ -457,10 +446,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String uri="/headerparams";
 		ApiServiceDispatcher dispatcher = ApiServiceDispatcher.getInstance();
 		assertEquals("there are still registered patterns! Threading issue?", 0, dispatcher.findMatchingConfigsForUri(uri).size());
-		Parameter p = new Parameter();
-		p.setName("envelopeId");
-		p.setValue("envelopeType");
-		p.setSessionKey("headers");
+		Parameter p = ParameterBuilder.create("envelopeId", "envelopeType").withSessionKey("headers");
 		p.setXpathExpression("/headers/header[@name='envelopeId']");
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")

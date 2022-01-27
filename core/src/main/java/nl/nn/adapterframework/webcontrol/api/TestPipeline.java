@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2017, 2020, 2021-2022 WeAreFrank!
+Copyright 2016-2017, 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -161,7 +162,7 @@ public class TestPipeline extends Base {
 
 	private void processZipFile(Map<String, Object> returnResult, InputStream inputStream, String fileEncoding, IAdapter adapter, Map<String, String> sessionKeyMap, boolean writeSecLogMessage) throws IOException {
 		StringBuilder result = new StringBuilder();
-		String lastState = null;
+		ExitState lastState = null;
 		try (ZipInputStream archive = new ZipInputStream(inputStream)) {
 			for (ZipEntry entry = archive.getNextEntry(); entry != null; entry = archive.getNextEntry()) {
 				String name = entry.getName();

@@ -135,6 +135,12 @@ public class TestTool {
 	private static final boolean allowReadlineSteps = false; 
 	protected static int globalTimeout=DEFAULT_TIMEOUT;
 
+	private static final String TR_STARTING_TAG="<tr>";
+	private static final String TR_CLOSING_TAG="</tr>";
+	private static final String TD_STARTING_TAG="<td>";
+	private static final String TD_CLOSING_TAG="</td>";
+	private static final String TABLE_CLOSING_TAG="</table>";
+
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
 	}
@@ -469,18 +475,112 @@ public class TestTool {
 		if (writers!=null) {
 			writeHtml("<form action=\"index.jsp\" method=\"post\">", writers, false);
 
-			writeHtml("<table>", writers, false);
-			writeHtml("<tr>", writers, false);
+			// scenario root directory drop down
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Scenarios root directory</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<select name=\"scenariosrootdirectory\" onchange=\"updateScenarios()\">", writers, false);
+			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
+			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
+			while (scenariosRootDirectoriesIterator.hasNext()) {
+				String directory = (String)scenariosRootDirectoriesIterator.next();
+				String description = (String)scenariosRootDescriptionsIterator.next();
+				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+				if (scenariosRootDirectory.equals(directory)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
+				writeHtml(option, writers, false);
+			}
+			writeHtml("</select>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Use a span to make IE put table on next line with a smaller window width
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			// timeout box
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Default timeout (ms)</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// log level dropdown
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Log level</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<select name=\"loglevel\">", writers, false);
+			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
+			while (tokenizer.hasMoreTokens()) {
+				String level = tokenizer.nextToken().trim();
+				level = level.substring(1, level.length() - 1);
+				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
+				if (((String)writers.get("loglevel")).equals(level)) {
+					option = option + " selected";
+				}
+				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+				writeHtml(option, writers, false);
+			}
+			writeHtml("</select>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Auto scroll checkbox
+			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml("<td>Auto scroll</td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
+			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
+			if (autoScroll.equals("true")) {
+				writeHtml(" checked", writers, false);
+			}
+			writeHtml(">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
+
+			// Scenario(s)
+			writeHtml("<table style=\"clear:both;float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td>Scenario(s)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
+			writeHtml(TD_STARTING_TAG, writers, false);
 			writeHtml("<select name=\"execute\">", writers, false);
 			debugMessage("Fill execute select box.", writers);
-			Set<String> addedDirectories = new HashSet<String>();
+			Set<String> addedDirectories = new HashSet<>();
 			Iterator<File> scenarioFilesIterator = scenarioFiles.iterator();
 			while (scenarioFilesIterator.hasNext()) {
-				File scenarioFile = (File)scenarioFilesIterator.next();
+				File scenarioFile = scenarioFilesIterator.next();
 				String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath() + File.separator;
 				Properties properties = readProperties(appConstants, scenarioFile, writers);
 				debugMessage("Add parent directories of '" + scenarioDirectory + "'", writers);
@@ -525,112 +625,22 @@ public class TestTool {
 				}
 			}
 			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Scenarios root directory</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<select name=\"scenariosrootdirectory\">", writers, false);
-			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
-			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
-			while (scenariosRootDirectoriesIterator.hasNext()) {
-				String directory = (String)scenariosRootDirectoriesIterator.next();
-				String description = (String)scenariosRootDescriptionsIterator.next();
-				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
-				if (scenariosRootDirectory.equals(directory)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
-				writeHtml(option, writers, false);
-			}
-			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			// Use a span to make IE put table on next line with a smaller window width
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Wait before clean up (ms)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"waitbeforecleanup\" value=\"" + waitBeforeCleanUp + "\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			// timeout box
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Default timeout (ms)</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"text\" name=\"timeout\" value=\"" + (timeout != globalTimeout ? timeout : globalTimeout) + "\" title=\"Global timeout for larva scenarios.\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Log level</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<select name=\"loglevel\">", writers, false);
-			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String level = tokenizer.nextToken().trim();
-				level = level.substring(1, level.length() - 1);
-				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
-				if (((String)writers.get("loglevel")).equals(level)) {
-					option = option + " selected";
-				}
-				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
-				writeHtml(option, writers, false);
-			}
-			writeHtml("</select>", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
-
-			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>Auto scroll</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
-			writeHtml("<td>", writers, false);
-			writeHtml("<input type=\"checkbox\" name=\"autoscroll\" value=\"true\"", writers, false);
-			if (autoScroll.equals("true")) {
-				writeHtml(" checked", writers, false);
-			}
-			writeHtml(">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
 
 			writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>", writers, false);
 			// submit button
-			writeHtml("<table align=\"left\">", writers, false);
-			writeHtml("<tr>", writers, false);
+			writeHtml("<table style=\"float:left;height:50px\">", writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td>&nbsp;</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("<tr>", writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml("<td align=\"right\">", writers, false);
-			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\">", writers, false);
-			writeHtml("</td>", writers, false);
-			writeHtml("</tr>", writers, false);
-			writeHtml("</table>", writers, false);
+			writeHtml("<input type=\"submit\" name=\"submit\" value=\"start\" id=\"submit\">", writers, false);
+			writeHtml(TD_CLOSING_TAG, writers, false);
+			writeHtml(TR_CLOSING_TAG, writers, false);
+			writeHtml(TABLE_CLOSING_TAG, writers, false);
 
 			writeHtml("</form>", writers, false);
 			writeHtml("<br clear=\"all\"/>", writers, false);

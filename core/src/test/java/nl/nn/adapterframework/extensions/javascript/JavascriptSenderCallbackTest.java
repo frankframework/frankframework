@@ -26,6 +26,7 @@ import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 @RunWith(Parameterized.class)
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
@@ -50,17 +51,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType(ParameterType.INTEGER);
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType(ParameterType.INTEGER);
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -76,17 +69,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType(ParameterType.INTEGER);
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType(ParameterType.INTEGER);
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");

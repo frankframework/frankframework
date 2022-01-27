@@ -50,7 +50,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -824,10 +824,10 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			}
 		} finally {
 			if (exitState==null) {
-				exitState = PipeLineExit.EXIT_STATE_SUCCESS;
+				exitState = PipeForward.SUCCESS_FORWARD_NAME;
 			}
 			PipeLine pipeline = getPipeLine();
-			if  (pipeline!=null) {
+			if (pipeline!=null) {
 				Adapter adapter = pipeline.getAdapter();
 				if (adapter!=null) {
 					if (getPresumedTimeOutInterval()>=0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {

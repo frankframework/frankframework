@@ -3,7 +3,7 @@ package nl.nn.adapterframework.http.authentication;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
@@ -12,7 +12,6 @@ import lombok.Getter;
 
 public class MockTokenServer extends WireMockRule {
 
-	private @Getter int port;
 	private boolean mockServer = true;
 	
 	String KEYCLOAK_SERVER="http://localhost:8888";
@@ -32,11 +31,11 @@ public class MockTokenServer extends WireMockRule {
 	private String accessTokenResponseExpired = "{\"access_token\":\""+EXPIRED_TOKEN+"\",\"refresh_expires_in\":0,\"scope\":\"profile email\",\"not-before-policy\":0,\"token_type\":\"Bearer\",\"expires_in\":0}";
 	
 	public MockTokenServer() {
-		this(8887);
+		super(wireMockConfig()
+				.dynamicPort());
 	}
 	public MockTokenServer(int port) {
 		super(port);
-		this.port=port;
 	}
 
 	@Override
@@ -63,7 +62,7 @@ public class MockTokenServer extends WireMockRule {
 	
 	
 	public String getServer() {
-		return mockServer ? "http://localhost:"+getPort() : KEYCLOAK_SERVER;
+		return mockServer ? "http://localhost:"+port() : KEYCLOAK_SERVER;
 	}
 	public String getEndpoint() {
 		return getServer()+getPath();

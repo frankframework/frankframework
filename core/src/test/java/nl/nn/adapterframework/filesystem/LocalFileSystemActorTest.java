@@ -14,6 +14,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
 
@@ -57,10 +58,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 
 		actor.setAction(FileSystemAction.MOVE);
 		ParameterList params = new ParameterList();
-		Parameter p = new Parameter();
-		p.setName("destination");
-		p.setValue(srcFolder+"/"+destFolder);
-		params.add(p);
+		params.add(new Parameter("destination", srcFolder+"/"+destFolder));
 		if (setCreateFolderAttribute) {
 			actor.setCreateFolder(true);
 		}

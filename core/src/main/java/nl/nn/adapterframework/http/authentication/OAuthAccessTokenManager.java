@@ -61,16 +61,18 @@ public class OAuthAccessTokenManager {
 	private CredentialFactory client_cf;
 	private boolean useClientCredentialsGrant;
 	private HttpSenderBase httpSender;
+	private int expiryMs; // 
 	
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender) {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender, int expiry) {
 		this.tokenEndpoint = tokenEndpoint;
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
 		this.client_cf = client_cf;
 		this.useClientCredentialsGrant = useClientCredentialsGrant;
 		this.httpSender = httpSender;
+		this.expiryMs = expiry * 1000;
 	}
 
 
@@ -139,7 +141,7 @@ public class OAuthAccessTokenManager {
 			// Get the access token
 			accessToken = successResponse.getTokens().getAccessToken();
 			// accessToken will be refreshed when it is half way expiration
-			accessTokenRefreshTime = System.currentTimeMillis() + 500 * accessToken.getLifetime();
+			accessTokenRefreshTime = System.currentTimeMillis() + expiryMs<0 ? 500 * accessToken.getLifetime() : expiryMs;
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+responseBody, e);
 		}

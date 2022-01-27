@@ -122,10 +122,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 			
-		Parameter dummyEntryName =  new Parameter();
-		dummyEntryName.setName("entryName");
-		dummyEntryName.setValue(principal);
-		ldapSender.addParameter(dummyEntryName);
+		ldapSender.addParameter(new Parameter("entryName", principal));
 			
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);

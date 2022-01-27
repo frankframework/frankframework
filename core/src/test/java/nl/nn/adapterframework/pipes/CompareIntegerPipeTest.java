@@ -43,14 +43,8 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		Parameter op1 = new Parameter();
-		op1.setName("operand1");
-		op1.setValue("4");
-		Parameter op2 = new Parameter();
-		op2.setName("operand2");
-		op2.setValue("5");
-		pipe.addParameter(op1);
-		pipe.addParameter(op2);
+		pipe.addParameter(new Parameter("operand1", "4"));
+		pipe.addParameter(new Parameter("operand2", "5"));
 		pipe.configure();
 
 		PipeRunResult prr = doPipe(pipe, "", session);
@@ -62,14 +56,8 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		Parameter op1 = new Parameter();
-		op1.setName("operand1");
-		op1.setValue("5");
-		Parameter op2 = new Parameter();
-		op2.setName("operand2");
-		op2.setValue("4");
-		pipe.addParameter(op1);
-		pipe.addParameter(op2);
+		pipe.addParameter(new Parameter("operand1", "5"));
+		pipe.addParameter(new Parameter("operand2", "4"));
 		pipe.configure();
 
 		PipeRunResult prr = doPipe(pipe, "", session);
@@ -81,14 +69,8 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		Parameter op1 = new Parameter();
-		op1.setName("operand1");
-		op1.setValue("5");
-		Parameter op2 = new Parameter();
-		op2.setName("operand2");
-		op2.setValue("5");
-		pipe.addParameter(op1);
-		pipe.addParameter(op2);
+		pipe.addParameter(new Parameter("operand1", "5"));
+		pipe.addParameter(new Parameter("operand2", "5"));
 		pipe.configure();
 
 		PipeRunResult prr = doPipe(pipe, "", session);
@@ -100,10 +82,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		Parameter op2 = new Parameter();
-		op2.setName("operand2");
-		op2.setValue("5");
-		pipe.addParameter(op2);
+		pipe.addParameter(new Parameter("operand2", "5"));
 		pipe.configure();
 
 		PipeRunResult prr = doPipe(pipe, "5", session);
@@ -116,10 +95,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		Parameter op1 = new Parameter();
-		op1.setName("operand1");
-		op1.setValue("5");
-		pipe.addParameter(op1);
+		pipe.addParameter(new Parameter("operand1", "5"));
 		pipe.configure();
 
 		doPipe(pipe, "non-numeric", session);
@@ -133,11 +109,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		String sessionKey1 = "sessionKey1";
 		session.put(sessionKey1, 5);
 
-		Parameter op2 = new Parameter();
-		op2.setName("operand2");
-		op2.setValue("5");
-
-		pipe.addParameter(op2);
+		pipe.addParameter(new Parameter("operand2", "5"));
 		pipe.setSessionKey1(sessionKey1);
 		pipe.configure();
 

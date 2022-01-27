@@ -60,6 +60,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.pipes.EchoPipe;
@@ -121,7 +122,7 @@ public abstract class ApiTestBase<M extends Base> extends Mockito {
 			PipeLine pipeline = new PipeLine();
 			PipeLineExit exit = new PipeLineExit();
 			exit.setPath("EXIT");
-			exit.setState("success");
+			exit.setState(ExitState.SUCCESS);
 			pipeline.registerPipeLineExit(exit);
 			EchoPipe pipe = new EchoPipe();
 			pipe.setName("myPipe");

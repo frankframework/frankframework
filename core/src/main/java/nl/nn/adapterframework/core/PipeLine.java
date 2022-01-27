@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -94,7 +96,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
-	private @Getter String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
@@ -127,6 +128,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
+
+	public enum ExitState {
+		SUCCESS,
+		ERROR,
+		REJECTED;
+	}
 
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
@@ -179,7 +186,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						pf.setPath(nextPipeName);
 						pipe.registerForward(pf);
 					} else {
-						PipeLineExit plexit = findExitByState(PipeLineExit.EXIT_STATE_SUCCESS);
+						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
@@ -332,10 +339,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return configurationSucceeded;
 	}
 
-	public PipeLineExit findExitByState(String state) {
+	public PipeLineExit findExitByState(ExitState state) {
 		for (String exitPath : pipeLineExits.keySet()) {
 			PipeLineExit pe = pipeLineExits.get(exitPath);
-			if (pe.getState().equals(state)) {
+			if (pe.getState()==state) {
 				return pe;
 			}
 		}
@@ -730,14 +737,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
-	}
-
-	/** 
-	 * If the exit state of the pipeline equals this value, the transaction is committed, otherwise it is rolled back.
-	 * @ff.default success
-	 */
-	public void setCommitOnState(String string) {
-		commitOnState = string;
 	}
 
 	/** 

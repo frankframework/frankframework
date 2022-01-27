@@ -23,6 +23,7 @@ import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
@@ -163,10 +164,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
 		
-		Parameter param = new Parameter();
-		param.setName("signature");
-		param.setValue(testSignature);
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("signature", testSignature));
 		
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
@@ -186,10 +184,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreAlias("1");
 		
-		Parameter param = new Parameter();
-		param.setName("signature");
-		param.setValue(testSignature);
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("signature", testSignature));
 		
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
@@ -207,10 +202,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystore("/Signature/certificate.crt");
 		pipe.setKeystoreType(KeystoreType.PEM);
 		
-		Parameter param = new Parameter();
-		param.setName("signature");
-		param.setValue(testSignature);
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("signature", testSignature));
 		
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");

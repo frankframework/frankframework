@@ -38,7 +38,7 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
@@ -106,7 +106,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private @Getter String description;
 	private @Getter boolean autoStart = APP_CONSTANTS.getBoolean("adapters.autoStart", true);
 	private @Getter boolean replaceNullMessage = false;
-	private @Getter String errorState = "ERROR";
 	private @Getter int messageKeeperSize = 10; //default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(APP_CONSTANTS.getProperty("msg.log.level.default", "BASIC"));
 	private @Getter boolean msgLogHidden = APP_CONSTANTS.getBoolean("msg.log.hidden.default", true);
@@ -117,7 +116,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
-	private @Getter PipeLine pipeline;
+	private PipeLine pipeline;
 
 	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
 
@@ -565,7 +564,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return processMessageWithExceptions(messageId, message, pipeLineSession);
 		} catch (Throwable t) {
 			PipeLineResult result = new PipeLineResult();
-			result.setState(getErrorState());
+			result.setState(ExitState.ERROR);
 			String msg = "Illegal exception ["+t.getClass().getName()+"]";
 			INamedObject objectInError = null;
 			if (t instanceof ListenerException) {
@@ -709,9 +708,10 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 
+	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
 	/**
 	 * Register a receiver for this Adapter
-	 * @see Receiver
+	 * @ff.mandatory
 	 */
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
@@ -975,7 +975,10 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	@IbisDoc({"name of the adapter", ""})
+	/** 
+	 * name of the adapter
+	 * @ff.mandatory
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -1001,14 +1004,12 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 
-	@IbisDoc({"when <code>true</code> a null message is replaced by an empty message", "false"})
+	/**
+	 * If <code>true</code> a null message is replaced by an empty message
+	 * @ff.default <code>false</code>
+	 */
 	public void setReplaceNullMessage(boolean b) {
 		replaceNullMessage = b;
-	}
-
-	/** state to put in {@link PipeLineResult} when a PipeRunException occurs */
-	public void setErrorState(String newErrorState) {
-		errorState = newErrorState;
 	}
 
 	/**
@@ -1019,12 +1020,15 @@ public class Adapter implements IAdapter, NamedBean {
 		this.messageKeeperSize = size;
 	}
 
-	@IbisDoc({"defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. " +
-			"Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>" +
-			"<tr><td colspan='1'>Off</td> <td>No logging</td></tr>" +
-			"<tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>" +
-			"<tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>" +
-			"<tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>", "BASIC"})
+	/**
+	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
+	 * Possible values are: <table border='1'><tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
+	 * <tr><td colspan='1'>Off</td> <td>No logging</td></tr>
+	 * <tr><td colspan='1'>Basic</td><td>Logs information from adapter level messages </td></tr>
+	 * <tr><td colspan='1'>Terse</td><td>Logs information from pipe messages.</td></tr>
+	 * <tr><td colspan='1'>All</td> <td>Logs all messages.</td></tr></table>
+	 * @ff.default <code>BASIC</code>
+	 */
 	public void setMsgLogLevel(String level) throws ConfigurationException {
 		Level toSet = Level.toLevel(level);
 		if (toSet.name().equalsIgnoreCase(level)) //toLevel falls back to DEBUG, so to make sure the level has been changed this explicity check is used.
@@ -1045,7 +1049,10 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 
-	@IbisDoc({"if set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message", "false"})
+	/**
+	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
+	 * @ff.default <code>false</code>
+	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
 	}

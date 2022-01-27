@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -59,7 +60,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  *<p>
  * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
- * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
+ * when the state of the Adapter equals the success state.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
  * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages.
  * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode,
@@ -202,9 +203,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			// TODO Do we still need this? Should we commit too? See
 			// PullingJmsListener.afterMessageProcessed() too (which does a
 			// commit, but no rollback).
-			if (plr!=null && !isTransacted() && isJmsTransacted()
-					&& StringUtils.isNotEmpty(getCommitOnState())
-					&& !getCommitOnState().equals(plr.getState())) {
+			if (plr!=null && !isTransacted() && isJmsTransacted() && plr.getState()==ExitState.SUCCESS) {
 				if (session==null) {
 					log.error(getLogPrefix()+"session is null, cannot roll back session");
 				} else {
@@ -215,9 +214,8 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
-			} else {
-				throw new ListenerException(e);
-			}
+			} 
+			throw new ListenerException(e);
 		}
 	}
 
@@ -381,6 +379,15 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 	public long getPollGuardInterval() {
 		return pollGuardInterval;
+	}
+
+	/**
+	 * The name of the destination to listen to, this may be a <code>queue</code> or <code>topic</code> name.
+	 * @ff.mandatory
+	 */
+	@Override
+	public void setDestinationName(String destinationName) {
+		super.setDestinationName(destinationName);
 	}
 
 }

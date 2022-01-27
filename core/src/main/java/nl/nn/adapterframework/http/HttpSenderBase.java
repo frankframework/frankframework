@@ -69,10 +69,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.htmlcleaner.CleanerProperties;
-import org.htmlcleaner.HtmlCleaner;
-import org.htmlcleaner.SimpleXmlSerializer;
-import org.htmlcleaner.TagNode;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -203,6 +199,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 	private @Getter String password;
 	private @Getter String authDomain;
 	private @Getter String tokenEndpoint;
+	private @Getter int tokenExpiry=-1;
 	private @Getter String clientAuthAlias;
 	private @Getter String clientId;
 	private @Getter String clientSecret;
@@ -478,7 +475,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			if (preferredAuthenticationScheme == AuthenticationScheme.OAUTH) {
 				CredentialFactory client_cf = new CredentialFactory(getClientAuthAlias(), getClientId(), getClientSecret());
-				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this);
+				OAuthAccessTokenManager accessTokenManager = new OAuthAccessTokenManager(getTokenEndpoint(), getScope(), client_cf, StringUtils.isEmpty(user_cf.getUsername()), this, getTokenExpiry());
 				httpClientContext.setAttribute(OAuthAuthenticationScheme.ACCESSTOKEN_MANAGER_KEY, accessTokenManager);
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
@@ -515,7 +512,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 			AuthState authState = httpClientContext.getTargetAuthState();
 			if (authState==null) {
 				authState = new AuthState();
-				httpClientContext.setAttribute(httpClientContext.TARGET_AUTH_STATE, authState);
+				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
 			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
@@ -718,7 +715,6 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				}
 				throw new SenderException(e);
 			} finally {
-				
 				// By forcing the use of the HttpResponseHandler the resultStream 
 				// will automatically be closed when it has been read.
 				// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
@@ -728,7 +724,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				// IMPORTANT: It is possible that poorly written implementations
 				// wont read or close the response.
 				// This will cause the connection to become stale..
-				
+
 				if (tg.cancel()) {
 					throw new TimeoutException(getLogPrefix()+"timeout of ["+getTimeout()+"] ms exceeded");
 				}
@@ -751,22 +747,17 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			String xhtml = XmlUtils.skipDocTypeDeclaration(resultString.trim());
-			if (xhtml.startsWith("<html>") || xhtml.startsWith("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtml);
-				xhtml = new SimpleXmlSerializer(props).getAsString(tagNode);
+			String xhtml = XmlUtils.toXhtml(resultString);
 
-				if (transformerPool != null) {
-					log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
-					try {
-						xhtml = transformerPool.transform(Message.asSource(xhtml));
-					} catch (Exception e) {
-						throw new SenderException("Exception on transforming input", e);
-					}
+			if (transformerPool != null && xhtml != null) {
+				log.debug(getLogPrefix() + " transforming result [" + xhtml + "]");
+				try {
+					xhtml = transformerPool.transform(Message.asSource(xhtml));
+				} catch (Exception e) {
+					throw new SenderException("Exception on transforming input", e);
 				}
 			}
+
 			result = Message.asMessage(xhtml);
 		}
 
@@ -852,10 +843,20 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 	/** 
 	 * Endpoint to obtain OAuth accessToken. If <code>authAlias</code> or <code>username</code>( and <code>password</code>) are specified, 
-	 * then a PasswordGrant is used, otherwise a ClientCredentials grant.
+	 * then a PasswordGrant is used, otherwise a ClientCredentials grant. The obtained accessToken will be added to the regular requests
+	 * in an HTTP Header 'Authorization' with a 'Bearer' prefix. 
 	 */
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
+	}
+	/**
+	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token 
+	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response, 
+	 * or when the regular server returns a 401 status with a challenge.
+	 * @ff.default -1
+	 */
+	public void setTokenExpiry(int value) {
+		tokenExpiry = value;
 	}
 	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
 	public void setClientAlias(String clientAuthAlias) {

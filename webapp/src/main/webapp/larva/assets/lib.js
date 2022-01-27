@@ -462,6 +462,10 @@ function addCommands()
 	}
 }
 
+function updateScenarios() {
+	document.getElementById("submit").click();
+}
+
 function addSynchScrolling()
 {
 	var allTA = $t("textarea");

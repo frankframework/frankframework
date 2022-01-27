@@ -18,11 +18,11 @@ public class ParameterListTest {
 	public void testParameterList() throws Exception {
 		ParameterList list = new ParameterList();
 
-		Parameter key2 = new SimpleParameter("key2", "value2");
-		list.add(new SimpleParameter("key1", "value1"));
+		Parameter key2 = new Parameter("key2", "value2");
+		list.add(new Parameter("key1", "value1"));
 		list.add(key2);
-		list.add(new SimpleParameter("key4", "value4"));
-		list.add(new SimpleParameter("key3", "value3"));
+		list.add(new Parameter("key4", "value4"));
+		list.add(new Parameter("key3", "value3"));
 		list.configure();
 
 		assertNotNull(list.findParameter("key1"));
@@ -49,12 +49,12 @@ public class ParameterListTest {
 	@Test
 	public void testParamWithoutName() throws ConfigurationException {
 		ParameterList list = new ParameterList();
-		list.add(new SimpleParameter("dummy-1"));
-		list.add(new SimpleParameter("dummy-2"));
-		list.add(new SimpleParameter("dummy-3"));
-		list.add(new SimpleParameter("dummy-4"));
+		list.add(new Parameter(null, "dummy-1"));
+		list.add(new Parameter(null, "dummy-2"));
+		list.add(new Parameter(null, "dummy-3"));
+		list.add(new Parameter(null, "dummy-4"));
 
-		Parameter key = new SimpleParameter("value");
+		Parameter key = new Parameter(null, "value");
 		list.add(key);
 		list.configure();
 		Parameter keyWithName = list.get(4);

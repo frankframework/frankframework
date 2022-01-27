@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.core;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -29,43 +32,17 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeLineResult {
 
-	private Message result;
-	private String state;
-	private int exitCode;
+	private @Getter @Setter Message result;
+	private @Getter @Setter ExitState state;
+	private @Getter @Setter int exitCode;
 
+	public boolean isSuccessful() {
+		return getState()==ExitState.SUCCESS;
+	}
+	
 	@Override
 	public String toString(){
 		return "result=["+result+"] state=["+state+"]";
 	}
 
-	/**
-	 * The result of the pipeline processing
-	 */
-	public void setResult(Message newResult) {
-		result = newResult;
-	}
-	public Message getResult() {
-		return result;
-	}
-
-	public boolean isSuccessful() {
-		return PipeLineExit.EXIT_STATE_SUCCESS.equalsIgnoreCase(getState());
-	}
-	
-	/**
-	 * The exit-state of the pipeline
-	 */
-	public void setState(String newState) {
-		state = newState;
-	}
-	public String getState() {
-		return state;
-	}
-
-	public void setExitCode(int code) {
-		this.exitCode = code;
-	}
-	public int getExitCode() {
-		return this.exitCode;
-	}
 }

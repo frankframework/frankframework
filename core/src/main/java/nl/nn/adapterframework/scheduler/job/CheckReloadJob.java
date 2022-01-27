@@ -46,15 +46,14 @@ public class CheckReloadJob extends JobDef {
 			return;
 		}
 
-		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-		List<String> configNames = new ArrayList<String>();
-		List<String> configsToReload = new ArrayList<String>();
+		List<String> configNames = new ArrayList<>();
+		List<String> configsToReload = new ArrayList<>();
 
 		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
-		qs.setDatasourceName(dataSource);
+		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
 		try {
 			qs.configure();
 			qs.open();
@@ -114,5 +113,9 @@ public class CheckReloadJob extends JobDef {
 				}
 			}
 		}
+	}
+	
+	protected String getDataSource() {
+		return JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	}
 }

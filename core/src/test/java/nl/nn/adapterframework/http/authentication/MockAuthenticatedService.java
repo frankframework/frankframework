@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
@@ -12,7 +13,6 @@ import lombok.Getter;
 public class MockAuthenticatedService extends WireMockRule {
 
 	private String AUTHORIZATION_HEADER="Authorization";
-	private @Getter int port;
 	private boolean mockServer = true;
 	
 	String REAL_SERVER="http://localhost:8888";
@@ -25,11 +25,11 @@ public class MockAuthenticatedService extends WireMockRule {
 	private @Getter String anyPath   = "/any";
 	
 	public MockAuthenticatedService() {
-		this(8886);
+		super(wireMockConfig()
+				.dynamicPort());
 	}
 	public MockAuthenticatedService(int port) {
 		super(port);
-		this.port=port;
 	}
 
 	@Override
@@ -126,7 +126,7 @@ public class MockAuthenticatedService extends WireMockRule {
 
 	
 	public String getServer() {
-		return mockServer ? "http://localhost:"+port : REAL_SERVER;
+		return mockServer ? "http://localhost:"+port() : REAL_SERVER;
 	}
 	public String getBasicEndpoint() {
 		return getServer() + basicPath;

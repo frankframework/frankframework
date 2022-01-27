@@ -1,17 +1,17 @@
 /*
-Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
@@ -184,7 +184,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return producedContentType;
 	}
 
-	@IbisDoc({"1", "HTTP method to listen to", "GET"})
+	/** 
+	 * HTTP method to listen to
+	 * @ff.default GET
+	 */
 	public void setMethod(HttpMethod method) {
 		this.method = method;
 		if(this.method == HttpMethod.OPTIONS) {
@@ -192,7 +195,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-	@IbisDoc({"2", "uri pattern to register this listener on, eq. `/my-listener/{something}/here`", ""})
+	/** 
+	 * URI pattern to register this listener on, eq. `/my-listener/{something}/here`
+	 * @ff.mandatory
+	 */
 	public void setUriPattern(String uriPattern) {
 		if(!uriPattern.startsWith("/"))
 			uriPattern = "/" + uriPattern;
@@ -203,17 +209,26 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.uriPattern = uriPattern;
 	}
 
-	@IbisDoc({"3", "the specified contentType on requests, if it doesn't match the request will fail", "ANY"})
+	/** 
+	 * The required contentType on requests, if it doesn't match the request will fail
+	 * @ff.default ANY
+	 */
 	public void setConsumes(MediaTypes value) {
 		this.consumes = value;
 	}
 
-	@IbisDoc({"4", "the specified contentType on response", "ANY"})
+	/** 
+	 * The specified contentType on response
+	 * @ff.default ANY
+	 */
 	public void setProduces(MediaTypes value) {
 		this.produces = value;
 	}
 
-	@IbisDoc({"5", "sets the specified character encoding on the response contentType header", "UTF-8"})
+	/** 
+	 * The specified character encoding on the response contentType header
+	 * @ff.default UTF-8
+	 */
 	public void setCharacterEncoding(String charset) {
 		if(StringUtils.isNotEmpty(charset)) {
 			this.charset = charset;
@@ -223,19 +238,27 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return charset;
 	}
 
-	@IbisDoc({"6", "automatically generate and validate etags", "true"})
+	/** 
+	 * Automatically generate and validate etags
+	 * @ff.default <code>true</code>
+	 */
 	public void setUpdateEtag(boolean updateEtag) {
 		this.updateEtag = updateEtag;
 	}
 
 	//TODO add authenticationType
 
-	@IbisDoc({"7", "enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property", "NONE"})
+	/** 
+	 * Enables security for this listener. If you wish to use the application servers authorisation roles [AUTHROLE], you need to enable them globally for all ApiListeners with the `servlet.ApiListenerServlet.securityroles=ibistester,ibiswebservice` property
+	 * @ff.default <code>NONE</code>
+	 */
 	public void setAuthenticationMethod(AuthenticationMethods authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
 	}
 
-	@IbisDoc({"8", "only active when AuthenticationMethod=AUTHROLE. comma separated list of authorization roles which are granted for this service, eq. ibistester,ibisobserver", ""})
+	/** 
+	 * Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. IbisTester,IbisObserver", ""})
+	 */
 	public void setAuthenticationRoles(String authRoles) {
 		List<String> roles = new ArrayList<String>();
 		if (StringUtils.isNotEmpty(authRoles)) {
@@ -253,7 +276,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return authenticationRoles;
 	}
 
-	@IbisDoc({"9", "specify the form-part you wish to enter the pipeline", "name of the first form-part"})
+	/** 
+	 * Specify the form-part you wish to enter the pipeline
+	 * @ff.default name of the first form-part
+	 */
 	public void setMultipartBodyName(String multipartBodyName) {
 		this.multipartBodyName = multipartBodyName;
 	}
@@ -264,17 +290,24 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return null;
 	}
 
-	@IbisDoc({"10", "name of the header which contains the message-id", "message-id"})
+	/** 
+	 * Name of the header which contains the message-id
+	 * @ff.default message-id
+	 */
 	public void setMessageIdHeader(String messageIdHeader) {
 		this.messageIdHeader = messageIdHeader;
 	}
 
-	@IbisDoc({"11", "Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema", ""})
+	/** 
+	 * Unique string used to identify the operation. The id MUST be unique among all operations described in the OpenApi schema
+	 */
 	public void setOperationId(String operationId) {
 		this.operationId = operationId;
 	}
 
-	@IbisDoc({"12", "Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.", ""})
+	/** 
+	 * Comma separated list of parameters passed as http header. Parameters will be stored in 'headers' sessionkey.
+	 */
 	public void setHeaderParams(String headerParams) {
 		this.headerParams = headerParams;
 	}

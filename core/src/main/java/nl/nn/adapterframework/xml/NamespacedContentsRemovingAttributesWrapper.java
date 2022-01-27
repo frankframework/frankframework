@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,19 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.xml;
 
-import javax.sql.CommonDataSource;
-import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.Attributes;
 
-import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
-
-public class SpringDataSourceFactory extends JndiDataSourceFactory {
-
-	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		return new TransactionalDbmsSupportAwareDataSourceProxy((DataSource) dataSource);
+/**
+ * AttributesWrapper that removes all attributes that have a namespace, or are of a specific namespace
+ * 
+ * @author Gerrit van Brakel
+ *
+ */
+public class NamespacedContentsRemovingAttributesWrapper extends AttributesWrapper {
+	
+	public NamespacedContentsRemovingAttributesWrapper(Attributes source) {
+		super(source,i->StringUtils.isEmpty(source.getURI(i)),false);
 	}
 
 }
