@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import lombok.Getter;
@@ -31,6 +32,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Read messages from the ibisstore previously stored by a
@@ -53,6 +55,20 @@ import nl.nn.adapterframework.stream.Message;
 		/>
  * </pre></code>
  * 
+ * The following defaults apply:
+ * <table>
+ * 	<tr><td>tableName</td><td>IBISSTORE</td></tr>
+ * 	<tr><td>keyField</td><td>MESSAGEKEY</td></tr>
+ * 	<tr><td>messageField</td><td>MESSAGE</td></tr>
+ * 	<tr><td>messageFieldType</td><td>BLOB</td></tr>
+ * 	<tr><td>blobSmartGet</td><td>true</td></tr>
+ * 	<tr><td>statusField</td><td>TYPE</td></tr>
+ * 	<tr><td>timestampField</td><td>MESSAGEDATE</td></tr>
+ * 	<tr><td>commentField</td><td>COMMENTS</td></tr>
+ * 	<tr><td>statusValueAvailable</td><td>M</td></tr>
+ * 	<tr><td>statusValueProcessed</td><td>A</td></tr>
+ * 	<tr><td>statusValueError</td><td>E</td></tr>
+ * </table>
  * 
  * @author Jaco de Groot
  */
@@ -79,7 +95,6 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	
 	@Override
 	public void configure() throws ConfigurationException {
-		setSelectCondition("SLOTID = '" + slotId + "'");
 		super.configure();
 		if (sessionKeys != null) {
 			sessionKeysList = new ArrayList<>();
@@ -134,6 +149,16 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			return augmentMessageBrowser(browser);
 		}
 		return null;
+	}
+
+	@Override
+	public String getSelectCondition() {
+		String conditionClause = super.getSelectCondition();
+		if (StringUtils.isNotEmpty(conditionClause)) {
+			conditionClause = "("+conditionClause+")";
+		}
+		String slotIdClause = StringUtils.isNotEmpty(getSlotId()) ? "SLOTID='"+slotId+"'" : null;
+		return Misc.concatStrings(slotIdClause, " AND ", conditionClause);
 	}
 
 

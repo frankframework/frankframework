@@ -1,5 +1,5 @@
 /*
-Copyright 2017, 2020, 2021 WeAreFrank!
+Copyright 2017, 2020-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -82,15 +81,12 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	}
 
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
-		DataSource datasource;
 		try {
-			datasource = dataSourceFactory.getDataSource(getDatasourceName());
+			log.debug("looking up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
+			return dataSourceFactory.getDataSource(getDatasourceName());
 		} catch (NamingException e) {
 			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
 		}
-		log.debug("looked up Datasource ["+getDatasourceName()+"] for JdbcMigrator ["+getName()+"]");
-
-		return new TransactionAwareDataSourceProxy(datasource);
 	}
 
 	/**

@@ -42,10 +42,11 @@
 			<artifactId>ibis-adapterframework-akamai</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
 		<dependency>
-			<groupId>com.github.marcus-nl.btm</groupId>
-			<artifactId>btm</artifactId>
-			<version>3.0.0-mk1</version>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

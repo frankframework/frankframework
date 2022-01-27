@@ -2058,17 +2058,16 @@ public class XmlUtils {
 	}
 
 	public static String toXhtml(String htmlString) {
-		String xhtmlString = null;
 		if (StringUtils.isNotEmpty(htmlString)) {
-			xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
+			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
 			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(xhtmlString);
-				xhtmlString = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}
-		return xhtmlString;
+		return null;
 	}
 
 	public static XPathFactory getXPathFactory() {

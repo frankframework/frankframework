@@ -14,6 +14,7 @@
 		<spring.version>5.3.15</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.4.4</cxf.version>
+		<jackson.version>2.13.1</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -150,18 +151,6 @@
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
 			<version>1.4.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sendgrid</groupId>
-			<artifactId>sendgrid-java</artifactId>
-			<version>4.3.0</version>
-			<exclusions>
-				<!-- exclude mockito from the main build path. It should not be there, and it causes problems with Hamcrest Matchers -->
-				<exclusion>
-					<groupId>org.mockito</groupId>
-					<artifactId>mockito-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>
@@ -341,9 +330,19 @@
 			<version>2.1_3</version>
 		</dependency>
 		<dependency>
+			<groupId>com.sendgrid</groupId>
+			<artifactId>sendgrid-java</artifactId>
+			<version>4.8.2</version>
+		</dependency>
+		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.11.484</version>
+			<version>1.11.1034</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-cbor</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.hierynomus</groupId>
@@ -378,10 +377,16 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.5.13</version>
 		</dependency>
-		<dependency>
+
+		<dependency> <!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.7</version>
+		</dependency>
+		<dependency> <!-- Fixes CVE-2021-33813 -->
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom2</artifactId>
+			<version>2.0.6.1</version>
 		</dependency>
 
 		<!-- oidc and oauth library -->
@@ -395,17 +400,18 @@
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
 			<artifactId>btm</artifactId>
-			<version>3.0.0-mk1</version>
+			<version>${btm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>
-			<version>5.11.0.Final</version>
+			<version>${narayana.version}</version>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
 			<artifactId>jboss-logging</artifactId>
-			<version>3.4.2.Final</version>
+			<version>${jboss-logging.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -523,13 +529,18 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>2.13.0</version>
+			<version>${jackson.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->

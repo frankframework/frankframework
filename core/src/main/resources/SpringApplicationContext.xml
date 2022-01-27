@@ -34,7 +34,7 @@
 
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jdbc.SpringDataSourceFactory" />
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory" />
 	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory" />
 	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.JndiMongoClientFactory" />
 

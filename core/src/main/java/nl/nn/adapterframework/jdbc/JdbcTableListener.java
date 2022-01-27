@@ -248,7 +248,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Additional condition for a row to belong to this TableListener
+	 * Additional condition for a row to belong to this TableListener. Impacts all process states
 	 */
 	public void setSelectCondition(String string) {
 		selectCondition = string;
