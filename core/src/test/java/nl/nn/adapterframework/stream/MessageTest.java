@@ -75,7 +75,6 @@ public class MessageTest {
 		Reader result = adapter.asReader();
 		String actual = StreamUtil.readerToString(result, null);
 		MatchUtils.assertXmlEquals(testString, actual);
-		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
 	protected void testAsInputSource(Message adapter) throws IOException, SAXException {
