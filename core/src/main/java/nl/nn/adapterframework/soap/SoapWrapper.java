@@ -298,7 +298,6 @@ public class SoapWrapper {
 			timestampBuilder.build();
 
 			return new Message(doc);
-
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);
 		}

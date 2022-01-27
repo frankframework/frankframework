@@ -3,19 +3,26 @@ package nl.nn.adapterframework.soap;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
+import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.WSSConfig;
+import org.apache.ws.security.WsuIdAllocator;
 import org.junit.Test;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.AttributesWrapper;
+import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * @author Peter Leeuwenburgh
@@ -135,28 +142,34 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void signSoap11MessageDigestPassword() throws ConfigurationException, IOException, TransformerException, SAXException {
+	public void signSoap11MessageDigestPassword() throws Exception {
+		resetWSConfig();
+
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest.xml");
-		String soapBody = soapWrapper.signMessage(new Message(soapMessage), "digestPassword", "digestPassword", true).asString();
+		Message soapBody = soapWrapper.signMessage(new Message(soapMessage), "dummy-username", "dummy-password", true);
 		String result = replaceDynamicElements(soapBody);
 		assertEquals(expectedSoapBody, result);
 	}
 
 	@Test
-	public void signSoap11Message() throws ConfigurationException, IOException, TransformerException, SAXException {
+	public void signSoap11Message() throws Exception {
+		resetWSConfig();
+
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
 		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
-		String soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
+		Message soapBody = soapWrapper.signMessage(new Message(soapMessage), "dummy-username", "dummy-password", false);
 		String result = replaceDynamicElements(soapBody);
+
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
 		assertEquals(expectedSoapBody, result);
 	}
 
 	@Test
 	public void signSoap11MessageBadFlow() throws ConfigurationException, IOException, TransformerException, SAXException {
 		SoapWrapper soapWrapper = SoapWrapper.getInstance();
+
 		String soapMessage = "noSOAP";
 		String soapBody = null;
 		try {
@@ -167,10 +180,75 @@ public class SoapWrapperTest {
 		assertEquals("Could not sign message", soapBody);
 	}
 
-	private String replaceDynamicElements(String result) throws IOException, TransformerException, SAXException {
-		URL url = TestFileUtils.getTestFileURL("/Soap/ignoreElements.xsl");
-		Transformer transformer = XmlUtils.createTransformer(url);
-		return XmlUtils.transformXml(transformer, result);
+	private String replaceDynamicElements(Message soapBody) throws Exception {
+		XmlWriter writer = new XmlWriter();
+		RemoveDynamicElements handler = new RemoveDynamicElements(writer);
+		XmlUtils.parseXml(soapBody.asInputSource(), handler);
+		return writer.toString();
 	}
-	
+
+	private static class RemoveDynamicElements extends FullXmlFilter {
+		private enum Namespace { Timestamp, Nonce, Password, SignatureValue };
+		private Namespace ns = null;
+
+		public RemoveDynamicElements(ContentHandler writer) {
+			super(writer);
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
+			if(uri.equals(WSConstants.WSU_NS)) {
+				ns = Namespace.Timestamp;
+			}
+			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
+				ns = Namespace.Nonce;
+			}
+			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
+				ns = Namespace.Password;
+			}
+			if(uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
+				ns = Namespace.SignatureValue;
+			}
+			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
+				atts = new AttributesWrapper(atts, "Id");
+			}
+			if(uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
+				atts = new AttributesWrapper(atts, "Id");
+			}
+
+			super.startElement(uri, localName, qName, atts);
+		}
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if(ns != null && length > 1) {
+				String replaceWith = "fake-"+ns.name();
+				super.characters(replaceWith.toCharArray(), 0, replaceWith.length());
+				return;
+			}
+			super.characters(ch, start, length);
+		}
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if(ns != null) {
+				ns = null;
+			}
+			super.endElement(uri, localName, qName);
+		};
+	}
+
+	private void resetWSConfig() {
+		WSSConfig.getDefaultWSConfig().setIdAllocator(new WsuIdAllocator() {
+			AtomicInteger i = new AtomicInteger(1);
+
+			@Override
+			public String createId(String prefix, Object o) {
+				return Misc.concat("", prefix, ""+i.getAndIncrement());
+			}
+
+			@Override
+			public String createSecureId(String prefix, Object o) {
+				return Misc.concat("", prefix, Misc.createUUID());
+			}
+		});
+	}
 }

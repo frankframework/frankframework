@@ -39,6 +39,7 @@ import nl.nn.adapterframework.pipes.PutInSession;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.DateUtils;
@@ -956,8 +957,8 @@ public class ParameterTest {
 	
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
-			
-			assertEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
+
+			MatchUtils.assertXmlEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
 			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
 		}
 	}
