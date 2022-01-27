@@ -73,7 +73,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 		String alias = StringUtils.isNotBlank(getTableAlias())?getTableAlias().trim():"";
 		setSelectQuery("SELECT "+getKeyField() + (StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
-						" FROM "+getTableName()+" "+ alias +
+						" FROM "+getTableName() + (StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"") +
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValue(ProcessState.AVAILABLE))?
 						 "='"+getStatusValue(ProcessState.AVAILABLE)+"'":

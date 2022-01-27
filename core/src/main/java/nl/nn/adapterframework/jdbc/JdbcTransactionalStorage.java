@@ -405,9 +405,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
+			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+ 
 							getWhereClause(getIdField()+"=?"+
-										" AND " +getCorrelationIdField()+"=?"+
+										" AND "+getCorrelationIdField()+"=?"+
 										" AND "+getDateField()+"=?",false);
 		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {

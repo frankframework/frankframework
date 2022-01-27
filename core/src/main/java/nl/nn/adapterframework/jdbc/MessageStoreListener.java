@@ -107,7 +107,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 			String setClause = "EXPIRYDATE = "+getDbmsSupport().getDateAndOffset(getDbmsSupport().getSysDate(),30);
 			setUpdateStatusQuery(ProcessState.DONE, createUpdateStatusQuery(getStatusValue(ProcessState.DONE),setClause));
 		} else {
-			String query = "DELETE FROM IBISSTORE WHERE MESSAGEKEY = ?";
+			String query = "DELETE FROM "+getTableName()+" WHERE "+getKeyField()+" = ?";
 			setUpdateStatusQuery(ProcessState.DONE, query);
 			setUpdateStatusQuery(ProcessState.ERROR, query);
 		}
