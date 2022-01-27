@@ -19,7 +19,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<!--  copy META-INF/services from the core module so it can be found by application servers -->
 		<!-- 
@@ -33,17 +32,14 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-larva</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-ladybug</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
-			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- jboss-logging is required for Narayana -->

@@ -21,12 +21,10 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>

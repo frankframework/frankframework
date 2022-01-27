@@ -16,7 +16,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-ear</artifactId>
-			<version>${project.version}</version>
 			<type>ear</type>
 		</dependency>
 		<dependency>
