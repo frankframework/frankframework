@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 import javax.sql.DataSource;
 
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.dbms.Dbms;
@@ -91,13 +93,23 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 	@Test
 	public void testSelectQuery() throws ConfigurationException {
+		listener.setOrderField("ORDRFLD");
 		listener.configure();
 
-		String expected = "SELECT TKEY FROM TEMP t WHERE TINT='1'";
+		String expected = "SELECT TKEY FROM TEMP t WHERE TINT='1' ORDER BY ORDRFLD";
 
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
+	@Test
+	public void testSelectQueryNoAvailable() throws ConfigurationException {
+		listener.setStatusValueAvailable(null);
+		listener.configure();
+
+		String expected = "SELECT TKEY FROM TEMP t WHERE TINT NOT IN ('3','2')";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
 	@Test
 	public void testSelectQueryWithSelectCondition() throws ConfigurationException {
 		listener.setSelectCondition("t.TVARCHAR='x'");
@@ -220,6 +232,72 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		testGetRawMessage("1",true);
 	}
 
+
+	@Test
+	public void testCreateQueryTexts() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		browser.setCorrelationIdField("CIDFLD");
+		browser.setIdField("IDFLD");
+
+		browser.createQueryTexts(dbmsSupport);
+
+		assertEquals("DELETE FROM TEMP WHERE TKEY=?", browser.deleteQuery);
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM TEMP WHERE TKEY=?", browser.selectContextQuery);
+		assertEquals("SELECT TKEY,MSGFLD FROM TEMP WHERE TKEY=?", browser.selectDataQuery);
+		assertEquals("SELECT IDFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition)) AND IDFLD=?", browser.checkMessageIdQuery);
+		assertEquals("SELECT CIDFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition)) AND CIDFLD=?", browser.checkCorrelationIdQuery);
+		assertEquals("SELECT COUNT(*) FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getMessageCountQuery);
+	}
+
+	@Test
+	public void testGetSelectListQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setTimestampField("TMFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		//listener.setCommentField("CMTFLD");
+		listener.configure();
+
+		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
+		browser.setCorrelationIdField("CIDFLD");
+		browser.setIdField("IDFLD");
+
+		Date start = new Date();
+		Date end = new Date();
+
+		//assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getSelectListQuery(dbmsSupport, null, null, null));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD>=? ORDER BY TMFLD DESC", browser.getSelectListQuery(dbmsSupport, start , null, SortOrder.NONE));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD<? ORDER BY TMFLD ASC", browser.getSelectListQuery(dbmsSupport, null , end, SortOrder.ASC));
+		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD FROM TEMP t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD>=? AND TMFLD<? ORDER BY TMFLD DESC", browser.getSelectListQuery(dbmsSupport, start , end, SortOrder.DESC));
+	}
+
+	@Test
+	public void testCreateUpdateStatusQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		listener.setMessageField("MSGFLD");
+		listener.setTimestampField("TMFLD");
+		//listener.setCommentField("CMTFLD");
+		listener.setSelectCondition("fakeSelectCondition");
+		listener.configure();
+
+		assertEquals("UPDATE TEMP SET TINT='fakeValue',TMFLD=NOW(),fakeAdditionalClause WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", "fakeAdditionalClause"));
+		assertEquals("UPDATE TEMP SET TINT='fakeValue',TMFLD=NOW() WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", null));
+
+	}
+
+	@Test
+	public void testCreateUpdateStatusQueryLessFields() throws Exception {
+		listener.configure();
+
+		assertEquals("UPDATE TEMP SET TINT='fakeValue',fakeAdditionalClause WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", "fakeAdditionalClause"));
+		assertEquals("UPDATE TEMP SET TINT='fakeValue' WHERE TINT!='fakeValue' AND TKEY=?", listener.createUpdateStatusQuery("fakeValue", null));
+
+	}
 
 	public void testGetMessageCount(String status, ProcessState state, int expectedCount) throws Exception {
 		listener.configure();
