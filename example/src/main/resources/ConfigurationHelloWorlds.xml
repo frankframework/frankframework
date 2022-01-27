@@ -35,7 +35,6 @@
 			<pipe
 				name="Text2Xml"
 				className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				includeXmlDeclaration="false"
 				xmlTag="tests"
 				splitLines="true"
 			/>
