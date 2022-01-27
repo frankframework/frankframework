@@ -228,6 +228,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	
 	@Test
 	public void testCreateQueryTexts() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
 		listener.setMessageField("MSGFLD");
 		listener.setSelectCondition("fakeSelectCondition");
 		listener.configure();
@@ -248,6 +249,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 	@Test
 	public void testGetSelectListQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
 		listener.setMessageField("MSGFLD");
 		listener.setTimestampField("TMFLD");
 		listener.setSelectCondition("fakeSelectCondition");
@@ -269,6 +271,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 
 	@Test
 	public void testCreateUpdateStatusQuery() throws Exception {
+		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
 		listener.setMessageField("MSGFLD");
 		listener.setTimestampField("TMFLD");
 		listener.setCommentField("CMTFLD");
