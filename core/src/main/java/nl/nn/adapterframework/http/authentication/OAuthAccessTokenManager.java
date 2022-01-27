@@ -19,18 +19,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -154,7 +158,10 @@ public class OAuthAccessTokenManager {
 		HttpRequestBase apacheHttpRequest;
 		String query = httpRequest.getQuery();
 		if (!basicAuthenticateWithClientCredentials) {
-			query = Misc.concatStrings(query, "&", "client_id="+URLEncoder.encode(client_cf.getUsername())+"&client_secret="+URLEncoder.encode(client_cf.getPassword()));
+			List<NameValuePair> clientInfo= new LinkedList<>();
+			clientInfo.add(new BasicNameValuePair("client_id",client_cf.getUsername()));
+			clientInfo.add(new BasicNameValuePair("client_secret",client_cf.getPassword()));
+			query = Misc.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
 		}
 		switch (httpRequest.getMethod()) {
 			case GET:
