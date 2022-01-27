@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.WsuIdAllocator;
 import org.apache.wss4j.dom.message.WSSecHeader;
 import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
@@ -39,6 +40,7 @@ import org.apache.xml.security.algorithms.JCEMapper;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -72,6 +74,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTSTRING_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 
 	private static SoapWrapper self = null;
+	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
 
 	private SoapWrapper() {
 		super();
@@ -269,23 +272,25 @@ public class SoapWrapper {
 
 			// add a UsernameToken
 			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken(secHeader);
+			tokenBuilder.setIdAllocator(idAllocator);
 			if (passwordDigest) {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
 			} else {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
 			}
 			tokenBuilder.setPrecisionInMilliSeconds(true);
-			tokenBuilder.addDerivedKey(true, 0);
 			tokenBuilder.setUserInfo(user, password);
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();
-			byte[] salt = UsernameTokenUtil.generateSalt(true);
-			tokenBuilder.prepare(salt);
+			tokenBuilder.prepare(null);
 
 			WSSecSignature sign = new WSSecSignature(secHeader);
+			sign.setIdAllocator(idAllocator);
 			sign.setCustomTokenValueType(WSConstants.USERNAMETOKEN_NS + "#UsernameToken");
 			sign.setCustomTokenId(tokenBuilder.getId());
-			sign.setSecretKey(tokenBuilder.getDerivedKey(salt));
+			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
+			sign.setAddInclusivePrefixes(false);
+			sign.setSecretKey("test".getBytes());
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
 			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
 			sign.build(null);
@@ -295,6 +300,7 @@ public class SoapWrapper {
 			// add a Timestamp
 			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
 			timestampBuilder.setTimeToLive(300);
+			timestampBuilder.setIdAllocator(idAllocator);
 			timestampBuilder.build();
 
 			return new Message(doc);

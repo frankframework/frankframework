@@ -7,9 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSSConfig;
-import org.apache.ws.security.WsuIdAllocator;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.WsuIdAllocator;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -236,12 +235,18 @@ public class SoapWrapperTest {
 		};
 	}
 
-	private void resetWSConfig() {
-		WSSConfig.getDefaultWSConfig().setIdAllocator(new WsuIdAllocator() {
+	private void resetWSConfig() throws Exception {
+		SoapWrapper.getInstance().setIdAllocator(new WsuIdAllocator() {
 			AtomicInteger i = new AtomicInteger(1);
 
 			@Override
 			public String createId(String prefix, Object o) {
+				if(prefix.equals("TS-")) {
+					prefix = "Timestamp-";
+				}
+				if(prefix.equals("SIG-")) {
+					prefix = "Signature-";
+				}
 				return Misc.concat("", prefix, ""+i.getAndIncrement());
 			}
 
