@@ -373,7 +373,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 
 			setupAuthentication(credentials, pcf, proxy, requestConfigBuilder);
 		} catch (URISyntaxException e) {
-			throw new ConfigurationException(getLogPrefix()+"cannot interpret uri ["+getUrl()+"]", e);
+			throw new ConfigurationException(getLogPrefix()+"cannot interpret url ["+getUrl()+"]", e);
 		}
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
