@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
@@ -104,21 +103,23 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 	
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
-		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		String listClause=getListClause();
-		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
-		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getCorrelationIdField() +"=?",false);
+		deleteQuery = "DELETE" + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
+		selectContextQuery = "SELECT "+getListClause(true)+ getWhereClause(getKeyField()+"=?",true);
+		selectDataQuery = "SELECT "+getKeyField()+","+getMessageField()+ getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
+		checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() + getFromClause(false) + getWhereClause(getIdField() +"=?",false);
+		checkCorrelationIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getCorrelationIdField() + getFromClause(false) + getWhereClause(getCorrelationIdField() +"=?",false);
 		try {
-			String alias = StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"";
-			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName() +alias+ getWhereClause(null,false));
+			getMessageCountQuery = dbmsSupport.prepareQueryTextForNonLockingRead("SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*)"+ getFromClause(false) + getWhereClause(null,false));
 		} catch (JdbcException e) {
 			throw new ConfigurationException("Cannot create getMessageCountQuery", e);
 		}
 	}
 
-	private String getListClause() {
+	protected String getFromClause(boolean noAlias) {
+		return " FROM "+getPrefix()+getTableName() + (!noAlias && StringUtils.isNotBlank(tableAlias)?" "+tableAlias.trim():"");
+	}
+
+	private String getListClause(boolean noAlias) {
 		return getKeyField()+
 		(StringUtils.isNotEmpty(getIdField())?","+getIdField():"")+
 		(StringUtils.isNotEmpty(getCorrelationIdField())?","+getCorrelationIdField():"")+
@@ -128,7 +129,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
 		(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
 		(StringUtils.isNotEmpty(getCommentField())?","+getCommentField():"")+
-		" FROM "+getPrefix()+getTableName();
+		getFromClause(noAlias);
 	}
 
 	@Override
@@ -140,10 +141,10 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		if (endTime!=null) {
 			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
-		if(order.equals(SortOrder.NONE)) { //If no order has been set, use the default (DESC for messages and ASC for errors)
-			order = getOrderEnum();
+		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
+			order = getOrder();
 		}
-		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
+		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
 	}
 

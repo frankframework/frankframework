@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter String hideRegex = null;
 	private @Getter @Setter String hideMethod = "all";
 
-	private SortOrder sortOrder = null;
+	private @Getter SortOrder order = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
 	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
@@ -129,6 +129,13 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		super.configure();
 		setOperationControls();
 		selector = createSelector();
+		if(getOrder() == null) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); //Defaults to ASC
+			} else {
+				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); //Defaults to DESC
+			}
+		}
 	}
 
 
@@ -524,22 +531,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.type = type;
 	}
 
-
-
-
-	public void setOrder(String string) {
-		sortOrder = EnumUtils.parse(SortOrder.class, "order", string);
-	}
-
-	public SortOrder getOrderEnum() {
-		if(sortOrder == null) {
-			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				setOrder(errorsOrder); //Defaults to ASC
-			} else {
-				setOrder(messagesOrder); //Defaults to DESC
-			}
-		}
-		return sortOrder;
+	public void setOrder(SortOrder value) {
+		order = value;
 	}
 
 }
