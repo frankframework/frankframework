@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -149,7 +150,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest.xml");
 		Message soapBody = soapWrapper.signMessage(new Message(soapMessage), "dummy-username", "dummy-password", true);
 		String result = replaceDynamicElements(soapBody);
-		assertEquals(expectedSoapBody, result);
+		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 	}
 
 	@Test
@@ -162,7 +163,7 @@ public class SoapWrapperTest {
 		String result = replaceDynamicElements(soapBody);
 
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1.xml");
-		assertEquals(expectedSoapBody, result);
+		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 	}
 
 	@Test

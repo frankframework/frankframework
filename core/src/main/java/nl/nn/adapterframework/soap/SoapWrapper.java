@@ -30,6 +30,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
+import org.apache.wss4j.common.util.WSTimeSource;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WsuIdAllocator;
 import org.apache.wss4j.dom.message.WSSecHeader;
@@ -38,6 +39,7 @@ import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
@@ -280,18 +282,23 @@ public class SoapWrapper {
 			}
 			tokenBuilder.setPrecisionInMilliSeconds(true);
 			tokenBuilder.setUserInfo(user, password);
+			WSTimeSource timesource = tokenBuilder.getWsTimeSource();
 			tokenBuilder.addNonce();
 			tokenBuilder.addCreated();
 			tokenBuilder.prepare(null);
+			Element element = tokenBuilder.getUsernameTokenElement();
+			String nonce = XmlUtils.getChildTagAsString(element, "wsse:Nonce");
+			byte[] decodedNonce = org.apache.xml.security.utils.XMLUtils.decode(nonce);
+			String created = XmlUtils.getChildTagAsString(element, "wsu:Created");
 
 			WSSecSignature sign = new WSSecSignature(secHeader);
 			sign.setIdAllocator(idAllocator);
-			sign.setCustomTokenValueType(WSConstants.USERNAMETOKEN_NS + "#UsernameToken");
+			sign.setCustomTokenValueType(WSConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
 			sign.setCustomTokenId(tokenBuilder.getId());
 			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
-			byte[] salt = UsernameTokenUtil.generateSalt(true);
-			sign.setSecretKey(salt);
+			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password);
+			sign.setSecretKey(signatureValue.getBytes());
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
 			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
 			sign.build(null);
@@ -300,6 +307,7 @@ public class SoapWrapper {
 
 			// add a Timestamp
 			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
+			timestampBuilder.setWsTimeSource(timesource);
 			timestampBuilder.setTimeToLive(300);
 			timestampBuilder.setIdAllocator(idAllocator);
 			timestampBuilder.build();
