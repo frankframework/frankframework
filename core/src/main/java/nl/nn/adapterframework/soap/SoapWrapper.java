@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -280,7 +281,7 @@ public class SoapWrapper {
 			} else {
 				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
 			}
-			tokenBuilder.setPrecisionInMilliSeconds(true);
+			tokenBuilder.setPrecisionInMilliSeconds(false);
 			tokenBuilder.setUserInfo(user, password);
 			WSTimeSource timesource = tokenBuilder.getWsTimeSource();
 			tokenBuilder.addNonce();
@@ -298,7 +299,7 @@ public class SoapWrapper {
 			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
 			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password);
-			sign.setSecretKey(signatureValue.getBytes());
+			sign.setSecretKey(signatureValue.getBytes(StreamUtil.DEFAULT_CHARSET));
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
 			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
 			sign.build(null);
