@@ -49,9 +49,9 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 
 		// unregister existing resources, to avoid problems registering them again, e.g. in fullReload()
 		for (String name:ResourceRegistrar.getResourcesUniqueNames()) {
-			log.debug("Unregistering resource ["+name+"]");
+			log.debug("Closing and unregistering resource ["+name+"]");
 			XAResourceProducer<?,?> resourceProducer = ResourceRegistrar.get(name);
-			ResourceRegistrar.unregister(resourceProducer);
+			resourceProducer.close();
 		}
 		
 		int inflightCount = transactionManager.getInFlightTransactionCount();
