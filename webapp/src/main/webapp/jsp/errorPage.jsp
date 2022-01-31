@@ -1,4 +1,5 @@
 <%@ page language="java" import="java.io.*" isErrorPage="true"%>
+<%@ page import="nl.nn.adapterframework.util.AppConstants"%>
 <html>
 	<head>
 		<title>Server Error: <%= exception.getMessage() %></title>
@@ -10,8 +11,15 @@
 		<br>
 		<br>(If
 		<b>500</b>, see server/console log for details. If
-		<b>404</b>, check the page's URL - perhaps a CAse eRrrOr has occurred.)
+		<b>404</b>, check the page's URL - perhaps a CAse eRrOr has occurred.)
 		<br>
+
+		<p>Please notify the administrator or check the application logs for more information.</p>
+
+<%
+String dtapStage = AppConstants.getInstance().getResolvedProperty("dtap.stage");
+if (!"ACC".equals(dtapStage) && !"PRD".equals(dtapStage)) {
+%>
 		<br>
 		<h2>Server Error</h2>
 		<p>An error occurred processing your request:</p>
@@ -22,10 +30,8 @@
 		<p />
 		<pre><% exception.printStackTrace(new PrintWriter(out)); %></pre>
 
-		<p>Please notify the administrator. Thank you.</p>
-		<p />
-
 		<jsp:include page="debuginfo.jsp" flush="true" />
+<% } %>
 	</body>
 </html>
 
