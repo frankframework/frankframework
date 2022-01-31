@@ -133,7 +133,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(txManager, 100);
 
 			lockerTester.setInitActionDone(otherReady);
 			lockerTester.setWaitBeforeAction(otherContinue);
@@ -167,7 +167,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherReady = new Semaphore();
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(txManager, 100);
 
 			lockerTester.setActionDone(otherReady);
 			lockerTester.setWaitAfterAction(otherContinue);
@@ -212,7 +212,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore otherContinue = new Semaphore();
 			Semaphore otherFinished = new Semaphore();
 			log.debug("Preparing LockerTester");
-			LockerTester lockerTester = new LockerTester(txManager);
+			LockerTester lockerTester = new LockerTester(txManager, 100);
 
 			lockerTester.setActionDone(otherInsertReady);
 			lockerTester.setWaitAfterAction(otherContinue);
@@ -280,7 +280,7 @@ public class LockerTest extends TransactionManagerTestBase {
 			Semaphore waitBeforeInsert = new Semaphore();
 			Semaphore insertDone = new Semaphore();
 			Semaphore waitBeforeCommit = new Semaphore();
-			LockerTester other = new LockerTester(txManager);
+			LockerTester other = new LockerTester(txManager, 100);
 
 			other.setWaitBeforeAction(waitBeforeInsert);
 			other.setActionDone(insertDone);
@@ -374,9 +374,11 @@ public class LockerTest extends TransactionManagerTestBase {
 	private class LockerTester extends ConcurrentManagedTransactionTester {
 
 		private Connection conn;
+		private int timeout;
 
-		public LockerTester(PlatformTransactionManager txManager) {
+		public LockerTester(PlatformTransactionManager txManager, int timeout) {
 			super(txManager);
+			this.timeout = timeout;
 		}
 
 		@Override
@@ -387,7 +389,14 @@ public class LockerTest extends TransactionManagerTestBase {
 		
 		@Override
 		public void action() throws Exception {
-			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
+			TimeoutGuard lockerTesterTimeout = new TimeoutGuard(timeout,"LockerTester timeout");
+			try {
+				executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
+			} finally {
+				if (lockerTesterTimeout.cancel()) {
+					log.warn("LockerTester insert timed out");
+				}
+			}
 		}
 
 		@Override
