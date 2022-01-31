@@ -301,7 +301,7 @@ public class SoapWrapperTest {
 		public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
 
 			if (keyInfo == null) {
-				throw new KeySelectorException("Null KeyInfo object!");
+				throw new KeySelectorException("no KeyInfo supplied!");
 			}
 
 			SignatureMethod sm = (SignatureMethod) method;
@@ -324,7 +324,7 @@ public class SoapWrapperTest {
 					return new KeySelectorResult() {
 						@Override
 						public Key getKey() {
-							String keyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(WSConstants.HMAC_SHA1); //empty string
+							String keyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(WSConstants.HMAC_SHA1); //TODO use the node's namespace
 							assertNotNull(keyAlgorithm);
 							return new SecretKeySpec(passwordDigest, keyAlgorithm);
 						}
