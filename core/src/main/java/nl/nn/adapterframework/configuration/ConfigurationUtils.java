@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ConfigurationUtils {
 	private static Logger log = LogUtil.getLogger(ConfigurationUtils.class);
 
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
+	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 	private static final String STUB4TESTTOOL_XSLT = "/xml/xsl/stub4testtool.xsl";
 	private static final String ACTIVE_XSLT = "/xml/xsl/active.xsl";
