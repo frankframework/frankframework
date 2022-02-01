@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -219,11 +219,13 @@ public class IbisContext extends IbisApplicationContext {
 		close();
 		Set<String> javaListenerNames = JavaListener.getListenerNames();
 		if (javaListenerNames.size() > 0) {
-			log("Not all java listeners are unregistered: " + javaListenerNames, MessageKeeperLevel.ERROR);
+			// cannot log to MessageKeeper here, as applicationContext is closed
+			LOG.warn("Not all java listeners are unregistered: " + javaListenerNames);
 		}
 		Set<String> uriPatterns = RestServiceDispatcher.getInstance().getUriPatterns();
 		if (!uriPatterns.isEmpty()) {
-			log("Not all rest listeners are unregistered: " + uriPatterns, MessageKeeperLevel.ERROR);
+			// cannot log to MessageKeeper here, as applicationContext is closed
+			LOG.warn("Not all rest listeners are unregistered: " + uriPatterns);
 		}
 
 		init();
