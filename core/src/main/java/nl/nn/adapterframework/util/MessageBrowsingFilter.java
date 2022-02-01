@@ -99,15 +99,15 @@ public class MessageBrowsingFilter {
 		}
 		if(startDate != null && endDate == null) {
 			count++;
-			matches += iterItem.getInsertDate().after(startDate) ? 1 : 0;
+			matches += (iterItem.getInsertDate().after(startDate) || iterItem.getInsertDate().equals(startDate)) ? 1 : 0;
 		}
 		if(startDate == null && endDate != null) {
 			count++;
-			matches += iterItem.getInsertDate().before(endDate) ? 1 : 0;
+			matches += (iterItem.getInsertDate().before(endDate) || iterItem.getInsertDate().equals(endDate)) ? 1 : 0;
 		}
 		if(startDate != null && endDate != null) {
 			count++;
-			matches += (iterItem.getInsertDate().after(startDate) && iterItem.getInsertDate().before(endDate)) ? 1 : 0;
+			matches += (iterItem.getInsertDate().after(startDate) || iterItem.getInsertDate().equals(startDate)) && (iterItem.getInsertDate().before(endDate) || iterItem.getInsertDate().equals(endDate)) ? 1 : 0;
 		}
 		if(message != null) {
 			count++;
