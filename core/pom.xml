@@ -269,6 +269,11 @@
 					<groupId>org.opensaml</groupId>
 					<artifactId>opensaml-xacml-saml-impl</artifactId>
 				</exclusion>
+				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
+				<exclusion>
+					<groupId>org.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
