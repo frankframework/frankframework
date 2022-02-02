@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private TransformerPool removeUnusedOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 	private TransformerPool rootTp = null;
+	private boolean parameterEvaluationRequiresInputMessage = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,6 +130,9 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix(null) + "created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
+		}
+		if(getParameterList().parameterEvaluationRequiresInputMessage()) {
+			parameterEvaluationRequiresInputMessage  = true;
 		}
 	}
 
@@ -229,8 +233,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
 				}
 				Map<String,Object> parameterValues = null;
-				if (getParameterList()!=null && (soapHeaderTp != null || soapBodyTp != null)) {
-					payload.preserve();
+				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
+					if(parameterEvaluationRequiresInputMessage) {
+						payload.preserve();
+					}
 					parameterValues = getParameterList().getValues(payload, session).getValueMap();
 				}
 				String soapHeader = null;
