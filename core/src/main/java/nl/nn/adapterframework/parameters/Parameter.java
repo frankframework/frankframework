@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,8 +35,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -43,7 +44,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IPipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
@@ -97,6 +97,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	private static final String TYPE_STRING = "string";
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
 	public final static String TYPE_DOMDOC="domdoc";
@@ -117,6 +118,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
 	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
+	private static final List<String> TYPES_REQUIRE_CONVERSION = Arrays.asList(new String[] {TYPE_NODE, TYPE_DOMDOC, TYPE_DATE, TYPE_TIME, TYPE_DATETIME, TYPE_TIMESTAMP, TYPE_XMLDATETIME, TYPE_NUMBER, TYPE_INTEGER, TYPE_BOOLEAN});
+	
 	public final static String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public final static String FIXEDHOSTNAME ="MYHOST000012345";
 	
@@ -192,17 +195,27 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			transformerPoolSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,"text",false,null);
 		}
-		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
-			setFormatString(TYPE_DATE_PATTERN);
+		if(getType()==null) {
+			log.info("parameter ["+getName()+" has no type. Setting the type to ["+TYPE_STRING+"]");
+			setType(TYPE_STRING);
 		}
-		if (TYPE_DATETIME.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
-			setFormatString(TYPE_DATETIME_PATTERN);
-		}
-		if (TYPE_TIMESTAMP.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
-			setFormatString(TYPE_TIMESTAMP_PATTERN);
-		}
-		if (TYPE_TIME.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
-			setFormatString(TYPE_TIME_PATTERN);
+		if(StringUtils.isEmpty(getFormatString())) {
+			switch(getType()) {
+				case TYPE_DATE:
+					setFormatString(TYPE_DATE_PATTERN);
+					break;
+				case TYPE_DATETIME:
+					setFormatString(TYPE_DATETIME_PATTERN);
+					break;
+				case TYPE_TIMESTAMP:
+					setFormatString(TYPE_TIMESTAMP_PATTERN);
+					break;
+				case TYPE_TIME:
+					setFormatString(TYPE_TIME_PATTERN);
+					break;
+				default:
+					break;
+			}
 		}
 		if (TYPE_NUMBER.equals(getType())) {
 			decimalFormatSymbols = new DecimalFormatSymbols();
@@ -243,24 +256,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 	}
 
-	private Object transform(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
+	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
-		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
-			
-			DOMResult transformResult = new DOMResult();
-			pool.transform(xmlSource,transformResult, pvl);
-			Node result=transformResult.getNode();
-			if (result!=null && TYPE_NODE.equals(getType())) {
-				result=result.getFirstChild();
-			}			
-			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
-			return result;
-
-		} 
-		return pool.transform(xmlSource, pvl);
+		DOMResult transformResult = new DOMResult();
+		pool.transform(xmlSource,transformResult, pvl);
+		return (Document) transformResult.getNode();
 	}
-	
-	
+
 	public boolean requiresInputValueForResolution() {
 		if (transformerPoolSessionKey != null) { //TODO: Check if this clause needs to go after the next one. Having a transformerpool on itself doesn't make it necessary to have the input.
 			return true;
@@ -295,12 +297,19 @@ public class Parameter implements IConfigurable, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
-				Object transformResult=null;
+				/*
+				 * determine source for XSLT transformation from
+				 * 1) value attribute
+				 * 2) requestedSessionKey
+				 * 3) pattern
+				 * 4) input message
+				 * 
+				 * N.B. this order differs from untransformed parameters
+				 */
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
 				} else if (StringUtils.isNotEmpty(requestedSessionKey)) {
-					String sourceString;
 					Object sourceObject = session.get(requestedSessionKey);
 					if (TYPE_LIST.equals(getType())	&& sourceObject instanceof List) {
 						List<String> items = (List<String>) sourceObject;
@@ -311,7 +320,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 							itemXml.setValue(item);
 							itemsXml.addSubElement(itemXml);
 						}
-						sourceString = itemsXml.toXML();
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
 					} else if (TYPE_MAP.equals(getType()) && sourceObject instanceof Map) {
 						Map<String, String> items = (Map<String, String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
@@ -322,15 +331,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 							itemXml.setValue(items.get(item));
 							itemsXml.addSubElement(itemXml);
 						}
-						sourceString = itemsXml.toXML();
+						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
 					} else {
-						sourceString = Message.asString(sourceObject);
-					}
-					if (StringUtils.isNotEmpty(sourceString)) {
-						log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
-						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
-					} else {
-						log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
+						Message sourceMsg = Message.asMessage(sourceObject);
+						if (!sourceMsg.isEmpty()) {
+							log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
+							source = sourceMsg.asSource();
+						} else {
+							log.debug("Parameter ["+getName()+"] sessionvariable ["+requestedSessionKey+"] empty, no transformation will be performed");
+						}
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
 					String sourceString = format(alreadyResolvedParameters, session);
@@ -349,15 +358,32 @@ public class Parameter implements IConfigurable, IWithParameters {
 						source = XmlUtils.stringToSource(rnResult);
 					}
 					ParameterValueList pvl = paramList==null ? null : paramList.getValues(message, session, namespaceAware);
-					transformResult = transform(source,pvl);
-				}
-				if (!(transformResult instanceof String) || StringUtils.isNotEmpty((String)transformResult)) {
-						result = transformResult;
+					switch (getType()) {
+						case TYPE_NODE:
+							return transformToDocument(source, pvl).getFirstChild();
+						case TYPE_DOMDOC:
+							return transformToDocument(source, pvl);
+						default:
+							String transformResult = pool.transform(source, pvl);
+							if (StringUtils.isNotEmpty(transformResult)) {
+								result = transformResult;
+							}
+							break;
+					}
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
+			/*
+			 * No XSLT transformation, determine primary result from
+			 * 1) requestedSessionKey
+			 * 2) pattern
+			 * 3) value attribute
+			 * 4) input message
+			 * 
+			 * N.B. this order differs from transformed parameters. 
+			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
 				if (log.isDebugEnabled() && (result==null || 
@@ -381,25 +407,25 @@ public class Parameter implements IConfigurable, IWithParameters {
 				}
 			}
 		}
-		if (result !=null && result instanceof Message) {
+		if (result != null && result instanceof Message) {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
-			// if value is null then return specified default value
+			// if result is null then return specified default value
 			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
 			while (result == null && stringTokenizer.hasMoreElements()) {
-				String token = stringTokenizer.nextToken();
-				if ("defaultValue".equals(token)) {
+				String token = stringTokenizer.nextToken().trim();
+				if ("defaultValue".equalsIgnoreCase(token)) {
 					result = getDefaultValue();
-				} else if ("sessionKey".equals(token)) {
+				} else if ("sessionKey".equalsIgnoreCase(token)) {
 					result = session.get(requestedSessionKey);
-				} else if ("pattern".equals(token)) {
+				} else if ("pattern".equalsIgnoreCase(token)) {
 					result = format(alreadyResolvedParameters, session);
-				} else if ("value".equals(token)) {
+				} else if ("value".equalsIgnoreCase(token)) {
 					result = getValue();
-				} else if ("input".equals(token)) {
+				} else if ("input".equalsIgnoreCase(token)) {
 					try {
 						message.preserve();
 						result=message.asString();
@@ -425,93 +451,130 @@ public class Parameter implements IConfigurable, IWithParameters {
 					result = ((String)result).substring(0, getMaxLength());
 				}
 			}
-			if (TYPE_NODE.equals(getType())) {
-				try {
-					if (transformerPoolRemoveNamespaces != null) {
-						result = transformerPoolRemoveNamespaces.transform((String)result, null);
-					}
-					result=XmlUtils.buildNode((String)result,namespaceAware);
-					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
-				}
+		}
+		if(result != null && TYPES_REQUIRE_CONVERSION.contains(getType())) {
+			result = getValueAsType(result, namespaceAware);
+		}
+		if (result !=null && result instanceof Number) {
+			if (getMinInclusive()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusive()+"]" );
+				result = minInclusive;
 			}
-			if (TYPE_DOMDOC.equals(getType())) {
-				try {
-					if (transformerPoolRemoveNamespaces != null) {
-						result = transformerPoolRemoveNamespaces.transform((String)result, null);
-					}
-					result=XmlUtils.buildDomDocument((String)result,namespaceAware);
-					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
-				}
-			}
-			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIMESTAMP.equals(getType()) || TYPE_TIME.equals(getType())) {
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
-				DateFormat df = new SimpleDateFormat(getFormatString());
-				try {
-					result = df.parseObject((String)result);
-				} catch (ParseException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
-				}
-			}
-			if (TYPE_XMLDATETIME.equals(getType())) {
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] from xml dateTime to date" );
-				result = DateUtils.parseXmlDateTime((String)result);
-			}
-			if (TYPE_NUMBER.equals(getType())) {
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
-				DecimalFormat df = new DecimalFormat();
-				df.setDecimalFormatSymbols(decimalFormatSymbols);
-				try {
-					Number n = df.parse((String)result);
-					result = n;
-				} catch (ParseException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
-				}
-				if (getMinLength()>=0 && result.toString().length()<getMinLength()) {
-					log.debug("Adding leading zeros to parameter ["+getName()+"]" );
-					result = StringUtils.leftPad(result.toString(), getMinLength(), '0');
-				}
-			}
-			if (TYPE_INTEGER.equals(getType())) {
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to integer" );
-				try {
-					Integer i = Integer.parseInt((String)result);
-					result = i;
-				} catch (NumberFormatException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
-				}
-			}
-			if (TYPE_BOOLEAN.equals(getType())) {
-				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to boolean" );
-				try {
-					Boolean i = Boolean.parseBoolean((String)result);
-					result = i;
-				} catch (NumberFormatException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to integer",e);
-				}
+			if (getMaxInclusive()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusive()+"]" );
+				result = maxInclusive;
 			}
 		}
-		if (result !=null) {
-			if (getMinInclusive()!=null || getMaxInclusive()!=null) {
-				if (getMinInclusive()!=null) {
-					if (((Number)result).floatValue()<minInclusive.floatValue()) {
-						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusive()+"]" );
-						result = minInclusive;
-					}
-				}
-				if (getMaxInclusive()!=null) {
-					if (((Number)result).floatValue()>maxInclusive.floatValue()) {
-						log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds maxInclusive ["+getMaxInclusive()+"]" );
-						result = maxInclusive;
-					}
-				}
-			}
+		if (getType()==TYPE_NUMBER && getMinLength()>=0 && (result+"").length()<getMinLength()) {
+			log.debug("Adding leading zeros to parameter ["+getName()+"]" );
+			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
-		
-		return result; 
+
+		return result;
+	}
+
+	/** Converts raw data to configured parameter type */
+	private Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException {
+		Message requestMessage = Message.asMessage(request);
+		Object result = request;
+		try {
+			Object requestObject = requestMessage.asObject();
+			switch(getType()) {
+				case TYPE_NODE:
+					try {
+						if (transformerPoolRemoveNamespaces != null) {
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
+						}
+						if(requestObject instanceof Document) {
+							return ((Document)requestObject).getDocumentElement();
+						}
+						if(requestObject instanceof Node) {
+							return requestObject;
+						}
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
+						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
+					}
+					break;
+				case TYPE_DOMDOC:
+					try {
+						if (transformerPoolRemoveNamespaces != null) {
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
+						}
+						if(requestObject instanceof Document) {
+							return requestObject;
+						}
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
+						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
+					}
+					break;
+				case TYPE_DATE:
+				case TYPE_DATETIME:
+				case TYPE_TIMESTAMP:
+				case TYPE_TIME:
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to date using formatString ["+getFormatString()+"]" );
+					DateFormat df = new SimpleDateFormat(getFormatString());
+					try {
+						result = df.parseObject(requestMessage.asString());
+					} catch (ParseException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to Date using formatString ["+getFormatString()+"]",e);
+					}
+					break;
+				case TYPE_XMLDATETIME:
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] from xml dateTime to date" );
+					result = DateUtils.parseXmlDateTime(requestMessage.asString());
+					break;
+				case TYPE_NUMBER:
+					if(requestObject instanceof Number) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+					DecimalFormat decimalFormat = new DecimalFormat();
+					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
+					try {
+						Number n = decimalFormat.parse(requestMessage.asString());
+						result = n;
+					} catch (ParseException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+					}
+					break;
+				case TYPE_INTEGER:
+					if(requestObject instanceof Integer) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to integer" );
+					try {
+						Integer i = Integer.parseInt(requestMessage.asString());
+						result = i;
+					} catch (NumberFormatException e) {
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to integer",e);
+					}
+					break;
+				case TYPE_BOOLEAN:
+					if(requestObject instanceof Boolean) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to boolean" );
+					Boolean i = Boolean.parseBoolean(requestMessage.asString());
+					result = i;
+					break;
+				default:
+					break;
+			}
+		} catch(IOException e) {
+			throw new ParameterException("Could not convert parameter ["+getName()+"] to String", e);
+		}
+
+		return result;
 	}
 
 	private String hide(String string) {
@@ -532,8 +595,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 		int endNdx = 0;
 
 		// replace the named parameter with numbered parameters
-		StringBuffer formatPattern = new StringBuffer();
-		List<Object> params = new ArrayList<Object>();
+		StringBuilder formatPattern = new StringBuilder();
+		List<Object> params = new ArrayList<>();
 		int paramPosition = 0;
 		while(endNdx != -1) {
 			// get name of parameter in pattern to be substituted 
@@ -553,10 +616,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (endNdx == -1) {
 				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
 			}
-			String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
 			
 			// get value
-			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionName);
+			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
@@ -564,24 +627,55 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String name) throws ParameterException {
+	private Object preFormatDateType(Object rawValue, String formatType) throws ParameterException {
+		if (formatType!=null && (formatType.equalsIgnoreCase("date") || formatType.equalsIgnoreCase("time"))) {
+			if (rawValue instanceof Date) {
+				return rawValue;
+			}
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			try {
+				return df.parse(Message.asString(rawValue));
+			} catch (ParseException | IOException e) {
+				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
+			}
+		} 
+		if (rawValue instanceof Date) {
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			return df.format(rawValue);
+		}
+		try {
+			return Message.asString(rawValue);
+		} catch (IOException e) {
+			throw new ParameterException("Cannot read date value ["+rawValue+"]", e);
+		}
+	}
+
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, IPipeLineSession session, String targetPattern) throws ParameterException {
+		String[] patternElements = targetPattern.split(",");
+		String name = patternElements[0].trim();
+		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
+		
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			substitutionValue = session.get(name);
-		}
-		if (substitutionValue instanceof Message) {
-			try {
-				substitutionValue = ((Message)substitutionValue).asString();
-			} catch (IOException e) {
-				throw new ParameterException("Cannot get substitution value", e);
+			Message substitutionValueMessage = Message.asMessage(session.get(name));
+			if (!substitutionValueMessage.isEmpty()) {
+				if (substitutionValueMessage.asObject() instanceof Date) {
+					substitutionValue = preFormatDateType(substitutionValueMessage.asObject(), formatType);
+				} else {
+					try {
+						substitutionValue = substitutionValueMessage.asString();
+					} catch (IOException e) {
+						throw new ParameterException("Cannot get substitution value", e);
+					}
+				}
 			}
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
 			if ("now".equals(name.toLowerCase())) {
-				substitutionValue = new Date();
+				substitutionValue = preFormatDateType(new Date(), formatType);
 			} else if ("uid".equals(namelc)) {
 				substitutionValue = Misc.createSimpleUUID();
 			} else if ("uuid".equals(namelc)) {
@@ -592,18 +686,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
-				Date d;
-				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-				String fixedDateTime = (String)session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-				if (StringUtils.isEmpty(fixedDateTime)) {
+				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				if (fixedDateTime==null) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}
-				try {
-					d = formatterFrom.parse(fixedDateTime);
-				} catch (ParseException e) {
-					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
-				}
-				substitutionValue = d;
+				substitutionValue = preFormatDateType(fixedDateTime, formatType);
 			} else if ("fixeduid".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
@@ -621,9 +708,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
+			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
 		}
-		return substitutionValue;		
+		return substitutionValue;
 	}
 
 	@Override

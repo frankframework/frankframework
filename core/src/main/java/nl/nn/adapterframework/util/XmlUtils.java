@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -580,64 +581,39 @@ public class XmlUtils {
 	
 
 	public static Document buildDomDocument(Reader in) throws DomBuilderException {
-		return buildDomDocument(in,isNamespaceAwareByDefault());
+		return buildDomDocument(in,isNamespaceAwareByDefault(), false);
 	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware)
-		throws DomBuilderException {
-			return buildDomDocument(in, namespaceAware, false);
-		}
+	public static Document buildDomDocument(InputSource in, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(in, namespaceAware, false);
+	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static Document buildDomDocument(InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		Document document;
-		InputSource src;
-
 		try {
-//			if (!XPATH_NAMESPACE_REMOVAL_VIA_XSLT && !namespaceAware) {
-////				Sax2Dom sax2dom = new Sax2Dom();
-////				XMLReader reader=getXMLReader(namespaceAware, resolveExternalEntities);
-////				reader.setContentHandler(sax2dom);
-////				reader.setDTDHandler(sax2dom);
-////				reader.setErrorHandler(sax2dom);
-////				InputSource source = new InputSource(in);
-////				reader.parse(source);
-////				return sax2dom.getDOM();
-//				TransformerPool tp = getRemoveNamespacesTransformerPool(false, false);
-//				Source source = new StreamSource(in);
-//				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-//				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//				DocumentBuilder builder = factory.newDocumentBuilder();
-//				document=builder.newDocument();
-//				Result result = new DOMResult(document);
-//				tp.transform(source, result, null);
-//				
-//			} else {
-				DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
-				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-				DocumentBuilder builder = factory.newDocumentBuilder();
-					if (!resolveExternalEntities) {
-						builder.setEntityResolver(new NonResolvingExternalEntityResolver());
-					}
-					src = new InputSource(in);
-					document = builder.parse(src);
-//			}
+			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			if (!resolveExternalEntities) {
+				builder.setEntityResolver(new NonResolvingExternalEntityResolver());
+			}
+			document = builder.parse(src);
 		} catch (SAXParseException e) {
 			throw new DomBuilderException(e);
 		} catch (ParserConfigurationException e) {
 			throw new DomBuilderException(e);
-		} catch (IOException e) {
-			throw new DomBuilderException(e);
 		} catch (SAXException e) {
 			throw new DomBuilderException(e);
-//		} catch (ConfigurationException e) {
-//			throw new DomBuilderException(e);
-//		} catch (TransformerException e) {
-//			throw new DomBuilderException(e);
+		} catch (IOException e) {
+			throw new DomBuilderException(e);
 		}
 		if (document == null) {
 			throw new DomBuilderException("Parsed Document is null");
 		}
 		return document;
+	}
+	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+		return buildDomDocument(new InputSource(in), namespaceAware, resolveExternalEntities);
 	}
 	/**
 	 * Convert an XML string to a Document
@@ -1923,6 +1899,21 @@ public class XmlUtils {
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
 		return sw.toString();
+	}
+
+	public static byte[] nodeToByteArray(Node node) throws TransformerException {
+		return nodeToByteArray(node, true);
+	}
+
+	public static byte[] nodeToByteArray(Node node, boolean omitXmlDeclaration) throws TransformerException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		Transformer t = getTransformerFactory().newTransformer();
+		if (omitXmlDeclaration) {
+			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		}
+		Result outputTarget = new StreamResult(outputStream);
+		t.transform(new DOMSource(node), outputTarget);
+		return outputStream.toByteArray();
 	}
 
 	public static String cdataToText(String input) {
