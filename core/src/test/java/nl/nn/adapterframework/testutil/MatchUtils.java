@@ -98,7 +98,7 @@ public class MatchUtils {
 			String expectedCanonalized = XmlUtils.canonicalize(expected);
 			String actualCanonalized = XmlUtils.canonicalize(actual);
 
-			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, "<asdf/>"));
+			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, actualCanonalized));
 			if(!diff.similar()) {
 				LOG.debug("expected: \n"+ expectedCanonalized);
 				LOG.debug("actual: \n"+ actualCanonalized);
