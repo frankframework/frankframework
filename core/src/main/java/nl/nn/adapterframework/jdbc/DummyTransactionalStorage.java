@@ -28,8 +28,8 @@ import nl.nn.adapterframework.core.SenderException;
  * 
  * @author Jaco de Groot
  */
-@Deprecated
-@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
+//@Deprecated
+//@ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
 	@Override
