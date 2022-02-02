@@ -261,10 +261,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
 		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
 
-		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
+		if (isConfigurationStubbed(classLoader)) {
 			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
 		}
 		return configuration;
+	}
+
+	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
+	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+		return ConfigurationUtils.isConfigurationStubbed(classLoader);
 	}
 
 	private List<String> getPropsToHide(Properties appConstants) {
