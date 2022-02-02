@@ -2,6 +2,7 @@ package nl.nn.adapterframework.testutil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,9 +17,13 @@ import java.util.TreeMap;
 import javax.json.Json;
 import javax.json.JsonStructure;
 
+import org.apache.logging.log4j.Logger;
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
@@ -26,7 +31,9 @@ import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MatchUtils {
-	
+
+	private static final Logger LOG = LogUtil.getLogger(MatchUtils.class);
+
     public static Map<String,Object> stringToMap(String mapInStr) throws IOException {
 		Properties inProps=new Properties();
 		inProps.load(new StringReader(mapInStr));
@@ -85,7 +92,23 @@ public class MatchUtils {
 		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces);
 		assertEquals(description,xmlExpPretty,xmlActPretty);
 	}
-	
+
+	public static void assertXmlSimilar(String expected, String actual) {
+		try {
+			String expectedCanonalized = XmlUtils.canonicalize(expected);
+			String actualCanonalized = XmlUtils.canonicalize(actual);
+
+			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, "<asdf/>"));
+			if(!diff.similar()) {
+				LOG.debug("expected: \n"+ expectedCanonalized);
+				LOG.debug("actual: \n"+ actualCanonalized);
+				assertEquals("xml not similar: " + diff.toString(), expectedCanonalized, actualCanonalized);
+			}
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;
@@ -99,7 +122,7 @@ public class MatchUtils {
 		assertNotNull("url to compare to ["+file1+"] should not be null",url);
 		assertTestFileEquals(file1,url.openStream());
 	}
-	
+
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
 		assertTestFileEquals(file1, Misc.streamToString(fileStream));
 	}
