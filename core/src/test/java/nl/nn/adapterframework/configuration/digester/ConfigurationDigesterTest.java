@@ -69,7 +69,7 @@ public class ConfigurationDigesterTest {
 
 	//Both OLD and NEW configuration parsers should output the same!!
 	@Test
-	public synchronized void testOldSchoolConfigurationParser() throws Exception {
+	public void testOldSchoolConfigurationParser() throws Exception {
 		ConfigurationDigester digester = new ConfigurationDigester();
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
@@ -87,15 +87,14 @@ public class ConfigurationDigesterTest {
 
 		MatchUtils.assertXmlSimilar(expected, result);
 
-		String stubbedResult = "";
-		try {
-			properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-			AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
-			stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-		} finally {
-			// Reset stubbing on the AppConstants, not doing this might fail other tests during CI 
-			AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, false);
-		}
+		digester = new ConfigurationDigester() {
+			@Override
+			protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+				return true;
+			}
+		};
+		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
 
 		//Unfortunately we need to cleanup the result a bit...
 		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
