@@ -20,6 +20,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
 	private static final int DB_LOGIN_TIMEOUT = 1;
+	private static List<String> skippedDatasources = new ArrayList<>();
 
 	private static final Object[][] TEST_DATASOURCES = {
 			// ProductName, Url, user, password, testPeekDoesntFindRecordsAlreadyLocked
@@ -37,6 +38,8 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 		for (Object[] datasource: TEST_DATASOURCES) {
 			String product = (String)datasource[0];
+			if(skippedDatasources.contains(product)) continue;
+
 			String url = (String)datasource[1];
 			String userId = (String)datasource[2];
 			String password = (String)datasource[3];
@@ -48,6 +51,8 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				// Check if we can make a connection
 				if(validateConnection(ds)) {
 					add(namedDataSource(ds, product, testPeek), product);
+				} else {
+					skippedDatasources.add(product);
 				}
 			} catch (Exception e) {
 				log.info("ignoring DataSource, cannot complete setup", e);
