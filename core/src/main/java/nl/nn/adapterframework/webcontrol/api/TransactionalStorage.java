@@ -750,15 +750,15 @@ public class TransactionalStorage extends Base {
 			}
 			if(startDate != null && endDate == null) {
 				count++;
-				matches += iterItem.getInsertDate().after(startDate) ? 1 : 0;
+				matches += !iterItem.getInsertDate().before(startDate) ? 1 : 0;
 			}
 			if(startDate == null && endDate != null) {
 				count++;
-				matches += iterItem.getInsertDate().before(endDate) ? 1 : 0;
+				matches += !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 			}
 			if(startDate != null && endDate != null) {
 				count++;
-				matches += (iterItem.getInsertDate().after(startDate) && iterItem.getInsertDate().before(endDate)) ? 1 : 0;
+				matches += !iterItem.getInsertDate().before(startDate) && !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 			}
 			if(message != null) {
 				count++;
