@@ -87,6 +87,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	private TransformerPool removeUnusedOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 	private TransformerPool rootTp = null;
+	private boolean parameterEvaluationRequiresInputMessage = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,6 +130,9 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || StringUtils.isNotEmpty(getWssUserName())) {
 			wssCredentialFactory = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
 			log.debug(getLogPrefix(null) + "created CredentialFactory for username=[" + wssCredentialFactory.getUsername()+"]");
+		}
+		if(getParameterList().parameterEvaluationRequiresInputMessage()) {
+			parameterEvaluationRequiresInputMessage  = true;
 		}
 	}
 
@@ -230,7 +234,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				}
 				Map<String,Object> parameterValues = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
-					if(getParameterList().parameterEvaluationRequiresInputMessage()) {
+					if(parameterEvaluationRequiresInputMessage) {
 						payload.preserve();
 					}
 					parameterValues = getParameterList().getValues(payload, session).getValueMap();
