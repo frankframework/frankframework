@@ -49,6 +49,10 @@ public class ExchangeFileSystemCache {
 		}
 	}
 
+	public FolderId getFolder(ExchangeFileSystemResolver resolver){
+		return getFolder(resolver.getMailbox(), resolver.getFolderName());
+	}
+
 	/**
 	 * Retrieves Exchange Folder object from cache.
 	 *

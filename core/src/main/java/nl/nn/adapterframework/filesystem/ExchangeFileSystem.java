@@ -328,7 +328,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId folderId = cache.getFolder(resolver.getMailbox(), resolver.getFolderName());
+			FolderId folderId = cache.getFolder(resolver);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -699,7 +699,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private FolderId getFolderIdByFolderName(ExchangeService exchangeService, ExchangeFileSystemResolver resolver, boolean create) throws Exception {
-		FolderId folderId = cache.getFolder(resolver.getMailbox(), resolver.getFolderName());
+		FolderId folderId = cache.getFolder(resolver);
 
 		if(folderId == null){
 			FindFoldersResults findResults;
