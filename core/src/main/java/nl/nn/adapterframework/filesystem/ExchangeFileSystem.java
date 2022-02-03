@@ -1063,5 +1063,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	public String getProxyDomain() {
 		return proxyDomain;
 	}
-	
+
+	@IbisDoc({"19", "Separator character used when working with dynamic email addresses, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code<", "|"})
+	public void setSeparator(String separator) {
+		ExchangeFileSystemResolver.setSeparator(separator);
+	}
+	public String getSeparator() {
+		return ExchangeFileSystemResolver.getSeparator();
+	}
+
 }

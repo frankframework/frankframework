@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.filesystem;
 
 import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * EFS could be used with a static mailAddress attribute or could be used in a dynamic way.
@@ -29,8 +31,7 @@ import lombok.Getter;
  * @author Laurens Mäkel.
  */
 public class ExchangeFileSystemResolver {
-	private final String SEPARATOR = "|";
-	private final String SEPARATOR_PATTERN = "\\|";
+	private static @Getter @Setter String separator = "|";
 
 	private @Getter String mailbox;
 	private @Getter String folderName;
@@ -41,19 +42,23 @@ public class ExchangeFileSystemResolver {
 	}
 
 	private String getFolderNameToUse(String folderName){
-		return folderName.contains(SEPARATOR) ? separateFolderName(folderName) : folderName;
+		return folderName.contains(getSeparator()) ? separateFolderName(folderName) : folderName;
 	}
 
 	private String getMailboxToUse(String folderName, String staticMailAddress){
-		return folderName.contains(SEPARATOR) ? separateMailbox(folderName) : staticMailAddress;
+		return folderName.contains(getSeparator()) ? separateMailbox(folderName) : staticMailAddress;
 	}
 
 	private String separateFolderName(String concatenatedString){
-		return concatenatedString.split(SEPARATOR_PATTERN)[1];
+		return split(concatenatedString)[1];
 	}
 
 	private String separateMailbox(String concatenatedString){
-		return concatenatedString.split(SEPARATOR_PATTERN)[0];
+		return split(concatenatedString)[0];
+	}
+
+	private String[] split(String concatenatedString){
+		return StringUtils.split(concatenatedString, getSeparator());
 	}
 
 }
