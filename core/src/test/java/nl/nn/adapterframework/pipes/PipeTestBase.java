@@ -63,7 +63,6 @@ public abstract class PipeTestBase<P extends IPipe> {
 
 	@After
 	public void tearDown() throws Exception {
-		pipe.stop();
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
 		pipe = null;
