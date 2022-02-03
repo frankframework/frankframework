@@ -328,7 +328,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId folderId = cache.getFolder(resolver);
+			FolderId folderId = getFolderIdByFolderName(exchangeService, resolver, true);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
