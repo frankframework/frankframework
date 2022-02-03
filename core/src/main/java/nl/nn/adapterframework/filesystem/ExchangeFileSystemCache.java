@@ -15,10 +15,8 @@
  */
 package nl.nn.adapterframework.filesystem;
 
-import microsoft.exchange.webservices.data.core.ExchangeService;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
-import microsoft.exchange.webservices.data.search.FolderView;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -31,7 +29,7 @@ import java.util.Map;
  * Acts as a cache for EWS components.
  * Stores Folder objects in memory for quick access.
  *
- * @author M63H114 - Laurens Mäkel.
+ * @author Laurens Mäkel.
  */
 public class ExchangeFileSystemCache {
 	private Logger log = LogUtil.getLogger(this);
@@ -65,14 +63,20 @@ public class ExchangeFileSystemCache {
 		FolderId result = folders.get(mailbox+folder);
 		if(result == null){
 			log.warn("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folder+"].");
-			// throw new IllegalStateException("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folder+"].");
 		}
 
 		return result;
 	}
 
 	public FolderId getBaseFolderId(String mailbox){
-		return baseFolders.get(mailbox);
+		log.debug("Looking for base folder for ["+mailbox+"]");
+
+		FolderId result = baseFolders.get(mailbox);
+		if(result == null){
+			log.warn("Cannot find base folder folder for mailbox ["+mailbox+"].");
+		}
+
+		return result;
 	}
 
 	/**
