@@ -57,16 +57,16 @@ public class ExchangeFileSystemCache {
 	 * Retrieves Exchange Folder object from cache.
 	 *
 	 * @param mailbox - Mailbox to retrieve Folder from
-	 * @param folder - Folder name to look for
+	 * @param folderName - Folder name to look for
 	 *
 	 * @return Folder - The EWS Folder object that matches parameters.
 	 */
-	public FolderId getFolder(String mailbox, String folder) throws IllegalStateException {
-		log.debug("Looking for folder ["+folder+"] in ["+mailbox+"]");
+	public FolderId getFolder(String mailbox, String folderName) throws IllegalStateException {
+		log.debug("Looking for folder ["+folderName+"] in ["+mailbox+"]");
 
-		FolderId result = folders.get(mailbox+folder);
+		FolderId result = folders.get(constructKey(mailbox, folderName));
 		if(result == null){
-			log.warn("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folder+"].");
+			log.warn("Cannot find folder for mailbox ["+mailbox+"] and folder ["+folderName+"].");
 		}
 
 		return result;
@@ -122,7 +122,7 @@ public class ExchangeFileSystemCache {
 	 */
 	public void registerFolder(String mailbox, Folder folder) throws Exception {
 		String folderName = folder.getDisplayName();
-		String key = mailbox + folderName;
+		String key = constructKey(mailbox, folderName);
 		if(!folders.containsKey(key)){
 			log.debug("Creating a local cache of folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"].");
 
@@ -130,14 +130,28 @@ public class ExchangeFileSystemCache {
 		}
 	}
 
+	public void registerFolder(ExchangeFileSystemResolver resolver, FolderId folderId) throws Exception {
+		String key = resolver.getMailbox() + resolver.getFolderName();
+
+		if(!folders.containsKey(key)){
+			log.debug("Creating a local cache of folder ["+resolver.getFolderName()+"] for ["+ resolver.getMailbox()+"] under key ["+key+"].");
+
+			folders.put(key,folderId);
+		}
+	}
+
 	public void removeFolder(String mailbox, Folder folder) throws Exception {
 		String folderName = folder.getDisplayName();
-		String key = mailbox + folderName;
+		String key = constructKey(mailbox, folderName);
 		if(folders.containsKey(key)){
 			log.debug("Removing folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"] from cache.");
 
 			folders.remove(key);
 		}
+	}
+
+	private String constructKey(String mailbox, String folderName){
+		return mailbox + folderName;
 	}
 
 }

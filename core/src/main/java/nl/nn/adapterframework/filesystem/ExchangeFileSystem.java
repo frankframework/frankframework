@@ -723,6 +723,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				log.debug("found folder with name: " + findResults.getFolders().get(0).getDisplayName());
 			}
 			folderId = findResults.getFolders().get(0).getId();
+
+			cache.registerFolder(resolver, folderId);
 		}
 
 		return folderId;
