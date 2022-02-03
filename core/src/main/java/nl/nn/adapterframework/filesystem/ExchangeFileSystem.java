@@ -116,7 +116,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyPassword = null;
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
-	
+	private String separator;
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getFilter())) {
