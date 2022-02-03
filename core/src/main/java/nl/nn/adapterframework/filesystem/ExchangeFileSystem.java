@@ -710,12 +710,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 			findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, resolver.getFolderName()), new FolderView(Integer.MAX_VALUE));
 			if (create && findResults.getTotalCount()==0) {
-				log.debug("creating folder [" + resolver.getFolderName() + "]");
+				log.debug("creating folder [" + resolver.getFolderName() + "] in mailbox ["+resolver.getMailbox()+"]");
 				createFolder(resolver);
 				findResults = exchangeService.findFolders(basefolderId, new SearchFilter.IsEqualTo(FolderSchema.DisplayName, resolver.getFolderName()), new FolderView(Integer.MAX_VALUE));
 			}
 			if (findResults.getTotalCount()==0) {
-				log.debug("folder [" + resolver.getFolderName() + "] not found");
+				log.debug("folder [" + resolver.getFolderName() + "] not found in mailbox ["+resolver.getMailbox()+"]");
 				return null;
 			}
 			if (log.isDebugEnabled()) {
