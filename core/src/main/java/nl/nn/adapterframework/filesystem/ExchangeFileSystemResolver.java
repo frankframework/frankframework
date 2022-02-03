@@ -31,14 +31,17 @@ import org.apache.commons.lang3.StringUtils;
  * @author Laurens Mäkel.
  */
 public class ExchangeFileSystemResolver {
-	private static @Getter @Setter String separator = "|";
+	private @Getter String separator = "|";
 
 	private @Getter String mailbox;
 	private @Getter String folderName;
 
-	public ExchangeFileSystemResolver(String folderName, String staticMailAddress){
+	public ExchangeFileSystemResolver(String folderName, String staticMailAddress, String separator){
 		this.mailbox = getMailboxToUse(folderName, staticMailAddress);
 		this.folderName = getFolderNameToUse(folderName);
+		if(separator != null){
+			this.separator = separator;
+		}
 	}
 
 	private String getFolderNameToUse(String folderName){

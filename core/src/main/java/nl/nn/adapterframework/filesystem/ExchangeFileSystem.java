@@ -887,7 +887,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private ExchangeFileSystemResolver getResolver(String folderName){
-		return new ExchangeFileSystemResolver(folderName, getMailAddress());
+		return new ExchangeFileSystemResolver(folderName, getMailAddress(), getSeparator());
 	}
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
@@ -1066,10 +1066,10 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@IbisDoc({"19", "Separator character used when working with dynamic email addresses, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code<", "|"})
 	public void setSeparator(String separator) {
-		ExchangeFileSystemResolver.setSeparator(separator);
+		this.separator = separator;
 	}
 	public String getSeparator() {
-		return ExchangeFileSystemResolver.getSeparator();
+		return separator;
 	}
 
 }
