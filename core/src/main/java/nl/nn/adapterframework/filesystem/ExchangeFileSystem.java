@@ -752,7 +752,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	@Override
 	public void removeFolder(String folderName, boolean removeNonEmptyFolder) throws FileSystemException {
-		ExchangeFileSystemResolver resolver = new ExchangeFileSystemResolver(folderName, getMailAddress());
+		ExchangeFileSystemResolver resolver = getResolver(folderName);
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
