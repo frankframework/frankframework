@@ -4,7 +4,7 @@
 	<packaging>pom</packaging>
 	<artifactId>ibis-adapterframework-docker</artifactId>
 	<name>Ibis AdapterFramework Docker images</name>
-	<version>7.8-SNAPSHOT</version>
+	<version>${revision}</version>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
