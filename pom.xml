@@ -3,7 +3,7 @@
 
 	<groupId>org.ibissource</groupId>
 	<artifactId>ibis-adapterframework-parent</artifactId>
-	<version>7.7-SNAPSHOT</version>
+	<version>7.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -13,7 +13,7 @@
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.11.0.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
+		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 	</properties>
 
@@ -66,89 +66,89 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>credentialprovider</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ifsa</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-tibco</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-sap</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-coolgen</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ibm</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-larva</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-akamai</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-cmis</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-webapp</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ear</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 				<type>ear</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-test-integration</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-idin</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-ladybug</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-aspose</artifactId>
-				<version>7.7-SNAPSHOT</version>
+				<version>7.8-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
