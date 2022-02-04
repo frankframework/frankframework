@@ -31,8 +31,8 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Performs a <strong>best effort</strong> JSON to XML transformation. If you wish to validate or add structure 
- * to the converted file, please use the {@link Json2XmlValidator}.
+ * JSON is not aware of the element order. This pipe performs a <strong>best effort</strong> JSON to XML transformation. 
+ * If you wish to validate or add structure to the converted (xml) file, please use the {@link Json2XmlValidator}.
  *
  * @author Martijn Onstwedder
  * @author Tom van der Heijden
