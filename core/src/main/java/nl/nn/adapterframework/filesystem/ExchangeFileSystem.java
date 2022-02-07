@@ -331,7 +331,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId folderId = getFolderIdByFolderName(exchangeService, resolver, true);
+			FolderId folderId = getFolderIdByFolderName(exchangeService, resolver, true, false);
 			ItemView view = new ItemView(getMaxNumberOfMessagesToList()<0?100:getMaxNumberOfMessagesToList());
 			view.getOrderBy().add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
 			FindItemsResults<Item> findResults;
@@ -371,14 +371,18 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		ExchangeFileSystemResolver resolver = getResolver(folder);
-		registerMailbox(resolver.getMailbox());
+		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		FolderId folderId = null;
 		try {
-			folderId = findFolder(cache.getBaseFolderId(resolver.getMailbox()), resolver.getFolderName());
+			folderId = getFolderIdByFolderName(exchangeService, resolver, false, true);
 		} catch (Exception e) {
+			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
+		} finally {
+			releaseConnection(exchangeService);
 		}
+
 		return folderId!=null;
 	}
 
@@ -432,7 +436,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder);
+			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
+
 			return (EmailMessage)f.move(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -448,7 +453,8 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder);
+			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
+
 			return (EmailMessage)f.copy(destinationFolderId);
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
@@ -695,14 +701,14 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return result;
 	}
 
-	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create) throws Exception {
+	public FolderId getFolderIdByFolderName(ExchangeService exchangeService, String folderName, boolean create, boolean skipCache) throws Exception {
 		ExchangeFileSystemResolver resolver = getResolver(folderName);
 
-		return getFolderIdByFolderName(exchangeService, resolver, create);
+		return getFolderIdByFolderName(exchangeService, resolver, create, skipCache);
 	}
 
-	private FolderId getFolderIdByFolderName(ExchangeService exchangeService, ExchangeFileSystemResolver resolver, boolean create) throws Exception {
-		FolderId folderId = cache.getFolder(resolver);
+	private FolderId getFolderIdByFolderName(ExchangeService exchangeService, ExchangeFileSystemResolver resolver, boolean create, boolean skipCache) throws Exception {
+		FolderId folderId = skipCache ? null : cache.getFolder(resolver);
 
 		if(folderId == null){
 			FindFoldersResults findResults;
@@ -761,7 +767,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		ExchangeService exchangeService = getConnection(resolver.getMailbox());
 
 		try {
-			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false);
+			FolderId folderId = getFolderIdByFolderName(exchangeService, folderName, false, false);
 			Folder folder = Folder.bind(exchangeService, folderId);
 			if(removeNonEmptyFolder) {
 				folder.empty(DeleteMode.HardDelete, true);
