@@ -58,11 +58,11 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot read input", e);
 		}
-		File file = new File(filename, getCharset());
+		File file = new File(filename);
 
 		try {
 			
-			PipeRunResult result = super.doPipe(new FileMessage(file), session);
+			PipeRunResult result = super.doPipe(new FileMessage(file, getCharset()), session);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 
