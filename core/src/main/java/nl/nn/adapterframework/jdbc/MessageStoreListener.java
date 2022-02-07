@@ -259,7 +259,7 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 	/**
-	 * "Value of statusField indicating the processing of the row resulted in an error
+	 * Value of statusField indicating the processing of the row resulted in an error
 	 * 
 	 * @ff.default <code>E</code>
 	 */
