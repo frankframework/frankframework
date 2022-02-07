@@ -315,6 +315,7 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.5.3</version>
 				<configuration>
+					<goals>deploy</goals>
 					<tagNameFormat>v@{project.version}</tagNameFormat>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 				</configuration>
@@ -500,10 +501,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<configuration>
-						<skip>true</skip>
-						<skipDeploy>true</skipDeploy>
-					</configuration>
+					<version>3.9.1</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -581,7 +579,7 @@
 						<configuration>
 							<serverId>ossrh</serverId>
 							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
 				</plugins>
