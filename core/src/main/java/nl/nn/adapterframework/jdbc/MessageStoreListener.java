@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -54,21 +53,6 @@ import nl.nn.adapterframework.util.Misc;
 			slotId="${instance.name}/ServiceName"
 		/>
  * </pre></code>
- * 
- * The following defaults apply:
- * <table>
- * 	<tr><td>tableName</td><td>IBISSTORE</td></tr>
- * 	<tr><td>keyField</td><td>MESSAGEKEY</td></tr>
- * 	<tr><td>messageField</td><td>MESSAGE</td></tr>
- * 	<tr><td>messageFieldType</td><td>BLOB</td></tr>
- * 	<tr><td>blobSmartGet</td><td>true</td></tr>
- * 	<tr><td>statusField</td><td>TYPE</td></tr>
- * 	<tr><td>timestampField</td><td>MESSAGEDATE</td></tr>
- * 	<tr><td>commentField</td><td>COMMENTS</td></tr>
- * 	<tr><td>statusValueAvailable</td><td>M</td></tr>
- * 	<tr><td>statusValueProcessed</td><td>A</td></tr>
- * 	<tr><td>statusValueError</td><td>E</td></tr>
- * </table>
  * 
  * @author Jaco de Groot
  */
@@ -162,24 +146,152 @@ public class MessageStoreListener<M> extends JdbcTableListener<M> {
 	}
 
 
-	@IbisDoc({"1", "Identifier for this service", ""})
+	/**
+	 * Identifier for this service
+	 */
 	public void setSlotId(String slotId) {
 		this.slotId = slotId;
 	}
 
-	@IbisDoc({"2", "Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessagestoreSender} must have the same value for this attribute", ""})
+	/**
+	 * Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessageStoreSender} must have the same value for this attribute
+	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
 
-	@IbisDoc({"3", "Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set false, messages are deleted after being processed", "true"})
+	/**
+	 * Name of the table to be used
+	 * 
+	 * @ff.default IBISSTORE
+	 */
+	@Override
+	public void setTableName(String string) {
+		super.setTableName(string);
+	}
+
+	/**
+	 * Primary key field of the table, used to identify messages
+	 * 
+	 * @ff.default MESSAGEKEY
+	 */
+	@Override
+	public void setKeyField(String fieldname) {
+		super.setKeyField(fieldname);
+	}
+
+	/**
+	 * field containing the message data
+	 * 
+	 * @ff.default MESSAGE
+	 */
+	@Override
+	public void setMessageField(String fieldname) {
+		super.setMessageField(fieldname);
+	}
+
+	/**
+	 * Type of the field containing the message data
+	 * 
+	 * @ff.default BLOB
+	 */
+	@Override
+	public void setMessageFieldType(MessageFieldType fieldtype) {
+		super.setMessageFieldType(fieldtype);
+	}
+
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string when read
+	 * 
+	 * @ff.default <code>true</code>
+	 */
+	@Override
+	public void setBlobSmartGet(boolean b) {
+		super.setBlobSmartGet(b);
+	}
+
+	/**
+	 * Field containing the status of the message
+	 * 
+	 * @ff.default TYPE
+	 */
+	@Override
+	public void setStatusField(String fieldname) {
+		super.setStatusField(fieldname);
+	}
+
+	/**
+	 * Field used to store the date and time of the last change of the statusField
+	 * 
+	 * @ff.default MESSAGEDATE
+	 */
+	@Override
+	public void setTimestampField(String fieldname) {
+		super.setTimestampField(fieldname);
+	}
+
+	/**
+	 * Field used to store the reason of the last change of the statusField
+	 * 
+	 * @ff.default COMMENTS
+	 */
+	@Override
+	public void setCommentField(String commentField) {
+		super.setCommentField(commentField);
+	}
+
+	/**
+	 * Value of statusField indicating row is available to be processed. If set empty, any row not having any of the other status values is considered available.
+	 * 
+	 * @ff.default <code>M</code>
+	 */
+	@Override
+	public void setStatusValueAvailable(String string) {
+		super.setStatusValueAvailable(string);
+	}
+
+	/**
+	 * Value of status field indicating is being processed. Set to <code>I</code> if database has no SKIP LOCKED functionality, the Receiver cannot be set to <code>Required</code> or <code>RequiresNew</code>, or to support programmatic retry.
+	 */
+	@Override
+	public void setStatusValueInProcess(String string) {
+		super.setStatusValueInProcess(string);
+	}
+
+	/**
+	 * "Value of statusField indicating the processing of the row resulted in an error
+	 * 
+	 * @ff.default <code>E</code>
+	 */
+	@Override
+	public void setStatusValueError(String string) {
+		super.setStatusValueError(string);
+	}
+
+	/**
+	 * Value of status field indicating row is processed OK
+	 * 
+	 * @ff.default <code>A</code>
+	 */
+	@Override
+	public void setStatusValueProcessed(String string) {
+		super.setStatusValueProcessed(string);
+	}
+
+	/**
+	 * Value of status field indicating message is on Hold, temporarily. If required, suggested value is <code>H</code>.
+	 */
+	@Override
+	public void setStatusValueHold(String string) {
+		super.setStatusValueHold(string);
+	}
+
+	/**
+	 * Move to messageLog after processing, as the message is already stored in the ibisstore only some fields need to be updated. When set <code>false</code>, messages are deleted after being processed
+	 * @ff.default <code>true</code>
+	 */
 	public void setMoveToMessageLog(boolean moveToMessageLog) {
 		this.moveToMessageLog = moveToMessageLog;
 	}
 
-	@Override
-	@IbisDoc({"4", "Value of status field indicating is being processed. Set to 'I' if database has no SKIP LOCKED functionality, the Receiver cannot be set to Required or RequiresNew, or to support programmatic retry.", ""})
-	public void setStatusValueInProcess(String string) {
-		super.setStatusValueInProcess(string);
-	}
 }
