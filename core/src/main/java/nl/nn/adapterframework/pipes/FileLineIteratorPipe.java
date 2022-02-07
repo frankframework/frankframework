@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -32,6 +33,8 @@ import nl.nn.adapterframework.stream.Message;
  *
  * @author  Gerrit van Brakel
  */
+@Deprecated
+@ConfigurationWarning("Please use StreamLineIteratorPipe")
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 	private @Getter String move2dirAfterTransform;
