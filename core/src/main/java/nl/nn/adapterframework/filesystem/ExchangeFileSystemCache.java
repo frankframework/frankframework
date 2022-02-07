@@ -35,7 +35,7 @@ public class ExchangeFileSystemCache {
 	private Logger log = LogUtil.getLogger(this);
 
 	private final Map<String, FolderId> baseFolders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
-	private final HashMap<String, FolderId> folders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
+	private final HashMap<String, FolderId> folders = new HashMap<>(); // <Mailbox, FolderId>
 	private final List<String> mailboxesList = new ArrayList<>();
 
 	/**
