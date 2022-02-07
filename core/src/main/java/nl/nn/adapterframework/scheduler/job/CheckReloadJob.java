@@ -36,6 +36,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
+	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
 	@Override
 	public void execute(IbisManager ibisManager) {
@@ -49,45 +50,56 @@ public class CheckReloadJob extends JobDef {
 		List<String> configNames = new ArrayList<>();
 		List<String> configsToReload = new ArrayList<>();
 
-		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
-		qs.setDatasourceName(getDataSource());
-		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
-		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
-		try {
-			qs.configure();
-			qs.open();
-			try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
-				for (Configuration configuration : ibisManager.getConfigurations()) {
-					String configName = configuration.getName();
-					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
-						stmt.setString(1, configName);
-						try (ResultSet rs = stmt.executeQuery()) {
-							if (rs.next()) {
-								String ibisConfigVersion = rs.getString(1);
-								String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
-								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
-									log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
-								}
-								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
-									log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
-									configsToReload.add(configName);
+		if(!atLeastOneConfigrationHasDBClassLoader) {
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				if("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					atLeastOneConfigrationHasDBClassLoader = true;
+					break;
+				}
+			}
+		}
+
+		if(atLeastOneConfigrationHasDBClassLoader) {
+			FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
+			qs.setDatasourceName(getDataSource());
+			qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
+			String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
+			String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
+			try {
+				qs.configure();
+				qs.open();
+				try (Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+					for (Configuration configuration : ibisManager.getConfigurations()) {
+						String configName = configuration.getName();
+						configNames.add(configName);
+						if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+							stmt.setString(1, configName);
+							try (ResultSet rs = stmt.executeQuery()) {
+								if (rs.next()) {
+									String ibisConfigVersion = rs.getString(1);
+									String configVersion = configuration.getVersion(); //DatabaseClassLoader configurations always have a version
+									if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { //If config hasn't loaded yet, don't skip it!
+										log.warn(getLogPrefix()+"skipping autoreload for configuration ["+configName+"] unable to determine [configuration.version]");
+									}
+									else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+										log.info(getLogPrefix()+"configuration ["+configName+"] with version ["+configVersion+"] will be reloaded with new version ["+ibisConfigVersion+"]");
+										configsToReload.add(configName);
+									}
 								}
 							}
 						}
 					}
 				}
+			} catch (Exception e) {
+				getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
+			} finally {
+				qs.close();
 			}
-		} catch (Exception e) {
-			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
-		} finally {
-			qs.close();
-		}
 
-		if (!configsToReload.isEmpty()) {
-			for (String configToReload : configsToReload) {
-				ibisManager.getIbisContext().reload(configToReload);
+			if (!configsToReload.isEmpty()) {
+				for (String configToReload : configsToReload) {
+					ibisManager.getIbisContext().reload(configToReload);
+				}
 			}
 		}
 
