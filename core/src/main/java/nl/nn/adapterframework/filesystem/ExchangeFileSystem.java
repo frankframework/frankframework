@@ -117,6 +117,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private String proxyAuthAlias = null;
 	private String proxyDomain = null;
 	private String separator;
+
+	private final String ANCHOR_HEADER = "X-AnchorMailbox";
+
 	@Override
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getFilter())) {
@@ -894,7 +897,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
 		ExchangeService service = super.getConnection();
-		service.getHttpHeaders().put("X-AnchorMailbox", mailbox);
+		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 
 		if(!cache.isMailboxRegistered(mailbox)) {
 			try {
@@ -907,6 +910,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 
 		return service;
+	}
+
+	@Override
+	protected void releaseConnection(ExchangeService service){
+		service.getHttpHeaders().remove(ANCHOR_HEADER);
+		super.releaseConnection(service);
 	}
 
 	private void registerMailbox(String mailbox) throws FileSystemException {
