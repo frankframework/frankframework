@@ -132,6 +132,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		}
 	}
 
+	@Override
+	public void open() throws FileSystemException {
+		super.open();
+		if(getMailAddress() != null){
+			registerMailbox(getMailAddress());
+		}
+	}
 	public FolderId getBaseFolderId(String emailAddress, String baseFolderName) throws FileSystemException {
 		FolderId basefolderId;
 
