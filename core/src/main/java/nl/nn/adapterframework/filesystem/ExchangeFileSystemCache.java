@@ -15,15 +15,15 @@
  */
 package nl.nn.adapterframework.filesystem;
 
+import microsoft.exchange.webservices.data.core.exception.service.local.ServiceLocalException;
 import microsoft.exchange.webservices.data.core.service.folder.Folder;
 import microsoft.exchange.webservices.data.property.complex.FolderId;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Acts as a cache for EWS components.
@@ -34,20 +34,8 @@ import java.util.Map;
 public class ExchangeFileSystemCache {
 	private Logger log = LogUtil.getLogger(this);
 
-	private final Map<String, FolderId> baseFolders = new HashMap<>(); // <Mailbox, FolderId>
-	private final HashMap<String, FolderId> folders = new HashMap<>(); // <Mailbox+FolderNaam, FolderId>
-	private final List<String> mailboxesList = new ArrayList<>();
-
-	/**
-	 * Ensures that all Folder objects are present in cache.
-	 *
-	 * @param mailbox - Mailbox to ensure in cache.
-	 */
-	public void ensureMailboxIsRegistered(String mailbox, FolderId baseFolderId, List<Folder> folders) throws Exception {
-		if(!isMailboxRegistered(mailbox)){
-			registerMailbox(mailbox, baseFolderId, folders);
-		}
-	}
+	private final Map<String, FolderId> baseFolders = new ConcurrentHashMap<>(); // <Mailbox, FolderId>
+	private final Map<String, FolderId> folders = new ConcurrentHashMap<>(); // <Mailbox+FolderName, FolderId>
 
 	public FolderId getFolder(ExchangeFileSystemResolver resolver){
 		return getFolder(resolver.getMailbox(), resolver.getFolderName());
@@ -61,7 +49,7 @@ public class ExchangeFileSystemCache {
 	 *
 	 * @return Folder - The EWS Folder object that matches parameters.
 	 */
-	public FolderId getFolder(String mailbox, String folderName) throws IllegalStateException {
+	public FolderId getFolder(String mailbox, String folderName) {
 		log.debug("Looking for folder ["+folderName+"] in ["+mailbox+"]");
 
 		FolderId result = folders.get(constructKey(mailbox, folderName));
@@ -91,26 +79,23 @@ public class ExchangeFileSystemCache {
 	 * @return boolean - Confirmation or denial.
 	 */
 	public boolean isMailboxRegistered(String mailbox){
-		return mailboxesList.contains(mailbox);
+		return baseFolders.entrySet().contains(mailbox);
 	}
-
 
 	/**
 	 * Starts the process of caching all Folder objects for specified mailbox.
 	 *
 	 * @param mailbox - The name of the mailbox to cache.
 	 */
-	private synchronized void registerMailbox(String mailbox, FolderId baseFolderId, List<Folder> folders) throws Exception {
+	public void registerMailbox(String mailbox, FolderId baseFolderId, List<Folder> folders) throws ServiceLocalException {
 		if(!isMailboxRegistered(mailbox)){
 			log.debug("Creating a local cache of folders for ["+mailbox+"].");
 
-			baseFolders.put(mailbox, baseFolderId);
+			baseFolders.putIfAbsent(mailbox, baseFolderId);
 
 			for (Folder localFolder : folders) {
 				registerFolder(mailbox, localFolder);
 			}
-
-			mailboxesList.add(mailbox);
 		}
 	}
 
@@ -120,27 +105,27 @@ public class ExchangeFileSystemCache {
 	 * @param mailbox - The name of the mailbox to cache.
 	 * @param folder - The Folder object to store in cache.
 	 */
-	public void registerFolder(String mailbox, Folder folder) throws Exception {
+	public void registerFolder(String mailbox, Folder folder) throws ServiceLocalException {
 		String folderName = folder.getDisplayName();
 		String key = constructKey(mailbox, folderName);
 		if(!folders.containsKey(key)){
 			log.debug("Creating a local cache of folder ["+folderName+"] for ["+mailbox+"] under key ["+key+"].");
 
-			folders.put(key, folder.getId());
+			folders.putIfAbsent(key, folder.getId());
 		}
 	}
 
-	public void registerFolder(ExchangeFileSystemResolver resolver, FolderId folderId) throws Exception {
+	public void registerFolder(ExchangeFileSystemResolver resolver, FolderId folderId)  {
 		String key = resolver.getMailbox() + resolver.getFolderName();
 
 		if(!folders.containsKey(key)){
 			log.debug("Creating a local cache of folder ["+resolver.getFolderName()+"] for ["+ resolver.getMailbox()+"] under key ["+key+"].");
 
-			folders.put(key,folderId);
+			folders.putIfAbsent(key,folderId);
 		}
 	}
 
-	public void removeFolder(String mailbox, Folder folder) throws Exception {
+	public void removeFolder(String mailbox, Folder folder) throws ServiceLocalException {
 		String folderName = folder.getDisplayName();
 		String key = constructKey(mailbox, folderName);
 		if(folders.containsKey(key)){
