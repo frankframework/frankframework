@@ -29,7 +29,7 @@ ENV ARTEMIS_VERSION 2.19.1
 
 # Download Apache Artemis
 RUN apt-get update && apt-get install -y wget --no-install-recommends \
-	&& wget -O artemis.tar.gz https://downloads.apache.org/activemq/activemq-artemis/${ARTEMIS_VERSION}/apache-artemis-${ARTEMIS_VERSION}-bin.tar.gz --no-check-certificate \
+	&& wget -q -O artemis.tar.gz https://downloads.apache.org/activemq/activemq-artemis/${ARTEMIS_VERSION}/apache-artemis-${ARTEMIS_VERSION}-bin.tar.gz --no-check-certificate \
 	&& tar -xvf artemis.tar.gz \
 	&& rm artemis.tar.gz \
 	&& mv apache-artemis-${ARTEMIS_VERSION} activemq-artemis \
