@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.configuration.extensions.SapSystems;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.jms.JmsRealms;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
@@ -522,7 +524,18 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
+	// Dummy setter to allow SapSystems being added to Configurations via Frank!Config XSD
+	public void setSapSystems(SapSystems sapSystems) {
+		// SapSystems self register;
+	}
+
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	public void setJmsRealms(JmsRealms realm) {
+		// JmsRealm-objects self register in JmsRealms-class;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	@Deprecated
 	public void registerJmsRealm(JmsRealm realm) {
 		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
@@ -533,9 +546,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Specifies event monitoring 
+	 * Container for monitor objects 
 	 */
+	public void setMonitoring(MonitorManager monitorManager) {
+		// Monitors self register in MonitorManager;
+	}
 	// above comment is used in FrankDoc
+	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
 	}
 

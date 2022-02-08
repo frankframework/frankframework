@@ -31,8 +31,6 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.doc.DocumentedEnum;
-import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -646,6 +644,16 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * PipeLine exits.
 	 * @ff.mandatory
 	 */
+	public void setPipeLineExits(PipeLineExits exits) {
+		for(PipeLineExit exit:exits.getExits()) {
+			registerPipeLineExit(exit);
+		}
+	}
+	
+	/** 
+	 * PipeLine exits.
+	 * @ff.deprecated
+	 */
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
@@ -662,6 +670,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** Global forwards */
+	public void setForwards(PipeForwards forwards){
+		for(PipeForward forward:forwards.getForwards()) {
+			registerForward(forward);
+		}
+	}
+
+	@Deprecated
 	public void registerForward(PipeForward forward){
 		globalForwards.put(forward.getName(), forward);
 		log.debug("registered global PipeForward "+forward.toString());

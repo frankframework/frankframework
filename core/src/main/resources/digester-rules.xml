@@ -7,11 +7,11 @@
 
 	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.digester.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
 
-	<rule pattern="configuration/jmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
+	<rule pattern="*/jmsRealms" registerMethod="setJmsRealms" beanClass="nl.nn.adapterframework.jms.JmsRealms"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
-	<rule pattern="configuration/sapSystems/"/>
-	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
+	<rule pattern="*/sapSystems" registerMethod="setSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.SapSystems"/>
+	<rule pattern="*/sapSystem" registerMethod="registerSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.ISapSystem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" beanClass="nl.nn.adapterframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="nl.nn.adapterframework.core.PipeLine"/>
@@ -34,10 +34,12 @@
 	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe" beanClass="nl.nn.adapterframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
+	<rule pattern="*/forwards" registerMethod="setForwards" beanClass="nl.nn.adapterframework.core.PipeForwards"/>
 	<rule pattern="*/forward" registerMethod="registerForward" beanClass="nl.nn.adapterframework.core.PipeForward"/>
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
 	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
+	<rule pattern="*/exits" registerMethod="setPipeLineExits" beanClass="nl.nn.adapterframework.core.PipeLineExits"/>
 	<rule pattern="*/exit" registerMethod="registerPipeLineExit" beanClass="nl.nn.adapterframework.core.PipeLineExit"/>
 
 	<rule pattern="*/job" factory="nl.nn.adapterframework.configuration.digester.JobFactory" registerMethod="registerScheduledJob"/>
@@ -57,11 +59,11 @@
 	<rule pattern="*/cache" registerMethod="setCache" beanClass="nl.nn.adapterframework.cache.EhCache"/>
 
 	<!-- Digester rules for monitoring -->
-	<rule pattern="configuration/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+	<rule pattern="*/monitoring" registerMethod="setMonitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
 	<rule pattern="*/destination" registerMethod="registerDestination" beanClass="nl.nn.adapterframework.monitoring.IMonitorAdapter"/>
 
-	<rule pattern="*/monitoring/monitor" registerMethod="addMonitor" beanClass="nl.nn.adapterframework.monitoring.Monitor"/>
+	<rule pattern="*/monitor" registerMethod="addMonitor" beanClass="nl.nn.adapterframework.monitoring.Monitor"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger" beanClass="nl.nn.adapterframework.monitoring.Trigger"/>
 	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>

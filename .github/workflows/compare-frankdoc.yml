@@ -1,4 +1,4 @@
-# This workflow will try to diff the current Frank!Doc XSD with the given target
+# This workflow will try to diff the current FrankConfig XSD with the given target
 
 name: Compare FrankDoc
 
@@ -22,7 +22,7 @@ jobs:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
 
-    - name: Retrieve base Frank!Doc XSD
+    - name: Retrieve base FrankConfig XSD
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: maven-build.yml
