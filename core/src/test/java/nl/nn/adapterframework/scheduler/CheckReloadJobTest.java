@@ -40,8 +40,9 @@ public class CheckReloadJobTest extends JdbcTestBase {
 
 		jobDef.execute(configuration.getIbisManager());
 
-		assertEquals(1, jobDef.getMessageKeeper().size());
+		assertEquals(2, jobDef.getMessageKeeper().size());
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));
+		assertTrue(jobDef.getMessageKeeper().getMessage(1).getMessageText().contains("No database configuration found to reload"));
 
 	}
 
