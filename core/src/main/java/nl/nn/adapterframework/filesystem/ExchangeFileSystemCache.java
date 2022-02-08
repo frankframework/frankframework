@@ -79,7 +79,7 @@ public class ExchangeFileSystemCache {
 	 * @return boolean - Confirmation or denial.
 	 */
 	public boolean isMailboxRegistered(String mailbox){
-		return baseFolders.entrySet().contains(mailbox);
+		return baseFolders.containsKey(mailbox);
 	}
 
 	/**
