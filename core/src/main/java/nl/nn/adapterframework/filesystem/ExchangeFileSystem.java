@@ -906,15 +906,13 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		service.getHttpHeaders().put(ANCHOR_HEADER, mailbox);
 
 		if(!cache.isMailboxRegistered(mailbox)) {
-			boolean failure = false;
 			try {
 				registerMailbox(mailbox, service);
 			} catch (Exception e) {
-				invalidateConnection(service);
-				failure = true;
-				throw new FileSystemException(e);
-			} finally {
-				if(failure){
+				try {		
+					invalidateConnection(service);
+					throw new FileSystemException(e);
+				} finally {
 					releaseConnection(service);
 				}
 			}
