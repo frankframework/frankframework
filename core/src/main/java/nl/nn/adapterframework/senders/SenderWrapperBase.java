@@ -22,7 +22,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -44,7 +43,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private @Getter String storeResultInSessionKey;
 	private @Getter String storeInputInSessionKey;
 	private @Getter boolean preserveInput=false;
-	
+
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
 	private @Getter @Setter ICache<String,String> cache=null;
 
@@ -83,7 +82,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException; 
+	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {

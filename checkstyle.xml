@@ -6,8 +6,8 @@
 <!-- Checkstyle-Configuration: Frank!Framework Description: none -->
 <module name="Checker">
 	<property name="severity" value="warning" />
-	<module name="JavadocPackage" />
 	<module name="TreeWalker">
+		<property name="fileExtensions" value="java"/>
 		<property name="severity" value="error" />
 		<module name="RedundantImport" />
 		<module name="UnusedImports" />
@@ -17,6 +17,11 @@
 		<module name="IllegalImport">
 			<property name="illegalPkgs" value="org.apache.commons.lang" />
 		</module>
+	</module>
+
+	<module name="SuppressionSingleFilter">
+		<property name="checks" value="UnusedImports"/>
+		<property name="files" value="StandardLockService.java"/>
 	</module>
 
 	<module name="TreeWalker">
@@ -55,6 +60,12 @@
 			<property name="format" value="\s+$" />
 			<property name="message" value="Line has trailing spaces." />
 			<property name="ignoreComments" value="true" />
+		</module>
+
+		<module name="RegexpSinglelineJava">
+			<property name="id" value="systemout"/>
+			<property name="format" value="^.*System\.(out|err).*$"/>
+			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
 		</module>
 	</module>
 </module>

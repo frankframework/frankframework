@@ -515,6 +515,7 @@
 					</configuration>
 					<executions>
 						<execution>
+							<?m2e ignore?>
 							<id>verify-code-style</id>
 							<phase>process-classes</phase>
 							<goals>
