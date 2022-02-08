@@ -23,39 +23,25 @@ FROM openjdk:8-jre-slim
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /opt
 
-# administrator username and password
-ENV ARTEMIS_USER artemis
-ENV ARTEMIS_PASSWORD artemis
-
 # artemis version (latest java 8 compatible)
 ENV ARTEMIS_VERSION 2.19.1
-ENV CREATE_ARGUMENTS --user ${ARTEMIS_USER} --password ${ARTEMIS_PASSWORD} --silent
 
-# add user and group for artemis
-RUN apt-get update && apt-get install -y libaio1
-RUN groupadd -g 1000 -r ${ARTEMIS_USER} && useradd -r -u 1000 -g ${ARTEMIS_USER} ${ARTEMIS_USER} 
 
 # Download Apache Artemis
-RUN apt-get update && apt-get install -y wget
-RUN wget -O artemis.tar.gz https://downloads.apache.org/activemq/activemq-artemis/${ARTEMIS_VERSION}/apache-artemis-${ARTEMIS_VERSION}-bin.tar.gz --no-check-certificate
-RUN tar -xvf artemis.tar.gz
-RUN rm artemis.tar.gz
-RUN mv apache-artemis-${ARTEMIS_VERSION} activemq-artemis
-
-USER ${ARTEMIS_USER}
+RUN apt-get update && apt-get install -y wget --no-install-recommends \
+	&& wget -O artemis.tar.gz https://downloads.apache.org/activemq/activemq-artemis/${ARTEMIS_VERSION}/apache-artemis-${ARTEMIS_VERSION}-bin.tar.gz --no-check-certificate \
+	&& tar -xvf artemis.tar.gz \
+	&& rm artemis.tar.gz \
+	&& mv apache-artemis-${ARTEMIS_VERSION} activemq-artemis \
+	&& apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Web Server
 EXPOSE 8161
 EXPOSE 61616
 
 
-USER root
-
-RUN mkdir /var/lib/artemis-instance && chown -R ${ARTEMIS_USER}.${ARTEMIS_USER} /var/lib/artemis-instance
-
 COPY ./docker-run.sh /
-
-USER ${ARTEMIS_USER}
 
 # Expose some outstanding folders
 VOLUME ["/var/lib/artemis-instance"]
