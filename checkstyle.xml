@@ -8,19 +8,24 @@
 	<property name="severity" value="warning" />
 	<module name="JavadocPackage" />
 	<module name="TreeWalker">
-		<property name="severity" value="ignore" />
-		<metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
-		<module name="AvoidStarImport">
-			<property name="allowStaticMemberImports" value="true" />
-		</module>
+		<property name="severity" value="error" />
 		<module name="RedundantImport" />
 		<module name="UnusedImports" />
 		<module name="IllegalImport">
 			<property name="illegalPkgs" value="junit.framework" />
 		</module>
 		<module name="IllegalImport">
-			<property name="illegalPkgs" value="org.apache.commons.lang3" />
+			<property name="illegalPkgs" value="org.apache.commons.lang" />
 		</module>
+	</module>
+
+	<module name="TreeWalker">
+		<property name="severity" value="info" />
+		<metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
+		<module name="AvoidStarImport">
+			<property name="allowStaticMemberImports" value="true" />
+		</module>
+		
 		<module name="EmptyBlock" />
 		<module name="ModifierOrder" />
 		<module name="RedundantModifier">
@@ -37,12 +42,19 @@
 		<module name="SuppressWarnings">
 			<property name="format" value="^all$" />
 		</module>
-		<module name="FileTabCharacter">
-			<property name="eachLine" value="true" />
-		</module>
 	</module>
-	<module name="RegexpSingleline">
-		<property name="format" value="\s+$" />
-		<property name="message" value="Line has trailing spaces." />
+
+	<module name="TreeWalker">
+		<property name="severity" value="warning" />
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="^\t* " />
+			<property name="message" value="Indent must use tab characters." />
+			<property name="ignoreComments" value="true" />
+		</module>
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="\s+$" />
+			<property name="message" value="Line has trailing spaces." />
+			<property name="ignoreComments" value="true" />
+		</module>
 	</module>
 </module>
