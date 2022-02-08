@@ -95,19 +95,19 @@ public abstract class ValidatorTestBase {
 	}
 
 	public void validate(String rootNamespace, String schemaLocation, boolean addNamespaceToSchema, String inputFile, String expectedFailureReason) throws Exception {
-		String expected[] = { expectedFailureReason };
+		String[] expected = { expectedFailureReason };
 		if (expectedFailureReason == null) expected = null;
 		validate(rootNamespace, schemaLocation, addNamespaceToSchema, false, inputFile, expected);
 	}
 
 	public void validateIgnoreUnknownNamespacesOn(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
-		String expected[] = { expectedFailureReason };
+		String[] expected = { expectedFailureReason };
 		if (expectedFailureReason == null) expected = null;
 		validate(rootNamespace, schemaLocation, false, true, inputFile, expected);
 	}
 
 	public void validateIgnoreUnknownNamespacesOff(String rootNamespace, String schemaLocation, String inputFile, String expectedFailureReason) throws Exception {
-		String expected[]={ expectedFailureReason };
+		String[] expected = { expectedFailureReason };
 		if (expectedFailureReason==null) expected=null;
 		validate(rootNamespace, schemaLocation, false, false, inputFile, expected );
 	}
