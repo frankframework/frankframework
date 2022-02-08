@@ -13,7 +13,7 @@
 		name="jdbc/ibis4test-h2"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.h2.jdbcx.JdbcDataSource"
-		URL="jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE,VERSION;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;TRACE_LEVEL_FILE=0"
+		URL="jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE;TRACE_LEVEL_FILE=0"
 	/>
 
 	<Resource
