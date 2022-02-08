@@ -462,7 +462,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
 
-			return (EmailMessage)f.copy(destinationFolderId);
+			Item destinationItem = f.copy(destinationFolderId);
+
+			return EmailMessage.bind(exchangeService, destinationItem.getId());
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
