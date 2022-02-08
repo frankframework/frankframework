@@ -320,11 +320,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			getLocker().configure();
 		}
 
-		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
 		super.configure();
-		messageKeeper.add("job successfully configured");
+		getMessageKeeper().add("job successfully configured");
 		configured = true;
 	}
 
@@ -347,6 +346,11 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		countThreads--;
 	}
 
+	/** Called before executeJob to prepare resources for executeJob method. */
+	public void beforeExecuteJob(IbisManager ibisManager) {
+		// Override this in subclasses when necessary
+	}
+
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
 	@Override
 	public final void executeJob(IbisManager ibisManager) {
@@ -357,6 +361,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			return;
 		}
 		try {
+			beforeExecuteJob(ibisManager);
 			if (getLocker() != null) {
 				String objectId = null;
 				try {
