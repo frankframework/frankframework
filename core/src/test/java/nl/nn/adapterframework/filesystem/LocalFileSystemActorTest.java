@@ -14,7 +14,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
 

@@ -503,6 +503,32 @@
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.9.1</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>3.1.2</version>
+					<configuration>
+						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
+						<logViolationsToConsole>true</logViolationsToConsole>
+					</configuration>
+					<executions>
+						<execution>
+							<?m2e ignore?>
+							<id>verify-code-style</id>
+							<phase>process-classes</phase>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>com.puppycrawl.tools</groupId>
+							<artifactId>checkstyle</artifactId>
+							<version>9.3</version>
+						</dependency>
+					</dependencies>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
