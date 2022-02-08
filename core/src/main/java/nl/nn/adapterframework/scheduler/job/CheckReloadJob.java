@@ -101,6 +101,8 @@ public class CheckReloadJob extends JobDef {
 					ibisManager.getIbisContext().reload(configToReload);
 				}
 			}
+		} else {
+			getMessageKeeper().add("No database configuration found to reload", MessageKeeperLevel.INFO);
 		}
 
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
