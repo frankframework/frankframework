@@ -85,7 +85,7 @@ public abstract class ValidatorTestBase {
 	}
 
 	protected void validation(String rootElement, String rootNamespace, String schemaLocation, String inputfile, boolean addNamespaceToSchema, String expectedFailureReason) throws Exception {
-		String expected[] = { expectedFailureReason };
+		String[] expected = { expectedFailureReason };
 		if (expectedFailureReason == null) expected = null;
 		validate(rootElement, rootNamespace, schemaLocation, addNamespaceToSchema, false, inputfile, expected);
 	}
