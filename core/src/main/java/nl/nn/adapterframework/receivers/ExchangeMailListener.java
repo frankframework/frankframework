@@ -17,6 +17,7 @@ package nl.nn.adapterframework.receivers;
 
 import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
 import microsoft.exchange.webservices.data.property.complex.Attachment;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.IbisDocRef;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
@@ -30,7 +31,18 @@ import nl.nn.adapterframework.filesystem.MailListener;
 public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
 
 	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
-	
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		String separator = getFileSystem().getSeparator();
+		if(getInputFolder().contains(separator) || getInProcessFolder().contains(separator) || getProcessedFolder().contains(separator)
+			|| getErrorFolder().contains(separator)){
+			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener. " +
+				"Please do not use dynamic mailboxes / folders seperated by ["+separator+"].");
+		}
+	}
+
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
 		return new ExchangeFileSystem();

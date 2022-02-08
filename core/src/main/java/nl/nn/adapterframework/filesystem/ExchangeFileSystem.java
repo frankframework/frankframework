@@ -444,8 +444,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
+			Item destinationItem = f.move(destinationFolderId);
 
-			return (EmailMessage)f.move(destinationFolderId);
+			return destinationItem == null ? null : (EmailMessage) destinationItem;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
@@ -1093,7 +1094,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		return proxyDomain;
 	}
 
-	@IbisDoc({"19", "Separator character used when working with dynamic email addresses, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code<", "|"})
+	@IbisDoc({"19", "Separator character used when working with dynamic email addresses, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code>. Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. ", "|"})
 	public void setSeparator(String separator) {
 		this.separator = separator;
 	}
