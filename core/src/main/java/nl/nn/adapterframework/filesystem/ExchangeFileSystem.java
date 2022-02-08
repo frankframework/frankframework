@@ -946,7 +946,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		FolderId baseFolderId = getBaseFolderId(mailbox, getBaseFolder());
 		List<Folder> folders = findFolders(service, baseFolderId, Integer.MAX_VALUE);
 
-		cache.ensureMailboxIsRegistered(mailbox, baseFolderId, folders);
+		cache.registerMailbox(mailbox, baseFolderId, folders);
 	}
 
 	/**
