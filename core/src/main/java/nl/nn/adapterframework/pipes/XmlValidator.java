@@ -155,17 +155,17 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
-	
+
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
 				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
-	
+
 			if (!isForwardFailureToSuccess() && !isThrowException()){
 				if (findForward("failure")==null) {
 					throw new ConfigurationException("must either set throwException true, forwardFailureToSuccess true or have a forward with name [failure]");
 				}
 			}
-	
+
 			// Different default value for ignoreUnknownNamespaces when using
 			// noNamespaceSchemaLocation.
 			if (validator.getIgnoreUnknownNamespaces() == null) {
@@ -227,7 +227,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	public List<XSModel> getXSModels() {
 		return validator.getXSModels();
 	}
- 
+
 	/**
 	 * Validate the XML string
 	 * 
@@ -255,7 +255,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			} else {
 				messageToValidate = input;
 			}
-		
+
 			PipeForward forward = validate(messageToValidate, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {
@@ -287,7 +287,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected RootValidations createRootValidation(String messageRoot) {
 		return new RootValidations(messageRoot);
 	}
-	
+
 	protected PipeForward determineForward(String resultEvent, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		throwEvent(resultEvent);
 		if (AbstractXmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
@@ -376,18 +376,16 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		return responseRootValidations!=null;
 	}
 
-
-	
 	public String getMessageRoot(boolean responseMode) {
-		return responseMode?getResponseRoot():getMessageRoot();
+		return responseMode ? getResponseRoot() : getMessageRoot();
 	}
-    /**
-     * Not ready yet (namespace not yet correctly parsed)
-     */
-    public QName getRootTag() {
-        return new QName(getSchema()/* TODO*/, getRoot());
-    }
 
+	/**
+	 * Not ready yet (namespace not yet correctly parsed)
+	 */
+	public QName getRootTag() {
+		return new QName(getSchema()/* TODO */, getRoot());
+	}
 
 	@Override
 	public String getSchemasId() {
@@ -522,7 +520,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 		public String getMessageRoot() {
 			return owner.getResponseRoot();
 		}
-		
+
 		@Override
 		public int getMaxThreads() {
 			return 0;
@@ -586,14 +584,14 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 			return owner.consumesSessionVariable(sessionKey);
 		}
 	}
-	
+
 	public boolean isMixedValidator(Object outputValidator) {
 		return outputValidator==null && isConfiguredForMixedValidation();
 	}
 
 	public RootValidations getRootValidations(boolean responseMode) {
 		return responseMode ? responseRootValidations : requestRootValidations;
-	} 
+	}
 
 	private void checkInputRootValidations(Set<XSD> xsds) throws ConfigurationException {
 		if (getRequestRootValidations() != null) {
@@ -684,7 +682,7 @@ public class XmlValidator extends FixedForwardPipe implements SchemasProvider, H
 	protected void addRootValidation(RootValidation path) {
 		addRequestRootValidation(path);
 	}
-	
+
 	protected void addRequestRootValidation(RootValidation path) {
 		if (requestRootValidations == null) {
 			requestRootValidations = new RootValidations(path);

@@ -28,7 +28,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.jwt.JwtValidator;
 import nl.nn.adapterframework.receivers.Receiver;
@@ -313,27 +312,27 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** issuer to validate jwt */
-	public void setRequiredIssuer(String issuer) { 
+	public void setRequiredIssuer(String issuer) {
 		this.requiredIssuer = issuer;
 	}
 
 	/** keysource url to validate jwt */
-	public void setJwksURL(String string) { 
+	public void setJwksURL(String string) {
 		this.jwksUrl = string;
 	}
 
 	/** comma separated list of required claims */
-	public void setRequiredClaims(String string) { 
+	public void setRequiredClaims(String string) {
 		this.requiredClaims = string;
 	}
 
 	/** comma separated key value pairs to match with jwt payload. e.g. "sub=UnitTest, aud=test" */
-	public void setExactMatchClaims(String string) { 
+	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
 	}
 
 	/** claim name which specifies the role */
-	public void setRoleClaim(String roleClaim) { 
+	public void setRoleClaim(String roleClaim) {
 		this.roleClaim = roleClaim;
 	}
 

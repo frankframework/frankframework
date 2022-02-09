@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,11 +55,11 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 
 		@Override
 		public void configure() throws ConfigurationException {
-			//In case a query is specified, return the Adapter, else return true to suppress the SQL Injection warning
+			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
 			if(query!=null) {
-				super.configure(getAdapter());
-			} else {
 				super.configure(true);
+			} else {
+				super.configure(getAdapter());
 			}
 		}
 

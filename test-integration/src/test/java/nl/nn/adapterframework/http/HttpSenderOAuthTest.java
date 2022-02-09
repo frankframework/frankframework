@@ -2,6 +2,8 @@ package nl.nn.adapterframework.http;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URLEncoder;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -15,11 +17,12 @@ public class HttpSenderOAuthTest {
 	protected String PROPERTY_FILE = "HttpSenderOAuth.properties";
 
 	
-	protected String baseUrl       = PropertyUtil.getProperty(PROPERTY_FILE, "baseUrl");
+	protected String tokenBaseUrl  = PropertyUtil.getProperty(PROPERTY_FILE, "tokenBaseUrl");
+	protected String dataBaseUrl   = PropertyUtil.getProperty(PROPERTY_FILE, "dataBaseUrl");
 	protected String apiContext    = PropertyUtil.getProperty(PROPERTY_FILE, "apiContext");
 	protected String oauthService  = PropertyUtil.getProperty(PROPERTY_FILE, "oauthService");
-	protected String url           = baseUrl + apiContext;
-	protected String tokenEndpoint = baseUrl + oauthService;
+	protected String url           = dataBaseUrl + apiContext;
+	protected String tokenEndpoint = tokenBaseUrl + oauthService;
 	protected String client_id     = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
 	protected String client_secret = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
 	protected String username      = PropertyUtil.getProperty(PROPERTY_FILE, "username");
@@ -40,8 +43,8 @@ public class HttpSenderOAuthTest {
 		
 		String tokenUrl = tokenEndpoint 
 				+"?grant_type=password"
-				+"&username="+username
-				+"&password="+ password
+				+"&username="+ URLEncoder.encode(username)
+				+"&password="+ URLEncoder.encode(password)
 				+"&client_id="+ client_id
 				+"&client_secret="+ client_secret;
 		
@@ -100,6 +103,7 @@ public class HttpSenderOAuthTest {
 		sender.setAllowSelfSignedCertificates(true);
 		sender.setResultStatusCodeSessionKey("StatusCode");
 		sender.setTimeout(1000);
+		sender.setMaxExecuteRetries(0);
 		
 		sender.configure();
 		sender.open();

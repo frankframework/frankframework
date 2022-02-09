@@ -39,7 +39,7 @@ public class DateUtils {
 	public static final String FORMAT_MILLISECONDS	   ="######.###";
 	public static final String FORMAT_GENERICDATETIME  ="yyyy-MM-dd HH:mm:ss";
 	public static final String FORMAT_DATE             ="dd-MM-yy";
-	public static final String FORMAT_TIME_HMS         ="HH:mm:ss";	
+	public static final String FORMAT_TIME_HMS         ="HH:mm:ss";
 
 	public static String format(Date date, String dateFormat) {
 		SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
@@ -113,7 +113,7 @@ public class DateUtils {
 		Date d = formatterFrom.parse(value);
 		String tempStr = formatterFrom.format(d);
 
-		if (tempStr.equals(value)) {	
+		if (tempStr.equals(value)) {
 			result = formatterTo.format(d);
 		} else {
 			log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr+"]");
@@ -139,7 +139,7 @@ public class DateUtils {
 	public static String changeDate(String date, int years, int months, int days) throws ParseException {
 		return changeDate(date, years, months, days, "yyyy-MM-dd");
 	}
-	
+
 	/**
 	 * 
 	 * Add a number of years, months, days to a date specified in a certain format, and return it in the same format.

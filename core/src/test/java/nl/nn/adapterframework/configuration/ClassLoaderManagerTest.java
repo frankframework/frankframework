@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,20 +43,20 @@ import nl.nn.adapterframework.util.Misc;
 @RunWith(Parameterized.class)
 public class ClassLoaderManagerTest extends Mockito {
 
-	private IbisContext ibisContext = spy(new IbisContext());
+	private static IbisContext ibisContext = spy(new IbisContext());
 	private ClassLoaderManager manager;
 
-	private final String BASE_DIR = "/ClassLoader";
-	private final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
-	private final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
+	private static final String BASE_DIR = "/ClassLoader";
+	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
+	private static final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
 
-	private final static String CONFIG_0_NAME = "config0";
-	private final static String CONFIG_1_NAME = "config1";
-	private final static String CONFIG_2_NAME = "config2";
-	private final static String CONFIG_3_NAME = "config3";
-	private final static String CONFIG_4_NAME = "config4";
-	private final static String CONFIG_5_NAME = "config5";
-	private final static String CONFIG_6_NAME = "config6";
+	private static final String CONFIG_0_NAME = "config0";
+	private static final String CONFIG_1_NAME = "config1";
+	private static final String CONFIG_2_NAME = "config2";
+	private static final String CONFIG_3_NAME = "config3";
+	private static final String CONFIG_4_NAME = "config4";
+	private static final String CONFIG_5_NAME = "config5";
+	private static final String CONFIG_6_NAME = "config6";
 
 	// declarations for parameterized tests
 	private String type = null;
@@ -81,6 +82,12 @@ public class ClassLoaderManagerTest extends Mockito {
 				{ "nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME },
 				{ "nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla"}
 		});
+	}
+
+	@BeforeClass
+	public static void before() throws Exception {
+		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
+		mockDatabase();
 	}
 
 	public ClassLoaderManagerTest(String type, String configurationName) throws Exception {
@@ -134,13 +141,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		}
 		setLocalProperty("configurations.names", configurationsNames);
 
-		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
-		mockDatabase();
-
 		manager = new ClassLoaderManager(ibisContext);
 	}
 
-	private void mockDatabase() throws Exception {
+	private static void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
@@ -156,13 +160,13 @@ public class ClassLoaderManagerTest extends Mockito {
 		ResultSet rs = mock(ResultSet.class);
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
-		URL file = this.getClass().getResource(JAR_FILE);
+		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
 		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
 	}
 
-	private void createAdapter4ServiceClassLoader(String config4Adaptername) throws ConfigurationException {
+	private static void createAdapter4ServiceClassLoader(String config4Adaptername) throws ConfigurationException {
 		// Mock a configuration with an adapter in it
 		IbisManager ibisManager = spy(new DefaultIbisManager());
 		ibisManager.setIbisContext(ibisContext);

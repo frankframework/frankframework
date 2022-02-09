@@ -15,7 +15,6 @@ import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.LocalFileSystemSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 

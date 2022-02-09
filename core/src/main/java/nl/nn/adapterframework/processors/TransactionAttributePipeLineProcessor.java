@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.processors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -48,7 +47,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 
 					boolean mustRollback=false;
-				
+
 					if (pipeLineResult==null) {
 						mustRollback=true;
 						log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
@@ -74,7 +73,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 					if (tg.cancel()) {
 						if (tCaught==null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
-						} 
+						}
 						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 					}
 				}
@@ -99,7 +98,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				+ pipeLine.getTransactionAttribute() + "]", e);
 		}
 	}
-	
+
 	public void setTxManager(PlatformTransactionManager txManager) {
 		this.txManager = txManager;
 	}
