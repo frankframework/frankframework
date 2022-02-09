@@ -544,9 +544,10 @@
 					<executions>
 						<execution>
 							<?m2e ignore?>
-							<id>flatten</id>
+							<id>clean-and-flatten</id>
 							<phase>process-resources</phase>
 							<goals>
+								<goal>clean</goal>
 								<goal>flatten</goal>
 							</goals>
 						</execution>
