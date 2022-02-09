@@ -670,7 +670,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** Global forwards */
-	public void setForwards(PipeForwards forwards){
+	public void setGlobalForwards(PipeForwards forwards){
 		for(PipeForward forward:forwards.getForwards()) {
 			registerForward(forward);
 		}
