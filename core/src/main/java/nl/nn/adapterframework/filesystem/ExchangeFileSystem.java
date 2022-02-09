@@ -446,7 +446,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
 			Item destinationItem = f.move(destinationFolderId);
 
-			return destinationItem == null ? null : (EmailMessage) destinationItem;
+			return (EmailMessage) destinationItem;
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);
@@ -462,10 +462,15 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 
 		try {
 			FolderId destinationFolderId = getFolderIdByFolderName(exchangeService, resolver, createFolder, false);
-
 			Item destinationItem = f.copy(destinationFolderId);
 
-			return EmailMessage.bind(exchangeService, destinationItem.getId());
+			if(destinationItem instanceof EmailMessage){
+				if(log.isDebugEnabled()) log.debug("Attempting to cast to EmailMessage");
+				return (EmailMessage) destinationItem;
+			} else {
+				if(log.isDebugEnabled()) log.debug("Unable to cast to EmailMessage, will use bind method!");
+				return EmailMessage.bind(exchangeService, destinationItem.getId());
+			}
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);

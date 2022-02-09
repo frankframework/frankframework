@@ -67,6 +67,7 @@ public class ExchangeFileSystemRuntimeParametersTest  extends MailFileSystemTest
 			EmailMessage destFile1 = fileSystem.copyFile(sourceFile, folderNameB, true);
 			assertTrue("source file should still exist after copy", fileSystem.exists(sourceFile));
 
+			assertFalse("Destination file cannot have the same id as original file", sourceFile.getId().getUniqueId().equalsIgnoreCase(destFile1.getId().getUniqueId()));
 			//displayFile(destFile1);
 			assertNotNull("destination file should be not null after copy", destFile1);
 			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
