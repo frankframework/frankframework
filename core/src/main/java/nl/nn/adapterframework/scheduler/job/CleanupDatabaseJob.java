@@ -109,6 +109,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setDatasourceName(datasourceName);
 				qs.setName("cleanupDatabase-IBISLOCK");
 				qs.setQueryType("other");
+				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
