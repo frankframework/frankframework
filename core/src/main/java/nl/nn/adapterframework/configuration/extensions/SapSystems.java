@@ -18,7 +18,7 @@ package nl.nn.adapterframework.configuration.extensions;
 public class SapSystems {
 
 	public void registerSapSystem(ISapSystem sapSystem) {
-		sapSystem.registerItem(this);
+		//SapSystems selfRegister, this method only exists for the FrankDoc;
 	}
 
 }

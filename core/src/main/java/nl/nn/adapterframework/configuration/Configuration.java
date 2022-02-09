@@ -537,13 +537,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	public void setJmsRealms(JmsRealms realm) {
-		// JmsRealm-objects self register in JmsRealms-class;
+		// JmsRealm-objects self register in JmsRealmFactory;
 	}
 
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm);
+		// JmsRealm-objects self register in JmsRealmFactory;
 	}
 
 	@Override
