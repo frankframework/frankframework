@@ -264,7 +264,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
-		
+
 		for(IPipe p:pipes) {
 			if (p.consumesSessionVariable("originalMessage")) {
 				inputMessageConsumedMultipleTimes = true;
@@ -480,7 +480,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		return nextPipe;
 	}
-	
+
 	/**
 	 * Register the adapterName of this Pipelineprocessor.
 	 * @param adapter

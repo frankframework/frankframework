@@ -69,7 +69,7 @@ public interface IJob extends IConfigurable {
 	public MessageKeeper getMessageKeeper();
 
 	/**
-	 * Optional attribute to avoid parallel execution of the Job, by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained!
+	 * Optional element to avoid parallel execution of the Job, by multiple threads or servers. The Job is NOT executed when the lock cannot be obtained!
 	 * In case another thread, potentially on another server, holds the lock and does not release it in a timely manner, it will not trigger the job.
 	 */
 	public void setLocker(Locker locker);

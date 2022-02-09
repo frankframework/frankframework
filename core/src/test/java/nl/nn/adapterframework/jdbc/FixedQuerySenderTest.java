@@ -14,7 +14,6 @@ import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class FixedQuerySenderTest extends SenderTestBase<FixedQuerySender> {

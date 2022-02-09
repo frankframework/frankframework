@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -76,22 +76,23 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Override
 	public void tearDown() throws Exception {
 		synchronized(pdfOutputLocation) {
-			Files.walk(pdfOutputLocation)
-			.forEach(t -> {
-				if(Files.isRegularFile(t)) {
-					try {
-						Files.delete(t);
-					} catch (IOException e) {
-						e.printStackTrace();
-						Assert.fail("unable to delete: "+ e.getMessage());
-					}
-				}
-			});
+			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
 
-			Files.deleteIfExists(pdfOutputLocation);
+			Files.deleteIfExists(pdfOutputLocation); //Remove root folder
 		}
 
 		super.tearDown();
+	}
+
+	private static void removeFile(Path file) {
+		if(Files.isRegularFile(file)) {
+			try {
+				Files.delete(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				Assert.fail("unable to delete: "+ e.getMessage());
+			}
+		}
 	}
 
 	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {

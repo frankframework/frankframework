@@ -33,12 +33,6 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
@@ -256,6 +250,12 @@
 			<version>18.11</version>
 		</dependency>
 
+		<!-- test scoped dependencies -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
