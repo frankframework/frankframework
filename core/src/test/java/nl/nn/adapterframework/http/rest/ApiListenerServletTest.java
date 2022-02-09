@@ -495,6 +495,22 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void formdataRequestWithFile() throws Exception {
+		String uri="/testFormdataRequestWithBinairyFile";
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON).build();
+
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		builder.addBinaryBody("string1", "<request/>".getBytes(), ContentType.create("text/xml"), "file.xml");//explicitly sent as UTF-8
+
+		Response result = service(createRequest(uri, Methods.POST, builder.build()));
+
+		assertEquals(200, result.getStatus());
+		assertEquals("<request/>", result.getContentAsString());
+		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void getRequestWithQueryParameters() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, Methods.GET).build();

@@ -15,10 +15,15 @@
 */
 package nl.nn.adapterframework.http.mime;
 
+import java.util.Locale;
+import java.util.Map;
+
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.ParameterParser;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -58,12 +63,57 @@ public abstract class MultipartUtils {
 		return null;
 	}
 
+	public static String getFileName(BodyPart part) {
+		String[] cd = part.getHeader("Content-Disposition");
+		if(cd != null) {
+			String cdFields = cd[0];
+			if (cdl.startsWith(FORM_DATA) || cdl.startsWith(ATTACHMENT)) {
+				
+			}
+		}
+	}
+
+    private String getFileName(String pContentDisposition) {
+        String fileName = null;
+        if (pContentDisposition != null) {
+            String cdl = pContentDisposition.toLowerCase(Locale.ENGLISH);
+            if (cdl.startsWith(FORM_DATA) || cdl.startsWith(ATTACHMENT)) {
+                ParameterParser parser = new ParameterParser();
+                parser.setLowerCaseNames(true);
+                // Parameter parser can handle null input
+                Map<String, String> params = parser.parse(pContentDisposition, ';');
+                if (params.containsKey("filename")) {
+                    fileName = params.get("filename");
+                    if (fileName != null) {
+                        fileName = fileName.trim();
+                    } else {
+                        // Even if there is no value, the parameter is present,
+                        // so we return an empty file name rather than no file
+                        // name.
+                        fileName = "";
+                    }
+                }
+            }
+        }
+        return fileName;
+    }
+
 	public static boolean isBinary(BodyPart part) {
 		try {
-			String[] cd = part.getHeader("Content-Transfer-Encoding");
+			//Check if a filename is present (indicating it's a file and not a field)
+			String[] cd = part.getHeader("Content-Disposition");
 			if(cd != null) {
-				String cdFields = cd[0]; //Content-Transfer-Encoding - binary || 8bit
-				if(cdFields != null && cdFields.equalsIgnoreCase("binary")) {
+				String cdFields = cd[0];
+				if(StringUtils.isNotEmpty(parseParameterField(cdFields, "filename"))) {
+					return true;
+				}
+			}
+
+			//Check if the transfer encoding has been set
+			String[] cte = part.getHeader("Content-Transfer-Encoding");
+			if(cte != null) {
+				String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
+				if(cteFields != null && cteFields.equalsIgnoreCase("binary")) {
 					return true;
 				}
 			}
