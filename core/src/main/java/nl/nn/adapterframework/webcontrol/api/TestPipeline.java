@@ -105,7 +105,7 @@ public class TestPipeline extends Base {
 			throw new ApiException("Adapter ["+adapterName+"] not found");
 		}
 		// resolve session keys
-		String sessionKeys = resolveStringFromMap(inputDataMap, "sessionKeys", "");
+		String sessionKeys = resolveTypeFromMap(inputDataMap, "sessionKeys", String.class, "");
 		Map<String, String> sessionKeyMap = null;
 		if(StringUtils.isNotEmpty(sessionKeys)) {
 			try {

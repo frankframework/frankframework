@@ -19,13 +19,13 @@
                                 </select>
                             </div>
                         </div>
-						<div class="row form-group test-pipeline-session-keys" ng-repeat="order in sessionKeyIndices">
+						<div class="row form-group test-pipeline-session-keys" ng-repeat="order in sessionKeyIndices" ng-init="form.sessionKeys[$index] = {};">
 							<label class="col-sm-3 control-label label-height-30"><span ng-if="$index==0">Session Key</span> </label>
 							<div class="col-sm-4">
-								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKey[order], form.sessionKeyValue[order], order)" name="sessionKey" placeholder="Name" type="text" ng-model="form.sessionKey[order]"/>
+								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKeys[$index], order)" name="sessionKey" placeholder="Name" type="text" ng-model="form.sessionKeys[$index].name"/>
 							</div>
 							<div class="col-sm-5">
-								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKey[order], form.sessionKeyValue[order], order)" name="sessionKeyValue" placeholder="Value" type="text" ng-model="form.sessionKeyValue[order]"/>
+								<input class="form-control" ng-blur="updateSessionKeys(form.sessionKeys[$index], order)" name="sessionKeyValue" placeholder="Value" type="text" ng-model="form.sessionKeys[$index].value"/>
 							</div>
 						</div>
 						<div class="row form-group">

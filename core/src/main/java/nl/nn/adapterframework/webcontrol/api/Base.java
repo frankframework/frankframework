@@ -132,7 +132,14 @@ public abstract class Base implements ApplicationContextAware {
 	}
 
 	protected String resolveStringFromMap(MultipartBody inputDataMap, String key, String defaultValue) throws ApiException {
-		return resolveTypeFromMap(inputDataMap, key, String.class, defaultValue);
+		String result = resolveTypeFromMap(inputDataMap, key, String.class, null);
+		if(StringUtils.isEmpty(result)) {
+			if(defaultValue != null) {
+				return defaultValue;
+			}
+			throw new ApiException("Key ["+key+"] may not be empty");
+		}
+		return result;
 	}
 
 	protected String resolveStringWithEncoding(MultipartBody inputDataMap, String key, String defaultEncoding) {

@@ -2670,25 +2670,24 @@ angular.module('iaf.beheerconsole')
 	$scope.sessionKeyIndices = [$scope.sessionKeyIndex];
 	var sessionKeys = [];
 
-	$scope.updateSessionKeys = function(sessionKey, sessionKeyValue, index) {
-
+	$scope.updateSessionKeys = function(sessionKey, index) {
 		let sessionKeyIndex = sessionKeys.findIndex(f => f.index===index);	// find by index
 		if(sessionKeyIndex >= 0) {	
-			if(sessionKey=="" && sessionKeyValue=="") { // remove row if row is empty
+			if(sessionKey.name=="" && sessionKey.value=="") { // remove row if row is empty
 				sessionKeys.splice(sessionKeyIndex, 1);
 				$scope.sessionKeyIndices.splice(sessionKeyIndex, 1);
 			} else { // update existing key value pair
-				sessionKeys[sessionKeyIndex].key = sessionKey;
-				sessionKeys[sessionKeyIndex].value = sessionKeyValue;
+				sessionKeys[sessionKeyIndex].key = sessionKey.name;
+				sessionKeys[sessionKeyIndex].value = sessionKey.value;
 			}
 			$scope.state = [];
-		} else if(sessionKey && sessionKey!="" && sessionKeyValue && sessionKeyValue!="") {
-			let keyIndex = sessionKeys.findIndex(f => f.key===sessionKey);	// find by key
+		} else if(sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != "") {
+			let keyIndex = sessionKeys.findIndex(f => f.key===sessionKey.name);	// find by key
 			// add new key
 			if(keyIndex < 0) {
 				$scope.sessionKeyIndex+=1;
 				$scope.sessionKeyIndices.push($scope.sessionKeyIndex);
-				sessionKeys.push({index:index, key:sessionKey, value:sessionKeyValue});
+				sessionKeys.push({index:index, key:sessionKey.name, value:sessionKey.value});
 				$scope.state = [];
 			} else { // key with the same name already exists show warning
 				if($scope.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
