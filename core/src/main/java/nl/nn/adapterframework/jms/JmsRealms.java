@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jms;
 public class JmsRealms {
 
 	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm);
+		// dummy method to tell FrankDoc about structure
+		// actual registration is done in realm factory
 	}
 }

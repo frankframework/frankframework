@@ -421,7 +421,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	public void setScheduleManager(ScheduleManager scheduleManager) {
 		this.scheduleManager = scheduleManager;
 	}
-	
+
 	/**
 	 * Register an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the

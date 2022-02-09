@@ -11,7 +11,7 @@
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems"/>
-	<rule pattern="*/sapSystem" registerMethod="registerSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.ISapSystem"/>
+	<rule pattern="*/sapSystem" registerMethod="registerSapSystems" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" beanClass="nl.nn.adapterframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="nl.nn.adapterframework.core.PipeLine"/>
