@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -122,7 +122,10 @@ public class SenderSeries extends SenderWrapperBase {
 		registerSender(sender);
 	}
 	
-	/** one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. */
+	/** 
+	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
+	 * @ff.mandatory
+	 */
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added

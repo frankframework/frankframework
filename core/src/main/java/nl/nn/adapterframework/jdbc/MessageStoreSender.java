@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.TextStringBuilder;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -31,7 +32,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
@@ -80,7 +80,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 	public static final String PARAM_MESSAGEID = "messageId";
 
 	private ParameterList paramList = null;
-	private String sessionKeys = null;
+	private @Getter String sessionKeys = null;
 
 	{ 
 		setOnlyStoreWhenMessageIdUnique(true);
@@ -149,16 +149,18 @@ public class MessageStoreSender extends JdbcTransactionalStorage<String> impleme
 		}
 	}
 
-	@IbisDoc({"1", "Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessagestoreListener must have the same value for this attribute", ""})
+	/**
+	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the same value for this attribute.
+	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
 	}
 
-	public String getSessionKeys() {
-		return sessionKeys;
-	}
-
-	@IbisDoc({"2", "If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.", "true"})
+	/**
+	 * If set to <code>true</code>, the message is stored only if the MessageId is not present in the store yet.
+	 * 
+	 * @ff.default <code>true</code>
+	 */
 	@Override
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		super.setOnlyStoreWhenMessageIdUnique(onlyStoreWhenMessageIdUnique);

@@ -12,7 +12,7 @@
 			<pipe name="insertDoc"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
+					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
@@ -61,7 +61,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="id" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="id" useCdataSection="false">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
@@ -71,7 +71,7 @@
 			</pipe>
 
 			<pipe name="text2Xml2" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -119,7 +119,7 @@
 			<pipe name="getDocAndWriteToFile"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true" streamResultToServlet="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />
@@ -215,7 +215,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename2" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename2" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -280,7 +280,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
-				xmlTag="filename3" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename3" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private @Setter boolean newlineAfterXmlDeclaration=false;
 	private @Setter boolean includeComments=true;
 	private @Setter boolean textMode=false;
+	private @Setter boolean closeWriterOnEndDocument=false;
 
 	private boolean outputEscaping=true;
 	private int elementLevel=0;
@@ -66,15 +67,24 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	public XmlWriter() {
-		writer=new StringWriter();
+		this(new StringWriter());
 	}
 
 	public XmlWriter(Writer writer) {
+		this(writer, false);
+	}
+
+	public XmlWriter(Writer writer, boolean closeWriterOnEndDocument) {
 		this.writer=writer;
+		this.closeWriterOnEndDocument = closeWriterOnEndDocument;
 	}
 
 	public XmlWriter(OutputStream stream) {
-		this.writer=new XmlStreamWriter(stream);
+		this(stream, false);
+	}
+
+	public XmlWriter(OutputStream stream, boolean closeStreamOnEndDocument) {
+		this(new XmlStreamWriter(stream), closeStreamOnEndDocument);
 	}
 
 	@Override
@@ -95,7 +105,11 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	@Override
 	public void endDocument() throws SAXException {
 		try {
-			writer.flush();
+			if (closeWriterOnEndDocument) {
+				writer.close();
+			} else {
+				writer.flush();
+			}
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}

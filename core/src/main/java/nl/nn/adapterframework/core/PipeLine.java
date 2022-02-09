@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -95,7 +94,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
-	private @Getter String commitOnState = "success"; // exit state on which receiver will commit XA transactions
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
@@ -128,6 +126,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
+
+	public enum ExitState {
+		SUCCESS,
+		ERROR,
+		REJECTED;
+	}
 
 	public IPipe getPipe(String pipeName) {
 		return pipesByName.get(pipeName);
@@ -180,7 +184,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 						pf.setPath(nextPipeName);
 						pipe.registerForward(pf);
 					} else {
-						PipeLineExit plexit = findExitByState(PipeLineExit.EXIT_STATE_SUCCESS);
+						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
 						if (plexit != null) {
 							PipeForward pf = new PipeForward();
 							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
@@ -260,7 +264,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
-		
+
 		for(IPipe p:pipes) {
 			if (p.consumesSessionVariable("originalMessage")) {
 				inputMessageConsumedMultipleTimes = true;
@@ -333,10 +337,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return configurationSucceeded;
 	}
 
-	public PipeLineExit findExitByState(String state) {
+	public PipeLineExit findExitByState(ExitState state) {
 		for (String exitPath : pipeLineExits.keySet()) {
 			PipeLineExit pe = pipeLineExits.get(exitPath);
-			if (pe.getState().equals(state)) {
+			if (pe.getState()==state) {
 				return pe;
 			}
 		}
@@ -476,7 +480,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		return nextPipe;
 	}
-	
+
 	/**
 	 * Register the adapterName of this Pipelineprocessor.
 	 * @param adapter
@@ -616,27 +620,30 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 
-	@IbisDoc({"10", "Request validator, or combined validator for request and response"})
+	/** Request validator, or combined validator for request and response */
 	public void setInputValidator(IValidator inputValidator) {
 		this.inputValidator = inputValidator;
 	}
 
-	@IbisDoc({"20", "Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator"})
+	/** Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator */
 	public void setOutputValidator(IValidator outputValidator) {
 		this.outputValidator = outputValidator;
 	}
 
-	@IbisDoc({"30", "Optional pipe to extract the request message from its envelope"})
+	/** Optional pipe to extract the request message from its envelope */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		this.inputWrapper = inputWrapper;
 	}
 
-	@IbisDoc({"40", "Optional pipe to wrap the response message in an envelope"})
+	/** Optional pipe to wrap the response message in an envelope */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		this.outputWrapper = outputWrapper;
 	}
 
-	@IbisDoc({"50", "PipeLine exits"})
+	/** 
+	 * PipeLine exits.
+	 * @ff.mandatory
+	 */
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
@@ -652,22 +659,24 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		pipeLineExits.put(exit.getPath(), exit);
 	}
 
-	@IbisDoc({"60", "Global forwards"})
+	/** Global forwards */
 	public void registerForward(PipeForward forward){
 		globalForwards.put(forward.getName(), forward);
 		log.debug("registered global PipeForward "+forward.toString());
 	}
 
-	@IbisDoc({"70", "Optional Locker, to avoid parallel execution of the PipeLine by multiple threads on multiple servers. " + 
-			"The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, " +
-			"e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. " +
-			"If only the number of threads executing this PipeLine needs to be limited, the attribute maxThreads can be set instead, avoiding the database overhead."})
+	/** 
+	 * Optional Locker, to avoid parallel execution of the PipeLine by multiple threads on multiple servers. 
+	 * The Pipeline is NOT executed (and is considered to have ended successfully) when the lock cannot be obtained, 
+	 * e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner. 
+	 * If only the number of threads executing this PipeLine needs to be limited, the attribute maxThreads can be set instead, avoiding the database overhead.
+	 */
 	public void setLocker(Locker locker) {
 		this.locker = locker;
 	}
 
+	/** Cache of results */
 	@Override
-	@IbisDoc({"80", "Cache of results"})
 	public void setCache(ICache<String,String> cache) {
 		this.cache=cache;
 	}
@@ -680,8 +689,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
 	 * @see AbstractPipe
+	 * @ff.mandatory
 	 **/
-	@IbisDoc("90")
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
@@ -726,14 +735,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	public void setMaxThreads(int newMaxThreads) {
 		maxThreads = newMaxThreads;
-	}
-
-	/** 
-	 * If the exit state of the pipeline equals this value, the transaction is committed, otherwise it is rolled back.
-	 * @ff.default success
-	 */
-	public void setCommitOnState(String string) {
-		commitOnState = string;
 	}
 
 	/** 

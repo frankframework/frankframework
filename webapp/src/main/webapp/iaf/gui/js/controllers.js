@@ -282,8 +282,9 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 					}
 */
-					if(!adapter.started)
+					if(adapter.state != "started") {
 						adapter.status = "stopped";
+					}
 
 					//Add flow diagrams
 					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
@@ -1450,7 +1451,7 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages + response.messageCount;
+				response.recordsFiltered = response.skipMessages;
 				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
@@ -1604,25 +1605,46 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', 'Cookies', '$compile', function($scope, Api, Cookies, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
 
 	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 
 	var columns = [
-		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "position", bSortable: false },
-		{ "data": "id", bSortable: false },
-		{ "data": "insertDate", className: "date" },
-		{ "data": "type", bSortable: false },
-		{ "data": "host", bSortable: false },
-		{ "data": "originalId", bSortable: false },
-		{ "data": "correlationId", bSortable: false },
-		{ "data": "comment", bSortable: false },
-		{ "data": "expiryDate", className: "date", bSortable: false },
-		{ "data": "label", bSortable: false },
+		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
+		{ "name": "pos", "data": "position", bSortable: false },
+		{ "name": "id", "data": "id", bSortable: false },
+		{ "name": "insertDate", "data": "insertDate", className: "date" },
+		{ "name": "host", "data": "host", bSortable: false },
+		{ "name": "originalId", "data": "originalId", bSortable: false },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false },
+		{ "name": "comment", "data": "comment", bSortable: false },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
+		{ "name": "label", "data": "label", bSortable: false },
 	];
+
+	var filterCookie = Cookies.get("PipeMessageLogFilter");
+	if(filterCookie) {
+		for(i in columns) {
+			var column = columns[i];
+			if(column.name && filterCookie[column.name] === false) {
+				column.visible = false;
+			}
+		}
+		$scope.displayColumn = filterCookie;
+	} else {
+		$scope.displayColumn = {
+			id: true,
+			insertDate: true,
+			host: true,
+			originalId: true,
+			correlationId: true,
+			comment: true,
+			expiryDate: true,
+			label: true,
+		}
+	}
 
 	$scope.dtOptions = {
 		stateSave: true,
@@ -1664,11 +1686,23 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages + response.messageCount;
+				response.recordsFiltered = response.messages.length;
 				callback(response);
 			});
 		}
 	};
+
+	$scope.updateFilter = function(column) {
+		Cookies.set("PipeMessageLogFilter", $scope.displayColumn);
+
+		var table = $('#datatable').DataTable();
+		if(table) {
+			var tableColumn = table.column(column+":name");
+			if(tableColumn && tableColumn.length == 1)
+				tableColumn.visible( $scope.displayColumn[column] );
+			table.draw();
+		}
+	}
 
 	$scope.search = {
 		id: "",
@@ -2196,6 +2230,8 @@ angular.module('iaf.beheerconsole')
 			return;
 		}
 
+		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
+			fd.append("property", formData.propertyKey+","+formData.propertyValue);
 		if(formData.message && formData.message != "")
 			fd.append("message", formData.message);
 		if($scope.file)

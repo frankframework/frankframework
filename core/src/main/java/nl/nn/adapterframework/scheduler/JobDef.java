@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2016, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -321,11 +320,10 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			getLocker().configure();
 		}
 
-		MessageKeeper messageKeeper = getMessageKeeper();
 		statsKeeper = new StatisticsKeeper(getName());
 
 		super.configure();
-		messageKeeper.add("job successfully configured");
+		getMessageKeeper().add("job successfully configured");
 		configured = true;
 	}
 
@@ -341,13 +339,16 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			countThreads++;
 			return true;
 		}
-		else {
-			return false;
-		}
+		return false;
 	}
 
 	public synchronized void decrementCountThreads() {
 		countThreads--;
+	}
+
+	/** Called before executeJob to prepare resources for executeJob method. */
+	public void beforeExecuteJob(IbisManager ibisManager) {
+		// Override this in subclasses when necessary
 	}
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
@@ -360,6 +361,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			return;
 		}
 		try {
+			beforeExecuteJob(ibisManager);
 			if (getLocker() != null) {
 				String objectId = null;
 				try {
@@ -436,12 +438,14 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	@Override
-	@IbisDoc({"Name of the job", ""})
+	/** Name of the job" 
+	 * @ff.mandatory
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	@IbisDoc({"(Optional) Description of the job", ""})
+	/** (Optional) Description of the job */
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -466,7 +470,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return locker;
 	}
 
-	@IbisDoc({"the number of threads that may execute concurrently", "1"})
+	/** Number of threads that may execute concurrently
+	 * @ff.default 1
+	 */
 	public void setNumThreads(int newNumThreads) {
 		numThreads = newNumThreads;
 	}
@@ -478,7 +484,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return messageKeeper;
 	}
 
-	@IbisDoc({"number of message displayed in ibisconsole", "10"})
+	/** Number of message displayed in ibisconsole
+	 * @ff.default 10
+	 */
 	public void setMessageKeeperSize(int size) {
 		this.messageKeeperSize = size;
 	}

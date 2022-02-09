@@ -49,15 +49,9 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
 		sender.setAction(FileSystemAction.RENAME);
-		Parameter param1 = new Parameter();
-		param1.setName("filename");
-		param1.setValue(src.getPath());
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		Parameter param2 = new Parameter();
-		param2.setName("destination");
-		param2.setValue(dest.getPath());
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();
@@ -83,15 +77,9 @@ public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSys
 
 		LocalFileSystemSender sender = new LocalFileSystemSender();
 		sender.setAction(FileSystemAction.RENAME);
-		Parameter param1 = new Parameter();
-		param1.setName("filename");
-		param1.setValue(src.getPath());
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("filename", src.getPath()));
 
-		Parameter param2 = new Parameter();
-		param2.setName("destination");
-		param2.setValue(dest.getPath());
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("destination", dest.getPath()));
 		sender.setNumberOfBackups(1);
 		sender.configure();
 		sender.open();

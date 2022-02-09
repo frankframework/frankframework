@@ -58,3 +58,7 @@ org.eclipse.
 .xquery
 .ldif
 .iml
+overview.html
+.editorconfig
+.checkstyle
+checkstyle.xml

@@ -15,8 +15,6 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.io.IOException;
-
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -27,7 +25,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;

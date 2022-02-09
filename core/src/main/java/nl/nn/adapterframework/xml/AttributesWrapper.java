@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,16 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.xml.sax.Attributes;
 
+/**
+ * Base class for transforming SAX Attributes-lists.
+ * 
+ * @author Gerrit van Brakel
+ *
+ */
 public class AttributesWrapper implements Attributes {
 	
 	private Map<String,Integer> indexByQName=new LinkedHashMap<String,Integer>();
@@ -38,16 +45,16 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	public AttributesWrapper(Attributes source, String localNameToSkip) {
-		this(source, localNameToSkip, false);
+		this(source, i->localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i)), false);
 	}
 
 	public AttributesWrapper(Attributes source, boolean sortAttributeOrder) {
 		this(source, null, sortAttributeOrder);
 	}
 
-	private AttributesWrapper(Attributes source, String localNameToSkip, boolean sortAttributeOrder) {
+	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder) {
 		for(int i=0;i<source.getLength();i++) {
-			if (localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i))) {
+			if (filter==null || filter.apply(i)) {
 				Attribute a = new Attribute();
 				a.uri=source.getURI(i);
 				a.localName=source.getLocalName(i);

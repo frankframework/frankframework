@@ -48,6 +48,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -55,39 +56,39 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class MessageTest {
 
-	private boolean TEST_CDATA=true;
-	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
-	private String CDATA_END=TEST_CDATA?"]]>":"";
-	
+	private static final boolean TEST_CDATA=true;
+	private static final String CDATA_START=TEST_CDATA?"<![CDATA[":"";
+	private static final String CDATA_END=TEST_CDATA?"]]>":"";
+
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub><data attr=\"één €\">één €</data></root>";
 	protected String testStringFile="/Message/testString.txt";
-	
+
 	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
-	
+
 	protected void testAsInputStream(Message adapter) throws IOException {
 		InputStream result = adapter.asInputStream();
 		String actual = StreamUtil.streamToString(result, null, "UTF-8");
-		assertEquals(testString, actual);
+		MatchUtils.assertXmlEquals(testString, actual);
 	}
-	
+
 	protected void testAsReader(Message adapter) throws IOException {
 		Reader result = adapter.asReader();
 		String actual = StreamUtil.readerToString(result, null);
-		assertEquals(testString, actual);
+		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
 	protected void testAsInputSource(Message adapter) throws IOException, SAXException {
 		InputSource result = adapter.asInputSource();
 		XmlWriter sink =  new XmlWriter();
 		XmlUtils.parseXml(result, sink);
-		
+
 		String actual = sink.toString();
-		assertEquals(testString, actual);
+		MatchUtils.assertXmlEquals(testString, actual);
 	}
-	
-	protected void testAsString(Message adapter) throws IOException {
-		String actual = adapter.asString();
-		assertEquals(testString, actual);
+
+	protected void testAsString(Message message) throws IOException {
+		String actual = message.asString();
+		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
 	protected void testAsByteArray(Message adapter) throws IOException {
@@ -98,11 +99,11 @@ public class MessageTest {
 			assertEquals("byte arrays differ at position ["+i+"]",expected[i],actual[i]);
 		}
 	}
-	
+
 	protected void testToString(Message adapter, Class<?> clazz) {
 		testToString(adapter,clazz,null);
 	}
-	
+
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
 		System.out.println("toString ["+actual+"] class typename ["+clazz.getSimpleName()+"]");
@@ -113,7 +114,7 @@ public class MessageTest {
 			assertEquals(adapter.getRequestClass().getName(), wrapperClass.getName());
 		}
 	}
-	
+
 	@Test
 	public void testInputStreamAsInputStream() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes("utf-8"));

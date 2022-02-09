@@ -318,8 +318,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	/**
 	 * The functional name of this pipe
+	 * TODO add ff.mandatory tag once validators and wrappers can be excluded.
 	 */
-	@IbisDoc({"1", "name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		this.name=name;

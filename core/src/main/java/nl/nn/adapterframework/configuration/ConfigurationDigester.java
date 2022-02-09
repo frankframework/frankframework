@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
+import nl.nn.adapterframework.xml.NamespacedContentsRemovingFilter;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -260,10 +261,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
 		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
 
-		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
+		if (isConfigurationStubbed(classLoader)) {
 			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
 		}
 		return configuration;
+	}
+
+	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
+	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+		return ConfigurationUtils.isConfigurationStubbed(classLoader);
 	}
 
 	private List<String> getPropsToHide(Properties appConstants) {
@@ -288,7 +294,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}
-			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(validatorHandler);
+			NamespacedContentsRemovingFilter namespacedContentsRemovingFilter = new NamespacedContentsRemovingFilter(validatorHandler);
+			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);

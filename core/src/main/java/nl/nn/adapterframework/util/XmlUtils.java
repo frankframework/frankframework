@@ -1866,13 +1866,14 @@ public class XmlUtils {
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
-		return nodeToString(node, true);
+		return nodeToString(node, false);
 	}
 
-	public static String nodeToString(Node node, boolean omitXmlDeclaration) throws TransformerException {
+	public static String nodeToString(Node node, boolean useIndentation) throws TransformerException {
 		Transformer t = getTransformerFactory().newTransformer();
-		if (omitXmlDeclaration) {
-			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		if (useIndentation) {
+			t.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
@@ -2057,17 +2058,16 @@ public class XmlUtils {
 	}
 
 	public static String toXhtml(String htmlString) {
-		String xhtmlString = null;
 		if (StringUtils.isNotEmpty(htmlString)) {
-			xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
+			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
 			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(xhtmlString);
-				xhtmlString = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}
-		return xhtmlString;
+		return null;
 	}
 
 	public static XPathFactory getXPathFactory() {

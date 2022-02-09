@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.xml.transform.TransformerException;
 

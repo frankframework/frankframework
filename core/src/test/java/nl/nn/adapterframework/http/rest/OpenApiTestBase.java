@@ -30,6 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -233,13 +234,13 @@ public class OpenApiTestBase extends Mockito {
 			ple.setEmpty(isEmpty);
 			switch (exitCode) {
 				case "200":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				case "201":
-					ple.setState("success");
+					ple.setState(ExitState.SUCCESS);
 					break;
 				default:
-					ple.setState("error");
+					ple.setState(ExitState.ERROR);
 					break;
 			}
 			this.exits.add(ple);
@@ -288,7 +289,7 @@ public class OpenApiTestBase extends Mockito {
 				adapter.startRunning();
 			}
 			for (Adapter adapter : adapters) {
-				while (!adapter.getRunState().equals(RunStateEnum.STARTED)) {
+				while (adapter.getRunState()!=RunState.STARTED) {
 					System.out.println("Adapter RunState: " + adapter.getRunStateAsString());
 					try {
 						Thread.sleep(1000);

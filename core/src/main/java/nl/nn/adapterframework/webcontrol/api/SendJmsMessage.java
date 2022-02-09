@@ -34,8 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -73,8 +75,21 @@ public final class SendJmsMessage extends Base {
 		boolean persistent = resolveTypeFromMap(inputDataMap, "persistent", boolean.class, false);
 		boolean synchronous = resolveTypeFromMap(inputDataMap, "synchronous", boolean.class, false);
 		boolean lookupDestination = resolveTypeFromMap(inputDataMap, "lookupDestination", boolean.class, false);
+		String messageProperty = resolveTypeFromMap(inputDataMap, "property", String.class, "");
 
 		JmsSender qms = jmsBuilder(connectionFactory, destinationName, persistent, destinationType, replyTo, synchronous, lookupDestination);
+
+		if(StringUtils.isNotEmpty(messageProperty)) {
+			String[] keypair = messageProperty.split(",");
+			Parameter p = new Parameter(keypair[0], keypair[1]);
+			try {
+				p.configure();
+			} catch (ConfigurationException e) {
+				throw new ApiException("Failed to configure message property ["+p.getName()+"]", e);
+			}
+			qms.addParameter(p);
+		}
+		
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			fileName = filePart.getContentDisposition().getParameter( "filename" );

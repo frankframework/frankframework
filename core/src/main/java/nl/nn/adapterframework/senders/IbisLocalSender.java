@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -250,9 +250,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
-		String exitState = (String)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		
+		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
+		if (exitState!=null && exitState!=ExitState.SUCCESS) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}

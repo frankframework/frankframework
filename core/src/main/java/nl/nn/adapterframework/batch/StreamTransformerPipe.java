@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
@@ -35,7 +36,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
@@ -55,9 +55,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey="originalBlock";
 
-	private boolean storeOriginalBlock=false;
-	private boolean closeInputstreamOnExit=true;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+	private @Getter boolean storeOriginalBlock=false;
+	private @Getter boolean closeInputstreamOnExit=true;
+	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -65,7 +65,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map<String,IRecordHandler> registeredRecordHandlers= new HashMap<>();
 	private Map<String,IResultHandler> registeredResultHandlers= new LinkedHashMap<>();
 	
-	private IReaderFactory readerFactory=new InputStreamReaderFactory();
+	private @Getter IReaderFactory readerFactory=new InputStreamReaderFactory();
 
 	protected String getStreamId(Message input, PipeLineSession session) {
 		return session.getMessageId();
@@ -188,9 +188,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerManager(manager);
 	}
-	@IbisDoc({"10", "Manager determines which handlers are to be used for the current line. If no manager is specified, a default manager and flow are created. "
-					+"The default manager always uses the default flow. The default flow always uses the first registered recordHandler (if available) " 
-					+"and the first registered resultHandler (if available)."})
+	/**
+	 * Manager determines which handlers are to be used for the current line. If no manager is specified, a default manager and flow are created.
+	 * The default manager always uses the default flow. The default flow always uses the first registered recordHandler (if available)
+	 * and the first registered resultHandler (if available).
+	 * @ff.mandatory
+	 */
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
@@ -228,7 +231,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerRecordHandler(handler);
 	}
-	@IbisDoc({"20", "Handler for transforming records of a specific type"})
+	/** Handler for transforming records of a specific type */
 	public void registerRecordHandler(IRecordHandler handler) throws Exception {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
@@ -247,7 +250,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerResultHandler(handler);
 	}
-	@IbisDoc({"30", "Handler for processing transformed records"})
+	/** Handler for processing transformed records */
 	public void registerResultHandler(IResultHandler handler) throws Exception {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
@@ -530,35 +533,32 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return FileUtils.getNamesFromList(results, ';');
 	}
 	
-	@IbisDoc({"1", "when set <code>true</code> the original block is stored under the session key originalblock", "false"})
+	/** 
+	 * If set <code>true</code> the original block is stored under the session key <code>originalBlock</code>.
+	 * @ff.default false
+	 */
 	public void setStoreOriginalBlock(boolean b) {
 		storeOriginalBlock = b;
 	}
-	public boolean isStoreOriginalBlock() {
-		return storeOriginalBlock;
-	}
 
-	@IbisDoc({"2", "when set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/** 
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used.
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	public boolean isCloseInputstreamOnExit() {
-		return closeInputstreamOnExit;
-	}
 
-	@IbisDoc({"3", "characterset used for reading file or inputstream", "utf-8"})
+	/** 
+	 * Characterset used for reading file or inputstream"
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
-	}
-	public String getCharset() {
-		return charset;
 	}
 
 	/** Factory for the <code>reader</code>. The default implementation {@link InputStreamReaderFactory} converts using the specified character set. */
 	public void setReaderFactory(IReaderFactory factory) {
 		readerFactory = factory;
-	}
-	public IReaderFactory getReaderFactory() {
-		return readerFactory;
 	}
 }

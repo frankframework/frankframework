@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.EnumUtils;
 
@@ -79,17 +78,19 @@ public class IbisActionJob extends JobDef {
 		jobAction = action;
 	}
 
-	@IbisDoc({"Configuration on which job operates", ""})
+	/** Configuration on which job operates */
 	public void setConfigurationName(String configurationName) {
 		this.configurationName = configurationName;
 	}
 
-	@IbisDoc({"Adapter on which job operates", ""})
+	/** Adapter on which job operates
+	 * @ff.mandatory
+	 */
 	public void setAdapterName(String adapterName) {
 		this.adapterName = adapterName;
 	}
 
-	@IbisDoc({"Receiver on which job operates", ""})
+	/** Receiver on which job operates */
 	public void setReceiverName(String receiverName) {
 		this.receiverName = receiverName;
 	}

@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -94,7 +93,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(super.toString());
+		StringBuilder builder = new StringBuilder(getTargetDataSource().toString());
 
 		if(metadata != null && log.isInfoEnabled()) {
 			builder.append(" user ["+metadata.get("user")+"]");

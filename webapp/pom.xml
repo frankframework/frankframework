@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.7-SNAPSHOT</version>
+		<version>7.8-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-webapp</artifactId>
@@ -42,10 +42,11 @@
 			<artifactId>ibis-adapterframework-akamai</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
 		<dependency>
-			<groupId>com.github.marcus-nl.btm</groupId>
-			<artifactId>btm</artifactId>
-			<version>3.0.0-mk1</version>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

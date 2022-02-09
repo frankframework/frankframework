@@ -10,7 +10,7 @@ public class SpringConfigurationXmlPropertyResolver {
 
 	@Test
 	public void testSpringXmlPropertyResolver() {
-		System.setProperty("SPRING.CONFIG.LOCATIONS", "SpringApplicationContext.xml");
+		System.setProperty("SPRING.CONFIG.LOCATIONS", "");
 
 		IbisContext context = new IbisContext();
 		context.init(false);

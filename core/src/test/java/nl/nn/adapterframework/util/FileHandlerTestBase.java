@@ -142,10 +142,7 @@ public abstract class FileHandlerTestBase {
 		if (suffix!=null) {
 			if (suffixViaParam) {
 				paramList=new ParameterList();
-				Parameter param=new Parameter();
-				param.setName("writeSuffix");
-				param.setValue(suffix);
-				paramList.add(param);
+				paramList.add(new Parameter("writeSuffix", suffix));
 				paramList.configure();
 				handler.setWriteSuffix(".wsx");
 			} else {

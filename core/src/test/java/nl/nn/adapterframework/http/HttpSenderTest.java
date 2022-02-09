@@ -27,6 +27,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSender.PostType;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -63,10 +64,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl(null);
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("relative/path");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "relative/path"));
 
 		sender.configure();
 		sender.open();
@@ -262,15 +260,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
@@ -289,15 +281,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST); //should handle both upper and lowercase methodtypes :)
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.configure();
 		sender.open();
@@ -345,15 +331,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -372,20 +352,11 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("http://127.0.0.1/value%20value?path=tralala");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?path=tralala"));
 
-		Parameter param1 = new Parameter();
-		param1.setName("illegalCharacters");
-		param1.setValue("o@t&h=e+r$V,a/lue");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("illegalCharacters", "o@t&h=e+r$V,a/lue"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("normalCharacters");
-		param2.setValue("helloWorld");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("normalCharacters", "helloWorld"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -420,15 +391,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setHeadersParams("custom-header, doesn-t-exist");
@@ -447,15 +412,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
@@ -475,15 +434,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("key");
-		param1.setValue("value");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("key", "value"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType(PostType.URLENCODED);
@@ -714,15 +667,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setMtomEnabled(true);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
-		Parameter urlParam = new Parameter();
-		urlParam.setName("url");
-		urlParam.setValue("http://ignore.me");
-		sender.addParameter(urlParam);
+		sender.addParameter(new Parameter("url", "http://ignore.me"));
 
-		Parameter partParam = new Parameter();
-		partParam.setName("my-beautiful-part");
-		partParam.setValue("<partContent/>");
-		sender.addParameter(partParam);
+		sender.addParameter(new Parameter("my-beautiful-part", "<partContent/>"));
 
 		sender.configure();
 		sender.open();
@@ -739,15 +686,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%20value?param=Hello%20G%C3%BCnter"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -765,15 +706,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "HTTP://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("otherKey");
-		param2.setValue("otherValue");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("otherKey", "otherValue"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -791,10 +726,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "ftp://127.0.0.1/value%2Fvalue?param=Hello%2520%2FG%C3%BCnter"));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -814,15 +746,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		PipeLineSession pls = new PipeLineSession(session);
 
-		Parameter param1 = new Parameter();
-		param1.setName("url");
-		param1.setValue("http://127.0.0.1/value%2Fvalue?emptyParam");
-		sender.addParameter(param1);
+		sender.addParameter(new Parameter("url", "http://127.0.0.1/value%2Fvalue?emptyParam"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("myParam");
-		param2.setValue("");
-		sender.addParameter(param2);
+		sender.addParameter(new Parameter("myParam", ""));
 
 		sender.setMethodType(HttpMethod.GET);
 
@@ -835,11 +761,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Throwable { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
+		String keystore = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -851,11 +778,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.pfx";
+		String keystore = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 
 		sender.setMethodType(HttpMethod.GET);
 		exception.expect(SenderException.class);
@@ -867,11 +795,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception { // keystore and the key pairs have the same password
-		String keystore = "/Signature/ks_multientry_samepassword.pfx";
+		String keystore = "/Signature/ks_multientry_samepassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -886,11 +815,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		// It would be difficult to provide password for each entry in a keystore 
 		//which has multiple entries each with a different password
 
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAliasPassword("test");
 
 		sender.setMethodType(HttpMethod.GET);
@@ -904,11 +834,12 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	@Test
 	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Throwable {
 
-		String keystore = "/Signature/ks_multientry_differentpassword.pfx";
+		String keystore = "/Signature/ks_multientry_differentpassword.jks";
 
 		sender = getSender();
 		sender.setKeystore(keystore);
 		sender.setKeystorePassword("geheim");
+		sender.setKeystoreType(KeystoreType.JKS);
 		sender.setKeystoreAlias("2nd");
 		sender.setKeystoreAliasPassword("test2");
 

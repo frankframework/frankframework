@@ -303,6 +303,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			state = BootState.STOPPING;
 			super.close();
 		} finally {
+			configured = false;
 			state = BootState.STOPPED;
 		}
 	}
@@ -521,7 +522,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
-	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
+	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
 	public void registerJmsRealm(JmsRealm realm) {
 		JmsRealmFactory.getInstance().registerJmsRealm(realm);
 	}
