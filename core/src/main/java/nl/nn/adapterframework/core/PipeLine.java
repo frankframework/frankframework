@@ -649,7 +649,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			registerPipeLineExit(exit);
 		}
 	}
-	
+
 	/** 
 	 * PipeLine exits.
 	 * @ff.deprecated

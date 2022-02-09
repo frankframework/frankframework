@@ -23,7 +23,7 @@ import lombok.Getter;
 public class PipeLineExits {
 
 	private @Getter List<PipeLineExit> exits = new LinkedList<>();
-	
+
 	/** 
 	 * PipeLine exits.
 	 * @ff.mandatory

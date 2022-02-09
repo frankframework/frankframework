@@ -76,7 +76,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
-	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter BootState state = BootState.STOPPED;
 
@@ -417,6 +417,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 
+	// explicitly in this position, to have the right location in the XSD
+	public void setScheduleManager(ScheduleManager scheduleManager) {
+		this.scheduleManager = scheduleManager;
+	}
+	
 	/**
 	 * Register an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
@@ -428,8 +433,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
+	@Deprecated // deprecated to force use of Scheduler element
 	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.register(jobdef);
+		scheduleManager.registerScheduledJob(jobdef);
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
