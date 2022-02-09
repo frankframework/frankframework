@@ -144,13 +144,13 @@ public class TestPipeline extends Base {
 					result.put(PIPELINE_RESULT_STATE, plr.getState());
 					result.put(PIPELINE_RESULT, plr.getResult().asString());
 				} catch (Exception e) {
-					String msg = "An exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]"; 
+					String msg = "An exception occurred while extracting the result of the PipeLine with exit state ["+plr.getState()+"]";
 					log.warn(msg, e);
 					result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
 					result.put(PIPELINE_RESULT, msg+": ("+e.getClass().getTypeName()+") "+e.getMessage());
 				}
 			} catch (Exception e) {
-				String msg = "An exception occurred while processing the message"; 
+				String msg = "An exception occurred while processing the message";
 				log.warn(msg, e);
 				result.put(PIPELINE_RESULT_STATE, PIPELINE_RESULT_STATE_ERROR);
 				result.put(PIPELINE_RESULT, msg + ": ("+e.getClass().getTypeName()+") "+e.getMessage());
