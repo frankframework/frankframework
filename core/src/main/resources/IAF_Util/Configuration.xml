@@ -7,7 +7,6 @@
 	<!ENTITY CleanupFileSystem SYSTEM "./ConfigurationCleanupFileSystem.xml">
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 	<!ENTITY ManageFileSystem SYSTEM "./ConfigurationManageFileSystem.xml">
-	<!ENTITY FileSystem SYSTEM "ConfigurationFileSystem.xml">
 ]>
 <configuration name="IAF_Util">
 	<!-- include configuration for managing the database -->
@@ -21,5 +20,4 @@
 	&CleanupFileSystem;
 	&RecoverAdapters;
 	&ManageFileSystem;
-	&FileSystem;
 </configuration>

@@ -1,16 +1,16 @@
 <module>	
-	<adapter name="FileSystem" description="Upload files to server" active="${fileSystem.active}">	
-		<receiver name="FileSystem">
-			<listener name="FileSystem"
+	<adapter name="UploadFile" description="Upload files to server" active="${active.uploadfile}">	
+		<receiver name="UploadFile">
+			<listener name="UploadFile"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
-				uriPattern="fileSystem" 
+				uriPattern="uploadFile" 
 				method="POST"
 				multipartBodyName="destination"
 				authenticationMethod="AUTHROLE"
 				authenticationRoles="IbisDataAdmin"/>
 		</receiver>
-		<receiver name="FileSystem-jl">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="FileSystem-jl" serviceName="${fileSystem-jl.serviceName}" />
+		<receiver name="UploadFile-jl">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="UploadFile-jl" serviceName="${uploadFile-jl.serviceName}" />
 		</receiver>
 
 		<pipeline>
@@ -40,7 +40,7 @@
 				getInputFromSessionKey="multipartAttachments"
 				elementXPathExpression="/parts/part[@type='file']">			
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
-					javaListener="FileSystem_Child">
+					javaListener="UploadFile_Child">
 					<param name="unzipFile" sessionKey="unzipFile"/>
 					<param name="file" sessionKeyXPath="part/@name"/>
 					<param name="destination" sessionKey="destination"/>
@@ -51,9 +51,9 @@
 		</pipeline>
 	</adapter>
 
-	<adapter name="FileSystem_Child">
-		<receiver name="FileSystem_Child" >
-			<listener name="FileSystem_Child" className="nl.nn.adapterframework.receivers.JavaListener"/>
+	<adapter name="UploadFile_Child" active="${active.uploadfile}">
+		<receiver name="UploadFile_Child" >
+			<listener name="UploadFile_Child" className="nl.nn.adapterframework.receivers.JavaListener"/>
 		</receiver>
 
 		<pipeline>

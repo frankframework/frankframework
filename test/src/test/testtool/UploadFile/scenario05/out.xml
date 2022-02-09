@@ -1,9 +1,9 @@
-<errorMessage timestamp="Thu Jan 06 13:16:05 CET 2022" originator="IAF_ss9 7.7-SNAPSHOT" message="Pipe [uploadFiles] msgId [Test Tool correlation id] : (SaxException) Could not process list of elements using xpath [/parts/part[@type='file']]: (TransformerException): (SaxException): IbisLocalSender [uploadFiles-sender] exception calling JavaListener [FileSystem_Child]: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.">
+<errorMessage timestamp="Thu Jan 06 13:16:05 CET 2022" originator="IAF_ss9 7.8-SNAPSHOT" message="Pipe [uploadFiles] msgId [Test Tool correlation id] : (SaxException) Could not process list of elements using xpath [/parts/part[@type='file']]: (TransformerException): (SaxException): IbisLocalSender [uploadFiles-sender] exception calling JavaListener [UploadFile_Child]: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.">
   <location class="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="uploadFiles"/>
-  <details>nl.nn.adapterframework.core.SenderException: (SaxException) Could not process list of elements using xpath [/parts/part[@type='file']]: (TransformerException): (SaxException): IbisLocalSender [uploadFiles-sender] exception calling JavaListener [FileSystem_Child]: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+  <details>nl.nn.adapterframework.core.SenderException: (SaxException) Could not process list of elements using xpath [/parts/part[@type='file']]: (TransformerException): (SaxException): IbisLocalSender [uploadFiles-sender] exception calling JavaListener [UploadFile_Child]: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.pipes.ForEachChildElementPipe.iterateOverInput(ForEachChildElementPipe.java:424)&#xD;
 	at nl.nn.adapterframework.pipes.IteratingPipe.sendMessage(IteratingPipe.java:452)&#xD;
-	at nl.nn.adapterframework.pipes.MessageSendingPipe.doPipe(MessageSendingPipe.java:558)&#xD;
+	at nl.nn.adapterframework.pipes.MessageSendingPipe.doPipe(MessageSendingPipe.java:557)&#xD;
 	at nl.nn.adapterframework.pipes.MessageSendingPipe$$FastClassBySpringCGLIB$$b131b2cb.invoke(&lt;generated&gt;)&#xD;
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)&#xD;
 	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:779)&#xD;
@@ -132,7 +132,7 @@ Caused by: nl.nn.adapterframework.xml.SaxException: Could not process list of el
 	at nl.nn.adapterframework.util.XmlUtils.parseXml(XmlUtils.java:511)&#xD;
 	at nl.nn.adapterframework.pipes.ForEachChildElementPipe.iterateOverInput(ForEachChildElementPipe.java:414)&#xD;
 	... 111 more&#xD;
-Caused by: javax.xml.transform.TransformerException: nl.nn.adapterframework.xml.SaxException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [FileSystem_Child]: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: javax.xml.transform.TransformerException: nl.nn.adapterframework.xml.SaxException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [UploadFile_Child]: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at org.apache.xalan.templates.ElemCopyOf.execute(ElemCopyOf.java:212)&#xD;
 	at org.apache.xalan.transformer.TransformerImpl.executeChildTemplates(TransformerImpl.java:2402)&#xD;
 	at org.apache.xalan.templates.ElemElement.constructNode(ElemElement.java:341)&#xD;
@@ -142,7 +142,7 @@ Caused by: javax.xml.transform.TransformerException: nl.nn.adapterframework.xml.
 	at org.apache.xalan.transformer.TransformerImpl.transformNode(TransformerImpl.java:1358)&#xD;
 	at org.apache.xalan.transformer.TransformerImpl.run(TransformerImpl.java:3449)&#xD;
 	at java.lang.Thread.run(Thread.java:748)&#xD;
-Caused by: nl.nn.adapterframework.xml.SaxException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [FileSystem_Child]: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.xml.SaxException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [UploadFile_Child]: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.pipes.ForEachChildElementPipe$ItemCallbackCallingHandler.endNode(ForEachChildElementPipe.java:210)&#xD;
 	at nl.nn.adapterframework.xml.NodeSetFilter.endElement(NodeSetFilter.java:163)&#xD;
 	at nl.nn.adapterframework.pipes.ForEachChildElementPipe$ItemCallbackCallingHandler.endElement(ForEachChildElementPipe.java:233)&#xD;
@@ -159,7 +159,7 @@ Caused by: nl.nn.adapterframework.xml.SaxException: IbisLocalSender [uploadFiles
 	at org.apache.xalan.transformer.TreeWalker2Result.traverse(TreeWalker2Result.java:74)&#xD;
 	at org.apache.xalan.templates.ElemCopyOf.execute(ElemCopyOf.java:186)&#xD;
 	... 8 more&#xD;
-Caused by: nl.nn.adapterframework.core.SenderException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [FileSystem_Child]: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.core.SenderException: IbisLocalSender [uploadFiles-sender] exception calling JavaListener [UploadFile_Child]: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.senders.IbisLocalSender.sendMessage(IbisLocalSender.java:243)&#xD;
 	at nl.nn.adapterframework.senders.IbisLocalSender$$FastClassBySpringCGLIB$$a6cd532c.invoke(&lt;generated&gt;)&#xD;
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)&#xD;
@@ -188,14 +188,14 @@ Caused by: nl.nn.adapterframework.core.SenderException: IbisLocalSender [uploadF
 	at nl.nn.adapterframework.pipes.StringIteratorPipe$1.handleItem(StringIteratorPipe.java:1)&#xD;
 	at nl.nn.adapterframework.pipes.ForEachChildElementPipe$ItemCallbackCallingHandler.endNode(ForEachChildElementPipe.java:205)&#xD;
 	... 22 more&#xD;
-Caused by: nl.nn.adapterframework.core.ListenerException: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.core.ListenerException: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.core.Adapter.processMessageWithExceptions(Adapter.java:680)&#xD;
 	at nl.nn.adapterframework.receivers.Receiver.processMessageInAdapter(Receiver.java:1258)&#xD;
 	at nl.nn.adapterframework.receivers.Receiver.processRequest(Receiver.java:976)&#xD;
 	at nl.nn.adapterframework.receivers.JavaListener.processRequest(JavaListener.java:156)&#xD;
 	at nl.nn.adapterframework.senders.IbisLocalSender.sendMessage(IbisLocalSender.java:237)&#xD;
 	... 48 more&#xD;
-Caused by: nl.nn.adapterframework.core.PipeRunException: cannot perform action: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.core.PipeRunException: cannot perform action: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemPipe.doPipe(FileSystemPipe.java:126)&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemPipe$$FastClassBySpringCGLIB$$7e3163fb.invoke(&lt;generated&gt;)&#xD;
 	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:218)&#xD;
@@ -301,11 +301,11 @@ Caused by: nl.nn.adapterframework.core.PipeRunException: cannot perform action: 
 	at nl.nn.adapterframework.core.PipeLine.process(PipeLine.java:454)&#xD;
 	at nl.nn.adapterframework.core.Adapter.processMessageWithExceptions(Adapter.java:656)&#xD;
 	... 52 more&#xD;
-Caused by: nl.nn.adapterframework.filesystem.FileSystemException: unable to process [WRITE] action for File [c:/temp/testdata/FileSystem\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.filesystem.FileSystemException: unable to process [WRITE] action for File [TESTDATA_DIR/UploadFile\testFile1.txt]: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemActor.doAction(FileSystemActor.java:460)&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemPipe.doPipe(FileSystemPipe.java:120)&#xD;
 	... 155 more&#xD;
-Caused by: nl.nn.adapterframework.filesystem.FileSystemException: Cannot write file to [testFile1.txt]. Destination file [C:\Temp\testdata\FileSystem\testFile1.txt] already exists.&#xD;
+Caused by: nl.nn.adapterframework.filesystem.FileSystemException: Cannot write file to [testFile1.txt]. Destination file [TESTDATA_DIR\UploadFile\testFile1.txt] already exists.&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemUtils.prepareDestination(FileSystemUtils.java:64)&#xD;
 	at nl.nn.adapterframework.filesystem.FileSystemActor.doAction(FileSystemActor.java:393)&#xD;
 	... 156 more</details>

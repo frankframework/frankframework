@@ -3,11 +3,11 @@
     <results count="2">
       <result item="1">
         <zipEntry>zipFile/testFile1.txt</zipEntry>
-        <fileName>c:\temp\testdata\FileSystem\zipFile\testFile17068045409442123139.txt</fileName>
+        <fileName>TESTDATA_DIR\UploadFile\zipFile\testFile1522888123009628282.txt</fileName>
       </result>
       <result item="2">
         <zipEntry>zipFile/testFile2.txt</zipEntry>
-        <fileName>c:\temp\testdata\FileSystem\zipFile\testFile25460854019004762224.txt</fileName>
+        <fileName>TESTDATA_DIR\UploadFile\zipFile\testFile24289814404512254304.txt</fileName>
       </result>
     </results>
   </result>
