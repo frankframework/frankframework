@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,12 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.configuration.digester;
+package nl.nn.adapterframework.core;
 
-public class RecordHandlingFlowFactory extends AbstractSpringPoweredDigesterFactory {
+import java.util.LinkedList;
+import java.util.List;
 
-	@Override
-	public String getSuggestedBeanName() {
-		return "proto-RecordHandlingFlow";
+import lombok.Getter;
+
+public class PipeLineExits {
+
+	private @Getter List<PipeLineExit> exits = new LinkedList<>();
+
+	/** 
+	 * PipeLine exits.
+	 * @ff.mandatory
+	 */
+	public void registerPipeLineExit(PipeLineExit exit) {
+		exits.add(exit);
 	}
 }
