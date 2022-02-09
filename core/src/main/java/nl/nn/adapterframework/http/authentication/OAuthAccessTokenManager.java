@@ -19,17 +19,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -61,7 +66,8 @@ public class OAuthAccessTokenManager {
 	private CredentialFactory client_cf;
 	private boolean useClientCredentialsGrant;
 	private HttpSenderBase httpSender;
-	private int expiryMs; // 
+	private int expiryMs;
+	private boolean basicAuthenticateWithClientCredentials = false;
 	
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
@@ -150,18 +156,27 @@ public class OAuthAccessTokenManager {
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
 	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
+		String query = httpRequest.getQuery();
+		if (!basicAuthenticateWithClientCredentials) {
+			List<NameValuePair> clientInfo= new LinkedList<>();
+			clientInfo.add(new BasicNameValuePair("client_id",client_cf.getUsername()));
+			clientInfo.add(new BasicNameValuePair("client_secret",client_cf.getPassword()));
+			query = Misc.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
+		}
 		switch (httpRequest.getMethod()) {
 			case GET:
-				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", httpRequest.getQuery());
+				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
 				apacheHttpRequest = new HttpGet(url);
 				break;
 			case POST:
 				apacheHttpRequest = new HttpPost(httpRequest.getURL().toExternalForm());
-			try {
-				((HttpPost)apacheHttpRequest).setEntity(new StringEntity(httpRequest.getQuery()));
-			} catch (UnsupportedEncodingException e) {
-				throw new HttpAuthenticationException("Could not create TokenRequest", e);
-			}
+				apacheHttpRequest.addHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				try {
+					((HttpPost)apacheHttpRequest).setEntity(new StringEntity(query));
+				} catch (UnsupportedEncodingException e) {
+					throw new HttpAuthenticationException("Could not create TokenRequest", e);
+				}
+				
 				break;
 			default:
 				throw new IllegalStateException("Illegal Method, must be GET or POST");

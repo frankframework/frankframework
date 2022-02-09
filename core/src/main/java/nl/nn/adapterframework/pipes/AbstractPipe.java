@@ -318,7 +318,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	/**
 	 * The functional name of this pipe
-	 * @ff.mandatory
+	 * TODO add ff.mandatory tag once validators and wrappers can be excluded.
 	 */
 	@Override
 	public void setName(String name) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,11 +61,15 @@ public interface DynamicRegistration {
 	/**
 	 * @return Name of the to-be implemented class
 	 */
-	public String getName();
+	public default String getName() {
+		return this.getClass().getSimpleName();
+	}
 
 	/**
 	 * Order in which to automatically instantiate and load the class.</br>
-	 * @return <code>0</code> to let the ibis determine, <code>-1</code> to disable
+	 * @return <code>0</code> to let the application server determine, <code>-1</code> to disable
 	 */
-	public int loadOnStartUp();
+	public default int loadOnStartUp() {
+		return 1;
+	}
 }

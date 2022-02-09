@@ -10,7 +10,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
@@ -19,20 +18,15 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	
 	@Override
 	public P createPipe() {
-		P pipe = (P)new SoapWrapperPipe();
-		return pipe;
+		return (P) new SoapWrapperPipe();
 	}
 
-	
 	public void addParam(String name, String value) {
 		pipe.addParameter(new Parameter(name, value));
 	}
-	
-	
 
 	@Test
 	public void testUnwrap() throws Exception {
-//		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		pipe.start();
@@ -50,7 +44,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -75,7 +68,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -100,7 +92,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -126,7 +117,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -151,7 +141,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -176,7 +165,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -200,7 +188,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -227,7 +214,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input, session);
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -254,7 +240,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input, session);
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -281,7 +266,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input, session);
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
@@ -306,13 +290,11 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}
 
 	public void testUnwrapConditional(boolean expectUnwrap) throws Exception {
-//		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		pipe.start();
@@ -330,7 +312,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input, session);
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		if (expectUnwrap) {
 			TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
@@ -431,7 +412,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
 		
 		String actual = prr.getResult().asString();
-		System.out.println("result ["+actual+"]");
 		
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 	}

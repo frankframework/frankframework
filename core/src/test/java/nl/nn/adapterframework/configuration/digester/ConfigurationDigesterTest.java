@@ -2,7 +2,6 @@ package nl.nn.adapterframework.configuration.digester;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -10,8 +9,6 @@ import java.util.Properties;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -23,7 +20,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -56,7 +52,7 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
-		
+
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
@@ -80,7 +76,7 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-		
+
 		//Unfortunately we need to cleanup the result a bit...
 		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
 		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
@@ -88,32 +84,26 @@ public class ConfigurationDigesterTest {
 
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
 
-		result = MatchUtils.xmlPretty(result, true);
-		expected = MatchUtils.xmlPretty(expected, true);
+		MatchUtils.assertXmlSimilar(expected, result);
 
-		Diff diff = XMLUnit.compareXML(expected, result); //We need to use XML Compare as the order is different in the old canonical xslt
-		assertTrue(diff.toString(), diff.similar());
-		
+		digester = new ConfigurationDigester() {
+			@Override
+			protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+				return true;
+			}
+		};
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, true);
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-		
-		// Reset stubbing on the AppConstants, not doing this might fail other tests during CI 
-		AppConstants.getInstance(configuration.getClassLoader()).setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, false);
-		
+
 		//Unfortunately we need to cleanup the result a bit...
 		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
 		stubbedResult = stubbedResult.replaceAll("(</?exits>)", "");//Remove the exits tag
 		stubbedResult = stubbedResult.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
-		
+
 		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-		
-		stubbedResult = MatchUtils.xmlPretty(stubbedResult, true);
-		stubbedExpected = MatchUtils.xmlPretty(stubbedExpected, true);
-		
-		diff = XMLUnit.compareXML(stubbedExpected, stubbedResult); //We need to use XML Compare as the order is different in the old canonical xslt
-		assertTrue(diff.toString(), diff.similar());
-		
+
+		MatchUtils.assertXmlSimilar(stubbedExpected, stubbedResult);
+
 		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
 	}

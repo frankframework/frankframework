@@ -427,7 +427,7 @@ public class Message implements Serializable {
 		if(request instanceof Node) {
 			try {
 				log.warn("returning Node as String; consider to avoid using Node or Document here to reduce memory footprint");
-				return XmlUtils.nodeToString((Node)request, true);
+				return XmlUtils.nodeToString((Node)request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node to String", e);
 			}

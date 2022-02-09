@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
 
