@@ -475,7 +475,7 @@ public class Message implements Serializable {
 	public boolean isEmpty() {
 		return request == null || request instanceof String && ((String)request).isEmpty();
 	}
-	
+
 	/**
 	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
 	 */
@@ -492,13 +492,13 @@ public class Message implements Serializable {
 			return (Message) object;
 		}
 		if (object instanceof URL) {
-			return new UrlMessage((URL)object, null);
+			return new UrlMessage((URL)object);
 		}
 		if (object instanceof File) {
 			return new FileMessage((File)object);
 		}
 		if (object instanceof Path) {
-			return new PathMessage((Path)object, null);
+			return new PathMessage((Path)object);
 		}
 		return new Message(null, object);
 	}
@@ -630,10 +630,10 @@ public class Message implements Serializable {
 			//Unable to determine the size of a Stream
 			log.debug("unable to determine size of Message ["+ClassUtils.nameOf(request)+"]");
 		}
-		
+
 		return -1;
 	}
-	
+
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
@@ -658,7 +658,7 @@ public class Message implements Serializable {
 		}
 		closeOnClose(outputStream);
 	}
-	
+
 	/**
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.

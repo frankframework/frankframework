@@ -377,9 +377,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	public boolean consumesSessionVariable(String sessionKey) {
 		return StringUtils.isEmpty(getContextKey()) && (
-				  sessionKey.equals(getSessionKey()) 
-				  || getPattern()!=null && getPattern().contains("{"+sessionKey+"}") 
-				  || getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey)
+					sessionKey.equals(getSessionKey())
+					|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}")
+					|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey)
 				);
 	}
 

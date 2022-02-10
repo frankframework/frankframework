@@ -264,7 +264,7 @@ public class FileSystemUtils {
 		String srcFilename = fileSystem.getCanonicalName(file);
 		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
 		fileSystem.renameFile(file, tgtFilename);
-		
+
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
 		long threshold = sysTime.getTime()- rotateDays*millisPerDay;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {

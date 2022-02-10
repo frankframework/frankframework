@@ -1192,13 +1192,13 @@ public class ParameterTest {
 			p.setPattern("{now}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
@@ -1207,7 +1207,7 @@ public class ParameterTest {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
 		}
 	}
-	
+
 	@Test
 	public void testPatternNowWithDateFormatType() throws Exception {
 		Parameter p = new Parameter();
@@ -1217,13 +1217,13 @@ public class ParameterTest {
 			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
@@ -1232,7 +1232,7 @@ public class ParameterTest {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
 		}
 	}
-	
+
 	@Test
 	public void testPatternFixedDateWithDateFormatType() throws Exception {
 		String expectedDate = "2001-12-17T09:30:47";
@@ -1243,13 +1243,13 @@ public class ParameterTest {
 			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, result);
 

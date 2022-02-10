@@ -37,7 +37,7 @@ public class PathMessage extends Message {
 	}
 
 	public PathMessage(Path path) {
-		this(path, null);
+		this(path, new MessageContext());
 	}
 	
 	@Override

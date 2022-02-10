@@ -33,7 +33,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 	public MessageContext(Map<? extends String, ? extends Object> base) {
 		super(base);
 	}
-	
+
 	public MessageContext withCharset(String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(Message.METADATA_CHARSET, charset);

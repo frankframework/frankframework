@@ -21,10 +21,10 @@ import java.util.Map;
 public class UrlMessage  extends Message {
 
 	public UrlMessage(URL url) {
-		this(url, null);
+		this(url, new MessageContext());
 	}
 
 	public UrlMessage(URL url, Map<String,Object> context) {
-		super(() -> url.openStream(), new MessageContext(context).withName(url.toString()), url.getClass());
+		super(() -> url.openStream(),  new MessageContext(context).withName(url.toString()), url.getClass());
 	}
 }
