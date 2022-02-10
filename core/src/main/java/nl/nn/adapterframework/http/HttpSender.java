@@ -216,7 +216,7 @@ public class HttpSender extends HttpSenderBase {
 
 	@Override
 	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
-		if (isEncodeMessages()) {
+		if (isEncodeMessages() && Message.isEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
 			} catch (IOException e) {
@@ -278,7 +278,7 @@ public class HttpSender extends HttpSenderBase {
 					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
 					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+relativePath+"]");
 				}
-				HttpGet getMethod = new HttpGet(relativePath+(parameters==null? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters==null && !Message.isEmpty(message)? message.asString():""));
 
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+getMethod.getURI().getQuery()+"]");
 				if (null != getFullContentType()) { //Manually set Content-Type header
