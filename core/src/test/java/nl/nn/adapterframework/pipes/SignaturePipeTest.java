@@ -23,7 +23,6 @@ import nl.nn.adapterframework.encryption.PkiUtil;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.SignaturePipe.Action;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {

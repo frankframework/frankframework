@@ -22,7 +22,6 @@ import java.util.Queue;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.auth.AUTH;
 import org.apache.http.auth.AuthOption;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -30,7 +29,6 @@ import org.apache.http.auth.MalformedChallengeException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.logging.log4j.Logger;
 
@@ -44,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 //	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 
 	@Override

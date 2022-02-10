@@ -1,4 +1,5 @@
 /*
+
    Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -618,7 +619,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		final HttpRequestBase httpRequestBase;
 		try {
 			if (urlParameter != null) {
-				String url = pvl.getParameterValue(getUrlParam()).asStringValue();
+				String url = pvl.get(getUrlParam()).asStringValue();
 				targetUri = getURI(url);
 			} else {
 				targetUri = staticUri;
@@ -631,7 +632,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				StringTokenizer st = new StringTokenizer(getHeadersParams(), ",");
 				while (st.hasMoreElements()) {
 					String paramName = st.nextToken();
-					ParameterValue paramValue = pvl.getParameterValue(paramName);
+					ParameterValue paramValue = pvl.get(paramName);
 					if(paramValue != null)
 						headersParamsMap.put(paramName, paramValue.asStringValue(null));
 				}
@@ -816,12 +817,12 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		maxExecuteRetries = i;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
+	/** Authentication Alias used for authentication to the host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"username used in authentication to host", ""})
+	/** Username used for authentication to the host */
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -831,12 +832,23 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		setUsername(username);
 	}
 
-	@IbisDoc({"password used in authentication to host", " "})
+	/** Password used for authentication to the host */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"domain used in authentication to host", " "})
+	/**
+	 * Corporate domain name. Should only be used in combination with sAMAccountName, never with an UPN.<br/>
+	 * <br/>
+	 * Assuming the following user:<br/>
+	 * UPN: john.doe@CorpDomain.biz<br/>
+	 * sAMAccountName: CORPDOMAIN\john.doe<br/>
+	 * <br/>
+	 * The username attribute may be set to <code>john.doe</code><br/>
+	 * The AuthDomain attribute may be set to <code>CORPDOMAIN</code><br/>
+	 */
+	@Deprecated
+	@ConfigurationWarning("Please use the UPN or the full sAM-AccountName instead")
 	public void setAuthDomain(String string) {
 		authDomain = string;
 	}

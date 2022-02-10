@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -27,7 +27,6 @@ import org.apache.http.protocol.HttpContext;
 
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends SenderTestBase<S> {

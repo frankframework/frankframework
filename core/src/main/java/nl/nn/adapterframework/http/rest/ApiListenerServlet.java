@@ -476,7 +476,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							} else {
 								// Process form file field (input type="file").
 								String fieldNameName = fieldName + "Name";
-								String fileName = bodyPart.getFileName();
+								String fileName = MultipartUtils.getFileName(bodyPart);
 								if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
 								messageContext.put(fieldNameName, fileName);
 								if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
