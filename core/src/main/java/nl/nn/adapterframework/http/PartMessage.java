@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.Part;
@@ -25,24 +26,32 @@ import org.apache.http.ParseException;
 import org.apache.http.entity.ContentType;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 
 public class PartMessage extends Message {
 
 	private Part part;
 
-	public PartMessage(Part part) {
-		this(part, null);
+	public PartMessage(Part part) throws MessagingException {
+		this(Message.createContext(), part);
 	}
 
-	public PartMessage(Part part, String charset) {
-		super(() -> part.getInputStream(), charset, part.getClass());
+	public PartMessage(Part part, String charset) throws MessagingException {
+		this(Message.createContext().withCharset(charset), part);
+	}
+	public PartMessage(Part part, Map<String,Object> context) throws MessagingException {
+		this(context instanceof MessageContext ? (MessageContext)context : Message.createContext(), part);
+	}
+	private  PartMessage(MessageContext context, Part part) throws MessagingException {
+		super(() -> part.getInputStream(), context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 
+		String charset = context!=null ? (String)context.get(Message.METADATA_CHARSET) : null;
 		if (StringUtils.isEmpty(charset)) {
 			try {
 				ContentType contentType = ContentType.parse(part.getContentType());
 				if(contentType.getCharset() != null) {
-					this.setCharset(contentType.getCharset().name());
+					context.put(Message.METADATA_CHARSET, contentType.getCharset().name());
 				}
 			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
 				log.warn("Could not determine charset", e);

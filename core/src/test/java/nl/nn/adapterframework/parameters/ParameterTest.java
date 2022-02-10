@@ -183,6 +183,72 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testContextKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+		
+		Message input = new Message("fakeMessage", Message.createContext().with("fakeContextKey", "fakeContextValue"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+
+	@Test
+	public void testContextKeyWithSessionKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+		
+		Message input = new Message("fakeMessage1", Message.createContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", Message.createContext().with("fakeContextKey", "fakeContextValue2"));
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+		
+		Message input = new Message("fakeMessage", Message.createContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+		
+		Message input = new Message("fakeMessage1", Message.createContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", Message.createContext().with("fakeContextKey", "<root><a/><a/><a/></root>"));
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+		
+	}
+	
+	
+	@Test
 	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");

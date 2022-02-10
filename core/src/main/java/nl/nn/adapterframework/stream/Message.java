@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.transform.Source;
@@ -47,10 +48,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Lombok;
-import lombok.Setter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
@@ -60,16 +59,22 @@ import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable {
-
 	protected transient Logger log = LogUtil.getLogger(this);
 
+	public static final String METADATA_CHARSET = "Metadata.Charset";
+	public static final String METADATA_SIZE = "Metadata.Size";
+	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";
+	public static final String METADATA_NAME = "Metadata.Name";
+	public static final String METADATA_LOCATION = "Metadata.Location";
+	
 	private Object request;
 	private @Getter Class<?> requestClass;
-	private @Getter @Setter(AccessLevel.PROTECTED) String charset; // representing a charset of byte typed requests
+	
+	private @Getter Map<String,Object> context;
 	
 	private Set<AutoCloseable> resourcesToClose;
 
-	private Message(Object request, String charset, Class<?> requestClass) {
+	private Message(Map<String,Object> context, Object request, Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -77,48 +82,78 @@ public class Message implements Serializable {
 		} else {
 			this.request = request;
 		}
-		this.charset = charset;
+		this.context = context!=null ? context : new MessageContext();
 		this.requestClass = requestClass;
 	}
-	private Message(Object request, String charset) {
-		this(request, charset, request !=null ? request.getClass() : null);
+	private Message(Map<String,Object> context, Object request) {
+		this(context, request, request !=null ? request.getClass() : null);
 	}
 
+	public Message(String request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(String request) {
 		this(request, null);
 	}
 
 	public Message(byte[] request, String charset) {
-		this((Object)request, charset);
+		this(createContext().withCharset(charset), request);
+	}
+	public Message(byte[] request, Map<String,Object> context) {
+		this(context, request);
 	}
 	public Message(byte[] request) {
-		this((Object)request, null);
+		this(null, request);
 	}
 
+	public Message(Reader request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(Reader request) {
-		this(request, null);
+		this(null, request);
 	}
 
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream,Exception> request, String charset, Class<?> requestClass) {
-		this((Object)request, charset, requestClass);
+	protected Message(ThrowingSupplier<InputStream,Exception> request, Map<String,Object> context, Class<?> requestClass) {
+		this(context, request, requestClass);
 	}
 	
 	public Message(InputStream request, String charset) {
-		this((Object)request, charset);
+		this(createContext().withCharset(charset), request);
+	}
+	public Message(InputStream request, Map<String,Object> context) {
+		this(context, request);
 	}
 	public Message(InputStream request) {
-		this((Object)request, null);
+		this(null, request);
 	}
 
+	public Message(Node request, Map<String,Object> context) {
+		this(context, request);
+	}
 	public Message(Node request) {
-		this((Object)request, null);
+		this(null, request);
 	}
 
 	public static Message nullMessage() {
-		return new Message((Object)null, null);
+		return new Message(null, (Object)null);
+	}
+	
+	public static MessageContext createContext() {
+		return new MessageContext();
+	}
+	public static MessageContext createContext(Map<String,Object> base) {
+		return base!=null? new MessageContext(base) : new MessageContext();
+	}
+	public MessageContext copyContext() {
+		return new MessageContext(getContext());
+	}
+	
+	// representing a charset of binary requests 
+	public String getCharset() {
+		return (String)context.get(METADATA_CHARSET);
 	}
 	/**
 	 * Notify the message object that the request object will be used multiple times.
@@ -260,7 +295,7 @@ public class Message implements Serializable {
 			return (Reader) request;
 		}
 		if (isBinary()) {
-			String readerCharset = charset; //Don't overwrite the Message's charset
+			String readerCharset = getCharset(); //Don't overwrite the Message's charset
 			if (StringUtils.isEmpty(readerCharset)) {
 				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			}
@@ -465,7 +500,7 @@ public class Message implements Serializable {
 		if (object instanceof Path) {
 			return new PathMessage((Path)object, null);
 		}
-		return new Message(object, null);
+		return new Message(null, object);
 	}
 
 	public static Object asObject(Object object) {

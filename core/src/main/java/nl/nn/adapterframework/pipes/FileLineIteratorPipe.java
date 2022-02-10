@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 
 /**
  * Sends a message to a Sender for each line of the file that the input message refers to.
@@ -65,7 +66,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 		try {
 			
-			PipeRunResult result = super.doPipe(new FileMessage(file, getCharset()), session);
+			PipeRunResult result = super.doPipe(new FileMessage(file, new MessageContext().withCharset(getCharset())), session);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public Message readFile(FTPFile f, String charset) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream, charset);
+		return new Message(inputStream, FileSystemUtils.getContext(this,f).withCharset(charset));
 	}
 
 	@Override
