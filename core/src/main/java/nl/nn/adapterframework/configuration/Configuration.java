@@ -45,7 +45,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ProtectedAttribute;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.jms.JmsRealms;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
@@ -535,7 +535,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
-	public void setJmsRealms(JmsRealms realm) {
+	public void setJmsRealms(JmsRealmFactory realm) {
 		// JmsRealm-objects self register in JmsRealmFactory;
 	}
 
