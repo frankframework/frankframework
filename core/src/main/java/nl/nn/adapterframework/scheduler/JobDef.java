@@ -394,24 +394,35 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	/**
+	 * Checks if job needs to run
+	 */
+	public boolean isRunJob(IbisManager ibisManager) {
+		return true;
+	}
+
+	/**
 	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
 	 */
 	private void runJob(IbisManager ibisManager) {
-		long startTime = System.currentTimeMillis();
-		getMessageKeeper().add("starting to run the job");
+		if(isRunJob(ibisManager)) {
+			long startTime = System.currentTimeMillis();
+			getMessageKeeper().add("starting to run the job");
 
-		try {
-			execute(ibisManager);
-		} catch (Exception e) {
-			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-			log.error(getLogPrefix()+msg, e);
+			try {
+				execute(ibisManager);
+			} catch (Exception e) {
+				String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
+				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+				log.error(getLogPrefix()+msg, e);
+			}
+
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			statsKeeper.addValue(duration);
+			getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
+		} else {
+			getMessageKeeper().add("job execution skipped");
 		}
-
-		long endTime = System.currentTimeMillis();
-		long duration = endTime - startTime;
-		statsKeeper.addValue(duration);
-		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
 	protected String getLogPrefix() {
