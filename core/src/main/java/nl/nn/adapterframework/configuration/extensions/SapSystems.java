@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.configuration.extensions;
 
-public class SapSystem extends nl.nn.adapterframework.extensions.sap.jco3.SapSystem implements ISapSystem {
+public class SapSystems {
+
+	public void registerSapSystem(ISapSystem sapSystem) {
+		//SapSystems selfRegister, this method only exists for the FrankDoc;
+	}
+
 }

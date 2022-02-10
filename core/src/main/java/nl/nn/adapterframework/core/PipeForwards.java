@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.sap;
+package nl.nn.adapterframework.core;
 
-public class SapSystem extends nl.nn.adapterframework.extensions.sap.jco3.SapSystem implements ISapSystem {
+import java.util.LinkedList;
+import java.util.List;
+
+import lombok.Getter;
+
+public class PipeForwards {
+
+	private @Getter List<PipeForward> forwards = new LinkedList<>();
+
+	/** 
+	 * Global forwards.
+	 */
+	public void registerForward(PipeForward forward) {
+		forwards.add(forward);
+	}
+
 }
