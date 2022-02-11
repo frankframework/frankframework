@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Lombok;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
