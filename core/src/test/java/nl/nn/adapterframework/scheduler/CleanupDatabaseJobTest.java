@@ -2,9 +2,9 @@ package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private JdbcTransactionalStorage storage;
 	private TestConfiguration configuration;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="JOBDEFTEST";
+	private final String tableName="IBISLOCK";
 
 	@Override
 	@Before
@@ -44,8 +44,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		jobDef = new CleanupDatabaseJob() {
 
 			@Override
-			protected List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
-				return Arrays.asList(getDataSourceName());
+			protected Set<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+				return Collections.singleton(getDataSourceName());
 			}
 
 		};
@@ -84,6 +84,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		
 		// set max rows to 0 
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
+
+		jobDef.beforeExecuteJob(configuration.getIbisManager());
 		jobDef.execute(configuration.getIbisManager());
 		
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
@@ -102,6 +104,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		// check insertion
 		assertEquals(5, rowCount);
 
+		jobDef.beforeExecuteJob(configuration.getIbisManager());
 		jobDef.execute(configuration.getIbisManager());
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
 		assertEquals(0, numRows);
@@ -163,6 +166,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		assertEquals(5, rowCount);
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
+
+		jobDef.beforeExecuteJob(configuration.getIbisManager());
 		jobDef.execute(configuration.getIbisManager());
 
 		int numRows = JdbcUtil.executeIntQuery(getConnection(), "SELECT count(*) from "+tableName);
