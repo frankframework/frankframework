@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
 
 /**
  * Sends a message to a Sender for each line of the file that the input message refers to.
