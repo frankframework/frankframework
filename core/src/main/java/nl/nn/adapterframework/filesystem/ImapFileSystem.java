@@ -57,6 +57,7 @@ import com.sun.mail.imap.IMAPMessage;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.PartMessage;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -333,13 +334,13 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					MimeBodyPart bodyPart = (MimeBodyPart) mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text/html")) {
-						return new PartMessage(bodyPart, charset);
+						return new PartMessage(bodyPart, new MessageContext().withCharset(charset).withName(bodyPart.getFileName())); // TODO determine appropriate properties to add to context
 					}
 				}
 				for (int i = 0; i < mimeMultipart.getCount(); i++) {
 					BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 					if (bodyPart.getContentType().startsWith("text")) {
-						return new PartMessage(bodyPart, charset);
+						return new PartMessage(bodyPart, new MessageContext().withCharset(charset).withName(bodyPart.getFileName())); // TODO determine appropriate properties to add to context
 					}
 				}
 			}
