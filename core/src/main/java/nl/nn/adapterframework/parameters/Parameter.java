@@ -363,7 +363,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return (Document) transformResult.getNode();
 	}
 	
-	
+
+	/**
+	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
+	 */
 	public boolean requiresInputValueForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
