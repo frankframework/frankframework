@@ -120,11 +120,11 @@ public class FileSystemUtils {
 	}
 
 	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file) throws FileSystemException {
-		return Message.createContext(fileSystem.getAdditionalFileProperties(file))
-				.withName(fileSystem.getName(file))
-				.withLocation(fileSystem.getCanonicalName(file))
-				.withModificationTime(fileSystem.getModificationTime(file))
-				.withSize(fileSystem.getFileSize(file));
+		return  new MessageContext(fileSystem.getAdditionalFileProperties(file))
+					.withName(fileSystem.getName(file))
+					.withLocation(fileSystem.getCanonicalName(file))
+					.withModificationTime(fileSystem.getModificationTime(file))
+					.withSize(fileSystem.getFileSize(file));
 	}
 
 	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file, String charset) throws FileSystemException {

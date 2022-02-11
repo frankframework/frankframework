@@ -135,9 +135,6 @@ public class Message implements Serializable {
 		return new Message(null, (Object)null);
 	}
 	
-	public static MessageContext createContext(Map<String,Object> base) {
-		return base!=null? new MessageContext(base) : new MessageContext();
-	}
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
 	}
@@ -150,8 +147,6 @@ public class Message implements Serializable {
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
 	 * For instance, it could replace an InputStream with a byte array or String.
-	 * 
-	 * @throws IOException
 	 */
 	public void preserve() throws IOException {
 		preserve(false);

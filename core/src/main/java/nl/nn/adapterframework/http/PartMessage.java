@@ -36,6 +36,10 @@ public class PartMessage extends Message {
 		this(new MessageContext(), part);
 	}
 
+	public PartMessage(Part part, String charset) throws MessagingException {
+		this(new MessageContext(charset), part);
+	}
+
 	public PartMessage(Part part, Map<String,Object> context) throws MessagingException {
 		this(context instanceof MessageContext ? (MessageContext)context : context==null ? new MessageContext() : new MessageContext(context), part);
 	}

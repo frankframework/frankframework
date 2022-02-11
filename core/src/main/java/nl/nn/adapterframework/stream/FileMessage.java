@@ -33,10 +33,14 @@ public class FileMessage extends Message {
 		this.file = file;
 	}
 
+	public FileMessage(File file, String charset) {
+		this(file, new MessageContext(charset));
+	}
+	
 	public FileMessage(File file) {
 		this(file, new MessageContext());
 	}
-	
+
 	@Override
 	public long size() {
 		return file.length();
