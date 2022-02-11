@@ -40,10 +40,17 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		this();
 		withCharset(charset);
 	}
-	public MessageContext(Map<? extends String, ? extends Object> base) {
-		super(base);
+	public MessageContext(Map<String,Object> base) {
+		this();
+		withAllFrom(base);
 	}
 
+	public MessageContext withAllFrom(Map<String,Object> base) {
+		if (base!=null) {
+			putAll(base);
+		}
+		return this;
+	}
 	public MessageContext withCharset(String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(METADATA_CHARSET, charset);
