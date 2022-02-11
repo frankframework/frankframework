@@ -32,7 +32,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";
 	public static final String METADATA_NAME = "Metadata.Name";
 	public static final String METADATA_LOCATION = "Metadata.Location";
-	
+
 	public MessageContext() {
 		super();
 	}

@@ -38,13 +38,13 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+
 		boolean outputSideEffectsPresent = StringUtils.isNotEmpty(getStoreResultInSessionKey()) || isPreserveInput() || isRestoreMovedElements()
-				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain()); 
-		
+				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain());
+
 		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
 				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
-				&& getLocker()==null && StringUtils.isEmpty(getIfParam()) 
+				&& getLocker()==null && StringUtils.isEmpty(getIfParam())
 				&& (getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution())
 				&& !outputSideEffectsPresent;
 		canStreamToNextPipe = !outputSideEffectsPresent && !isWriteToSecLog();
@@ -57,7 +57,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		if (getPipeLine()==null) {
 			return null;
 		}
-		
+
 		PipeForward forward = getSuccessForward();
 		try {
 			return getPipeLine().resolveForward(this, forward);
@@ -83,8 +83,8 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	/**
 	 * called if the pipe implementation requests an OutputStream, to determine if there are side effects configured
 	 * that require the output of this pipe to be available at the return of the doPipe() method.
-	 * All side effects that are handled by PipeProcessors (storeResultInSessionKey, preserveInput) and 
-	 * move and chop actions (restoreMovedElements, elementToMove, chompCharSize, ElementToMoveChain) inhibit streaming to the next pipe. 
+	 * All side effects that are handled by PipeProcessors (storeResultInSessionKey, preserveInput) and
+	 * move and chop actions (restoreMovedElements, elementToMove, chompCharSize, ElementToMoveChain) inhibit streaming to the next pipe.
 	 */
 	protected boolean canStreamToNextPipe() {
 		return canStreamToNextPipe;

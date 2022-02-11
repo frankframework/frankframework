@@ -355,7 +355,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		return defaultValueMethodsList;
 	}
-	
+
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
@@ -371,9 +371,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		return StringUtils.isEmpty(getContextKey()) && 
-				(StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern()) 
-				 || getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT)
+		return StringUtils.isEmpty(getContextKey()) &&
+				(StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+						|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT)
 				);
 	}
 
@@ -381,8 +381,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern()) 
-				 || getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
+		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
