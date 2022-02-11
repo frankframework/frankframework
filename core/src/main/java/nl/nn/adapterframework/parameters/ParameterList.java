@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -35,7 +36,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class ParameterList extends ArrayList<Parameter> {
 	private AtomicInteger index = new AtomicInteger();
-	private boolean inputValueRequiredForResolution;
+	private @Getter boolean inputValueRequiredForResolution;
+	private @Getter boolean inputValueOrContextRequiredForResolution;
 
 	public ParameterList() {
 		super();
@@ -53,6 +55,7 @@ public class ParameterList extends ArrayList<Parameter> {
 		}
 		index = null; //Once configured there is no need to keep this in memory
 		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
+		inputValueOrContextRequiredForResolution = parameterEvaluationRequiresInputValueOrContext();
 	}
 
 	@Override
@@ -82,6 +85,15 @@ public class ParameterList extends ArrayList<Parameter> {
 	private boolean parameterEvaluationRequiresInputValue() {
 		for (Parameter p:this) {
 			if (p.requiresInputValueForResolution()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean parameterEvaluationRequiresInputValueOrContext() {
+		for (Parameter p:this) {
+			if (p.requiresInputValueOrContextForResolution()) {
 				return true;
 			}
 		}

@@ -371,11 +371,18 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		if ((StringUtils.isNotEmpty(getContextKey()) || StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
-				&& (getDefaultValueMethodsList().isEmpty() || !getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT))) {
-			return false;
+		return StringUtils.isEmpty(getContextKey()) && 
+				(StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern()) 
+				 || getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT)
+				);
+	}
+
+	public boolean requiresInputValueOrContextForResolution() {
+		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
+			return true;
 		}
-		return true;
+		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern()) 
+				 || getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
