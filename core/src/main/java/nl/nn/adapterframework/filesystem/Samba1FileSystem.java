@@ -146,7 +146,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 
 	@Override
 	public Message readFile(SmbFile f, String charset) throws IOException, FileSystemException {
-		return new Samba1Message(f, FileSystemUtils.getContext(this,f).withCharset(charset));
+		return new Samba1Message(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	private class Samba1Message extends Message {

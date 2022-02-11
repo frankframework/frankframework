@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import liquibase.pro.packaged.F;
 import lombok.Lombok;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
@@ -121,12 +120,15 @@ public class FileSystemUtils {
 	}
 
 	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file) throws FileSystemException {
-		
 		return Message.createContext(fileSystem.getAdditionalFileProperties(file))
 				.withName(fileSystem.getName(file))
 				.withLocation(fileSystem.getCanonicalName(file))
 				.withModificationTime(fileSystem.getModificationTime(file))
 				.withSize(fileSystem.getFileSize(file));
+	}
+
+	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file, String charset) throws FileSystemException {
+		return getContext(fileSystem, file).withCharset(charset);
 	}
 	
 	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, F file, int numberOfBackups) throws FileSystemException {

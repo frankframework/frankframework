@@ -111,7 +111,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 
 	@Override
 	public Message readFile(Path f, String charset) throws IOException, FileSystemException {
-		return new PathMessage(f, FileSystemUtils.getContext(this,f).withCharset(charset));
+		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override

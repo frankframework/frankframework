@@ -33,22 +33,22 @@ public class PartMessage extends Message {
 	private Part part;
 
 	public PartMessage(Part part) throws MessagingException {
-		this(Message.createContext(), part);
+		this(new MessageContext(), part);
 	}
 
 	public PartMessage(Part part, Map<String,Object> context) throws MessagingException {
-		this(context instanceof MessageContext ? (MessageContext)context : Message.createContext(), part);
+		this(context instanceof MessageContext ? (MessageContext)context : context==null ? new MessageContext() : new MessageContext(context), part);
 	}
-	private  PartMessage(MessageContext context, Part part) throws MessagingException {
+	private PartMessage(MessageContext context, Part part) throws MessagingException {
 		super(() -> part.getInputStream(), context.withName(part.getFileName()), part.getClass());
 		this.part = part;
 
-		String charset = context!=null ? (String)context.get(Message.METADATA_CHARSET) : null;
+		String charset = context!=null ? (String)context.get(MessageContext.METADATA_CHARSET) : null;
 		if (StringUtils.isEmpty(charset)) {
 			try {
 				ContentType contentType = ContentType.parse(part.getContentType());
 				if(contentType.getCharset() != null) {
-					context.put(Message.METADATA_CHARSET, contentType.getCharset().name());
+					context.put(MessageContext.METADATA_CHARSET, contentType.getCharset().name());
 				}
 			} catch (UnsupportedCharsetException | ParseException | MessagingException e) {
 				log.warn("Could not determine charset", e);

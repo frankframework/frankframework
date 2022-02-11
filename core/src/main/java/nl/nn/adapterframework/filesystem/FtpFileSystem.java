@@ -154,7 +154,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	public Message readFile(FTPFile f, String charset) throws FileSystemException, IOException {
 		InputStream inputStream = ftpClient.retrieveFileStream(f.getName());
 		ftpClient.completePendingCommand();
-		return new Message(inputStream, FileSystemUtils.getContext(this,f).withCharset(charset));
+		return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override

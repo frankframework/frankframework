@@ -107,7 +107,7 @@ public class ParameterList extends ArrayList<Parameter> {
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		if(inputValueRequiredForResolution) {
+		if(inputValueRequiredForResolution && message!=null) {
 			try {
 				message.preserve();
 			} catch (IOException e) {

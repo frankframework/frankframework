@@ -18,6 +18,8 @@ package nl.nn.adapterframework.stream;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+
 public class UrlMessage  extends Message {
 
 	public UrlMessage(URL url) {
@@ -25,6 +27,6 @@ public class UrlMessage  extends Message {
 	}
 
 	public UrlMessage(URL url, Map<String,Object> context) {
-		super(() -> url.openStream(),  new MessageContext(context).withName(url.toString()), url.getClass());
+		super(() -> url.openStream(),  new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
 	}
 }

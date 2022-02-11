@@ -39,6 +39,7 @@ import nl.nn.adapterframework.pipes.PutInSession;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -189,7 +190,7 @@ public class ParameterTest {
 		p.setContextKey("fakeContextKey");
 		p.configure();
 		
-		Message input = new Message("fakeMessage", Message.createContext().with("fakeContextKey", "fakeContextValue"));
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue"));
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
@@ -204,8 +205,8 @@ public class ParameterTest {
 		p.setContextKey("fakeContextKey");
 		p.configure();
 		
-		Message input = new Message("fakeMessage1", Message.createContext().with("fakeContextKey", "fakeContextValue1"));
-		Message sessionValue = new Message("fakeMessage2", Message.createContext().with("fakeContextKey", "fakeContextValue2"));
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "fakeContextValue2"));
 		
 		PipeLineSession session = new PipeLineSession();
 		session.put("fakeSessionKey", sessionValue);
@@ -221,7 +222,7 @@ public class ParameterTest {
 		p.setXpathExpression("count(root/a)");
 		p.configure();
 		
-		Message input = new Message("fakeMessage", Message.createContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
 		PipeLineSession session = new PipeLineSession();
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 		
@@ -236,8 +237,8 @@ public class ParameterTest {
 		p.setXpathExpression("count(root/a)");
 		p.configure();
 		
-		Message input = new Message("fakeMessage1", Message.createContext().with("fakeContextKey", "<root><a/><a/></root>"));
-		Message sessionValue = new Message("fakeMessage2", Message.createContext().with("fakeContextKey", "<root><a/><a/><a/></root>"));
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "<root><a/><a/><a/></root>"));
 		
 		PipeLineSession session = new PipeLineSession();
 		session.put("fakeSessionKey", sessionValue);

@@ -61,12 +61,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class Message implements Serializable {
 	protected transient Logger log = LogUtil.getLogger(this);
 
-	public static final String METADATA_CHARSET = "Metadata.Charset";
-	public static final String METADATA_SIZE = "Metadata.Size";
-	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";
-	public static final String METADATA_NAME = "Metadata.Name";
-	public static final String METADATA_LOCATION = "Metadata.Location";
-	
 	private Object request;
 	private @Getter Class<?> requestClass;
 	
@@ -97,7 +91,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(byte[] request, String charset) {
-		this(createContext().withCharset(charset), request);
+		this(new MessageContext(charset), request);
 	}
 	public Message(byte[] request, Map<String,Object> context) {
 		this(context, request);
@@ -121,7 +115,7 @@ public class Message implements Serializable {
 	}
 	
 	public Message(InputStream request, String charset) {
-		this(createContext().withCharset(charset), request);
+		this(new MessageContext(charset), request);
 	}
 	public Message(InputStream request, Map<String,Object> context) {
 		this(context, request);
@@ -141,9 +135,6 @@ public class Message implements Serializable {
 		return new Message(null, (Object)null);
 	}
 	
-	public static MessageContext createContext() {
-		return new MessageContext();
-	}
 	public static MessageContext createContext(Map<String,Object> base) {
 		return base!=null? new MessageContext(base) : new MessageContext();
 	}
@@ -153,7 +144,7 @@ public class Message implements Serializable {
 	
 	// representing a charset of binary requests 
 	public String getCharset() {
-		return (String)context.get(METADATA_CHARSET);
+		return (String)context.get(MessageContext.METADATA_CHARSET);
 	}
 	/**
 	 * Notify the message object that the request object will be used multiple times.

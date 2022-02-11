@@ -34,7 +34,7 @@ public class FileMessage extends Message {
 	}
 
 	public FileMessage(File file) {
-		this(file, Message.createContext());
+		this(file, new MessageContext());
 	}
 	
 	@Override

@@ -66,7 +66,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 
 		try {
 			
-			PipeRunResult result = super.doPipe(new FileMessage(file, new MessageContext().withCharset(getCharset())), session);
+			PipeRunResult result = super.doPipe(new FileMessage(file, new MessageContext(getCharset())), session);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 

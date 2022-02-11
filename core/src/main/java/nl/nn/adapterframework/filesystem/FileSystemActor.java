@@ -535,7 +535,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	protected boolean canProvideOutputStream() {
 		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND) 
 				&& parameterList.findParameter(PARAMETER_FILENAME)!=null 
-				&& parameterList.isInputValueOrContextRequiredForResolution();
+				&& !parameterList.isInputValueOrContextRequiredForResolution();
 	}
 
 	@Override
