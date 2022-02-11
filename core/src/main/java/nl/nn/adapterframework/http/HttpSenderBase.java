@@ -515,10 +515,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 				httpClientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
 			authState.setState(AuthProtocolState.CHALLENGED);
-			AuthOption authOption = new AuthOption(getPreferredAuthenticationScheme().createScheme(), getCredentials());
-			Queue<AuthOption> authOptionQueue = new LinkedList<>();
-			authOptionQueue.add(authOption);
-			authState.update(authOptionQueue);
+			authState.update(getPreferredAuthenticationScheme().createScheme(), getCredentials());
 		}
 	}
 	
