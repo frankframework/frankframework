@@ -216,7 +216,7 @@ public class HttpSender extends HttpSenderBase {
 
 	@Override
 	protected HttpRequestBase getMethod(URI url, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException {
-		if (isEncodeMessages() && Message.isEmpty(message)) {
+		if (isEncodeMessages() && !Message.isEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
 			} catch (IOException e) {
