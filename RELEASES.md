@@ -77,6 +77,8 @@ Upcoming (7.7)
 - Remove Struts management console (including the IAF-WebControl Configuration)
 - Server healthcheck at /iaf/api/server/health is now publicly accessible. 
   It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
+- Placeholders like ${property} in configuration files are now resolved after the XML is parsed, and should therefor no longer contain characters that 
+  are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
 
 
 
