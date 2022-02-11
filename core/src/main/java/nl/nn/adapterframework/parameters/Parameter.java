@@ -355,24 +355,24 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		return defaultValueMethodsList;
 	}
-	
+
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
 		pool.transform(xmlSource,transformResult, pvl);
 		return (Document) transformResult.getNode();
 	}
-	
-	
+
+
+	/**
+	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
+	 */
 	public boolean requiresInputValueForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
-				&& (getDefaultValueMethodsList().isEmpty() || !getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT))) {
-			return false;
-		}
-		return true;
+		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
