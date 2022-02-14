@@ -44,15 +44,23 @@ public class AttributesWrapper implements Attributes {
 		public String value;
 	}
 
+	public AttributesWrapper(Attributes source) {
+		this(source,(String)null);
+	}
+
 	public AttributesWrapper(Attributes source, String localNameToSkip) {
-		this(source, i->localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i)), false);
+		this(source, i->localNameToSkip==null || !localNameToSkip.equals(source.getLocalName(i)), false, null);
 	}
 
 	public AttributesWrapper(Attributes source, boolean sortAttributeOrder) {
-		this(source, null, sortAttributeOrder);
+		this(source, null, sortAttributeOrder, null);
 	}
 
-	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder) {
+	public AttributesWrapper(Attributes source, Function<String,String> valueTransformer) {
+		this(source, null, false, valueTransformer);
+	}
+
+	protected AttributesWrapper(Attributes source, Function<Integer,Boolean> filter, boolean sortAttributeOrder, Function<String,String> valueTransformer) {
 		for(int i=0;i<source.getLength();i++) {
 			if (filter==null || filter.apply(i)) {
 				Attribute a = new Attribute();
@@ -60,7 +68,7 @@ public class AttributesWrapper implements Attributes {
 				a.localName=source.getLocalName(i);
 				a.qName=source.getQName(i);
 				a.type=source.getType(i);
-				a.value=source.getValue(i);
+				a.value=valueTransformer!=null ? valueTransformer.apply(source.getValue(i)) : source.getValue(i);
 				indexByQName.put(a.qName, i);
 				indexByUriAndLocalName.put(a.uri+":"+a.localName, i);
 				attributes.add(a);
@@ -84,10 +92,6 @@ public class AttributesWrapper implements Attributes {
 				}
 			});
 		}
-	}
-
-	public AttributesWrapper(Attributes source) {
-		this(source,null);
 	}
 
 	@Override

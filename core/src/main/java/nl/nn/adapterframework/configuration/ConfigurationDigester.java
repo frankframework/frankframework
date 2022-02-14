@@ -224,16 +224,18 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Resolve all non-attribute properties
 	 */
 	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		XmlWriter writer;
+		XmlWriter loadedWriter;
 		ContentHandler handler;
 		if(schemaBasedParsing) {
-			writer = new ElementPropertyResolver(appConstants);
-			handler = getStub4TesttoolContentHandler(writer, appConstants);
+			loadedWriter = new ElementPropertyResolver(appConstants);
+			handler = loadedWriter;
+			handler = new AttributePropertyResolver(handler, appConstants);
+			handler = getStub4TesttoolContentHandler(handler, appConstants);
 			handler = getCanonicalizedConfiguration(handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
-			writer = new XmlWriter();
-			handler = writer;
+			loadedWriter = new XmlWriter();
+			handler = loadedWriter;
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();
@@ -242,13 +244,11 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
 
+		String loaded = loadedWriter.toString();
 		if(schemaBasedParsing) {
-			handler = new AttributePropertyResolver(handler, appConstants); //OOPS
-			String loaded = writer.toString();
 			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
 			configuration.setLoadedConfiguration(loadedHide);
 		} else {
-			String loaded = writer.toString();
 			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
 			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
 			configuration.setLoadedConfiguration(loadedHide);

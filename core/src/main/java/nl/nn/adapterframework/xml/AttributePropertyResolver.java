@@ -21,6 +21,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.StringResolver;
+
+
 public class AttributePropertyResolver extends FullXmlFilter {
 	private Properties properties;
 
@@ -28,8 +31,8 @@ public class AttributePropertyResolver extends FullXmlFilter {
 		this(new XmlWriter(), properties);
 	}
 
-	public AttributePropertyResolver(ContentHandler writer, Properties properties) {
-		super(writer);
+	public AttributePropertyResolver(ContentHandler handler, Properties properties) {
+		super(handler);
 		if(properties == null) {
 			throw new IllegalArgumentException("no properties defined");
 		}
@@ -38,7 +41,6 @@ public class AttributePropertyResolver extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		//TODO loop through all attributes and StringResolver.substVars(attributes.getValue(i), properties)
-		super.startElement(uri, localName, qName, attributes);
+		super.startElement(uri, localName, qName, new AttributesWrapper(attributes, v->StringResolver.substVars(v, properties)));
 	}
 }
