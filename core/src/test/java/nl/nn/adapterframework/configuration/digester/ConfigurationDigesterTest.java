@@ -20,6 +20,8 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -42,51 +44,62 @@ public class ConfigurationDigesterTest {
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
-	//Both OLD and NEW configuration parsers should output the same!!
+	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
+	//The new configuration parser returns the configuration with all property not yet resolved
 	@Test
-	public void testConfigurationPreParser() throws Exception {
+	public void testNewConfigurationPreParser() throws Exception {
 		ConfigurationDigester digester = new ConfigurationDigester();
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
+		properties.setProperty("secret", "GEHEIM"); 
+		properties.setProperty("properties.hide", "secret"); 
 		Configuration configuration = new TestConfiguration();
+		
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
+		MatchUtils.assertXmlEquals(expected, result);
+
+		String storedResult = configuration.getLoadedConfiguration();
+		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
+		MatchUtils.assertXmlEquals(storedExpected, storedResult);
 
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
-
-		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
-		MatchUtils.assertXmlEquals(expected, result);
-
 		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
 		MatchUtils.assertXmlEquals(stubbedExpected, stubbedResult);
 
-		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
-		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
 	}
 
-	//Both OLD and NEW configuration parsers should output the same!!
+	//Both OLD and NEW configuration parsers should set the same values for 'loadedConfiguration': properties resolved, secrets hidden
+	//The old configuration parser returns the configuration with all property references resolved
 	@Test
 	public void testOldSchoolConfigurationParser() throws Exception {
 		ConfigurationDigester digester = new ConfigurationDigester();
+		AppConstants.getInstance().put("properties.hide", "secret");
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		properties.setProperty("digester.property", "[ &gt;&quot;&lt; ]"); // old style escaped property values
+		properties.setProperty("secret", "GEHEIM"); 
+		properties.setProperty("properties.hide", "secret"); 
 		Configuration configuration = new TestConfiguration();
+
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-
 		//Unfortunately we need to cleanup the result a bit...
-		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
-		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
-		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
-
-		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfiguration.xml");
-
+		result = cleanupOldStyleResult(result);
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
+		expected = StringResolver.substVars(expected, properties);
 		MatchUtils.assertXmlSimilar(expected, result);
+
+		String storedResult = configuration.getLoadedConfiguration();
+		//Unfortunately we need to cleanup the result a bit...
+		storedResult = cleanupOldStyleResult(storedResult);
+		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
+		MatchUtils.assertXmlSimilar(storedExpected, storedResult);
 
 		digester = new ConfigurationDigester() {
 			@Override
@@ -96,20 +109,21 @@ public class ConfigurationDigesterTest {
 		};
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		String stubbedResult = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
-
 		//Unfortunately we need to cleanup the result a bit...
-		stubbedResult = stubbedResult.replaceAll("(</?module>)", "");//Remove the modules root tag
-		stubbedResult = stubbedResult.replaceAll("(</?exits>)", "");//Remove the exits tag
-		stubbedResult = stubbedResult.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
-
+		stubbedResult = cleanupOldStyleResult(stubbedResult);
 		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-
+		stubbedExpected = StringResolver.substVars(stubbedExpected, properties);
 		MatchUtils.assertXmlSimilar(stubbedExpected, stubbedResult);
-
-		String original = TestFileUtils.getTestFile("/Digester/Original/SimpleConfiguration.xml");
-		MatchUtils.assertXmlEquals(original, configuration.getOriginalConfiguration());
 	}
 
+	private String cleanupOldStyleResult(String result) {
+		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
+		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
+		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
+		return result;
+	}
+	
+	
 	@Test
 	public void simpleXsdWithDefaultAndFixedAttributed() throws Exception {
 		URL schemaURL = TestFileUtils.getTestFileURL("/Digester/resolveDefaultAttribute.xsd");
