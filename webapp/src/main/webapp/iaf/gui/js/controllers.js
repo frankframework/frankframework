@@ -2666,11 +2666,42 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	$scope.sessionKeyIndex=1;
+	$scope.sessionKeyIndices = [$scope.sessionKeyIndex];
+	var sessionKeys = [];
+
+	$scope.updateSessionKeys = function(sessionKey, index) {
+		let sessionKeyIndex = sessionKeys.findIndex(f => f.index===index);	// find by index
+		if(sessionKeyIndex >= 0) {	
+			if(sessionKey.name=="" && sessionKey.value=="") { // remove row if row is empty
+				sessionKeys.splice(sessionKeyIndex, 1);
+				$scope.sessionKeyIndices.splice(sessionKeyIndex, 1);
+			} else { // update existing key value pair
+				sessionKeys[sessionKeyIndex].key = sessionKey.name;
+				sessionKeys[sessionKeyIndex].value = sessionKey.value;
+			}
+			$scope.state = [];
+		} else if(sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != "") {
+			let keyIndex = sessionKeys.findIndex(f => f.key===sessionKey.name);	// find by key
+			// add new key
+			if(keyIndex < 0) {
+				$scope.sessionKeyIndex+=1;
+				$scope.sessionKeyIndices.push($scope.sessionKeyIndex);
+				sessionKeys.push({index:index, key:sessionKey.name, value:sessionKey.value});
+				$scope.state = [];
+			} else { // key with the same name already exists show warning
+				if($scope.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
+					$scope.addNote("warning", "Session keys cannot have the same name!");
+			}
+		}
+		
+	}
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
 		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter and message!");
+			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
 
@@ -2690,9 +2721,14 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
-		if(!formData.message && !$scope.file) {
-			$scope.addNote("warning", "Please specify a file or message!");
-			return;
+		if(sessionKeys.length > 0){
+			let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
+			if(incompleteKeyIndex < 0) {
+				fd.append("sessionKeys", JSON.stringify(sessionKeys));
+			} else {
+				$scope.addNote("warning", "Please make sure all sessionkeys have name and value!");
+				return;
+			}
 		}
 
 		$scope.processingMessage = true;

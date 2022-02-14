@@ -89,4 +89,11 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		String expected="{\"result\":\"Test1.txt:SUCCESS\\nTest2.txt:SUCCESS\",\"state\":\"SUCCESS\"}";
 		assertEquals(expected, response.getEntity().toString());
 	}
+
+	@Test
+	public void testGetIbisContext() throws Exception {
+		TestPipeline testPipeline = createJaxRsResource();
+		String input = "<?ibiscontext key1=value1 key2=value2 ?> <test/>";
+		assertEquals("{key1=value1 key2=value2}", testPipeline.getIbisContext(input).toString());
+	}
 }
