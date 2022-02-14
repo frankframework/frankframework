@@ -54,8 +54,8 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
-		properties.setProperty("secret", "GEHEIM"); 
-		properties.setProperty("properties.hide", "secret"); 
+		properties.setProperty("secret", "GEHEIM");
+		properties.setProperty("properties.hide", "secret");
 		Configuration configuration = new TestConfiguration();
 		
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
@@ -84,8 +84,8 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		properties.setProperty("digester.property", "[ &gt;&quot;&lt; ]"); // old style escaped property values
-		properties.setProperty("secret", "GEHEIM"); 
-		properties.setProperty("properties.hide", "secret"); 
+		properties.setProperty("secret", "GEHEIM");
+		properties.setProperty("properties.hide", "secret");
 		Configuration configuration = new TestConfiguration();
 
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
@@ -116,8 +116,8 @@ public class ConfigurationDigesterTest {
 		MatchUtils.assertXmlSimilar(stubbedExpected, stubbedResult);
 	}
 
-	private String cleanupOldStyleResult(String result) {
-		result = result.replaceAll("(</?module>)", "");//Remove the modules root tag
+	private String cleanupOldStyleResult(String oldStyleResult) {
+		String result = oldStyleResult.replaceAll("(</?module>)", "");//Remove the modules root tag
 		result = result.replaceAll("(</?exits>)", "");//Remove the exits tag
 		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
 		return result;
