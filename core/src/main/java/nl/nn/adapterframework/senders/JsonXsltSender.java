@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,6 +63,10 @@ public class JsonXsltSender extends XsltSender {
 
 	@Override
 	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
+		if (!canProvideOutputStream()) {
+			log.debug("sender [{}] cannot provide outputstream", () -> getName());
+			return null;
+		}
 		ThreadConnector threadConnector = isStreamingXslt() ? new ThreadConnector(this, threadLifeCycleEventListener, txManager, session) : null; 
 		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		ContentHandler handler = createHandler(null, threadConnector, session, target);

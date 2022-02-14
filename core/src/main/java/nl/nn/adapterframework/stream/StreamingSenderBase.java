@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -23,11 +24,28 @@ import nl.nn.adapterframework.senders.SenderWithParametersBase;
 
 public abstract class StreamingSenderBase extends SenderWithParametersBase implements IStreamingSender {
 
+	private boolean canProvideOutputStream;
+
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		canProvideOutputStream = getParameterList()==null || !getParameterList().isInputValueRequiredForResolution();
+	}
+	
 	@Override
 	// can make this sendMessage() 'final', debugging handled by IStreamingSender.sendMessage(), that includes the MessageOutputStream
 	public final Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		PipeRunResult result = sendMessage(message, session, null);
 		return result.getResult();
+	}
+
+	/**
+	 * returns true when there are no parameters that require the input value or context 
+	 * (or other side effects inhibiting providing an outputstream, to be determined by descendants)
+	 */
+	protected boolean canProvideOutputStream() {
+		return canProvideOutputStream;
 	}
 
 	@Override
