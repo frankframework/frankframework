@@ -4,17 +4,15 @@
 	<packaging>pom</packaging>
 	<artifactId>ibis-adapterframework-docker</artifactId>
 	<name>Ibis AdapterFramework Docker images</name>
-	<version>${revision}</version>
 
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.8-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 	<properties>
-		<iaf.version>7.8-SNAPSHOT</iaf.version>
-		<revision>${iaf.version}</revision>
+		<iaf.version>${revision}</iaf.version>
 		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>

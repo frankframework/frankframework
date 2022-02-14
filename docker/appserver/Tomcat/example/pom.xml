@@ -17,7 +17,7 @@
 		<config.tag>example</config.tag>
 		<config.groupid>org.ibissource</config.groupid>
 		<config.project>ibis-adapterframework-${config.tag}</config.project>
-		<config.project.version>${iaf.version}</config.project.version>
+		<config.project.version>${project.version}</config.project.version>
 	</properties>
 	
 	
@@ -25,7 +25,7 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-docker-as-tomcat</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
