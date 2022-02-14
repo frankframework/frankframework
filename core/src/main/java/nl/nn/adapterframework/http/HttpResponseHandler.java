@@ -45,8 +45,11 @@ public class HttpResponseHandler {
 			httpEntity = httpResponse.getEntity();
 
 			MessageContext context = new MessageContext();
-			for(Header header:resp.getAllHeaders()) {
-				context.put(header.getName(),header.getValue());
+			Header[] headers = resp.getAllHeaders();
+			if (headers!=null) {
+				for(Header header:headers) {
+					context.put(header.getName(),header.getValue());
+				}
 			}
 			context.withCharset(getCharset());
 			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); //Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
