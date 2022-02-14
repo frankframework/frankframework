@@ -644,6 +644,16 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * PipeLine exits.
 	 * @ff.mandatory
 	 */
+	public void setPipeLineExits(PipeLineExits exits) {
+		for(PipeLineExit exit:exits.getExits()) {
+			registerPipeLineExit(exit);
+		}
+	}
+
+	/** 
+	 * PipeLine exits.
+	 * @ff.deprecated
+	 */
 	public void registerPipeLineExit(PipeLineExit exit) {
 		if (pipeLineExits.containsKey(exit.getPath())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getPath()+"] already exists");
@@ -660,6 +670,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** Global forwards */
+	public void setGlobalForwards(PipeForwards forwards){
+		for(PipeForward forward:forwards.getForwards()) {
+			registerForward(forward);
+		}
+	}
+
+	@Deprecated
 	public void registerForward(PipeForward forward){
 		globalForwards.put(forward.getName(), forward);
 		log.debug("registered global PipeForward "+forward.toString());

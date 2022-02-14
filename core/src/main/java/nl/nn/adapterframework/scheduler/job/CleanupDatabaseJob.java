@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package nl.nn.adapterframework.scheduler.job;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -64,7 +65,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 		@Override
 		public boolean equals(Object o) {
-			if(o == null || !(o instanceof MessageLogObject)) return false;
+			if(!(o instanceof MessageLogObject)) return false;
 
 			MessageLogObject mlo = (MessageLogObject) o;
 			if (mlo.getDatasourceName().equals(datasourceName) &&
@@ -98,15 +99,10 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) {
-		Date date = new Date();
+	public void beforeExecuteJob(IbisManager ibisManager) {
+		Set<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
 
-		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
-
-		List<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
-
-		for (Iterator<String> iter = datasourceNames.iterator(); iter.hasNext();) {
-			String datasourceName = iter.next();
+		for (String datasourceName : datasourceNames) {
 			FixedQuerySender qs = null;
 			try {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
@@ -117,7 +113,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
-				Parameter param = new Parameter("now", DateUtils.format(date));
+				Parameter param = new Parameter("now", DateUtils.format(new Date()));
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 				qs.configure();
@@ -125,7 +121,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 				Message result = qs.sendMessage(Message.nullMessage(), null);
 				String resultString = result.asString();
-				int numberOfRowsAffected = Integer.valueOf(resultString);
+				int numberOfRowsAffected = Integer.parseInt(resultString);
 				if(numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -139,6 +135,13 @@ public class CleanupDatabaseJob extends JobDef {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void execute(IbisManager ibisManager) {
+		Date date = new Date();
+
+		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
 
 		List<MessageLogObject> messageLogs = getAllMessageLogs(ibisManager);
 
@@ -189,14 +192,14 @@ public class CleanupDatabaseJob extends JobDef {
 	 * Locate all Lockers, and find out which datasources are used.
 	 * @return distinct list of all datasourceNames used by lockers
 	 */
-	protected List<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
-		List<String> datasourceNames = new ArrayList<>();
+	protected Set<String> getAllLockerDatasourceNames(IbisManager ibisManager) {
+		Set<String> datasourceNames = new HashSet<>();
 
 		for (Configuration configuration : ibisManager.getConfigurations()) {
 			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
-					if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+					if(StringUtils.isNotEmpty(datasourceName)) {
 						datasourceNames.add(datasourceName);
 					}
 				}
@@ -211,7 +214,7 @@ public class CleanupDatabaseJob extends JobDef {
 						IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
 						if (extendedPipe.getLocker() != null) {
 							String datasourceName = extendedPipe.getLocker().getDatasourceName();
-							if(StringUtils.isNotEmpty(datasourceName) && !datasourceNames.contains(datasourceName)) {
+							if(StringUtils.isNotEmpty(datasourceName)) {
 								datasourceNames.add(datasourceName);
 							}
 						}
@@ -224,7 +227,7 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
-		if (transactionalStorage!=null && transactionalStorage instanceof JdbcTransactionalStorage) {
+		if (transactionalStorage instanceof JdbcTransactionalStorage) {
 			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>)transactionalStorage;
 			String datasourceName = messageLog.getDatasourceName();
 			String expiryDateField = messageLog.getExpiryDateField();

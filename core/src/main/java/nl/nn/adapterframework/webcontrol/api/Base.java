@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2021 WeAreFrank!
+Copyright 2016-2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -155,7 +155,8 @@ public abstract class Base implements ApplicationContextAware {
 			InputStream is = msg.getObject(InputStream.class);
 
 			try {
-				return Misc.streamToString(is, "\n", encoding, false);
+				String inputMessage = Misc.streamToString(is, "\n", encoding, false);
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
 			} catch (UnsupportedEncodingException e) {
 				throw new ApiException("unsupported file encoding ["+encoding+"]");
 			} catch (IOException e) {

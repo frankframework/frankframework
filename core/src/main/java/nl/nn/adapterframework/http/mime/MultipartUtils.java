@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.LogUtil;
@@ -28,6 +29,7 @@ public abstract class MultipartUtils {
 
 	public static final String FORM_DATA = "form-data";
 	public static final String MULTIPART = "multipart/";
+	public static final String ATTACHMENT = "attachment";
 
 	public static boolean isMultipart(HttpServletRequest request) {
 		String httpMethod = request.getMethod().toUpperCase();
@@ -58,12 +60,38 @@ public abstract class MultipartUtils {
 		return null;
 	}
 
+	/**
+	 * Check for the filename in the <code>Content-Disposition</code> header.
+	 * Eg. Content-Disposition form-data; name="file"; filename="dummy.jpg"
+	 * Eg. Content-Disposition attachment; filename="dummy.jpg"
+	 */
+	public static String getFileName(BodyPart part) throws MessagingException {
+		String[] cd = part.getHeader("Content-Disposition");
+		if(cd != null) {
+			String cdFields = cd[0];
+			if (cdFields.startsWith(FORM_DATA) || cdFields.startsWith(ATTACHMENT)) {
+				String filename = parseParameterField(cdFields, "filename");
+				if(StringUtils.isNotEmpty(filename)) {
+					return filename.trim();
+				}
+			}
+		}
+		return null;
+	}
+
 	public static boolean isBinary(BodyPart part) {
 		try {
-			String[] cd = part.getHeader("Content-Transfer-Encoding");
-			if(cd != null) {
-				String cdFields = cd[0]; //Content-Transfer-Encoding - binary || 8bit
-				if(cdFields != null && cdFields.equalsIgnoreCase("binary")) {
+			//Check if a filename is present (indicating it's a file and not a field)
+			String filename = getFileName(part);
+			if(filename != null) {
+				return true;
+			}
+
+			//Check if the transfer encoding has been set when MTOM
+			String[] cte = part.getHeader("Content-Transfer-Encoding");
+			if(cte != null) {
+				String cteFields = cte[0]; //Content-Transfer-Encoding - binary || 8bit
+				if(cteFields != null && cteFields.equalsIgnoreCase("binary")) {
 					return true;
 				}
 			}

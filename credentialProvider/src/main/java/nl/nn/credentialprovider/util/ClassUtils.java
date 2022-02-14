@@ -242,11 +242,11 @@ public class ClassUtils {
 		}
 	}
 	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Method getterMtd = o.getClass().getMethod(name, null );
+		Method getterMtd = o.getClass().getMethod(name);
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
 		}
-		return getterMtd.invoke(o,null);
+		return getterMtd.invoke(o);
 	}
 	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		return invokeGetter(o,name,false);

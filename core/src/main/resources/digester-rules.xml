@@ -7,11 +7,11 @@
 
 	<rule pattern="*/include" factory="nl.nn.adapterframework.configuration.digester.ConfigurationDigesterFactory" selfRegisterMethod="include"/>
 
-	<rule pattern="configuration/jmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
+	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
-	<rule pattern="configuration/sapSystems/"/>
-	<rule pattern="*/sapSystem" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
+	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems"/>
+	<rule pattern="*/sapSystem" registerMethod="registerSapSystems" object="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
 	<rule pattern="*/adapter" registerMethod="registerAdapter" beanClass="nl.nn.adapterframework.core.Adapter"/>
 	<rule pattern="*/adapter/pipeline" registerMethod="setPipeLine" beanClass="nl.nn.adapterframework.core.PipeLine"/>
@@ -34,12 +34,15 @@
 	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe" beanClass="nl.nn.adapterframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
+	<rule pattern="*/global-forwards" registerMethod="setGlobalForwards"/>
 	<rule pattern="*/forward" registerMethod="registerForward" beanClass="nl.nn.adapterframework.core.PipeForward"/>
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
 	<rule pattern="*/inputFields" registerMethod="registerInputFields"/>
+	<rule pattern="*/exits" registerMethod="setPipeLineExits"/>
 	<rule pattern="*/exit" registerMethod="registerPipeLineExit" beanClass="nl.nn.adapterframework.core.PipeLineExit"/>
 
+	<rule pattern="configuration/scheduler" registerMethod="setScheduleManager"/>
 	<rule pattern="*/job" factory="nl.nn.adapterframework.configuration.digester.JobFactory" registerMethod="registerScheduledJob"/>
 	<rule pattern="*/locker" registerMethod="setLocker" beanClass="nl.nn.adapterframework.util.Locker"/>
 	<rule pattern="*/param" registerMethod="addParameter" beanClass="nl.nn.adapterframework.parameters.Parameter"/>
@@ -48,7 +51,7 @@
 	<!-- batch related rules -->
 	<rule pattern="*/readerFactory" registerMethod="setReaderFactory"/>
 	<rule pattern="*/manager" registerMethod="registerManager"/>
-	<rule pattern="*/manager/flow" factory="nl.nn.adapterframework.configuration.digester.RecordHandlingFlowFactory" registerMethod="addHandler" beanClass="nl.nn.adapterframework.batch.RecordHandlingFlow" />
+	<rule pattern="*/manager/flow" registerMethod="addHandler" beanClass="nl.nn.adapterframework.batch.RecordHandlingFlow" />
 	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
@@ -57,11 +60,11 @@
 	<rule pattern="*/cache" registerMethod="setCache" beanClass="nl.nn.adapterframework.cache.EhCache"/>
 
 	<!-- Digester rules for monitoring -->
-	<rule pattern="configuration/monitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
+	<rule pattern="configuration/monitoring" registerMethod="setMonitoring" factory="nl.nn.adapterframework.monitoring.MonitoringFactory"/>
 
 	<rule pattern="*/destination" registerMethod="registerDestination" beanClass="nl.nn.adapterframework.monitoring.IMonitorAdapter"/>
 
-	<rule pattern="*/monitoring/monitor" registerMethod="addMonitor" beanClass="nl.nn.adapterframework.monitoring.Monitor"/>
+	<rule pattern="*/monitor" registerMethod="addMonitor" beanClass="nl.nn.adapterframework.monitoring.Monitor"/>
 
 	<rule pattern="*/monitor/trigger" registerMethod="registerTrigger" beanClass="nl.nn.adapterframework.monitoring.Trigger"/>
 	<rule pattern="*/monitor/trigger/event" registerTextMethod="addEventCode"/>
