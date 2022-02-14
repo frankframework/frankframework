@@ -59,15 +59,17 @@ public class MessageEncoder extends MessageEncoderImpl {
 					} 
 					StringWriter writer = new StringWriter();
 					try (Reader reader = m.asReader()){
+						m.toStringPrefix(writer);
 						IOUtils.copy(new BoundedReader(reader, testTool.getMaxMessageLength()), writer);
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
 					return new ToStringResult(writer.toString(), null, m.getRequestClass().getTypeName());
 				}
-				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
+				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
 			}
-			return super.toString(m.asObject(), charset);
+//			return super.toString(m.asObject(), charset);
+			return super.toString(m, charset);
 		}
 		if (message instanceof WriterPlaceHolder) {
 			return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, "request to provide outputstream");

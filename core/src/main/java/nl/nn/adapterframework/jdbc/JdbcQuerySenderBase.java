@@ -957,6 +957,10 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		this.packageContent = packageContent;
 	}
 
+	/**
+	 * Type of query to be executed
+	 * @ff.default OTHER
+	 */
 	public void setQueryType(String queryType) {
 		if ("insert".equalsIgnoreCase(queryType) || "delete".equalsIgnoreCase(queryType) || "update".equalsIgnoreCase(queryType)) {
 			this.queryType=QueryType.OTHER;

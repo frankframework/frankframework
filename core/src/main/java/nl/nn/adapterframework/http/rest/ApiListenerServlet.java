@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -461,7 +462,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 							String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
-								body = new PartMessage(bodyPart);
+								body = new PartMessage(bodyPart, getContext(request));
 							}
 
 							XmlBuilder attachment = new XmlBuilder("part");
@@ -504,7 +505,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				} else {
 					//If content is present (POST/PUT) one of these headers must be set (see https://www.rfc-editor.org/rfc/rfc7230#section-3.3)
 					if(request.getContentLength() > -1 || request.getHeader("transfer-encoding") != null) {
-						body = parseContentAsMessage(request.getInputStream(), request.getContentType());
+						body = parseContentAsMessage(request.getInputStream(), request.getContentType(), request);
 					} else {
 						body = Message.nullMessage();
 					}
@@ -611,7 +612,22 @@ public class ApiListenerServlet extends HttpServletBase {
 		}
 	}
 
-	private Message parseContentAsMessage(InputStream inputStream, String contentType) {
+	public MessageContext getContext(HttpServletRequest request) {
+		MessageContext result = new MessageContext();
+		result.withCharset(request.getCharacterEncoding());
+		int contentLength = request.getContentLength();
+		if (contentLength>=0) {
+			result.withSize(contentLength);
+		}
+		Enumeration<String> names=request.getHeaderNames(); 
+		while(names.hasMoreElements()) {
+			String name=names.nextElement();
+			result.put(name,request.getHeader(name));
+		}
+		return result;
+	}
+
+	private Message parseContentAsMessage(InputStream inputStream, String contentType, HttpServletRequest request) {
 		String charset = null;
 		if(StringUtils.isNotEmpty(contentType)) {
 			try {
@@ -625,7 +641,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				log.warn("unable to parse charset from contentType [{}]", contentType, e);
 			}
 		}
-		return new Message(inputStream, charset);
+		return new Message(inputStream, getContext(request).withCharset(charset));
 	}
 
 	@Override

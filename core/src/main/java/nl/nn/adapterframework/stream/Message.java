@@ -34,6 +34,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.transform.Source;
@@ -462,15 +463,43 @@ public class Message implements Serializable {
 		return request == null || request instanceof String && ((String)request).isEmpty();
 	}
 
+	public void toStringPrefix(Writer writer) throws IOException {
+		if (context==null || context.isEmpty()) {
+			return;
+		}
+		writer.write("context:\n");
+		for(Entry<String,Object> entry:context.entrySet()) {
+			writer.write(entry.getKey()+": "+entry.getValue()+"\n");
+		}
+		writer.write("value\n");
+	}
+	public String toStringPrefix() {
+		StringWriter result = new StringWriter();
+		try {
+			toStringPrefix(result);
+		} catch (IOException e) {
+			result.write("cannot write toStringPrefix: "+e.getMessage());
+		}
+		return result.toString();
+	}
+	
 	/**
 	 * toString can be used to inspect the message. It does not convert the 'request' to a string. 
 	 */
 	@Override
 	public String toString() {
-		if (request==null) {
-			return "null";
+		StringWriter result = new StringWriter();
+		try {
+			toStringPrefix(result);
+			if (request==null) {
+				result.write("null");
+			} else {
+				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+			}
+		} catch (IOException e) {
+			result.write("cannot write toString: "+e.getMessage());
 		}
-		return (getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString();
+		return result.toString();
 	}
 
 	public static Message asMessage(Object object) {

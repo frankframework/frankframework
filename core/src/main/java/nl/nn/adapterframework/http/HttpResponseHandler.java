@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpResponseHandler {
@@ -43,8 +44,13 @@ public class HttpResponseHandler {
 		if(httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
 
+			MessageContext context = new MessageContext();
+			for(Header header:resp.getAllHeaders()) {
+				context.put(header.getName(),header.getValue());
+			}
+			context.withCharset(getCharset());
 			InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent()); //Wrap the contentStream in a ReleaseConnectionAfterReadInputStream
-			responseMessage = new Message(entityStream, getCharset());
+			responseMessage = new Message(entityStream, context);
 		}
 	}
 
