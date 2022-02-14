@@ -20,7 +20,6 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -39,7 +38,7 @@ public class ConfigurationDigesterTest {
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);
 		String result = writer.toString();
-		String expected = TestFileUtils.getTestFile("/Digester/Resolved/SimpleConfiguration.xml");
+		String expected = TestFileUtils.getTestFile("/Digester/Canonicalized/SimpleConfiguration.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 
@@ -51,6 +50,7 @@ public class ConfigurationDigesterTest {
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 
@@ -75,6 +75,7 @@ public class ConfigurationDigesterTest {
 		Properties properties = new Properties();
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		properties.setProperty("digester.property", "[ &gt;&quot;&lt; ]"); // old style escaped property values
 		Configuration configuration = new TestConfiguration();
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, false);
 

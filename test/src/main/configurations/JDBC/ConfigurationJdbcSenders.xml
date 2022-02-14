@@ -17,6 +17,42 @@
 				xpathExpression="/request/@action" getInputFromSessionKey="originalMessage"
 			/>
 
+			<pipe name="SelectDynamic1">
+				<FixedQuerySender query="${dynamicQuery}" queryType="SELECT">
+				<Param name="value" value="10000"/>
+				</FixedQuerySender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="SelectDynamic2">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="${dynamicQuery}" queryType="SELECT">
+				<Param name="value" value="10000"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="SelectStatic1">
+				<FixedQuerySender query="SELECT * FROM IBISTEMP WHERE TKEY &lt; ?" queryType="SELECT">
+				<Param name="value" value="10000"/>
+				</FixedQuerySender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="SelectStatic2">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT * FROM IBISTEMP WHERE TKEY &lt; ?" queryType="SELECT">
+				<Param name="value" value="10000"/>
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="XsltParam" className="nl.nn.adapterframework.pipes.XsltPipe" getInputFromFixedValue="&lt;dummy/&gt;" styleSheetName="xsl/LimitDocumentNameLength.xsl">
+			<pipe name="XsltParam" className="nl.nn.adapterframework.pipes.XsltPipe" getInputFromFixedValue="&lt;dummy/&gt;" styleSheetName="xsl/LimitDocumentNameLength.xsl">
+				<param name="documentName" value="proof.png"/>
+				<param name="replaceCharacters" value="/:*?&quot;&lt;&gt;|"/>
+				<param name="replaceCharactersHyphen" value="–"/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+
 			<pipe name="DirectQuerySender" getInputFromSessionKey="query">
 				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" queryType="select" scalar="true"/>
 				<forward name="success" path="EXIT" />

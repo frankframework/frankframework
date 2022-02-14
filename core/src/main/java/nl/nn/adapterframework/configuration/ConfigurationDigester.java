@@ -56,6 +56,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.AttributePropertyResolver;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.NamespacedContentsRemovingFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -223,16 +224,18 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Resolve all non-attribute properties
 	 */
 	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		XmlWriter writer;
+		XmlWriter loadedWriter;
 		ContentHandler handler;
 		if(schemaBasedParsing) {
-			writer = new ElementPropertyResolver(appConstants);
-			handler = getStub4TesttoolContentHandler(writer, appConstants);
+			loadedWriter = new ElementPropertyResolver(appConstants);
+			handler = loadedWriter;
+			handler = new AttributePropertyResolver(handler, appConstants);
+			handler = getStub4TesttoolContentHandler(handler, appConstants);
 			handler = getCanonicalizedConfiguration(handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
-			writer = new XmlWriter();
-			handler = writer;
+			loadedWriter = new XmlWriter();
+			handler = loadedWriter;
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();
@@ -240,8 +243,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
-		String loaded = writer.toString();
 
+		String loaded = loadedWriter.toString();
 		if(schemaBasedParsing) {
 			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
 			configuration.setLoadedConfiguration(loadedHide);
