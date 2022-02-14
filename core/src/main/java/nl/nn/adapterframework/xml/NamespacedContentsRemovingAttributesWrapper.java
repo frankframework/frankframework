@@ -25,7 +25,7 @@ import org.xml.sax.Attributes;
  *
  */
 public class NamespacedContentsRemovingAttributesWrapper extends AttributesWrapper {
-	
+
 	public NamespacedContentsRemovingAttributesWrapper(Attributes source) {
 		super(source,i->StringUtils.isEmpty(source.getURI(i)),false);
 	}

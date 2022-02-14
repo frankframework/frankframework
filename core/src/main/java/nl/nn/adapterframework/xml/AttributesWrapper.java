@@ -31,11 +31,11 @@ import org.xml.sax.Attributes;
  *
  */
 public class AttributesWrapper implements Attributes {
-	
+
 	private Map<String,Integer> indexByQName=new LinkedHashMap<String,Integer>();
 	private Map<String,Integer> indexByUriAndLocalName=new LinkedHashMap<String,Integer>();
 	private List<Attribute> attributes = new ArrayList<Attribute>();
-	
+
 	private class Attribute {
 		public String uri;
 		public String localName;
@@ -75,7 +75,7 @@ public class AttributesWrapper implements Attributes {
 					if ("".equals(o1Name)) {
 						o1Name = o1.uri;
 					}
-	
+
 					String o2Name = o2.localName;
 					if ("".equals(o2Name)) {
 						o2Name = o2.uri;

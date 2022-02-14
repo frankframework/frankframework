@@ -232,7 +232,15 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	public String generateDot(IAdapter adapter) throws TransformerException, IOException, SAXException {
-		return transformerPoolAdapter.transform(adapter.getAdapterConfigurationAsString(), null);
+		return transformerPoolAdapter.transform(getAdapterConfigurationAsString(adapter), null);
+	}
+
+	public String getAdapterConfigurationAsString(IAdapter adapter) {
+		String loadedConfig = adapter.getConfiguration().getLoadedConfiguration();
+		String encodedName = StringUtils.replace(adapter.getName(), "'", "''");
+		String xpath = "//adapter[@name='" + encodedName + "']";
+
+		return XmlUtils.copyOfSelect(loadedConfig, xpath);
 	}
 
 	public String generateDot(Configuration config) throws TransformerException, IOException, SAXException {

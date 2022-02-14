@@ -56,6 +56,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.AttributePropertyResolver;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
 import nl.nn.adapterframework.xml.NamespacedContentsRemovingFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -240,12 +241,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
-		String loaded = writer.toString();
 
 		if(schemaBasedParsing) {
+			handler = new AttributePropertyResolver(handler, appConstants); //OOPS
+			String loaded = writer.toString();
 			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
 			configuration.setLoadedConfiguration(loadedHide);
 		} else {
+			String loaded = writer.toString();
 			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
 			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
 			configuration.setLoadedConfiguration(loadedHide);
