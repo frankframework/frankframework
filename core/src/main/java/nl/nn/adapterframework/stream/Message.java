@@ -487,16 +487,18 @@ public class Message implements Serializable {
 	@Override
 	public String toString() {
 		StringWriter result = new StringWriter();
+		if (request==null) {
+			result.write("null");
+		} else {
+			result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+		}
+
 		try {
 			toStringPrefix(result);
-			if (request==null) {
-				result.write("null");
-			} else {
-				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
-			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
 		}
+
 		return result.toString();
 	}
 
@@ -637,6 +639,10 @@ public class Message implements Serializable {
 		}
 		if (request instanceof byte[]) {
 			return ((byte[]) request).length;
+		}
+
+		if(context.containsKey(MessageContext.METADATA_SIZE)) {
+			return (long) context.get(MessageContext.METADATA_SIZE);
 		}
 
 		if(!(request instanceof InputStream || request instanceof Reader)) {

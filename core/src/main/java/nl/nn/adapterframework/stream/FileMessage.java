@@ -20,9 +20,9 @@ import java.io.FileInputStream;
 import java.util.Map;
 
 public class FileMessage extends Message {
-	
+
 	private File file;
-	
+
 	public FileMessage(File file, Map<String,Object> context) {
 		super(() -> new FileInputStream(file), new MessageContext(context)
 				.withModificationTime(file.lastModified())
@@ -36,7 +36,7 @@ public class FileMessage extends Message {
 	public FileMessage(File file, String charset) {
 		this(file, new MessageContext(charset));
 	}
-	
+
 	public FileMessage(File file) {
 		this(file, new MessageContext());
 	}

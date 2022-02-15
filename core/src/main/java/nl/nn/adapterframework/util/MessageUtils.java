@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -84,12 +83,16 @@ public abstract class MessageUtils {
 	}
 
 	public static String computeContentType(Message message) {
-		if(Message.isEmpty(message)) {
+		if(Message.isEmpty(message) || message.getContext() == null) {
 			return null;
 		}
 
-		Map<String, Object> messageMetadata = message.getContext();
-		StringBuilder contentType = new StringBuilder((String) messageMetadata.get(MessageContext.METADATA_MIMETYPE));
+		String mimeType = (String)message.getContext().get(MessageContext.METADATA_MIMETYPE);
+		if(StringUtils.isEmpty(mimeType)) {
+			return null;
+		}
+
+		StringBuilder contentType = new StringBuilder(mimeType);
 		if(!message.isBinary()) {
 			contentType.append(";charset=");
 			contentType.append(message.getCharset());
