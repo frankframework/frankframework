@@ -40,7 +40,7 @@ public class CheckReloadJob extends JobDef {
 	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
 	@Override
-	public boolean isRunJob(IbisManager ibisManager) {
+	public boolean beforeExecuteJob(IbisManager ibisManager) {
 		if(!atLeastOneConfigrationHasDBClassLoader) {
 			for (Configuration configuration : ibisManager.getConfigurations()) {
 				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {

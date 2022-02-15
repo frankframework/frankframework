@@ -346,9 +346,9 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		countThreads--;
 	}
 
-	/** Called before executeJob to prepare resources for executeJob method. */
-	public void beforeExecuteJob(IbisManager ibisManager) {
-		// Override this in subclasses when necessary
+	/** Called before executeJob to prepare resources for executeJob method. Returns false if job does not need to run */
+	public boolean beforeExecuteJob(IbisManager ibisManager) {
+		return true;
 	}
 
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
@@ -361,37 +361,40 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			return;
 		}
 		try {
-			beforeExecuteJob(ibisManager);
-			if (getLocker() != null) {
-				String objectId = null;
-				try {
-					objectId = getLocker().acquire(getMessageKeeper());
-				} catch (Exception e) {
-					getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-					log.error(getLogPrefix()+e.getMessage());
-				}
-				if (objectId!=null) {
-					TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+			if(beforeExecuteJob(ibisManager)) {
+				if (getLocker() != null) {
+					String objectId = null;
 					try {
-						tg.activateGuard(getTransactionTimeout());
-						runJob(ibisManager);
-					} finally {
-						if (tg.cancel()) {
-							log.error(getLogPrefix()+"thread has been interrupted");
-						}
-					}
-					try {
-						getLocker().release(objectId);
+						objectId = getLocker().acquire(getMessageKeeper());
 					} catch (Exception e) {
-						String msg = "error while removing lock: " + e.getMessage();
-						getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
-						log.warn(getLogPrefix()+msg);
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
+						log.error(getLogPrefix()+e.getMessage());
+					}
+					if (objectId!=null) {
+						TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+						try {
+							tg.activateGuard(getTransactionTimeout());
+							runJob(ibisManager);
+						} finally {
+							if (tg.cancel()) {
+								log.error(getLogPrefix()+"thread has been interrupted");
+							}
+						}
+						try {
+							getLocker().release(objectId);
+						} catch (Exception e) {
+							String msg = "error while removing lock: " + e.getMessage();
+							getMessageKeeper().add(msg, MessageKeeperLevel.WARN);
+							log.warn(getLogPrefix()+msg);
+						}
+					} else {
+						getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
 					}
 				} else {
-					getMessageKeeper().add("unable to acquire lock ["+getName()+"] did not run");
+					runJob(ibisManager);
 				}
 			} else {
-				runJob(ibisManager);
+				getMessageKeeper().add("job execution skipped");
 			}
 		} finally {
 			decrementCountThreads();
@@ -399,35 +402,24 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	/**
-	 * Checks if job needs to run
-	 */
-	public boolean isRunJob(IbisManager ibisManager) {
-		return true;
-	}
-
-	/**
 	 * Wrapper around running the job, to log and deal with Exception in a uniform manner.
 	 */
 	private void runJob(IbisManager ibisManager) {
-		if(isRunJob(ibisManager)) {
-			long startTime = System.currentTimeMillis();
-			getMessageKeeper().add("starting to run the job");
+		long startTime = System.currentTimeMillis();
+		getMessageKeeper().add("starting to run the job");
 
-			try {
-				execute(ibisManager);
-			} catch (Exception e) {
-				String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
-				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg, e);
-			}
-
-			long endTime = System.currentTimeMillis();
-			long duration = endTime - startTime;
-			statsKeeper.addValue(duration);
-			getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
-		} else {
-			getMessageKeeper().add("job execution skipped");
+		try {
+			execute(ibisManager);
+		} catch (Exception e) {
+			String msg = "error while executing job ["+this+"] (as part of scheduled job execution): " + e.getMessage();
+			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+			log.error(getLogPrefix()+msg, e);
 		}
+
+		long endTime = System.currentTimeMillis();
+		long duration = endTime - startTime;
+		statsKeeper.addValue(duration);
+		getMessageKeeper().add("finished running the job in ["+(duration)+"] ms");
 	}
 
 	protected String getLogPrefix() {
