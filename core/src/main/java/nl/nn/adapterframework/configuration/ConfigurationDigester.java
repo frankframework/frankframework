@@ -303,8 +303,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
 		}
-	}	
-	
+	}
+
 	/**
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is

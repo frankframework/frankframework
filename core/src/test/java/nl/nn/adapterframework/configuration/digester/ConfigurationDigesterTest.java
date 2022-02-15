@@ -57,7 +57,7 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("secret", "GEHEIM");
 		properties.setProperty("properties.hide", "secret");
 		Configuration configuration = new TestConfiguration();
-		
+
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
