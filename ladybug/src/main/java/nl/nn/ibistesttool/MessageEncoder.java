@@ -68,8 +68,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 				}
 				return new ToStringResult(m.toStringPrefix()+WAITING_FOR_STREAM_MESSAGE, null, m.getRequestClass().getTypeName());
 			}
-//			return super.toString(m.asObject(), charset);
-			return super.toString(m, charset);
+			return super.toString(m.asObject(), charset);
 		}
 		if (message instanceof WriterPlaceHolder) {
 			return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, "request to provide outputstream");

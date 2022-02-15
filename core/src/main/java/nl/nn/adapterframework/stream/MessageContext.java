@@ -32,6 +32,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";
 	public static final String METADATA_NAME = "Metadata.Name";
 	public static final String METADATA_LOCATION = "Metadata.Location";
+	public static final String METADATA_MIMETYPE = "Metadata.MimeType";
 
 	public MessageContext() {
 		super();
@@ -61,6 +62,10 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		if (charset!=null) {
 			put(METADATA_CHARSET, charset.name());
 		}
+		return this;
+	}
+	public MessageContext withMimeType(String mimeType) {
+		put(METADATA_MIMETYPE, mimeType);
 		return this;
 	}
 	public MessageContext withSize(long size) {
