@@ -57,7 +57,7 @@ public class ConfigurationDigesterTest {
 		properties.setProperty("secret", "GEHEIM");
 		properties.setProperty("properties.hide", "secret");
 		Configuration configuration = new TestConfiguration();
-		
+
 		String result = digester.resolveEntitiesAndProperties(configuration, resource, properties, true);
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
@@ -122,8 +122,8 @@ public class ConfigurationDigesterTest {
 		result = result.replace("<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">", "").replace("</root>", "");//Remove the root tag
 		return result;
 	}
-	
-	
+
+
 	@Test
 	public void simpleXsdWithDefaultAndFixedAttributed() throws Exception {
 		URL schemaURL = TestFileUtils.getTestFileURL("/Digester/resolveDefaultAttribute.xsd");
