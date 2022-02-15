@@ -32,7 +32,7 @@
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
 						maxCommentLength="100"
-						selectCondition="TNUMBER=${jdbc.querylistener.key} AND 0&lt;1"
+						selectCondition="TNUMBER=${jdbc.querylistener.key}"
 						statusValueAvailable="5"
 						statusValueProcessed="6"
 						statusValueError="7"
@@ -77,7 +77,7 @@
 				xpathExpression="request/@action"></pipe>
 			<pipe name="DeleteIbistemp">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key} AND 0&lt;1" 
+					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}" 
 				/>
 				<forward name="success" path="do_success" />
 			</pipe>
