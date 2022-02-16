@@ -689,14 +689,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		MessageContext result = new MessageContext();
 		result.withName(message.getJMSMessageID());
 		result.withModificationTime(message.getJMSTimestamp());
-		Enumeration<String> names=message.getPropertyNames(); 
+		Enumeration<String> names=message.getPropertyNames();
 		while(names.hasMoreElements()) {
 			String name=names.nextElement();
 			result.put(name,message.getObjectProperty(name));
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.

@@ -554,7 +554,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				nl.nn.adapterframework.http.rest.ContentType mimeType = listener.getContentType();
+				ContentType mimeType = listener.getContentType();
 				if(!Message.isEmpty(result) && StringUtils.isNotEmpty(result.getCharset())) {
 					try {
 						mimeType.setCharset(result.getCharset());

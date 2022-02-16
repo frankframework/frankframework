@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
 /**
- * Shows all monitors.
+ * Shows directory of logfiles
  * 
  * @since	7.0-B1
  * @author	Niels Meijer
