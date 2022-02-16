@@ -217,7 +217,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** 
-	 * The specified contentType on response
+	 * The specified contentType on response. When <code<ANY</code> the response will determine the content type based on the return data.
 	 * @ff.default ANY
 	 */
 	public void setProduces(MediaTypes value) {

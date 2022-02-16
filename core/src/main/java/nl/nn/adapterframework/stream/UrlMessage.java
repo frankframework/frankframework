@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 package nl.nn.adapterframework.stream;
 
 import java.net.URL;
+import java.util.Map;
+
+import org.apache.commons.io.FilenameUtils;
 
 public class UrlMessage  extends Message {
 
 	public UrlMessage(URL url) {
-		this(url, null);
+		this(url, new MessageContext());
 	}
 
-	public UrlMessage(URL url, String charset) {
-		super(() -> url.openStream(), charset, url.getClass());
+	public UrlMessage(URL url, Map<String,Object> context) {
+		super(() -> url.openStream(),  new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
 	}
 }

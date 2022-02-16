@@ -75,6 +75,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -470,7 +471,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				}
 				session.put("contentStream:MimeType", contentStream.getMimeType());
 				session.put("contentStream:Filename", contentStream.getFileName());
-				return new Message(inputStream);
+
+				MessageContext context = new MessageContext();
+				context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());
+				return new Message(inputStream, context);
 			}
 		} catch (IOException e) {
 			throw new SenderException(e);

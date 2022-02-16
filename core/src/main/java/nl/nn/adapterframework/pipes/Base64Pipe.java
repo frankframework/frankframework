@@ -115,7 +115,7 @@ public class Base64Pipe extends StreamingPipe {
 
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
-		Message result = new Message(base64, directionEncode ? StandardCharsets.US_ASCII.name() : getCharset());
+		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
 		if (getOutputTypeEnum()==OutputTypes.STRING) {
 			try {
 				result = new Message(result.asReader());

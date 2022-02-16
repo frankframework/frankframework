@@ -39,6 +39,7 @@ import nl.nn.adapterframework.pipes.PutInSession;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -182,6 +183,72 @@ public class ParameterTest {
 		p.getValue(alreadyResolvedParameters, null, session, false);
 	}
 
+	@Test
+	public void testContextKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+		
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeContextValue", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+
+	@Test
+	public void testContextKeyWithSessionKey() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.configure();
+		
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "fakeContextValue2"));
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+		
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
+	}
+	@Test
+	public void testContextKeyWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("fakeContextKey");
+		p.setXpathExpression("count(root/a)");
+		p.configure();
+		
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "<root><a/><a/><a/></root>"));
+		
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+		
+		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+		
+	}
+	
+	
 	@Test
 	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
@@ -1126,13 +1193,13 @@ public class ParameterTest {
 			p.setPattern("{now}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
@@ -1141,7 +1208,7 @@ public class ParameterTest {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
 		}
 	}
-	
+
 	@Test
 	public void testPatternNowWithDateFormatType() throws Exception {
 		Parameter p = new Parameter();
@@ -1151,13 +1218,13 @@ public class ParameterTest {
 			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
@@ -1166,7 +1233,7 @@ public class ParameterTest {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
 		}
 	}
-	
+
 	@Test
 	public void testPatternFixedDateWithDateFormatType() throws Exception {
 		String expectedDate = "2001-12-17T09:30:47";
@@ -1177,13 +1244,13 @@ public class ParameterTest {
 			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
-	
+
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
-	
+
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
-	
+
 			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, result);
 
