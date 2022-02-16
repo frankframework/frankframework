@@ -107,7 +107,9 @@ public class MessageTest {
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
 		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
-		assertEquals(clazz.getSimpleName(), actual.substring(0, actual.indexOf(": ")));
+		// remove the toStringPrefix(), if it is present
+		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual; 
+		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf(": ")));
 		if (wrapperClass == null) {
 			assertEquals(adapter.getRequestClass().getName(), clazz.getName());
 		} else {

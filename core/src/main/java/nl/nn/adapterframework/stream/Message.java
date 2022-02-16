@@ -469,7 +469,7 @@ public class Message implements Serializable {
 		for(Entry<String,Object> entry:context.entrySet()) {
 			writer.write(entry.getKey()+": "+entry.getValue()+"\n");
 		}
-		writer.write("value\n");
+		writer.write("value:\n");
 	}
 	public String toStringPrefix() {
 		StringWriter result = new StringWriter();
@@ -487,14 +487,14 @@ public class Message implements Serializable {
 	@Override
 	public String toString() {
 		StringWriter result = new StringWriter();
-		if (request==null) {
-			result.write("null");
-		} else {
-			result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
-		}
 
 		try {
 			toStringPrefix(result);
+			if (request==null) {
+				result.write("null");
+			} else {
+				result.write((getRequestClass()!=null?getRequestClass().getSimpleName():"?")+": "+request.toString());
+			}
 		} catch (IOException e) {
 			result.write("cannot write toString: "+e.getMessage());
 		}
