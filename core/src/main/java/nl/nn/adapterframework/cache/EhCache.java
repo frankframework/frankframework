@@ -37,18 +37,18 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since   4.11
  */
 public class EhCache<V> extends CacheAdapterBase<V> {
-	
-	private final String KEY_PREFIX="cache.default."; 
-	private final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory"; 
-	private final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy"; 
-	private final String KEY_ETERNAL=KEY_PREFIX+"eternal"; 
-	private final String KEY_TIME_TO_LIVE_SECONDS=KEY_PREFIX+"timeToLiveSeconds"; 
-	private final String KEY_TIME_TO_IDLE_SECONDS=KEY_PREFIX+"timeToIdleSeconds"; 
-	private final String KEY_OVERFLOW_TO_DISK=KEY_PREFIX+"overflowToDisk"; 
-	private final String KEY_MAX_ELEMENTS_ON_DISK=KEY_PREFIX+"maxElementsOnDisk"; 
-	private final String KEY_DISK_PERSISTENT=KEY_PREFIX+"diskPersistent"; 
-	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS=KEY_PREFIX+"diskExpiryThreadIntervalSeconds"; 
-	
+
+	private final String KEY_PREFIX = "cache.default.";
+	private final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
+	private final String KEY_MEMORYSTORE_EVICTION_POLICY = KEY_PREFIX + "memoryStoreEvictionPolicy";
+	private final String KEY_ETERNAL = KEY_PREFIX + "eternal";
+	private final String KEY_TIME_TO_LIVE_SECONDS = KEY_PREFIX + "timeToLiveSeconds";
+	private final String KEY_TIME_TO_IDLE_SECONDS = KEY_PREFIX + "timeToIdleSeconds";
+	private final String KEY_OVERFLOW_TO_DISK = KEY_PREFIX + "overflowToDisk";
+	private final String KEY_MAX_ELEMENTS_ON_DISK = KEY_PREFIX + "maxElementsOnDisk";
+	private final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
+	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
+
 	private int maxElementsInMemory=100;
 	private String memoryStoreEvictionPolicy="LRU";
 	private boolean eternal=false;
@@ -58,10 +58,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 	private int maxElementsOnDisk=10000;
 	private boolean diskPersistent=false;
 	private int diskExpiryThreadIntervalSeconds=600;
-	
-	private Ehcache cache=null;
-	private IbisCacheManager cacheManager=null;
-	
+
+	private Ehcache cache = null;
+	private IbisCacheManager cacheManager = null;
+
 	public EhCache() {
 		super();
 		AppConstants ac = AppConstants.getInstance();
@@ -75,7 +75,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		diskPersistent=ac.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
 		diskExpiryThreadIntervalSeconds=ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
 	}
-	
+
 	@Override
 	public void configure(String ownerName) throws ConfigurationException {
 		super.configure(ownerName);
@@ -83,9 +83,9 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 			log.info("setting overflowToDisk true, to support diskPersistent=true");
 			setOverflowToDisk(true);
 		}
-		MemoryStoreEvictionPolicy.fromString(getMemoryStoreEvictionPolicy()); 
+		MemoryStoreEvictionPolicy.fromString(getMemoryStoreEvictionPolicy());
 	}
-	
+
 	@Override
 	public void open() {
 		Cache configCache = new Cache(
