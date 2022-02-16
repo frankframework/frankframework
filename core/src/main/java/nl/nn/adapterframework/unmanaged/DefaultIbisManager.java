@@ -33,7 +33,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
@@ -277,7 +277,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	private void stopAdapters(Configuration configuration) {
-		configuration.dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+		configuration.dumpStatistics(Action.MARK_FULL);
 		log.info("Stopping all adapters for configuation " + configuration.getName());
 		configuration.getAdapterManager().stop();
 	}
@@ -315,7 +315,7 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
-	public void dumpStatistics(int action) {
+	public void dumpStatistics(Action action) {
 		for (Configuration configuration : configurations) {
 			configuration.dumpStatistics(action);
 		}

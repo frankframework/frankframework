@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -83,7 +84,7 @@ public interface IbisManager extends ApplicationEventPublisherAware {
      */
     PlatformTransactionManager getTransactionManager();
 
-    public void dumpStatistics(int action);
+    public void dumpStatistics(Action action);
     
     public ApplicationEventPublisher getApplicationEventPublisher();
 

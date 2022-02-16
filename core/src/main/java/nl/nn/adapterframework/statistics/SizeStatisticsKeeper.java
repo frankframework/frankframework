@@ -28,6 +28,7 @@ public class SizeStatisticsKeeper extends StatisticsKeeper {
 		super(name,BigBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
+	@Override
 	public String getUnits() {
 		return "B";
 	}

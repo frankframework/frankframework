@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -116,7 +116,7 @@ public final class ShowAdapterStatistics extends Base {
 		handler.configure();
 		Object handle = handler.start(null, null, null);
 		try {
-			adapter.getPipeLine().iterateOverStatistics(handler, tmp, HasStatistics.STATISTICS_ACTION_FULL);
+			adapter.getPipeLine().iterateOverStatistics(handler, tmp, Action.FULL);
 			statisticsMap.put("durationPerPipe", tmp.get("pipeStats"));
 			statisticsMap.put("sizePerPipe", tmp.get("sizeStats"));
 		} catch (SenderException e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHandler {
+public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHandler<XmlBuilder> {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
@@ -56,14 +56,12 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		super();
 	}
 
-	public XmlBuilder getXml(Object data) {
-		return (XmlBuilder)data; 
-	}
-
+	@Override
 	public void configure() throws ConfigurationException {
 	}	
 
-	public Object start(Date now, Date mainMark, Date detailMark) {
+	@Override
+	public XmlBuilder start(Date now, Date mainMark, Date detailMark) {
 		log.debug("StatisticsKeeperXmlBuilder.start()");
 		
 		long freeMem = Runtime.getRuntime().freeMemory();
@@ -93,36 +91,38 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		return root;
 	}
 	
-	public void end(Object data) {
+	@Override
+	public void end(XmlBuilder data) {
 		log.debug("StatisticsKeeperXmlBuilder.end()");
 	}
 
-	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
-		XmlBuilder context=(XmlBuilder)data;
+	@Override
+	public void handleStatisticsKeeper(XmlBuilder context, StatisticsKeeper sk) {
 		XmlBuilder item = statisticsKeeperToXmlBuilder(sk,STATKEEPER_ELEMENT);
 		if (item!=null) {
 			context.addSubElement(item);
 		}
 	}
 
-	public void handleScalar(Object data, String scalarName, long value){
+	@Override
+	public void handleScalar(XmlBuilder data, String scalarName, long value){
 		handleScalar(data,scalarName,""+value);
 	}
 
-	public void handleScalar(Object data, String scalarName, Date value){
+	@Override
+	public void handleScalar(XmlBuilder data, String scalarName, Date value){
 		if (value!=null) {
 			handleScalar(data,scalarName,dtf.format(value));
 		} 
 	}
 
 
-	public void handleScalar(Object data, String scalarName, String value){
-		XmlBuilder context=(XmlBuilder)data;
+	private void handleScalar(XmlBuilder context, String scalarName, String value){
 		addNumber(context,scalarName,value);
 	}
 
-	public Object openGroup(Object parentData, String name, String type) {
-		XmlBuilder context=(XmlBuilder)parentData;
+	@Override
+	public XmlBuilder openGroup(XmlBuilder context, String name, String type) {
 		XmlBuilder group= new XmlBuilder(GROUP_ELEMENT);
 		group.addAttribute("name",name);
 		group.addAttribute("type",type);
@@ -130,7 +130,8 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		return group;
 	}
 
-	public void closeGroup(Object data) {
+	@Override
+	public void closeGroup(XmlBuilder data) {
 	}
 
 	private void addPeriodIndicator(XmlBuilder xml, Date now, String[][] periods, long allowedLength, String suffix, Date mark) {

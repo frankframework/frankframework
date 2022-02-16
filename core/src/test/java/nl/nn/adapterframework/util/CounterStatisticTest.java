@@ -1,8 +1,10 @@
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.statistics.HasStatistics;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
  * CounterStatistic Tester.
@@ -21,7 +23,7 @@ public class CounterStatisticTest {
     @Test
     public void testPerformActionSummaryOrFull() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        cs.performAction(HasStatistics.STATISTICS_ACTION_SUMMARY);
+        cs.performAction(Action.SUMMARY);
         assertEquals(10, cs.getValue());
     }
 
@@ -33,7 +35,7 @@ public class CounterStatisticTest {
     @Test
     public void testPerformActionReset() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        cs.performAction(HasStatistics.STATISTICS_ACTION_RESET);
+        cs.performAction(Action.RESET);
         assertEquals(0, cs.getValue());
     }
     
@@ -46,14 +48,14 @@ public class CounterStatisticTest {
     @Test
     public void testPerformActionMarkMain() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        cs.performAction(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
+        cs.performAction(Action.MARK_MAIN);
         assertEquals( 10, cs.getValue());
     }
 
     @Test
     public void testPerformActionMarkFull() throws Exception {
         CounterStatistic cs = new CounterStatistic(10);
-        cs.performAction(HasStatistics.STATISTICS_ACTION_MARK_FULL);
+        cs.performAction(Action.MARK_FULL);
         assertEquals( 10, cs.getValue());
     }
 

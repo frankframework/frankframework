@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @author  Gerrit van Brakel
  * @since  
  */
-public interface StatisticsKeeperIterationHandler {
+public interface StatisticsKeeperIterationHandler<D> {
 
 	public static final long PERIOD_ALLOWED_LENGTH_HOUR=1100*60*60; // 10% extra
 	public static final long PERIOD_ALLOWED_LENGTH_DAY=PERIOD_ALLOWED_LENGTH_HOUR*24;
@@ -47,11 +47,11 @@ public interface StatisticsKeeperIterationHandler {
 
 
 	public void configure() throws ConfigurationException;
-	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException;
-	public void end(Object data) throws SenderException;
-	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) throws SenderException;
-	public void handleScalar(Object data, String scalarName, long value) throws SenderException;
-	public void handleScalar(Object data, String scalarName, Date value) throws SenderException;
-	public Object openGroup(Object parentData, String name, String type) throws SenderException;
-	public void  closeGroup(Object data) throws SenderException;
+	public D start(Date now, Date mainMark, Date detailMark) throws SenderException;
+	public void end(D data) throws SenderException;
+	public void handleStatisticsKeeper(D data, StatisticsKeeper sk) throws SenderException;
+	public void handleScalar(D data, String scalarName, long value) throws SenderException;
+	public void handleScalar(D data, String scalarName, Date value) throws SenderException;
+	public D openGroup(D parentData, String name, String type) throws SenderException;
+	public void  closeGroup(D data) throws SenderException;
 }

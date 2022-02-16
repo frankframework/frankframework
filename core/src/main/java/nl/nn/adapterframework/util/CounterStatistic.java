@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
  * Counter value that is maintained with statistics.
@@ -32,14 +32,14 @@ public class CounterStatistic extends Counter {
 		mark=startValue;
 	}
 
-	public void performAction(int action) {
-		if (action==HasStatistics.STATISTICS_ACTION_FULL || action==HasStatistics.STATISTICS_ACTION_SUMMARY) {
+	public void performAction(Action action) {
+		if (action==Action.FULL || action==Action.SUMMARY) {
 			return;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
+		if (action==Action.RESET) {
 			clear();
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_MARK_FULL || action==HasStatistics.STATISTICS_ACTION_MARK_MAIN) {
+		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
 			synchronized (this) {
 				mark=getValue();
 			}

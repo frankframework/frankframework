@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
+import lombok.Getter;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
@@ -58,6 +62,8 @@ public class StatisticsKeeper implements ItemList {
 
 	protected PercentileEstimator pest;
 
+	private @Getter DistributionSummary distributionSummary;
+	
 	/**
 	 * Constructor for StatisticsKeeper.
 	 *
@@ -67,6 +73,23 @@ public class StatisticsKeeper implements ItemList {
 	 */
 	public StatisticsKeeper(String name) {
 		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	}
+	
+	public void initMetrics(MeterRegistry registry, String groupname, List<String> groupType) {
+		double[] percentiles = new double[pest.getNumPercentiles()];
+		for (int i=0;i<pest.getNumPercentiles();i++) {
+			percentiles[i]=pest.getPercentage(i)/100;
+		}
+		DistributionSummary.Builder builder= DistributionSummary
+				.builder(groupname+"."+name)
+				.baseUnit(getUnits())
+				.publishPercentiles(percentiles)
+				.publishPercentileHistogram();
+		int i=0;
+		for(String group:groupType) {
+			builder.tag("group"+i++, group);
+		}
+		distributionSummary = builder.register(registry);
 	}
 
 	protected StatisticsKeeper(String name, Class basicsClass, String boundaryConfigKey, String defaultBoundaryList) {
@@ -102,14 +125,14 @@ public class StatisticsKeeper implements ItemList {
 		return "ms";
 	}
 
-	public void performAction(int action) {
-		if (action==HasStatistics.STATISTICS_ACTION_FULL || action==HasStatistics.STATISTICS_ACTION_SUMMARY) {
+	public void performAction(Action action) {
+		if (action==Action.FULL || action==Action.SUMMARY) {
 			return;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
+		if (action==Action.RESET) {
 			clear();
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_MARK_FULL || action==HasStatistics.STATISTICS_ACTION_MARK_MAIN) {
+		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
 			mark.mark(cumulative);
 		}
 	}
@@ -123,6 +146,9 @@ public class StatisticsKeeper implements ItemList {
 	}
 
 	public void addValue(long value) {
+		if (distributionSummary!=null) {
+			distributionSummary.record(value);
+		}
 		if (first==Long.MIN_VALUE) {
 			first=value;
 		}

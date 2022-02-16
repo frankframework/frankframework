@@ -45,6 +45,7 @@ import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
@@ -393,7 +394,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
 		Object root=hski.start(now,mainMark,detailMark);
 		try {
 			forEachStatisticsKeeperBody(hski,root,action);
@@ -402,7 +403,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 	
-	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, int action) throws SenderException {
+	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
@@ -425,9 +426,9 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean showDetails = action == HasStatistics.STATISTICS_ACTION_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_MARK_FULL
-				|| action == HasStatistics.STATISTICS_ACTION_RESET;
+		boolean showDetails = action == Action.FULL
+				|| action == Action.MARK_FULL
+				|| action == Action.RESET;
 		if (showDetails) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			for (Receiver<?> receiver: receivers) {
@@ -447,13 +448,13 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
 		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
 		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
 
-		if (action!=HasStatistics.STATISTICS_ACTION_FULL &&
-			action!=HasStatistics.STATISTICS_ACTION_SUMMARY) {
+		if (action!=Action.FULL &&
+			action!=Action.SUMMARY) {
 			synchronized (statsMessageProcessingDuration) {
 				doForEachStatisticsKeeperBody(hski,adapterData,action);
 			}

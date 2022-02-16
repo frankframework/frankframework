@@ -1624,7 +1624,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
 		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());

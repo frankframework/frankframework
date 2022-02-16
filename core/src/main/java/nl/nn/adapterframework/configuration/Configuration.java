@@ -34,6 +34,11 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -52,9 +57,10 @@ import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.Job;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
+import nl.nn.adapterframework.statistics.micrometer.MetricsInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -91,7 +97,24 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+	private @Getter @Setter CompositeMeterRegistry meterRegistry = Metrics.globalRegistry;
+	private SimpleMeterRegistry simpleMeterRegistry = new SimpleMeterRegistry();
+	private static @Getter @Setter PrometheusMeterRegistry  prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+	public void initMetrics() throws ConfigurationException {
+		meterRegistry.add(simpleMeterRegistry);
+		meterRegistry.add(prometheusMeterRegistry);
+		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
+		meterRegistry.config().commonTags("instanceName", appConstants.getProperty("instance.name"));
+		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry, getName());
+		try {
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.CONFIGURE);
+		} catch (SenderException e) {
+			throw new ConfigurationException("Cannot initialize metrics", e);
+		}
+	}
+
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
@@ -105,11 +128,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	public void dumpStatistics(int action) {
+	public void dumpStatistics(Action action) {
 		Date now = new Date();
-		boolean showDetails=(action == HasStatistics.STATISTICS_ACTION_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_RESET);
+		boolean showDetails=(action == Action.FULL ||
+							 action == Action.MARK_FULL ||
+							 action == Action.RESET);
 		try {
 			if (statisticsHandler==null) {
 				statisticsHandler =new StatisticsKeeperLogger();
@@ -131,13 +154,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.RESET ||
+			action==Action.MARK_MAIN ||
+			action==Action.MARK_FULL) {
 				statisticsMarkDateMain=now;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.RESET ||
+			action==Action.MARK_FULL) {
 				statisticsMarkDateDetails=now;
 		}
 

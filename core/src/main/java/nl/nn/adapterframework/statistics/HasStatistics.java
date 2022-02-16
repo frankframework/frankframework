@@ -25,11 +25,14 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public interface HasStatistics {
 
-	public static final int STATISTICS_ACTION_SUMMARY=0;
-	public static final int STATISTICS_ACTION_FULL=1;
-	public static final int STATISTICS_ACTION_RESET=2;
-	public static final int STATISTICS_ACTION_MARK_MAIN=3;
-	public static final int STATISTICS_ACTION_MARK_FULL=4;
+	public enum Action {
+		CONFIGURE,
+		SUMMARY,
+		FULL,
+		RESET,
+		MARK_MAIN,
+		MARK_FULL
+	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
+	public <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException ;
 }
