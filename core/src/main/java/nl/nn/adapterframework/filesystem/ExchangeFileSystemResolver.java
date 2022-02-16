@@ -36,8 +36,18 @@ public class ExchangeFileSystemResolver {
 	private @Getter String folderName;
 
 	public ExchangeFileSystemResolver(String folderName, String staticMailAddress, String separator){
+
+		if(folderName == null){
+			throw new IllegalArgumentException("Cannot create ExchangeFileSystemResolver when folderName is null!");
+		}
+		if(staticMailAddress == null && !folderName.contains(getSeparator()) ){
+			throw new IllegalArgumentException("Cannot create ExchangeFileSystemResolver when staticMailAddress is null " +
+				"and folderName does not contain separator ["+getSeparator()+"]!");
+		}
+
 		this.mailbox = getMailboxToUse(folderName, staticMailAddress);
 		this.folderName = getFolderNameToUse(folderName);
+
 		if(separator != null){
 			this.separator = separator;
 		}
