@@ -7,7 +7,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/ibissource/iaf/badge)](https://www.codefactor.io/repository/github/ibissource/iaf)
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/ibissource/iaf.svg)](https://github.com/ibissource/iaf/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:org.ibissource)
-[![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#view-repositories;releases~browsestorage)
+[![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
 
 
 Frank!Framework
