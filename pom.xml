@@ -23,7 +23,7 @@
 	<url>http://maven.ibissource.org/iaf/</url>
 
 	<organization>
-		<name>Ibissource.org</name>
+		<name>frankframework.org</name>
 		<url>https://ibissource.org</url>
 	</organization>
 
@@ -661,11 +661,11 @@
 			<distributionManagement>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/releases</url>
+					<url>https://nexus.frankframework.org/content/repositories/releases</url>
 				</repository>
 				<snapshotRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/repositories/snapshots</url>
+					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
 					<id>www.ibissource.org</id>
@@ -675,7 +675,7 @@
 			<repositories>
 				<repository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 				</repository>
 			</repositories>
 		</profile>
@@ -739,7 +739,7 @@
 			<repositories>
 				<repository>
 					<id>proprietary</id>
-					<url>https://nexus.ibissource.org/content/repositories/private/</url>
+					<url>https://nexus.frankframework.org/content/repositories/private/</url>
 					<snapshots>
 						<!-- Prevent Maven from attempting to download non existing /x.y-SNAPSHOT/maven-metadata.xml on this url for every module on every build -->
 						<enabled>false</enabled>
@@ -799,7 +799,7 @@
 			<pluginRepositories>
 				<pluginRepository>
 					<id>ibissource</id>
-					<url>https://nexus.ibissource.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/groups/public</url>
 					<snapshots>
 						<enabled>true</enabled>
 						<updatePolicy>always</updatePolicy>
