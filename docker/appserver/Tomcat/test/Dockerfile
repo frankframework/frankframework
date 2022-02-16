@@ -6,7 +6,7 @@ COPY src/scripts/catalinaAdditionalTest.properties /tmp
 RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditionalTest.properties
 
 # copy war
-COPY target/dependencies/ibis-adapterframework-test.war /usr/local/tomcat/webapps/iaf-test.war
+COPY target/dependencies/ibis-adapterframework-test.war /usr/local/tomcat/webapps/ROOT.war
 
 # copy any additional drivers
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
