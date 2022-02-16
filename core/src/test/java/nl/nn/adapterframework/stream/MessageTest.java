@@ -108,7 +108,7 @@ public class MessageTest {
 		String actual = adapter.toString();
 		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
 		// remove the toStringPrefix(), if it is present
-		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual; 
+		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
 		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf(": ")));
 		if (wrapperClass == null) {
 			assertEquals(adapter.getRequestClass().getName(), clazz.getName());
