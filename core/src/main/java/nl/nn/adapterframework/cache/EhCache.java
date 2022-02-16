@@ -117,7 +117,7 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 			cache.removeAll();
 		}
 		if (cacheManager!=null) {
-			cacheManager.removeCache(cache.getName());
+			cacheManager.destroyCache(cache.getName());
 			cacheManager=null;
 		}
 		cache=null;

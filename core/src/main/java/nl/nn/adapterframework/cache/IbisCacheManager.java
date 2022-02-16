@@ -45,6 +45,9 @@ public class IbisCacheManager {
 	private CacheManager cacheManager=null;
 
 	private IbisCacheManager() {
+		//TODO use CachingProvider cachingProvider = Caching.getCachingProvider();
+		// javax.cache.CacheManager cacheManager2 = cachingProvider.getCacheManager();
+
 		Configuration cacheManagerConfig = new Configuration();
 		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
@@ -58,14 +61,14 @@ public class IbisCacheManager {
 		cacheManager= new CacheManager(cacheManagerConfig);
 	}
 
-	public synchronized static IbisCacheManager getInstance() {
+	public static synchronized IbisCacheManager getInstance() {
 		if (self==null) {
 			self=new IbisCacheManager();
 		}
 		return self;
 	}
 
-	public synchronized static void shutdown() {
+	public static synchronized void shutdown() {
 		if (self!=null) {
 			self.log.debug("shutting down cacheManager...");
 			self.cacheManager.shutdown();
@@ -81,7 +84,7 @@ public class IbisCacheManager {
 		return cacheManager.getEhcache(cache.getName());
 	}
 
-	public void removeCache(String cacheName) {
+	public void destroyCache(String cacheName) {
 		log.debug("deregistering cache ["+cacheName+"]");
 		cacheManager.removeCache(cacheName);
 	}
