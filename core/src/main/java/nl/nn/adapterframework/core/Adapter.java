@@ -44,14 +44,13 @@ import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.Receiver;
+import nl.nn.adapterframework.statistics.CounterStatistic;
 import nl.nn.adapterframework.statistics.HasStatistics;
-import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -397,7 +396,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
 		Object root=hski.start(now,mainMark,detailMark);
 		try {
-			forEachStatisticsKeeperBody(hski,root,action);
+			iterateOverStatistics(hski,root,action);
 		} finally {
 			hski.end(root);
 		}
@@ -405,14 +404,12 @@ public class Adapter implements IAdapter, NamedBean {
 	
 	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
-		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleScalar(adapterData,"messagesProcessed", numOfMessagesProcessed);
+		hski.handleScalar(adapterData,"messagesInError", numOfMessagesInError);
 		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
 		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		statsMessageProcessingDuration.performAction(action);
-		numOfMessagesProcessed.performAction(action);
-		numOfMessagesInError.performAction(action);
 
 		Object hourData=hski.openGroup(adapterData,getName(),"processing by hour");
 		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
@@ -448,7 +445,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	@Override
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
 		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
 		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
