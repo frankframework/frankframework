@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -119,9 +119,9 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 	}
 
 	/**
-	 * Check if the value is not empty,
-	 * Can be parsed to match the Getters return type, 
-	 * Equals the default value (parsed by invoking the getter, if present).
+	 * Check if the value:,
+	 * - Can be parsed to match the Getters return type, 
+	 * - Does not equal the default value (parsed by invoking the getter, if present).
 	 * If no Getter is present, tries to match the type to the Setters first argument.
 	 */
 	private void checkTypeCompatibility(PropertyDescriptor pd, String name, String value, Map<String, String> attrs) {
@@ -133,12 +133,8 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				if (bean instanceof HasSpecialDefaultValues) {
 					defaultValue = ((HasSpecialDefaultValues)bean).getSpecialDefaultValue(name, defaultValue, attrs);
 				}
-				if (defaultValue!=null) {
-					if (value.length()==0) {
-						addLocalWarning("attribute ["+name+"] has no value");
-					} else if (equals(defaultValue, value)) {
-						addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
-					}
+				if (defaultValue!=null && equals(defaultValue, value)) {
+					addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
 				}
 			} catch (NumberFormatException e) {
 				addLocalWarning("attribute ["+ name+"] with value ["+value+"] cannot be converted to a number: "+e.getMessage());
@@ -149,7 +145,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		} else {
 			//No readMethod, thus we cannot check the default value. We can however check if we can parse the value
 			if (value.length()==0) {
-				addLocalWarning("attribute ["+name+"] has no value");
+				// no need to check if we can parse an empty string, but no warning either, as empty string might be an appropriate value
 				return;
 			}
 
