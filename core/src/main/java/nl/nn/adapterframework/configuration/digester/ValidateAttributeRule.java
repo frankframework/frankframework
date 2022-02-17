@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 		} else {
 			//No readMethod, thus we cannot check the default value. We can however check if we can parse the value
 			if (value.length()==0) {
-				addLocalWarning("attribute ["+name+"] has no value");
+				// no need to check if we can parse an empty string, but no warning either, as empty string might be an appropriate value
 				return;
 			}
 
