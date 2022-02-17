@@ -64,15 +64,14 @@ public class StreamUtil {
 
 	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
 	protected static Logger log = LogUtil.getLogger(StreamUtil.class);
-	
+
 	@Deprecated
 	public static OutputStream getOutputStream(Object target) throws IOException {
 		if (target instanceof OutputStream) {
 			return (OutputStream) target;
-		} 
+		}
 		if (target instanceof String) {
 			return getFileOutputStream((String)target);
-			
 		}
 		if (target instanceof Message) {
 			if(((Message) target).asObject() instanceof String) {
@@ -104,10 +103,10 @@ public class StreamUtil {
 		if (target instanceof Writer) {
 			return (Writer)target;
 		}
-		
+
 		return null;
 	}
-	
+
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {
 			public NonClosingInputStreamFilter(InputStream in) {
@@ -117,8 +116,8 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingInputStreamFilter(stream);
 	}
 
@@ -131,11 +130,11 @@ public class StreamUtil {
 			public void close() throws IOException {
 				// do not close
 			}
-		};
-		
+		}
+
 		return new NonClosingReaderFilter(reader);
 	}
-	
+
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		try {
 			StringBuffer sb = new StringBuffer();
@@ -173,14 +172,14 @@ public class StreamUtil {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		return Misc.streamToBytes(bOMInputStream);
 	}
-	
+
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, the default character set UTF-8 is used.
 	 */
 	public static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
 		return getCharsetDetectingInputStreamReader(inputStream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
-	
+
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
@@ -195,11 +194,11 @@ public class StreamUtil {
 
 		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
-	
+
 	public static void copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in!=null) {
-			byte buffer[]=new byte[chunkSize]; 
-					
+			byte[] buffer=new byte[chunkSize];
+
 			int bytesRead=1;
 			while (bytesRead>0) {
 				bytesRead=in.read(buffer,0,chunkSize);
@@ -215,8 +214,8 @@ public class StreamUtil {
 
 	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize, boolean resolve, boolean xmlEncode) throws IOException {
 		if (reader!=null) {
-			char buffer[]=new char[chunkSize]; 
-					
+			char[] buffer=new char[chunkSize];
+
 			int charsRead=1;
 			while (charsRead>0) {
 				charsRead=reader.read(buffer,0,chunkSize);
@@ -276,7 +275,7 @@ public class StreamUtil {
 			}
 		};
 	}
-	
+
 	public static Reader onClose(Reader reader, Runnable onClose) {
 		return new FilterReader(reader) {
 			@Override
@@ -319,23 +318,21 @@ public class StreamUtil {
 	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
 		return onClose(reader, () -> closeResource(resource));
 	}
-	
+
 	public static Writer closeOnClose(Writer writer, AutoCloseable resource) {
 		return onClose(writer, () -> closeResource(resource));
 	}
 
-	
-	
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {
-		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; }); 
+		return watch(stream, onClose, (e) -> { if (onException!=null) onException.run(); return e; });
 	}
-	
+
 	public static InputStream watch(InputStream stream, Runnable onClose, Function<IOException,IOException> onException) {
 		class WatchedInputStream extends FilterInputStream {
 			public WatchedInputStream(InputStream in) {
 				super(in);
 			}
-			
+
 			private IOException handleException(IOException e) {
 				if (onException!=null) {
 					IOException r = onException.apply(e);
@@ -345,7 +342,7 @@ public class StreamUtil {
 				}
 				return e;
 			}
-			
+
 			@Override
 			public void close() throws IOException {
 				try {
@@ -412,19 +409,19 @@ public class StreamUtil {
 				}
 			}
 
-		};
+		}
 
 		return new WatchedInputStream(stream);
 	}
 
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
 		return new ThresholdingOutputStream(maxSize) {
-			
+
 			@Override
 			protected void thresholdReached() throws IOException {
 				stream.close();
 			}
-			
+
 			@Override
 			protected OutputStream getStream() throws IOException {
 				if (isThresholdExceeded()) {
@@ -438,7 +435,7 @@ public class StreamUtil {
 
 	public static Writer limitSize(Writer writer, int maxSize) {
 		return new Writer() {
-			
+
 			private long written;
 
 			@Override
@@ -470,10 +467,10 @@ public class StreamUtil {
 		return captureInputStream(in, capture, 10000, true);
 	}
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
-		
+
 		CountingInputStream counter = new CountingInputStream(in);
 		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
-			
+
 			@Override
 			public void close() throws IOException {
 				try {
@@ -489,7 +486,7 @@ public class StreamUtil {
 			}
 
 		};
-		
+
 	}
 
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture) {
@@ -498,7 +495,7 @@ public class StreamUtil {
 	public static OutputStream captureOutputStream(OutputStream stream, OutputStream capture, int maxSize) {
 		return new TeeOutputStream(stream, limitSize(capture,maxSize));
 	}
-	
+
 	private static interface ReadMethod {
 		int read() throws IOException;
 	}
@@ -508,10 +505,9 @@ public class StreamUtil {
 	}
 	public static Reader captureReader(Reader in, Writer capture, int maxSize, boolean captureRemainingOnClose) {
 		return new TeeReader(in, limitSize(capture, maxSize), true) {
-			
+
 			private int charsRead;
-			
-			
+
 			private int readCounted(ReadMethod reader) throws IOException {
 				int len = reader.read();
 				if (len>0) {
@@ -519,7 +515,7 @@ public class StreamUtil {
 				}
 				return len;
 			}
-			
+
 			@Override
 			public int read() throws IOException {
 				return readCounted(() -> super.read());
