@@ -26,7 +26,7 @@ import lombok.Getter;
 public class ScalarStatistic extends GaugeBase {
 
 	private @Getter long value;
-	
+
 	public synchronized void increase() {
 		++value;
 	}

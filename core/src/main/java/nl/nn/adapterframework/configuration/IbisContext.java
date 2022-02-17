@@ -132,9 +132,9 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderManager = new ClassLoaderManager(this);
-			
+		
 			initMetrics();
-			
+		
 			try {
 				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {

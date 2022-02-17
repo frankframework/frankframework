@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.SenderException;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig> {
 
-	
+
 	private MeterRegistry registry;
 	private NodeConfig root;
 
@@ -41,12 +41,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 			this.tags = tags!=null ? tags : new LinkedList<>();
 		}
 	}
-	
+
 	public MetricsInitializer(MeterRegistry registry) {
 		this.registry = registry;
 		root = new NodeConfig(null);
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 	}
@@ -96,5 +96,5 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	public void configureCache(Ehcache cache) {
 		new EhCache2Metrics(cache, root.tags).bindTo(registry);
 	}
-	
+
 }

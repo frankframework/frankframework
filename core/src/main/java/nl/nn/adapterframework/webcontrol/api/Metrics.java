@@ -32,7 +32,7 @@ public class Metrics extends Base {
 	@Context HttpServletRequest servletRequest;
 
 	private PrometheusMeterRegistry registry;
-	
+
 	protected void initRegistry() {
 		if (registry==null) {
 			MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
@@ -49,7 +49,7 @@ public class Metrics extends Base {
 			}
 		}
 	}
-	
+
 	@GET
 	@Path("/metrics")
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
