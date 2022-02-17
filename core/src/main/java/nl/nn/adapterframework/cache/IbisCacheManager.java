@@ -45,9 +45,6 @@ public class IbisCacheManager {
 	private CacheManager cacheManager=null;
 
 	private IbisCacheManager() {
-		//TODO use CachingProvider cachingProvider = Caching.getCachingProvider();
-		// javax.cache.CacheManager cacheManager2 = cachingProvider.getCacheManager();
-
 		Configuration cacheManagerConfig = new Configuration();
 		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
