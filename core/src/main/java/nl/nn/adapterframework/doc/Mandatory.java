@@ -21,8 +21,5 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DefaultValue {
-
-	String value();
-
+public @interface Mandatory {
 }

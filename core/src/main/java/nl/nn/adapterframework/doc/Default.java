@@ -21,5 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FrankMandatory {
+public @interface Default {
+
+	String value();
+
 }
