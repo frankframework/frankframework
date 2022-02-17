@@ -64,7 +64,7 @@ public class StatisticsKeeper implements ItemList {
 	protected PercentileEstimator pest;
 
 	private @Getter DistributionSummary distributionSummary;
-	
+
 	/**
 	 * Constructor for StatisticsKeeper.
 	 *
@@ -75,7 +75,7 @@ public class StatisticsKeeper implements ItemList {
 	public StatisticsKeeper(String name) {
 		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
-	
+
 	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags) {
 		double[] percentiles = new double[pest.getNumPercentiles()];
 		for (int i=0;i<pest.getNumPercentiles();i++) {

@@ -41,8 +41,8 @@ public class Metrics extends Base {
 			} else if (metersRegistry instanceof CompositeMeterRegistry) {
 				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
 				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
-					if (meterRegistry instanceof PrometheusMeterRegistry) { 
-						registry = (PrometheusMeterRegistry)meterRegistry; 
+					if (meterRegistry instanceof PrometheusMeterRegistry) {
+						registry = (PrometheusMeterRegistry)meterRegistry;
 						break;
 					}
 				}

@@ -36,7 +36,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	public class NodeConfig {
 		public List<Tag> tags;
-		
+
 		NodeConfig(List<Tag> tags) {
 			this.tags = tags!=null ? tags : new LinkedList<>();
 		}
