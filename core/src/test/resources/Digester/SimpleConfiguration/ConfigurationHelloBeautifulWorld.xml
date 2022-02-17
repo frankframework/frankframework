@@ -21,7 +21,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 			<Exit path="EXIT" state="success"/>
 			<FixedResultPipe
 				name="HelloBeautifulWorld"
-				returnString="Hello Beautiful World"
+				returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;"
 				>
 				<Forward name="success" path="EXIT"/>
 			</FixedResultPipe>

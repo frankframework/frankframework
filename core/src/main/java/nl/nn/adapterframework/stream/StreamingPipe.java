@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,13 +38,15 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+
 		boolean outputSideEffectsPresent = StringUtils.isNotEmpty(getStoreResultInSessionKey()) || isPreserveInput() || isRestoreMovedElements()
-				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain()); 
-		
+				|| StringUtils.isNotEmpty(getElementToMove()) || StringUtils.isNotEmpty(getChompCharSize()) || StringUtils.isNotEmpty(getElementToMoveChain());
+
 		canProvideOutputStream = StringUtils.isEmpty(getGetInputFromSessionKey()) && StringUtils.isEmpty(getGetInputFromFixedValue())
 				&& StringUtils.isEmpty(getEmptyInputReplacement()) && !isSkipOnEmptyInput()
-				&& getLocker()==null && StringUtils.isEmpty(getIfParam()) && !outputSideEffectsPresent;
+				&& getLocker()==null && StringUtils.isEmpty(getIfParam())
+				&& (getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution())
+				&& !outputSideEffectsPresent;
 		canStreamToNextPipe = !outputSideEffectsPresent && !isWriteToSecLog();
 	}
 
@@ -55,7 +57,7 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 		if (getPipeLine()==null) {
 			return null;
 		}
-		
+
 		PipeForward forward = getSuccessForward();
 		try {
 			return getPipeLine().resolveForward(this, forward);
@@ -71,15 +73,18 @@ public abstract class StreamingPipe extends FixedForwardPipe implements IOutputS
 	 *  a) the pipe might be able to accept an input by providing an OutputStream, and 
 	 *  b) there are no side effects configured that prevent handing over its PipeRunResult to the calling pipe (e.g. storeResultInSessionKey)
 	 *  c) there are no side effects that require the input to be available at the end of the pipe (e.g. preserveInput=true)
+	 *  d) there are no parameters that require the input value or context
+	 *  (b and c are implemented by PipeProcessors, that do not support outputStreaming)
 	 */
 	protected boolean canProvideOutputStream() {
 		return canProvideOutputStream;
 	}
 
 	/**
-	 * returns true when:
-	 *  a) the operation needs to have an OutputStream, and 
-	 *  b) there are no side effects configured that require the output of this pipe to be available at the return of the doPipe() method.
+	 * called if the pipe implementation requests an OutputStream, to determine if there are side effects configured
+	 * that require the output of this pipe to be available at the return of the doPipe() method.
+	 * All side effects that are handled by PipeProcessors (storeResultInSessionKey, preserveInput) and
+	 * move and chop actions (restoreMovedElements, elementToMove, chompCharSize, ElementToMoveChain) inhibit streaming to the next pipe.
 	 */
 	protected boolean canStreamToNextPipe() {
 		return canStreamToNextPipe;

@@ -66,7 +66,6 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String forwardNameSessionKey = null;
 
 	private TransformerPool transformerPool = null;
-	private boolean parameterEvaluationRequiresInputMessage;
 
 	/**
 	 * If no {@link #setStyleSheetName(String) styleSheetName} is specified, the
@@ -108,9 +107,6 @@ public class XmlSwitch extends AbstractPipe {
 			} catch (TransformerConfigurationException e) {
 				throw new ConfigurationException("got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", e);
 			}
-		}
-		if(getParameterList().parameterEvaluationRequiresInputMessage()) {
-			parameterEvaluationRequiresInputMessage  = true;
 		}
 		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
@@ -159,9 +155,6 @@ public class XmlSwitch extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
-					if(parameterEvaluationRequiresInputMessage) {
-						message.preserve();
-					}
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				if(StringUtils.isNotEmpty(getSessionKey())) {

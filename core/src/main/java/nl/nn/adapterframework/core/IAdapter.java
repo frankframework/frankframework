@@ -63,6 +63,4 @@ public interface IAdapter extends IManagable, HasStatistics {
 
 	@JmxAttribute(description = "Return the Adapter description")
 	public String getDescription();
-
-	public String getAdapterConfigurationAsString();
 }

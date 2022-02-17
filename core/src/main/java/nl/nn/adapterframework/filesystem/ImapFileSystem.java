@@ -343,7 +343,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 					}
 				}
 			}
-			return new PartMessage(f, charset);
+			return new PartMessage(f, FileSystemUtils.getContext(this, f, charset));
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
 		}

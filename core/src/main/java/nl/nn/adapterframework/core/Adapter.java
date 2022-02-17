@@ -58,7 +58,6 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
@@ -947,15 +946,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return Misc.toFileSize(message.size());
 	}
 
-	@Override
-	public String getAdapterConfigurationAsString() {
-		String loadedConfig = getConfiguration().getLoadedConfiguration();
-		String encodedName = StringUtils.replace(getName(), "'", "''");
-		String xpath = "//adapter[@name='" + encodedName + "']";
-
-		return XmlUtils.copyOfSelect(loadedConfig, xpath);
-	}
-
 	public void waitForNoMessagesInProcess() throws InterruptedException {
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
@@ -963,7 +953,6 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 		}
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.NamedBean#getBeanName()

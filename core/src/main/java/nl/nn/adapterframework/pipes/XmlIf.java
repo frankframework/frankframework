@@ -131,9 +131,6 @@ public class XmlIf extends AbstractPipe {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
 				if (!parameterList.isEmpty()) {
-					if(parameterList.parameterEvaluationRequiresInputMessage()) {
-						message.preserve();
-					}
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 				forward = tp.transform(sInput, parametervalues, isNamespaceAware());

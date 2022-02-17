@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -405,7 +405,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 				MimeContent mc = emailMessage.getMimeContent();
 				return new Message(mc.getContent(), charset);
 			}
-			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()));
+			return new Message(MessageBody.getStringFromMessageBody(emailMessage.getBody()), FileSystemUtils.getContext(this,f));
 		} catch (Exception e) {
 			invalidateConnection(exchangeService);
 			throw new FileSystemException(e);

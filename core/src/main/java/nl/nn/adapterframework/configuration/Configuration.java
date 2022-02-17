@@ -279,6 +279,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			}
 		} catch (ConfigurationException e) {
 			state = BootState.STOPPED;
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
 		initMetrics();

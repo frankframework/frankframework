@@ -101,7 +101,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
 	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	
+
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private @Getter Locker locker;
 	private @Getter String emptyInputReplacement=null;

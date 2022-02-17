@@ -52,7 +52,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -116,6 +115,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
+	private @Getter String contextKey = null;
 	private @Getter String xpathExpression = null; 
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
@@ -355,7 +355,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		return defaultValueMethodsList;
 	}
-	
+
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
@@ -363,22 +363,34 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return (Document) transformResult.getNode();
 	}
 	
-	
+
+	/**
+	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
+	 */
 	public boolean requiresInputValueForResolution() {
 		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
-				&& (getDefaultValueMethodsList().isEmpty() || !getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT))) {
-			return false;
+		return StringUtils.isEmpty(getContextKey()) &&
+				(StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+						|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT)
+				);
+	}
+
+	public boolean requiresInputValueOrContextForResolution() {
+		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
+			return true;
 		}
-		return true;
+		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getSessionKey()) 
-				|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}") 
-				|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return StringUtils.isEmpty(getContextKey()) && (
+					sessionKey.equals(getSessionKey())
+					|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}")
+					|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey)
+				);
 	}
 
 	/**
@@ -443,6 +455,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
+						if (StringUtils.isNotEmpty(getContextKey())) {
+							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
+						}
 						if (!sourceMsg.isEmpty()) {
 							log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
 							source = sourceMsg.asSource();
@@ -459,7 +474,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
 				} else {
-					source = message.asSource();
+					if (StringUtils.isNotEmpty(getContextKey())) {
+						source = Message.asSource(message.getContext().get(getContextKey()));
+					} else {
+						source = message.asSource();
+					}
 				}
 				if (source!=null) {
 					if (transformerPoolRemoveNamespaces != null) {
@@ -495,6 +514,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
+				if (result instanceof Message && StringUtils.isNotEmpty(getContextKey())) {
+					result = ((Message)result).getContext().get(getContextKey());
+				}
 				if (log.isDebugEnabled() && (result==null || 
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty())) {
@@ -509,8 +531,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if (message==null) {
 						return null;
 					}
-					message.preserve();
-					result=message.asString();
+					if (StringUtils.isNotEmpty(getContextKey())) {
+						result = message.getContext().get(getContextKey());
+					} else {
+						message.preserve();
+						result=message;
+					}
 				} catch (IOException e) {
 					throw new ParameterException(e);
 				}
@@ -842,7 +868,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return transformerPool;
 	}
 
-	@IbisDoc({"1", "Name of the parameter", ""})
+	/** Name of the parameter */
 	@Override
 	public void setName(String parameterName) {
 		name = parameterName;
@@ -856,110 +882,115 @@ public class Parameter implements IConfigurable, IWithParameters {
 		this.type = type;
 	}
 
-	@IbisDoc({"3", "The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting.", ""})
+	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
 	public void setValue(String value) {
 		this.value = value;
 	}
 
-	@IbisDoc({"4", "Key of a pipelinesession-variable. <br/>If specified, the value of the pipelinesession variable is used as input for "+ 
-			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+ 
-			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+ 
-			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+ 
-			"value '*' then all existing sessionkeys are added as parameter (except tsReceived)", ""})
+	/**
+	 * Key of a PipelineSession-variable. <br/>If specified, the value of the PipelineSession variable is used as input for
+	 * the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are
+	 * specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as
+	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
+	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
+	 */
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
 
-	@IbisDoc({"5", "Instead of a fixed <code>sessionKey</code> it's also possible to use a xpath expression applied to the input message to extract the name of the session-variable.", ""})
+	/** key of message context variable to use as source, instead of the message found from input message or sessionKey itself */
+	public void setContextKey(String string) {
+		contextKey = string;
+	}
+
+	/** Instead of a fixed <code>sessionKey</code> it's also possible to use a XPath expression applied to the input message to extract the name of the session-variable. */
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
 
-	/**
-	 * Specify the stylesheet to use
-	 */
-	@IbisDoc({"6", "url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", ""})
+	/** URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable. */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	/**
-	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
-	 */
-	@IbisDoc({"7", "the XPath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
+	/** the XPath expression to extract the parameter value from the (xml formatted) input or session-variable. */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
 	}
 
-	@IbisDoc({"8", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	/** 
+	 * when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
+	 * @default 0
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	@IbisDoc({"9", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
 	@Deprecated
 	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
 	}
 
-	@IbisDoc({"10", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of "+ 
-			"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	/** 
+	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of 
+	 * <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace. 
+	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
-		"stylesheet/xpathExpression is executed", "false"})
+	/** 
+	 * When set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed
+	 * @default <code>false</code>
+	 */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
 
-	@IbisDoc({"12", "If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned", ""})
+	/** If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned */
 	public void setDefaultValue(String string) {
 		defaultValue = string;
 	}
 
-	@IbisDoc({"13", "Comma separated list of methods (defaultValue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.", "defaultValue"})
+	/** 
+	 * Comma separated list of methods (<code>defaultValue</code>, <code>sessionKey</code>, <code>pattern</code>, <code>value</code> or <code>input</code>) to use as default value. Used in the order they appear until a non-null value is found.
+	 * @default <code>defaultValue</code>
+	 */
 	public void setDefaultValueMethods(String string) {
 		defaultValueMethods = string;
 	}
 
-	/**
-	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
+	/** 
+	 * Value of parameter is determined using substitution and formating, following MessageFormat syntax with named parameters. The expression can contain references
+	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
+	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern
+	 * 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>
+	 * The following predefined reference can be used in the expression too:<ul>
+	 * <li>{now}: the current system time</li>
+	 * <li>{uid}: an unique identifier, based on the IP address and java.rmi.server.UID</li>
+	 * <li>{uuid}: an unique identifier, based on the IP address and java.util.UUID</li>
+	 * <li>{hostname}: the name of the machine the application runs on</li>
+	 * <li>{username}: username from the credentials found using authAlias, or the username attribute</li>
+	 * <li>{password}: password from the credentials found using authAlias, or the password attribute</li>
+	 * <li>{fixeddate}: fake date, for testing only</li>
+	 * <li>{fixeduid}: fake uid, for testing only</li>
+	 * <li>{fixedhostname}: fake hostname, for testing only</li>
+	 * </ul>
+	 * A guid can be generated using {hostname}_{uid}, see also
+	 * <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or 
+	 * <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
 	 */
-	@IbisDoc({"14", "Value of parameter is determined using substitution and formating. The expression can contain references "+ 
-		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
-		"<br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern "+ 
-		"'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>" +
-		"The following predefined reference can be used in the expression too:<ul>" +
-		"<li>{now}: the current system time</li>" +
-		"<li>{uid}: an unique identifier, based on the IP address and java.rmi.server.UID</li>" +
-		"<li>{uuid}: an unique identifier, based on the IP address and java.util.UUID</li>" +
-		"<li>{hostname}: the name of the machine the application runs on</li>" +
-		"<li>{username}: username from the credentials found using authAlias, or the username attribute</li>" +
-		"<li>{password}: password from the credentials found using authAlias, or the password attribute</li>" +
-		"<li>{fixeddate}: fake date, for testing only</li>" +
-		"<li>{fixeduid}: fake uid, for testing only</li>" +
-		"<li>{fixedhostname}: fake hostname, for testing only</li>" +
-		"</ul>"+ 
-		"A guid can be generated using {hostname}_{uid}, see also "+ 
-		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
-		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
-		"for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
 	}
 
-	@IbisDoc({"15", "Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified", ""})
+	/** Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"16", "Default username that is used when a <code>pattern</code> containing {username} is specified", ""})
+	/** Default username that is used when a <code>pattern</code> containing {username} is specified */
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -969,47 +1000,65 @@ public class Parameter implements IConfigurable, IWithParameters {
 		setUsername(username);
 	}
 
-	@IbisDoc({"17", "Default password that is used when a <code>pattern</code> containing {password} is specified", " "})
+	/** Default password that is used when a <code>pattern</code> containing {password} is specified */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"18", "Used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>", "depends on type"})
+	/** 
+	 * Used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>"
+	 * @default depends on type
+	 */
 	public void setFormatString(String string) {
 		formatString = string;
 	}
 
-	@IbisDoc({"19", "Used in combination with type <code>number</code>", "system default"})
+	/** 
+	 * Used in combination with type <code>number</code>
+	 * @default system default
+	 */
 	public void setDecimalSeparator(String string) {
 		decimalSeparator = string;
 	}
 
-	@IbisDoc({"20", "Used in combination with type <code>number</code>", "system default"})
+	/** 
+	 * Used in combination with type <code>number</code>
+	 * @default system default
+	 */
 	public void setGroupingSeparator(String string) {
 		groupingSeparator = string;
 	}
 
-	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded", "-1"})
+	/** 
+	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
+	 * @default -1
+	 */
 	public void setMinLength(int i) {
 		minLength = i;
 	}
 
-	@IbisDoc({"22", "If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length", "-1"})
+	/** 
+	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length
+	 * @default -1
+	 */
 	public void setMaxLength(int i) {
 		maxLength = i;
 	}
 
-	@IbisDoc({"23", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", ""})
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken */
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
 	
-	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken", ""})
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken */
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}
 
-	@IbisDoc({"25", "If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "false"})
+	/** 
+	 * If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)
+	 * @default <code>false</code>
+	 */
 	public void setHidden(boolean b) {
 		hidden = b;
 	}

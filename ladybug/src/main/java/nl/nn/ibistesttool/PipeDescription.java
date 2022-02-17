@@ -27,10 +27,7 @@ import java.util.List;
 public class PipeDescription {
 	private String checkpointName;
 	private String description;
-	private List<String> resourcesNames = new ArrayList<String>();
-
-	public PipeDescription() {
-	}
+	private List<String> resourcesNames = new ArrayList<>();
 
 	public void setCheckpointName(String checkpointName) {
 		this.checkpointName = checkpointName;

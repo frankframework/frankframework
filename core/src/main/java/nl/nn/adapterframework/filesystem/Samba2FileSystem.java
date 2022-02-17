@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -289,12 +289,12 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 
 	@Override
 	public Message readFile(String filename, String charset) throws FileSystemException, IOException {
-		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), charset);
+		return new Samba2Message(getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN), FileSystemUtils.getContext(this, filename, charset));
 	}
 
 	private class Samba2Message extends Message {
 		
-		public Samba2Message(File file, String charset) {
+		public Samba2Message(File file, Map<String,Object> context) {
 			super(() -> {
 				InputStream is = file.getInputStream();
 				FilterInputStream fis = new FilterInputStream(is) {
@@ -311,7 +311,7 @@ public class Samba2FileSystem extends FileSystemBase<String> implements IWritabl
 				};
 				return fis;
 				
-			}, charset, file.getClass());
+			}, context, file.getClass());
 		}
 	}
 

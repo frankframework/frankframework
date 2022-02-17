@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -533,7 +533,9 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	
 	
 	protected boolean canProvideOutputStream() {
-		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND) && parameterList.findParameter(PARAMETER_FILENAME)!=null;
+		return (getAction() == FileSystemAction.WRITE || getAction() == FileSystemAction.APPEND)
+				&& parameterList.findParameter(PARAMETER_FILENAME)!=null
+				&& !parameterList.isInputValueOrContextRequiredForResolution();
 	}
 
 	@Override
