@@ -1,0 +1,106 @@
+<module>	
+	<adapter name="UploadFile" description="Upload files to server" active="${active.uploadfile}">	
+		<receiver name="UploadFile">
+			<listener name="UploadFile"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="uploadFile" 
+				method="POST"
+				multipartBodyName="destination"
+				authenticationMethod="AUTHROLE"
+				authenticationRoles="IbisDataAdmin"/>
+		</receiver>
+		<receiver name="UploadFile-jl">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="UploadFile-jl" serviceName="${uploadFile-jl.serviceName}" />
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit state="success" path="EXIT" code="200"/>
+				<exit state="error" path="ERROR" code="500"/>
+			</exits>
+
+			<pipe name="switchCleanFilesystem" 
+				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				sessionKey="cleanFilesystem" 
+				notFoundForwardName="uploadFiles">
+				<forward name="clean" path="deleteFilesystem" />
+			</pipe>
+
+			<pipe name="deleteFilesystem"
+				className="nl.nn.adapterframework.pipes.CleanupOldFilesPipe"
+				filePatternSessionKey="destination" 
+				subdirectories="true"
+				deleteEmptySubdirectories="true" 
+				lastModifiedDelta="-1">
+				<forward name="success" path="uploadFiles" />
+			</pipe>
+
+			<pipe name="uploadFiles"
+				className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+				getInputFromSessionKey="multipartAttachments"
+				elementXPathExpression="/parts/part[@type='file']">			
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="UploadFile_Child">
+					<param name="unzipFile" sessionKey="unzipFile"/>
+					<param name="file" sessionKeyXPath="part/@name"/>
+					<param name="destination" sessionKey="destination"/>
+				</sender>
+				<forward name="success" path="EXIT"/>
+				<forward name="exception" path="ERROR"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="UploadFile_Child" active="${active.uploadfile}">
+		<receiver name="UploadFile_Child" >
+			<listener name="UploadFile_Child" className="nl.nn.adapterframework.receivers.JavaListener"/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success"/>
+			</exits>
+
+			<pipe name="isZipfile" 
+				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				xpathExpression="contains($filename,'.zip')">
+				<param name="filename" xpathExpression="part/@filename" />
+				<forward name="true" path="switchUnzipFile" />
+				<forward name="false" path="StoreFilenameInSessionkey" />
+			</pipe>
+
+			<pipe name="switchUnzipFile" 
+				className="nl.nn.adapterframework.pipes.XmlSwitch"
+				sessionKey="unzipFile" 
+				notFoundForwardName="StoreFilenameInSessionkey">
+				<forward name="unzip" path="unzipFiles" />
+			</pipe>
+
+			<pipe name="unzipFiles" 
+				className="nl.nn.adapterframework.pipes.UnzipPipe"
+				getInputFromSessionKey="file"
+				directorySessionKey="destination"
+				keepOriginalFilePath="true">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="StoreFilenameInSessionkey"
+				className="nl.nn.adapterframework.pipes.XsltPipe"
+				xpathExpression="concat($destination,$pathSeparator,$filename)"
+				storeResultInSessionKey="filename">
+				<param name="destination" sessionKey="destination"/>
+				<param name="pathSeparator" value="${file.separator}"/>
+				<param name="filename" xpathExpression="part/@filename"/>
+				<forward name="success" path="writeFile"/>
+			</pipe>
+
+			<pipe name="writeFile"
+				className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				action="write">
+				<param name="contents" sessionKey="file" />
+				<param name="filename" sessionKey="filename" />
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>	
+</module>
