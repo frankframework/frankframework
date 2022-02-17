@@ -115,7 +115,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String messageSelector = null;
 
 	private @Getter boolean correlationIdToHex = false;
-	private String correlationIdToHexPrefix = "ID:";
+	private @Getter String correlationIdToHexPrefix = "ID:";
 	private @Getter int correlationIdMaxLength = -1;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
