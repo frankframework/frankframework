@@ -28,6 +28,7 @@ import net.sf.ehcache.statistics.StatisticsGateway;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.micrometer.MetricsInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -41,10 +42,11 @@ public class IbisCacheManager {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final String CACHE_DIR_KEY="cache.dir";
-	
+
 	private static IbisCacheManager self;
 	private CacheManager cacheManager=null;
-	
+
+
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
 		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
@@ -58,14 +60,14 @@ public class IbisCacheManager {
 		cacheManagerConfig.addDefaultCache(defaultCacheConfig);
 		cacheManager= new CacheManager(cacheManagerConfig);
 	}
-	
+
 	public synchronized static IbisCacheManager getInstance() {
 		if (self==null) {
 			self=new IbisCacheManager();
 		}
 		return self;
 	}
-	
+
 	public synchronized static void shutdown() {
 		if (self!=null) {
 			self.log.debug("shutting down cacheManager...");
@@ -75,7 +77,7 @@ public class IbisCacheManager {
 			self=null;
 		}
 	}
-	
+
 	public Ehcache addCache(Cache cache) {
 		log.debug("registering cache ["+cache.getName()+"]");
 		cacheManager.addCache(cache);
@@ -91,23 +93,27 @@ public class IbisCacheManager {
 		return cacheManager.getCache(cacheName);
 	}
 
-	public static void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
+	public static <D> void iterateOverStatistics(StatisticsKeeperIterationHandler<D> hski, D data, Action action) throws SenderException {
 		if (self==null) {
 			return;
 		}
 		String cacheNames[]=self.cacheManager.getCacheNames();
 		for (int i=0;i<cacheNames.length;i++) {
-			Object subdata=hski.openGroup(data, cacheNames[i], "cache");
+			D subdata=hski.openGroup(data, cacheNames[i], "cache");
 			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
-			StatisticsGateway stats = cache.getStatistics();
-			hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
-			hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
-			hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
-			hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
-			hski.handleScalar(subdata, "ObjectCount", cache.getSize());
-			hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
-			hski.closeGroup(subdata);
+			if (action==Action.CONFIGURE && hski instanceof MetricsInitializer) {
+				((MetricsInitializer)hski).configureCache(cache);
+			} else {
+				StatisticsGateway stats = cache.getStatistics();
+				hski.handleScalar(subdata, "CacheHits", stats.cacheHitCount());
+				hski.handleScalar(subdata, "CacheMisses", stats.cacheMissCount());
+				hski.handleScalar(subdata, "EvictionCount", stats.cacheEvictedCount());
+				hski.handleScalar(subdata, "InMemoryHits", stats.localHeapHitCount());
+				hski.handleScalar(subdata, "ObjectCount", cache.getSize());
+				hski.handleScalar(subdata, "OnDiskHits", stats.localDiskHitCount());
+				hski.closeGroup(subdata);
+			}
 		}
 	}
-	
+
 }

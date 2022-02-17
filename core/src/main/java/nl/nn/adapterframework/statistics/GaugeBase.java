@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,15 @@
 */
 package nl.nn.adapterframework.statistics;
 
-/**
- * @author  Gerrit van Brakel
- * @since  
- */
-public class SizeStatisticsKeeper extends StatisticsKeeper {
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 
-	private static final String statConfigKey="Statistics.size.boundaries";
-    public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
-
-    public SizeStatisticsKeeper(String name) {
-		super(name,BigBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
-	}
+public abstract class GaugeBase extends ScalarMetricBase<Gauge> {
 
 	@Override
-	public String getQuantity() {
-		return "size";
-	}
-	@Override
-	public String getUnits() {
-		return "B";
+	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name) {
+		meter = Gauge.builder(name,()->getValue()).tags(tags).register(registry);
 	}
 
 }

@@ -50,6 +50,7 @@ public interface StatisticsKeeperIterationHandler<D> {
 	public D start(Date now, Date mainMark, Date detailMark) throws SenderException;
 	public void end(D data) throws SenderException;
 	public void handleStatisticsKeeper(D data, StatisticsKeeper sk) throws SenderException;
+	public void handleScalar(D data, String name, ScalarMetricBase<?> meter) throws SenderException;
 	public void handleScalar(D data, String scalarName, long value) throws SenderException;
 	public void handleScalar(D data, String scalarName, Date value) throws SenderException;
 	public D openGroup(D parentData, String name, String type) throws SenderException;

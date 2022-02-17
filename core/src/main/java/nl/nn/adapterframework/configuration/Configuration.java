@@ -36,7 +36,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import lombok.Getter;
@@ -98,15 +97,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
 	private @Getter @Setter CompositeMeterRegistry meterRegistry = Metrics.globalRegistry;
-	private SimpleMeterRegistry simpleMeterRegistry = new SimpleMeterRegistry();
+//	private SimpleMeterRegistry simpleMeterRegistry = new SimpleMeterRegistry();
 	private static @Getter @Setter PrometheusMeterRegistry  prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
 	public void initMetrics() throws ConfigurationException {
-		meterRegistry.add(simpleMeterRegistry);
+//		meterRegistry.add(simpleMeterRegistry);
 		meterRegistry.add(prometheusMeterRegistry);
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
-		meterRegistry.config().commonTags("instanceName", appConstants.getProperty("instance.name"));
-		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry, getName());
+		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
 		try {
 			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.CONFIGURE);
 		} catch (SenderException e) {
@@ -119,7 +117,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		try {
 			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
+				adapter.iterateOverStatistics(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -291,7 +289,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			state = BootState.STOPPED;
 			throw e;
 		}
-
+		initMetrics();
 		configured = true;
 
 		String msg;

@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.statistics;
 
 import static org.junit.Assert.assertEquals;
 

@@ -31,6 +31,7 @@ import nl.nn.adapterframework.jdbc.CachedSideTable;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.SideTable;
+import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.jdbc.StatisticsKeeperStore.SessionInfo;
@@ -279,6 +280,11 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 				}
 			}
 		}
+	}
+
+	@Override
+	public void handleScalar(SessionInfo data, String scalarName, ScalarMetricBase<?> meter) throws SenderException {
+		handleScalar(data, scalarName, meter.getValue());
 	}
 
 	@Override

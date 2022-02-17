@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,8 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.statistics;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
@@ -23,36 +26,53 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class CounterStatistic extends Counter {
+public class CounterStatistic extends ScalarMetricBase<Counter> {
 
 	long mark;
 	
 	public CounterStatistic(int startValue) {
-		super(startValue);
 		mark=startValue;
 	}
 
+	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name) {
+		meter = Counter.builder(name).tags(tags).register(registry);
+	}
+	
 	public void performAction(Action action) {
-		if (action==Action.FULL || action==Action.SUMMARY) {
+		switch (action) {
+		case CONFIGURE:
+		case FULL:
+		case SUMMARY:
 			return;
-		}
-		if (action==Action.RESET) {
+		case RESET:
 			clear();
-		}
-		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
+			return;
+		case MARK_FULL:
+		case MARK_MAIN:
 			synchronized (this) {
 				mark=getValue();
 			}
+			return;
+		default:
+			throw new IllegalArgumentException("unknown Action ["+action+"]");
 		}
 	}
 
+	public synchronized void increase() {
+		meter.increment();
+	}
+	
+	@Override
+	public long getValue() {
+		return (long)meter.count();
+	}
+	
 	public synchronized long getIntervalValue() {
 		return getValue()-mark;
 	}
 
 	public synchronized void clear() {
-		super.clear();
-		mark=0;	
+		throw new IllegalArgumentException("clear() is not supported anymore");
 	}
 
 }

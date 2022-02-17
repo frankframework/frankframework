@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import lombok.Getter;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
@@ -75,20 +76,17 @@ public class StatisticsKeeper implements ItemList {
 		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 	
-	public void initMetrics(MeterRegistry registry, String groupname, List<String> groupType) {
+	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags) {
 		double[] percentiles = new double[pest.getNumPercentiles()];
 		for (int i=0;i<pest.getNumPercentiles();i++) {
 			percentiles[i]=pest.getPercentage(i)/100;
 		}
 		DistributionSummary.Builder builder= DistributionSummary
-				.builder(groupname+"."+name)
+				.builder(getQuantity())
 				.baseUnit(getUnits())
-				.publishPercentiles(percentiles)
-				.publishPercentileHistogram();
-		int i=0;
-		for(String group:groupType) {
-			builder.tag("group"+i++, group);
-		}
+				.tags(tags)
+				.publishPercentiles(percentiles);
+				//.publishPercentileHistogram();
 		distributionSummary = builder.register(registry);
 	}
 
@@ -121,6 +119,9 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
+	public String getQuantity() {
+		return "latency";
+	}
 	public String getUnits() {
 		return "ms";
 	}

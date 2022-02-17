@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,26 +15,23 @@
 */
 package nl.nn.adapterframework.statistics;
 
+import lombok.Getter;
+
 /**
+ * Counter value that is maintained with statistics.
+ * 
  * @author  Gerrit van Brakel
- * @since  
+ * @since   4.9
  */
-public class SizeStatisticsKeeper extends StatisticsKeeper {
+public class ScalarStatistic extends GaugeBase {
 
-	private static final String statConfigKey="Statistics.size.boundaries";
-    public static final String DEFAULT_BOUNDARY_LIST="10000,100000,1000000";
-
-    public SizeStatisticsKeeper(String name) {
-		super(name,BigBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	private @Getter long value;
+	
+	public synchronized void increase() {
+		++value;
 	}
-
-	@Override
-	public String getQuantity() {
-		return "size";
-	}
-	@Override
-	public String getUnits() {
-		return "B";
+	public synchronized void decrease() {
+		--value;
 	}
 
 }

@@ -41,7 +41,7 @@ public class StatisticsKeeperTest {
 	@Test
 	public void testCompareDistributionSummary() {
 		StatisticsKeeper sk = new StatisticsKeeper("test");
-		sk.initMetrics(new SimpleMeterRegistry(), "test", new ArrayList<>());
+		sk.initMetrics(new SimpleMeterRegistry(), new ArrayList<>());
 		
 		for (int i=0; i<100; i++) {
 			sk.addValue(i);

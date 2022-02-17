@@ -19,8 +19,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jmx.JmxAttribute;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.MessageKeeper;
 
@@ -31,7 +30,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
  * accessing/activating IReceivers, Pipelines, statistics etc.
  *
  **/
-public interface IAdapter extends IManagable {
+public interface IAdapter<D> extends IManagable, HasStatistics {
 
 	/**
 	 * Instruct the adapter to configure itself. The adapter will call the pipeline
@@ -61,9 +60,6 @@ public interface IAdapter extends IManagable {
 	public boolean isAutoStart();
 
 	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
-
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException ;
-
 
 	@JmxAttribute(description = "Return the Adapter description")
 	public String getDescription();

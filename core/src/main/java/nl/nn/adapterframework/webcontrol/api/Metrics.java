@@ -18,6 +18,7 @@ package nl.nn.adapterframework.webcontrol.api;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
@@ -27,6 +28,7 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.exporter.common.TextFormat;
 import nl.nn.adapterframework.configuration.Configuration;
 
 @Path("/")
@@ -51,10 +53,9 @@ public class Metrics extends Base {
 	
 	@GET
 	@Path("/metrics")
+	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response getLogDirectory() throws ApiException {
-		String scrape = registry.scrape();
-		log.info("scrape: "+scrape);
-		return Response.status(Response.Status.OK).entity(scrape).build();
+		return Response.status(Response.Status.OK).entity(registry.scrape()).build(); // it would be better to write directly to response.getWriter()
 	}
 
 }

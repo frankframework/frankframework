@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
@@ -159,6 +160,11 @@ public final class ShowAdapterStatistics extends Base {
 		}
 
 		@Override
+		public void handleScalar(Object data, String scalarName, ScalarMetricBase meter) throws SenderException {
+			handleScalar(data, scalarName, meter.getValue());
+		}
+
+		@Override
 		public void handleScalar(Object data, String scalarName, long value) {
 			handleScalar(data, scalarName, ""+value);
 		}
@@ -189,6 +195,7 @@ public final class ShowAdapterStatistics extends Base {
 		@Override
 		public void closeGroup(Object data) {
 		}
+
 	}
 
 	protected Map<String, Object> statisticsKeeperToMapBuilder(StatisticsKeeper sk) {

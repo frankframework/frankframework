@@ -20,8 +20,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
+import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 
@@ -31,19 +35,17 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	private MeterRegistry registry;
 	private NodeConfig root;
 
-	protected class NodeConfig {
-		String name;
-		List<String> groupType;
+	public class NodeConfig {
+		public List<Tag> tags;
 		
-		NodeConfig(String name, List<String> groupType) {
-			this.name = name;
-			this.groupType = groupType!=null ? groupType : new LinkedList<>();
+		NodeConfig(List<Tag> tags) {
+			this.tags = tags!=null ? tags : new LinkedList<>();
 		}
 	}
 	
-	public MetricsInitializer(MeterRegistry registry, String name) {
+	public MetricsInitializer(MeterRegistry registry) {
 		this.registry = registry;
-		root = new NodeConfig(name, null);
+		root = new NodeConfig(null);
 	}
 	
 	@Override
@@ -61,7 +63,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
-		sk.initMetrics(registry, data.name, data.groupType);
+		sk.initMetrics(registry, data.tags);
+	}
+
+	@Override
+	public void handleScalar(NodeConfig data, String scalarName, ScalarMetricBase<?> meter) throws SenderException {
+		meter.initMetrics(registry, data.tags, scalarName);
 	}
 
 	@Override
@@ -78,13 +85,17 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public NodeConfig openGroup(NodeConfig parentData, String name, String type) throws SenderException {
-		List<String> types = new LinkedList<>(parentData.groupType);
-		types.add(type);
-		return new NodeConfig(parentData.name+"."+name, types);
+		List<Tag> tags = new LinkedList<>(parentData.tags);
+		tags.add(Tag.of(type, name));
+		return new NodeConfig(tags);
 	}
 
 	@Override
 	public void closeGroup(NodeConfig data) throws SenderException {
 	}
 
+	public void configureCache(Ehcache cache) {
+		new EhCache2Metrics(cache, root.tags).bindTo(registry);
+	}
+	
 }

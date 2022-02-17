@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -102,6 +103,11 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		if (item!=null) {
 			context.addSubElement(item);
 		}
+	}
+
+	@Override
+	public void handleScalar(XmlBuilder context, String name, ScalarMetricBase<?> meter) throws SenderException {
+		handleScalar(context, name, meter.getValue());
 	}
 
 	@Override
