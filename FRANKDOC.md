@@ -2,8 +2,7 @@
 
 The Frank!Doc provides reference information for Frank developers as explained in [CONTRIBUTING.md](./CONTRIBUTING.md). It is produced by a doclet that assembles the Frank!Doc from the Java sources. You can control the Frank!Doc using custom JavaDoc tags and using Frank!Doc-related Java annotations. These annotations and tags are summarized in the table below:
 
-| JavaDoc | Java | | |
-| Tag | annotation | Appears on | Function |
+| JavaDoc Tag | Java annotation | Appears on | Function |
 | ---- | ---- | ---------- | -------- |
 | | `@FrankDocGroup` | Class or interface | Define group as shown in top-left of webapp. Has fields `name` and `order` (integer). |
 | `@ff.parameters` | | Class | Describes how parameters (Frank config `<Param>`) are used. |
