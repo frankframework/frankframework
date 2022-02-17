@@ -29,7 +29,7 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
 public class CounterStatistic extends ScalarMetricBase<Counter> {
 
 	long mark;
-	
+
 	public CounterStatistic(int startValue) {
 		mark=startValue;
 	}
@@ -39,7 +39,7 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 		meter = Counter.builder(name).tags(tags).register(registry);
 		meter.increment(mark);
 	}
-	
+
 	public void performAction(Action action) {
 		switch (action) {
 		case FULL:
@@ -59,12 +59,12 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 	public synchronized void increase() {
 		meter.increment();
 	}
-	
+
 	@Override
 	public long getValue() {
 		return (long)meter.count();
 	}
-	
+
 	public synchronized long getIntervalValue() {
 		return getValue()-mark;
 	}
