@@ -74,7 +74,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 			valueTp=TransformerPool.configureTransformer(getLogPrefix(), this, getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
 		}
 	}
-	
+
 	protected abstract V getElement(String key);
 	protected abstract void putElement(String key, V value);
 	protected abstract boolean removeElement(Object key);
@@ -89,7 +89,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 			try {
 				input=keyTp.transform(input, null);
 			} catch (Exception e) {
-			   log.error(getLogPrefix()+"cannot determine cache key",e);
+				log.error(getLogPrefix()+"cannot determine cache key",e);
 			}
 		}
 		if (StringUtils.isEmpty(input)) {
@@ -134,7 +134,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 		putElement(key, value);
 	}
 
-	public boolean remove(Object key) {
+	public boolean remove(String key) {
 		return removeElement(key);
 	}
 
@@ -149,7 +149,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	public String getLogPrefix() {
 		return "cache ["+getName()+"] ";
 	}
-	
+
 	@IbisDoc({"xpath expression to extract cache key from request message", ""})
 	public void setKeyXPath(String keyXPath) {
 		this.keyXPath = keyXPath;
@@ -197,7 +197,7 @@ public abstract class CacheAdapterBase<V> implements ICache<String,V>, IConfigur
 	public void setValueStyleSheet(String valueStyleSheet) {
 		this.valueStyleSheet = valueStyleSheet;
 	}
-	
+
 	@IbisDoc({"session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet", ""})
 	public void setValueInputSessionKey(String valueInputSessionKey) {
 		this.valueInputSessionKey = valueInputSessionKey;
