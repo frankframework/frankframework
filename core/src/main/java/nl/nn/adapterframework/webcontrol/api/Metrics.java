@@ -33,16 +33,18 @@ public class Metrics extends Base {
 
 	private PrometheusMeterRegistry registry;
 	
-	public Metrics() {
-		MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
-		if (metersRegistry instanceof PrometheusMeterRegistry) {
-			registry = (PrometheusMeterRegistry)metersRegistry;
-		} else if (metersRegistry instanceof CompositeMeterRegistry) {
-			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
-			for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
-				if (meterRegistry instanceof PrometheusMeterRegistry) { 
-					registry = (PrometheusMeterRegistry)meterRegistry; 
-					break;
+	protected void initRegistry() {
+		if (registry==null) {
+			MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
+			if (metersRegistry instanceof PrometheusMeterRegistry) {
+				registry = (PrometheusMeterRegistry)metersRegistry;
+			} else if (metersRegistry instanceof CompositeMeterRegistry) {
+				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
+				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+					if (meterRegistry instanceof PrometheusMeterRegistry) { 
+						registry = (PrometheusMeterRegistry)meterRegistry; 
+						break;
+					}
 				}
 			}
 		}
@@ -53,7 +55,10 @@ public class Metrics extends Base {
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response getLogDirectory() throws ApiException {
 		if (registry==null) {
-			return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+			initRegistry();
+			if (registry==null) {
+				return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+			}
 		}
 		return Response.status(Response.Status.OK).entity(registry.scrape()).build(); // it would be better to write directly to response.getWriter()
 	}

@@ -392,16 +392,33 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
-		Object root=hski.start(now,mainMark,detailMark);
-		try {
-			iterateOverStatistics(hski,root,action);
-		} finally {
-			hski.end(root);
-		}
-	}
+//	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
+//		Object root=hski.start(now,mainMark,detailMark);
+//		try {
+//			iterateOverStatistics(hski,root,action);
+//		} finally {
+//			hski.end(root);
+//		}
+//	}
 	
-	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
+	@Override
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
+		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
+		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
+
+		if (action!=Action.FULL &&
+			action!=Action.SUMMARY) {
+			synchronized (statsMessageProcessingDuration) {
+				iterateOverStatisticsBody(hski,adapterData,action);
+			}
+		} else {
+			iterateOverStatisticsBody(hski,adapterData,action);
+		}
+		hski.closeGroup(adapterData);
+	}
+
+	private void iterateOverStatisticsBody(StatisticsKeeperIterationHandler hski, Object adapterData, Action action) throws SenderException {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", numOfMessagesProcessed);
 		hski.handleScalar(adapterData,"messagesInError", numOfMessagesInError);
@@ -422,10 +439,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean showDetails = action == Action.FULL
+		boolean visitDetails = 
+				   action == Action.CONFIGURE
+				|| action == Action.FULL
 				|| action == Action.MARK_FULL
 				|| action == Action.RESET;
-		if (showDetails) {
+		if (visitDetails) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			for (Receiver<?> receiver: receivers) {
 				receiver.iterateOverStatistics(hski,recsData,action);
@@ -441,23 +460,6 @@ public class Adapter implements IAdapter, NamedBean {
 			getPipeLine().iterateOverStatistics(hski, pipelineData, action);
 			hski.closeGroup(pipelineData);
 		}
-	}
-
-	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
-		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalar(adapterData,"upSince", getStatsUpSinceDate());
-		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDateDate());
-
-		if (action!=Action.FULL &&
-			action!=Action.SUMMARY) {
-			synchronized (statsMessageProcessingDuration) {
-				doForEachStatisticsKeeperBody(hski,adapterData,action);
-			}
-		} else {
-			doForEachStatisticsKeeperBody(hski,adapterData,action);
-		}
-		hski.closeGroup(adapterData);
 	}
 
 

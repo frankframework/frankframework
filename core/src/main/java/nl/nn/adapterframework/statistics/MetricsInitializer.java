@@ -13,11 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.statistics.micrometer;
+package nl.nn.adapterframework.statistics;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -25,9 +27,6 @@ import io.micrometer.core.instrument.binder.cache.EhCache2Metrics;
 import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.statistics.ScalarMetricBase;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig> {
 
@@ -73,20 +72,20 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleScalar(NodeConfig data, String scalarName, long value) throws SenderException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void handleScalar(NodeConfig data, String scalarName, Date value) throws SenderException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public NodeConfig openGroup(NodeConfig parentData, String name, String type) throws SenderException {
 		List<Tag> tags = new LinkedList<>(parentData.tags);
-		tags.add(Tag.of(type, name));
+		if (StringUtils.isNotEmpty(name)) {
+			tags.add(Tag.of(type, name));
+		} else {
+			tags.add(Tag.of(type, "1"));
+		}
 		return new NodeConfig(tags);
 	}
 

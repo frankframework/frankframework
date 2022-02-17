@@ -27,8 +27,8 @@ import net.sf.ehcache.config.DiskStoreConfiguration;
 import net.sf.ehcache.statistics.StatisticsGateway;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.statistics.micrometer.MetricsInitializer;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
