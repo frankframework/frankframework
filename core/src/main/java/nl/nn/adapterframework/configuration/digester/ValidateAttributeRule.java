@@ -136,6 +136,8 @@ public class ValidateAttributeRule extends DigesterRuleBase {
 				if (defaultValue!=null && equals(defaultValue, value)) {
 					addLocalWarning("attribute ["+name+"] already has a default value ["+value+"]");
 				}
+				// if the default value is null, then it can mean that the real default value is determined in configure(),
+				// so we cannot assume setting it to "" has no effect
 			} catch (NumberFormatException e) {
 				addLocalWarning("attribute ["+ name+"] with value ["+value+"] cannot be converted to a number: "+e.getMessage());
 			} catch (Throwable t) {
