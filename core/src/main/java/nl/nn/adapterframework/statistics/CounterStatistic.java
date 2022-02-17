@@ -41,7 +41,6 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 	
 	public void performAction(Action action) {
 		switch (action) {
-		case CONFIGURE:
 		case FULL:
 		case SUMMARY:
 			return;

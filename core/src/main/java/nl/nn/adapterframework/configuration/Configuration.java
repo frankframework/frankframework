@@ -95,10 +95,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	public void initMetrics() throws ConfigurationException {
 		MeterRegistry meterRegistry = getIbisManager().getIbisContext().getMeterRegistry();
-		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
 		try {
-			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.CONFIGURE);
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL);
 		} catch (SenderException e) {
 			throw new ConfigurationException("Cannot initialize metrics", e);
 		}

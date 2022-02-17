@@ -440,8 +440,7 @@ public class Adapter implements IAdapter, NamedBean {
 		hski.closeGroup(hourData);
 
 		boolean visitDetails = 
-				   action == Action.CONFIGURE
-				|| action == Action.FULL
+				   action == Action.FULL
 				|| action == Action.MARK_FULL
 				|| action == Action.RESET;
 		if (visitDetails) {

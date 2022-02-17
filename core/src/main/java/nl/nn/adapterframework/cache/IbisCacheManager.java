@@ -101,7 +101,7 @@ public class IbisCacheManager {
 		for (int i=0;i<cacheNames.length;i++) {
 			D subdata=hski.openGroup(data, cacheNames[i], "cache");
 			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
-			if (action==Action.CONFIGURE && hski instanceof MetricsInitializer) {
+			if (hski instanceof MetricsInitializer) {
 				((MetricsInitializer)hski).configureCache(cache);
 			} else {
 				StatisticsGateway stats = cache.getStatistics();

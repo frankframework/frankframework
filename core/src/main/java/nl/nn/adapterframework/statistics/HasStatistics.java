@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.SenderException;
 public interface HasStatistics {
 
 	public enum Action {
-		CONFIGURE,
 		SUMMARY,
 		FULL,
 		RESET,
