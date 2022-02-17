@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
  * accessing/activating IReceivers, Pipelines, statistics etc.
  *
  **/
-public interface IAdapter<D> extends IManagable, HasStatistics {
+public interface IAdapter extends IManagable, HasStatistics {
 
 	/**
 	 * Instruct the adapter to configure itself. The adapter will call the pipeline

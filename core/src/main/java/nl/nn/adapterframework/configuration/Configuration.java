@@ -34,10 +34,7 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -96,13 +93,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
-	private @Getter @Setter CompositeMeterRegistry meterRegistry = Metrics.globalRegistry;
-//	private SimpleMeterRegistry simpleMeterRegistry = new SimpleMeterRegistry();
-	private static @Getter @Setter PrometheusMeterRegistry  prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-
 	public void initMetrics() throws ConfigurationException {
-//		meterRegistry.add(simpleMeterRegistry);
-		meterRegistry.add(prometheusMeterRegistry);
+		MeterRegistry meterRegistry = getIbisManager().getIbisContext().getMeterRegistry();
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
 		try {

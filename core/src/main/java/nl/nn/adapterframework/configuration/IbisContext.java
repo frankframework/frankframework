@@ -30,6 +30,16 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.http.RestServiceDispatcher;
@@ -74,10 +84,12 @@ public class IbisContext extends IbisApplicationContext {
 			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
 	}
 
-	private IbisManager ibisManager;
+	private @Getter IbisManager ibisManager;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
 	private static List<String> loadingConfigs = new ArrayList<>();
+
+	private @Getter @Setter MeterRegistry meterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
 	private Thread ibisContextReconnectThread = null;
 
@@ -119,7 +131,9 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderManager = new ClassLoaderManager(this);
-
+			
+			initMetrics();
+			
 			try {
 				flowDiagramManager = getBean("flowDiagramManager", FlowDiagramManager.class); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
@@ -374,6 +388,17 @@ public class IbisContext extends IbisApplicationContext {
 		}
 	}
 
+	private void initMetrics() {
+		if (meterRegistry!=null) {
+			// These classes are for exposing JVM specific metrics
+			new ClassLoaderMetrics().bindTo(meterRegistry);
+			new JvmMemoryMetrics().bindTo(meterRegistry);
+			new JvmGcMetrics().bindTo(meterRegistry);
+			new ProcessorMetrics().bindTo(meterRegistry);
+			new JvmThreadMetrics().bindTo(meterRegistry);
+		}
+	}
+	
 	private void generateFlow() { //Generate big flow diagram file for all configurations
 		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();
@@ -395,10 +420,6 @@ public class IbisContext extends IbisApplicationContext {
 
 	public void log(String message, MessageKeeperLevel level, Exception e) {
 		getApplicationContext().publishEvent(new ApplicationMessageEvent(getApplicationContext(), message, level, e));
-	}
-
-	public IbisManager getIbisManager() {
-		return ibisManager;
 	}
 
 	public String getApplicationName() {

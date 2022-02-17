@@ -22,14 +22,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
-import nl.nn.adapterframework.configuration.Configuration;
 
 @Path("/")
 public class Metrics extends Base {
@@ -38,23 +34,27 @@ public class Metrics extends Base {
 	private PrometheusMeterRegistry registry;
 	
 	public Metrics() {
-		this(Configuration.getPrometheusMeterRegistry());
-	}
-	
-	public Metrics(PrometheusMeterRegistry registry) {
-		this.registry = registry;
-		// These classes are for exposing JVM specific metrics
-		new ClassLoaderMetrics().bindTo(registry);
-		new JvmMemoryMetrics().bindTo(registry);
-		new JvmGcMetrics().bindTo(registry);
-		new ProcessorMetrics().bindTo(registry);
-		new JvmThreadMetrics().bindTo(registry);
+		MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
+		if (metersRegistry instanceof PrometheusMeterRegistry) {
+			registry = (PrometheusMeterRegistry)metersRegistry;
+		} else if (metersRegistry instanceof CompositeMeterRegistry) {
+			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
+			for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				if (meterRegistry instanceof PrometheusMeterRegistry) { 
+					registry = (PrometheusMeterRegistry)meterRegistry; 
+					break;
+				}
+			}
+		}
 	}
 	
 	@GET
 	@Path("/metrics")
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response getLogDirectory() throws ApiException {
+		if (registry==null) {
+			return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+		}
 		return Response.status(Response.Status.OK).entity(registry.scrape()).build(); // it would be better to write directly to response.getWriter()
 	}
 
