@@ -50,6 +50,7 @@ import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
@@ -390,6 +391,12 @@ public class IbisContext extends IbisApplicationContext {
 
 	private void initMetrics() {
 		if (meterRegistry!=null) {
+			meterRegistry.config().commonTags(
+						"instance", APP_CONSTANTS.getString("instance.name",""),
+						"ff_version", APP_CONSTANTS.getProperty("application.version"),
+						"hostname" , Misc.getHostname(),
+						"dtap.stage" , APP_CONSTANTS.getProperty("dtap.stage")
+					);
 			// These classes are for exposing JVM specific metrics
 			new ClassLoaderMetrics().bindTo(meterRegistry);
 			new JvmMemoryMetrics().bindTo(meterRegistry);

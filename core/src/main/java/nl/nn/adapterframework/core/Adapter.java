@@ -439,11 +439,7 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		hski.closeGroup(hourData);
 
-		boolean visitDetails = 
-				   action == Action.FULL
-				|| action == Action.MARK_FULL
-				|| action == Action.RESET;
-		if (visitDetails) {
+		if (action == Action.FULL || action == Action.MARK_FULL) {
 			Object recsData=hski.openGroup(adapterData,null,"receivers");
 			for (Receiver<?> receiver: receivers) {
 				receiver.iterateOverStatistics(hski,recsData,action);

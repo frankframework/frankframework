@@ -132,9 +132,6 @@ public class StatisticsKeeper implements ItemList {
 		if (action==Action.FULL || action==Action.SUMMARY) {
 			return;
 		}
-		if (action==Action.RESET) {
-			clear();
-		}
 		if (action==Action.MARK_FULL || action==Action.MARK_MAIN) {
 			mark.mark(cumulative);
 		}

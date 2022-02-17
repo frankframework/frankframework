@@ -37,15 +37,13 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 	@Override
 	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name) {
 		meter = Counter.builder(name).tags(tags).register(registry);
+		meter.increment(mark);
 	}
 	
 	public void performAction(Action action) {
 		switch (action) {
 		case FULL:
 		case SUMMARY:
-			return;
-		case RESET:
-			clear();
 			return;
 		case MARK_FULL:
 		case MARK_MAIN:
@@ -69,10 +67,6 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 	
 	public synchronized long getIntervalValue() {
 		return getValue()-mark;
-	}
-
-	public synchronized void clear() {
-		throw new IllegalArgumentException("clear() is not supported anymore");
 	}
 
 }
