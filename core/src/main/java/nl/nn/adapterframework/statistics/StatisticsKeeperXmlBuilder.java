@@ -177,10 +177,10 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 				addNumber(cumulativeStats, sk.getItemName(i), "-");
 			} else {
 				switch (sk.getItemType(i)) {
-					case INTEGER: 
+					case INTEGER:
 						addNumber(cumulativeStats, sk.getItemName(i), ""+ (Long)item);
 						break;
-					case TIME: 
+					case TIME:
 						addNumber(cumulativeStats, sk.getItemName(i), df.format(item));
 						break;
 					case FRACTION:
@@ -198,10 +198,10 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 				addNumber(intervalStats, sk.getIntervalItemName(i), "-");
 			} else {
 				switch (sk.getIntervalItemType(i)) {
-					case INTEGER: 
+					case INTEGER:
 						addNumber(intervalStats, sk.getIntervalItemName(i), ""+ (Long)item);
 						break;
-					case TIME: 
+					case TIME:
 						addNumber(intervalStats, sk.getIntervalItemName(i), df.format(item));
 						break;
 					case FRACTION:

@@ -84,7 +84,7 @@ public class StatisticsKeeperTest {
 	public void testLabelsAndTypes() {
 		List<String> labels = StatisticsKeeper.getLabels();
 		List<String> types  = StatisticsKeeper.getTypes();
-		
+
 		assertEquals("Name", labels.get(0));
 		assertEquals("STRING", types.get(0));
 		assertEquals("Count", labels.get(1));

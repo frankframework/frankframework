@@ -57,7 +57,7 @@ public final class ShowAdapterStatistics extends Base {
 	public Response getStatistics(@PathParam("adapterName") String adapterName) throws ApiException {
 
 		Map<String, Object> statisticsMap = new HashMap<String, Object>();
-		
+
 		statisticsMap.put("labels", StatisticsKeeper.getLabels());
 		statisticsMap.put("types", StatisticsKeeper.getTypes());
 
