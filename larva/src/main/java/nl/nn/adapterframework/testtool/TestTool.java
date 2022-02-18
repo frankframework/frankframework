@@ -141,8 +141,6 @@ public class TestTool {
 	private static final String TD_STARTING_TAG="<td>";
 	private static final String TD_CLOSING_TAG="</td>";
 	private static final String TABLE_CLOSING_TAG="</table>";
-	
-	private static final List<String> typesRequireStringType = Arrays.asList(new String []{"node", "domdoc", "list", "map"});
 
 	public static void setTimeout(int newTimeout) {
 		globalTimeout=newTimeout;
@@ -4292,35 +4290,32 @@ public class TestTool {
 						}
 					}
 				}
-				if(typesRequireStringType.contains(type) && value instanceof Message) {
+				if ("node".equals(type)) {
 					try {
-						value = ((Message)value).asString();
-					} catch (IOException e) {
-						errorMessage("Could not convert parameter '" + name + "' with value: " + value +" to string", e, writers);
+						value = XmlUtils.buildNode(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
 					}
-				}
-				if (value instanceof String) {
-					if ("node".equals(type)) {
-						try {
-							value = XmlUtils.buildNode((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("domdoc".equals(type)) {
-						try {
-							value = XmlUtils.buildDomDocument((String)value, true);
-						} catch (DomBuilderException e) {
-							errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
-						}
-					} else if ("list".equals(type)) {
-						List<String> parts = new ArrayList<>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
+				} else if ("domdoc".equals(type)) {
+					try {
+						value = XmlUtils.buildDomDocument(Message.asString(value), true);
+					} catch (DomBuilderException | IOException e) {
+						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("list".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
 						List<String> list = new LinkedList<>();
 						for (String part : parts) {
 							list.add(part);
 						}
 						value = list;
-					} else if ("map".equals(type)) {
-						List<String> parts = new ArrayList<>(Arrays.asList(((String)value).split("\\s*(,\\s*)+")));
+					} catch (IOException e) {
+						errorMessage("Could not build a list for parameter '" + name + "' with value: " + value, e, writers);
+					}
+				} else if ("map".equals(type)) {
+					try {
+						List<String> parts = new ArrayList<>(Arrays.asList(Message.asString(value).split("\\s*(,\\s*)+")));
 						Map<String, String> map = new LinkedHashMap<>();
 						for (String part : parts) {
 							String[] splitted = part.split("\\s*(=\\s*)+", 2);
@@ -4331,6 +4326,8 @@ public class TestTool {
 							}
 						}
 						value = map;
+					} catch (IOException e) {
+						errorMessage("Could not build a map for parameter '" + name + "' with value: " + value, e, writers);
 					}
 				}
 				if (createParameterObjects) {
