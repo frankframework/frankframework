@@ -1,0 +1,35 @@
+<configuration>
+	<adapter name="Mandatory">
+		<receiver name="testtool-Mandatory" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-Mandatory"/>
+		</receiver>
+		<receiver name="Mandatory" transactionAttribute="Mandatory">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="Mandatory"/>
+		</receiver>
+		<receiver name="testtool-Mandatory-1" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-Mandatory-1"/>
+		</receiver>
+	</adapter>
+	<adapter name="Required">
+		<receiver name="testtool-Required" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-Required"/>
+		</receiver>
+		<receiver name="Required" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="Required"/>
+		</receiver>
+		<receiver name="testtool-Required-1" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-Required-1"/>
+		</receiver>
+	</adapter>
+	<adapter name="None">
+		<receiver name="testtool-None">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-None"/>
+		</receiver>
+		<receiver name="None">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="None"/>
+		</receiver>
+		<receiver name="testtool-None-1">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-None-1"/>
+		</receiver>
+	</adapter>
+</configuration>
