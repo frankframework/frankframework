@@ -4,6 +4,7 @@ package nl.nn.adapterframework.statistics;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -63,12 +64,12 @@ public class StatisticsKeeperTest {
 		}
 
 		Map<String,Object> map = sk.asMap();
-		assertMapValue(map, "name", "test");
-		assertMapValue(map, "count", "100");
-		assertMapValue(map, "min", "0");
-		assertMapValue(map, "max", "99");
-		assertMapValue(map, "avg", "49.5");
-		assertMapValue(map, "stdDev", "29.0");
+		assertMapValue(map, "Name", "test");
+		assertMapValue(map, "Count", "100");
+		assertMapValue(map, "Min", "0");
+		assertMapValue(map, "Max", "99");
+		assertMapValue(map, "Avg", "49.5");
+		assertMapValue(map, "StdDev", "29.0");
 		assertMapValue(map, "p50", "49.5");
 		assertMapValue(map, "p90", "89.5");
 		assertMapValue(map, "p95", "94.5");
@@ -78,5 +79,17 @@ public class StatisticsKeeperTest {
 	public void assertMapValue(Map<String,Object> map, String key, String value) {
 		assertEquals(value, map.get(key).toString());
 	}
+	
+	@Test
+	public void testLabelsAndTypes() {
+		List<String> labels = StatisticsKeeper.getLabels();
+		List<String> types  = StatisticsKeeper.getTypes();
+		
+		assertEquals("Name", labels.get(0));
+		assertEquals("STRING", types.get(0));
+		assertEquals("Count", labels.get(1));
+		assertEquals("INTEGER", types.get(1));
+	}
 
 }
+ 
