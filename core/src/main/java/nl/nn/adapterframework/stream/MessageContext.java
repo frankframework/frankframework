@@ -21,11 +21,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class MessageContext extends LinkedHashMap<String,Object> {
+	protected transient Logger log = LogUtil.getLogger(this);
 
 	public static final String METADATA_CHARSET = "Metadata.Charset";
 	public static final String METADATA_SIZE = "Metadata.Size";
@@ -65,11 +70,24 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		return this;
 	}
 	public MessageContext withMimeType(String mimeType) {
+		try {
+			withMimeType(MimeType.valueOf(mimeType));
+		} catch (InvalidMimeTypeException imte) {
+			log.warn("unable to parse mimetype from string ["+mimeType+"]", imte);
+		}
+
+		return this;
+	}
+	public MessageContext withMimeType(MimeType mimeType) {
 		put(METADATA_MIMETYPE, mimeType);
+		withCharset(mimeType.getCharset());
+
 		return this;
 	}
 	public MessageContext withSize(long size) {
-		put(METADATA_SIZE, size);
+		if (size >= 0) {
+			put(METADATA_SIZE, size);
+		}
 		return this;
 	}
 	public MessageContext withoutSize() {

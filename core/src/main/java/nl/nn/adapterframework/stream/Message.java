@@ -150,7 +150,9 @@ public class Message implements Serializable {
 	 * For instance, it could replace an InputStream with a byte array or String.
 	 */
 	public void preserve() throws IOException {
-		preserve(false);
+		if(!isRepeatable()) {
+			preserve(false);
+		}
 	}
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {

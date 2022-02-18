@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.mime.MediaType;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionException;
@@ -29,8 +29,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 /**
- * @author
- * 	Gerard van der Hoorn
+ * @author Gerard van der Hoorn
  */
 public class CisConversionServiceImpl implements CisConversionService {
 
@@ -54,6 +53,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
 
 		CisConversionResult result = null;
+		//MimeType mimeType = MessageUtils.getMimeType(message, filename);
 		MediaType mediaType = getMediaType(message, filename);
 
 		if (isPasswordProtected(mediaType)) {

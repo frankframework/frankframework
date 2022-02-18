@@ -16,14 +16,14 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.Logger;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -38,26 +38,8 @@ public abstract class MessageUtils {
 		MessageContext result = new MessageContext();
 		result.withCharset(request.getCharacterEncoding());
 		int contentLength = request.getContentLength();
-		if (contentLength>=0) {
-			result.withSize(contentLength);
-		}
-
-		String contentType = request.getContentType();
-		if(StringUtils.isNotEmpty(contentType)) {
-			try {
-				ContentType parsedContentType = ContentType.parse(contentType);
-				if(parsedContentType.getMimeType() != null) {
-					result.withMimeType(parsedContentType.getMimeType());
-				}
-				Charset parsedCharset = parsedContentType.getCharset();
-				if(parsedCharset != null) {
-					result.withCharset(parsedCharset.displayName());
-				}
-			} catch (Exception e) {
-				//For now just log when we cannot parse, perhaps we should abort the request?
-				LOG.warn("unable to parse charset from contentType [{}]", contentType, e);
-			}
-		}
+		result.withSize(contentLength);
+		result.withMimeType(request.getContentType());
 
 		Enumeration<String> names = request.getHeaderNames();
 		while(names.hasMoreElements()) {
@@ -87,16 +69,47 @@ public abstract class MessageUtils {
 			return null;
 		}
 
-		String mimeType = (String)message.getContext().get(MessageContext.METADATA_MIMETYPE);
-		if(StringUtils.isEmpty(mimeType)) {
+		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
+		if(mimeType == null) {
 			return null;
 		}
 
-		StringBuilder contentType = new StringBuilder(mimeType);
+		StringBuilder contentType = new StringBuilder();
+		contentType.append(mimeType.getType());
+		contentType.append('/');
+		contentType.append(mimeType.getSubtype());
+
 		if(!message.isBinary()) {
 			contentType.append(";charset=");
 			contentType.append(message.getCharset());
 		}
 		return contentType.toString();
+	}
+
+	public static MimeType getMimeType(Message message, String filename) {
+		Map<String, Object> context = message.getContext();
+		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		if(mimeType != null) {
+			return mimeType;
+		}
+
+		String name = (String) context.get(MessageContext.METADATA_NAME);
+		if(StringUtils.isNotEmpty(filename)) {
+			name = filename;
+		}
+
+		/*
+		Tika tika = new Tika();
+		try {
+			message.preserve();
+			String type = tika.detect(message.asInputStream(), name);
+			return MediaType.valueOf(type);
+		} catch (Throwable t) {
+			LOG.warn("error parsing message to determine mimetype", t);
+		}
+		*/
+
+		LOG.info("unable to determine mimetype");
+		return null;
 	}
 }

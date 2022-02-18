@@ -44,6 +44,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe.DocumentAction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -142,7 +143,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		PipeLineSession session = new PipeLineSession();
 		URL input = TestFileUtils.getTestFileURL(fileToConvert);
-		pipe.doPipe(Message.asMessage(new File(input.toURI())), session);
+		pipe.doPipe(new UrlMessage(input), session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getMessage("documents").asString();
