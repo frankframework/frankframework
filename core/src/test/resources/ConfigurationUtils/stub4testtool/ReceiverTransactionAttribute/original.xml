@@ -1,0 +1,22 @@
+<configuration>
+	<adapter name="Mandatory">
+		<receiver name="Mandatory" transactionAttribute="Mandatory">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="Mandatory"/>
+		</receiver>
+	</adapter>
+	
+	<adapter name="Required">
+		<receiver name="Required" transactionAttribute="Required">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="Required"/>
+		</receiver>
+	</adapter>
+	
+	<adapter name="None">
+		<receiver name="None">
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				name="None"/>
+		</receiver>
+	</adapter>
+</configuration>
