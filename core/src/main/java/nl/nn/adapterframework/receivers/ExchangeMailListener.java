@@ -35,7 +35,7 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		String separator = getFileSystem().getSeparator();
+		String separator = getFileSystem().getMailboxFolderSeparator();
 		if(getInputFolder().contains(separator) || getInProcessFolder().contains(separator)){
 			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
 				"Please do not use dynamic mailboxes / folders separated by ["+separator+"].");
