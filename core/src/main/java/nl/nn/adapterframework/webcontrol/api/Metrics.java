@@ -53,14 +53,14 @@ public class Metrics extends Base {
 	@GET
 	@Path("/metrics")
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
-	public Response getLogDirectory() throws ApiException {
+	public Response scrapeForPrometheus() throws ApiException {
 		if (registry==null) {
 			initRegistry();
 			if (registry==null) {
 				return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 			}
 		}
-		return Response.status(Response.Status.OK).entity(registry.scrape()).build(); // it would be better to write directly to response.getWriter()
+		return Response.status(Response.Status.OK).entity(registry).build(); // uses PrometheusMessageBodyWriter
 	}
 
 }
