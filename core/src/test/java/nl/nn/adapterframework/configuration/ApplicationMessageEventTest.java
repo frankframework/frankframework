@@ -59,6 +59,6 @@ public class ApplicationMessageEventTest {
 		MessageKeeper configKeeper = configuration.getMessageKeeper();
 		assertEquals(1, configKeeper.size());
 		assertEquals("INFO", configKeeper.getMessage(0).getMessageLevel());
-		assertThat(configKeeper.getMessage(0).getMessageText(), Matchers.containsString("Configuration [TestConfiguration] startup in "));
+		assertThat(configKeeper.getMessage(0).getMessageText(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
 	}
 }

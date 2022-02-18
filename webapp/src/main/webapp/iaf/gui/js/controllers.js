@@ -282,8 +282,9 @@ angular.module('iaf.beheerconsole')
 							adapter.status = 'warning';
 					}
 */
-					if(!adapter.started)
+					if(adapter.state != "started") {
 						adapter.status = "stopped";
+					}
 
 					//Add flow diagrams
 					adapter.flow = Misc.getServerPath() + 'iaf/api/adapters/' + Misc.escapeURL(adapter.name) + "/flow?"+adapter.upSince;
@@ -2196,6 +2197,8 @@ angular.module('iaf.beheerconsole')
 			return;
 		}
 
+		if(formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
+			fd.append("property", formData.propertyKey+","+formData.propertyValue);
 		if(formData.message && formData.message != "")
 			fd.append("message", formData.message);
 		if($scope.file)

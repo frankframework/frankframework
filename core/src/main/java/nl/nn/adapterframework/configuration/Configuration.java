@@ -50,6 +50,7 @@ import nl.nn.adapterframework.lifecycle.LazyLoadingEventListener;
 import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
@@ -82,7 +83,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter String originalConfiguration;
 	private @Getter String loadedConfiguration;
 	private StatisticsKeeperIterationHandler statisticsHandler = null;
-	private @Getter @Setter boolean configured = false;
+	private @Getter boolean configured = false;
 
 	private @Getter ConfigurationException configurationException = null;
 
@@ -267,7 +268,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			throw e;
 		}
 
-		setConfigured(true);
+		configured = true;
 
 		String msg;
 		if (isAutoStart()) {
@@ -302,6 +303,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			state = BootState.STOPPING;
 			super.close();
 		} finally {
+			configured = false;
 			state = BootState.STOPPED;
 		}
 	}
@@ -347,6 +349,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return inState(BootState.STARTED) && super.isRunning();
 	}
 
+	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
 	public void setAutoStart(boolean autoStart) {
 		this.autoStart = autoStart;
 	}
@@ -418,7 +421,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * information from the parameters, after checking the
 	 * parameters of the job. (basically, it checks whether the adapter and the
 	 * receiver are registered.
-	 * <p>See the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> documentation</p>
+	 * <p>See the <a href="https://www.quartz-scheduler.org/">Quartz scheduler</a> documentation</p>
 	 * @param jobdef a JobDef object
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
@@ -456,6 +459,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return getId();
 	}
 
+	/** The version of the Configuration, typically provided by the BuildInfo.properties file. */
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
@@ -536,6 +540,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	@Override
+	@ProtectedAttribute
 	public void setBeanName(String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");

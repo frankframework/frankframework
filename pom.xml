@@ -8,7 +8,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.15.0</log4j2.version>
+		<log4j2.version>2.17.0</log4j2.version>
+		<h2.version>2.0.206</h2.version>
 		<argLine></argLine> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 	</properties>
@@ -549,6 +550,16 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.6</version>
+						<configuration>
+							<passphrase>${gpg.passphrase}</passphrase>
+							<gpgArguments>
+								<!-- This is necessary for gpg to not try to use the pinentry programs -->
+								<arg>--batch</arg>
+								<arg>--no-tty</arg>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -754,7 +765,7 @@
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
 								<artifactId>frank-doc</artifactId>
-								<version>1.0-SNAPSHOT</version>
+								<version>1.0-20220110.134541-15</version>
 							</docletArtifact>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>

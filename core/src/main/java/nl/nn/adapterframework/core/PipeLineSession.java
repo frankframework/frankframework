@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -50,9 +51,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String TS_SENT_KEY = "tsSent";
 	public static final String securityHandlerKey="securityHandler";
 
-	public static final String HTTP_REQUEST_KEY    = "restListenerServletRequest";
-	public static final String HTTP_RESPONSE_KEY   = "restListenerServletResponse";
-	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
+	public static final String HTTP_REQUEST_KEY    = "servletRequest";
+	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
+	public static final String SERVLET_CONTEXT_KEY = "servletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
@@ -262,7 +263,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				resource.close();
 			}
 		};
-		scheduleCloseOnSessionExit(resourceMessage, resource.toString()+" of "+requester);
+		scheduleCloseOnSessionExit(resourceMessage, ClassUtils.nameOf(resource) +" of "+requester);
 	}
 
 	public boolean isScheduledForCloseOnExit(Message message) {

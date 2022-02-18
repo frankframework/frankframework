@@ -38,6 +38,9 @@ table.table thead th.tbl-15 {
 table.table thead th.tbl-65 {
 	width: 65%;
 }
+table.table thead th.tbl-75 {
+	width: 75%;
+}
 table.table thead th.tbl-85 {
 	width: 85%;
 }
@@ -112,7 +115,7 @@ table.table thead th.tbl-85 {
 	background-color: white;
 	overflow-y: scroll;
 }
-.sidebar__elements li.deprecated span, td.deprecated {
+.sidebar__elements li.deprecated span, td.deprecated, code.deprecated {
 	text-decoration: line-through;
 }
 .sidebar__elements li.deprecated i {

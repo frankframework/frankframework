@@ -61,7 +61,6 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Generic parameter definition.
@@ -73,8 +72,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * from the pipelineSession or the fixed value specified.
  * <br/>
  * Examples:
- * <pre>
- * 
+ * <pre><code>
  * stored under SessionKey 'TransportInfo':
  *  &lt;transportinfo&gt;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
@@ -90,11 +88,12 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * Result:
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
- * </pre>
+ * </code></pre>
  * 
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
  * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
  * @author Gerrit van Brakel
+ * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
 public class Parameter implements IConfigurable, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
@@ -202,13 +201,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 		/** Forces the parameter value to be treated as binary data (eg. when using a SQL BLOB field). */
 		BINARY,
 
-		@Deprecated
 		/** (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
-		LIST,
+		@Deprecated LIST,
 
-		@Deprecated
 		/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
-		MAP;
+		@Deprecated MAP;
 
 		public final boolean requiresTypeConversion;
 
@@ -222,6 +219,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	}
 
+	public Parameter() {
+		super();
+	}
+	
+	/** utility constructor, useful for unit testing */
+	public Parameter(String name, String value) {
+		this();
+		this.name = name;
+		this.value = value;
+	}
+	
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {

@@ -31,11 +31,11 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
-import nl.nn.adapterframework.jndi.DbAwareDataSource;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.statistics.HasStatistics;
@@ -123,7 +123,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
-		if(getDatasource() instanceof DbAwareDataSource) {
+		if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
 			return getDatasource().toString();
 		}
 		try (Connection conn=getConnection()) {
@@ -180,7 +180,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		}
 	}
 
-	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeOutException {
+	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();
 		}
@@ -190,7 +190,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 			return getConnection();
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeOutException(getLogPrefix()+"thread has been interrupted");
+				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
 			} 
 		}
 	}
@@ -202,7 +202,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 
 	@Override
 	@Deprecated
-	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		super.setJmsRealm(jmsRealmName); //super.setJmsRealm(...) sets the jmsRealmName only when a realm is found
 		if(StringUtils.isEmpty(getJmsRealmName())) { //confirm that the configured jmsRealm exists
@@ -219,8 +219,8 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public String getPhysicalDestinationName() {
 		try {
 			//Try to minimise the amount of DB connections
-			if(getDatasource() instanceof DbAwareDataSource) {
-				return ((DbAwareDataSource) getDatasource()).getDestinationName();
+			if(getDatasource() instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				return ((TransactionalDbmsSupportAwareDataSourceProxy) getDatasource()).getDestinationName();
 			}
 
 			try (Connection connection = getConnection()) {

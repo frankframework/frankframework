@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
- *
+ * 
  * @author Gerrit van Brakel
  * @since  4.2
  */
@@ -157,7 +157,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
@@ -189,8 +189,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
 			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
 			} finally {
@@ -237,8 +237,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
 			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {

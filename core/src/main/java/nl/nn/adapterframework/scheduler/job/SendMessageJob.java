@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -48,7 +48,7 @@ public class SendMessageJob extends JobDef {
 		localSender = SpringUtils.createBean(getApplicationContext(), IbisLocalSender.class);
 		localSender.setJavaListener(getJavaListener());
 		localSender.setIsolated(false);
-		localSender.setName("AdapterJob");
+		localSender.setName("Job " + getName());
 		if (getInterval() == 0) {
 			localSender.setDependencyTimeOut(-1);
 		}
@@ -56,7 +56,7 @@ public class SendMessageJob extends JobDef {
 	}
 
 	@Override
-	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeOutException {
+	public void execute(IbisManager ibisManager) throws JobExecutionException, TimeoutException {
 		try {
 			localSender.open();
 			//sendMessage message cannot be NULL
@@ -79,6 +79,7 @@ public class SendMessageJob extends JobDef {
 
 	/**
 	 * JavaListener to send the message to
+	 * @ff.mandatory
 	 */
 	public void setJavaListener(String javaListener) {
 		this.javaListener = javaListener;

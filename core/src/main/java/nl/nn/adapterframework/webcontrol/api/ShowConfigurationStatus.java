@@ -67,12 +67,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.encryption.HasKeystore;
+import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
-import nl.nn.adapterframework.ftp.FtpSender;
-import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.RestListener;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
 import nl.nn.adapterframework.jms.JmsListenerBase;
@@ -82,7 +81,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -214,27 +213,27 @@ public final class ShowConfigurationStatus extends Base {
 		Map<String, Object> response = new HashMap<String, Object>();
 		List<String> errors = new ArrayList<String>();
 
-		RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-		if(state.equals(RunStateEnum.STARTED)) {
+		if(state==RunState.STARTED) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {
-				RunStateEnum rState = receiver.getRunState();
+				RunState rState = receiver.getRunState();
 
-				if(!rState.equals(RunStateEnum.STARTED)) {
+				if(rState!=RunState.STARTED) {
 					errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-					state = RunStateEnum.ERROR;
+					state = RunState.ERROR;
 				}
 			}
 		}
 		else {
 			errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-			state = RunStateEnum.ERROR;
+			state = RunState.ERROR;
 		}
 
 		Status status = Response.Status.OK;
-		if(state.equals(RunStateEnum.ERROR))
+		if(state==RunState.ERROR) {
 			status = Response.Status.SERVICE_UNAVAILABLE;
-
+		}
 		if(errors.size() > 0)
 			response.put("errors", errors);
 		response.put("status", status);
@@ -414,79 +413,33 @@ public final class ShowConfigurationStatus extends Base {
 		}
 	}
 
-	private Map<String, Object> addCertificateInfo(WebServiceSender s) {
-		String certificate = s.getCertificate();
+	private Map<String, Object> addCertificateInfo(HasKeystore s) {
+		String certificate = s.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
 		Map<String, Object> certElem = new HashMap<String, Object>(4);
 		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
+		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
-		if (certificateUrl == null) {
-			certElem.put("url", null);
-			certElem.put("info", "*** ERROR ***");
-		} else {
-			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getKeystoreType();
-			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
-		}
-		return certElem;
-	}
-
-	private Map<String, Object> addCertificateInfo(HttpSender s) {
-		String certificate = s.getCertificate();
-		if (certificate == null || StringUtils.isEmpty(certificate))
-			return null;
-
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
-		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
-		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
+		URL certificateUrl = ClassUtils.getResourceURL(s, s.getKeystore());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
 		} else {
 			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
+			String certificatePassword = s.getKeystorePassword();
 			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getKeystoreType();
+			KeystoreType keystoreType = s.getKeystoreType();
 			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
 		}
 		return certElem;
 	}
 
-	private Map<String, Object> addCertificateInfo(FtpSender s) {
-		String certificate = s.getCertificate();
-		if (certificate == null || StringUtils.isEmpty(certificate))
-			return null;
-
-		Map<String, Object> certElem = new HashMap<String, Object>(4);
-		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getCertificateAuthAlias();
-		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, certificate);
-		if (certificateUrl == null) {
-			certElem.put("url", "");
-			certElem.put("info", "*** ERROR ***");
-		} else {
-			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getCertificatePassword();
-			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			String keystoreType = s.getCertificateType();
-			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
-		}
-		return certElem;
-	}
-
-	private ArrayList<Object> getCertificateInfo(final URL url, final String password, String keyStoreType, String prefix) {
+	private ArrayList<Object> getCertificateInfo(final URL url, final String password, KeystoreType KeystoreType, String prefix) {
 		ArrayList<Object> certificateList = new ArrayList<Object>();
 		try {
-			KeyStore keystore = KeyStore.getInstance(keyStoreType);
+			KeyStore keystore = KeyStore.getInstance(KeystoreType.name());
 			keystore.load(url.openStream(), password != null ? password.toCharArray() : null);
 			if (log.isInfoEnabled()) {
 				Enumeration<String> aliases = keystore.aliases();
@@ -534,24 +487,18 @@ public final class ShowConfigurationStatus extends Base {
 
 			pipesInfo.put("name", pipename);
 			pipesInfo.put("forwards", forwards);
+			if (pipe instanceof HasKeystore) {
+				HasKeystore s = (HasKeystore) pipe;
+				Map<String, Object> certInfo = addCertificateInfo(s);
+				if(certInfo != null)
+					pipesInfo.put("certificate", certInfo);
+			}
 			if (pipe instanceof MessageSendingPipe) {
 				MessageSendingPipe msp=(MessageSendingPipe)pipe;
 				ISender sender = msp.getSender();
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
-				if (sender instanceof WebServiceSender) {
-					WebServiceSender s = (WebServiceSender) sender;
-					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
-						pipesInfo.put("certificate", certInfo);
-				}
-				if (sender instanceof HttpSender) {
-					HttpSender s = (HttpSender) sender;
-					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
-						pipesInfo.put("certificate", certInfo);
-				}
-				if (sender instanceof FtpSender) {
-					FtpSender s = (FtpSender) sender;
+				if (sender instanceof HasKeystore) {
+					HasKeystore s = (HasKeystore) sender;
 					Map<String, Object> certInfo = addCertificateInfo(s);
 					if(certInfo != null)
 						pipesInfo.put("certificate", certInfo);
@@ -606,29 +553,16 @@ public final class ShowConfigurationStatus extends Base {
 		for (Receiver<?> receiver: adapter.getReceivers()) {
 			Map<String, Object> receiverInfo = new HashMap<>();
 
-			RunStateEnum receiverRunState = receiver.getRunState();
+			RunState receiverRunState = receiver.getRunState();
 
-			receiverInfo.put("started", receiverRunState.equals(RunStateEnum.STARTED));
-			receiverInfo.put("state", receiverRunState.toString().toLowerCase().replace("*", ""));
-			
 			receiverInfo.put("name", receiver.getName());
+			receiverInfo.put("state", receiverRunState.name().toLowerCase());
+
 			Map<String, Object> messages = new HashMap<String, Object>(3);
 			messages.put("received", receiver.getMessagesReceived());
 			messages.put("retried", receiver.getMessagesRetried());
 			messages.put("rejected", receiver.getMessagesRejected());
 			receiverInfo.put("messages", messages);
-			ISender sender=null;
-			Map<String, Object> listenerInfo = new HashMap<String, Object>();
-			IListener<?> listener=receiver.getListener();
-			listenerInfo.put("name", listener.getName());
-			listenerInfo.put("class", ClassUtils.nameOf(listener));
-			if (listener instanceof HasPhysicalDestination) {
-				String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
-				listenerInfo.put("destination", pd);
-			}
-			if (listener instanceof HasSender) {
-				sender = ((HasSender)listener).getSender();
-			}
 
 			Set<ProcessState> knownStates = receiver.knownProcessStates();
 			Map<ProcessState, Object> tsInfo = new LinkedHashMap<ProcessState, Object>();
@@ -648,13 +582,31 @@ public final class ShowConfigurationStatus extends Base {
 			}
 			receiverInfo.put("transactionalStores", tsInfo);
 
-			boolean isRestListener = (listener instanceof RestListener);
-			listenerInfo.put("isRestListener", isRestListener);
-			if (isRestListener) {
-				RestListener rl = (RestListener) listener;
-				listenerInfo.put("restUriPattern", rl.getRestUriPattern());
-				listenerInfo.put("isView", rl.isView());
+			ISender sender=null;
+			IListener<?> listener=receiver.getListener();
+			if(listener != null) {
+				Map<String, Object> listenerInfo = new HashMap<String, Object>();
+				listenerInfo.put("name", listener.getName());
+				listenerInfo.put("class", ClassUtils.nameOf(listener));
+				if (listener instanceof HasPhysicalDestination) {
+					String pd = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
+					listenerInfo.put("destination", pd);
+				}
+				if (listener instanceof HasSender) {
+					sender = ((HasSender)listener).getSender();
+				}
+
+				boolean isRestListener = (listener instanceof RestListener);
+				listenerInfo.put("isRestListener", isRestListener);
+				if (isRestListener) {
+					RestListener rl = (RestListener) listener;
+					listenerInfo.put("restUriPattern", rl.getRestUriPattern());
+					listenerInfo.put("isView", rl.isView());
+				}
+
+				receiverInfo.put("listener", listenerInfo);
 			}
+
 			if ((listener instanceof JmsListenerBase) && showPendingMsgCount) {
 				JmsListenerBase jlb = (JmsListenerBase) listener;
 				JmsBrowser<javax.jms.Message> jmsBrowser;
@@ -694,8 +646,6 @@ public final class ShowConfigurationStatus extends Base {
 				}
 			}
 			receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
-
-			receiverInfo.put("listener", listenerInfo);
 
 			ISender rsender = receiver.getSender();
 			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
@@ -750,8 +700,8 @@ public final class ShowConfigurationStatus extends Base {
 		// replace low line (x'5f') by asterisk (x'2a) so it's sorted before any digit and letter 
 		String nameUC = StringUtils.upperCase(StringUtils.replace(adapterName,"_", "*"));
 		adapterInfo.put("nameUC", nameUC);
-		RunStateEnum adapterRunState = adapter.getRunState();
-		adapterInfo.put("started", adapterRunState.equals(RunStateEnum.STARTED));
+		RunState adapterRunState = adapter.getRunState();
+		adapterInfo.put("started", adapterRunState==RunState.STARTED);
 		String state = adapterRunState.toString().toLowerCase().replace("*", "");
 		adapterInfo.put("state", state);
 
@@ -773,7 +723,7 @@ public final class ShowConfigurationStatus extends Base {
 			if(rcv.isNumberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached()) {
 				adapterInfo.put("receiverReachedMaxExceptions", "true");
 			}
-			
+
 			IMessageBrowser esmb = rcv.getMessageBrowser(ProcessState.ERROR);
 			if(esmb != null) {
 				try {

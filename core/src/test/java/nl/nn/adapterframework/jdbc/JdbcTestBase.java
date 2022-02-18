@@ -86,7 +86,12 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			liquibase.dropAll();
+			try {
+				liquibase.dropAll();
+			} catch(Exception e) {
+				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
+				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null); 
+			}
 			liquibase.close();
 		}
 

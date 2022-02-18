@@ -6,7 +6,9 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.testutil.TestAssertions;
 
@@ -33,7 +35,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	public void testUnwrap() throws Exception {
 //		pipe.setOutputNamespace(TARGET_NAMESPACE);
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		pipe.start();
 		
@@ -57,7 +59,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 	@Test
 	public void testUnwrapRemoveNamespaces() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.configure();
 		pipe.start();
@@ -82,7 +84,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 	@Test
 	public void testUnwrapSwitchRoot() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.setRoot("OtherRoot");
 		pipe.configure();
 		pipe.start();
@@ -107,7 +109,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 	@Test
 	public void testUnwrapRemoveNamespacesAndSwitchRoot() throws Exception {
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.setRoot("OtherRoot");
 		pipe.configure();
@@ -159,7 +161,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	public void testWrapSoapVersionSoap12() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
-		pipe.setSoapVersion("1.2");
+		pipe.setSoapVersion(SoapVersion.SOAP12);
 		pipe.configure();
 		pipe.start();
 		
@@ -184,7 +186,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	public void testWrapSoapVersionNone() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
-		pipe.setSoapVersion("none");
+		pipe.setSoapVersion(SoapVersion.NONE);
 		pipe.configure();
 		pipe.start();
 		
@@ -313,7 +315,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 	public void testUnwrapConditional(boolean expectUnwrap) throws Exception {
 //		pipe.setOutputNamespace(TARGET_NAMESPACE);
-		pipe.setDirection("unwrap");
+		pipe.setDirection(Direction.UNWRAP);
 		pipe.configure();
 		pipe.start();
 		
@@ -415,7 +417,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	public void testWrapSoap11() throws Exception {
 		pipe.setOutputNamespace(TARGET_NAMESPACE);
 		pipe.configure();
-		pipe.setSoapVersion("1.1");
+		pipe.setSoapVersion(SoapVersion.SOAP11);
 		pipe.start();
 		
 		String input = "<root>\n"

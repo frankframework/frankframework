@@ -25,7 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -110,7 +110,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Message sendMessage(Message input, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message input, PipeLineSession session) throws SenderException, TimeoutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));

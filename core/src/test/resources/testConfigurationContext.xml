@@ -16,20 +16,11 @@
 	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
 
-	<bean
-		name="adapterManager"
-		class="nl.nn.adapterframework.configuration.AdapterManager"
-		autowire="byType"
-		scope="singleton"
-	/>
+	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
-	<bean
-		name="scheduleManager"
-		class="nl.nn.adapterframework.configuration.ScheduleManager"
-		autowire="byType"
-		scope="singleton"
-	/>
-
+	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
+	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />

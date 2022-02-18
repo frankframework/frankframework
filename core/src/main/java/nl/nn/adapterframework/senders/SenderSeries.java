@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -75,7 +75,7 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
@@ -122,7 +122,10 @@ public class SenderSeries extends SenderWrapperBase {
 		registerSender(sender);
 	}
 	
-	/** one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. */
+	/** 
+	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
+	 * @ff.mandatory
+	 */
 	public void registerSender(ISender sender) {
 		senderList.add(sender);
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added

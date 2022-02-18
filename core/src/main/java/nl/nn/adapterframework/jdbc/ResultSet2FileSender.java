@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,15 +27,15 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -45,10 +45,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
-	private String filenameSessionKey;
-	private String statusFieldType;
-	private boolean append = false;
-	private String maxRecordsSessionKey;
+	private @Getter String filenameSessionKey;
+	private @Getter String statusFieldType;
+	private @Getter boolean append = false;
+	private @Getter String maxRecordsSessionKey;
 
 	protected byte[] eolArray=null;
 
@@ -68,7 +68,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		int counter = 0;
 		String fileName = null;
 		try {
@@ -145,12 +145,9 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		fos.write(eolArray);
 	}
 	
-	@IbisDoc({"type of the optional status field which is set after the row is written to the file: timestamp", ""})
+	/** type of the optional status field which is set after the row is written to the file: timestamp */
 	public void setStatusFieldType(String statusFieldType) {
 		this.statusFieldType = statusFieldType;
-	}
-	public String getStatusFieldType() {
-		return statusFieldType;
 	}
 
 	@Deprecated
@@ -159,27 +156,27 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		setFilenameSessionKey(filenameSessionKey);
 	}
 	
-	@IbisDoc({"the session key that contains the name of the file to use", ""})
+	/** 
+	 * Key of session variable that contains the name of the file to use.
+	 * @ff.mandatory
+	 */
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
-	public String getFilenameSessionKey() {
-		return filenameSessionKey;
-	}
 
-	@IbisDoc({"when set <code>true</code> and the file already exists, the resultset rows are written to the end of the file", "false"})
+	/** 
+	 * If set <code>true</code> and the file already exists, the resultset rows are written to the end of the file.
+	 * @ff.default false
+	 */
 	public void setAppend(boolean b) {
 		append = b;
 	}
-	public boolean isAppend() {
-		return append;
-	}
 
-	@IbisDoc({"when set (and &gt;=0), this session key contains the maximum number of records which are processed. if <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed", ""})
+	/**
+	 * If set (and &gt;=0), this session key contains the maximum number of records which are processed. 
+	 * If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed 
+	 */
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;
-	}
-	public String getMaxRecordsSessionKey() {
-		return maxRecordsSessionKey;
 	}
 }

@@ -34,10 +34,10 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class.
@@ -279,10 +279,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	}
 
 	@Override
-	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeOutException {
+	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
 		javax.jms.Message msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
-			throw new TimeOutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
+			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JmsListener ["+getName()+"] received for correlationId ["+correlationId+"] replymessage ["+msg+"]");
@@ -359,7 +359,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	
 
 	protected boolean canGoOn() {
-		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+		return runStateEnquirer!=null && runStateEnquirer.getRunState()==RunState.STARTED;
 	}
 
 	@Override
