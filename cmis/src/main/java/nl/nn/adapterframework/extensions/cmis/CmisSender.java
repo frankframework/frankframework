@@ -361,7 +361,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				case GET:
 					return sendMessageForActionGet(cmisSession, message, session, pvl);
 				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session);
+					return sendMessageForActionCreate(cmisSession, message, session, pvl);
 				case DELETE:
 					return sendMessageForActionDelete(cmisSession, message, session);
 				case FIND:
@@ -481,10 +481,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
+	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		String fileName = null;
 		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
+			fileName = session.getMessage( pvl.get("filenameSessionKey").asStringValue(getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
 			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
@@ -531,7 +531,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		ContentStream contentStream;
 		try {
-			Message inputFromSessionKey = session.getMessage(getFileSessionKey());
+			Message inputFromSessionKey = session.getMessage( pvl.get("fileSessionKey").asStringValue(getFileSessionKey()) );
 
 			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
