@@ -18,7 +18,7 @@ package nl.nn.adapterframework.statistics;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -140,13 +140,6 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public void clear() {
-		cumulative.reset();
-		mark.reset();
-		first=0;
-		last=0;
-		pest.clear();
-	}
 
 	public void addValue(long value) {
 		if (distributionSummary!=null) {
@@ -208,7 +201,7 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public String getIntervalItemName(int index) {
+	protected String getIntervalItemName(int index) {
 		switch (index) {
 			case 0: return ITEM_NAME_COUNT;
 			case 1: return ITEM_NAME_MIN;
@@ -220,7 +213,7 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public int getItemIndex(String name) {
+	protected int getItemIndex(String name) {
 		int top=NUM_STATIC_ITEMS+classBoundaries.length;
 		if (calculatePercentiles) {
 			top+=pest.getNumPercentiles();
@@ -332,7 +325,7 @@ public class StatisticsKeeper implements ItemList {
 	}
 
 	public Map<String, Object> asMap() {
-		Map<String, Object> tmp = new HashMap<String, Object>();
+		Map<String, Object> tmp = new LinkedHashMap<String, Object>();
 		tmp.put("name", getName());
 		for (int i=0; i< getItemCount(); i++) {
 			Object item = getItemValue(i);

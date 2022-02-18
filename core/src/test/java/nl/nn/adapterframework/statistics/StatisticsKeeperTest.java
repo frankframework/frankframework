@@ -4,12 +4,11 @@ package nl.nn.adapterframework.statistics;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.junit.Test;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import liquibase.repackaged.org.apache.commons.lang3.builder.ToStringBuilder;
-import liquibase.repackaged.org.apache.commons.lang3.builder.ToStringStyle;
 
 public class StatisticsKeeperTest {
 
@@ -52,6 +51,32 @@ public class StatisticsKeeperTest {
 		assertEquals(sk.getAvg(),   sk.getDistributionSummary().mean(), 0.001);
 		assertEquals(sk.getTotal(), sk.getDistributionSummary().totalAmount(), 0.001);
 
+	}
+
+	@Test
+	public void testGetMap() {
+		StatisticsKeeper sk = new StatisticsKeeper("test");
+		sk.initMetrics(new SimpleMeterRegistry(), new ArrayList<>());
+
+		for (int i=0; i<100; i++) {
+			sk.addValue(i);
+		}
+
+		Map<String,Object> map = sk.asMap();
+		assertMapValue(map, "name", "test");
+		assertMapValue(map, "count", "100");
+		assertMapValue(map, "min", "0");
+		assertMapValue(map, "max", "99");
+		assertMapValue(map, "avg", "49.5");
+		assertMapValue(map, "stdDev", "29.0");
+		assertMapValue(map, "p50", "49.5");
+		assertMapValue(map, "p90", "89.5");
+		assertMapValue(map, "p95", "94.5");
+		assertMapValue(map, "p98", "97.5");
+	}
+
+	public void assertMapValue(Map<String,Object> map, String key, String value) {
+		assertEquals(value, map.get(key).toString());
 	}
 
 }
