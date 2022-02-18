@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.statistics;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -328,6 +331,47 @@ public class StatisticsKeeper implements ItemList {
 		return ItemUtil.toXml(this, elementName, getName(), timeFormat, percentageFormat, countFormat);
 	}
 
+	public Map<String, Object> asMap() {
+		Map<String, Object> tmp = new HashMap<String, Object>();
+		tmp.put("name", getName());
+		for (int i=0; i< getItemCount(); i++) {
+			Object item = getItemValue(i);
+			String key = getItemName(i).replace("< ", "");
+			if (item==null) {
+				tmp.put(key, null);
+			} else {
+				switch (getItemType(i)) {
+					case ItemList.ITEM_TYPE_INTEGER:
+						tmp.put(key, item);
+						break;
+					case ItemList.ITEM_TYPE_TIME:
+						if(item instanceof Long) {
+							tmp.put(key, item);
+						} else {
+							Double val = (Double) item;
+							if(val.isNaN() || val.isInfinite()) {
+								tmp.put(key, null);
+							} else {
+								tmp.put(key, new BigDecimal(val).setScale(1, BigDecimal.ROUND_HALF_EVEN));
+							}
+						}
+						break;
+					case ItemList.ITEM_TYPE_FRACTION:
+						Double val = (Double) item;
+						if(val.isNaN() || val.isInfinite()) {
+							tmp.put(key, null);
+						} else {
+							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
+						}
+						break;
+				}
+			}
+		}
+		return tmp;
+	}
+	
+	
+	
 	public long getCount() {
 		return cumulative.getCount();
 	}
