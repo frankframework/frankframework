@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -72,11 +72,11 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
-				if (pvl.getParameterValue("writer") != null) {
-					Output writer = (Output) pvl.getParameterValue("writer").getValue();
+				if (pvl.get("writer") != null) {
+					Output writer = (Output) pvl.get("writer").getValue();
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.getParameterValue(SessionParameter.CLIENT_COMPRESSION);
+					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
 					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
 						httpPost.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));
@@ -96,11 +96,11 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
-				if (pvl.getParameterValue("writer") != null) {
-					Output writer = (Output) pvl.getParameterValue("writer").getValue();
+				if (pvl.get("writer") != null) {
+					Output writer = (Output) pvl.get("writer").getValue();
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.getParameterValue(SessionParameter.CLIENT_COMPRESSION);
+					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
 					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
 						httpPut.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));

@@ -1451,7 +1451,7 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages + response.messageCount;
+				response.recordsFiltered = response.skipMessages;
 				$scope.targetStates = response.targetStates;
 				callback(response);
 			});
@@ -1605,25 +1605,46 @@ angular.module('iaf.beheerconsole')
 	};
 }])
 
-.controller('PipeMessageLogListCtrl', ['$scope', 'Api', '$compile', function($scope, Api, $compile) {
+.controller('PipeMessageLogListCtrl', ['$scope', 'Api', 'Cookies', '$compile', function($scope, Api, Cookies, $compile) {
 	var base_url = "adapters/"+$scope.adapterName+"/pipes/"+$scope.pipeName+"/messages";
 
 	var a =  '<a ui-sref="pages.pipemessagelog.view({adapter:adapterName,pipe:pipeName,messageId:message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
 		a += '<button title="Download Message" ng-click="downloadMessage(message.id)" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
 
 	var columns = [
-		{ "data": null, defaultContent: a, className: "m-b-xxs", bSortable: false},
-		{ "data": "position", bSortable: false },
-		{ "data": "id", bSortable: false },
-		{ "data": "insertDate", className: "date" },
-		{ "data": "type", bSortable: false },
-		{ "data": "host", bSortable: false },
-		{ "data": "originalId", bSortable: false },
-		{ "data": "correlationId", bSortable: false },
-		{ "data": "comment", bSortable: false },
-		{ "data": "expiryDate", className: "date", bSortable: false },
-		{ "data": "label", bSortable: false },
+		{ "data": null, defaultContent: a, className: "m-b-xxs storageActions", bSortable: false},
+		{ "name": "pos", "data": "position", bSortable: false },
+		{ "name": "id", "data": "id", bSortable: false },
+		{ "name": "insertDate", "data": "insertDate", className: "date" },
+		{ "name": "host", "data": "host", bSortable: false },
+		{ "name": "originalId", "data": "originalId", bSortable: false },
+		{ "name": "correlationId", "data": "correlationId", bSortable: false },
+		{ "name": "comment", "data": "comment", bSortable: false },
+		{ "name": "expiryDate", "data": "expiryDate", className: "date", bSortable: false },
+		{ "name": "label", "data": "label", bSortable: false },
 	];
+
+	var filterCookie = Cookies.get("PipeMessageLogFilter");
+	if(filterCookie) {
+		for(i in columns) {
+			var column = columns[i];
+			if(column.name && filterCookie[column.name] === false) {
+				column.visible = false;
+			}
+		}
+		$scope.displayColumn = filterCookie;
+	} else {
+		$scope.displayColumn = {
+			id: true,
+			insertDate: true,
+			host: true,
+			originalId: true,
+			correlationId: true,
+			comment: true,
+			expiryDate: true,
+			label: true,
+		}
+	}
 
 	$scope.dtOptions = {
 		stateSave: true,
@@ -1665,11 +1686,23 @@ angular.module('iaf.beheerconsole')
 			Api.Get(url, function(response) {
 				response.draw = data.draw;
 				response.recordsTotal = response.totalMessages;
-				response.recordsFiltered = response.skipMessages + response.messageCount;
+				response.recordsFiltered = response.messages.length;
 				callback(response);
 			});
 		}
 	};
+
+	$scope.updateFilter = function(column) {
+		Cookies.set("PipeMessageLogFilter", $scope.displayColumn);
+
+		var table = $('#datatable').DataTable();
+		if(table) {
+			var tableColumn = table.column(column+":name");
+			if(tableColumn && tableColumn.length == 1)
+				tableColumn.visible( $scope.displayColumn[column] );
+			table.draw();
+		}
+	}
 
 	$scope.search = {
 		id: "",
@@ -2633,11 +2666,42 @@ angular.module('iaf.beheerconsole')
 	};
 	$scope.processingMessage = false;
 
+	$scope.sessionKeyIndex=1;
+	$scope.sessionKeyIndices = [$scope.sessionKeyIndex];
+	var sessionKeys = [];
+
+	$scope.updateSessionKeys = function(sessionKey, index) {
+		let sessionKeyIndex = sessionKeys.findIndex(f => f.index===index);	// find by index
+		if(sessionKeyIndex >= 0) {	
+			if(sessionKey.name=="" && sessionKey.value=="") { // remove row if row is empty
+				sessionKeys.splice(sessionKeyIndex, 1);
+				$scope.sessionKeyIndices.splice(sessionKeyIndex, 1);
+			} else { // update existing key value pair
+				sessionKeys[sessionKeyIndex].key = sessionKey.name;
+				sessionKeys[sessionKeyIndex].value = sessionKey.value;
+			}
+			$scope.state = [];
+		} else if(sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != "") {
+			let keyIndex = sessionKeys.findIndex(f => f.key===sessionKey.name);	// find by key
+			// add new key
+			if(keyIndex < 0) {
+				$scope.sessionKeyIndex+=1;
+				$scope.sessionKeyIndices.push($scope.sessionKeyIndex);
+				sessionKeys.push({index:index, key:sessionKey.name, value:sessionKey.value});
+				$scope.state = [];
+			} else { // key with the same name already exists show warning
+				if($scope.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
+					$scope.addNote("warning", "Session keys cannot have the same name!");
+			}
+		}
+		
+	}
+
 	$scope.submit = function(formData) {
 		$scope.result = "";
 		$scope.state = [];
 		if(!formData) {
-			$scope.addNote("warning", "Please specify an adapter and message!");
+			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
 
@@ -2657,9 +2721,14 @@ angular.module('iaf.beheerconsole')
 			$scope.addNote("warning", "Please specify an adapter!");
 			return;
 		}
-		if(!formData.message && !$scope.file) {
-			$scope.addNote("warning", "Please specify a file or message!");
-			return;
+		if(sessionKeys.length > 0){
+			let incompleteKeyIndex = sessionKeys.findIndex(f => (f.key==="" || f.value===""));
+			if(incompleteKeyIndex < 0) {
+				fd.append("sessionKeys", JSON.stringify(sessionKeys));
+			} else {
+				$scope.addNote("warning", "Please make sure all sessionkeys have name and value!");
+				return;
+			}
 		}
 
 		$scope.processingMessage = true;

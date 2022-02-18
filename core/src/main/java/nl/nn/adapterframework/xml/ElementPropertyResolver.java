@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.StringResolver;
 public class ElementPropertyResolver extends XmlWriter {
 	private Properties properties;
 	private StringBuffer pendingSubstBuff = new StringBuffer();
-	
+
 	private boolean collectingBuffer;
 
 	public ElementPropertyResolver(Properties properties) {
@@ -65,7 +65,7 @@ public class ElementPropertyResolver extends XmlWriter {
 				getWriter().append(StringResolver.substVars(pendingSubstBuff.toString(), properties));
 			} catch (IllegalArgumentException | IOException e) {
 				throw new SaxException("Could not substitute", e);
-			} 
+			}
 			collectingBuffer=false;
 			pendingSubstBuff.setLength(0);
 		}

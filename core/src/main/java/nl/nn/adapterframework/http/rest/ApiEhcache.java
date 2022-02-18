@@ -109,7 +109,7 @@ public class ApiEhcache implements IApiCache {
 			cache.removeAll();
 		}
 		if (cacheManager!=null) {
-			cacheManager.removeCache(cache.getName());
+			cacheManager.destroyCache(cache.getName());
 			cacheManager=null;
 		}
 		cache=null;

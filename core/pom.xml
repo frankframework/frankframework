@@ -4,16 +4,17 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.7-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-core</artifactId>
 	<name>Ibis AdapterFramework core</name>
 
 	<properties>
-		<spring.version>5.3.8</spring.version>
+		<spring.version>5.3.15</spring.version>
 		<j2v8.version>4.6.0</j2v8.version>
 		<cxf.version>3.4.4</cxf.version>
+		<jackson.version>2.13.1</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -152,18 +153,6 @@
 			<version>1.4.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.sendgrid</groupId>
-			<artifactId>sendgrid-java</artifactId>
-			<version>4.3.0</version>
-			<exclusions>
-				<!-- exclude mockito from the main build path. It should not be there, and it causes problems with Hamcrest Matchers -->
-				<exclusion>
-					<groupId>org.mockito</groupId>
-					<artifactId>mockito-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.4</version>
@@ -264,9 +253,28 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.ws.security</groupId>
-			<artifactId>wss4j</artifactId>
-			<version>1.5.11</version>
+			<groupId>org.apache.wss4j</groupId>
+			<artifactId>wss4j-ws-security-dom</artifactId>
+			<version>2.4.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.opensaml</groupId>
+					<artifactId>opensaml-saml-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.opensaml</groupId>
+					<artifactId>opensaml-xacml-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.opensaml</groupId>
+					<artifactId>opensaml-xacml-saml-impl</artifactId>
+				</exclusion>
+				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
+				<exclusion>
+					<groupId>org.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>soap</groupId>
@@ -341,9 +349,19 @@
 			<version>2.1_3</version>
 		</dependency>
 		<dependency>
+			<groupId>com.sendgrid</groupId>
+			<artifactId>sendgrid-java</artifactId>
+			<version>4.8.2</version>
+		</dependency>
+		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.11.484</version>
+			<version>1.11.1034</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-cbor</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.hierynomus</groupId>
@@ -378,10 +396,16 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.5.13</version>
 		</dependency>
-		<dependency>
+
+		<dependency> <!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.7</version>
+		</dependency>
+		<dependency> <!-- Fixes CVE-2021-33813 -->
+			<groupId>org.jdom</groupId>
+			<artifactId>jdom2</artifactId>
+			<version>2.0.6.1</version>
 		</dependency>
 
 		<!-- oidc and oauth library -->
@@ -395,17 +419,18 @@
 		<dependency>
 			<groupId>com.github.marcus-nl.btm</groupId>
 			<artifactId>btm</artifactId>
-			<version>3.0.0-mk1</version>
+			<version>${btm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>
-			<version>5.11.0.Final</version>
+			<version>${narayana.version}</version>
 		</dependency>
+		<!-- jboss-logging is required for Narayana -->
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
 			<artifactId>jboss-logging</artifactId>
-			<version>3.4.2.Final</version>
+			<version>${jboss-logging.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -523,13 +548,18 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>2.13.0</version>
+			<version>${jackson.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
@@ -662,10 +692,10 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.2.16</version>
+			<version>42.3.3</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
@@ -700,25 +730,10 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.1</version>
-				<executions>
-					<execution>
-						<id>services-war</id>
-						<goals>
-							<goal>war</goal>
-						</goals>
-						<configuration>
-							<classifier>services</classifier>
-							<packagingIncludes>WEB-INF/classes/META-INF/services/</packagingIncludes>
-						</configuration>
-					</execution>
-				</executions>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
-			 -->
 		</plugins>
 	</build>
 

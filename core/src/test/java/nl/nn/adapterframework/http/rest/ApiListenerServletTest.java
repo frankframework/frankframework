@@ -645,7 +645,6 @@ public class ApiListenerServletTest extends Mockito {
 		headers.put("if-match", "my-etag-value");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
-		System.out.println(result);
 		assertEquals(200, result.getStatus());
 		assertEquals("{\"tralalalallala\":true}", result.getContentAsString());
 		assertTrue(result.containsHeader("Allow"));

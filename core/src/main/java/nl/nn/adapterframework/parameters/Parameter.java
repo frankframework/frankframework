@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -49,12 +50,14 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.DocumentedEnum;
+import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -112,6 +115,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter ParameterType type = ParameterType.STRING;
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
+	private @Getter String contextKey = null;
 	private @Getter String xpathExpression = null; 
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
@@ -138,10 +142,12 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	private TransformerPool transformerPoolRemoveNamespaces;
-	private TransformerPool sessionKeyTransformerPool = null;
+	private TransformerPool tpDynamicSessionKey = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
 	private CredentialFactory cf;
+	
+	private List<DefaultValueMethods> defaultValueMethodsList;
 
 	public enum ParameterType {
 		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that 
@@ -219,17 +225,25 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	}
 
+	public enum DefaultValueMethods implements DocumentedEnum {
+		@EnumLabel("defaultValue")	DEFAULTVALUE,
+		@EnumLabel("sessionKey")	SESSIONKEY,
+		@EnumLabel("pattern")		PATTERN,
+		@EnumLabel("value")			VALUE,
+		@EnumLabel("input") 		INPUT;
+	}
+	
 	public Parameter() {
 		super();
 	}
-	
+
 	/** utility constructor, useful for unit testing */
 	public Parameter(String name, String value) {
 		this();
 		this.name = name;
 		this.value = value;
 	}
-	
+
 	@Override
 	public void addParameter(Parameter p) { 
 		if (paramList==null) {
@@ -265,7 +279,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			sessionKeyTransformerPool = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer("SessionKey for parameter ["+getName()+"] ", this, getNamespaceDefs(), getSessionKeyXPath(), null,OutputType.TEXT,false,null);
 		}
 		if(getType()==null) {
 			log.info("parameter ["+getName()+" has no type. Setting the type to ["+ParameterType.STRING+"]");
@@ -328,6 +342,20 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 	}
 
+	private List<DefaultValueMethods>getDefaultValueMethodsList() {
+		if (defaultValueMethodsList==null) {
+			defaultValueMethodsList = new LinkedList<>();
+			if (StringUtils.isNotEmpty(getDefaultValueMethods())) {
+				StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ", ");
+				while (stringTokenizer.hasMoreTokens()) {
+					String token = stringTokenizer.nextToken();
+					defaultValueMethodsList.add(EnumUtils.parse(DefaultValueMethods.class, token));
+				}
+			}
+		}
+		return defaultValueMethodsList;
+	}
+
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
@@ -335,22 +363,34 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return (Document) transformResult.getNode();
 	}
 	
-	
+
+	/**
+	 * if this returns true, then the input value must be repeatable, as it might be used multiple times.
+	 */
 	public boolean requiresInputValueForResolution() {
-		if (sessionKeyTransformerPool != null) { // sessionKeyTransformerPool is applied to the input message to retrieve the session key
+		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
 			return true;
 		}
-		if ((StringUtils.isNotEmpty(getSessionKey()) || StringUtils.isNotEmpty(getValue()) || StringUtils.isNotEmpty(getPattern()))
-				&& (StringUtils.isEmpty(getDefaultValueMethods()) || !getDefaultValueMethods().contains("input"))) {
-			return false;
+		return StringUtils.isEmpty(getContextKey()) &&
+				(StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+						|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT)
+				);
+	}
+
+	public boolean requiresInputValueOrContextForResolution() {
+		if (tpDynamicSessionKey != null) { // tpDynamicSessionKey is applied to the input message to retrieve the session key
+			return true;
 		}
-		return true;
+		return StringUtils.isEmpty(getSessionKey()) && StringUtils.isEmpty(getValue()) && StringUtils.isEmpty(getPattern())
+					|| getDefaultValueMethodsList().contains(DefaultValueMethods.INPUT);
 	}
 
 	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getSessionKey()) 
-				|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}") 
-				|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey);
+		return StringUtils.isEmpty(getContextKey()) && (
+					sessionKey.equals(getSessionKey())
+					|| getPattern()!=null && getPattern().contains("{"+sessionKey+"}")
+					|| getParameterList()!=null && getParameterList().consumesSessionVariable(sessionKey)
+				);
 	}
 
 	/**
@@ -364,9 +404,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		
 		String requestedSessionKey;
-		if (sessionKeyTransformerPool != null) {
+		if (tpDynamicSessionKey != null) {
 			try {
-				requestedSessionKey = sessionKeyTransformerPool.transform(message.asSource());
+				requestedSessionKey = tpDynamicSessionKey.transform(message.asSource());
 			} catch (Exception e) {
 				throw new ParameterException("SessionKey for parameter ["+getName()+"] exception on transformation to get name", e);
 			}
@@ -376,6 +416,15 @@ public class Parameter implements IConfigurable, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
+				/*
+				 * determine source for XSLT transformation from
+				 * 1) value attribute
+				 * 2) requestedSessionKey
+				 * 3) pattern
+				 * 4) input message
+				 * 
+				 * N.B. this order differs from untransformed parameters
+				 */
 				Source source=null;
 				if (StringUtils.isNotEmpty(getValue())) {
 					source = XmlUtils.stringToSourceForSingleUse(getValue(), namespaceAware);
@@ -406,6 +455,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 						source = XmlUtils.stringToSourceForSingleUse(itemsXml.toXML(), namespaceAware);
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
+						if (StringUtils.isNotEmpty(getContextKey())) {
+							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
+						}
 						if (!sourceMsg.isEmpty()) {
 							log.debug("Parameter ["+getName()+"] using sessionvariable ["+requestedSessionKey+"] as source for transformation");
 							source = sourceMsg.asSource();
@@ -422,7 +474,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
 				} else {
-					source = message.asSource();
+					if (StringUtils.isNotEmpty(getContextKey())) {
+						source = Message.asSource(message.getContext().get(getContextKey()));
+					} else {
+						source = message.asSource();
+					}
 				}
 				if (source!=null) {
 					if (transformerPoolRemoveNamespaces != null) {
@@ -447,8 +503,20 @@ public class Parameter implements IConfigurable, IWithParameters {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
+			/*
+			 * No XSLT transformation, determine primary result from
+			 * 1) requestedSessionKey
+			 * 2) pattern
+			 * 3) value attribute
+			 * 4) input message
+			 * 
+			 * N.B. this order differs from transformed parameters. 
+			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
 				result=session.get(requestedSessionKey);
+				if (result instanceof Message && StringUtils.isNotEmpty(getContextKey())) {
+					result = ((Message)result).getContext().get(getContextKey());
+				}
 				if (log.isDebugEnabled() && (result==null || 
 					result instanceof String  && ((String)result).isEmpty() ||
 					result instanceof Message && ((Message)result).isEmpty())) {
@@ -463,38 +531,52 @@ public class Parameter implements IConfigurable, IWithParameters {
 					if (message==null) {
 						return null;
 					}
-					message.preserve();
-					result=message.asString();
+					if (StringUtils.isNotEmpty(getContextKey())) {
+						result = message.getContext().get(getContextKey());
+					} else {
+						message.preserve();
+						result=message;
+					}
 				} catch (IOException e) {
 					throw new ParameterException(e);
 				}
 			}
 		}
+		
 		if (result !=null && result instanceof Message) {
 			result = ((Message)result).asObject(); // avoid the IOException thrown by asString()
 		}
 		if (result != null) {
 			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
 		} else {
-			// if value is null then return specified default value
-			StringTokenizer stringTokenizer = new StringTokenizer(getDefaultValueMethods(), ",");
-			while (result == null && stringTokenizer.hasMoreElements()) {
-				String token = stringTokenizer.nextToken();
-				if ("defaultValue".equals(token)) {
-					result = getDefaultValue();
-				} else if ("sessionKey".equals(token)) {
-					result = session.get(requestedSessionKey);
-				} else if ("pattern".equals(token)) {
-					result = format(alreadyResolvedParameters, session);
-				} else if ("value".equals(token)) {
-					result = getValue();
-				} else if ("input".equals(token)) {
-					try {
-						message.preserve();
-						result=message.asString();
-					} catch (IOException e) {
-						throw new ParameterException(e);
-					}
+			// if result is null then return specified default value
+			// N.B. 
+			Iterator<DefaultValueMethods> it = getDefaultValueMethodsList().iterator();
+			while (result == null && it.hasNext()) {
+				DefaultValueMethods method = it.next();
+				switch(method) {
+					case DEFAULTVALUE:
+						result = getDefaultValue();
+						break;
+					case SESSIONKEY:
+						result = session.get(requestedSessionKey);
+						break;
+					case PATTERN:
+						result = format(alreadyResolvedParameters, session);
+						break;
+					case VALUE:
+						result = getValue();
+						break;
+					case INPUT:
+						try {
+							message.preserve();
+							result=message.asString();
+						} catch (IOException e) {
+							throw new ParameterException(e);
+						}
+						break;
+					default:
+						throw new IllegalArgumentException("Unknown defaultValues method ["+method+"]");
 				}
 			}
 			if (result!=null) {
@@ -504,7 +586,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		if (result !=null && result instanceof String) {
 			if (getMinLength()>=0 && getType()!=ParameterType.NUMBER) {
 				if (((String)result).length()<getMinLength()) {
-					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] deceeds minLength ["+getMinLength()+"]" );
+					log.debug("Padding parameter ["+getName()+"] because length ["+((String)result).length()+"] falls short of minLength ["+getMinLength()+"]" );
 					result = StringUtils.rightPad(((String)result), getMinLength());
 				}
 			}
@@ -520,7 +602,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		}
 		if (result !=null && result instanceof Number) {
 			if (getMinInclusiveString()!=null && ((Number)result).floatValue() < minInclusive.floatValue()) {
-				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] exceeds minInclusive ["+getMinInclusiveString()+"]" );
+				log.debug("Replacing parameter ["+getName()+"] because value ["+result+"] falls short of minInclusive ["+getMinInclusiveString()+"]" );
 				result = minInclusive;
 			}
 			if (getMaxInclusiveString()!=null && ((Number)result).floatValue() > maxInclusive.floatValue()) {
@@ -536,84 +618,99 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/** Converts raw data to configured parameter type */
-	private Object getValueAsType(Object message, boolean namespaceAware) throws ParameterException {
-		Message request = Message.asMessage(message);
-		Object result = message;
+	private Object getValueAsType(Object request, boolean namespaceAware) throws ParameterException {
+		Message requestMessage = Message.asMessage(request);
+		Object result = request;
 		try {
+			Object requestObject = requestMessage.asObject();
 			switch(getType()) {
 				case NODE:
 					try {
 						if (transformerPoolRemoveNamespaces != null) {
-							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
 						}
-						Object requestObject = request.asObject();
 						if(requestObject instanceof Document) {
 							return ((Document)requestObject).getDocumentElement();
 						}
 						if(requestObject instanceof Node) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware).getDocumentElement();
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML nodeset",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
 					}
 					break;
 				case DOMDOC:
 					try {
 						if (transformerPoolRemoveNamespaces != null) {
-							request = new Message(transformerPoolRemoveNamespaces.transform(request, null));
+							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
 						}
-						Object requestObject = request.asObject();
 						if(requestObject instanceof Document) {
 							return requestObject;
 						}
-						result=XmlUtils.buildDomDocument(request.asInputSource(), namespaceAware);
+						result=XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
 						if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to XML document",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 					}
 					break;
 				case DATE:
 				case DATETIME:
 				case TIMESTAMP:
 				case TIME:
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to date using formatString ["+getFormatString()+"]" );
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to date using formatString ["+getFormatString()+"]" );
 					DateFormat df = new SimpleDateFormat(getFormatString());
 					try {
-						result = df.parseObject(request.asString());
+						result = df.parseObject(requestMessage.asString());
 					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to Date using formatString ["+getFormatString()+"]",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to Date using formatString ["+getFormatString()+"]",e);
 					}
 					break;
 				case XMLDATETIME:
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] from xml dateTime to date" );
-					result = DateUtils.parseXmlDateTime(request.asString());
+					if(requestObject instanceof Date) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] from xml dateTime to date" );
+					result = DateUtils.parseXmlDateTime(requestMessage.asString());
 					break;
 				case NUMBER:
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+					if(requestObject instanceof Number) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
 					DecimalFormat decimalFormat = new DecimalFormat();
 					decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
 					try {
-						Number n = decimalFormat.parse(request.asString());
+						Number n = decimalFormat.parse(requestMessage.asString());
 						result = n;
 					} catch (ParseException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 					}
 					break;
 				case INTEGER:
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to integer" );
+					if(requestObject instanceof Integer) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to integer" );
 					try {
-						Integer i = Integer.parseInt(request.asString());
+						Integer i = Integer.parseInt(requestMessage.asString());
 						result = i;
 					} catch (NumberFormatException e) {
-						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+request+"] to integer",e);
+						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to integer",e);
 					}
 					break;
 				case BOOLEAN:
-					log.debug("Parameter ["+getName()+"] converting result ["+request+"] to boolean" );
-					Boolean i = Boolean.parseBoolean(request.asString());
+					if(requestObject instanceof Boolean) {
+						return requestObject;
+					}
+					log.debug("Parameter ["+getName()+"] converting result ["+requestMessage+"] to boolean" );
+					Boolean i = Boolean.parseBoolean(requestMessage.asString());
 					result = i;
+					break;
 				default:
 					break;
 			}
@@ -663,10 +760,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (endNdx == -1) {
 				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
 			}
-			String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			//String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
 			
 			// get value
-			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionName);
+			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
 			params.add(substitutionValue);
 			formatPattern.append('{').append(paramPosition++);
 		}
@@ -674,24 +772,56 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return MessageFormat.format(formatPattern.toString(), params.toArray());
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String name) throws ParameterException {
+	private Object preFormatDateType(Object rawValue, String formatType) throws ParameterException {
+		if (formatType!=null && (formatType.equalsIgnoreCase("date") || formatType.equalsIgnoreCase("time"))) {
+			if (rawValue instanceof Date) {
+				return rawValue;
+			}
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			try {
+				return df.parse(Message.asString(rawValue));
+			} catch (ParseException | IOException e) {
+				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
+			}
+		} 
+		if (rawValue instanceof Date) {
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(getFormatString()) ? getFormatString() : DateUtils.FORMAT_GENERICDATETIME);
+			return df.format(rawValue);
+		}
+		try {
+			return Message.asString(rawValue);
+		} catch (IOException e) {
+			throw new ParameterException("Cannot read date value ["+rawValue+"]", e);
+		}
+	}
+	
+	
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
+		String[] patternElements = targetPattern.split(",");
+		String name = patternElements[0].trim();
+		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
+		
 		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			substitutionValue = session.get(name);
-		}
-		if (substitutionValue instanceof Message) {
-			try {
-				substitutionValue = ((Message)substitutionValue).asString();
-			} catch (IOException e) {
-				throw new ParameterException("Cannot get substitution value", e);
+			Message substitutionValueMessage = session.getMessage(name);
+			if (!substitutionValueMessage.isEmpty()) {
+				if (substitutionValueMessage.asObject() instanceof Date) {
+					substitutionValue = preFormatDateType(substitutionValueMessage.asObject(), formatType);
+				} else {
+					try {
+						substitutionValue = substitutionValueMessage.asString();
+					} catch (IOException e) {
+						throw new ParameterException("Cannot get substitution value", e);
+					}
+				}
 			}
 		}
 		if (substitutionValue == null) {
 			String namelc=name.toLowerCase();
 			if ("now".equals(name.toLowerCase())) {
-				substitutionValue = new Date();
+				substitutionValue = preFormatDateType(new Date(), formatType);
 			} else if ("uid".equals(namelc)) {
 				substitutionValue = Misc.createSimpleUUID();
 			} else if ("uuid".equals(namelc)) {
@@ -702,23 +832,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
 				}
-				Date d;
-				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-				String fixedDateTime = null;
-				try {
-					fixedDateTime = session.getMessage(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY).asString();
-				} catch (IOException e1) {
-					throw new ParameterException("Unable to resolve ["+PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY+"]");
-				}
-				if (StringUtils.isEmpty(fixedDateTime)) {
+				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				if (fixedDateTime==null) {
 					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
 				}
-				try {
-					d = formatterFrom.parse(fixedDateTime);
-				} catch (ParseException e) {
-					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
-				}
-				substitutionValue = d;
+				substitutionValue = preFormatDateType(fixedDateTime, formatType);
 			} else if ("fixeduid".equals(namelc)) {
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
@@ -736,7 +854,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (substitutionValue == null) {
-			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + pattern + "] cannot be resolved");
+			throw new ParameterException("Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
 		}
 		return substitutionValue;
 	}
@@ -750,7 +868,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return transformerPool;
 	}
 
-	@IbisDoc({"1", "Name of the parameter", ""})
+	/** Name of the parameter */
 	@Override
 	public void setName(String parameterName) {
 		name = parameterName;
@@ -764,110 +882,115 @@ public class Parameter implements IConfigurable, IWithParameters {
 		this.type = type;
 	}
 
-	@IbisDoc({"3", "The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting.", ""})
+	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
 	public void setValue(String value) {
 		this.value = value;
 	}
 
-	@IbisDoc({"4", "Key of a pipelinesession-variable. <br/>If specified, the value of the pipelinesession variable is used as input for "+ 
-			"the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are "+ 
-			"specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as "+ 
-			"parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the "+ 
-			"value '*' then all existing sessionkeys are added as parameter (except tsreceived)", ""})
+	/**
+	 * Key of a PipelineSession-variable. <br/>If specified, the value of the PipelineSession variable is used as input for
+	 * the xpathExpression or stylesheet, instead of the current input message. <br/>If no xpathExpression or stylesheet are
+	 * specified, the value itself is returned. <br/>If the value '*' is specified, all existing sessionkeys are added as
+	 * parameter of which the name starts with the name of this parameter. <br/>If also the name of the parameter has the
+	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
+	 */
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}
 
-	@IbisDoc({"5", "Instead of a fixed <code>sessionkey</code> it's also possible to use a xpath expression applied to the input message to extract the name of the session-variable.", ""})
+	/** key of message context variable to use as source, instead of the message found from input message or sessionKey itself */
+	public void setContextKey(String string) {
+		contextKey = string;
+	}
+
+	/** Instead of a fixed <code>sessionKey</code> it's also possible to use a XPath expression applied to the input message to extract the name of the session-variable. */
 	public void setSessionKeyXPath(String string) {
 		sessionKeyXPath = string;
 	}
 
-	/**
-	 * Specify the stylesheet to use
-	 */
-	@IbisDoc({"6", "url to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.", ""})
+	/** URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable. */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
-	/**
-	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
-	 */
-	@IbisDoc({"7", "the xpath expression to extract the parameter value from the (xml formatted) input or session-variable.", ""})
+	/** the XPath expression to extract the parameter value from the (xml formatted) input or session-variable. */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
 	}
 
-	@IbisDoc({"8", "when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect", "0"})
+	/** 
+	 * when set to <code>2</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
+	 * @default 0
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
 	}
 
-	@IbisDoc({"9", "when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)", "false"})
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
 	@Deprecated
 	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		xsltVersion=b?2:1;
 	}
 
-	@IbisDoc({"10", "Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of "+ 
-			"<code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	/** 
+	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of 
+	 * <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace. 
+	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"11", "When set <code>true</code> namespaces (and prefixes) in the input message are removed before the "+ 
-		"stylesheet/xpathexpression is executed", "false"})
+	/** 
+	 * When set <code>true</code> namespaces (and prefixes) in the input message are removed before the stylesheet/xpathExpression is executed
+	 * @default <code>false</code>
+	 */
 	public void setRemoveNamespaces(boolean b) {
 		removeNamespaces = b;
 	}
 
-	@IbisDoc({"12", "If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned", ""})
+	/** If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned */
 	public void setDefaultValue(String string) {
 		defaultValue = string;
 	}
 
-	@IbisDoc({"13", "Comma separated list of methods (defaultvalue, sessionKey, pattern, value or input) to use as default value. Used in the order they appear until a non-null value is found.", "defaultvalue"})
+	/** 
+	 * Comma separated list of methods (<code>defaultValue</code>, <code>sessionKey</code>, <code>pattern</code>, <code>value</code> or <code>input</code>) to use as default value. Used in the order they appear until a non-null value is found.
+	 * @default <code>defaultValue</code>
+	 */
 	public void setDefaultValueMethods(String string) {
 		defaultValueMethods = string;
 	}
 
-	/**
-	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
+	/** 
+	 * Value of parameter is determined using substitution and formating, following MessageFormat syntax with named parameters. The expression can contain references
+	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
+	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern
+	 * 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>
+	 * The following predefined reference can be used in the expression too:<ul>
+	 * <li>{now}: the current system time</li>
+	 * <li>{uid}: an unique identifier, based on the IP address and java.rmi.server.UID</li>
+	 * <li>{uuid}: an unique identifier, based on the IP address and java.util.UUID</li>
+	 * <li>{hostname}: the name of the machine the application runs on</li>
+	 * <li>{username}: username from the credentials found using authAlias, or the username attribute</li>
+	 * <li>{password}: password from the credentials found using authAlias, or the password attribute</li>
+	 * <li>{fixeddate}: fake date, for testing only</li>
+	 * <li>{fixeduid}: fake uid, for testing only</li>
+	 * <li>{fixedhostname}: fake hostname, for testing only</li>
+	 * </ul>
+	 * A guid can be generated using {hostname}_{uid}, see also
+	 * <a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> for more information about (g)uid's or 
+	 * <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> for more information about uuid's.
 	 */
-	@IbisDoc({"14", "Value of parameter is determined using substitution and formating. The expression can contain references "+ 
-		"to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. "+ 
-		"<br/>If for instance <code>fname</code> is a parameter or session variable that resolves to eric, then the pattern "+ 
-		"'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.<br/>" +
-		"The following predefined reference can be used in the expression too:<ul>" +
-		"<li>{now}: the current system time</li>" +
-		"<li>{uid}: an unique identifier, based on the IP address and java.rmi.server.UID</li>" +
-		"<li>{uuid}: an unique identifier, based on the IP address and java.util.UUID</li>" +
-		"<li>{hostname}: the name of the machine the application runs on</li>" +
-		"<li>{username}: username from the credentials found using authAlias, or the username attribute</li>" +
-		"<li>{password}: password from the credentials found using authAlias, or the password attribute</li>" +
-		"<li>{fixeddate}: fake date, for testing only</li>" +
-		"<li>{fixeduid}: fake uid, for testing only</li>" +
-		"<li>{fixedhostname}: fake hostname, for testing only</li>" +
-		"</ul>"+ 
-		"A guid can be generated using {hostname}_{uid}, see also "+ 
-		"<a href=\"http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html\">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/uid.html</a> "+ 
-		"for more information about (g)uid's or <a href=\"http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html\">http://docs.oracle.com/javase/1.5.0/docs/api/java/util/uuid.html</a> "+ 
-		"for more information about uuid's.", ""})
 	public void setPattern(String string) {
 		pattern = string;
 	}
 
-	@IbisDoc({"15", "Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified", ""})
+	/** Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"16", "Default username that is used when a <code>pattern</code> containing {username} is specified", ""})
+	/** Default username that is used when a <code>pattern</code> containing {username} is specified */
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -877,47 +1000,65 @@ public class Parameter implements IConfigurable, IWithParameters {
 		setUsername(username);
 	}
 
-	@IbisDoc({"17", "Default password that is used when a <code>pattern</code> containing {password} is specified", " "})
+	/** Default password that is used when a <code>pattern</code> containing {password} is specified */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-	@IbisDoc({"18", "Used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>", "depends on type"})
+	/** 
+	 * Used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code>"
+	 * @default depends on type
+	 */
 	public void setFormatString(String string) {
 		formatString = string;
 	}
 
-	@IbisDoc({"19", "Used in combination with type <code>number</code>", "system default"})
+	/** 
+	 * Used in combination with type <code>number</code>
+	 * @default system default
+	 */
 	public void setDecimalSeparator(String string) {
 		decimalSeparator = string;
 	}
 
-	@IbisDoc({"20", "Used in combination with type <code>number</code>", "system default"})
+	/** 
+	 * Used in combination with type <code>number</code>
+	 * @default system default
+	 */
 	public void setGroupingSeparator(String string) {
 		groupingSeparator = string;
 	}
 
-	@IbisDoc({"21", "If set (>=0) and the length of the value of the parameter deceeds this minimum length, the value is padded", "-1"})
+	/** 
+	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
+	 * @default -1
+	 */
 	public void setMinLength(int i) {
 		minLength = i;
 	}
 
-	@IbisDoc({"22", "If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length", "-1"})
+	/** 
+	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length
+	 * @default -1
+	 */
 	public void setMaxLength(int i) {
 		maxLength = i;
 	}
 
-	@IbisDoc({"23", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken", ""})
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this maximum value, this maximum value is taken */
 	public void setMaxInclusive(String string) {
 		maxInclusiveString = string;
 	}
 	
-	@IbisDoc({"24", "Used in combination with type <code>number</code>; if set and the value of the parameter exceeds this minimum value, this minimum value is taken", ""})
+	/** Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken */
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
 	}
 
-	@IbisDoc({"25", "If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)", "false"})
+	/** 
+	 * If set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)
+	 * @default <code>false</code>
+	 */
 	public void setHidden(boolean b) {
 		hidden = b;
 	}

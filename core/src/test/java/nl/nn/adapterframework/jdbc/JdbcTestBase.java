@@ -7,20 +7,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -44,9 +45,12 @@ public abstract class JdbcTestBase {
 	protected final static String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 
+	protected static String singleDatasource = null; // "MariaDB";  // set to a specific datasource name, to speed up testing
+
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected String productKey = "unknown";
+	protected Properties dataSourceInfo;
 
 	/** Only to be used for setup and teardown like actions */
 	protected Connection connection;
@@ -60,27 +64,46 @@ public abstract class JdbcTestBase {
 	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
-	public static Collection data() {
+	public static Collection data() throws NamingException {
 		TransactionManagerType type = TransactionManagerType.DATASOURCE;
-		List<DataSource> datasources = type.getAvailableDataSources();
-		Object[][] matrix = new Object[datasources.size()][];
+		List<DataSource> datasources;
+		if (StringUtils.isNotEmpty(singleDatasource)) {
+			datasources = new ArrayList<>();
+			datasources.add(type.getDataSourceFactory().getDataSource(singleDatasource));
+		} else {
+			datasources = type.getAvailableDataSources();
+		}
+		List<Object[]> matrix = new ArrayList<>();
 
-		int i = 0;
 		for(DataSource ds : datasources) {
-			matrix[i] = new Object[] {type, ds};
-			i++;
+			matrix.add(new Object[] {type, ds});
 		}
 
-		return Arrays.asList(matrix);
+		return matrix;
 	}
 
 	@Before
 	public void setup() throws Exception {
-		Properties dataSourceProperties = ((DriverManagerDataSource)dataSource).getConnectionProperties();
-		productKey = dataSourceProperties.getProperty(URLDataSourceFactory.PRODUCT_KEY);
-		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceProperties.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
+		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		dataSourceInfo = parseDataSourceInfo(dsInfo);
+		productKey = dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY);
+		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 
 		prepareDatabase();
+	}
+
+	private Properties parseDataSourceInfo(String dsInfo) {
+		Properties props = new Properties();
+		String[] parts = dsInfo.split("\\] ");
+		for (String part : parts) {
+			String[] kvPair = part.split(" \\[");
+			String key = kvPair[0];
+			String value = (kvPair.length == 1) ? "" : kvPair[1];
+			if(!props.containsKey(key)) {
+				props.put(key, value);
+			}
+		}
+		return props;
 	}
 
 	@After

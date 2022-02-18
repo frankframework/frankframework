@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 WeAreFrank!
+   Copyright 2018-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -223,7 +223,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
-			return new S3Message(s3Client.getObject(bucketName, f.getKey()), charset);
+			return new S3Message(s3Client.getObject(bucketName, f.getKey()), FileSystemUtils.getContext(this, f, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -233,8 +233,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		
 		private S3Object file;
 		
-		public S3Message(S3Object file, String charset) {
-			super(() -> file.getObjectContent(), charset, file.getClass());
+		public S3Message(S3Object file, Map<String,Object> context) {
+			super(() -> file.getObjectContent(), context, file.getClass());
 			this.file = file;
 		}
 

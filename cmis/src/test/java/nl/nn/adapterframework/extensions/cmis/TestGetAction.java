@@ -148,15 +148,8 @@ public class TestGetAction extends SenderTestBase<CmisSender>{
 	}
 
 	public void configureWithParameters() throws ConfigurationException, SenderException, TimeoutException {
-		Parameter getPropertiesParameter = new Parameter();
-		getPropertiesParameter.setName("getProperties");
-		getPropertiesParameter.setValue(getProperties.toString());
-		sender.addParameter(getPropertiesParameter);
-
-		Parameter getDocumentContentParameter = new Parameter();
-		getDocumentContentParameter.setName("getDocumentContent");
-		getDocumentContentParameter.setValue(getDocumentContent.toString());
-		sender.addParameter(getDocumentContentParameter);
+		sender.addParameter(new Parameter("getProperties", getProperties.toString()));
+		sender.addParameter(new Parameter("getDocumentContent", getDocumentContent.toString()));
 
 		configure();
 	}

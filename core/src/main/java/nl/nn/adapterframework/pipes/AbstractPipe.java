@@ -101,7 +101,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter boolean removeCompactMsgNamespaces = true;
 	private @Getter boolean restoreMovedElements=false;
 	private @Getter boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	
+
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", false);
 	private @Getter Locker locker;
 	private @Getter String emptyInputReplacement=null;
@@ -318,8 +318,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	/**
 	 * The functional name of this pipe
+	 * TODO add ff.mandatory tag once validators and wrappers can be excluded.
 	 */
-	@IbisDoc({"1", "name of the pipe", ""})
 	@Override
 	public void setName(String name) {
 		this.name=name;

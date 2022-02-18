@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 */
 package nl.nn.adapterframework.parameters;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -34,6 +36,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class ParameterList extends ArrayList<Parameter> {
 	private AtomicInteger index = new AtomicInteger();
+	private @Getter boolean inputValueRequiredForResolution;
+	private @Getter boolean inputValueOrContextRequiredForResolution;
 
 	public ParameterList() {
 		super();
@@ -50,6 +54,8 @@ public class ParameterList extends ArrayList<Parameter> {
 			param.configure();
 		}
 		index = null; //Once configured there is no need to keep this in memory
+		inputValueRequiredForResolution = parameterEvaluationRequiresInputValue();
+		inputValueOrContextRequiredForResolution = parameterEvaluationRequiresInputValueOrContext();
 	}
 
 	@Override
@@ -76,9 +82,18 @@ public class ParameterList extends ArrayList<Parameter> {
 		return null;
 	}
 
-	public boolean parameterEvaluationRequiresInputMessage() {
+	private boolean parameterEvaluationRequiresInputValue() {
 		for (Parameter p:this) {
 			if (p.requiresInputValueForResolution()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean parameterEvaluationRequiresInputValueOrContext() {
+		for (Parameter p:this) {
+			if (p.requiresInputValueOrContextForResolution()) {
 				return true;
 			}
 		}
@@ -89,9 +104,16 @@ public class ParameterList extends ArrayList<Parameter> {
 		return getValues(message, session, true);
 	}
 	/**
-	 * Returns an array list of <link>ParameterValue<link> objects
+	 * Returns a List of <link>ParameterValue<link> objects
 	 */
 	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		if(inputValueRequiredForResolution && message!=null) {
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new ParameterException("Cannot preserve message for parameter resolution", e);
+			}
+		}
 		ParameterValueList result = new ParameterValueList();
 		for (Parameter parm : this) {
 			String parmSessionKey = parm.getSessionKey();

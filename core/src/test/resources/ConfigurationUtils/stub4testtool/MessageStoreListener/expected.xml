@@ -1,6 +1,7 @@
 <configuration>
 	  <adapter name="MessageStoreListener">
-      <receiver name="testtool-MessageStoreListener" pollInterval="1">
+      <receiver name="testtool-MessageStoreListener"
+         			transactionAttribute="Required" pollInterval="1">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MessageStoreListener"/>
       </receiver>
@@ -10,7 +11,8 @@
                    slotId="${applicationId}/MessageStoreListener"
                    peekUntransacted="true"/>
 		    </receiver>
-      <receiver name="testtool-MessageStoreListener-1" pollInterval="1">
+      <receiver name="testtool-MessageStoreListener-1"
+         			transactionAttribute="Required" pollInterval="1">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-MessageStoreListener-1"/>
       </receiver>

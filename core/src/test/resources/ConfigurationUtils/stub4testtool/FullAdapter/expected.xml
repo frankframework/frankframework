@@ -1,6 +1,7 @@
 <configuration>
 	  <adapter name="FullAdapter">
-      <receiver name="testtool-FullAdapter">
+      <receiver name="testtool-FullAdapter"
+      			transactionAttribute="Required">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-FullAdapter"/>
          <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
@@ -16,7 +17,8 @@
                      jmsRealm="jdbc"
                      slotId="FullAdapter"
                      retention="7"/>
-		    </receiver>--><receiver name="testtool-FullAdapter-1">
+		    </receiver>--><receiver name="testtool-FullAdapter-1" 
+		    	transactionAttribute="Required">
          <listener className="nl.nn.adapterframework.receivers.JavaListener"
                    serviceName="testtool-FullAdapter-1"/>
          <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"

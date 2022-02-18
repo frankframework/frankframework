@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.testautomationguru.utility.PDFUtil;
@@ -57,26 +58,41 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*(?=\")";
 	private static final String REGEX_TIJDSTIP_IGNORE = "(?<=Tijdstip:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
-	private String pdfOutputLocation;
-	
+	private Path pdfOutputLocation;
+
 	@Override
 	public PdfPipe createPipe() {
 		return new PdfPipe();
 	}
-	
+
 	@Override
 	public void setup() throws Exception {
 		super.setup();
-		pdfOutputLocation = Files.createTempDirectory("Pdf").toString();
+		pdfOutputLocation = Files.createTempDirectory("Pdf");
+		pipe.setPdfOutputLocation(pdfOutputLocation.toString());
+		pipe.setUnpackCommonFontsArchive(true);
 	}
-	
+
 	@Override
 	public void tearDown() throws Exception {
-		Files.walk(Paths.get(pdfOutputLocation))
-			.map(Path::toFile)
-			.forEach(File::delete);
-		Files.deleteIfExists(Paths.get(pdfOutputLocation));
+		synchronized(pdfOutputLocation) {
+			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
+
+			Files.deleteIfExists(pdfOutputLocation); //Remove root folder
+		}
+
 		super.tearDown();
+	}
+
+	private static void removeFile(Path file) {
+		if(Files.isRegularFile(file)) {
+			try {
+				Files.delete(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				Assert.fail("unable to delete: "+ e.getMessage());
+			}
+		}
 	}
 
 	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
@@ -121,7 +137,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public String executeConversion(String pipeName, String fileToConvert) throws Exception {
 		pipe.setName(pipeName);
 		pipe.setAction(DocumentAction.CONVERT);
-		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
 		pipe.start();
 
@@ -280,11 +295,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	
 	@Test
 	public void multiThreadedMailWithWordAttachment() throws Exception {
-		pipe=createPipe();
 		pipe.setName("multiThreadedmailWithWordAttachment");
 		pipe.setAction(DocumentAction.CONVERT);
 		pipe.registerForward(new PipeForward("success", "dummy"));
-		pipe.setPdfOutputLocation(pdfOutputLocation);
 		pipe.configure();
 		pipe.start();
 

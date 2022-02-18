@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.configuration.extensions.SapSystems;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
@@ -74,7 +75,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
-	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter BootState state = BootState.STOPPED;
 
@@ -265,6 +266,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			}
 		} catch (ConfigurationException e) {
 			state = BootState.STOPPED;
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
 
@@ -415,6 +417,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 
+	// explicitly in this position, to have the right location in the XSD
+	public void setScheduleManager(ScheduleManager scheduleManager) {
+		this.scheduleManager = scheduleManager;
+	}
+
 	/**
 	 * Register an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
@@ -426,8 +433,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
+	@Deprecated // deprecated to force use of Scheduler element
 	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.register(jobdef);
+		scheduleManager.registerScheduledJob(jobdef);
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
@@ -522,9 +530,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
-	// Dummy setter to allow JmsRealms being added to Configurations via FrankDoc.xsd
+	// Dummy setter to allow SapSystems being added to Configurations via Frank!Config XSD
+	public void setSapSystems(SapSystems sapSystems) {
+		// SapSystems self register;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	public void setJmsRealms(JmsRealmFactory realm) {
+		// JmsRealm-objects self register in JmsRealmFactory;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	@Deprecated
 	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm);
+		// JmsRealm-objects self register in JmsRealmFactory;
 	}
 
 	@Override
@@ -533,9 +552,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Specifies event monitoring 
+	 * Container for monitor objects 
 	 */
+	public void setMonitoring(MonitorManager monitorManager) {
+		// Monitors self register in MonitorManager;
+	}
 	// above comment is used in FrankDoc
+	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
 	}
 

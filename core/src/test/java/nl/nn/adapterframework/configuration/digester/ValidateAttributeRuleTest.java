@@ -175,30 +175,6 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(2));
 	}
 
-	@Test
-	public void testAttributeWithNoValue() throws Exception {
-		Map<String, String> attr = new HashMap<>();
-		attr.put("testString", "");
-		attr.put("testInteger", "");
-		attr.put("testBoolean", "");
-
-
-		attr.put("testStringWithoutGetter", "");
-		attr.put("testIntegerWithoutGetter", "");
-		attr.put("testBooleanWithoutGetter", "");
-
-		runRule(ClassWithEnum.class, attr);
-
-		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(6, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testInteger] has no value", configWarnings.get(0));
-		assertEquals("ClassWithEnum attribute [testBoolean] has no value", configWarnings.get(1));
-		assertEquals("ClassWithEnum attribute [testBooleanWithoutGetter] has no value", configWarnings.get(2));
-		assertEquals("ClassWithEnum attribute [testString] has no value", configWarnings.get(3));
-		assertEquals("ClassWithEnum attribute [testStringWithoutGetter] has no value", configWarnings.get(4));
-		assertEquals("ClassWithEnum attribute [testIntegerWithoutGetter] has no value", configWarnings.get(5));
-	}
-
 
 	@Test
 	public void testAttributeWithNumberFormatException() throws Exception {

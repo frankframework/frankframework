@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -277,27 +277,6 @@ public class XmlUtils {
 		String xslt = makeRemoveNamespacesXslt(omitXmlDeclaration,indent);
 		//log.debug("RemoveNamespacesXslt ["+xslt+"]");
 		return getUtilityTransformerPool(xslt,"RemoveNamespaces",omitXmlDeclaration,indent);
-	}
-
-	protected static String makeGetIbisContextXslt() {
-		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"text\"/>"
-			+ "<xsl:template match=\"/\">"
-			+ "<xsl:for-each select=\"processing-instruction('ibiscontext')\">"
-			+ "<xsl:variable name=\"ic\" select=\"normalize-space(.)\"/>"
-			+ "<xsl:text>{</xsl:text>"
-			+ "<xsl:value-of select=\"string-length($ic)\"/>"
-			+ "<xsl:text>}</xsl:text>"
-			+ "<xsl:value-of select=\"$ic\"/>"
-			+ "</xsl:for-each>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
-	}
-
-	public static TransformerPool getGetIbisContextTransformerPool() throws ConfigurationException {
-		String xslt = makeGetIbisContextXslt();
-		return getUtilityTransformerPool(xslt,"GetIbisContext",true,false);
 	}
 
 	protected static String makeGetRootNamespaceXslt() {
@@ -1803,55 +1782,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String, String> getIbisContext(String input) {
-		if (input.startsWith("<") && !input.startsWith("<?") && !input.startsWith("<!")) {
-			return null;
-		}
-		if (isWellFormed(input)) {
-			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
-			try {
-				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
-				String str = XmlUtils.transformXml(t, input);
-				Map<String, String> ibisContexts = new LinkedHashMap<String, String>();
-				int indexBraceOpen = str.indexOf("{");
-				int indexBraceClose = 0;
-				int indexStartNextSearch = 0;
-				while (indexBraceOpen >= 0) {
-					indexBraceClose = str.indexOf("}",indexBraceOpen+1);
-					if (indexBraceClose > indexBraceOpen) {
-						String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
-						int icLength = Integer.parseInt(ibisContextLength);
-						if (icLength > 0) {
-							indexStartNextSearch = indexBraceClose + 1 + icLength;
-							String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);
-							int indexEqualSign = ibisContext.indexOf("=");
-							String key;
-							String value;
-							if (indexEqualSign < 0) {
-								key = ibisContext;
-								value = "";
-							} else {
-								key = ibisContext.substring(0,indexEqualSign);
-								value = ibisContext.substring(indexEqualSign+1);
-							}
-							ibisContexts.put(key, value);
-						} else {
-							indexStartNextSearch = indexBraceClose + 1;
-						}
-					} else {
-						indexStartNextSearch = indexBraceOpen + 1;
-					}
-					indexBraceOpen = str.indexOf("{",indexStartNextSearch);
-				}
-				return ibisContexts;
-			} catch (Exception e) {
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-
 	public static String canonicalize(String input) throws IOException {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
@@ -1866,13 +1796,14 @@ public class XmlUtils {
 	}
 
 	public static String nodeToString(Node node) throws TransformerException {
-		return nodeToString(node, true);
+		return nodeToString(node, false);
 	}
 
-	public static String nodeToString(Node node, boolean omitXmlDeclaration) throws TransformerException {
+	public static String nodeToString(Node node, boolean useIndentation) throws TransformerException {
 		Transformer t = getTransformerFactory().newTransformer();
-		if (omitXmlDeclaration) {
-			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		if (useIndentation) {
+			t.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
 		StringWriter sw = new StringWriter();
 		t.transform(new DOMSource(node), new StreamResult(sw));
@@ -2057,17 +1988,16 @@ public class XmlUtils {
 	}
 
 	public static String toXhtml(String htmlString) {
-		String xhtmlString = null;
 		if (StringUtils.isNotEmpty(htmlString)) {
-			xhtmlString = XmlUtils.skipDocTypeDeclaration(htmlString.trim());
+			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
 			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
 				CleanerProperties props = new CleanerProperties();
 				HtmlCleaner cleaner = new HtmlCleaner(props);
 				TagNode tagNode = cleaner.clean(xhtmlString);
-				xhtmlString = new SimpleXmlSerializer(props).getXmlAsString(tagNode);
+				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}
-		return xhtmlString;
+		return null;
 	}
 
 	public static XPathFactory getXPathFactory() {

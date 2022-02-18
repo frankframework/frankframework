@@ -29,6 +29,7 @@ import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderTestBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 
 public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
@@ -165,10 +166,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.UPLOAD);
 		Message input = new Message("my/special/path/");
 
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -195,10 +193,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -225,15 +220,8 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.MD5);
 		Message input = new Message("my/special/path/");
 
-		Parameter hashParam = new Parameter();
-		hashParam.setName("md5");
-		hashParam.setValue("a1658c154b6af0fba9d93aa86e5be06f");//Matches response file but uses a different input message
-		sender.addParameter(hashParam);
-
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("md5").withValue("a1658c154b6af0fba9d93aa86e5be06f")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -260,10 +248,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -290,15 +275,8 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.SHA1);
 		Message input = new Message("my/special/path/");
 
-		Parameter hashParam = new Parameter();
-		hashParam.setName("sha1");
-		hashParam.setValue("51e8bbf813bdbcede109d13b863a58132e80b2e2");//Matches response file but uses a different input message
-		sender.addParameter(hashParam);
-
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("sha1").withValue("51e8bbf813bdbcede109d13b863a58132e80b2e2")); //Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -325,10 +303,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setHashAlgorithm(HashAlgorithm.SHA256);
 		Message input = new Message("my/special/path/");
 
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -354,15 +329,9 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.UPLOAD);
 		Message input = new Message("my/special/path/");
 
-		Parameter hashParam = new Parameter();
-		hashParam.setName("sha256");
-		hashParam.setValue("71d1503b5afba60e212a46e4112fba56503e281224957ad8dee6034ad25f12dc"); //Matches response file but uses a different input message
-		sender.addParameter(hashParam);
-
-		Parameter param = new Parameter();
-		param.setName("file");
-		param.setSessionKey("fileMessage");
-		sender.addParameter(param);
+		//Matches response file but uses a different input message
+		sender.addParameter(ParameterBuilder.create().withName("sha256").withValue("71d1503b5afba60e212a46e4112fba56503e281224957ad8dee6034ad25f12dc"));
+		sender.addParameter(ParameterBuilder.create().withName("file").withSessionKey("fileMessage"));
 		try {
 			Message file = new Message("<dummyFile>----");
 			PipeLineSession pls = new PipeLineSession(session);
@@ -434,10 +403,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.RENAME);
 		Message input = new Message("my/special/path/file1.txt");
 
-		Parameter param = new Parameter();
-		param.setName("destination");
-		param.setValue("my/other/special/path/file2.txt");
-		sender.addParameter(param);
+		sender.addParameter(new Parameter("destination", "my/other/special/path/file2.txt"));
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 
@@ -461,10 +427,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		sender.setAction(Action.MTIME);
 		Message input = new Message("my/special/path/");
 
-		Parameter param = new Parameter();
-		param.setName("mtime");
-		param.setValue("1633945058");
-		sender.addParameter(param);
+		sender.addParameter(new Parameter("mtime", "1633945058"));
 		try {
 			PipeLineSession pls = new PipeLineSession(session);
 

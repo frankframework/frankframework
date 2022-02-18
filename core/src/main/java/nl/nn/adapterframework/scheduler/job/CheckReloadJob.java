@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,22 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class CheckReloadJob extends JobDef {
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = AppConstants.getInstance().getBoolean("configurations.database.autoLoad", false);
+	private static final String DATABASE_CLASSLOADER = "DatabaseClassLoader";
+	private boolean atLeastOneConfigrationHasDBClassLoader = CONFIG_AUTO_DB_CLASSLOADER;
 
+	@Override
+	public boolean beforeExecuteJob(IbisManager ibisManager) {
+		if(!atLeastOneConfigrationHasDBClassLoader) {
+			for (Configuration configuration : ibisManager.getConfigurations()) {
+				if(DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
+					atLeastOneConfigrationHasDBClassLoader=true;
+					break;
+				}
+			}
+		}
+		return atLeastOneConfigrationHasDBClassLoader;
+	}
+	
 	@Override
 	public void execute(IbisManager ibisManager) {
 		if (ibisManager.getIbisContext().isLoadingConfigs()) {
@@ -46,15 +61,14 @@ public class CheckReloadJob extends JobDef {
 			return;
 		}
 
-		String dataSource = JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
-		List<String> configNames = new ArrayList<String>();
-		List<String> configsToReload = new ArrayList<String>();
+		List<String> configNames = new ArrayList<>();
+		List<String> configsToReload = new ArrayList<>();
 
 		FixedQuerySender qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
-		qs.setDatasourceName(dataSource);
+		qs.setDatasourceName(getDataSource());
 		qs.setQuery("SELECT COUNT(*) FROM IBISCONFIG");
 		String booleanValueTrue = qs.getDbmsSupport().getBooleanValue(true);
-		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = '"+booleanValueTrue+"' and AUTORELOAD = '"+booleanValueTrue+"'";
+		String selectQuery = "SELECT VERSION FROM IBISCONFIG WHERE NAME=? AND ACTIVECONFIG = "+booleanValueTrue+" and AUTORELOAD = "+booleanValueTrue;
 		try {
 			qs.configure();
 			qs.open();
@@ -62,7 +76,7 @@ public class CheckReloadJob extends JobDef {
 				for (Configuration configuration : ibisManager.getConfigurations()) {
 					String configName = configuration.getName();
 					configNames.add(configName);
-					if ("DatabaseClassLoader".equals(configuration.getClassLoaderType())) {
+					if (DATABASE_CLASSLOADER.equals(configuration.getClassLoaderType())) {
 						stmt.setString(1, configName);
 						try (ResultSet rs = stmt.executeQuery()) {
 							if (rs.next()) {
@@ -108,11 +122,15 @@ public class CheckReloadJob extends JobDef {
 				}
 				// unload old (deactivated) configurations
 				for (String currentConfigurationName : configNames) {
-					if (!dbConfigNames.contains(currentConfigurationName) && "DatabaseClassLoader".equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
+					if (!dbConfigNames.contains(currentConfigurationName) && DATABASE_CLASSLOADER.equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
 						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
 			}
 		}
+	}
+	
+	protected String getDataSource() {
+		return JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	}
 }

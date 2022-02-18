@@ -19,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -57,7 +58,7 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(Message.asMessage("Success"));
-		plr.setState("success");
+		plr.setState(ExitState.SUCCESS);
 
 		doReturn(plr).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
 
@@ -85,7 +86,14 @@ public class TestPipelineTest extends ApiTestBase<TestPipeline>{
 		attachments.add(attachmentAdapter);
 
 		Response response = dispatcher.dispatchRequest(HttpMethod.POST, "/test-pipeline", attachments);
-		String expected="{\"result\":\"Test1.txt:success\\nTest2.txt:success\",\"state\":\"success\"}";
+		String expected="{\"result\":\"Test1.txt:SUCCESS\\nTest2.txt:SUCCESS\",\"state\":\"SUCCESS\"}";
 		assertEquals(expected, response.getEntity().toString());
+	}
+
+	@Test
+	public void testGetIbisContext() throws Exception {
+		TestPipeline testPipeline = createJaxRsResource();
+		String input = "<?ibiscontext key1=value1 key2=value2 ?> <test/>";
+		assertEquals("{key1=value1 key2=value2}", testPipeline.getIbisContext(input).toString());
 	}
 }

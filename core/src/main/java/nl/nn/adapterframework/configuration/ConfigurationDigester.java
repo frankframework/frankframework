@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,9 @@ import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.AttributePropertyResolver;
 import nl.nn.adapterframework.xml.ElementPropertyResolver;
+import nl.nn.adapterframework.xml.NamespacedContentsRemovingFilter;
 import nl.nn.adapterframework.xml.SaxException;
 import nl.nn.adapterframework.xml.TransformerFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -222,16 +224,19 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Resolve all non-attribute properties
 	 */
 	public String resolveEntitiesAndProperties(Configuration configuration, Resource resource, Properties appConstants, boolean schemaBasedParsing) throws IOException, SAXException, ConfigurationException, TransformerConfigurationException {
-		XmlWriter writer;
+		XmlWriter forDigesterLoadedWriter;
+		XmlWriter forLoadedHiddenWriter = null;
 		ContentHandler handler;
 		if(schemaBasedParsing) {
-			writer = new ElementPropertyResolver(appConstants);
-			handler = getStub4TesttoolContentHandler(writer, appConstants);
+			forDigesterLoadedWriter = new ElementPropertyResolver(appConstants);
+			forLoadedHiddenWriter = new ElementPropertyResolver(appConstants);
+			handler = new XmlTee(forDigesterLoadedWriter, new AttributePropertyResolver(forLoadedHiddenWriter, appConstants, getPropsToHide(appConstants)));
+			handler = getStub4TesttoolContentHandler(handler, appConstants);
 			handler = getCanonicalizedConfiguration(handler);
 			handler = new OnlyActiveFilter(handler, appConstants);
 		} else {
-			writer = new XmlWriter();
-			handler = writer;
+			forDigesterLoadedWriter = new XmlWriter();
+			handler = forDigesterLoadedWriter;
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();
@@ -239,31 +244,35 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 		XmlUtils.parseXml(resource, handler);
 		configuration.setOriginalConfiguration(originalConfigWriter.toString());
-		String loaded = writer.toString();
 
+		String loadedForDigester = forDigesterLoadedWriter.toString();
 		if(schemaBasedParsing) {
-			String loadedHide = StringResolver.substVars(loaded, appConstants, null, getPropsToHide(appConstants));
-			configuration.setLoadedConfiguration(loadedHide);
+			configuration.setLoadedConfiguration(forLoadedHiddenWriter.toString());
 		} else {
 			String loadedHide = StringResolver.substVars(configuration.getOriginalConfiguration(), appConstants, null, getPropsToHide(appConstants));
 			loadedHide = processCanonicalizedActivatedStubbedXslts(loadedHide, configuration.getClassLoader());
 			configuration.setLoadedConfiguration(loadedHide);
 
-			loaded = StringResolver.substVars(loaded, appConstants);
-			loaded = processCanonicalizedActivatedStubbedXslts(loaded, configuration.getClassLoader());
+			loadedForDigester = StringResolver.substVars(loadedForDigester, appConstants);
+			loadedForDigester = processCanonicalizedActivatedStubbedXslts(loadedForDigester, configuration.getClassLoader());
 		}
 
-		return loaded;
+		return loadedForDigester;
 	}
 
 	private String processCanonicalizedActivatedStubbedXslts(String configuration, ClassLoader classLoader) throws ConfigurationException {
 		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
 		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
 
-		if (ConfigurationUtils.isConfigurationStubbed(classLoader)) {
+		if (isConfigurationStubbed(classLoader)) {
 			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
 		}
 		return configuration;
+	}
+
+	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
+	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
+		return ConfigurationUtils.isConfigurationStubbed(classLoader);
 	}
 
 	private List<String> getPropsToHide(Properties appConstants) {
@@ -288,13 +297,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}
-			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(validatorHandler);
+			NamespacedContentsRemovingFilter namespacedContentsRemovingFilter = new NamespacedContentsRemovingFilter(validatorHandler);
+			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
 		}
-	}	
-	
+	}
+
 	/**
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 public class BtmDataSourceFactory extends JndiDataSourceFactory implements DisposableBean {
 
 	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
 		if (dataSource instanceof XADataSource) {
 			PoolingDataSource result = new PoolingDataSource();
 			result.setUniqueName(dataSourceName);
@@ -37,6 +37,7 @@ public class BtmDataSourceFactory extends JndiDataSourceFactory implements Dispo
 			result.init();
 			return result;
 		}
+
 		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
 		return (DataSource)dataSource;
 	}

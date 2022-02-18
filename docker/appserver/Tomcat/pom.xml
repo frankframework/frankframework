@@ -16,7 +16,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
-			<version>${revision}</version> <!-- Make the version overridable -->
 		</dependency>
 		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
@@ -80,13 +79,6 @@
 			<version>1.11</version>
 		</dependency>
 		
-		<!-- Required for NARAYANA -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>3.4.2.Final</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
