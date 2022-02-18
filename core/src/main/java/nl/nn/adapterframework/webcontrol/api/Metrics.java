@@ -22,29 +22,30 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 
 @Path("/")
-public class Metrics extends Base {
+public class Metrics extends Base implements InitializingBean {
 	@Context HttpServletRequest servletRequest;
 
 	private PrometheusMeterRegistry registry;
 
-	protected void initRegistry() {
-		if (registry==null) {
-			MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
-			if (metersRegistry instanceof PrometheusMeterRegistry) {
-				registry = (PrometheusMeterRegistry)metersRegistry;
-			} else if (metersRegistry instanceof CompositeMeterRegistry) {
-				CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
-				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
-					if (meterRegistry instanceof PrometheusMeterRegistry) {
-						registry = (PrometheusMeterRegistry)meterRegistry;
-						break;
-					}
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		MeterRegistry metersRegistry = getIbisContext().getMeterRegistry();
+		if (metersRegistry instanceof PrometheusMeterRegistry) {
+			registry = (PrometheusMeterRegistry)metersRegistry;
+		} else if (metersRegistry instanceof CompositeMeterRegistry) {
+			CompositeMeterRegistry compositeMeterRegistry = (CompositeMeterRegistry)metersRegistry;
+			for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				if (meterRegistry instanceof PrometheusMeterRegistry) {
+					registry = (PrometheusMeterRegistry)meterRegistry;
+					break;
 				}
 			}
 		}
@@ -55,10 +56,7 @@ public class Metrics extends Base {
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response scrapeForPrometheus() throws ApiException {
 		if (registry==null) {
-			initRegistry();
-			if (registry==null) {
-				return Response.status(Response.Status.NOT_IMPLEMENTED).build();
-			}
+			return Response.status(Response.Status.NOT_IMPLEMENTED).build();
 		}
 		return Response.status(Response.Status.OK).entity(registry).build(); // uses PrometheusMessageBodyWriter
 	}

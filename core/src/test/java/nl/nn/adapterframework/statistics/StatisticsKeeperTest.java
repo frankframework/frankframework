@@ -79,7 +79,7 @@ public class StatisticsKeeperTest {
 	public void assertMapValue(Map<String,Object> map, String key, String value) {
 		assertEquals(value, map.get(key).toString());
 	}
-	
+
 	@Test
 	public void testLabelsAndTypes() {
 		List<String> labels = StatisticsKeeper.getLabels();
@@ -92,4 +92,3 @@ public class StatisticsKeeperTest {
 	}
 
 }
- 

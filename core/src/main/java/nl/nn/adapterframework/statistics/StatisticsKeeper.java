@@ -88,7 +88,7 @@ public class StatisticsKeeper implements ItemList {
 			percentiles[i]=pest.getPercentage(i)/100;
 		}
 		DistributionSummary.Builder builder= DistributionSummary
-				.builder(getQuantity())
+				.builder("message."+getQuantity())
 				.baseUnit(getUnits())
 				.tags(tags)
 				.tag("name", getName())
@@ -351,7 +351,7 @@ public class StatisticsKeeper implements ItemList {
 		}
 		return types;
 	}
-	
+
 	public Map<String, Object> asMap() {
 		Map<String, Object> tmp = new LinkedHashMap<String, Object>();
 		tmp.put("Name", getName());
@@ -390,9 +390,9 @@ public class StatisticsKeeper implements ItemList {
 		}
 		return tmp;
 	}
-	
-	
-	
+
+
+
 	public long getCount() {
 		return cumulative.getCount();
 	}

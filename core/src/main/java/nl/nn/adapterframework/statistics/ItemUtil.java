@@ -36,7 +36,7 @@ public class ItemUtil {
 	public static void addItem(XmlBuilder xml, String name, Long value) {
 		addItem(xml,name,""+value);
 	}
-	
+
 	public static XmlBuilder getSummaryContainer(XmlBuilder parent, String name) {
 		if (parent==null) {
 			throw new NullPointerException("parent XmlBuilder cannot be null");
@@ -64,14 +64,14 @@ public class ItemUtil {
 			} else {
 				String value = "";
 				switch (il.getItemType(i)) {
-					case INTEGER: 
+					case INTEGER:
 						if (countFormat==null) {
 							value = ""+ (Long)item;
 						} else {
 							value = countFormat.format(item);
 						}
 						break;
-					case TIME: 
+					case TIME:
 						value = timeFormat.format(item);
 						break;
 					case FRACTION:
@@ -90,9 +90,9 @@ public class ItemUtil {
 			return ItemList.ITEM_VALUE_NAN;
 		}
 		switch (il.getItemType(index)) {
-			case INTEGER: 
+			case INTEGER:
 				return ""+ (Long)item;
-			case TIME: 
+			case TIME:
 				DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
 				return df.format(item);
 			case FRACTION:

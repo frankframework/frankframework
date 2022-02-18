@@ -405,7 +405,7 @@ public class IbisContext extends IbisApplicationContext {
 			new JvmThreadMetrics().bindTo(meterRegistry);
 		}
 	}
-	
+
 	private void generateFlow() { //Generate big flow diagram file for all configurations
 		if (flowDiagramManager != null) {
 			List<Configuration> configurations = ibisManager.getConfigurations();

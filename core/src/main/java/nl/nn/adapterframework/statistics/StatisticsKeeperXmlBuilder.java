@@ -168,9 +168,9 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		XmlBuilder container = new XmlBuilder(elementName);
 		if (name!=null)
 			container.addAttribute("name", name);
-			
+
 		XmlBuilder cumulativeStats = new XmlBuilder(STATKEEPER_SUMMARY_ELEMENT);
-	
+
 		for (int i=0; i<sk.getItemCount(); i++) {
 			Object item = sk.getItemValue(i);
 			if (item==null) {
@@ -191,7 +191,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		}
 		container.addSubElement(cumulativeStats);
 		XmlBuilder intervalStats = new XmlBuilder(STATKEEPER_INTERVAL_ELEMENT);
-	
+
 		for (int i=0; i<sk.getIntervalItemCount(); i++) {
 			Object item = sk.getIntervalItemValue(i);
 			if (item==null) {
