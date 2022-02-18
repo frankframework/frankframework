@@ -85,15 +85,15 @@ public class StatisticsKeeper implements ItemList {
 	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags) {
 		double[] percentiles = new double[pest.getNumPercentiles()];
 		for (int i=0;i<pest.getNumPercentiles();i++) {
-			percentiles[i]=pest.getPercentage(i)/100;
+			percentiles[i]=((double)pest.getPercentage(i))/100;
 		}
 		DistributionSummary.Builder builder= DistributionSummary
 				.builder("message."+getQuantity())
 				.baseUnit(getUnits())
 				.tags(tags)
 				.tag("name", getName())
-				//.publishPercentiles(percentiles);
-				//.publishPercentileHistogram();
+				.publishPercentiles(percentiles)
+				//.publishPercentileHistogram()
 				;
 		distributionSummary = builder.register(registry);
 	}
