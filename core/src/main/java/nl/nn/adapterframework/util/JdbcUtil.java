@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -53,14 +52,15 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -246,27 +246,27 @@ public class JdbcUtil {
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
 	}
 
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
 			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
 		}
 	}
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
 			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
 		}
 	}
-	public static void streamBlob(final InputStream blobIntputStream, String charset, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final InputStream blobIntputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
 		OutputStream outputStream=StreamUtil.getOutputStream(target);
 		if (outputStream!=null) {
-			if ("decode".equalsIgnoreCase(blobBase64Direction)){
+			if (blobBase64Direction == Direction.DECODE){
 				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			}
-			else if ("encode".equalsIgnoreCase(blobBase64Direction)){
+			else if (blobBase64Direction == Direction.ENCODE){
 				Base64InputStream base64EncodedStream = new Base64InputStream (blobIntputStream, true);
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			}
@@ -394,7 +394,18 @@ public class JdbcUtil {
 		} else {
 			result = out;
 		}
-		return result;	
+		return result;
+	}
+
+	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
+		OutputStream result;
+		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
+		if (compressBlob) {
+			result = new DeflaterOutputStream(out, true);
+		} else {
+			result = out;
+		}
+		return result;
 	}
 
 	public static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
@@ -857,97 +868,111 @@ public class JdbcUtil {
 
 	public static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired) throws SQLException, JdbcException {
 		String paramName=pv.getDefinition().getName();
-		String paramType = pv.getDefinition().getType();
+		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
 		if (log.isDebugEnabled()) log.debug("jdbc parameter ["+parameterIndex+"] applying parameter ["+paramName+"] value ["+value+"]");
-		if (Parameter.TYPE_DATE.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.DATE);
-			} else {
-				statement.setDate(parameterIndex, new java.sql.Date(((Date) value).getTime()));
-			}
-		} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.TIMESTAMP);
-			} else {
-				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
-			}
-		} else if (Parameter.TYPE_TIMESTAMP.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.TIMESTAMP);
-			} else {
-				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
-			}
-		} else if (Parameter.TYPE_TIME.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.TIME);
-			} else {
-				statement.setTime(parameterIndex, new java.sql.Time(((Date) value).getTime()));
-			}
-		} else if (Parameter.TYPE_XMLDATETIME.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.TIMESTAMP);
-			} else {
-				statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
-			}
-		} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.NUMERIC);
-			} else {
-				statement.setDouble(parameterIndex, ((Number) value).doubleValue());
-			}
-		} else if (Parameter.TYPE_INTEGER.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.INTEGER);
-			} else {
-				statement.setInt(parameterIndex, (Integer) value);
-			}
-		} else if (Parameter.TYPE_BOOLEAN.equals(paramType)) {
-			if (value == null) {
-				statement.setNull(parameterIndex, Types.BOOLEAN);
-			} else {
-				statement.setBoolean(parameterIndex, (Boolean) value);
-			}
-		} else if (Parameter.TYPE_INPUTSTREAM.equals(paramType)) {
-			if (value instanceof FileInputStream) {
-				FileInputStream fis = (FileInputStream) value;
-				long len = 0;
-				try {
-					len = fis.getChannel().size();
-				} catch (IOException e) {
-					log.warn("could not determine file size", e);
+		switch(paramType) {
+			case DATE:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.DATE);
+				} else {
+					statement.setDate(parameterIndex, new java.sql.Date(((Date) value).getTime()));
 				}
-				statement.setBinaryStream(parameterIndex, fis, (int) len);
-			} else if (value instanceof ByteArrayInputStream) {
-				ByteArrayInputStream bais = (ByteArrayInputStream) value;
-				long len = bais.available();
-				statement.setBinaryStream(parameterIndex, bais, (int) len);
-			} else if (value instanceof InputStream) {
-				statement.setBinaryStream(parameterIndex, (InputStream) value);
-			} else {
-				throw new JdbcException("unknown inputstream [" + value.getClass() + "] for parameter [" + paramName + "]");
-			}
-		} else if ("bytes".equals(paramType)) {
-			statement.setBytes(parameterIndex, (byte[]) value);
-		} else {
-			setParameter(statement, parameterIndex, (String)value, parameterTypeMatchRequired);
+				break;
+			case DATETIME:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
+				}
+				break;
+			case TIMESTAMP:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
+				}
+				break;
+			case TIME:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.TIME);
+				} else {
+					statement.setTime(parameterIndex, new java.sql.Time(((Date) value).getTime()));
+				}
+				break;
+			case XMLDATETIME:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(parameterIndex, new Timestamp(((Date) value).getTime()));
+				}
+				break;
+			case NUMBER:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.NUMERIC);
+				} else {
+					statement.setDouble(parameterIndex, ((Number) value).doubleValue());
+				}
+				break;
+			case INTEGER:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.INTEGER);
+				} else {
+					statement.setInt(parameterIndex, (Integer) value);
+				}
+				break;
+			case BOOLEAN:
+				if (value == null) {
+					statement.setNull(parameterIndex, Types.BOOLEAN);
+				} else {
+					statement.setBoolean(parameterIndex, (Boolean) value);
+				}
+				break;
+			case INPUTSTREAM:
+			case BINARY:
+				try {
+					Message message = Message.asMessage(value);
+					long len = message.size();
+					if(message.requiresStream()) {
+						if(len != -1) {
+							statement.setBinaryStream(parameterIndex, message.asInputStream(), len);
+						} else {
+							statement.setBinaryStream(parameterIndex, message.asInputStream());
+						}
+					}
+					else {
+						statement.setBytes(parameterIndex, message.asByteArray());
+					}
+				} catch(IOException e) {
+					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
+				}
+				break;
+			case BYTES:
+				try {
+					statement.setBytes(parameterIndex, Message.asByteArray(value));
+				} catch (IOException e) {
+					throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
+				}
+				break;
+			default:
+				setParameter(statement, parameterIndex, (String)value, parameterTypeMatchRequired);
 		}
 	}
 
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
 		if (!parameterTypeMatchRequired) {
-			statement.setString(parameterIndex, (String) value);
+			statement.setString(parameterIndex, value);
 			return;
 		}
 		int sqlTYpe=statement.getParameterMetaData().getParameterType(parameterIndex);
 		try {
 			switch(sqlTYpe) {
 			case Types.INTEGER:
-				statement.setInt(parameterIndex, Integer.parseInt((String)value));
+				statement.setInt(parameterIndex, Integer.parseInt(value));
 				break;
 			case Types.NUMERIC:
 			case Types.DOUBLE:
-				statement.setDouble(parameterIndex, Double.parseDouble((String)value));
+				statement.setDouble(parameterIndex, Double.parseDouble(value));
 				break;
 			case Types.BIGINT:
 				statement.setLong(parameterIndex, Long.parseLong((String)value));

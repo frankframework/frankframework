@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="CorrelationMessageId">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CorrelationMessageId" />
@@ -31,4 +31,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

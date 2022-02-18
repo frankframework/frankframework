@@ -1,0 +1,111 @@
+<Module>
+
+<!-- Adapter to create the trigger message that will be stored in database.
+	Uses createTriggerMessage.xsl file to create the message. The message format can be adjusted with the xsl 
+	Has a directory listener which scans the fixed inputFolder to detect files. 
+	wildcard can be set in the directoryListener to filter files. 
+-->
+
+	<Adapter name="MFHIn" active="${active.mfh}">
+		<Receiver pollInterval="${mfh.flow1.pollInterval}"> 
+			<DirectoryListener
+				minStableTime ="${mfh.flow1.minstabletime}"
+				fileTimeSensitive="true"
+				name="MFHIn"
+				messageType="info"
+				root="${mfh.flow1.rootdir}"
+				inputFolder="in"
+				inProcessFolder="inProcess"
+				errorFolder="error"
+				createFolders="true"
+				wildcard="${mfh.flow1.wildcard}"
+			/>
+		</Receiver>
+		<Pipeline>
+			<Exit path="EXIT" state="success" />
+
+			<XsltPipe
+				name="wrapInput"
+				styleSheetName="MFH/xsl/createTriggerMessage.xsl"
+				storeResultInSessionKey="triggerMessage"
+			>
+				<Param name="CanonicalName" xpathExpression="file/@canonicalName" />
+				<Param name="Filename" xpathExpression="file/@name" />
+				<Param name="MFHFlowId" value="${mfh.flow1.mfhflowid}" /> 
+				<Param name="LegacyFlowId" value="${mfh.flow1.legacyflowid}" /> <!-- Can be hardcoded or retrieved from the filename depending on the new design-->
+				<Param name="OriginalFilename" sessionKey="originalFilename" /> <!-- without timestamp suffix -->
+				<Param name="LocalTransactionID" sessionKey="messageId" />
+			</XsltPipe>
+
+			<SenderPipe 
+				name="insertPipe"
+			>
+				<FixedQuerySender
+					name="insertPipe"
+					query="INSERT INTO IBISFILETRIGGER (MESSAGEID, FILENAME, FILEURI, CREATED_AT, FILESIZE, FLOWID, MESSAGE, STATUS, UPDATED_AT) VALUES (?{MESSAGEID}, ?{FILENAME}, ?{FILEURI}, CURRENT_TIMESTAMP, ?{FILESIZE}, ?{FLOWID}, ?{MESSAGE}, 'A', CURRENT_TIMESTAMP)"
+					queryType="OTHER"
+				>
+					<Param name="MESSAGEID" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
+					<Param name="FILENAME" sessionKey="originalMessage" xpathExpression="file/@name" />
+					<Param name="FILEURI" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
+					<Param name="FILESIZE" sessionKey="originalMessage" xpathExpression="file/@size" />
+					<Param name="FLOWID" sessionKey="triggerMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
+					<Param name="MESSAGE" sessionKey="triggerMessage" type="xml" />
+				</FixedQuerySender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+<!-- Adapter may process a message from the IBISFILETRIGGER table 
+	Has a table listener listening to IBISFILETRIGGER table. 
+	It is possible to specify a 'selectCondition' in table listener to retrieve only some of the records.
+	For example selectCondition="FLOWID='NNX12345'
+	Generates sessionKeys that can be used in the flow by parsing the message data 
+-->
+	<Adapter name="MFHProcessor">
+		<Receiver>
+			<JdbcTableListener
+				name="IBISFILETRIGGER_listener"
+				tableName="IBISFILETRIGGER"
+				statusField="STATUS"
+				timestampField="UPDATED_AT"
+				statusValueAvailable="A"
+				statusValueInProcess="I"
+				statusValueProcessed="P"
+				statusValueError="E"
+				statusValueHold="H"
+				keyField="MESSAGEID"
+				messageField="MESSAGE"
+				orderField="CREATED_AT"
+			/>
+		</Receiver>
+		<Receiver>
+			<JavaListener name="processMessage" serviceName="ibis4test-processMessage"/>
+		</Receiver>
+		<Pipeline>
+			<Exit state="success" path="EXIT"/>
+
+<!-- The parameters can be extended with more information-->
+			<PutParametersInSessionPipe name="paramsInSession">
+				<Param name="canonicalName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
+				<Param name="filename" sessionKey="originalMessage" xpathExpression="/Message/Filename"/>
+				<Param name="MFHFlowId" sessionKey="originalMessage" xpathExpression="/Message/MFHFlowId"/>
+				<Param name="serverFileName" sessionKey="originalMessage" xpathExpression="/Message/CanonicalName"/>
+				<Param name="LegacyFlowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
+				<Param name="clientFilename" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/ClientFilename"/>
+			</PutParametersInSessionPipe>
+<!-- Some processing may be in place (XmlSwitchPipe switch between flows)-->
+
+
+			<LocalFileSystemPipe name="Move to processed folder" action="move" createFolder="true">
+				<Param name="filename" sessionKey="clientFilename"/>
+				<Param name="destination" xpathExpression="concat(substring-before($clientFilename,$nameOfTheFile),'..\processed\')">
+					<Param name="nameOfTheFile" sessionKey="filename"/>
+					<Param name="clientFilename" sessionKey="clientFilename"/>
+				</Param>
+			</LocalFileSystemPipe>
+			
+		</Pipeline>
+	</Adapter>
+
+</Module>

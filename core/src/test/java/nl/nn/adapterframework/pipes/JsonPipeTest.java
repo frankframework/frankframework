@@ -4,22 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Override
 	public JsonPipe createPipe() {
 		return new JsonPipe();
-	}
-
-	@Test
-	public void configureWrongDirection() throws ConfigurationException {
-		exception.expect(Exception.class);
-		exception.expectMessage("unknown direction value [foutje!]. Must be one of [JSON2XML, XML2JSON]");
-		pipe.setDirection("foutje!");
-		pipe.configure();
 	}
 
 	@Test
@@ -68,7 +60,7 @@ public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 
 	@Test
 	public void testEmptyXmlElement() throws Exception {
-		pipe.setDirection("xml2json");
+		pipe.setDirection(Direction.XML2JSON);
 		pipe.configure();
 		pipe.start();
 		String input = "<root><value>a</value><empty1></empty1><empty2/></root>";

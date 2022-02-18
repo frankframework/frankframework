@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 WeAreFrank!
+   Copyright 2018-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,28 +42,21 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.StorageClass;
-import com.amazonaws.services.s3.model.Tier;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWritableFileSystem<S3Object> {
 
 	public static final List<String> AVAILABLE_REGIONS = getAvailableRegions();
-	public static final List<String> STORAGE_CLASSES = getStorageClasses();
-	public static final List<String> TIERS = getTiers();
+//	public static final List<String> STORAGE_CLASSES = getStorageClasses();
+//	public static final List<String> TIERS = getTiers();
 
 	private String accessKey;
 	private String secretKey;
@@ -75,16 +68,16 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private String clientRegion = Regions.EU_WEST_1.getName();
 	
 	private String bucketName;
-	private String destinationBucketName;
-	private String bucketRegion;
+//	private String destinationBucketName;
+//	private String bucketRegion;
 
-	private String storageClass;
-	private String tier = Tier.Standard.toString();
-	private int expirationInDays = -1;
+//	private String storageClass;
+//	private String tier = Tier.Standard.toString();
+//	private int expirationInDays = -1;
 
-	private boolean storageClassEnabled = false;
-	private boolean bucketCreationEnabled = false;
-	private boolean bucketExistsThrowException = true;
+//	private boolean storageClassEnabled = false;
+//	private boolean bucketCreationEnabled = false;
+//	private boolean bucketExistsThrowException = true;
 	
 	private String proxyHost = null;
 	private Integer proxyPort = null;
@@ -230,7 +223,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public Message readFile(S3Object f, String charset) throws FileSystemException, IOException {
 		try {
-			return new S3Message(s3Client.getObject(bucketName, f.getKey()), charset);
+			return new S3Message(s3Client.getObject(bucketName, f.getKey()), FileSystemUtils.getContext(this, f, charset));
 		} catch (AmazonServiceException e) {
 			throw new FileSystemException(e);
 		}
@@ -240,8 +233,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		
 		private S3Object file;
 		
-		public S3Message(S3Object file, String charset) {
-			super(() -> file.getObjectContent(), charset, file.getClass());
+		public S3Message(S3Object file, Map<String,Object> context) {
+			super(() -> file.getObjectContent(), context, file.getClass());
 			this.file = file;
 		}
 
@@ -349,146 +342,146 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return date;
 	}
 
-	/**
-	* Creates a bucket on Amazon S3.
-	*
-	* @param bucketName
-	*            The desired name for a bucket that is about to be created. The class {@link BucketNameUtils} 
-	*            provides a method that can check if the bucketName is valid. This is done just before the bucketName is used here.
-	* @param bucketExistsThrowException
-	* 			  This parameter is used for controlling the behavior for whether an exception has to be thrown or not. 
-	* 			  In case of upload action being configured to be able to create a bucket, an exception will not be thrown when a bucket with assigned bucketName already exists.
-	*/
-	public String createBucket(String bucketName, boolean bucketExistsThrowException) throws SenderException {
-		try {
-			if (!s3Client.doesBucketExistV2(bucketName)) {
-				CreateBucketRequest createBucketRequest = null;
-				if (isForceGlobalBucketAccessEnabled())
-					createBucketRequest = new CreateBucketRequest(bucketName, getBucketRegion());
-				else
-					createBucketRequest = new CreateBucketRequest(bucketName);
-				s3Client.createBucket(createBucketRequest);
-				log.debug("Bucket with bucketName: [" + bucketName + "] is created.");
-			} else if (bucketExistsThrowException)
-				throw new SenderException(" bucket with bucketName [" + bucketName + "] already exists, please specify a unique bucketName");
+//	/**
+//	* Creates a bucket on Amazon S3.
+//	*
+//	* @param bucketName
+//	*            The desired name for a bucket that is about to be created. The class {@link BucketNameUtils} 
+//	*            provides a method that can check if the bucketName is valid. This is done just before the bucketName is used here.
+//	* @param bucketExistsThrowException
+//	* 			  This parameter is used for controlling the behavior for whether an exception has to be thrown or not. 
+//	* 			  In case of upload action being configured to be able to create a bucket, an exception will not be thrown when a bucket with assigned bucketName already exists.
+//	*/
+//	public String createBucket(String bucketName, boolean bucketExistsThrowException) throws SenderException {
+//		try {
+//			if (!s3Client.doesBucketExistV2(bucketName)) {
+//				CreateBucketRequest createBucketRequest = null;
+//				if (isForceGlobalBucketAccessEnabled())
+//					createBucketRequest = new CreateBucketRequest(bucketName, getBucketRegion());
+//				else
+//					createBucketRequest = new CreateBucketRequest(bucketName);
+//				s3Client.createBucket(createBucketRequest);
+//				log.debug("Bucket with bucketName: [" + bucketName + "] is created.");
+//			} else if (bucketExistsThrowException)
+//				throw new SenderException(" bucket with bucketName [" + bucketName + "] already exists, please specify a unique bucketName");
+//
+//		} catch (AmazonServiceException e) {
+//			log.warn("Failed to create bucket with bucketName [" + bucketName + "].");
+//			throw new SenderException("Failed to create bucket with bucketName [" + bucketName + "]." + e);
+//		}
+//
+//		return bucketName;
+//	}
 
-		} catch (AmazonServiceException e) {
-			log.warn("Failed to create bucket with bucketName [" + bucketName + "].");
-			throw new SenderException("Failed to create bucket with bucketName [" + bucketName + "]." + e);
-		}
+//	/**
+//	 * Deletes a bucket on Amazon S3.
+//	 */
+//	public String deleteBucket() throws SenderException {
+//		try {
+//			bucketDoesNotExist(bucketName);
+//			DeleteBucketRequest deleteBucketRequest = new DeleteBucketRequest(bucketName);
+//			s3Client.deleteBucket(deleteBucketRequest);
+//			log.debug("Bucket with bucketName [" + bucketName + "] is deleted.");
+//		} catch (AmazonServiceException e) {
+//			log.warn("Failed to delete bucket with bucketName [" + bucketName + "].");
+//			throw new SenderException("Failed to delete bucket with bucketName [" + bucketName + "].");
+//		}
+//
+//		return bucketName;
+//	}
 
-		return bucketName;
-	}
+//	/**
+//	 * Copies a file from one Amazon S3 bucket to another one. 
+//	 *
+//	 * @param fileName
+//	 * 				This is the name of the file that is desired to be copied.
+//	 * 
+//	 * @param destinationFileName
+//	 * 				The name of the destination file
+//	 */
+//	public String copyObject(String fileName, String destinationFileName) throws SenderException {
+//		try {
+//			bucketDoesNotExist(bucketName); //if bucket does not exists this method throws an exception
+//			fileDoesNotExist(bucketName, fileName); //if object does not exists this method throws an exception
+//			if (!s3Client.doesBucketExistV2(destinationBucketName))
+//				bucketCreationWithObjectAction(destinationBucketName);
+//			if (!s3Client.doesObjectExist(destinationBucketName, destinationFileName)) {
+//				CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucketName, fileName, destinationBucketName, destinationFileName);
+//				if (isStorageClassEnabled())
+//					copyObjectRequest.setStorageClass(getStorageClass());
+//				s3Client.copyObject(copyObjectRequest);
+//				log.debug("Object with fileName [" + fileName + "] copied from bucket with bucketName [" + bucketName
+//						+ "] into bucket with bucketName [" + destinationBucketName + "] and new fileName ["
+//						+ destinationFileName + "]");
+//			} else
+//				throw new SenderException(" file with given name already exists, please specify a new name");
+//		} catch (AmazonServiceException e) {
+//			log.error("Failed to perform [copy] action on object with fileName [" + fileName + "]");
+//			throw new SenderException("Failed to perform [copy] action on object with fileName [" + fileName + "]");
+//		}
+//
+//		return destinationFileName;
+//	}
 
-	/**
-	 * Deletes a bucket on Amazon S3.
-	 */
-	public String deleteBucket() throws SenderException {
-		try {
-			bucketDoesNotExist(bucketName);
-			DeleteBucketRequest deleteBucketRequest = new DeleteBucketRequest(bucketName);
-			s3Client.deleteBucket(deleteBucketRequest);
-			log.debug("Bucket with bucketName [" + bucketName + "] is deleted.");
-		} catch (AmazonServiceException e) {
-			log.warn("Failed to delete bucket with bucketName [" + bucketName + "].");
-			throw new SenderException("Failed to delete bucket with bucketName [" + bucketName + "].");
-		}
+//	public String restoreObject(String fileName) throws SenderException {
+//		Boolean restoreFlag;
+//		try {
+//			bucketDoesNotExist(bucketName);
+//			fileDoesNotExist(bucketName, fileName);
+//			RestoreObjectRequest requestRestore = new RestoreObjectRequest(bucketName, fileName, expirationInDays).withTier(tier);
+//			s3Client.restoreObjectV2(requestRestore);
+//			log.debug("Object with fileName [" + fileName + "] and bucketName [" + bucketName + "] restored from Amazon S3 Glacier");
+//
+//			ObjectMetadata response = s3Client.getObjectMetadata(bucketName, fileName);
+//			restoreFlag = response.getOngoingRestore();
+//			System.out.format("Restoration status: %s.\n", restoreFlag ? "in progress" : "not in progress (finished or failed)");
+//
+//		} catch (AmazonServiceException e) {
+//			log.error("Failed to perform [restore] action, and restore object with fileName [" + fileName + "] from Amazon S3 Glacier");
+//			throw new SenderException("Failed to perform [restore] action, and restore object with fileName [" + fileName + "] from Amazon S3 Glacier");
+//		}
+//
+//		String prefix = "Restoration status: %s.\n";
+//		return restoreFlag ? prefix + "in progress" : prefix + "not in progress (finished or failed)";
+//	}
 
-		return bucketName;
-	}
+//	/**
+//	 * This method is wrapper which makes it possible for upload and copy actions to create a bucket and 
+//	 * in case a bucket already exists the operation will proceed without throwing an exception. 
+//	 *
+//	 * @param bucketName
+//	 *            The name of the bucket that is addressed. 
+//	 */
+//	public void bucketCreationWithObjectAction(String bucketName) throws SenderException {
+//		if (isBucketCreationEnabled())
+//			createBucket(bucketName, !bucketExistsThrowException);
+//		else
+//			throw new SenderException("Failed to create a bucket, to create a bucket bucketCreationEnabled attribute must be assinged to [true]");
+//	}
 
-	/**
-	 * Copies a file from one Amazon S3 bucket to another one. 
-	 *
-	 * @param fileName
-	 * 				This is the name of the file that is desired to be copied.
-	 * 
-	 * @param destinationFileName
-	 * 				The name of the destination file
-	 */
-	public String copyObject(String fileName, String destinationFileName) throws SenderException {
-		try {
-			bucketDoesNotExist(bucketName); //if bucket does not exists this method throws an exception
-			fileDoesNotExist(bucketName, fileName); //if object does not exists this method throws an exception
-			if (!s3Client.doesBucketExistV2(destinationBucketName))
-				bucketCreationWithObjectAction(destinationBucketName);
-			if (!s3Client.doesObjectExist(destinationBucketName, destinationFileName)) {
-				CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucketName, fileName, destinationBucketName, destinationFileName);
-				if (isStorageClassEnabled())
-					copyObjectRequest.setStorageClass(getStorageClass());
-				s3Client.copyObject(copyObjectRequest);
-				log.debug("Object with fileName [" + fileName + "] copied from bucket with bucketName [" + bucketName
-						+ "] into bucket with bucketName [" + destinationBucketName + "] and new fileName ["
-						+ destinationFileName + "]");
-			} else
-				throw new SenderException(" file with given name already exists, please specify a new name");
-		} catch (AmazonServiceException e) {
-			log.error("Failed to perform [copy] action on object with fileName [" + fileName + "]");
-			throw new SenderException("Failed to perform [copy] action on object with fileName [" + fileName + "]");
-		}
+//	/**
+//	 * This is a help method which throws an exception if a bucket does not exist.
+//	 *
+//	 * @param bucketName
+//	 *            The name of the bucket that is processed. 
+//	 */
+//	public void bucketDoesNotExist(String bucketName) throws SenderException {
+//		if (!s3Client.doesBucketExistV2(bucketName))
+//			throw new SenderException(" bucket with bucketName [" + bucketName + "] does not exist, please specify the name of an existing bucket");
+//	}
 
-		return destinationFileName;
-	}
-
-	public String restoreObject(String fileName) throws SenderException {
-		Boolean restoreFlag;
-		try {
-			bucketDoesNotExist(bucketName);
-			fileDoesNotExist(bucketName, fileName);
-			RestoreObjectRequest requestRestore = new RestoreObjectRequest(bucketName, fileName, expirationInDays).withTier(tier);
-			s3Client.restoreObjectV2(requestRestore);
-			log.debug("Object with fileName [" + fileName + "] and bucketName [" + bucketName + "] restored from Amazon S3 Glacier");
-
-			ObjectMetadata response = s3Client.getObjectMetadata(bucketName, fileName);
-			restoreFlag = response.getOngoingRestore();
-			System.out.format("Restoration status: %s.\n", restoreFlag ? "in progress" : "not in progress (finished or failed)");
-
-		} catch (AmazonServiceException e) {
-			log.error("Failed to perform [restore] action, and restore object with fileName [" + fileName + "] from Amazon S3 Glacier");
-			throw new SenderException("Failed to perform [restore] action, and restore object with fileName [" + fileName + "] from Amazon S3 Glacier");
-		}
-
-		String prefix = "Restoration status: %s.\n";
-		return restoreFlag ? prefix + "in progress" : prefix + "not in progress (finished or failed)";
-	}
-
-	/**
-	 * This method is wrapper which makes it possible for upload and copy actions to create a bucket and 
-	 * in case a bucket already exists the operation will proceed without throwing an exception. 
-	 *
-	 * @param bucketName
-	 *            The name of the bucket that is addressed. 
-	 */
-	public void bucketCreationWithObjectAction(String bucketName) throws SenderException {
-		if (isBucketCreationEnabled())
-			createBucket(bucketName, !bucketExistsThrowException);
-		else
-			throw new SenderException("Failed to create a bucket, to create a bucket bucketCreationEnabled attribute must be assinged to [true]");
-	}
-
-	/**
-	 * This is a help method which throws an exception if a bucket does not exist.
-	 *
-	 * @param bucketName
-	 *            The name of the bucket that is processed. 
-	 */
-	public void bucketDoesNotExist(String bucketName) throws SenderException {
-		if (!s3Client.doesBucketExistV2(bucketName))
-			throw new SenderException(" bucket with bucketName [" + bucketName + "] does not exist, please specify the name of an existing bucket");
-	}
-
-	/**
-	 * This is a help method which throws an exception if a file does not exist.
-	 *
-	 * @param bucketName
-	 *            The name of the bucket where the file is stored in.
-	 * @param fileName
-	 * 			  The name of the file that is processed. 
-	 */
-	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
-		if (!s3Client.doesObjectExist(bucketName, fileName))
-			throw new SenderException(" file with fileName [" + fileName + "] does not exist, please specify the name of an existing file");
-	}
+//	/**
+//	 * This is a help method which throws an exception if a file does not exist.
+//	 *
+//	 * @param bucketName
+//	 *            The name of the bucket where the file is stored in.
+//	 * @param fileName
+//	 * 			  The name of the file that is processed. 
+//	 */
+//	public void fileDoesNotExist(String bucketName, String fileName) throws SenderException {
+//		if (!s3Client.doesObjectExist(bucketName, fileName))
+//			throw new SenderException(" file with fileName [" + fileName + "] does not exist, please specify the name of an existing file");
+//	}
 
 	@Override
 	public String getPhysicalDestinationName() {
@@ -503,21 +496,21 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		return availableRegions;
 	}
 
-	public static List<String> getStorageClasses() {
-		List<String> storageClasses = new ArrayList<String>(StorageClass.values().length);
-		for (StorageClass storageClass : StorageClass.values())
-			storageClasses.add(storageClass.toString());
+//	public static List<String> getStorageClasses() {
+//		List<String> storageClasses = new ArrayList<String>(StorageClass.values().length);
+//		for (StorageClass storageClass : StorageClass.values())
+//			storageClasses.add(storageClass.toString());
+//
+//		return storageClasses;
+//	}
 
-		return storageClasses;
-	}
-
-	public static List<String> getTiers() {
-		List<String> tiers = new ArrayList<String>(Tier.values().length);
-		for (Tier tier : Tier.values())
-			tiers.add(tier.toString());
-
-		return tiers;
-	}
+//	public static List<String> getTiers() {
+//		List<String> tiers = new ArrayList<String>(Tier.values().length);
+//		for (Tier tier : Tier.values())
+//			tiers.add(tier.toString());
+//
+//		return tiers;
+//	}
 
 	public String getAccessKey() {
 		return accessKey;
@@ -583,65 +576,65 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		this.bucketName = bucketName;
 	}
 
-	public String getDestinationBucketName() {
-		return destinationBucketName;
-	}
+//	public String getDestinationBucketName() {
+//		return destinationBucketName;
+//	}
+//
+//	public void setDestinationBucketName(String destinationBucketName) {
+//		this.destinationBucketName = destinationBucketName;
+//	}
 
-	public void setDestinationBucketName(String destinationBucketName) {
-		this.destinationBucketName = destinationBucketName;
-	}
+//	public String getBucketRegion() {
+//		return bucketRegion;
+//	}
+//
+//	public void setBucketRegion(String bucketRegion) {
+//		this.bucketRegion = bucketRegion;
+//	}
 
-	public String getBucketRegion() {
-		return bucketRegion;
-	}
+//	public String getStorageClass() {
+//		return storageClass;
+//	}
+//
+//	public void setStorageClass(String storageClass) {
+//		this.storageClass = storageClass;
+//	}
 
-	public void setBucketRegion(String bucketRegion) {
-		this.bucketRegion = bucketRegion;
-	}
+//	public String getTier() {
+//		return tier;
+//	}
+//
+//	public void setTier(String tier) {
+//		this.tier = tier;
+//	}
 
-	public String getStorageClass() {
-		return storageClass;
-	}
+//	public int getExpirationInDays() {
+//		return expirationInDays;
+//	}
+//
+//	public void setExpirationInDays(int experationInDays) {
+//		this.expirationInDays = experationInDays;
+//	}
 
-	public void setStorageClass(String storageClass) {
-		this.storageClass = storageClass;
-	}
+//	public boolean isStorageClassEnabled() {
+//		return storageClassEnabled;
+//	}
+//
+//	public void setStorageClassEnabled(boolean storageClassEnabled) {
+//		this.storageClassEnabled = storageClassEnabled;
+//	}
 
-	public String getTier() {
-		return tier;
-	}
+//	public boolean isBucketCreationEnabled() {
+//		return bucketCreationEnabled;
+//	}
 
-	public void setTier(String tier) {
-		this.tier = tier;
-	}
-
-	public int getExpirationInDays() {
-		return expirationInDays;
-	}
-
-	public void setExpirationInDays(int experationInDays) {
-		this.expirationInDays = experationInDays;
-	}
-
-	public boolean isStorageClassEnabled() {
-		return storageClassEnabled;
-	}
-
-	public void setStorageClassEnabled(boolean storageClassEnabled) {
-		this.storageClassEnabled = storageClassEnabled;
-	}
-
-	public boolean isBucketCreationEnabled() {
-		return bucketCreationEnabled;
-	}
-
-	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
-		this.bucketCreationEnabled = bucketCreationEnabled;
-	}
-
-	public boolean isBucketExistsThrowException() {
-		return bucketExistsThrowException;
-	}
+//	public void setBucketCreationEnabled(boolean bucketCreationEnabled) {
+//		this.bucketCreationEnabled = bucketCreationEnabled;
+//	}
+//
+//	public boolean isBucketExistsThrowException() {
+//		return bucketExistsThrowException;
+//	}
 
 	public ClientConfiguration getProxyConfig() {
 		ClientConfiguration proxyConfig = null;

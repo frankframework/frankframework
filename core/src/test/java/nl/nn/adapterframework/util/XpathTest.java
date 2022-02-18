@@ -11,6 +11,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XpathTest extends FunctionalTransformerPoolTestBase {
 
@@ -54,12 +55,12 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 	
 	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		String namespaceDefs=null; 
-		xpathTest(input, namespaceDefs, xpath, "text", expected);
+		xpathTest(input, namespaceDefs, xpath, OutputType.TEXT, expected);
 	}
 	public void xpathTest(String input, String namespaceDefs, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
-		xpathTest(input, namespaceDefs, xpath, "text", expected);
+		xpathTest(input, namespaceDefs, xpath, OutputType.TEXT, expected);
 	}
-	public void xpathTest(String input, String namespaceDefs, String xpath, String outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
+	public void xpathTest(String input, String namespaceDefs, String xpath, OutputType outputType, String expected)  throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {
 		boolean includeXmlDeclaration=false;
 		ParameterList formalParams=null;
 		TransformerPool tp= XmlUtils.getXPathTransformerPool(namespaceDefs, xpath, outputType, includeXmlDeclaration, formalParams);

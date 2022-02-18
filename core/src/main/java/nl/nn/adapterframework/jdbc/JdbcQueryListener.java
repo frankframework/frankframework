@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
 
@@ -57,27 +56,42 @@ public class JdbcQueryListener extends JdbcListener {
 	
 
 	@Override
-	@IbisDoc({"1", "Query that returns a row to be processed. Must contain a key field and optionally a message field", ""})
+	/**
+	 * Query that returns a row to be processed. Must contain a key field and optionally a message field.
+	 * @ff.mandatory
+	 */
 	public void setSelectQuery(String string) {
 		super.setSelectQuery(string);
 	}
 
-	@IbisDoc({"2", "SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key", ""})
+	/**
+	 * SQL statement to set the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key
+	 * @ff.mandatory
+	 */
 	public void setUpdateStatusToProcessedQuery(String query) {
 		setUpdateStatusQuery(ProcessState.DONE, query);
 	}
 
-	@IbisDoc({"3", "SQL statement to set the status of a row to 'error'. Must contain one parameter, that is set to the value of the key", "same as <code>updateStatusToProcessedQuery</code>"})
+	/**
+	 * SQL statement to set the status of a row to 'error'. Must contain one parameter, that is set to the value of the key
+	 * @ff.default same as <code>updateStatusToProcessedQuery</code>
+	 */
 	public void setUpdateStatusToErrorQuery(String query) {
 		setUpdateStatusQuery(ProcessState.ERROR, query);
 	}
 
-	@IbisDoc({"4", "SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.", ""})
+	/**
+	 * SQL statement to set the status of a row to 'in process'. Must contain one parameter, that is set to the value of the key. 
+	 * Can be left emtpy if database has SKIP LOCKED functionality and the Receiver can be (and is) set to Required or RequiresNew.
+	 */
 	public void setUpdateStatusToInProcessQuery(String query) {
 		setUpdateStatusQuery(ProcessState.INPROCESS, query);
 	}
 
-	@IbisDoc({"5", "SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key. Only use in rollbacks, when updateStatusToInProcessQuery is specified", ""})
+	/** 
+	 * SQL statement to set the status of a row to 'available'. Must contain one parameter, that is set to the value of the key. 
+	 * Only used in rollbacks, when updateStatusToInProcessQuery is specified
+	 */
 	public void setRevertInProcessStatusQuery(String query) {
 		setUpdateStatusQuery(ProcessState.AVAILABLE, query);
 	}

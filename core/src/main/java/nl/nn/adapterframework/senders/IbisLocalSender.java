@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.PipeLineExit;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -76,7 +76,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
- *
+ * 
  * @author Gerrit van Brakel
  * @since  4.2
  */
@@ -157,7 +157,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session==null ? null : session.getMessageId();
 		Message result = null;
 		HashMap<String,Object> context = null;
@@ -189,8 +189,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
 				}
 			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
 			} finally {
@@ -198,7 +198,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			} 
 		} else {
@@ -237,8 +237,8 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					result = new Message(listener.processRequest(correlationID,message.asString(),context));
 				}
 			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeOutException) {
-					throw new TimeOutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
+				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
+					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
@@ -246,13 +246,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 				}
 				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, session);
+					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 		}
-		String exitState = (String)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		
+		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && !exitState.equalsIgnoreCase(PipeLineExit.EXIT_STATE_SUCCESS)) {
+		if (exitState!=null && exitState!=ExitState.SUCCESS) {
 			context.put("originalResult", result);
 			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 		}
@@ -320,7 +321,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. a value of -1 indicates to wait indefinitely", "60 s"})
+	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
 	public void setDependencyTimeOut(int i) {
 		dependencyTimeOut = i;
 	}

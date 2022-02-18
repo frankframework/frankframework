@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 	Beans defined in this file are unique for every configuration. If you want 
-	to reuse a bean over multiple configurations, add it to the SpringCommon.xml
+	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -16,20 +16,11 @@
 	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
 
-	<bean
-		name="adapterManager"
-		class="nl.nn.adapterframework.configuration.AdapterManager"
-		autowire="byType"
-		scope="singleton"
-	/>
+	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
-	<bean
-		name="scheduleManager"
-		class="nl.nn.adapterframework.configuration.ScheduleManager"
-		autowire="byType"
-		scope="singleton"
-	/>
-
+	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
+	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
 	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
 
 	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
@@ -37,4 +28,8 @@
 
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.URLDataSourceFactory" />
+	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
+
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" />
 </beans>

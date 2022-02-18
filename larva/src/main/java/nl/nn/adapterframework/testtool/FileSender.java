@@ -1,7 +1,22 @@
+/*
+   Copyright 2021 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.testtool;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Xml;
 
@@ -37,7 +52,7 @@ public class FileSender {
 	 * 
 	 * @param message  the message to write to file
 	 */
-	public void sendMessage(String message) throws TimeOutException, SenderException {
+	public void sendMessage(String message) throws TimeoutException, SenderException {
 		if (runAnt) {
 			runAntScript();
 		} else {
@@ -79,14 +94,14 @@ public class FileSender {
 						}
 					}
 					if (checkDelete && file.exists()) {
-						throw new TimeOutException("Time out waiting for deletion of file '" + filename + "'.");
+						throw new TimeoutException("Time out waiting for deletion of file '" + filename + "'.");
 					}
 				}
 			}
 		}
 	}
 
-	public String getMessage() throws TimeOutException, SenderException {
+	public String getMessage() throws TimeoutException, SenderException {
 		Dir2Xml dx=new Dir2Xml();
 		dx.setPath(filename);
 		return dx.getRecursiveDirList();

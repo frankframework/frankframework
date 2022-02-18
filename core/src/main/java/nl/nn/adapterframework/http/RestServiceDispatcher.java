@@ -23,9 +23,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +65,7 @@ public class RestServiceDispatcher  {
 	private final String KEY_ETAG_KEY="etagKey";
 	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private ConcurrentSkipListMap patternClients=new ConcurrentSkipListMap(new RestUriComparator());
+	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
 	private static IApiCache cache = ApiCacheManager.getInstance();
@@ -90,8 +91,8 @@ public class RestServiceDispatcher  {
 		}
 
 		String matchingPattern=null;
-		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=(String)it.next();
+		for (Iterator<String> it=patternClients.keySet().iterator();it.hasNext();) {
+			String uriPattern=it.next();
 			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
 			if (lookupUriPattern.equals(uriPattern)) {
 				matchingPattern=uriPattern;
@@ -101,23 +102,23 @@ public class RestServiceDispatcher  {
 		return matchingPattern;
 	}
 	
-	public Map getMethodConfig(String matchingPattern, String method) {
-		Map methodConfig;
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
+	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
+		Map<String,Object> methodConfig;
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
 		
-		methodConfig = (Map)patternEntry.get(method);
+		methodConfig = patternEntry.get(method);
 		if (methodConfig==null) {
-			methodConfig = (Map)patternEntry.get(WILDCARD);
+			methodConfig = patternEntry.get(WILDCARD);
 		}
 		return methodConfig;
 	}
 	
-	public List getAvailableMethods(String matchingPattern) {
-		Map patternEntry=(Map)patternClients.get(matchingPattern);
-		Iterator it = patternEntry.entrySet().iterator();
-		List methods = new ArrayList<String>();
+	public List<String> getAvailableMethods(String matchingPattern) {
+		Map<String,Map<String,Object>> patternEntry=patternClients.get(matchingPattern);
+		Iterator<Entry<String,Map<String,Object>>> it = patternEntry.entrySet().iterator();
+		List<String> methods = new ArrayList<>();
 		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry)it.next();
+			Entry<String,Map<String,Object>> pair = it.next();
 			methods.add(pair.getKey());
 		}
 		return methods;
@@ -138,7 +139,7 @@ public class RestServiceDispatcher  {
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
 		
-		Map methodConfig = getMethodConfig(matchingPattern, method);
+		Map<String,Object> methodConfig = getMethodConfig(matchingPattern, method);
 		
 		if (methodConfig==null) {
 			throw new ListenerException("No REST listener specified for uri ["+uri+"] method ["+method+"]");
@@ -303,29 +304,34 @@ public class RestServiceDispatcher  {
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
-		if (patternEntry==null) {
-			patternEntry=new HashMap();
-			patternClients.put(uriPattern, patternEntry);
-		}
-		Map listenerConfig = (Map)patternEntry.get(method);
-		if (listenerConfig!=null) { 
+		patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry.computeIfAbsent(method, m -> {
+			Map<String,Object> listenerConfig = new HashMap<>();
+			listenerConfig.put(KEY_LISTENER, listener);
+			listenerConfig.put("validateEtag", validateEtag);
+			if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
+			if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
+			return listenerConfig;
+		})==null) {
 			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
 		}
-		listenerConfig = new HashMap();
-		patternEntry.put(method,listenerConfig);
-		listenerConfig.put(KEY_LISTENER, listener);
-		listenerConfig.put("validateEtag", validateEtag);
-		if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
-		if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 	}
 
-	public void unregisterServiceClient(String uriPattern) {
+	public void unregisterServiceClient(String uriPattern, String method) {
 		uriPattern = unifyUriPattern(uriPattern);
-		patternClients.remove(uriPattern);
+		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
+		if (patternEntry == null) {
+			return;
+		}
+		if (StringUtils.isEmpty(method)) {
+			method=WILDCARD;
+		}
+		patternEntry.remove(method);
+		// removing patternEntry from patternClients is not thread safe
 	}
 
-	public Set getUriPatterns() {
+	public Set<String> getUriPatterns() {
 		return patternClients.keySet();
 	}
 

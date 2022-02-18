@@ -1,12 +1,8 @@
 package nl.nn.adapterframework.validation;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.junit.runners.Parameterized;
 
@@ -48,14 +44,9 @@ public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase 
 			instance.configure("init");
 			instance.start();
 
-			Set<List<String>> rootvalidations = null;
+			RootValidations rootvalidations = null;
 			if(rootElement != null) {
-				List<String> rootvalidation = new ArrayList<String>();
-				rootvalidation.add("Envelope");
-				rootvalidation.add("Body");
-				rootvalidation.add(rootElement);
-				rootvalidations = new HashSet<List<String>>();
-				rootvalidations.add(rootvalidation);
+				rootvalidations = new RootValidations("Envelope", "Body", rootElement);
 			}
 			String result = instance.validate(testXml, session, "test", rootvalidations, null);
 			evaluateResult(result, session, null, expectedFailureReasons);

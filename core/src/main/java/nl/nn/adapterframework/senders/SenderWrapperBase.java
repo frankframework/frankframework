@@ -22,23 +22,16 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
- * <table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>&lt;cache ... /&gt;</td><td>optional {@link nl.nn.adapterframework.cache.EhCache cache} definition</td></tr>
- * </table>
- * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
@@ -50,7 +43,7 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private @Getter String storeResultInSessionKey;
 	private @Getter String storeInputInSessionKey;
 	private @Getter boolean preserveInput=false;
-	
+
 	protected @Setter SenderWrapperProcessor senderWrapperProcessor;
 	private @Getter @Setter ICache<String,String> cache=null;
 
@@ -89,10 +82,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException; 
+	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
@@ -101,12 +94,8 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	@Override
 	public String getLogPrefix() {
-		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
+		return super.getLogPrefix();
 	}
-
-	@Override
-	public abstract boolean isSynchronous() ;
-	public abstract void setSender(ISender sender);
 
 
 	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})

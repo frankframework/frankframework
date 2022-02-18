@@ -22,6 +22,7 @@ import java.util.Set;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.statistics.ItemList;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DateUtils;
@@ -95,7 +96,7 @@ public class SchedulerAdapter {
 					jn.addSubElement(datamap);
 					jb.addSubElement(jn);
 
-					JobDef jobDef = null;
+					IJob jobDef = null;
 					if(ibisManager != null) {
 						for (Configuration configuration : ibisManager.getConfigurations()) {
 							jobDef = configuration.getScheduledJob(jobName);
@@ -130,7 +131,7 @@ public class SchedulerAdapter {
 		return xbRoot;
 	}
 
-	public XmlBuilder getJobMessages(JobDef jobdef) {
+	public XmlBuilder getJobMessages(IJob jobdef) {
 		XmlBuilder jobMessages = new XmlBuilder("jobMessages");
 		if (jobdef!=null) {
 			MessageKeeper jobMessageKeeper = jobdef.getMessageKeeper();
@@ -147,7 +148,7 @@ public class SchedulerAdapter {
 		return jobMessages;
 	}
 
-	public XmlBuilder getJobRunStatistics(JobDef jobdef) {
+	public XmlBuilder getJobRunStatistics(IJob jobdef) {
 		XmlBuilder jobRunStatistics = new XmlBuilder("jobRunStatistics");
 		if (jobdef != null) {
 			StatisticsKeeper statsKeeper = jobdef.getStatisticsKeeper();

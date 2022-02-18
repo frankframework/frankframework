@@ -1,13 +1,12 @@
 <!DOCTYPE configuration [
-	<!ENTITY ManageDatabase SYSTEM "ConfigurationManageDatabase.xml">
+	<!ENTITY ManageDatabase SYSTEM "./ConfigurationManageDatabase.xml">
 	<!ENTITY CheckReload SYSTEM "./ConfigurationCheckReload.xml">
 	<!ENTITY LoadDatabaseSchedules SYSTEM "./ConfigurationLoadDatabaseSchedules.xml">
 	<!ENTITY StatScheduler SYSTEM "./ConfigurationStatScheduler.xml">
 	<!ENTITY CleanupDatabase SYSTEM "./ConfigurationCleanupDatabase.xml">
 	<!ENTITY CleanupFileSystem SYSTEM "./ConfigurationCleanupFileSystem.xml">
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
-	<!ENTITY IbisDoc SYSTEM "./ConfigurationIbisDoc.xml">
-	<!ENTITY ManageFileSystem SYSTEM "ConfigurationManageFileSystem.xml">
+	<!ENTITY ManageFileSystem SYSTEM "./ConfigurationManageFileSystem.xml">
 ]>
 <configuration name="IAF_Util">
 	<!-- include configuration for managing the database -->
@@ -20,6 +19,5 @@
 	&CleanupDatabase;
 	&CleanupFileSystem;
 	&RecoverAdapters;
-	&IbisDoc;
 	&ManageFileSystem;
 </configuration>

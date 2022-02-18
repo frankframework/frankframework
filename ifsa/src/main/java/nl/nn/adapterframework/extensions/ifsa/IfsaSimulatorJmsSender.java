@@ -20,6 +20,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -85,27 +86,12 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 			throw new ConfigurationException(getLogPrefix() + "illegal value for messageType [" + getMessageType() + "], must be '" + RR_REQUEST + "', '" + RR_REPLY + "'"+ "' or '" + FF_REQUEST + "'");
 		}
 
+		addParameter(new Parameter("ifsa", "_IFSA_HEADER_"));
+		addParameter(new Parameter("ifsa_api", "jms_wrapper"));
+		addParameter(new Parameter("ifsa_api_version", "22.30.020"));
+		addParameter(new Parameter("ifsa_auth_flag", "1"));
+
 		Parameter p = new Parameter();
-		p.setName("ifsa");
-		p.setValue("_IFSA_HEADER_");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_api");
-		p.setValue("jms_wrapper");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_api_version");
-		p.setValue("22.30.020");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_auth_flag");
-		p.setValue("1");
-		addParameter(p);
-
-		p = new Parameter();
 		p.setName("ifsa_bif_id");
 		if (getMessageType().equalsIgnoreCase(RR_REQUEST)) {
 			String iad = AppConstants.getInstance().getProperty("IFSAApplicationID", "");
@@ -128,21 +114,9 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 			p.setValue("2");
 		}
 		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_bulk");
-		p.setValue("0");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_bulk_auth_flag");
-		p.setValue("0");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_cil_version");
-		p.setValue("22.30.009");
-		addParameter(p);
+		addParameter(new Parameter("ifsa_bulk", "0"));
+		addParameter(new Parameter("ifsa_bulk_auth_flag", "0"));
+		addParameter(new Parameter("ifsa_cil_version", "22.30.009"));
 
 		p = new Parameter();
 		p.setName("ifsa_comp_algo");
@@ -171,21 +145,9 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 			p.setValue("0");
 		}
 		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_header_version");
-		p.setValue("02.02.000");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_hop_count");
-		p.setValue("000");
-		addParameter(p);
-
-		p = new Parameter();
-		p.setName("ifsa_node_id");
-		p.setValue(AppConstants.getInstance().getProperty("ifsa_node_id", ""));
-		addParameter(p);
+		addParameter(new Parameter("ifsa_header_version", "02.02.000"));
+		addParameter(new Parameter("ifsa_hop_count", "000"));
+		addParameter(new Parameter("ifsa_node_id", AppConstants.getInstance().getProperty("ifsa_node_id", "")));
 
 		p = new Parameter();
 		p.setName("ifsa_ori_area");
@@ -277,7 +239,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		} else if (getMessageType().equalsIgnoreCase(FF_REQUEST)) {
 			p.setValue("8");
 		}
-		p.setType(Parameter.TYPE_INTEGER);
+		p.setType(ParameterType.INTEGER);
 		addParameter(p);
 
 		if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {

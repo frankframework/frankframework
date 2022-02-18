@@ -172,12 +172,12 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		this.timeZone = TimeZone.getTimeZone(timeZone);
 	}
 
-	@IbisDoc({"Set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}", "-1 (disabled)"})
+	@IbisDoc({"Set to a time <i>in milliseconds</i> to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine or <code>-1 to disable</code>. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without Daylight Saving Time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>note:</b> When you're looking for a GUID parameter for your XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}", "-1"})
 	public void setSleepWhenEqualToPrevious(long sleepWhenEqualToPrevious) {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}
 	
-	@IbisDoc({"If <code>true</code>, the date/time returned will always be "+FIXEDDATETIME+" (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists", "<code>false</code>"})
+	@IbisDoc({"If <code>true</code>, the date/time returned will always be "+FIXEDDATETIME+" (for testing purposes only). It is overridden by the value of the pipelinesession key <code>stub4testtool.fixeddate</code> when it exists", "false"})
 	public void setReturnFixedDate(boolean b) {
 		returnFixedDate = b;
 	}

@@ -99,6 +99,13 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.io";
 
 // required for CXF jaxrs spring bean parser
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.dom";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp";
+
+// required for SUN SAAJ library
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
+permission java.lang.RuntimePermission "accessClassInPackage.com.sun.xml.*";
+// required to find SAAJ factory
+permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}conf${/}-", "read";
 
 permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
@@ -182,6 +189,10 @@ permission java.net.URLPermission "https:*", "*";
 
 // required for Aspose libary's fonts
 permission java.io.FilePermission "/usr/share/fonts/-", "read";
+permission java.io.FilePermission "/System Folder/Fonts", "read";
+permission java.io.FilePermission "/System/Library/Fonts", "read";
+permission java.io.FilePermission "/Network/Library/Fonts", "read";
+permission java.io.FilePermission "/Library/Fonts", "read";
 
 // required for ladybug retrieving userprincipal
 permission java.security.SecurityPermission "printIdentity";

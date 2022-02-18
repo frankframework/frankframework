@@ -32,15 +32,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Output bytes as specified by the input XML. 
- *
- * </p>
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * </p>
- *
+ * 
  * Actions are taken on every field
  * tag found in the input XML. Every field tag should have a type attribute
  * that specifies the type of conversion that needs to be done on the string

@@ -28,10 +28,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.IConfigurationAware;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -44,10 +47,12 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @version 2.0
  * @author Niels Meijer
  */
-public class Monitor implements ApplicationContextAware, DisposableBean {
+@FrankDocGroup(name = "Monitoring")
+public class Monitor implements IConfigurationAware, INamedObject, DisposableBean {
 	protected Logger log = LogUtil.getLogger(this);
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private String name;
+	private @Getter String name;
 	private EventTypeEnum type = EventTypeEnum.TECHNICAL;
 	private boolean raised = false;
 	private Date stateChangeDt = null;
@@ -63,7 +68,7 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 
 	private List<ITrigger> triggers = new ArrayList<>();
 	private Set<String> destinations = new HashSet<>(); 
-	private @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	public void configure() {
 		for(String destination : destinations) {
@@ -225,15 +230,6 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		}
 	}
 
-	public void registerAlarm(ITrigger trigger) {
-		trigger.setAlarm(true);
-		registerTrigger(trigger);
-	}
-	public void registerClearing(ITrigger trigger) {
-		trigger.setAlarm(false);
-		registerTrigger(trigger);
-	}
-
 	public String getLogPrefix() {
 		return "Monitor ["+getName()+"] ";
 	}
@@ -252,11 +248,9 @@ public class Monitor implements ApplicationContextAware, DisposableBean {
 		return triggers.get(index);
 	}
 
+	@Override
 	public void setName(String string) {
 		name = string;
-	}
-	public String getName() {
-		return name;
 	}
 
 	public void setType(String eventType) {

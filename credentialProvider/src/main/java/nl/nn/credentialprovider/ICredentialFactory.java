@@ -18,8 +18,12 @@ package nl.nn.credentialprovider;
 public interface ICredentialFactory {
 
 	/**
-	 * The constructor of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
+	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
+	 * @throws Exception 
 	 */
+	default void initialize() throws Exception {
+		// implementations can do their initialization, and throw an exception if they cannot.
+	};
 	
 	public boolean hasCredentials(String alias);
 	

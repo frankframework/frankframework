@@ -23,7 +23,8 @@ angular.module('iaf.beheerconsole')
 						Debug.log("Sending request to uri ["+uri+"] using HttpOptions ", defaultHttpOptions);
 					}
 				}
-			} else if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
+			}
+			if(etags.hasOwnProperty(uri)) { //If not explicitly disabled (httpOptions==false), check eTag
 				var tag = etags[uri];
 				defaultHttpOptions.headers['If-None-Match'] = tag;
 			}
@@ -876,6 +877,9 @@ angular.module('iaf.beheerconsole')
 			if(absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
 			return absolutePath;
 		};
+		this.escapeURL = function(uri) {
+			return encodeURIComponent(uri);
+		}
 		this.isMobile = function() {
 			return ( navigator.userAgent.match(/Android/i)
 				|| navigator.userAgent.match(/webOS/i)
@@ -1046,6 +1050,14 @@ angular.module('iaf.beheerconsole')
 
 						switch (rejection.status) {
 							case -1:
+								fetch(rejection.config.url, { redirect: "manual" }).then((res) => {
+									if (res.type === "opaqueredirect") {
+										// if the request ended in a redirect that failed, then login
+										login_url = Misc.getServerPath() + 'iaf/';
+										window.location.href = login_url;
+									}
+								});
+							
 								if(appConstants.init == 1) {
 									if(rejection.config.headers["Authorization"] != undefined) {
 										console.warn("Authorization error");
@@ -1062,8 +1074,11 @@ angular.module('iaf.beheerconsole')
 											body: "Connection to the server was lost! Click to refresh the page.",
 											timeout: 0,
 											showCloseButton: true,
-											onHideCallback: function() {
-												window.location.reload();
+											clickHandler: function(_, isCloseButton) {
+												if(isCloseButton !== true) {
+													window.location.reload();
+												}
+												return true;
 											}
 										});
 									}

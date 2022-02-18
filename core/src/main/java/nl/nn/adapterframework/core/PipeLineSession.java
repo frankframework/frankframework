@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import java.io.StringReader;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -46,22 +46,24 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String messageIdKey="messageId";
 	public static final String businessCorrelationIdKey="cid";
 	public static final String technicalCorrelationIdKey="tcid";
-	public static final String tsReceivedKey="tsReceived";
-	public static final String tsSentKey="tsSent";
+
+	public static final String TS_RECEIVED_KEY = "tsReceived";
+	public static final String TS_SENT_KEY = "tsSent";
 	public static final String securityHandlerKey="securityHandler";
 
-	public static final String HTTP_REQUEST_KEY    = "restListenerServletRequest";
-	public static final String HTTP_RESPONSE_KEY   = "restListenerServletResponse";
-	public static final String SERVLET_CONTEXT_KEY = "restListenerServletContext";
+	public static final String HTTP_REQUEST_KEY    = "servletRequest";
+	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
+	public static final String SERVLET_CONTEXT_KEY = "servletContext";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
 	private ISecurityHandler securityHandler = null;
-	
-	// Map that maps resources to wrapped versions of them. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
-	private Set<Message> closeables = new HashSet<>(); 
+
+	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
+	// Values are labels to help debugging
+	private Map<Message,String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -91,6 +93,34 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Message.nullMessage();
 	}
 
+	public Date getTsReceived() {
+		return getTsReceived(this);
+	}
+
+	public static Date getTsReceived(Map<String, Object> context) {
+		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
+		if(tsReceived instanceof Date) {
+			return (Date) tsReceived;
+		} else if(tsReceived instanceof String) {
+			return DateUtils.parseToDate((String) tsReceived, DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return null;
+	}
+
+	public Date getTsSent() {
+		return getTsSent(this);
+	}
+
+	public static Date getTsSent(Map<String, Object> context) {
+		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
+		if(tsSent instanceof Date) {
+			return (Date) tsSent;
+		} else if(tsSent instanceof String) {
+			return DateUtils.parseToDate((String) tsSent, DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return null;
+	}
+
 	/**
 	 * Convenience method to set required parameters from listeners
 	 */
@@ -104,9 +134,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (tsReceived==null) {
 			tsReceived=new Date();
 		}
-		map.put(tsReceivedKey,DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
+		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
 		if (tsSent!=null) {
-			map.put(tsSentKey,DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
+			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
 		}
 	}
 
@@ -220,12 +250,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		return Double.parseDouble(this.getString(key));
 	}
-	
-	public void scheduleCloseOnSessionExit(Message message) {
-		closeables.add(message);
+
+	public void scheduleCloseOnSessionExit(Message message, String label) {
+		closeables.put(message, label);
 	}
 
-	public void scheduleCloseOnSessionExit(AutoCloseable resource) {
+	public void scheduleCloseOnSessionExit(AutoCloseable resource, String requester) {
 		// create a dummy Message, to be able to schedule the resource for close on exit of session
 		Message resourceMessage = new Message(new StringReader("dummy")) {
 			@Override
@@ -233,29 +263,31 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				resource.close();
 			}
 		};
-		scheduleCloseOnSessionExit(resourceMessage);
+		scheduleCloseOnSessionExit(resourceMessage, ClassUtils.nameOf(resource) +" of "+requester);
 	}
-	
+
 	public boolean isScheduledForCloseOnExit(Message message) {
-		return closeables.contains(message);
+		return closeables.containsKey(message);
 	}
 
 	public void unscheduleCloseOnSessionExit(Message message) {
 		closeables.remove(message);
 	}
-	
+
 	@Override
 	public void close() {
 		log.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
+			Iterator<Entry<Message,String>> it = closeables.entrySet().iterator();
+			Entry<Message,String> entry = it.next();
+			Message messageToClose = entry.getKey();
 			try {
-				Iterator<Message> it = closeables.iterator();
-				Message entry = it.next();
-				log.warn("messageId ["+getMessageId()+"] auto closing resource ["+entry+"]");
-				entry.close();
-				closeables.remove(entry);
+				log.warn("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
+				messageToClose.close();
 			} catch (Exception e) {
 				log.warn("Exception closing resource", e);
+			} finally {
+				closeables.remove(messageToClose);
 			}
 		}
 	}

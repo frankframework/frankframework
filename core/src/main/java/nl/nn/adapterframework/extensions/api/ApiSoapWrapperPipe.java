@@ -61,7 +61,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if ("wrap".equalsIgnoreCase(getDirection())) {
+		if (getDirection()==Direction.WRAP) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}
@@ -95,10 +95,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 
-		p = new Parameter();
-		p.setName(FROM_OUT);
-		p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
-		addParameter(p);
+		addParameter(new Parameter(FROM_OUT, AppConstants.getInstance().getProperty("instance.name", "")));
 
 	}
 }

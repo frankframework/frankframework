@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.ibistesttool.tibet2.Storage;
 import nl.nn.testtool.echo2.BeanParent;
 import nl.nn.testtool.echo2.Echo2Application;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.filter.View;
 
 public class TibetView extends View {
@@ -71,7 +72,7 @@ public class TibetView extends View {
 			pipeLineSession.put("View", getName());
 			PipeLineResult processResult = adapter.processMessage(null, new Message("<dummy/>"), pipeLineSession);
 			if (processResult.isSuccessful()) {
-				return "Allowed";
+				return ReportsComponent.OPEN_REPORT_ALLOWED;
 			} else {
 				return "Not allowed. Result of adapter "
 						+ AUTHORISATION_CHECK_ADAPTER + ": "

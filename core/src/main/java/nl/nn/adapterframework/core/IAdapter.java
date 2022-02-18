@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,13 +63,7 @@ public interface IAdapter extends IManagable {
 
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 
-	/**
-	 * state to put in PipeLineResult when a PipeRunException occurs.
-	 */
-	public String getErrorState();
 
 	@JmxAttribute(description = "Return the Adapter description")
 	public String getDescription();
-
-	public String getAdapterConfigurationAsString();
 }

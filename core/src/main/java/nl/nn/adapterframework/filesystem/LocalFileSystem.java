@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,8 +110,8 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Message readFile(Path f, String charset) throws IOException {
-		return new PathMessage(f, charset);
+	public Message readFile(Path f, String charset) throws IOException, FileSystemException {
+		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 
 	@Override
@@ -175,6 +175,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		try {
 			return Files.move(f, toFile(destinationFolder, getName(f)));
 		} catch (IOException e) {
@@ -183,6 +190,13 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		if(createFolder && !folderExists(destinationFolder)) {
+			try {
+				Files.createDirectories(toFile(destinationFolder));
+			} catch (IOException e) {
+				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
+			}
+		}
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);

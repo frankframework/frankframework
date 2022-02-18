@@ -20,11 +20,14 @@ import java.sql.Connection;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -32,12 +35,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * QuerySender that interprets the input message as a query, possibly with attributes.
  * Messages are expected to contain sql-text.
  *
- * <table border="1">
- * <p><b>Parameters:</b>
- * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
- * </table>
- * </p>
+ * @ff.parameters All parameters present are applied to the query to be executed.
  * 
  * @author  Gerrit van Brakel
  * @since 	4.1
@@ -46,12 +44,24 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(false);
+		configure(null); //No adapter? Don't trust!
 	}
 
-	public void configure(boolean trust) throws ConfigurationException {
+	public void configure(boolean ignoreSQLInjectionWarning) throws ConfigurationException {
+		if(ignoreSQLInjectionWarning) {
+			super.configure();
+		} else {
+			configure(null);
+		}
+	}
+
+	public void configure(IAdapter adapter) throws ConfigurationException {
 		super.configure();
-		if (!trust) {
+
+		if (adapter != null) {
+			ConfigurationWarnings.add(adapter, log, "has a ["+ClassUtils.nameOf(this)+"]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, adapter);
+		} else {
+			//This can still be triggered when a Sender is inside a SenderSeries wrapper such as ParallelSenders
 			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
 		}
 	}
@@ -67,7 +77,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 
 	@Override
-	public Connection openBlock(PipeLineSession session) throws SenderException, TimeOutException {
+	public Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			return super.getConnectionForSendMessage(null);
 		} catch (JdbcException e) {
@@ -79,31 +89,31 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
 		try {
 			super.closeConnectionForSendMessage(connection, session);
-		} catch (JdbcException | TimeOutException e) {
+		} catch (JdbcException | TimeoutException e) {
 			throw new SenderException("cannot close Connection",e);
 		}
 	}
 	
 	@Override
-	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeOutException {
+	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeoutException {
 		return blockHandle;
 	}
 
 	@Override
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeOutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
 		// postpone close to closeBlock()
 	}
 
 
 	@Override
 	// implements IBlockEnabledSender.sendMessage()
-	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return sendMessageOnConnection(blockHandle, message, session, null).getResult();
 	}
 
 	@Override
 	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeOutException {
+	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		Connection blockHandle = openBlock(session);
 		try {
 			return sendMessageOnConnection(blockHandle, message, session, next);

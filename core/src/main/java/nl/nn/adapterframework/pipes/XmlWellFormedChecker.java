@@ -32,13 +32,9 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
  * 
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
- * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
- * </table>
- * <br>
+ * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case
+ * @ff.forward failure The document is not well formed.
+ * 
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */

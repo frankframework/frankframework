@@ -122,10 +122,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 			
-		Parameter dummyEntryName =  new Parameter();
-		dummyEntryName.setName("entryName");
-		dummyEntryName.setValue(principal);
-		ldapSender.addParameter(dummyEntryName);
+		ldapSender.addParameter(new Parameter("entryName", principal));
 			
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
@@ -134,7 +131,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		}
 		ldapSender.setPrincipal(principal);
 		ldapSender.setCredentials(credentials);
-		ldapSender.setOperation(Operation.OPERATION_READ.getLabel());
+		ldapSender.setOperation(Operation.READ);
 		try {
 			log.debug("Looking up context for principal ["+principal+"]");
 			ldapSender.configure();

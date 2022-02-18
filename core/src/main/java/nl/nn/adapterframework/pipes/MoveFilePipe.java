@@ -282,7 +282,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-	@IbisDoc({"time between attempts", "1000 [ms]"})
+	@IbisDoc({"Time <i>in milliseconds</i> between attempts", "1000"})
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}

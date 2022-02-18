@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	private String charset;
 	
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
-		super(owner, next);
+		super(owner, next, null);
 	}
 
 	@Override

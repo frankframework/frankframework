@@ -24,13 +24,14 @@ best practices and perform security testing before releasing your application.
 
 ## Supported Versions
 
-| Version | Supported          | Security Fixes   | Released     |
-| ------- | ------------------ |----------------- |--------------|
-| 7.7.x   | :white_check_mark: |:white_check_mark:|              |
-| 7.6.x   | :white_check_mark: |:white_check_mark:| Aug 3, 2021  |
-| 7.5.x   | :white_check_mark: |:white_check_mark:| Nov 16, 2020 |
-| 7.0.x   | :x:                |:x:               | Jun 1, 2018  |
-| < 6.1   | :x:                |:x:               | Dec 13, 2016 |
+| Version | Supported          | Security Fixes   | Released         |
+| ------- | ------------------ |----------------- |------------------|
+| 7.8.x   | :white_check_mark: |:white_check_mark:|                  |
+| 7.7.x   | :white_check_mark: |:white_check_mark:| Feb 4, 2022 (RC) |
+| 7.6.x   | :white_check_mark: |:white_check_mark:| Aug 3, 2021      |
+| 7.5.x   | :x:                |:white_check_mark:| Nov 16, 2020     |
+| 7.0.x   | :x:                |:x:               | Jun 1, 2018      |
+| < 6.1   | :x:                |:x:               | Dec 13, 2016     |
 
 
 ## Reporting a Vulnerability

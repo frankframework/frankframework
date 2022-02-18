@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServ
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * It is important that we register the correct CXF bus, or else JAX-RS won't work properly
+ * It is important that we register the correct CXF bus, or else 
+ * JAX-RS (IAF-API / WebServiceListener) won't work properly
  * 
  * @author Niels Meijer
  */
@@ -42,16 +43,6 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 		returnMap.put(PARAM_CMIS_VERSION, getCmisVersion());
 
 		return returnMap;
-	}
-
-	@Override
-	public String getName() {
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public int loadOnStartUp() {
-		return 1;
 	}
 
 	@Override
