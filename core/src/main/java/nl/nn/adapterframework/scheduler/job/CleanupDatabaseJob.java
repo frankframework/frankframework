@@ -99,7 +99,7 @@ public class CleanupDatabaseJob extends JobDef {
 	}
 
 	@Override
-	public void beforeExecuteJob(IbisManager ibisManager) {
+	public boolean beforeExecuteJob(IbisManager ibisManager) {
 		Set<String> datasourceNames = getAllLockerDatasourceNames(ibisManager);
 
 		for (String datasourceName : datasourceNames) {
@@ -135,6 +135,7 @@ public class CleanupDatabaseJob extends JobDef {
 				}
 			}
 		}
+		return true;
 	}
 
 	@Override
