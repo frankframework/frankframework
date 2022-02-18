@@ -245,7 +245,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
 		}
 
-		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey())) {
+		if (getAction().equals("create") && StringUtils.isEmpty(getFileSessionKey()) && (getParameterList() == null | getParameterList().findParameter("fileSessionKey") == null)) {
 			throw new ConfigurationException("fileSessionKey should be specified");
 		}
 
