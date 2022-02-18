@@ -34,17 +34,19 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	private MeterRegistry registry;
 	private NodeConfig root;
 
-	public class NodeConfig {
+	protected class NodeConfig {
 		public List<Tag> tags;
+		public int groupLevel;
 
-		NodeConfig(List<Tag> tags) {
+		NodeConfig(List<Tag> tags, int groupLevel) {
 			this.tags = tags!=null ? tags : new LinkedList<>();
+			this.groupLevel = groupLevel;
 		}
 	}
 
 	public MetricsInitializer(MeterRegistry registry) {
 		this.registry = registry;
-		root = new NodeConfig(null);
+		root = new NodeConfig(null,0);
 	}
 
 	@Override
@@ -81,12 +83,13 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	@Override
 	public NodeConfig openGroup(NodeConfig parentData, String name, String type) throws SenderException {
 		List<Tag> tags = new LinkedList<>(parentData.tags);
+		int groupLevel = parentData.groupLevel;
 		if (StringUtils.isNotEmpty(name)) {
 			tags.add(Tag.of(type, name));
 		} else {
-			tags.add(Tag.of(type, "1"));
+			tags.add(Tag.of("group_"+(++groupLevel), type));
 		}
-		return new NodeConfig(tags);
+		return new NodeConfig(tags, groupLevel);
 	}
 
 	@Override
