@@ -118,7 +118,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	private @Getter String proxyPassword = null;
 	private @Getter String proxyAuthAlias = null;
 	private @Getter String proxyDomain = null;
-	private @Getter String separator;
+	private @Getter String mailboxFolderSeparator ;
 
 	private final String ANCHOR_HEADER = "X-AnchorMailbox";
 
@@ -915,7 +915,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 	}
 
 	private ExchangeFileSystemResolver getResolver(String folderName){
-		return new ExchangeFileSystemResolver(folderName, getMailAddress(), getSeparator());
+		return new ExchangeFileSystemResolver(folderName, getMailAddress(), getMailboxFolderSeparator());
 	}
 
 	private ExchangeService getConnection(String mailbox) throws FileSystemException {
@@ -1071,9 +1071,9 @@ public class ExchangeFileSystem extends MailFileSystemBase<EmailMessage,Attachme
 		this.proxyDomain = proxyDomain;
 	}
 
-	@IbisDoc({"19", "Separator character used when working with dynamic email addresses, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code>. Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. ", "|"})
-	public void setSeparator(String separator) {
-		this.separator = separator;
+	@IbisDoc({"19", "Separator character used when working with multiple mailboxes, specified before the separator in the folder name <code>test@organisation.com|My sub folder</code>. Please consider when moving emails across mailboxes that there will be a null value returned instead of the newly created identifier. ", "|"})
+	public void setMailboxFolderSeparator(String separator) {
+		this.mailboxFolderSeparator = separator;
 	}
 
 
