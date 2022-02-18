@@ -484,7 +484,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private Message sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
 		String fileName = null;
 		try {
-			fileName = session.getMessage( pvl.get("filenameSessionKey").asStringValue(getFilenameSessionKey()) ).asString();
+			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
 		} catch (IOException e) {
 			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
 		}
@@ -531,7 +531,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		ContentStream contentStream;
 		try {
-			Message inputFromSessionKey = session.getMessage( pvl.get("fileSessionKey").asStringValue(getFileSessionKey()) );
+			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
 
 			if(convert2Base64 && inputFromSessionKey.asObject() instanceof String) {
 				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
