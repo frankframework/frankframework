@@ -23,6 +23,6 @@ public abstract class MetricBase<M extends Meter> {
 
 	protected M meter;
 
-	public abstract void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name);
+	public abstract void initMetrics(MeterRegistry registry, String groupName, Iterable<Tag> tags, String scalarName);
 
 }

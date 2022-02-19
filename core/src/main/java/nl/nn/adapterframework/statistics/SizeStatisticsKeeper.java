@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,11 +28,6 @@ public class SizeStatisticsKeeper extends StatisticsKeeper {
 		super(name,BigBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
-	@Override
-	public String getQuantity() {
-		return "size";
-	}
-	@Override
 	public String getUnits() {
 		return "B";
 	}

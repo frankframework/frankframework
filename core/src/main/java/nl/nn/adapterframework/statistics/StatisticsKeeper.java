@@ -82,16 +82,21 @@ public class StatisticsKeeper implements ItemList {
 		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
-	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags) {
+	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
+		double[] serviceLevelObjectives = new double[classBoundaries.length];
+		for (int i=0;i<classBoundaries.length;i++) {
+			serviceLevelObjectives[i]=classBoundaries[i];
+		}
 		double[] percentiles = new double[pest.getNumPercentiles()];
 		for (int i=0;i<pest.getNumPercentiles();i++) {
 			percentiles[i]=((double)pest.getPercentage(i))/100;
 		}
 		DistributionSummary.Builder builder= DistributionSummary
-				.builder("message."+getQuantity())
+				.builder(name)
 				.baseUnit(getUnits())
 				.tags(tags)
 				.tag("name", getName())
+				.serviceLevelObjectives(serviceLevelObjectives)
 				.publishPercentiles(percentiles)
 				//.publishPercentileHistogram()
 				;
@@ -127,9 +132,6 @@ public class StatisticsKeeper implements ItemList {
 		}
 	}
 
-	public String getQuantity() {
-		return "latency";
-	}
 	public String getUnits() {
 		return "ms";
 	}

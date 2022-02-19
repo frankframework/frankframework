@@ -22,8 +22,8 @@ import io.micrometer.core.instrument.Tag;
 public abstract class GaugeBase extends ScalarMetricBase<Gauge> {
 
 	@Override
-	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name) {
-		meter = Gauge.builder(name,()->getValue()).tags(tags).register(registry);
+	public void initMetrics(MeterRegistry registry, String groupName, Iterable<Tag> tags, String scalarname) {
+		meter = Gauge.builder(groupName+"."+scalarname,()->getValue()).tags(tags).register(registry);
 	}
 
 }

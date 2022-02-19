@@ -35,10 +35,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	private NodeConfig root;
 
 	protected class NodeConfig {
+		public String name;
 		public List<Tag> tags;
 		public int groupLevel;
 
-		NodeConfig(List<Tag> tags, int groupLevel) {
+		NodeConfig(String name, List<Tag> tags, int groupLevel) {
+			this.name = name;
 			this.tags = tags!=null ? tags : new LinkedList<>();
 			this.groupLevel = groupLevel;
 		}
@@ -46,7 +48,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	public MetricsInitializer(MeterRegistry registry) {
 		this.registry = registry;
-		root = new NodeConfig(null,0);
+		root = new NodeConfig("frank", null,0);
 	}
 
 	@Override
@@ -64,12 +66,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleStatisticsKeeper(NodeConfig data, StatisticsKeeper sk) throws SenderException {
-		sk.initMetrics(registry, data.tags);
+		sk.initMetrics(registry, data.name, data.tags);
 	}
 
 	@Override
 	public void handleScalar(NodeConfig data, String scalarName, ScalarMetricBase<?> meter) throws SenderException {
-		meter.initMetrics(registry, data.tags, scalarName);
+		meter.initMetrics(registry, data.name, data.tags, scalarName);
 	}
 
 	@Override
@@ -81,15 +83,16 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	}
 
 	@Override
-	public NodeConfig openGroup(NodeConfig parentData, String name, String type) throws SenderException {
+	public NodeConfig openGroup(NodeConfig parentData, String dimensionName, String type) throws SenderException {
+		String nodeName = parentData.name;
 		List<Tag> tags = new LinkedList<>(parentData.tags);
 		int groupLevel = parentData.groupLevel;
-		if (StringUtils.isNotEmpty(name)) {
-			tags.add(Tag.of(type, name));
+		if (StringUtils.isNotEmpty(dimensionName)) {
+			tags.add(Tag.of(type, dimensionName));
 		} else {
-			tags.add(Tag.of("group_"+(++groupLevel), type));
+			nodeName=nodeName+"."+type;
 		}
-		return new NodeConfig(tags, groupLevel);
+		return new NodeConfig(nodeName, tags, groupLevel);
 	}
 
 	@Override

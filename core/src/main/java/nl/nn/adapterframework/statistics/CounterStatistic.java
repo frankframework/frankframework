@@ -35,8 +35,8 @@ public class CounterStatistic extends ScalarMetricBase<Counter> {
 	}
 
 	@Override
-	public void initMetrics(MeterRegistry registry, Iterable<Tag> tags, String name) {
-		meter = Counter.builder(name).tags(tags).register(registry);
+	public void initMetrics(MeterRegistry registry, String groupName, Iterable<Tag> tags, String scalarname) {
+		meter = Counter.builder(groupName+"."+scalarname).tags(tags).register(registry);
 		meter.increment(mark);
 	}
 
