@@ -63,7 +63,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		}
 
 		MediaType mediaType = MediaType.asMediaType(mimeType);
-		if (isPasswordProtected(mimeType)) {
+		if (isPasswordProtected(mediaType)) {
 			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 		} else {
 			// Get the convertor for the given mediatype.
