@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import nl.nn.adapterframework.parameters.Parameter;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,8 +63,66 @@ public class TestCreateAction extends CmisSenderTestBase {
 	}
 
 	@Test
+	public void fileFromSessionKeyAsString() throws Exception {
+		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
+		sender.setFileSessionKey("fileContent");
+		sender.setUseRootFolder(false);
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
+	public void fileFromSessionKeyAsStringParameter() throws Exception {
+		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		sender.setUseRootFolder(false);
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
+	public void fileFromSessionKeyAsByteArray() throws Exception {
+		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
+		sender.setFileSessionKey("fileContent");
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
+	public void fileFromSessionKeyAsByteArrayParameter() throws Exception {
+		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
+	public void fileFromSessionKeyAsInputStream() throws Exception {
+		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
+		sender.setFileSessionKey("fileContent");
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
+	public void fileFromSessionKeyAsInputStreamParameter() throws Exception {
+		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
+		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
+		sender.addParameter(fileSessionKey);
+		configure();
+		String actualResult = sender.sendMessage(input, session).asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+	}
+
+	@Test
 	public void fileContentFromSessionKeyAsString() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileContentSessionKey("fileContent");
 		sender.setUseRootFolder(false);
