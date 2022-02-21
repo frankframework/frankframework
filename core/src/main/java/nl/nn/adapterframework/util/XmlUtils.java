@@ -119,7 +119,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 public class XmlUtils {
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
-	public static final int DEFAULT_XSLT_VERSION = 2;
+	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.default.version", 2);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
