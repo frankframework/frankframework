@@ -50,7 +50,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -510,6 +509,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
+			input = validationResult.getResult();
 		}
 
 		if (StringUtils.isNotEmpty(getStubFilename())) {
@@ -725,8 +725,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.isSuccessful()) {
-				return validationResult;
+			if (validationResult!=null) {
+				if (!validationResult.isSuccessful()) {
+					return validationResult;
+				}
+				result = validationResult.getResult();
 			}
 		}
 		if (getOutputWrapper()!=null) {
