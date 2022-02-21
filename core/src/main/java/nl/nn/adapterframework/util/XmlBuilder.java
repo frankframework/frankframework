@@ -25,7 +25,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -39,7 +38,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Johan Verrips
  * @author Peter Leeuwenburgh
  **/
-@Deprecated // Please replace with XmlWriter, SaxDocumentBuilder or IDocumentBuilder (from DocumentBuilderFactory.startDocument())
+@Deprecated // Please replace with SaxDocumentBuilder or IDocumentBuilder (from DocumentBuilderFactory.startDocument())
 public class XmlBuilder {
 	static Logger log = LogUtil.getLogger(XmlBuilder.class);
 
@@ -52,12 +51,14 @@ public class XmlBuilder {
 	private boolean parseText;
 	private List<String> cdata;
 
-	@SneakyThrows
 	public XmlBuilder(String tagName) {
 		root = tagName;
 	}
 
-	@SneakyThrows
+	public static XmlBuilder create(String tagName) {
+		return new XmlBuilder(tagName);
+	}
+	
 	public void addAttribute(String name, String value) {
 		if (value != null) {
 			attributes.addAttribute("", name, name, "STRING", value);
