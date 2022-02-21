@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionException;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Co
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 /**
  * @author Gerard van der Hoorn
  */
@@ -53,8 +55,10 @@ public class CisConversionServiceImpl implements CisConversionService {
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
 
 		CisConversionResult result = null;
-		//MimeType mimeType = MessageUtils.getMimeType(message, filename);
-		MediaType mediaType = getMediaType(message, filename);
+		MimeType mimeType = MessageUtils.getMimeType(message, filename);
+//		MediaType mediaType = getMediaType(message, filename);
+		MediaType mediaType = MediaType.asMediaType(mimeType);
+//		System.err.println(mediaType + " - " + mimeType);
 
 		if (isPasswordProtected(mediaType)) {
 			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
@@ -90,6 +94,9 @@ public class CisConversionServiceImpl implements CisConversionService {
 	}
 
 	private boolean isPasswordProtected(MediaType mediaType) {
+		if( ("x-tika-ooxml-protected".equals(mediaType.getSubtype()))) {
+			System.err.println("asdasdfdfdfsafdsfdasdsfdfsfdas");
+		}
 		return ("x-tika-ooxml-protected".equals(mediaType.getSubtype()));
 	}
 

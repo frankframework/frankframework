@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.tika.Tika;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
@@ -98,16 +99,14 @@ public abstract class MessageUtils {
 			name = filename;
 		}
 
-		/*
 		Tika tika = new Tika();
 		try {
 			message.preserve();
 			String type = tika.detect(message.asInputStream(), name);
-			return MediaType.valueOf(type);
+			return MimeType.valueOf(type);
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 		}
-		*/
 
 		LOG.info("unable to determine mimetype");
 		return null;

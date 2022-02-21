@@ -66,6 +66,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 		map.put(new MediaType(IMAGE, "png"), null);
 		map.put(new MediaType(IMAGE, "gif"), null);
 		map.put(new MediaType(IMAGE, TIFF), null);
+		map.put(new MediaType(IMAGE, "bmp"), null);
 		map.put(new MediaType(IMAGE, "x-ms-bmp"), null);
 
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);

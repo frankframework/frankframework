@@ -108,13 +108,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		if(convertedDocumentMatcher.find()) { //Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
-			System.out.println("found converted file ["+convertedFilePath+"]");
+//			System.out.println("found converted file ["+convertedFilePath+"]");
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
 			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
-			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
+//			System.out.println("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = new PDFUtil();
 			//remove Aspose evaluation copy information
