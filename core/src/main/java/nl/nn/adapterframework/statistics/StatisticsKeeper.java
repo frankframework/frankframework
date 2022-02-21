@@ -387,6 +387,8 @@ public class StatisticsKeeper implements ItemList {
 							tmp.put(key, new BigDecimal(((Double) item).doubleValue()*100).setScale(1,  BigDecimal.ROUND_HALF_EVEN));
 						}
 						break;
+					default:
+						throw new IllegalStateException("Unknown item type ["+getItemType(i)+"]");
 				}
 			}
 		}
