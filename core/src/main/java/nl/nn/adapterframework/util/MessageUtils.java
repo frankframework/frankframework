@@ -23,7 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaMetadataKeys;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.stream.Message;
@@ -87,9 +89,14 @@ public abstract class MessageUtils {
 		return contentType.toString();
 	}
 
-	public static MimeType getMimeType(Message message, String filename) {
+	public static MimeType getMimeType(Message message) {
 		Map<String, Object> context = message.getContext();
-		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		return (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+	}
+
+	public static MimeType computeMimeType(Message message, String filename) {
+		Map<String, Object> context = message.getContext();
+		MimeType mimeType = getMimeType(message);
 		if(mimeType != null) {
 			return mimeType;
 		}
@@ -99,11 +106,13 @@ public abstract class MessageUtils {
 			name = filename;
 		}
 
-		Tika tika = new Tika();
 		try {
 			message.preserve();
-			String type = tika.detect(message.asInputStream(), name);
-			return MimeType.valueOf(type);
+			TikaConfig tika = new TikaConfig();
+			Metadata metadata = new Metadata();
+			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
+			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(message.asInputStream(), metadata);
+			return MimeType.valueOf(tikaMediaType.toString());
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 		}

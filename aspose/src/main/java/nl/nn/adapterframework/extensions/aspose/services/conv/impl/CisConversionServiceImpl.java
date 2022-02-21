@@ -18,6 +18,14 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.tika.detect.DefaultDetector;
+import org.apache.tika.exception.EncryptedDocumentException;
+import org.apache.tika.exception.WriteLimitReachedException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaMetadataKeys;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -28,6 +36,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 /**
@@ -55,12 +64,13 @@ public class CisConversionServiceImpl implements CisConversionService {
 	public CisConversionResult convertToPdf(Message message, String filename, ConversionOption conversionOption) throws IOException {
 
 		CisConversionResult result = null;
-		MimeType mimeType = MessageUtils.getMimeType(message, filename);
-//		MediaType mediaType = getMediaType(message, filename);
+		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
+		if(mimeType == null) {
+			mimeType = getMediaType(message, filename);
+		}
 		MediaType mediaType = MediaType.asMediaType(mimeType);
-//		System.err.println(mediaType + " - " + mimeType);
 
-		if (isPasswordProtected(mediaType)) {
+		if ("x-tika-msoffice".equals(mediaType.getSubtype()) && isPasswordProtected(message)) {
 			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 		} else {
 			// Get the convertor for the given mediatype.
@@ -93,11 +103,27 @@ public class CisConversionServiceImpl implements CisConversionService {
 		return result;
 	}
 
-	private boolean isPasswordProtected(MediaType mediaType) {
-		if( ("x-tika-ooxml-protected".equals(mediaType.getSubtype()))) {
-			System.err.println("asdasdfdfdfsafdsfdasdsfdfsfdas");
+	private boolean isPasswordProtected(Message message) {
+		try {
+			message.preserve();
+			BodyContentHandler textHandler = new BodyContentHandler(10*1024);
+			Metadata metadata = new Metadata();
+			Object name = message.getContext().get(MessageContext.METADATA_NAME);
+			if(name != null) {
+				metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, (String) name);
+			}
+			AutoDetectParser parser = new AutoDetectParser(new DefaultDetector());
+
+			parser.parse(message.asInputStream(), textHandler, metadata, new ParseContext());
+		} catch (EncryptedDocumentException t) {
+			return true;
+		} catch (WriteLimitReachedException t) {
+			// We don't actually need to read the entire file, after reaching the 10K limit, and no-password request has been found assume false.
+			return false;
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
-		return ("x-tika-ooxml-protected".equals(mediaType.getSubtype()));
+		return false;
 	}
 
 	private MediaType getMediaType(Message message, String filename) {
