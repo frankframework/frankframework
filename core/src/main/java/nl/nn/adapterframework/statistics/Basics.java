@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -108,10 +108,12 @@ public class Basics implements ItemList {
 	}
 
 
+	@Override
 	public int getItemCount() {
 		return NUM_BASIC_ITEMS;
 	}
 
+	@Override
 	public String getItemName(int index) {
 		switch (index) {
 			case 0: return ITEM_NAME_COUNT;
@@ -124,18 +126,20 @@ public class Basics implements ItemList {
 		}
 	}
 
-	public int getItemType(int index) {
+	@Override
+	public Type getItemType(int index) {
 		switch (index) {
-			case 0: return ITEM_TYPE_INTEGER;
-			case 1: return ITEM_TYPE_TIME;
-			case 2: return ITEM_TYPE_TIME;
-			case 3: return ITEM_TYPE_TIME;
-			case 4: return ITEM_TYPE_TIME;
-			case 5: return ITEM_TYPE_TIME;
+			case 0: return Type.INTEGER;
+			case 1: return Type.TIME;
+			case 2: return Type.TIME;
+			case 3: return Type.TIME;
+			case 4: return Type.TIME;
+			case 5: return Type.TIME;
 			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
 		}
 	}
 
+	@Override
 	public Object getItemValue(int index) {
 		switch (index) {
 			case 0: return new Long(getCount());

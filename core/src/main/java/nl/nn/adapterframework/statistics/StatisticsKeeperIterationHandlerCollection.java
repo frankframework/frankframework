@@ -51,6 +51,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		iterationHandlerList.add(handler);
 	}
 
+	@Override
 	public void configure() throws ConfigurationException {	
 		if (trace && log.isDebugEnabled()) log.debug("configure()");
 		for (Iterator it=iterationHandlerList.iterator();it.hasNext();) {
@@ -59,6 +60,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		}
 	}
 	
+	@Override
 	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("start()");
 		List sessionData=new LinkedList();
@@ -69,6 +71,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		return sessionData;
 	}
 
+	@Override
 	public void end(Object data) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("end()");
 		List sessionData=(List)data;
@@ -80,6 +83,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 	}
 
 
+	@Override
 	public Object openGroup(Object parentData, String name, String type) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("openGroup() name ["+name+"] type ["+type+"]");
 		Iterator parentDataIterator=((List)parentData).iterator();
@@ -91,6 +95,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		return groupData;
 	}
 	
+	@Override
 	public void closeGroup(Object data) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("closeGroup()");
 		List sessionData=(List)data;
@@ -102,6 +107,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 	}
 
 
+	@Override
 	public void handleScalar(Object data, String scalarName, Date value) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("handleScalar() scalarName ["+scalarName+"] value ["+(value==null?"null":DateUtils.format(value))+"]");
 		List sessionData=(List)data;
@@ -112,6 +118,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		}
 	}
 
+	@Override
 	public void handleScalar(Object data, String scalarName, long value) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("handleScalar() scalarName ["+scalarName+"] value ["+value+"]");
 		List sessionData=(List)data;
@@ -122,6 +129,12 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		}
 	}
 
+	@Override
+	public void handleScalar(Object data, String scalarName, ScalarMetricBase meter) throws SenderException {
+		handleScalar(data, scalarName, meter.getValue());
+	}
+
+	@Override
 	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("handleStatisticsKeeper() StatisticsKeeper ["+sk.getName()+"]");
 		List sessionData=(List)data;

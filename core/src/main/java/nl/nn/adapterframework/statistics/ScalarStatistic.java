@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler.job;
+package nl.nn.adapterframework.statistics;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import lombok.Getter;
 
-public class DumpFullStatisticsJob extends JobDef {
+/**
+ * Counter value that is maintained with statistics.
+ * 
+ * @author  Gerrit van Brakel
+ * @since   4.9
+ */
+public class ScalarStatistic extends GaugeBase {
 
-	@Override
-	public void execute(IbisManager ibisManager) {
-		ibisManager.dumpStatistics(Action.MARK_FULL);
+	private @Getter long value;
+
+	public synchronized void increase() {
+		++value;
 	}
+	public synchronized void decrease() {
+		--value;
+	}
+
 }

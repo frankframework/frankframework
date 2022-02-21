@@ -34,6 +34,7 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
@@ -52,7 +53,8 @@ import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.Job;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
@@ -91,12 +93,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+	public Configuration() {
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	}
+
+	private void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action, String rootName, String rootType) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
-			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
+			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
+				adapter.iterateOverStatistics(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -105,11 +111,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	public void dumpStatistics(int action) {
+	public void dumpStatistics(Action action) {
 		Date now = new Date();
-		boolean showDetails=(action == HasStatistics.STATISTICS_ACTION_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_RESET);
+		boolean showDetails=(action == Action.FULL || action == Action.MARK_FULL);
 		try {
 			if (statisticsHandler==null) {
 				statisticsHandler =new StatisticsKeeperLogger();
@@ -127,24 +131,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 //			skih.configure();
 //			skihc.registerIterationHandler(skih);
 
-			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action);
+			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_MAIN || action==Action.MARK_FULL) {
 				statisticsMarkDateMain=now;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_FULL) {
 				statisticsMarkDateDetails=now;
 		}
 
 	}
 
-	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	public void initMetrics() throws ConfigurationException {
+		MeterRegistry meterRegistry = getIbisManager().getIbisContext().getMeterRegistry();
+		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
+		try {
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
+		} catch (SenderException e) {
+			throw new ConfigurationException("Cannot initialize metrics", e);
+		}
 	}
 
 	@Override
@@ -269,7 +276,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
-
+		initMetrics();
 		configured = true;
 
 		String msg;

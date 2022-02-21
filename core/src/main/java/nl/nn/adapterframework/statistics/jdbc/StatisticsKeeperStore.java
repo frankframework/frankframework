@@ -31,8 +31,10 @@ import nl.nn.adapterframework.jdbc.CachedSideTable;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jdbc.SideTable;
+import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.jdbc.StatisticsKeeperStore.SessionInfo;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -44,7 +46,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
-public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeeperIterationHandler {
+public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeeperIterationHandler<SessionInfo> {
 
 	private SideTable instances=new CachedSideTable("ibisinstance", "instancekey", "name", "seq_ibisinstance");
 	private SideTable hosts=    new CachedSideTable("ibishost",     "hostkey",     "name", "seq_ibishost");
@@ -69,7 +71,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 
-	private class SessionInfo {
+	protected class SessionInfo {
 		Connection connection;
 		int groupKey;
 		int eventKey;
@@ -139,7 +141,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 
 
 	@Override
-	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException {
+	public SessionInfo start(Date now, Date mainMark, Date detailMark) throws SenderException {
 		List nameList=new LinkedList();
 		List valueList=new LinkedList();
 		now=new Date();
@@ -204,7 +206,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public void end(Object data) throws SenderException {
+	public void end(SessionInfo data) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		try {
 			if (sessionInfo!=null && sessionInfo.connection!=null) {
@@ -234,7 +236,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) throws SenderException {
+	public void handleStatisticsKeeper(SessionInfo data, StatisticsKeeper sk) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
 
@@ -281,7 +283,12 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public void handleScalar(Object data, String scalarName, long value) throws SenderException {
+	public void handleScalar(SessionInfo data, String scalarName, ScalarMetricBase<?> meter) throws SenderException {
+		handleScalar(data, scalarName, meter.getValue());
+	}
+
+	@Override
+	public void handleScalar(SessionInfo data, String scalarName, long value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;
 		PreparedStatement stmt = null;
 
@@ -309,7 +316,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public void handleScalar(Object data, String scalarName, Date value) throws SenderException {
+	public void handleScalar(SessionInfo data, String scalarName, Date value) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)data;	
 		PreparedStatement stmt = null;
 
@@ -341,7 +348,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public Object openGroup(Object parentData, String name, String type) throws SenderException {
+	public SessionInfo openGroup(SessionInfo parentData, String name, String type) throws SenderException {
 		SessionInfo sessionInfo = (SessionInfo)parentData;
 		int parentKey=sessionInfo.groupKey;
 		int groupKey;	
@@ -358,7 +365,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	@Override
-	public void closeGroup(Object data) throws SenderException {
+	public void closeGroup(SessionInfo data) throws SenderException {
 		// nothing to do
 	}
 

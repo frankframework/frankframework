@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.scheduler.job;
+package nl.nn.adapterframework.statistics;
 
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 
-public class DumpFullStatisticsJob extends JobDef {
+public abstract class MetricBase<M extends Meter> {
 
-	@Override
-	public void execute(IbisManager ibisManager) {
-		ibisManager.dumpStatistics(Action.MARK_FULL);
-	}
+	protected M meter;
+
+	public abstract void initMetrics(MeterRegistry registry, String groupName, Iterable<Tag> tags, String scalarName);
+
 }
