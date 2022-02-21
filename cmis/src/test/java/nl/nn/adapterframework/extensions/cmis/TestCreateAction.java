@@ -66,7 +66,6 @@ public class TestCreateAction extends CmisSenderTestBase {
 	public void fileFromSessionKeyAsString() throws Exception {
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileSessionKey("fileContent");
-		sender.setUseRootFolder(false);
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
@@ -77,7 +76,6 @@ public class TestCreateAction extends CmisSenderTestBase {
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
 		sender.addParameter(fileSessionKey);
-		sender.setUseRootFolder(false);
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
@@ -125,67 +123,60 @@ public class TestCreateAction extends CmisSenderTestBase {
 	public void fileContentFromSessionKeyAsString() throws Exception {
 		session.put("fileContent", new String(Base64.encodeBase64("some content here for test FileContent as String".getBytes())));
 		sender.setFileContentSessionKey("fileContent");
-		sender.setUseRootFolder(false);
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileContentFromSessionKeyAsByteArray() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fileContent", "some content here for test fileContent as byte array".getBytes());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileContentFromSessionKeyAsInputStream() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fileContent", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileContentSessionKey("fileContent");
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsString() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fis", new String(Base64.encodeBase64("some content here for test FileStream as String".getBytes())));
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsByteArray() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fis", "some content here for test FileStream as byte array".getBytes());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyAsInputStream() throws Exception {
-		sender.setGetProperties(true);
 		session.put("fis", getClass().getResource("/fileInput.txt").openStream());
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
 		String actualResult = sender.sendMessage(input, session).asString();
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 	}
-	
+
 	@Test
 	public void fileStreamFromSessionKeyWithIllegalType() throws ConfigurationException, SenderException, TimeoutException, IOException {
 //		exception.expect(SenderException.class);
 //		exception.expectMessage("expected InputStream, ByteArray or Base64-String but got");
-		sender.setGetProperties(true);
 		session.put("fis", 1);
 		sender.setFileInputStreamSessionKey("fis");
 		configure();
