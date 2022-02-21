@@ -58,7 +58,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		MimeType mimeType = MessageUtils.computeMimeType(message, filename);
 		if(mimeType == null || "x-tika-msoffice".equals(mimeType.getSubtype())) {
 			// If we cannot determine the MimeType based on the files magic numbers, read part of the file.
-			// MS Office files can be password protected, which can only determine by reading a part of the file.
+			// MS Office files can be password protected, which can only be determined by reading a part of the file.
 			mimeType = getMediaType(message, filename);
 		}
 
