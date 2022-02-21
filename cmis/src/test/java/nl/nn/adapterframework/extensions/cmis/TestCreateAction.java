@@ -56,7 +56,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 		this.expectedResult = expected;
 	}
 
-	public void configure() throws ConfigurationException, SenderException, TimeoutException {
+	public void configure() throws ConfigurationException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
