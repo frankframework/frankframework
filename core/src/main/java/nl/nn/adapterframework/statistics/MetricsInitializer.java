@@ -53,6 +53,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void configure() throws ConfigurationException {
+		//not used
 	}
 
 	@Override
@@ -62,6 +63,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void end(NodeConfig data) throws SenderException {
+		//not used
 	}
 
 	@Override
@@ -76,10 +78,12 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void handleScalar(NodeConfig data, String scalarName, long value) throws SenderException {
+		//not used
 	}
 
 	@Override
 	public void handleScalar(NodeConfig data, String scalarName, Date value) throws SenderException {
+		//not used
 	}
 
 	@Override
@@ -97,6 +101,7 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void closeGroup(NodeConfig data) throws SenderException {
+		//not used
 	}
 
 	public void configureCache(Ehcache cache) {

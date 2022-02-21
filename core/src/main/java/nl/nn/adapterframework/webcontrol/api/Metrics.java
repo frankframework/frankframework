@@ -51,7 +51,7 @@ public class Metrics extends Base {
 	}
 
 	@GET
-	@Path("/metrics")
+	@Path("/metrics/prometheus")
 	@Produces(TextFormat.CONTENT_TYPE_004) // see https://github.com/prometheus/prometheus/issues/6499
 	public Response scrapeForPrometheus() throws ApiException {
 		if (registry==null) {
