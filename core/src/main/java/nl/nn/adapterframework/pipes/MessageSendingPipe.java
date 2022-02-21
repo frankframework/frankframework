@@ -509,6 +509,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (validationResult!=null && !validationResult.isSuccessful()) {
 				return validationResult;
 			}
+			input = validationResult.getResult();
 		}
 
 		if (StringUtils.isNotEmpty(getStubFilename())) {
@@ -724,8 +725,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			log.debug(getLogPrefix(session)+"validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, Message.asMessage(result), session);
-			if (validationResult!=null && !validationResult.isSuccessful()) {
-				return validationResult;
+			if (validationResult!=null) {
+				if (!validationResult.isSuccessful()) {
+					return validationResult;
+				}
+				result = validationResult.getResult();
 			}
 		}
 		if (getOutputWrapper()!=null) {
