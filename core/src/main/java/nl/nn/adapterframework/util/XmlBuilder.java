@@ -177,4 +177,7 @@ public class XmlBuilder {
 		}
 	}
 	
+	public String toString() {
+		return toXML();
+	}
 }

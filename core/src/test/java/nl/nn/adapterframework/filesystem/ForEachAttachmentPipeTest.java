@@ -70,12 +70,12 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		
 		String expected="<results>\n"+
            "<result item=\"1\">\n"+
-           "<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\r\n"+
-           "  <properties>\r\n"+
-           "    <property name=\"propname1\">propvalue1</property>\r\n"+
-           "    <property name=\"propname2\">propvalue2</property>\r\n"+
-           "  </properties>\r\n"+
-           "</attachment>\r\n\n"+
+           "<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\n"+
+           "	<properties>\n"+
+           "		<property name=\"propname1\">propvalue1</property>\n"+
+           "		<property name=\"propname2\">propvalue2</property>\n"+
+           "	</properties>\n"+
+           "</attachment>\n"+
            "</result>\n"+
            "</results>";
 		

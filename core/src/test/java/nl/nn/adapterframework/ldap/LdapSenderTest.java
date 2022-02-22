@@ -99,7 +99,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
 
-		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n  <attribute name=\"mail\" value=\"leaadministrator@ibissource.org\" />\n  <attribute name=\"gidNumber\" value=\"505\" />\n</attributes>\n", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n\t<attribute name=\"mail\" value=\"leaadministrator@ibissource.org\"/>\n\t<attribute name=\"gidNumber\" value=\"505\"/>\n</attributes>\n", result);
 	}
 
 	@Test
