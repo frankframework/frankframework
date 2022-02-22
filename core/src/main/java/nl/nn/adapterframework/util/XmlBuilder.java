@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -109,7 +108,8 @@ public class XmlBuilder {
 	public void setValue(String value) {
 		cdata=null;
 		if (value != null) {
-			text = StringEscapeUtils.escapeJava(value);
+			text = value;
+			// text = StringEscapeUtils.escapeJava(value); // Java escaping as was used by IbisXmlLayout.XmlBuilder
 		}
 	}
 
