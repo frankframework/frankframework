@@ -360,11 +360,17 @@ public class Message implements Serializable {
 
 	/**
 	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
-	 * Only works for binary messages;
+	 * Only works for binary messages
 	 */
 	public byte[] getMagic() throws IOException {
 		return getMagic(10*1024);
 	}
+
+	/**
+	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
+	 * Only works for binary messages
+	 * @param readLimit amount of bytes to read.
+	 */
 	public byte[] getMagic(int readLimit) throws IOException {
 		if(!isBinary()) {
 			return null;
@@ -383,11 +389,8 @@ public class Message implements Serializable {
 			}
 		}
 		if (request instanceof ThrowingSupplier) {
-			try {
-				InputStream stream = ((ThrowingSupplier<InputStream,Exception>) request).get();
+			try (InputStream stream = asInputStream()) { //Message is repeatable, close the stream after it's been (partially) read.
 				return readBytesFromInputStream(stream, readLimit);
-			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
 			}
 		}
 		if(request instanceof byte[]) {

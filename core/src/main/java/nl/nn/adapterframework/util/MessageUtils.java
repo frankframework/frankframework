@@ -93,14 +93,25 @@ public abstract class MessageUtils {
 		return contentType.toString();
 	}
 
+	/**
+	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
+	 * @throws IOException when it cannot read the first 10k bytes.
+	 */
 	public static Charset computeCharset(Message message) throws IOException {
 		return computeCharset(message, 65);
 	}
 
+	/**
+	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
+	 * @param confidence percentage required to successfully determine the charset.
+	 * @throws IOException when it cannot read the first 10k bytes.
+	 */
 	public static Charset computeCharset(Message message, int confidence) throws IOException {
-		if(message.getCharset() == null) {
-			message.preserve();
+		if(StringUtils.isNotEmpty(message.getCharset())) {
+			Charset.forName(message.getCharset());
+		}
 
+		if(message.isBinary()) {
 			CharsetDetector detector = new CharsetDetector();
 			detector.setText(message.getMagic());
 			CharsetMatch match = detector.detect();
@@ -120,13 +131,12 @@ public abstract class MessageUtils {
 			}
 
 			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, match.getName(), match.getConfidence(), confidence);
-			return null; // Fail fast when it cannot determine the charset
 		}
-		return null;
+		return StreamUtil.DEFAULT_CHARSET; //fall back to the default charset.
 	}
 
 	/**
-	 * Returns the {@link MimeType} if available.
+	 * Returns the {@link MimeType} if present in the {@link MessageContext}.
 	 */
 	public static MimeType getMimeType(Message message) {
 		Map<String, Object> context = message.getContext();
