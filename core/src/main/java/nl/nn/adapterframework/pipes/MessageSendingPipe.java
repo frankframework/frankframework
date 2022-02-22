@@ -400,41 +400,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		propagateName();
 	}
 
-//	/**
-//	 * When true, the streaming capability of the nested sender is taken into account to determine if the pipe can provide an OutputStream.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamProvidingCapability() {
-//		return true;
-//	}
-//	/**
-//	 * When true, the ability of the nested sender to write to is taken into account to determine if the pipe can stream its output.
-//	 * Descender classes may override this method when necessary.
-//	 */
-//	protected boolean senderAffectsStreamWritingCapability() {
-//		return true;
-//	}
-//	
-//	@Override
-//	public protected canProvideOutputStream() {
-//		return super.canProvideOutputStream() 
-//				&& (!senderAffectsStreamProvidingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).canProvideOutputStream()
-//				   )
-//				&& getInputWrapper()==null
-//				&& getInputValidator()==null;
-//	}
-//
-//	@Override
-//	public boolean requiresOutputStream() {
-//		return super.requiresOutputStream() 
-//				&& (!senderAffectsStreamWritingCapability() || 
-//					sender instanceof IOutputStreamingSupport && ((IOutputStreamingSupport)sender).requiresOutputStream()
-//				   )
-//				&& getOutputWrapper()==null
-//				&& getOutputValidator()==null
-//				&& !isStreamResultToServlet();
-//	}
 
 	@Override
 	public boolean supportsOutputStreamPassThrough() {
