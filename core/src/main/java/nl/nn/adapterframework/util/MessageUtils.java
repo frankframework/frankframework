@@ -82,7 +82,7 @@ public abstract class MessageUtils {
 		contentType.append('/');
 		contentType.append(mimeType.getSubtype());
 
-		if(!message.isBinary()) {
+		if(message.getCharset() != null) {
 			contentType.append(";charset=");
 			contentType.append(message.getCharset());
 		}
