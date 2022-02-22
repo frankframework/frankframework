@@ -18,7 +18,10 @@ package nl.nn.adapterframework.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -26,8 +29,12 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.message.Message;
-
-import nl.nn.adapterframework.util.XmlBuilder;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 /**
  * Implementation of {@link IbisMaskingLayout} to serialize given log events 
@@ -84,4 +91,74 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 		return new IbisXmlLayout(config, charset, alwaysWriteExceptions);
 	}
 
+	/**
+	 * Local copy of an old version of XmlBuilder, that
+	 * - does not use logging itself
+	 * - java escapes unicode characters
+	 */
+	private static class XmlBuilder {
+		private Element element;
+
+		public static XmlBuilder create(String tagName) {
+			return new XmlBuilder(tagName);
+		}
+
+		private XmlBuilder(String tagName) {
+			element = new Element(tagName);
+		}
+
+		public void setValue(String value) {
+			if (value != null) {
+				//Escape illegal JDOM characters
+				element.setText(StringEscapeUtils.escapeJava(value));
+			}
+		}
+
+		public void addSubElement(XmlBuilder newElement) {
+			addSubElement(newElement, true);
+		}
+
+		public void addSubElement(XmlBuilder newElement, boolean adoptNamespace) {
+			if (newElement != null) {
+				if (adoptNamespace && StringUtils.isNotEmpty(element.getNamespaceURI())) {
+					addNamespaces(newElement.element, element.getNamespace());
+				}
+				element.addContent(newElement.element);
+			}
+		}
+
+		private void addNamespaces(Element element, Namespace namespace) {
+			if (StringUtils.isEmpty(element.getNamespaceURI())) {
+				element.setNamespace(namespace);
+				List<Element> childList = element.getChildren();
+				if (!childList.isEmpty()) {
+					for (Element child : childList) {
+						addNamespaces(child, namespace);
+					}
+				}
+			}
+		}
+
+		public void addAttribute(String name, String value) {
+			if (value != null) {
+				if (name.equalsIgnoreCase("xmlns")) {
+					element.setNamespace(Namespace.getNamespace(value));
+				} else if (StringUtils.startsWithIgnoreCase(name, "xmlns:")) {
+					String prefix = name.substring(6);
+					element.addNamespaceDeclaration(
+							Namespace.getNamespace(prefix, value));
+				} else {
+					element.setAttribute(new Attribute(name, value));
+				}
+			}
+		}
+
+		@Override
+		public String toString() {
+			Document document = new Document(element.detach());
+			XMLOutputter xmlOutputter = new XMLOutputter();
+			xmlOutputter.setFormat(Format.getPrettyFormat().setOmitDeclaration(true));
+			return xmlOutputter.outputString(document);
+		}
+	}
 }
