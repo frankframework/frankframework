@@ -13,9 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.stream;
+package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -24,12 +25,15 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
-import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.springframework.util.MimeType;
 
-import nl.nn.adapterframework.util.LogUtil;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
+
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
 	private static Logger LOG = LogUtil.getLogger(MessageUtils.class);
@@ -89,11 +93,51 @@ public abstract class MessageUtils {
 		return contentType.toString();
 	}
 
+	public static Charset computeCharset(Message message) throws IOException {
+		return computeCharset(message, 65);
+	}
+
+	public static Charset computeCharset(Message message, int confidence) throws IOException {
+		if(message.getCharset() == null) {
+			message.preserve();
+
+			CharsetDetector detector = new CharsetDetector();
+			detector.setText(message.getMagic());
+			CharsetMatch match = detector.detect();
+			String charset = match.getName();
+
+			if(match.getConfidence() > 90) {
+				return Charset.forName(charset);
+			}
+
+			//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+			if(charset.startsWith("windows-125")) {
+				charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+			}
+			if(match.getConfidence() >= confidence) {
+				LOG.info("unable to properly detect charset for message [{}], using [{}]", message, charset);
+				return Charset.forName(charset);
+			}
+
+			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, match.getName(), match.getConfidence(), confidence);
+			return null; // Fail fast when it cannot determine the charset
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the {@link MimeType} if available.
+	 */
 	public static MimeType getMimeType(Message message) {
 		Map<String, Object> context = message.getContext();
 		return (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 	}
 
+	/**
+	 * Computes the {@link MimeType} when not available.
+	 * <p>
+	 * NOTE: This is a <b>very</b> resource intensive operation!
+	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		Map<String, Object> context = message.getContext();
 		MimeType mimeType = getMimeType(message);
@@ -107,10 +151,11 @@ public abstract class MessageUtils {
 		}
 
 		try {
+			message.preserve();
 			TikaConfig tika = new TikaConfig();
 			Metadata metadata = new Metadata();
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(TikaInputStream.get(message.getMagic()), metadata);
+			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(message.asInputStream(), metadata);
 			return MimeType.valueOf(tikaMediaType.toString());
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);

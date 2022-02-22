@@ -362,10 +362,10 @@ public class Message implements Serializable {
 	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
 	 * Only works for binary messages;
 	 */
-	byte[] getMagic() throws IOException {
+	public byte[] getMagic() throws IOException {
 		return getMagic(10*1024);
 	}
-	byte[] getMagic(int readLimit) throws IOException {
+	public byte[] getMagic(int readLimit) throws IOException {
 		if(!isBinary()) {
 			return null;
 		}

@@ -648,6 +648,11 @@
 			<artifactId>tika-core</artifactId>
 			<version>1.28.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>70.1</version>
+		</dependency>
 
 		<!-- Test scoped dependencies -->
 		<dependency>
