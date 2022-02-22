@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -27,6 +28,9 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.springframework.util.MimeType;
+
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -87,6 +91,38 @@ public abstract class MessageUtils {
 			contentType.append(message.getCharset());
 		}
 		return contentType.toString();
+	}
+
+	public static Charset computeCharset(Message message) throws IOException {
+		return computeCharset(message, 65);
+	}
+
+	public static Charset computeCharset(Message message, int confidence) throws IOException {
+		if(message.getCharset() == null) {
+			message.preserve();
+
+			CharsetDetector detector = new CharsetDetector();
+			detector.setText(message.asInputStream());
+			CharsetMatch match = detector.detect();
+			String charset = match.getName();
+
+			if(match.getConfidence() > 90) {
+				return Charset.forName(charset);
+			}
+
+			//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+			if(charset.startsWith("windows-125")) {
+				charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+			}
+			if(match.getConfidence() >= confidence) {
+				LOG.info("unable to properly detect charset for message [{}], using [{}]", message, charset);
+				return Charset.forName(charset);
+			}
+
+			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, match.getName(), match.getConfidence(), confidence);
+			return null; // Fail fast when it cannot determine the charset
+		}
+		return null;
 	}
 
 	public static MimeType getMimeType(Message message) {
