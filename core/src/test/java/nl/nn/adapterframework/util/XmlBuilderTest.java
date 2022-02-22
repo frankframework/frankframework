@@ -13,6 +13,10 @@ import com.unboundid.ldap.sdk.LDAPException;
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class XmlBuilderTest {
+	
+	private final String UNICODE_CHARACTERS = " aâΔع你好ಡತ";
+	private final String JAVA_ESCAPED_UNICODE_CHARACTERS = "\u0010 a\u00E2\u0394\u0639\u4F60\u597D\u0CA1\u0CA4";
+	private final String XML_RENDERED_UNICODE_CHARACTERS = "¿#16; aâΔع你好ಡತ";
 
 	@Before
 	public void initXMLUnit() throws LDAPException, IOException {
@@ -204,4 +208,17 @@ public class XmlBuilderTest {
 		String actual = root.toXML().trim().replaceAll("  ", "\t").replaceAll(System.lineSeparator(), "\n");
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void testUnicodeMessage() {
+		XmlBuilder root = new XmlBuilder("root");
+		XmlBuilder subElement = new XmlBuilder("element");
+		subElement.setValue("Unicode characters ["+UNICODE_CHARACTERS+"]");
+		root.addSubElement(subElement);
+		
+		String expected = "<root><element>Unicode characters ["+XML_RENDERED_UNICODE_CHARACTERS+"]</element></root>";
+		
+		MatchUtils.assertXmlEquals(expected, root.toXML());
+	}
+
 }
