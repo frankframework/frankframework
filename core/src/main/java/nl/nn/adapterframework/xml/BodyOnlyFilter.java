@@ -33,8 +33,8 @@ public class BodyOnlyFilter extends FullXmlFilter {
 
 	private @Getter @Setter boolean skipRoot=true;
 
-	int level;
-	
+	private int level;
+
 	public BodyOnlyFilter() {
 		super();
 	}
@@ -59,6 +59,7 @@ public class BodyOnlyFilter extends FullXmlFilter {
 			super.startElement(uri, localname, qname, attributes);
 		}
 	}
+
 	@Override
 	public void endElement(String uri, String localname, String qname) throws SAXException {
 		if (!isSkipRoot() || --level>0) {

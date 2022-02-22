@@ -32,7 +32,7 @@ public class ElementPropertyResolver extends FullXmlFilter {
 	private boolean collectingBuffer;
 
 	private BodyOnlyFilter bodyOnly;
-	
+
 	public ElementPropertyResolver(ContentHandler handler, Properties properties) {
 		super(handler);
 		if(properties == null) {
