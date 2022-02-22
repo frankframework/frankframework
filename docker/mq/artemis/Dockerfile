@@ -36,11 +36,6 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Web Server
-EXPOSE 8161
-EXPOSE 61616
-
-
 COPY ./docker-run.sh /
 
 # Expose some outstanding folders
