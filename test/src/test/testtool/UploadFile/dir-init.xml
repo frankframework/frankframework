@@ -1,0 +1,7 @@
+<project default="copy.files">
+	<target name="copy.files">
+		<property name="root.dir" value="${testdata.dir}/UploadFile" />
+		<delete dir="${root.dir}" />
+		<mkdir dir="${root.dir}" />
+	</target>
+</project>

@@ -4,7 +4,7 @@ FROM iaf-as-tomcat AS iaf-example-tomcat
 COPY target/dependencies/*.jar /usr/local/tomcat/lib/
 
 # copy war
-COPY target/dependencies/ibis-adapterframework-example.war /usr/local/tomcat/webapps/iaf-example.war
+COPY target/dependencies/ibis-adapterframework-example.war /usr/local/tomcat/webapps/ROOT.war
 
 # copy configuration, properties and testscenarios
 #COPY target/dependencies/frank/configuration/*-resources.jar /opt/frank/resources/

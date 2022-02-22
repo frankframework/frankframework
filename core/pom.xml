@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.ibissource</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
-		<version>7.8-SNAPSHOT</version>
+		<version>${revision}</version>
 	</parent>
 
 	<artifactId>ibis-adapterframework-core</artifactId>
@@ -62,6 +62,17 @@
 			<version>${log4j2.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<version>1.8.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>1.8.2</version>
 		</dependency>
 
 		<dependency>
@@ -692,7 +703,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.2.25</version>
+			<version>42.3.3</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -730,25 +741,10 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.1</version>
-				<executions>
-					<execution>
-						<id>services-war</id>
-						<goals>
-							<goal>war</goal>
-						</goals>
-						<configuration>
-							<classifier>services</classifier>
-							<packagingIncludes>WEB-INF/classes/META-INF/services/</packagingIncludes>
-						</configuration>
-					</execution>
-				</executions>
+				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
-			 -->
 		</plugins>
 	</build>
 

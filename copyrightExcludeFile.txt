@@ -60,3 +60,5 @@ org.eclipse.
 .iml
 overview.html
 .editorconfig
+.checkstyle
+checkstyle.xml

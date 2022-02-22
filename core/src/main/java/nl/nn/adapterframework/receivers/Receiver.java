@@ -86,6 +86,7 @@ import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.monitoring.EventPublisher;
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.statistics.CounterStatistic;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -94,7 +95,6 @@ import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CompactSaxHandler;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
@@ -1624,44 +1624,43 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
-		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
-		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
-		hski.handleScalar(recData,"messagesRejected", numRejected.getValue());
-		hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
-		hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
-		hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
-		numReceived.performAction(action);
-		numRetried.performAction(action);
-		numRejected.performAction(action);
-		messageExtractionStatistics.performAction(action);
-		Object pstatData=hski.openGroup(recData,null,"procStats");
-		for(StatisticsKeeper pstat:getProcessStatistics()) {
-			hski.handleStatisticsKeeper(pstatData,pstat);
-			pstat.performAction(action);
-		}
-		hski.closeGroup(pstatData);
-
-		Object istatData=hski.openGroup(recData,null,"idleStats");
-		for(StatisticsKeeper istat:getIdleStatistics()) {
-			hski.handleStatisticsKeeper(istatData,istat);
-			istat.performAction(action);
-		}
-		hski.closeGroup(istatData);
-
-		Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
-		if (statsIter!=null) {
-			Object qstatData=hski.openGroup(recData,null,"queueingStats");
-			for(StatisticsKeeper qstat:statsIter) {
-				hski.handleStatisticsKeeper(qstatData,qstat);
-				qstat.performAction(action);
+		try {
+			hski.handleScalar(recData,"messagesReceived", numReceived);
+			hski.handleScalar(recData,"messagesRetried", numRetried);
+			hski.handleScalar(recData,"messagesRejected", numRejected);
+			hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
+			hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
+			hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
+			messageExtractionStatistics.performAction(action);
+			Object pstatData=hski.openGroup(recData,null,"procStats");
+			for(StatisticsKeeper pstat:getProcessStatistics()) {
+				hski.handleStatisticsKeeper(pstatData,pstat);
+				pstat.performAction(action);
 			}
-			hski.closeGroup(qstatData);
+			hski.closeGroup(pstatData);
+	
+			Object istatData=hski.openGroup(recData,null,"idleStats");
+			for(StatisticsKeeper istat:getIdleStatistics()) {
+				hski.handleStatisticsKeeper(istatData,istat);
+				istat.performAction(action);
+			}
+			hski.closeGroup(istatData);
+	
+			Iterable<StatisticsKeeper> statsIter = getQueueingStatistics();
+			if (statsIter!=null) {
+				Object qstatData=hski.openGroup(recData,null,"queueingStats");
+				for(StatisticsKeeper qstat:statsIter) {
+					hski.handleStatisticsKeeper(qstatData,qstat);
+					qstat.performAction(action);
+				}
+				hski.closeGroup(qstatData);
+			}
+	
+		} finally {
+			hski.closeGroup(recData);
 		}
-
-
-		hski.closeGroup(recData);
 	}
 
 

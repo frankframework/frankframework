@@ -50,7 +50,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -955,7 +954,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	@Override
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 		}

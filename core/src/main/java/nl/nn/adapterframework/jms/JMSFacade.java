@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jms;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,7 @@ import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -115,7 +117,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String messageSelector = null;
 
 	private @Getter boolean correlationIdToHex = false;
-	private String correlationIdToHexPrefix = "ID:";
+	private @Getter String correlationIdToHexPrefix = "ID:";
 	private @Getter int correlationIdMaxLength = -1;
 
 	public enum AcknowledgeMode implements DocumentedEnum {
@@ -683,6 +685,18 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
+	public MessageContext getContext(javax.jms.Message message) throws JMSException {
+		MessageContext result = new MessageContext();
+		result.withName(message.getJMSMessageID());
+		result.withModificationTime(message.getJMSTimestamp());
+		Enumeration<String> names=message.getPropertyNames();
+		while(names.hasMoreElements()) {
+			String name=names.nextElement();
+			result.put(name,message.getObjectProperty(name));
+		}
+		return result;
+	}
+
 	/**
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
@@ -702,7 +716,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (rawMessage instanceof IMessageWrapper) {
 			message = ((IMessageWrapper)rawMessage).getMessage();
 		} else if (rawMessage instanceof TextMessage) {
-			message = new Message(((TextMessage)rawMessage).getText());
+			message = new Message(((TextMessage)rawMessage).getText(),getContext((TextMessage)rawMessage));
 		} else if (rawMessage instanceof BytesMessage) {
 			BytesMessage bytesMsg = (BytesMessage)rawMessage;
 			InputStream input = new InputStream() {
@@ -740,7 +754,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				}
 				
 			};
-			message = new Message(new BufferedInputStream(input));
+			message = new Message(new BufferedInputStream(input),getContext((BytesMessage)rawMessage));
 		} else if (rawMessage == null) {
 			message = Message.nullMessage();
 		} else {

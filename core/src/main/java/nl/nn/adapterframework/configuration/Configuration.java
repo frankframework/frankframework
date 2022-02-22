@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,10 +34,12 @@ import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.configuration.extensions.SapSystems;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
@@ -51,7 +53,8 @@ import nl.nn.adapterframework.lifecycle.SpringContextScope;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.scheduler.job.IJob;
 import nl.nn.adapterframework.scheduler.job.Job;
-import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics.Action;
+import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
@@ -74,7 +77,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
-	private @Getter @Setter ScheduleManager scheduleManager; //We have to manually inject the AdapterManager bean! See refresh();
+	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
 
 	private @Getter BootState state = BootState.STOPPED;
 
@@ -90,12 +93,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private Date statisticsMarkDateMain=new Date();
 	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+	public Configuration() {
+		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	}
+
+	private void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action, String rootName, String rootType) throws SenderException {
 		Object root = hski.start(now,mainMark,detailMark);
 		try {
-			Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
+			Object groupData= hski.openGroup(root, rootName, rootType);
 			for (Adapter adapter : adapterManager.getAdapterList()) {
-				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
+				adapter.iterateOverStatistics(hski,groupData,action);
 			}
 			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
@@ -104,11 +111,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 	}
 
-	public void dumpStatistics(int action) {
+	public void dumpStatistics(Action action) {
 		Date now = new Date();
-		boolean showDetails=(action == HasStatistics.STATISTICS_ACTION_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_MARK_FULL ||
-							 action == HasStatistics.STATISTICS_ACTION_RESET);
+		boolean showDetails=(action == Action.FULL || action == Action.MARK_FULL);
 		try {
 			if (statisticsHandler==null) {
 				statisticsHandler =new StatisticsKeeperLogger();
@@ -126,24 +131,27 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 //			skih.configure();
 //			skihc.registerIterationHandler(skih);
 
-			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action);
+			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
 		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_MAIN ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_MAIN || action==Action.MARK_FULL) {
 				statisticsMarkDateMain=now;
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_RESET ||
-			action==HasStatistics.STATISTICS_ACTION_MARK_FULL) {
+		if (action==Action.MARK_FULL) {
 				statisticsMarkDateDetails=now;
 		}
 
 	}
 
-	public Configuration() {
-		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
+	public void initMetrics() throws ConfigurationException {
+		MeterRegistry meterRegistry = getIbisManager().getIbisContext().getMeterRegistry();
+		StatisticsKeeperIterationHandler metricsInitializer = new MetricsInitializer(meterRegistry);
+		try {
+			forEachStatisticsKeeper(metricsInitializer, new Date(), statisticsMarkDateMain, statisticsMarkDateDetails, Action.FULL, getName(), "configuration");
+		} catch (SenderException e) {
+			throw new ConfigurationException("Cannot initialize metrics", e);
+		}
 	}
 
 	@Override
@@ -265,9 +273,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 			}
 		} catch (ConfigurationException e) {
 			state = BootState.STOPPED;
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
-
+		initMetrics();
 		configured = true;
 
 		String msg;
@@ -415,6 +424,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		log.debug("Configuration [" + getName() + "] registered adapter [" + adapter.toString() + "]");
 	}
 
+	// explicitly in this position, to have the right location in the XSD
+	public void setScheduleManager(ScheduleManager scheduleManager) {
+		this.scheduleManager = scheduleManager;
+	}
+
 	/**
 	 * Register an {@link IJob job} for scheduling at the configuration.
 	 * The configuration will create an {@link IJob AdapterJob} instance and a JobDetail with the
@@ -426,8 +440,9 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	 * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
+	@Deprecated // deprecated to force use of Scheduler element
 	public void registerScheduledJob(IJob jobdef) {
-		scheduleManager.register(jobdef);
+		scheduleManager.registerScheduledJob(jobdef);
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
@@ -522,9 +537,20 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		return null;
 	}
 
+	// Dummy setter to allow SapSystems being added to Configurations via Frank!Config XSD
+	public void setSapSystems(SapSystems sapSystems) {
+		// SapSystems self register;
+	}
+
 	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	public void setJmsRealms(JmsRealmFactory realm) {
+		// JmsRealm-objects self register in JmsRealmFactory;
+	}
+
+	// Dummy setter to allow JmsRealms being added to Configurations via Frank!Config XSD
+	@Deprecated
 	public void registerJmsRealm(JmsRealm realm) {
-		JmsRealmFactory.getInstance().registerJmsRealm(realm);
+		// JmsRealm-objects self register in JmsRealmFactory;
 	}
 
 	@Override
@@ -533,9 +559,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	/**
-	 * Specifies event monitoring 
+	 * Container for monitor objects 
 	 */
+	public void setMonitoring(MonitorManager monitorManager) {
+		// Monitors self register in MonitorManager;
+	}
 	// above comment is used in FrankDoc
+	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
 	}
 
