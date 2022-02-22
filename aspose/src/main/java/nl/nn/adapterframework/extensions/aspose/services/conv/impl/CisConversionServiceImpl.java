@@ -28,8 +28,8 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageUtils;
 /**
  * @author Gerard van der Hoorn
  */

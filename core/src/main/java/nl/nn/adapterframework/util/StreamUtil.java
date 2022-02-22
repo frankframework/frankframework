@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
@@ -48,6 +49,7 @@ import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Lombok;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 
@@ -414,6 +416,31 @@ public class StreamUtil {
 		return new WatchedInputStream(stream);
 	}
 
+	public static OutputStream markOutputStream(OutputStream stream) {
+		return new MarkSupportedOutputStream(stream);
+	}
+
+	private static class MarkSupportedOutputStream extends BufferedOutputStream {
+
+		public MarkSupportedOutputStream(OutputStream out) {
+			super(out, 1024);
+		}
+
+		public void mark(int readLimit) {
+			try {
+				flush(); // Flush the internal buffer before assigning a new one.
+			} catch (IOException e) {
+				Lombok.sneakyThrow(e);
+			}
+			buf = new byte[readLimit];
+			count = 0;
+		}
+		public void reset() {
+			buf = new byte[1024];
+			count = 0;
+		}
+	}
+
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
 		return new ThresholdingOutputStream(maxSize) {
 
@@ -469,7 +496,8 @@ public class StreamUtil {
 	public static InputStream captureInputStream(InputStream in, OutputStream capture, int maxSize, boolean captureRemainingOnClose) {
 
 		CountingInputStream counter = new CountingInputStream(in);
-		return new TeeInputStream(counter, limitSize(capture, maxSize), true) {
+		OutputStream markableOutputStream = markOutputStream(limitSize(capture, maxSize));
+		return new TeeInputStream(counter, markableOutputStream, true) {
 
 			@Override
 			public void close() throws IOException {
@@ -485,6 +513,17 @@ public class StreamUtil {
 				}
 			}
 
+			@Override
+			public synchronized void mark(int readlimit) {
+				((MarkSupportedOutputStream) markableOutputStream).mark(readlimit);
+				super.mark(readlimit);
+			}
+
+			@Override
+			public synchronized void reset() throws IOException {
+				((MarkSupportedOutputStream) markableOutputStream).reset();
+				super.reset();
+			}
 		};
 
 	}

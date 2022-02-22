@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.util;
+package nl.nn.adapterframework.stream;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -24,12 +24,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.springframework.util.MimeType;
 
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MessageUtils {
 	private static Logger LOG = LogUtil.getLogger(MessageUtils.class);
@@ -107,11 +107,10 @@ public abstract class MessageUtils {
 		}
 
 		try {
-			message.preserve();
 			TikaConfig tika = new TikaConfig();
 			Metadata metadata = new Metadata();
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(message.asInputStream(), metadata);
+			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(TikaInputStream.get(message.getMagic()), metadata);
 			return MimeType.valueOf(tikaMediaType.toString());
 		} catch (Throwable t) {
 			LOG.warn("error parsing message to determine mimetype", t);

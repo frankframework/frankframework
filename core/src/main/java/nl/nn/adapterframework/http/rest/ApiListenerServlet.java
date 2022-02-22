@@ -53,11 +53,11 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 

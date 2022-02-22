@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.stream;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,6 +33,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -354,6 +356,58 @@ public class Message implements Serializable {
 			onExceptionClose(e);
 			throw Lombok.sneakyThrow(e);
 		}
+	}
+
+	/**
+	 * Reads the first 10k of a binary message. If the message does not support markSupported it is wrapped in a buffer.
+	 * Only works for binary messages;
+	 */
+	byte[] getMagic() throws IOException {
+		return getMagic(10*1024);
+	}
+	byte[] getMagic(int readLimit) throws IOException {
+		if(!isBinary()) {
+			return null;
+		}
+
+		if (request instanceof InputStream) {
+			InputStream stream = (InputStream) request;
+			if(!stream.markSupported()) {
+				request = new BufferedInputStream(stream, readLimit);
+			}
+			stream.mark(readLimit + 1);
+			try {
+				return readBytesFromInputStream(stream, readLimit);
+			} finally {
+				stream.reset();
+			}
+		}
+		if (request instanceof ThrowingSupplier) {
+			try {
+				InputStream stream = ((ThrowingSupplier<InputStream,Exception>) request).get();
+				return readBytesFromInputStream(stream, readLimit);
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		}
+		if(request instanceof byte[]) {
+			return Arrays.copyOf((byte[]) request, readLimit);
+		}
+
+		return null;
+	}
+
+	private byte[] readBytesFromInputStream(InputStream stream, int readLimit) throws IOException {
+		byte[] bytes = new byte[readLimit];
+		int numRead = stream.read(bytes);
+		if (numRead < 0) {
+			return null;
+		}
+		if (numRead < readLimit) {
+			// move the bytes into a smaller array
+			bytes = Arrays.copyOf(bytes, numRead);
+		}
+		return bytes;
 	}
 
 	/**

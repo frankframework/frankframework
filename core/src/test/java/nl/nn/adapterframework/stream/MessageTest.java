@@ -65,8 +65,13 @@ public class MessageTest {
 
 	private SerializationTester<Message> serializationTester = new SerializationTester<Message>();
 
-	protected void testAsInputStream(Message adapter) throws IOException {
-		InputStream result = adapter.asInputStream();
+	protected void testAsInputStream(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
+		InputStream result = message.asInputStream();
 		String actual = StreamUtil.streamToString(result, null, "UTF-8");
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
@@ -87,12 +92,22 @@ public class MessageTest {
 	}
 
 	protected void testAsString(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
 		String actual = message.asString();
 		MatchUtils.assertXmlEquals(testString, actual);
 	}
 
-	protected void testAsByteArray(Message adapter) throws IOException {
-		byte[] actual = adapter.asByteArray();
+	protected void testAsByteArray(Message message) throws IOException {
+		if(message.isBinary()) {
+			byte[] header = message.getMagic(6);
+			assertEquals("<root>", new String(header));
+		}
+
+		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes("UTF-8");
 		assertEquals("lengths differ", expected.length, actual.length);
 		for (int i = 0; i < expected.length; i++) {
