@@ -228,7 +228,7 @@ angular.module('iaf.beheerconsole')
 		link: function(scope, elem) {
 			let mermaidUrl = Misc.getServerPath() + "iaf/api/adapters/" + scope.adaptername + "/flow?flowType=mermaid";
 			$http.get(mermaidUrl).then(function(results) {
-				elem.html(results.data);
+				elem.html('<ng-mermaid>' + results.data + '</ng-mermaid>');
 				$compile(elem.contents())(scope);
 			});
 

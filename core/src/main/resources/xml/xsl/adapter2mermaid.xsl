@@ -13,20 +13,10 @@
 			<xsl:apply-templates select="*" mode="preprocess"/>
 		</xsl:variable>
 
-		<xsl:text>
-			&lt;div class="inmodal">
-				&lt;div class="modal-body" ng-if="!error">
-					&lt;ng-mermaid>
-		</xsl:text>
 		<xsl:text>graph&#10;</xsl:text>
 		<xsl:text> classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
-		<xsl:text>
-					&lt;/ng-mermaid>
-				&lt;/div>
-			&lt;/div>
-		</xsl:text>
 <!--		<xsl:copy-of select="$preproccessedConfiguration"/>-->
 	</xsl:template>
 
