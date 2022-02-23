@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * JDBC implementation of {@link IMessageBrowser}.
@@ -66,7 +67,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 	private @Getter @Setter String hideRegex = null;
 	private @Getter @Setter String hideMethod = "all";
 
-	private SortOrder sortOrder = null;
+	private @Getter SortOrder order = null;
 	private String messagesOrder = AppConstants.getInstance().getString("browse.messages.order", "DESC");
 	private String errorsOrder = AppConstants.getInstance().getString("browse.errors.order", "ASC");
 
@@ -110,6 +111,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	public void copyFacadeSettings(JdbcFacade facade) throws JdbcException {
 		if (facade!=null) {
+			SpringUtils.autowireByName(facade.getApplicationContext(), this);
 			datasource=facade.getDatasource();
 			setAuthAlias(facade.getAuthAlias());
 			setUsername(facade.getUsername());
@@ -122,12 +124,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		return datasource!=null ? datasource : super.getDatasource();
 	}
 
-	
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		setOperationControls();
 		selector = createSelector();
+		if(getOrder() == null) {
+			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); //Defaults to ASC
+			} else {
+				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); //Defaults to DESC
+			}
+		}
 	}
 
 
@@ -343,17 +351,18 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(selectContextQuery)) {
-				applyStandardParameters(stmt, storageKey, true);
-				try (ResultSet rs =  stmt.executeQuery()) {
-	
-					if (!rs.next()) {
-						throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
-					}
-					return new JdbcMessageBrowserIteratorItem(conn, rs,true);
-				}
+		// result set needs to stay open to access the fields of a record
+		// The caller may use try-with-resources to call the close method of IMessageBrowsingIteratorItem to close the open resources
+		try {
+			Connection conn = getConnection();
+			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);
+			applyStandardParameters(stmt, storageKey, true);
+			ResultSet rs = stmt.executeQuery();
+			if (!rs.next()) {
+				throw new ListenerException("could not retrieve context for storageKey ["+ storageKey+"]");
 			}
+
+			return new JdbcMessageBrowserIteratorItem(conn, rs, true);
 		} catch (Exception e) {
 			throw new ListenerException("cannot read context",e);
 		}
@@ -522,22 +531,8 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		this.type = type;
 	}
 
-
-
-
-	public void setOrder(String string) {
-		sortOrder = EnumUtils.parse(SortOrder.class, "order", string);
-	}
-
-	public SortOrder getOrderEnum() {
-		if(sortOrder == null) {
-			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				setOrder(errorsOrder); //Defaults to ASC
-			} else {
-				setOrder(messagesOrder); //Defaults to DESC
-			}
-		}
-		return sortOrder;
+	public void setOrder(SortOrder value) {
+		order = value;
 	}
 
 }

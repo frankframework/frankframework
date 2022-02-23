@@ -16,25 +16,19 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-docker-as-jboss-wildfly</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>resources</classifier>
+			<version>${project.version}</version>
+			<classifier>full-configuration</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
-			<classifier>configurations</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
-			<version>${iaf.version}</version>
+			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 		</dependency>
 		<dependency>
@@ -82,7 +76,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeClassifiers>configurations,resources,scenarios</excludeClassifiers>
+							<excludeClassifiers>full-configuration,scenarios</excludeClassifiers>
 						</configuration>
 					</execution>
 					<execution>
@@ -96,12 +90,7 @@
 								<artifactItem>
 									<groupId>org.ibissource</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>configurations</classifier>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
-									<classifier>resources</classifier>
+									<classifier>full-configuration</classifier>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/dependencies/frank/configuration</outputDirectory>

@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
 		<receiver>
 			<listener
@@ -90,4 +90,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

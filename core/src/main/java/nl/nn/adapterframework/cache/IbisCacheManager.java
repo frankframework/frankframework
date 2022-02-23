@@ -39,11 +39,11 @@ import org.apache.logging.log4j.Logger;
 public class IbisCacheManager {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final String CACHE_DIR_KEY="cache.dir";
-	
+	private static final String CACHE_DIR_KEY="cache.dir";
+
 	private static IbisCacheManager self;
 	private CacheManager cacheManager=null;
-	
+
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
 		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
@@ -52,20 +52,20 @@ public class IbisCacheManager {
 			DiskStoreConfiguration diskStoreConfiguration = new DiskStoreConfiguration();
 			diskStoreConfiguration.setPath(cacheDir);
 			cacheManagerConfig.addDiskStore(diskStoreConfiguration);
-		} 
+		}
 		CacheConfiguration defaultCacheConfig = new CacheConfiguration();
 		cacheManagerConfig.addDefaultCache(defaultCacheConfig);
 		cacheManager= new CacheManager(cacheManagerConfig);
 	}
-	
-	public synchronized static IbisCacheManager getInstance() {
+
+	public static synchronized IbisCacheManager getInstance() {
 		if (self==null) {
 			self=new IbisCacheManager();
 		}
 		return self;
 	}
-	
-	public synchronized static void shutdown() {
+
+	public static synchronized void shutdown() {
 		if (self!=null) {
 			self.log.debug("shutting down cacheManager...");
 			self.cacheManager.shutdown();
@@ -74,14 +74,14 @@ public class IbisCacheManager {
 			self=null;
 		}
 	}
-	
+
 	public Ehcache addCache(Cache cache) {
 		log.debug("registering cache ["+cache.getName()+"]");
 		cacheManager.addCache(cache);
 		return cacheManager.getEhcache(cache.getName());
 	}
 
-	public void removeCache(String cacheName) {
+	public void destroyCache(String cacheName) {
 		log.debug("deregistering cache ["+cacheName+"]");
 		cacheManager.removeCache(cacheName);
 	}
@@ -108,5 +108,5 @@ public class IbisCacheManager {
 			hski.closeGroup(subdata);
 		}
 	}
-	
+
 }

@@ -477,7 +477,7 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
-			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", false, true, false);
+			return JdbcUtil.getValue(dbmsSupport, rs, columnIndex, rs.getMetaData(), Misc.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
 		} catch (JdbcException e) {
 			throw new SQLException("JdbcException reading value");
 		} catch (IOException e) {
@@ -576,6 +576,11 @@ public class Storage extends JdbcFacade implements nl.nn.testtool.storage.CrudSt
 		if (errorMessage != null) {
 			throw new StorageException(errorMessage);
 		}
+	}
+
+	@Override
+	public void clear() throws StorageException {
+		throw new StorageException("Clear method is not implemented");
 	}
 
 }

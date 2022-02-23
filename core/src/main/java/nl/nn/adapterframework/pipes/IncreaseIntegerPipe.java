@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -34,19 +35,16 @@ import nl.nn.adapterframework.stream.Message;
  * Pipe that increases the integer value of a session variable.
  * Can be used in combination with {@link CompareIntegerPipe} to construct loops.
  * 
- * <p>
- * <table border="1">
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>reference to the session variable whose value is to be increased</td><td></td></tr>
- * <tr><td>{@link #setIncrement(int) increment}</td><td>amount to increment the value. Can be set from the attribute or the parameter 'increment'</td><td>1</td></tr>
- * </table>
- * </p>
+ * @ff.parameter increment integer value to be added to the session variable
+ * 
  * @author Richard Punt / Gerrit van Brakel
  */
 public class IncreaseIntegerPipe extends FixedForwardPipe {
 
-	private String sessionKey=null;
-	private int increment=1;
 	private final static String PARAMETER_INCREMENT = "increment";
+
+	private @Getter String sessionKey=null;
+	private @Getter int increment=1;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -87,20 +85,22 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@IbisDoc({"reference to the session variable whose value is to be increased", ""})
+	@Override
+	public boolean consumesSessionVariable(String sessionKey) {
+		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
+	}
+
+
+	/** Reference to the session variable whose value is to be increased
+	 * @ff.mandatory
+	 */
 	public void setSessionKey(String string) {
 		sessionKey = string;
-	}
-	public String getSessionKey() {
-		return sessionKey;
 	}
 
 	@IbisDoc({"amount to increment the value. Can be set from the attribute or the parameter 'increment'", "1"})
 	public void setIncrement(int i) {
 		increment = i;
-	}
-	public int getIncrement() {
-		return increment;
 	}
 
 }

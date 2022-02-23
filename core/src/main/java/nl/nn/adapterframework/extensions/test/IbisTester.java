@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class IbisTester {
@@ -162,7 +162,7 @@ public class IbisTester {
 
 	public void closeTest() {
 		if (ibisContext != null) {
-			ibisContext.destroy();
+			ibisContext.close();
 		}
 		debug("***end***");
 	}
@@ -206,18 +206,18 @@ public class IbisTester {
 		int adaptersCount = 0;
 		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
-			RunStateEnum runState = adapter.getRunState();
-			if (!(RunStateEnum.STARTED).equals(runState)) {
+			RunState runState = adapter.getRunState();
+			if (!(RunState.STARTED).equals(runState)) {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "], will retry...");
 				int count = 30;
-				while (count-- > 0 && !(RunStateEnum.STARTED).equals(runState)) {
+				while (count-- > 0 && !(RunState.STARTED).equals(runState)) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					runState = adapter.getRunState();
-					if (!(RunStateEnum.STARTED).equals(runState)) {
+					if (!(RunState.STARTED).equals(runState)) {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "], retries left [" + count + "]");
 					} else {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
@@ -226,7 +226,7 @@ public class IbisTester {
 			} else {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
-			if ((RunStateEnum.STARTED).equals(runState)) {
+			if ((RunState.STARTED).equals(runState)) {
 				adaptersStarted++;
 			} else {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");

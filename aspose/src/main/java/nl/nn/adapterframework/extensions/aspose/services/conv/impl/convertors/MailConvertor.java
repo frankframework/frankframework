@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -47,16 +48,15 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 class MailConvertor extends AbstractConvertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(MailConvertor.class);
 
-	private static final float MaxImageWidthInPoints = PageConvertUtil
-			.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
-	private static final float MaxImageHeightInPoints = PageConvertUtil
-			.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
+	private static final float MaxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
+	private static final float MaxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private final String eMailHeaderDateFormat = "dd-MM-yyyy HH:mm:ss";
 	private CisConversionService cisConversionService;
 
@@ -75,19 +75,16 @@ class MailConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	MailConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
-		super(pdfOutputLocation,
-				MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
-
+	protected MailConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
+		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 		this.cisConversionService = cisConversionService;
 	}
 
 	@Override
-	public void convert(MediaType mediaType, File file, CisConversionResult result, ConversionOption conversionOption)
-			throws Exception {
+	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		MailMessage eml = null;
 
-		try (FileInputStream inputStream = new FileInputStream(file)) {
+		try (InputStream inputStream = message.asInputStream(charset)) {
 			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 
 			AttachmentCollection attachments = eml.getAttachments();
@@ -125,14 +122,13 @@ class MailConvertor extends AbstractConvertor {
 				resizeInlineImages(doc);
 
 				doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-				
+
 				result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 				Long endTime = new Date().getTime();
 				LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
 			}finally {
 				Files.delete(tempMHtmlFile.toPath());
 			}
-			
 
 			// Convert and (optional add) any attachment of the mail.
 			for (int index = 0; index < attachments.size(); index++) {
@@ -140,18 +136,14 @@ class MailConvertor extends AbstractConvertor {
 				Attachment attachment = attachments.get_Item(index);
 
 				// Convert the attachment.
-				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment,
-						conversionOption);
+				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
 				// If it is an singlepdf add the file to the the current pdf.
-				if ((ConversionOption.SINGLEPDF.equals(conversionOption)) 
-					&& (cisConversionResultAttachment.isConversionSuccessfull())) {
+				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessfull()) {
 					try {
 						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
 						pdfAttachmentUtil.addAttachmentInSinglePdf();
 					} finally {
-						
 						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						
 						// Clear the file because it is now incorporated in the file it self. 
 						cisConversionResultAttachment.setPdfResultFile(null);
 						cisConversionResultAttachment.setResultFilePath(null);
@@ -161,7 +153,6 @@ class MailConvertor extends AbstractConvertor {
 				result.addAttachment(cisConversionResultAttachment);
 			}
 		}
-			
 	}
 
 	private void resizeInlineImages(Document doc) throws Exception {
@@ -189,14 +180,13 @@ class MailConvertor extends AbstractConvertor {
 	 * Converts an email attachment to a pdf via the cisConversionService.
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
-
 		LOGGER.debug("Convert attachment... (" + attachment.getName() + ")");
 
 		// Get the name of the file (segment) (this is the last part.
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 
-		return cisConversionService.convertToPdf(attachment.getContentStream(), segmentFilename, conversionOption);
+		return cisConversionService.convertToPdf(new Message(attachment.getContentStream()), segmentFilename, conversionOption);
 	}
 
 	private String toString(Iterable<MailAddress> iterable) {

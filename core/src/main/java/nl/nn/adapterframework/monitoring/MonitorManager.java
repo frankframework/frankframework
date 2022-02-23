@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.monitoring.events.Event;
 import nl.nn.adapterframework.monitoring.events.RegisterMonitorEvent;
@@ -49,6 +50,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Niels Meijer
  * @version 2.0
  */
+@FrankDocGroup(name = "Monitoring")
 public class MonitorManager extends ConfigurableLifecyleBase implements ApplicationContextAware, ApplicationListener<RegisterMonitorEvent> {
 
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -199,7 +201,6 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 	public XmlBuilder toXml() {
 		XmlBuilder configXml=new XmlBuilder("monitoring");
 		configXml.addAttribute("enabled",isEnabled());
-		XmlBuilder destinationsXml=new XmlBuilder("destinations");
 		for(String name : destinations.keySet()) {
 			IMonitorAdapter ma=getDestination(name);
 
@@ -207,15 +208,12 @@ public class MonitorManager extends ConfigurableLifecyleBase implements Applicat
 			destinationXml.addAttribute("name",ma.getName());
 			destinationXml.addAttribute("className",ma.getClass().getName());
 
-			destinationsXml.addSubElement(ma.toXml());
+			configXml.addSubElement(ma.toXml());
 		}
-		configXml.addSubElement(destinationsXml);
-		XmlBuilder monitorsXml=new XmlBuilder("monitors");
 		for (int i=0; i<monitors.size(); i++) {
 			Monitor monitor=getMonitor(i);
-			monitorsXml.addSubElement(monitor.toXml());
+			configXml.addSubElement(monitor.toXml());
 		}
-		configXml.addSubElement(monitorsXml);
 
 		return configXml;
 	}

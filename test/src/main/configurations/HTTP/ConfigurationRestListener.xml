@@ -12,7 +12,7 @@
 			<pipe name="insertDoc"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB1) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
+					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
@@ -48,7 +48,11 @@
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST" url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
-					paramsInUrl="false" multipart="true">
+					postType="FORMDATA"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="key01" value="every cloud has a silver lining" />
 					<param name="key02" sessionKey="originalMessage" />
 					<param name="file" sessionKey="fileContent" type="inputstream" />
@@ -57,7 +61,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="id" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="id" useCdataSection="false">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
@@ -67,7 +71,7 @@
 			</pipe>
 
 			<pipe name="text2Xml2" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -88,7 +92,7 @@
 			</pipe>
 
 			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetId.xsl" sessionKey="docId"
+				styleSheetName="RestListener/xsl/GetId.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
 				<forward name="success" path="getDocFileName" />
@@ -107,7 +111,7 @@
 
 			<pipe name="setContentDisposition" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetContentDisposition.xsl"
-				sessionKey="contentDisposition" getInputFromFixedValue="&lt;dummy/&gt;">
+				storeResultInSessionKey="contentDisposition" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="fileName" sessionKey="docFileName" />
 				<forward name="success" path="getDocAndWriteToFile" />
 			</pipe>
@@ -115,7 +119,7 @@
 			<pipe name="getDocAndWriteToFile"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
-					query="SELECT TBLOB1 FROM IBISTEMP WHERE TKEY=?" queryType="select"
+					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true" streamResultToServlet="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />
@@ -135,14 +139,14 @@
 			</exits>
 
 			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetId2.xsl" sessionKey="docId"
+				styleSheetName="RestListener/xsl/GetId2.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
 				<forward name="success" path="getUrl" />
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc" />
@@ -153,7 +157,11 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" streamResultToServlet="true">
+					urlParam="url_param" streamResultToServlet="true"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -181,7 +189,7 @@
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url">
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url" preserveInput="true">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc2" />
 				<param name="docId" xpathExpression="id" />
@@ -191,14 +199,13 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" base64="true">
+					urlParam="url_param"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
-				<forward name="success" path="decodeFile" />
-			</pipe>
-
-			<pipe name="decodeFile" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="decode" outputType="bytes">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
@@ -208,7 +215,7 @@
 			</pipe>
 
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename2" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="filename2" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -246,7 +253,7 @@
 			</pipe>
 
 			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="RestListener/xsl/GetUrl.xsl" sessionKey="url"
+				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc3" />
@@ -257,17 +264,25 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" streamResultToFileNameSessionKey="fileName">
+					urlParam="url_param"
+					authAlias="${framework.api.user.alias}"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+				>
 					<param name="url_param" sessionKey="url" />
 				</sender>
+				<forward name="success" path="safePdfFile" />
+			</pipe>
+
+			<pipe name="safePdfFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="write">
+				<param name="filename" sessionKey="fileName" />
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="filename3" includeXmlDeclaration="false" useCdataSection="false">
+			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
+				xmlTag="filename3" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 </module>
-	

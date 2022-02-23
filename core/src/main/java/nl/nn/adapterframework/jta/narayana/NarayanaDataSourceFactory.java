@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,11 +27,15 @@ public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
 	private NarayanaRecoveryManager recoveryManager;
 
 	@Override
-	protected DataSource augment(CommonDataSource dataSource, String dataSourceName) {
-		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
-		this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+		if (dataSource instanceof XADataSource) {
+			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
+			this.recoveryManager.registerXAResourceRecoveryHelper(recoveryHelper);
+			return new NarayanaDataSource((DataSource) dataSource);
+		}
 
-		return new NarayanaDataSource((DataSource) dataSource);
+		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
+		return (DataSource) dataSource;
 	}
 
 	public void setRecoveryManager(NarayanaRecoveryManager recoveryManager) {

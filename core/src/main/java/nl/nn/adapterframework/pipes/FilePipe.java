@@ -28,14 +28,6 @@ import nl.nn.adapterframework.util.FileHandler;
 /**
  * <p>See {@link FileHandler}</p>
  * 
- * <p><b>Exits:</b>
- * <table border="1">
- * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td>"exception"</td><td>if an error occurred</td></tr>
- * </table>
- * </p>
- * 
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  * 

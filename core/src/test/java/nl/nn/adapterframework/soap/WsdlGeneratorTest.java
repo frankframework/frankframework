@@ -10,6 +10,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
@@ -28,7 +29,7 @@ public class WsdlGeneratorTest {
 
 		PipeLineExit exit = new PipeLineExit();
 		exit.setPath("exit");
-		exit.setState("success");
+		exit.setState(ExitState.SUCCESS);
 		pipeline.registerPipeLineExit(exit);
 
 		Adapter adapter = new Adapter();

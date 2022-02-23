@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -58,19 +58,19 @@ import nl.nn.adapterframework.util.Misc;
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private String serviceName;
-	private String serviceNameSessionKey;
-	private String returnedSessionKeys = null;
-	private boolean multipartResponse = false;
+	private @Getter String serviceName;
+	private @Getter String serviceNameSessionKey;
+	private @Getter String returnedSessionKeys = null;
+	private @Getter boolean multipartResponse = false;
 	private String multipartResponseContentType = "application/octet-stream";
 	private String multipartResponseCharset = "UTF-8";
-	private String dispatchType = "default";
+	private @Getter String dispatchType = "default";
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getServiceNameSessionKey())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify serviceName");
+			throw new ConfigurationException(getLogPrefix()+"must specify serviceName or serviceNameSessionKey");
 		}
 	}
 
@@ -78,9 +78,8 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
 			return "JavaListenerSessionKey "+getServiceNameSessionKey();
-		} else {
-			return "JavaListener "+getServiceName();
 		}
+		return "JavaListener "+getServiceName();
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HashMap context = null;
 		try {
@@ -136,41 +135,46 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
 			if (session!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, session);
+				Misc.copyContext(getReturnedSessionKeys(), context, session, this);
 			}
 		}
 		return new Message(result);
 	}
 
 
-	public String getServiceName() {
-		return serviceName;
-	}
 
-	@IbisDoc({"serviceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
+	/** 
+	 * ServiceName of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called.
+	 */
 	public void setServiceName(String string) {
 		serviceName = string;
 	}
 
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (only for listeners that support it, like javalistener)", ""})
+	/** 
+	 * Key of session variable to specify ServiceName of the JavaListener that should be called.
+	 */
+	public void setServiceNameSessionKey(String string) {
+		serviceNameSessionKey = string;
+	}
+	
+	/** 
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results. (Only for listeners that support it, like JavaListener)
+	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
 
-	public String getReturnedSessionKeys() {
-		return returnedSessionKeys;
-	}
-
-	@IbisDoc({"currently used to mimic the httpsender when it is stubbed locally. it could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed", "false"})
+	/** 
+	 * Currently used to mimic the HttpSender when it is stubbed locally. It could be useful in other situations too although currently the response string is used which isn't streamed, it would be better to pass the multipart as an input stream in the context map in which case content type and charset could also be passed
+	 * @ff.default false
+	 */
 	public void setMultipartResponse(boolean b) {
 		multipartResponse = b;
 	}
 
-	public boolean isMultipartResponse() {
-		return multipartResponse;
-	}
-
-	@IbisDoc({"set to 'dll' to make the dispatcher communicate with a dll set on the classpath", ""})
+	/** 
+	 * Set to 'DLL' to make the dispatcher communicate with a DLL set on the classpath
+	 */
 	public void setDispatchType(String type) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(type)) {
 			if(type.equalsIgnoreCase("DLL")) {
@@ -181,14 +185,4 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		}
 	}
 
-	public String getDispatchType() {
-		return dispatchType;
-	}
-
-	public void setServiceNameSessionKey(String string) {
-		serviceNameSessionKey = string;
-	}
-	public String getServiceNameSessionKey() {
-		return serviceNameSessionKey;
-	}
 }

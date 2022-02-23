@@ -6,11 +6,15 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestFileUtils {
-	
+	private static Logger LOG = LogUtil.getLogger(TestFileUtils.class);
+
 	public static Message getTestFileMessage(String file) throws IOException {
 		return new Message(new StringReader(getTestFile(file)));
 	}
@@ -25,7 +29,7 @@ public class TestFileUtils {
 	public static String getTestFile(String file, String charset) throws IOException {
 		URL url = getTestFileURL(file);
 		if (url == null) {
-			System.out.println("file [" + file + "] not found");
+			LOG.error("file [" + file + "] not found");
 			return null;
 		}
 		return getTestFile(url, charset);
@@ -34,7 +38,11 @@ public class TestFileUtils {
 	public static URL getTestFileURL(String file) throws IOException {
 		return TestFileUtils.class.getResource(file);
 	}
-	
+
+	public static Message getNonRepeatableTestFileMessage(String file) throws IOException {
+		return new Message(getTestFileURL(file).openStream());
+	}
+
 	public static String getTestFile(URL url, String charset) throws IOException {
 		if (url == null) {
 			return null;

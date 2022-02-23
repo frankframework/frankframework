@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,7 +37,6 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
 
 /**
@@ -55,13 +55,14 @@ import nl.nn.adapterframework.util.Misc;
 
 public class JavascriptSender extends SenderSeries {
 
-	private String fileInput;
-	private String jsFileName;
-	private String jsFunctionName = "main";
+	private @Getter String jsFileName;
+	private @Getter String jsFunctionName = "main";
+	private @Getter JavaScriptEngines engine = JavaScriptEngines.J2V8;
 
 	/** ES6's let/const declaration Pattern. */
 	private Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
-	private JavaScriptEngines engine = JavaScriptEngines.J2V8;
+
+	private String fileInput;
 
 	public enum JavaScriptEngines {
 		J2V8(J2V8.class), NASHORN(Nashorn.class), RHINO(Rhino.class);
@@ -167,9 +168,8 @@ public class JavascriptSender extends SenderSeries {
 		String result = String.valueOf(jsResult);
 		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
 			return Message.nullMessage();
-		} else {
-			return new Message(result);
 		}
+		return new Message(result);
 	}
 
 	/**
@@ -194,23 +194,14 @@ public class JavascriptSender extends SenderSeries {
 	public void setJsFileName(String jsFileName) {
 		this.jsFileName = jsFileName;
 	}
-	public String getJsFileName() {
-		return jsFileName;
-	}
 
 	@IbisDoc({"the name of the javascript function that will be called (first)", "main"})
 	public void setJsFunctionName(String jsFunctionName) {
 		this.jsFunctionName = jsFunctionName;
 	}
-	public String getJsFunctionName() {
-		return jsFunctionName;
-	}
 
 	@IbisDoc({"the name of the javascript engine to be used", "J2V8"})
-	public void setEngineName(String engineName) {
-		this.engine = EnumUtils.parse(JavaScriptEngines.class, engineName);
-	}
-	public JavaScriptEngines getEngineEnum() {
-		return engine;
+	public void setEngineName(JavaScriptEngines engineName) {
+		this.engine = engineName;
 	}
 }

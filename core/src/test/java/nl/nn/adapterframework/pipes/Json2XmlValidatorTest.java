@@ -12,11 +12,14 @@ import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
+import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
@@ -29,7 +32,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Test
 	public void testNoNamespaceXml2Json() throws Exception {
 		pipe.setName("Response_To_Json");
-		pipe.setOutputFormat("json");
+		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
 //		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
@@ -72,7 +75,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 	@Test
 	public void testWithNamespace() throws Exception {
 		pipe.setName("Response_To_Json");
-		pipe.setOutputFormat("json");
+		pipe.setOutputFormat(DocumentFormat.JSON);
 		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
 //		pipe.setRoot("GetPartiesOnAgreement_Response");
 //		pipe.setTargetNamespace("http://nn.nl/XSD/CustomerAdministration/Party/1/GetPartiesOnAgreement/7");
@@ -88,29 +91,58 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertEquals(expected, prr.getResult().asString());
 	}
 
+
+	public String setupAcceptHeaderTest(String acceptHeaderValue) throws Exception {
+		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setInputFormatSessionKey("AcceptHeader");
+		pipe.setOutputFormat(DocumentFormat.XML);
+		pipe.setSchema("/Validation/NoNamespace/bp.xsd");
+		pipe.setResponseRoot("BusinessPartner");
+
+		pipe.setThrowException(true);
+		pipe.configure();
+		pipe.start();
+
+		session.put("AcceptHeader", acceptHeaderValue);
+		
+		String input = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+
+		doPipe(pipe, input,session); // first run the request validation ...
+		
+		IValidator validator = pipe.getResponseValidator();
+		PipeRunResult prr_response = validator.doPipe(new Message(input), session);
+
+		return prr_response.getResult().asString();
+		
+	}
+	
+	@Test
+	public void testAcceptHeaderTextJson() throws Exception {
+		String actual = setupAcceptHeaderTest("text/Json");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-compact.json");
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testAcceptHeaderTextXML() throws Exception {
+		String actual = setupAcceptHeaderTest("text/Xml");
+		String expected = TestFileUtils.getTestFile("/Validation/NoNamespace/bp-response-withNamespace.xml");
+		assertEquals(expected, actual);
+	}
+
+	
 	@Test
 	public void testWithParameters() throws Exception {
 		pipe.setName("RestGet");
 		pipe.setRoot("Root");
-		pipe.setOutputFormat("xml");
+		pipe.setOutputFormat(DocumentFormat.XML);
 		pipe.setSchema("/Validation/Parameters/simple.xsd");
 		pipe.setThrowException(true);
-		Parameter param = new Parameter();
-		param.setName("a");
-		param.setValue("param_a");
-		pipe.addParameter(param);
-		param = new Parameter();
-		param.setName("b");
-		param.setSessionKey("b_key");
-		pipe.addParameter(param);
-		param = new Parameter();
-		param.setName("c");
-		param.setSessionKey("c_key");
-		pipe.addParameter(param);
-		param = new Parameter();
-		param.setName("d");
-		param.setSessionKey("d_key");
-		pipe.addParameter(param);
+
+		pipe.addParameter(new Parameter("a", "param_a"));
+		pipe.addParameter(ParameterBuilder.create().withName("b").withSessionKey("b_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("c").withSessionKey("c_key"));
+		pipe.addParameter(ParameterBuilder.create().withName("d").withSessionKey("d_key"));
 		pipe.configure();
 		pipe.start();
 		
@@ -133,10 +165,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("NestedValue");
 		pipe.setThrowException(true);
 
-		Parameter param = new Parameter();
-		param.setName("Id");
-		param.setValue("3242343");
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("Id", "3242343"));
 		
 		pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
 		
@@ -162,10 +191,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		//pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
 		
-		Parameter param = new Parameter();
-		param.setName("Id");
-		param.setValue("24");
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("Id", "24"));
 		
 		pipe.configure();
 		pipe.start();
@@ -210,36 +236,21 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("Options");
 		pipe.setThrowException(true);
 		
-		Parameter param1 = new Parameter();
-		param1.setName("singleInt");
-		param1.setValue("33");
-		pipe.addParameter(param1);
+		pipe.addParameter(new Parameter("singleInt", "33"));
 
-		Parameter param2 = new Parameter();
-		param2.setName("singleString");
-		param2.setValue("tja");
-		pipe.addParameter(param2);
+		pipe.addParameter(new Parameter("singleString", "tja"));
 
-		Parameter param3 = new Parameter();
-		param3.setName("stringArray2");
 		List<String> stringValues = Arrays.asList("aa","bb");
 		session.put("StringValueList", stringValues);
-		param3.setSessionKey("StringValueList");
-		pipe.addParameter(param3);
+		pipe.addParameter(ParameterBuilder.create().withName("stringArray2").withSessionKey("StringValueList"));
 		
-		Parameter param4 = new Parameter();
-		param4.setName("intArray");
 		List<String> intValues = Arrays.asList("11","22");
 		session.put("IntValueList", intValues);
-		param4.setSessionKey("IntValueList");
-		pipe.addParameter(param4);
+		pipe.addParameter(ParameterBuilder.create().withName("intArray").withSessionKey("IntValueList"));
 		
-		Parameter param5 = new Parameter();
-		param5.setName("stringElem3");
 		List<String> stringElem3elements = Arrays.asList("aa","bb");
 		session.put("stringElem3elements", stringElem3elements);
-		param5.setSessionKey("stringElem3elements");
-		pipe.addParameter(param5);
+		pipe.addParameter(ParameterBuilder.create().withName("stringElem3").withSessionKey("stringElem3elements"));
 		
 		pipe.configure();
 		pipe.start();
@@ -261,20 +272,9 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("FindDocuments_Request");
 		pipe.setThrowException(true);
 		
-		Parameter param1 = new Parameter();
-		param1.setName("schemaName");
-		param1.setValue("NNPensioenen");
-		pipe.addParameter(param1);
-
-		Parameter param2 = new Parameter();
-		param2.setName("requestUserId");
-		param2.setValue("postman2");
-		pipe.addParameter(param2);
-
-		Parameter param3 = new Parameter();
-		param3.setName("SearchAttributes/agreementNumber");
-		param3.setSessionKey("agreementNumbers");
-		pipe.addParameter(param3);
+		pipe.addParameter(new Parameter("schemaName", "NNPensioenen"));
+		pipe.addParameter(new Parameter("requestUserId", "postman2"));
+		pipe.addParameter(ParameterBuilder.create().withName("SearchAttributes/agreementNumber").withSessionKey("agreementNumbers"));
 		
 		pipe.configure();
 		pipe.start();
@@ -304,20 +304,9 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setDeepSearch(true);
 		pipe.setThrowException(true);
 		
-		Parameter param1 = new Parameter();
-		param1.setName("schemaName");
-		param1.setValue("NNPensioenen");
-		pipe.addParameter(param1);
-
-		Parameter param2 = new Parameter();
-		param2.setName("requestUserId");
-		param2.setValue("postman2");
-		pipe.addParameter(param2);
-
-		Parameter param3 = new Parameter();
-		param3.setName("agreementNumber");
-		param3.setSessionKey("agreementNumbers");
-		pipe.addParameter(param3);
+		pipe.addParameter(new Parameter("schemaName", "NNPensioenen"));
+		pipe.addParameter(new Parameter("requestUserId", "postman2"));
+		pipe.addParameter(ParameterBuilder.create().withName("agreementNumber").withSessionKey("agreementNumbers"));
 		
 		pipe.configure();
 		pipe.start();
@@ -346,19 +335,15 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("Options");
 		pipe.setThrowException(true);
 		
-		Parameter param = new Parameter();
-		param.setName("intArray");
 		List<String> intValues = Arrays.asList("44");
 		session.put("IntValueList", intValues);
-		param.setSessionKey("IntValueList");
-		pipe.addParameter(param);
+		pipe.addParameter(ParameterBuilder.create().withName("intArray").withSessionKey("IntValueList"));
 		
 		pipe.configure();
 		pipe.start();
 		
 		String input    = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
-		
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 		
@@ -374,10 +359,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("Options");
 		pipe.setThrowException(true);
 		
-		Parameter param = new Parameter();
-		param.setName("intArray");
-		param.setValue("44");
-		pipe.addParameter(param);
+		pipe.addParameter(new Parameter("intArray", "44"));
 		
 		pipe.configure();
 		pipe.start();
@@ -393,7 +375,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		assertXmlEquals("converted XML does not match", expected, actualXml, true);
 	}
 
-	public void testStoreRootElement(String outputFormat, String inputFile, boolean setRootElement) throws Exception {
+	public void testStoreRootElement(DocumentFormat outputFormat, String inputFile, boolean setRootElement) throws Exception {
 		pipe.setName("testStoreRootElement");
 		pipe.setSchema("/Align/Abc/abc.xsd");
 		pipe.setRootElementSessionKey("rootElement");
@@ -421,26 +403,26 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testStoreRootElementXml2Json() throws Exception {
-		testStoreRootElement("json","abc.xml",false);
+		testStoreRootElement(DocumentFormat.JSON,"abc.xml",false);
 	}
 	@Test
 	public void testStoreRootElementJson2XmlFull() throws Exception {
-		testStoreRootElement("xml","abc-full.json",false);
+		testStoreRootElement(DocumentFormat.XML,"abc-full.json",false);
 	}
 	@Test
 	public void testStoreRootElementJson2XmlCompact() throws Exception {
-		testStoreRootElement("xml","abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.XML,"abc-compact.json",true);
 	}
 	@Test
 	public void testStoreRootElementJson2JsonFull() throws Exception {
-		testStoreRootElement("json","abc-full.json",false);
+		testStoreRootElement(DocumentFormat.JSON,"abc-full.json",false);
 	}
 	@Test
 	public void testStoreRootElementJson2JsonCompact() throws Exception {
-		testStoreRootElement("json","abc-compact.json",true);
+		testStoreRootElement(DocumentFormat.JSON,"abc-compact.json",true);
 	}
 	@Test
 	public void testStoreRootElementXml2Xml() throws Exception {
-		testStoreRootElement("xml","abc.xml",false);
+		testStoreRootElement(DocumentFormat.XML,"abc.xml",false);
 	}
 }

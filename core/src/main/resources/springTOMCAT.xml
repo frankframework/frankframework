@@ -20,7 +20,7 @@
 	-->
 	<bean
 		id="txManagerReal"
-		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		class="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager"
 		>
 		<property name="dataSource">
 			<ref bean="defaultDataSource"/>

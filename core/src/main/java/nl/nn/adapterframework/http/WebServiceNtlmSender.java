@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,33 +49,34 @@ import jcifs.ntlmssp.Type1Message;
 import jcifs.ntlmssp.Type2Message;
 import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that sends a message via a WebService based on NTLM authentication.
  *
  * @author  Peter Leeuwenburgh
  */
-public class WebServiceNtlmSender extends SenderWithParametersBase implements
-		HasPhysicalDestination {
+public class WebServiceNtlmSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
-	private String contentType = "text/xml; charset="
-			+ Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String contentType = "text/xml; charset="+ StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String url;
 	private int timeout = 10000;
 	private int maxConnections=10;
-	private String authAlias;
-	private String userName;
-	private String password;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
 	private String authDomain;
 	private String proxyHost;
 	private int proxyPort = 80;
@@ -127,7 +128,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		HttpConnectionParams.setSoTimeout(httpParameters, getTimeout());
 		httpClient = new DefaultHttpClient(connectionManager, httpParameters);
 		httpClient.getAuthSchemes().register("NTLM", new NTLMSchemeFactory());
-		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		httpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new NTCredentials(cf.getUsername(), cf.getPassword(), Misc.getHostname(), getAuthDomain()));
 		if (StringUtils.isNotEmpty(getProxyHost())) {
 			HttpHost proxy = new HttpHost(getProxyHost(), getProxyPort());
@@ -150,7 +151,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -187,13 +188,9 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 				result = EntityUtils.toString(httpEntity);
 				log.debug(getLogPrefix() + "retrieved result [" + result + "]");
 			}
+		} catch (SocketTimeoutException | ConnectTimeoutException e) {
+			throw new TimeoutException(e);
 		} catch (Exception e) {
-			if (e instanceof SocketTimeoutException) {
-				throw new TimeOutException(e);
-			} 
-			if (e instanceof ConnectTimeoutException) {
-				throw new TimeOutException(e);
-			} 
 			throw new SenderException(e);
 		} finally {
 			httpPost.releaseConnection();
@@ -242,29 +239,22 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements
 		maxConnections = i;
 	}
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
 	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	public String getUserName() {
-		return userName;
-	}
-
 	@IbisDoc({"username used in authentication to host", ""})
-	public void setUserName(String string) {
-		userName = string;
+	public void setUsername(String string) {
+		username = string;
+	}
+	@Deprecated
+	@ConfigurationWarning("Please use attribute username instead")
+	public void setUserName(String username) {
+		setUsername(username);
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	@IbisDoc({"", " "})
+	@IbisDoc({"password used to authenticate with the host", " "})
 	public void setPassword(String string) {
 		password = string;
 	}

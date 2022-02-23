@@ -41,13 +41,15 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
+import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
+import nl.nn.adapterframework.lifecycle.MessageEventListener;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 
 /**
  * Collection of server and application statistics and information.
@@ -70,12 +72,12 @@ public class ServerStatistics extends Base {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
-		Map<String, Object> framework = new HashMap<String, Object>(2);
+		Map<String, Object> framework = new HashMap<>(2);
 		framework.put("name", "FF!");
 		framework.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("framework", framework);
 
-		Map<String, Object> instance = new HashMap<String, Object>(2);
+		Map<String, Object> instance = new HashMap<>(2);
 		instance.put("version", appConstants.getProperty("instance.version"));
 		instance.put("name", getIbisContext().getApplicationName());
 		returnMap.put("instance", instance);
@@ -94,7 +96,7 @@ public class ServerStatistics extends Base {
 
 		returnMap.put("applicationServer", servletConfig.getServletContext().getServerInfo());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<String, Object>(2);
+		Map<String, Object> fileSystem = new HashMap<>(2);
 		fileSystem.put("totalSpace", Misc.getFileSystemTotalSpace());
 		fileSystem.put("freeSpace", Misc.getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);
@@ -168,6 +170,7 @@ public class ServerStatistics extends Base {
 
 		Map<String, Object> returnMap = new HashMap<String, Object>();
 		ApplicationWarnings globalConfigWarnings = getIbisContext().getBean("applicationWarnings", ApplicationWarnings.class);
+		MessageEventListener eventListener = getIbisContext().getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
 		boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -183,38 +186,40 @@ public class ServerStatistics extends Base {
 				configurationsMap.put("exception", message);
 			}
 
-			//ErrorStore count
-			if (configuration.isActive() && showCountErrorStore) {
-				long esr = 0;
-				for (Adapter adapter : configuration.getRegisteredAdapters()) {
-					for (Receiver<?> receiver: adapter.getReceivers()) {
-						IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
-						if (errorStorage != null) {
-							try {
-								esr += errorStorage.getMessageCount();
-							} catch (Exception e) {
-								//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
-								log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+			if (configuration.isActive()) {
+				//ErrorStore count
+				if (showCountErrorStore) {
+					long esr = 0;
+					for (Adapter adapter : configuration.getRegisteredAdapters()) {
+						for (Receiver<?> receiver: adapter.getReceivers()) {
+							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
+							if (errorStorage != null) {
+								try {
+									esr += errorStorage.getMessageCount();
+								} catch (Exception e) {
+									//error("error occured on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									log.warn("Assuming there are no errorlog records for adapter ["+adapter.getName()+"]");
+								}
 							}
 						}
 					}
+					totalErrorStoreCount += esr;
+					configurationsMap.put("errorStoreCount", esr);
 				}
-				totalErrorStoreCount += esr;
-				configurationsMap.put("errorStoreCount", esr);
-			}
 
-			//Configuration specific warnings
-			ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-			if(configWarns != null && configWarns.size() > 0) {
-				configurationsMap.put("warnings", configWarns.getWarnings());
-			}
+				//Configuration specific warnings
+				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
+				if(configWarns != null && configWarns.size() > 0) {
+					configurationsMap.put("warnings", configWarns.getWarnings());
+				}
 
-			//Configuration specific messages
-			MessageKeeper messageKeeper = getIbisContext().getMessageKeeper(configuration.getName());
-			if(messageKeeper != null) {
-				List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-				if(!messages.isEmpty()) {
-					configurationsMap.put("messages", messages);
+				//Configuration specific messages
+				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
+				if(messageKeeper != null) {
+					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
+					if(!messages.isEmpty()) {
+						configurationsMap.put("messages", messages);
+					}
 				}
 			}
 
@@ -226,7 +231,7 @@ public class ServerStatistics extends Base {
 
 		//Global warnings
 		if (globalConfigWarnings.size()>0) {
-			List<Object> warnings = new ArrayList<Object>();
+			List<Object> warnings = new ArrayList<>();
 			for (int j=0; j<globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));
 			}
@@ -234,10 +239,11 @@ public class ServerStatistics extends Base {
 		}
 
 		//Global messages
-		MessageKeeper messageKeeper = getIbisContext().getMessageKeeper();
+		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-		if(messages.size() > 0)
+		if(!messages.isEmpty()) {
 			returnMap.put("messages", messages);
+		}
 
 		Response.ResponseBuilder response = null;
 
@@ -295,25 +301,37 @@ public class ServerStatistics extends Base {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
 		}
 
-		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
-		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			BootState state = config.getState();
+			if(state != BootState.STARTED) {
+				if(config.getConfigurationException() != null) {
+					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
+				} else {
+					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
+				}
+				stateCount.put(RunState.ERROR, 1); //We're not really using stateCount other then to determine the HTTP response code.
+			}
+		}
 
-			if(state.equals(RunStateEnum.STARTED)) {
+		for (Adapter adapter : getIbisManager().getRegisteredAdapters()) {
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+
+			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+					RunState rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -326,7 +344,7 @@ public class ServerStatistics extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty()) {

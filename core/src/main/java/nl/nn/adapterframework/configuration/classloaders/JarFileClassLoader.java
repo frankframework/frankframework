@@ -18,7 +18,8 @@ package nl.nn.adapterframework.configuration.classloaders;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Map;
-import nl.nn.adapterframework.configuration.ConfigurationException;
+
+import nl.nn.adapterframework.configuration.ClassLoaderException;
 
 public class JarFileClassLoader extends JarBytesClassLoader {
 	private String jarFileName;
@@ -28,15 +29,15 @@ public class JarFileClassLoader extends JarBytesClassLoader {
 	}
 
 	@Override
-	protected Map<String, byte[]> loadResources() throws ConfigurationException {
+	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		if(jarFileName == null)
-			throw new ConfigurationException("jar file not set");
+			throw new ClassLoaderException("jar file not set");
 
 		try {
 			FileInputStream jarFile = new FileInputStream(jarFileName);
 			return readResources(jarFile);
 		} catch (FileNotFoundException fnfe) {
-			throw new ConfigurationException("jar file not found");
+			throw new ClassLoaderException("jar file not found");
 		}
 	}
 

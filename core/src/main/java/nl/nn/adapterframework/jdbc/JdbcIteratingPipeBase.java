@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,12 +50,17 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	protected class MixedQuerySender extends DirectQuerySender {
-		
+
 		private String query;
 
 		@Override
 		public void configure() throws ConfigurationException {
-			super.configure(query!=null);
+			//In case a query is specified, pass true as argument to suppress the SQL Injection warning else pass the Adapter
+			if(query!=null) {
+				super.configure(true);
+			} else {
+				super.configure(getAdapter());
+			}
 		}
 
 		@Override
@@ -141,7 +146,7 @@ public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implement
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please use attribute dataSourceName instead")
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

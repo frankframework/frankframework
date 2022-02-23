@@ -17,23 +17,25 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.JavascriptSender;
+import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 @RunWith(Parameterized.class)
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameterized.Parameter(0)
-	public String engine;
+	public JavaScriptEngines engine;
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{"J2V8"}, {"Nashorn"}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}});
 	}
 
 	@Override
@@ -42,23 +44,15 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 	}
 
 	@Test
-	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType("integer");
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType("integer");
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		sender.configure();
 		sender.open();
@@ -68,23 +62,15 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 
 	//An EchoSender will be called in the javascript code.
 	@Test
-	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeOutException, IOException {
+	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js"); 
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
-		Parameter param = new Parameter();
-		param.setName("x");
-		param.setType("integer");
-		param.setValue("3");
-		sender.addParameter(param);
+		sender.addParameter(ParameterBuilder.create("x", "3").withType(ParameterType.INTEGER));
 
-		Parameter param2 = new Parameter();
-		param2.setName("y");
-		param2.setType("integer");
-		param2.setValue("4");
-		sender.addParameter(param2);
+		sender.addParameter(ParameterBuilder.create("y", "4").withType(ParameterType.INTEGER));
 
 		EchoSender log = new EchoSender();
 		log.setName("myFunction");
@@ -122,7 +108,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			promiseResult = message;
 			return Message.nullMessage();
 		}

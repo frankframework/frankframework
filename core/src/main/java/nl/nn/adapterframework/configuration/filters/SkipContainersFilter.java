@@ -25,11 +25,21 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.xml.FullXmlFilter;
 
+/**
+ * This class omits XML elements from Frank configs that are meaningless containers.
+ * The children of the omitted elements are kept. This class does its job by filtering SAX events.
+ *
+ */
 public class SkipContainersFilter extends FullXmlFilter {
 
-	private final String SKIPABLE_CONTAINERS[] = { "Exits", "Forwards", "JmsRealms", "Module", "Root" };
-	
-	private Set<String> skipableContainers = new LinkedHashSet<String>(Arrays.asList(SKIPABLE_CONTAINERS));
+	// Here are the omitted XML elements.
+	//
+	// The Frank!Doc trusts that this class is used to omit the <Module> element.
+	// If you ever want to remove Module from this list, please update the Frank!Doc.
+	// To search for the relevant Frank!Doc code, you can start at
+	// nl.nn.adapterframework.frankdoc.Constants.MODULE_ELEMENT_NAME.
+	private static final String SKIPABLE_CONTAINERS[] = { "Exits", "Forwards", "Module", "Root", "Global-forwards", "Scheduler" };
+	private Set<String> skipableContainers = new LinkedHashSet<>(Arrays.asList(SKIPABLE_CONTAINERS));
 
 	public SkipContainersFilter() {
 		super();

@@ -1,8 +1,9 @@
 package nl.nn.adapterframework.xml;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,7 +16,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
@@ -48,7 +48,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	}
 
 	@Test
-	public void localClassPathFileOnRootOfClasspathAbsolute() throws SAXException, IOException {
+	public void localClassPathFileOnRootOfClasspathAbsolute() throws Exception {
 		ClassLoaderXmlEntityResolver resolver = new ClassLoaderXmlEntityResolver(scopeProvider);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/AppConstants.properties");
@@ -69,7 +69,7 @@ public class ClassLoaderXmlEntityResolverTest {
 
 	
 	@Test
-	public void bytesClassPath() throws SAXException, IOException, ConfigurationException {
+	public void bytesClassPath() throws Exception {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -90,7 +90,7 @@ public class ClassLoaderXmlEntityResolverTest {
 	}
 
 	@Test
-	public void bytesClassPathAbsolute() throws SAXException, IOException, ConfigurationException  {
+	public void bytesClassPathAbsolute() throws Exception  {
 		ClassLoader localClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL file = this.getClass().getResource(JAR_FILE);
@@ -137,8 +137,7 @@ public class ClassLoaderXmlEntityResolverTest {
 			resolver.resolveEntity(resourceIdentifier);
 		});
 
-		String errorMessage = "Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] with protocol [ftp], no allowedProtocols";
-		assertTrue("SaxParseException should start with [Cannot get resource ...] but is ["+thrown.getMessage()+"]", thrown.getMessage().startsWith(errorMessage));
+		assertThat(thrown.getMessage(), startsWith("Cannot lookup resource [ftp://share.host.org/UDTSchema.xsd] not allowed with protocol [ftp]"));
 	}
 
 	private class ResourceIdentifier implements XMLResourceIdentifier {

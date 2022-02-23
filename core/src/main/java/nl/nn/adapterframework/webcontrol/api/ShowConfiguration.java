@@ -60,7 +60,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.NameComparatorBase;
-import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -171,25 +171,25 @@ public final class ShowConfiguration extends Base {
 		}
 
 		Map<String, Object> response = new HashMap<>();
-		Map<RunStateEnum, Integer> stateCount = new HashMap<>();
+		Map<RunState, Integer> stateCount = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
 		for (IAdapter adapter : configuration.getRegisteredAdapters()) {
-			RunStateEnum state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
-			if(state.equals(RunStateEnum.STARTED)) {
+			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
-					RunStateEnum rState = receiver.getRunState();
+					RunState rState = receiver.getRunState();
 	
-					if(!rState.equals(RunStateEnum.STARTED)) {
+					if(rState!=RunState.STARTED) {
 						errors.add("receiver["+receiver.getName()+"] of adapter["+adapter.getName()+"] is in state["+rState.toString()+"]");
-						state = RunStateEnum.ERROR;
+						state = RunState.ERROR;
 					}
 				}
 			}
 			else {
 				errors.add("adapter["+adapter.getName()+"] is in state["+state.toString()+"]");
-				state = RunStateEnum.ERROR;
+				state = RunState.ERROR;
 			}
 
 			int count;
@@ -202,7 +202,7 @@ public final class ShowConfiguration extends Base {
 		}
 
 		Status status = Response.Status.OK;
-		if(stateCount.containsKey(RunStateEnum.ERROR))
+		if(stateCount.containsKey(RunState.ERROR))
 			status = Response.Status.SERVICE_UNAVAILABLE;
 
 		if(!errors.isEmpty())
@@ -352,10 +352,10 @@ public final class ShowConfiguration extends Base {
 			throw new ApiException("Missing post parameters");
 		}
 
-		String datasource = resolveStringFromMap(inputDataMap, "datasource");
-		boolean multiple_configs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
-		boolean activate_config  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
-		boolean automatic_reload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
+		String datasource = resolveStringFromMap(inputDataMap, "datasource", JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		boolean multipleConfigs = resolveTypeFromMap(inputDataMap, "multiple_configs", boolean.class, false);
+		boolean activateConfig  = resolveTypeFromMap(inputDataMap, "activate_config", boolean.class, true);
+		boolean automaticReload = resolveTypeFromMap(inputDataMap, "automatic_reload", boolean.class, false);
 		InputStream file = resolveTypeFromMap(inputDataMap, "file", InputStream.class, null);
 
 		String user = resolveTypeFromMap(inputDataMap, "user", String.class, "");
@@ -367,14 +367,14 @@ public final class ShowConfiguration extends Base {
 
 		Map<String, String> result = new LinkedHashMap<String, String>();
 		try {
-			if(multiple_configs) {
+			if(multipleConfigs) {
 				try {
-					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activate_config, automatic_reload, file, user);
+					result = ConfigurationUtils.processMultiConfigZipFile(getIbisContext(), datasource, activateConfig, automaticReload, file, user);
 				} catch (IOException e) {
 					throw new ApiException(e);
 				}
 			} else {
-				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activate_config, automatic_reload, fileName, file, user);
+				String configName=ConfigurationUtils.addConfigToDatabase(getIbisContext(), datasource, activateConfig, automaticReload, fileName, file, user);
 				if(configName != null) {
 					result.put(configName, "loaded");
 				}

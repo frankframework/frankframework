@@ -30,7 +30,6 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author Jaco de Groot
  */
 public class H2DbmsSupport extends GenericDbmsSupport {
-	public final static String dbmsName = "H2";
 
 	@Override
 	public Dbms getDbms() {

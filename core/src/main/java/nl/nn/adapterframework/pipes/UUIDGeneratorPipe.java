@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,48 +15,36 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * Pipe that generates an UUID (Universally Unique Identifier).
  *
- * 
- * If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated.
- * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42.
  * Only type <code>alphanumeric</code> guarantees a 100% unique identifier, type <code>numeric</code> has a 0.01% chance of exactly the same id in case of multiple calls on the same host within a few milliseconds.  
  * 
  * @author Peter Leeuwenburgh
  */
 public class UUIDGeneratorPipe extends FixedForwardPipe {
 
-	private String type = "alphanumeric";
+	private @Getter Type type = Type.ALPHANUMERIC;
 
-	@Override
-	public void configure() throws ConfigurationException {
-		super.configure();
-		String uType = getType();
-		if (uType == null) {
-			throw new ConfigurationException("type must be set");
-		}
-		if (!uType.equalsIgnoreCase("alphanumeric")
-			&& !uType.equalsIgnoreCase("numeric")) {
-			throw new ConfigurationException("illegal value for type ["
-					+ uType
-					+ "], must be 'alphanumeric' or 'numeric'");
-		}
+	public enum Type {
+		/** the UUID will not have a fixed length which will be about 42 */
+		ALPHANUMERIC,
+		/** a UUID with fixed length 31 will be generated */
+		NUMERIC
 	}
-
+	
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		String result = null;
-		if ("alphanumeric".equalsIgnoreCase(getType())) {
+		if (getType()==Type.ALPHANUMERIC) {
 			result = Misc.createUUID();
 		} else {
 			result = Misc.createNumericUUID();
@@ -65,12 +53,11 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	public String getType() {
-		return type;
-	}
-
-	@IbisDoc({"either <code>alphanumeric</code> or <code>numeric</code>", "alphanumeric"})
-	public void setType(String type) {
-		this.type = type;
+	/**
+	 * Format of generated string.
+	 * @ff.default alphanumeric
+	 */
+	public void setType(Type value) {
+		this.type = value;
 	}
 }

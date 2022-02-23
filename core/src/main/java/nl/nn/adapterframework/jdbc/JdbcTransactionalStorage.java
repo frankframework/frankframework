@@ -15,12 +15,10 @@
 */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +45,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
@@ -349,7 +347,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 		super.configure();
 		checkDatabase();
-		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionDefinition.PROPAGATION_REQUIRED, 0);
+		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.REQUIRED, 0);
 	}
 
 	@Override
@@ -407,9 +405,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
-			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
+			selectKeyQuery = "SELECT max("+getKeyField()+")"+getFromClause(false)+ 
 							getWhereClause(getIdField()+"=?"+
-										" AND " +getCorrelationIdField()+"=?"+
+										" AND "+getCorrelationIdField()+"=?"+
 										" AND "+getDateField()+"=?",false);
 		}
 		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
@@ -597,13 +595,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				return null;
 			}
 			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(); // TODO replace this with BlobOutputStream
-				OutputStream out = isBlobsCompressed() ? new DeflaterOutputStream(baos) : baos;
-				try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+				int blobColumnIndex = ++parPos;
+				Object blobHandle=dbmsSupport.getBlobHandle(stmt, blobColumnIndex);
+				try (ObjectOutputStream oos = new ObjectOutputStream(JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, stmt, blobColumnIndex, isBlobsCompressed()))) {
 					oos.writeObject(message);
 				}
-				
-				stmt.setBytes(++parPos, baos.toByteArray());
+				dbmsSupport.applyBlobParameter(stmt, blobColumnIndex, blobHandle);
+
 				if (isOnlyStoreWhenMessageIdUnique()) {
 					stmt.setString(++parPos, messageId);
 					stmt.setString(++parPos, getSlotId());
@@ -614,7 +612,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 						return "<id>" + rs.getString(1) + "</id>";
 					} 
 				}
-				
+
 				boolean isMessageDifferent = isMessageDifferent(conn, messageId, message);
 				String resultString = createResultString(isMessageDifferent);
 				log.warn("MessageID [" + messageId + "] already exists");
@@ -730,7 +728,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		IbisTransaction itx = null;
 		if (txManager!=null) {
-			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this)+ " ["+getName()+"]");
+			itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
 		}
 		try {
 			String result;

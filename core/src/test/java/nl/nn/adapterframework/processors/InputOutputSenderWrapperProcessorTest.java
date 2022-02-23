@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.senders.SenderSeries;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
@@ -32,7 +32,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
@@ -48,18 +48,18 @@ public class InputOutputSenderWrapperProcessorTest {
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					return new Message("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
 			}});
-		senderSeries.setSender(new SenderBase() {
+		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
 					return new Message(secondSenderOutput);

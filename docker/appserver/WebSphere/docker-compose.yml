@@ -1,9 +1,0 @@
-version: "3"
-services:
-  websphere:
-    image: iaf-test-as-websphere
-    restart: unless-stopped
-    ports:
-      - 9043:9043
-      - 9443:9443
-      - 9080:9080

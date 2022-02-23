@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
@@ -33,12 +32,9 @@ import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
-	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
-
 	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 
 	@Test
@@ -517,7 +513,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsBlobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {
@@ -533,7 +529,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testIsClobTypeIbisTemp() throws Exception {
 		try (Connection connection=getConnection()) {
 			assumeTrue(dbmsSupport.isTablePresent(connection, "IBISTEMP"));
-			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB1, TCLOB FROM IBISTEMP")) {
+			try (PreparedStatement stmt= connection.prepareStatement("SELECT TKEY, TVARCHAR, TNUMBER, TDATE, TTIMESTAMP, TBLOB, TCLOB FROM IBISTEMP")) {
 				try (ResultSet rs=stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i=1;i<=7;i++) {

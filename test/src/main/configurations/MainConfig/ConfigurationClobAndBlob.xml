@@ -1,4 +1,4 @@
-<ibis>
+<module>
 	<adapter name="ClobAndBlob" description="Test the functioning handling CLOBs and BLOBs">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ClobAndBlob" />
@@ -83,7 +83,7 @@
 
 			<!-- 03 InsertBlobViaInputMessage -->
 			<pipe name="InsertBlobViaInputMessage" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
@@ -92,12 +92,12 @@
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessage" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" 
 				scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -106,13 +106,13 @@
 			
 			<!-- 03b OverwriteBlobViaInputMessage -->
 			<pipe name="OverwriteBlobViaInputMessage" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
 			<pipe name="WaitForBlobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteBlobViaInputMessage2" getInputFromSessionKey="">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="transformOriginalMessageForBlob" />
@@ -121,7 +121,7 @@
 
 			<!-- 04 InsertBlobViaBlobSessionKey -->
 			<pipe name="InsertBlobViaBlobSessionKey" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" 
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" 
 					>
 				</sender>
@@ -132,7 +132,7 @@
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob"
 					blobSessionKey="blobSource">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -143,7 +143,7 @@
 			</pipe>
 
 			<pipe name="readBlobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
 					blobSessionKey="blobResult">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -155,7 +155,7 @@
 
 			<!-- 05 InsertBlobViaInputMessageNotCompressed -->
 			<pipe name="InsertBlobViaInputMessageNotCompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
@@ -164,13 +164,13 @@
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessageNotCompressed">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"
 				blobsCompressed="false"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessageNotCompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
 				blobsCompressed="false" scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -179,7 +179,7 @@
 			
 			<!-- 06 InsertBlobViaBlobSessionKeyNotCompressed -->
 			<pipe name="InsertBlobViaBlobSessionKeyNotCompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" blobsCompressed="false" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" blobsCompressed="false" 
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" 
 					>
 				</sender>
@@ -190,13 +190,13 @@
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob" 
 					blobSessionKey="blobSource" blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true" 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true" 
 					blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey"/>
 				</sender>
@@ -205,17 +205,17 @@
 
 			<!-- 07 InsertBlobViaInputMessageReadAsIfcompressed -->
 			<pipe name="InsertBlobViaInputMessageReadAsIfcompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tblob1) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
 			<pipe name="updateBlobViaInputMessageReadAsIfcompressed" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" blobsCompressed="false"> 
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" blobsCompressed="false"> 
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobReadAsIfcompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tblob1 FROM IBISTEMP WHERE tkey=?" queryType="select"
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
 				scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
@@ -224,4 +224,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-</ibis>
+</module>

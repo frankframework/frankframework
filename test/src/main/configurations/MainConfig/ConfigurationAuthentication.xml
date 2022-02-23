@@ -4,6 +4,7 @@
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-authentication" />
 		</receiver>
+		<errorMessageFormatter/>
 		<pipeline firstPipe="selectSenderBasedOnRootNode">
 			<exits>
 				<exit path="READY" state="success" />
@@ -13,17 +14,38 @@
 
 			<pipe name="testalias" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
 				targetUserid="testUser" targetPassword="testPassword" authAlias="${test.alias}"
-				defaultUserid="${test.userid}" defaultPassword="${test.password}">
+				defaultUserid="fakeDefaultUsername" defaultPassword="fakeDefaultPassword">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="dummy" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+			<pipe name="unknownAliasWithDefaults" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+				targetUserid="fakeDefaultUsername" targetPassword="fakeDefaultPassword" authAlias="dummy" defaultUserid="fakeDefaultUsername" defaultPassword="fakeDefaultPassword">
+				<forward name="success" path="text2Xml" />
+				<forward name="exception" path="extractErrorMessage" />
+			</pipe>
+
+			<pipe name="unknownAliasWithoutDefaults" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
 				targetUserid="dummy" targetPassword="dummy" authAlias="dummy">
 				<forward name="success" path="text2Xml" />
+				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
+			<pipe name="expandCredentialProperty" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				substituteVars="true" returnString="username: ${credential:username:${test.alias}}; password:${credential:password:${test.alias}}">
+				<forward name="success" path="text2Xml" />
+				<forward name="exception" path="extractErrorMessage" />
+			</pipe>
+
+			<pipe name="expandCredentialPropertyNotAllowed" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				substituteVars="true" returnString="username: ${credential:username:secretAlias}; password:${credential:password:secretAlias}">
+				<forward name="success" path="text2Xml" />
+				<forward name="exception" path="extractErrorMessage" />
+			</pipe>
+
+			<pipe name="extractErrorMessage" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/@message"/>
+
 			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
-				xmlTag="result" includeXmlDeclaration="false" useCdataSection="false">
+				xmlTag="result" useCdataSection="false">
 				<forward name="success" path="READY" />
 			</pipe>
 

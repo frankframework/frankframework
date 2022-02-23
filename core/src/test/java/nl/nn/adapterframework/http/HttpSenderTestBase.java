@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends SenderTestBase<S> {
-	private final String BASEDIR = "/nl/nn/adapterframework/http/response/";
+	private final String BASEDIR = "/Http/Responses/";
 
 	public S getSender() throws Exception {
 		return getSender(true);
@@ -55,10 +55,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 		if(addCustomHeader) {
 			sender.setHeadersParams("custom-header");
-			Parameter headerParameter = new Parameter();
-			headerParameter.setName("custom-header");
-			headerParameter.setValue("value");
-			sender.addParameter(headerParameter);
+			sender.addParameter(new Parameter("custom-header", "value"));
 		}
 
 		return sender;

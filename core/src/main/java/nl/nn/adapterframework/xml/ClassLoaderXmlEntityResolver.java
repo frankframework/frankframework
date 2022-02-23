@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.xml;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.xml.transform.TransformerException;
 
@@ -76,10 +75,8 @@ public class ClassLoaderXmlEntityResolver extends ClassLoaderURIResolver impleme
 		} catch (TransformerException e) {
 			throw new XNIException(e);
 		}
-	
-		
-		InputStream inputStream = resource.getURL().openStream();
-		return new XMLInputSource(null, resource.getSystemId(), null, inputStream, null);
+
+		return resource.asXMLInputSource();
 	}
 
 }

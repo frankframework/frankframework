@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
 import org.xml.sax.ContentHandler;
 
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IBlockEnabledSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -71,20 +74,28 @@ import nl.nn.adapterframework.xml.XmlWriter;
 /**
  * @author  Jaco de Groot (jaco@dynasol.nl)
  */
-public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
+public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
 	protected Logger log = LogUtil.getLogger(this);
+
+	private @Setter IbisDebugger ibisDebugger;
+	private @Setter IbisManager ibisManager;
 
 	// Contract for testtool state:
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
-	private IbisDebugger ibisDebugger;
 	private static boolean enabled=true;
 	
 	private AtomicInteger threadCounter = new AtomicInteger(0);
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
+
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if(ibisDebugger == null) {
+			return;
+		}
+		// As ibisDebugger lives in the WebApplicationContext it cannot get wired with ibisManager by Spring
+		ibisDebugger.setIbisManager(ibisManager);
 	}
 
 	/**
@@ -294,13 +305,12 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 			if (resultStream!=null) {
 				resultStream.captureCharacterStream(writerPlaceHolder.getWriter(), writerPlaceHolder.getSizeLimit());
 			} else {
-				try (Writer writer = writerPlaceHolder.getWriter()){ 
-					writer.write("<--> request to provide outputstream could not be honored");
-					writer.close();
+				try (Writer writer = writerPlaceHolder.getWriter()) {
+					writer.write("--> Requesting OutputStream from next pipe"); //We already know it failed, but it's a more user-friendly message..
 				}
 			}
 		} 
-		return resultStream!=null ? "<-- outputstream provided" : "<-- no outputstream could be provided";
+		return resultStream!=null ? "<-- OutputStream provided" : "<-- Request to provide OutputStream could not be honored, no outputstream provided";
 	}
 	
 	@Override
@@ -312,8 +322,8 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			session.scheduleCloseOnSessionExit(writer);
-			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()));
+			session.scheduleCloseOnSessionExit(writer, "debugger for inspectXml labeled ["+label+"]");
+			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		} 
 		return contentHandler;
@@ -340,19 +350,19 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		return (Message)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 	}
 
-	public Object debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<?> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
+	public <M> M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
-			return proceedingJoinPoint.proceed();
+			return (M)proceedingJoinPoint.proceed();
 		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		String result = null;
+		M result = null;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
 			return null;
 		}
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[1] = correlationId;
-			result = (String)proceedingJoinPoint.proceed(args);
+			result = (M)proceedingJoinPoint.proceed(args);
 		} catch(Throwable throwable) {
 			throw ibisDebugger.replyListenerAbort(listener, pipeLineSession.getMessageId(), throwable);
 		}
@@ -398,33 +408,33 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 	}
 
 	@Override
-	public Object threadCreated(ThreadDebugInfo ref, Object request) {
+	public <R> R threadCreated(ThreadDebugInfo ref, R request) {
 		if (!isEnabled()) {
-			return null;
+			return request;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
 			log.debug("threadCreated thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
 		}
-		return ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
+		return (R)ibisDebugger.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
 
 	@Override
-	public Object threadEnded(ThreadDebugInfo ref, Object result) {
+	public <R> R threadEnded(ThreadDebugInfo ref, R result) {
 		if (!isEnabled()) {
-			return null;
+			return result;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
 			log.debug("threadEnded thread id ["+Thread.currentThread().getId()+"] thread name ["+Thread.currentThread().getName()+"] owner ["+ref.owner.getClass().getSimpleName()+"]"+nameClause+" threadId ["+ref.threadId+"] correlationId ["+ref.correlationId+"]");
 		}
-		return ibisDebugger.endThread(ref.owner, ref.correlationId, result);
+		return (R)ibisDebugger.endThread(ref.owner, ref.correlationId, result);
 	}
 
 	@Override
 	public Throwable threadAborted(ThreadDebugInfo ref, Throwable t) {
 		if (!isEnabled()) {
-			return null;
+			return t;
 		}
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof INamedObject?" name ["+((INamedObject)ref.owner).getName()+"]":"";
@@ -468,7 +478,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 
 		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, requestReplyExecutor.getCorrelationID());
+			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
 		}
 		
 		@Override
@@ -496,7 +506,7 @@ public class IbisDebuggerAdvice implements ThreadLifeCycleEventListener<ThreadDe
 		AppConstants.getInstance().put("testtool.enabled", ""+enable);
 	}
 	public boolean isEnabled() {
-		return enabled;
+		return ibisDebugger != null && enabled;
 	}
 
 	@Override

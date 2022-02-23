@@ -1,0 +1,27 @@
+<xs:schema targetNamespace="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns="http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+         <xs:element name="OnCompletedTransferNotify_Action">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="TransferFlowId" type="xs:string"/>
+                  <xs:element name="UserData" type="xs:string"/>
+                  <xs:element name="ClientFilename">
+                     <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                           <xs:minLength value="1"/>
+                           <xs:whiteSpace value="collapse"/>
+                        </xs:restriction>
+                     </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="ServerFilename">
+                     <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                           <xs:minLength value="1"/>
+                           <xs:whiteSpace value="collapse"/>
+                        </xs:restriction>
+                     </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="LocalTransactionID" type="xs:string"/>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+      </xs:schema>

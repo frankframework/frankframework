@@ -22,12 +22,12 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.IParameterHandler;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerrit van Brakel
  * @since  4.9
  */
-public class LogSender extends SenderWithParametersBase implements IParameterHandler {
+public class LogSender extends SenderWithParametersBase {
 	private String logLevel="info";
 	private String logCategory=null;
 
@@ -58,7 +58,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeOutException {
+	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			logger.log(level, message.asString());
 		} catch (IOException io) {
@@ -68,7 +68,9 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 			try {
 				ParameterValueList pvl = getParameterList().getValues(message, session);
 				if (pvl != null) {
-					pvl.forAllParameters(this);
+					for (ParameterValue param : pvl) {
+						handleParam(param.getName(), param.getValue());
+					}
 				}
 			} catch (ParameterException e) {
 				throw new SenderException("exception determining value of parameters", e);
@@ -77,7 +79,6 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return message;
 	}
 
-	@Override
 	public void handleParam(String paramName, Object value) {
 		logger.log(level, "parameter [" + paramName + "] value [" + value + "]");
 	}

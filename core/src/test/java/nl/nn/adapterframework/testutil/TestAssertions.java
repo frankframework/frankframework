@@ -47,6 +47,17 @@ public class TestAssertions extends org.junit.Assert {
 		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
 	}
 
+	static public void assertEqualsIgnoreRNTSpace(String a, String b) {
+		assertEquals(removeRegexCharactersFromInput(a, "[\\n\\t\\r ]"), removeRegexCharactersFromInput(b, "[\\n\\t\\r ]"));
+	}
+
+	private static String removeRegexCharactersFromInput(String input, String regex) {
+		if(input == null) {
+			return null;
+		}
+		return input.replaceAll(regex, "");
+	}
+
 	private static String trimMultilineString(String str) throws IOException {
 		if(str == null || str.isEmpty())
 			return "";

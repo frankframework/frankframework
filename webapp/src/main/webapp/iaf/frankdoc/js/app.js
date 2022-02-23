@@ -69,7 +69,11 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 					for(i in groupMembers) {
 						let memberName = groupMembers[i];
 						if($scope.elements[memberName].name == elementSimpleName) {
-							$rootScope.$broadcast('element', $scope.elements[memberName]);
+							let el = $scope.elements[memberName];
+							if($scope.showInheritance) {
+								el = $scope.flattenElements(el);
+							}
+							$rootScope.$broadcast('element', el);
 						}
 					}
 				} else {
@@ -110,9 +114,31 @@ angular.module('iaf.frankdoc').config(['$stateProvider', '$urlRouterProvider', f
 	return function(input, $scope) {
 		if(!input || !$scope.elements) return;
 		input = input.replace(/\[(.*?)\]\((.+?)\)/g, '<a target="_blank" href="$2" alt="$1">$1</a>');
+		input = input.replaceAll('\\"', '"');
 		input = input.replace(/(?:{@link\s(.*?)})/g, function(match, captureGroup) {
-			let captures = captureGroup.split(" ");
+			// {@link PipeLineSession pipeLineSession}
+			// {@link IPipe#configure()}
+			// {@link #doPipe(Message, PipeLineSession) doPipe}
+			let referencedElement = captureGroup;
+			let hash = captureGroup.indexOf("#");
+			if(hash > -1) {
+				referencedElement = captureGroup.split("#")[0];
+
+				if(referencedElement == '') { //if there is no element ref then it's a method
+					let method = captureGroup.substring(hash);
+					let nameOrAlias = method.split(") ");
+					if(nameOrAlias.length == 2) {
+						return nameOrAlias[1]; //If it's an alias
+					}
+					return method.substring(1, method.indexOf("("))
+				}
+			}
+			let captures = referencedElement.split(" ");
 			let name = captures[captures.length-1];
+			if(hash > -1) {
+				let method = captureGroup.split("#")[1];
+				name = name +"."+ (method.substring(method.indexOf(") ")+1)).trim();
+			}
 			let element = findElement($scope.elements, captures[0]);
 			if(!element) {
 				return name;

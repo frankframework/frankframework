@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private LexicalHandler lexicalHandler;
-	
+
 	public FullXmlFilter() {
 		super();
 	}
@@ -42,8 +42,6 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		}
 	}
 
-	
-	
 	@Override
 	public void setContentHandler(ContentHandler handler) {
 		super.setContentHandler(handler);
@@ -65,7 +63,6 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		}
 	}
 
-	
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (lexicalHandler!=null) {

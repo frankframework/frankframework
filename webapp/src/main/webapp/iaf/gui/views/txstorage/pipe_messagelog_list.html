@@ -13,7 +13,7 @@
 					</div>
 					<div class="row full-width">
 						<div class="col-lg-6 col-md-12 clear">
-							<h4>Display Filters</h4>
+							<h4>Display and Search Filters</h4>
 						</div>
 					</div>
 				</div>
@@ -31,32 +31,37 @@
 								<tr>
 									<th>Storage ID</th>
 									<td><input disabled icheck type="checkbox" ng-change="updateFilter('id')" ng-model="displayColumn.id"/></td>
-									<td><input type="text" class="full-width" ng-model="search.id" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.id" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 								<tr>
-									<th>Timestamp</th>
+									<th>Timestamp (From)</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('insertDate')" ng-model="displayColumn.insertDate"/></td>
-									<td><input type="text" class="full-width" ng-model="search.startDate" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.startDate" ng-change="updateTable()" ng-model-options="{ debounce: 2000 }" title="Expects a timestamp with at least yyyy-mm"/></td>
+								</tr>
+								<tr>
+									<th>Timestamp (To)</th>
+									<td>&nbsp;</td>
+									<td><input type="text" class="full-width" ng-model="search.endDate" ng-change="updateTable()" ng-model-options="{ debounce: 2000 }" title="Expects a timestamp with at least yyyy-mm"/></td>
 								</tr>
 								<tr>
 									<th>Host</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('host')" ng-model="displayColumn.host"/></td>
-									<td><input type="text" class="full-width" ng-model="search.host" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.host" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 								<tr>
 									<th>Original ID</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('originalId')" ng-model="displayColumn.originalId"/></td>
-									<td><input type="text" class="full-width" ng-model="search.messageId" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.messageId" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 								<tr>
 									<th>Correlation ID</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('correlationId')" ng-model="displayColumn.correlationId"/></td>
-									<td><input type="text" class="full-width" ng-model="search.correlationId" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.correlationId" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 								<tr>
 									<th>Comment</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('comment')" ng-model="displayColumn.comment"/></td>
-									<td><input type="text" class="full-width" ng-model="search.comment" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.comment" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 								<tr>
 									<th>Expires</th>
@@ -66,7 +71,12 @@
 								<tr>
 									<th>Label</th>
 									<td><input icheck type="checkbox" ng-change="updateFilter('label')" ng-model="displayColumn.label"/></td>
-									<td><input type="text" class="full-width" ng-model="search.label" ng-change="updateTable()" ng-model-options="{ debounce: 400 }"/></td>
+									<td><input type="text" class="full-width" ng-model="search.label" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
+								</tr>
+								<tr>
+									<th>Message</th>
+									<td>&nbsp;</td>
+									<td><input type="text" class="full-width" ng-model="search.message" ng-change="updateTable()" ng-model-options="{ debounce: 500 }"/></td>
 								</tr>
 							</tbody>
 						</table>
@@ -93,7 +103,6 @@
 								<th>No.</th>
 								<th>Storage ID</th>
 								<th>Timestamp</th>
-								<th>Type</th>
 								<th>Host</th>
 								<th>Original ID</th>
 								<th>Correlation ID</th>

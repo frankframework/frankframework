@@ -64,7 +64,7 @@ public class ServiceJob extends BaseJob {
 			}
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error("JobExecutionException while running "+getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}
 		log.debug(getLogPrefix(context) + "completed");

@@ -29,7 +29,7 @@ import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.SpringTxManagerProxy;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 /**
  * @author Jaco de Groot

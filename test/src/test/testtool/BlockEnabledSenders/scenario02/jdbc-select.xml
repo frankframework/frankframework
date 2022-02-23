@@ -1,48 +1,56 @@
 <result>
   <fielddefinition>
-    <field name="TKEY" type="Unknown" columnDisplaySize="10" precision="10" scale="0" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal" />
-    <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String" />
-    <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String" />
-    <field name="TNUMBER" type="Unknown" columnDisplaySize="17" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal" />
-    <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp" />
-    <field name="TDATE" type="TIME" columnDisplaySize="8" precision="8" scale="0" isCurrency="false" columnTypeName="TIME" columnClassName="java.sql.Time" />
-    <field name="TBLOB1" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob" />
-    <field name="TCLOB" type="CLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="java.sql.Clob" />
-    <field name="TBLOB2" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob" />
+    <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+    <field name="TINT" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
+    <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+    <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+    <field name="TNUMBER" type="DECIMAL" columnDisplaySize="19" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
+    <field name="TDATETIME" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+    <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+    <field name="TDATE" type="TIMESTAMP" columnDisplaySize="19" precision="19" scale="0" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+    <field name="TTIME" type="TIME" columnDisplaySize="8" precision="8" scale="0" isCurrency="false" columnTypeName="TIME" columnClassName="java.sql.Time"/>
+    <field name="TBLOB" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BLOB" columnClassName="java.sql.Blob"/>
+    <field name="TCLOB" type="CLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="CLOB" columnClassName="java.sql.Clob"/>
   </fielddefinition>
   <rowset>
     <row number="0">
-      <field name="TKEY">58590</field>
+      <field name="TKEY">57100</field>
+      <field name="TINT" null="true"/>
       <field name="TCHAR">a</field>
-      <field name="TVARCHAR" null="true" />
+      <field name="TVARCHAR" null="true"/>
       <field name="TNUMBER">260902</field>
-      <field name="TTIMESTAMP" null="true" />
-      <field name="TDATE" null="true" />
-      <field name="TBLOB1" null="true" />
-      <field name="TCLOB" null="true" />
-      <field name="TBLOB2" null="true" />
+      <field name="TDATETIME" null="true"/>
+      <field name="TTIMESTAMP" null="true"/>
+      <field name="TDATE" null="true"/>
+      <field name="TTIME" null="true"/>
+      <field name="TBLOB" null="true"/>
+      <field name="TCLOB" null="true"/>
     </row>
     <row number="1">
-      <field name="TKEY">58591</field>
+      <field name="TKEY">57101</field>
+      <field name="TINT" null="true"/>
       <field name="TCHAR">d</field>
-      <field name="TVARCHAR" null="true" />
+      <field name="TVARCHAR" null="true"/>
       <field name="TNUMBER">260902</field>
-      <field name="TTIMESTAMP" null="true" />
-      <field name="TDATE" null="true" />
-      <field name="TBLOB1" null="true" />
-      <field name="TCLOB" null="true" />
-      <field name="TBLOB2" null="true" />
+      <field name="TDATETIME" null="true"/>
+      <field name="TTIMESTAMP" null="true"/>
+      <field name="TDATE" null="true"/>
+      <field name="TTIME" null="true"/>
+      <field name="TBLOB" null="true"/>
+      <field name="TCLOB" null="true"/>
     </row>
     <row number="2">
-      <field name="TKEY">58592</field>
+      <field name="TKEY">57102</field>
+      <field name="TINT" null="true"/>
       <field name="TCHAR">c</field>
-      <field name="TVARCHAR" null="true" />
+      <field name="TVARCHAR" null="true"/>
       <field name="TNUMBER">260902</field>
-      <field name="TTIMESTAMP" null="true" />
-      <field name="TDATE" null="true" />
-      <field name="TBLOB1" null="true" />
-      <field name="TCLOB" null="true" />
-      <field name="TBLOB2" null="true" />
+      <field name="TDATETIME" null="true"/>
+      <field name="TTIMESTAMP" null="true"/>
+      <field name="TDATE" null="true"/>
+      <field name="TTIME" null="true"/>
+      <field name="TBLOB" null="true"/>
+      <field name="TCLOB" null="true"/>
     </row>
   </rowset>
 </result>

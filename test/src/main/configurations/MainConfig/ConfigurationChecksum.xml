@@ -73,7 +73,7 @@
 			<pipe
 				name="selectSenderBasedOnTransferName"
 				className="nl.nn.adapterframework.pipes.XmlSwitch" 
-				sessionKey="FxfTransferName" >
+				getInputFromSessionKey="FxfTransferName" >
 			</pipe>
 
 
