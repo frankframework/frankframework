@@ -22,6 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestScopeProvider;
+import nl.nn.adapterframework.xml.StringBuilderContentHandler;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
@@ -170,4 +171,41 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 				"	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n" + 
 				"</test>", attributes);
 	}
+	
+	@Test
+	public void testParseXml() throws IOException, SAXException {
+		String source="<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+		String expected="startDocument\n"
+						+ "startElement root\n"
+						+ "startElement elem_a\n"
+						+ "characters [val_a]\n"
+						+ "endElement elem_a\n"
+						+ "startElement elem_b\n"
+						+ "characters [val_b]\n"
+						+ "endElement elem_b\n"
+						+ "endElement root\n"
+						+ "endDocument\n";
+		StringBuilderContentHandler handler = new StringBuilderContentHandler();
+		
+		XmlUtils.parseXml(source, handler);
+		
+		assertEquals(expected, handler.toString());
+	}
+
+	@Test
+	public void testParseNodeSet() throws IOException, SAXException {
+		String source="<elem_a>val_a</elem_a><elem_b>val_b</elem_b>";
+		String expected="startElement elem_a\n"
+						+ "characters [val_a]\n"
+						+ "endElement elem_a\n"
+						+ "startElement elem_b\n"
+						+ "characters [val_b]\n"
+						+ "endElement elem_b\n";
+		StringBuilderContentHandler handler = new StringBuilderContentHandler();
+		
+		XmlUtils.parseNodeSet(source, handler);
+		
+		assertEquals(expected, handler.toString());
+	}
+
 }

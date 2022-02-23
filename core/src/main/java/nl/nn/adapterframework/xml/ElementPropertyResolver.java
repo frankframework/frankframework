@@ -31,8 +31,6 @@ public class ElementPropertyResolver extends FullXmlFilter {
 
 	private boolean collectingBuffer;
 
-	private BodyOnlyFilter bodyOnly;
-
 	public ElementPropertyResolver(ContentHandler handler, Properties properties) {
 		super(handler);
 		if(properties == null) {
@@ -60,10 +58,7 @@ public class ElementPropertyResolver extends FullXmlFilter {
 	private void substitute() throws SAXException {
 		if (collectingBuffer) {
 			try {
-				if (bodyOnly==null) {
-					bodyOnly = new BodyOnlyFilter(getContentHandler());
-				}
-				XmlUtils.parseXml("<x>"+StringResolver.substVars(pendingSubstBuff.toString(), properties)+"</x>", bodyOnly);
+				XmlUtils.parseNodeSet(StringResolver.substVars(pendingSubstBuff.toString(), properties), getContentHandler());
 			} catch (IllegalArgumentException | IOException e) {
 				throw new SaxException("Could not substitute", e);
 			}

@@ -33,7 +33,7 @@ public class ConfigurationDigesterTest {
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
 		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler handler = digester.getCanonicalizedConfiguration(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
+		ContentHandler handler = digester.getConfigurationCanonicalizer(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
 
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);

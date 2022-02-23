@@ -97,7 +97,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private static final String CONFIGURATION_VALIDATION_SCHEMA = "FrankFrameworkCanonical.xsd";
 
-	private String digesterRulesFile = FrankDigesterRules.DIGESTER_RULES_FILE;
+	private @Getter @Setter String digesterRules = FrankDigesterRules.DIGESTER_RULES_FILE;
 
 	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
@@ -221,13 +221,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		
 		XmlWriter loadedHiddenWriter = new XmlWriter();
 		handler = new PrettyPrintFilter(loadedHiddenWriter);
-		handler = new ElementPropertyResolver(handler, appConstants);
 		handler = new AttributePropertyResolver(handler, appConstants, getPropsToHide(appConstants));
 		handler = new XmlTee(digester, handler);
 
 		handler = getStub4TesttoolContentHandler(handler, appConstants);
-		handler = getCanonicalizedConfiguration(handler);
+		handler = getConfigurationCanonicalizer(handler);
 		handler = new OnlyActiveFilter(handler, appConstants);
+		handler = new ElementPropertyResolver(handler, appConstants);
 
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
@@ -261,12 +261,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return propsToHide;
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler writer) throws IOException, SAXException {
+	public ContentHandler getConfigurationCanonicalizer(ContentHandler writer) throws IOException {
 		String frankConfigXSD = ConfigurationUtils.FRANK_CONFIG_XSD;
-		return getCanonicalizedConfiguration(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
+		return getConfigurationCanonicalizer(writer, frankConfigXSD, new XmlErrorHandler(frankConfigXSD));
 	}
 
-	public ContentHandler getCanonicalizedConfiguration(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
+	public ContentHandler getConfigurationCanonicalizer(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
@@ -303,11 +303,4 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		return handler;
 	}
 
-	public void setDigesterRules(String string) {
-		digesterRulesFile = string;
-	}
-
-	public String getDigesterRules() {
-		return digesterRulesFile;
-	}
 }
