@@ -8,7 +8,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class StringBuilderContentHandler extends DefaultHandler implements LexicalHandler {
 
 	private StringBuilder builder = new StringBuilder();
-	
+
 
 	@Override
 	public void startDocument() throws SAXException {
