@@ -152,9 +152,7 @@ public class Message implements Serializable {
 	 * For instance, it could replace an InputStream with a byte array or String.
 	 */
 	public void preserve() throws IOException {
-		if(!isRepeatable()) {
-			preserve(false);
-		}
+		preserve(false);
 	}
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
@@ -394,7 +392,7 @@ public class Message implements Serializable {
 			}
 		}
 		if(request instanceof byte[]) {
-			return Arrays.copyOf((byte[]) request, readLimit);
+			return (byte[]) request;
 		}
 
 		return null;
