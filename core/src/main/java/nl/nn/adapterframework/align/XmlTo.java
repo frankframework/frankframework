@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.apache.xerces.xs.XSWildcard;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -83,24 +85,40 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		} else {
 			if (writeAttributes) {
 				XSObjectList attributeUses=aligner.getAttributeUses();
-				if (attributeUses==null) {
+				XSWildcard wildcard = typeDefinition instanceof XSComplexTypeDefinition ? ((XSComplexTypeDefinition)typeDefinition).getAttributeWildcard():null;
+				if (attributeUses==null && wildcard==null) {
 					if (atts.getLength()>0) {
 						log.warn("found ["+atts.getLength()+"] attributes, but no declared AttributeUses");
 					}
 				} else {
-					for (int i=0;i<attributeUses.getLength(); i++) {
-						XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
-						XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
-						XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
-						String attName=attributeDeclaration.getName();
-						String attNS=attributeDeclaration.getNamespace();
-						if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
-						int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
-						if (attIndex>=0) {
-							String value=atts.getValue(attIndex);
-							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+					if (wildcard!=null) {
+						// if wildcard (xs:anyAttribute namespace="##any" processContents="lax") is present, then any attribute will be parsed
+						for (int i=0;i<atts.getLength(); i++) {
+							String name=atts.getLocalName(i);
+							String namespace=atts.getURI(i);
+							String value=atts.getValue(i);
+							XSSimpleTypeDefinition attTypeDefinition = findAttributeTypeDefinition(atts, attributeUses, namespace, name);
+							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+namespace+":"+name+"] value ["+value+"]");
 							if (StringUtils.isNotEmpty(value)) {
-								documentContainer.setAttribute(attName, value, attTypeDefinition);
+								documentContainer.setAttribute(name, value, attTypeDefinition);
+							}
+						}
+					} else {
+						// if no wildcard is found, then only declared attributes will be parsed
+						for (int i=0;i<attributeUses.getLength(); i++) {
+							XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
+							XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
+							XSSimpleTypeDefinition attTypeDefinition=attributeDeclaration.getTypeDefinition();
+							String attName=attributeDeclaration.getName();
+							String attNS=attributeDeclaration.getNamespace();
+							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] searching attribute ["+attNS+":"+attName+"]");
+							int attIndex=attNS!=null? atts.getIndex(attNS, attName):atts.getIndex(attName);
+							if (attIndex>=0) {
+								String value=atts.getValue(attIndex);
+								if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+attNS+":"+attName+"] value ["+value+"]");
+								if (StringUtils.isNotEmpty(value)) {
+									documentContainer.setAttribute(attName, value, attTypeDefinition);
+								}
 							}
 						}
 					}
@@ -109,6 +127,22 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		}
 	}
 
+	private XSSimpleTypeDefinition findAttributeTypeDefinition(Attributes atts, XSObjectList attributeUses, String namespace, String name) {
+		if (attributeUses==null) {
+			return null;
+		}
+		for (int i=0;i<attributeUses.getLength(); i++) {
+			XSAttributeUse attributeUse=(XSAttributeUse)attributeUses.item(i);
+			XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
+			String attUseName=attributeDeclaration.getName();
+			String attUseNS=attributeDeclaration.getNamespace();
+			if ((namespace==null && attUseNS==null || namespace!=null && namespace.equals(attUseNS)) && name.equals(attUseName)) {
+				return attributeDeclaration.getTypeDefinition();
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {

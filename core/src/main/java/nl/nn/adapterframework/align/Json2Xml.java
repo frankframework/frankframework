@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2017,2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package nl.nn.adapterframework.align;
 
 import java.io.StringReader;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -176,7 +176,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			return null;
 		}
 		try {
-			Map<String, String> result=new HashMap<String,String>();
+			Map<String, String> result=new LinkedHashMap<String,String>();
 			for (String key:o.keySet()) {
 				if (key.startsWith(attributePrefix)) {
 					String attributeName=key.substring(attributePrefix.length());
