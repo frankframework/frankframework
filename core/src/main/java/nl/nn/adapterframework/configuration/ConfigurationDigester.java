@@ -237,15 +237,6 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
 	}
 
-//	private String processCanonicalizedActivatedStubbedXslts(String configuration, ClassLoader classLoader) throws ConfigurationException {
-//		configuration = ConfigurationUtils.getCanonicalizedConfiguration(configuration);
-//		configuration = ConfigurationUtils.getActivatedConfiguration(configuration);
-//
-//		if (isConfigurationStubbed(classLoader)) {
-//			configuration = ConfigurationUtils.getStubbedConfiguration(classLoader, configuration);
-//		}
-//		return configuration;
-//	}
 
 	//Fixes ConfigurationDigesterTest#testOldSchoolConfigurationParser test
 	protected boolean isConfigurationStubbed(ClassLoader classLoader) {
