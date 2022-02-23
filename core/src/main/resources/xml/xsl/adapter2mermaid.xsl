@@ -17,7 +17,10 @@
 		<xsl:text> classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
-<!--		<xsl:copy-of select="$preproccessedConfiguration"/>-->
+
+		<!-- The code below gives back the preprocessed configuration
+		This is for testing purposes, to test also change outputtype(line 3) to xml instead of text-->
+		<!-- <xsl:copy-of select="$preproccessedConfiguration"/> -->
 	</xsl:template>
 
 	<xsl:template match="*" mode="preprocess">
@@ -25,7 +28,7 @@
 			<xsl:call-template name="defaultCopyActions"/>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template match="@*|comment()" mode="preprocess">
 		<xsl:copy/>
 	</xsl:template>
@@ -68,7 +71,7 @@
 			</xsl:element>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template match="pipeline" mode="preprocess">
 		<xsl:param name="firstElementID"/>
 		<!-- Modify the pipeline in the following ways:
@@ -119,7 +122,7 @@
 			<xsl:apply-templates select=".//exit" mode="#current"/>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template match="pipeline/inputValidator" mode="preprocess">
 		<xsl:param name="firstPipe"/>
 
@@ -132,7 +135,7 @@
 			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<xsl:template match="pipeline/inputWrapper" mode="preprocess">
 		<xsl:param name="firstPipe"/>
 
@@ -194,7 +197,7 @@
 			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<!-- The following pipes do not have a success forward, so it should not be added by default -->
 	<xsl:template match="pipe[@className=('nl.nn.adapterframework.pipes.CompareStringPipe',
 										 'nl.nn.adapterframework.pipes.CompareIntegerPipe')]" mode="preprocess">
@@ -230,7 +233,7 @@
 			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>
-	
+
 	<!-- The XmlSwitchPipe can have no forwards, in that case do nothing. Users shouldn't let this happen -->
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.XmlSwitch']" mode="preprocess">
 		<xsl:copy>
@@ -276,7 +279,7 @@
 		<xsl:param name="pipeline" select="ancestor::pipeline"/>
 		<xsl:param name="parentName" select="parent::*/name()"/>
 		<xsl:copy>
-			<xsl:variable name="target" select="$pipeline/(pipe[@name=current()/@path]|exits/exit[@path=current()/@path])[1]"/>
+			<xsl:variable name="target" select="$pipeline/(pipe[@name=current()/@path]|.//exit[@path=current()/@path])[1]"/>
 
 			<xsl:attribute name="testParentName" select="$parentName"/>
 			<!-- When the forward is an exit, link it to the corresponding outputWrapper or outputValidator -->
@@ -361,7 +364,7 @@
 		<xsl:attribute name="elementID" select="generate-id()"/>
 		<xsl:apply-templates select="*|@*" mode="#current"/>
 	</xsl:template>
-	
+
 	<xsl:template name="defaultPipeCopyActions">
 		<xsl:call-template name="defaultCopyActions"/>
 		<xsl:apply-templates select="../global-forwards/forward[not(@name = current()/forward/@name)]" mode="#current"/>
@@ -383,16 +386,16 @@
 			</xsl:call-template>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template name="createForward">
 		<xsl:param name="path"/>
 		<xsl:param name="name" select="$path"/>
-		
+
 		<xsl:variable name="forward">
 			<xsl:element name="forward">
 				<xsl:attribute name="name" select="$name"/>
 				<xsl:attribute name="path" select="$path"/>
-			</xsl:element> 
+			</xsl:element>
 		</xsl:variable>
 		<xsl:apply-templates select="$forward/forward" mode="#current">
 			<!--Scope is the variable which has no parent, so explicitly pass pipeline parameter-->
