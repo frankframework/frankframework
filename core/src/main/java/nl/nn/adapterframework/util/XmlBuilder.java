@@ -157,7 +157,7 @@ public class XmlBuilder {
 				}
 				if (text!=null) {
 					if (parseText) {
-						XmlUtils.parseXml(text, handler); // TODO should skip startDocument() and endDocument(). I'll do that when #2796 is merged
+						XmlUtils.parseNodeSet(text, handler);
 					} else {
 						handler.characters(text.toCharArray(), 0, text.length());
 					}
