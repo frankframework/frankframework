@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.FrankDocGroup;
+
 /**
  * Marker interface for Wrappers
  * 
  * * @author Gerrit van Brakel
  * 
  */
+@FrankDocGroup(order = 50, name = "Wrappers")
 public interface IWrapperPipe extends IPipe {
 
 	enum Direction { WRAP, UNWRAP; };
