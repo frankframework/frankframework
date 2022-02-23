@@ -104,6 +104,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.validation.RootValidations;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
+import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
@@ -484,6 +485,15 @@ public class XmlUtils {
 
 	public static void parseXml(String source, ContentHandler handler) throws IOException, SAXException {
 		parseXml(Message.asInputSource(source),handler);
+	}
+	
+	/**
+	 * like {@link #parseXml(String source, ContentHandler handler)}, but skips startDocument() and endDocument().
+	 * Can be used to parse a string and inject its events in an existing SAX event stream.
+	 */
+	public static void parseNodeSet(String source, ContentHandler handler) throws IOException, SAXException {
+		ContentHandler filter = new BodyOnlyFilter(handler);
+		parseXml("<nodesetRoot>"+source+"</nodesetRoot>", filter);
 	}
 
 	public static void parseXml(InputSource inputSource, ContentHandler handler) throws IOException, SAXException {
