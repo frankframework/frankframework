@@ -132,7 +132,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 			Map<String, String> headers = (Map<String, String>) session.get("headers");
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
-				if(log.isDebugEnabled()) log.debug("append header ["+ entry.getKey() +"] with value ["+  entry.getValue() +"]");
+				if(log.isTraceEnabled()) log.trace("appending header [{}] with value [{}]", entry.getKey(), entry.getValue());
 
 				method.addHeader(entry.getKey(), entry.getValue());
 			}
