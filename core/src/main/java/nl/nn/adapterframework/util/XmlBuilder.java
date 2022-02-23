@@ -25,7 +25,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
+import nl.nn.adapterframework.stream.document.IDocumentBuilder;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
+import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
@@ -35,12 +38,15 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * function returns the node and subnodes as an indented xml string.
  * <p/>
  * 
+ * @deprecated Please replace with {@link SaxDocumentBuilder} or {@link IDocumentBuilder} (from {@link DocumentBuilderFactory})
+ * 
  * @author Johan Verrips
  * @author Peter Leeuwenburgh
+ * 
  **/
-@Deprecated // Please replace with SaxDocumentBuilder or IDocumentBuilder (from DocumentBuilderFactory.startDocument())
+@Deprecated
 public class XmlBuilder {
-	static Logger log = LogUtil.getLogger(XmlBuilder.class);
+	protected Logger log = LogUtil.getLogger(this);
 
 	private final String CDATA_END="]]>";
 	
@@ -109,7 +115,6 @@ public class XmlBuilder {
 		cdata=null;
 		if (value != null) {
 			text = value;
-			// text = StringEscapeUtils.escapeJava(value); // Java escaping as was used by IbisXmlLayout.XmlBuilder
 		}
 	}
 
@@ -178,6 +183,7 @@ public class XmlBuilder {
 		}
 	}
 	
+	@Override
 	public String toString() {
 		return toXML();
 	}
