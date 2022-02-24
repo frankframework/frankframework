@@ -60,7 +60,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		this.documentContainer=documentContainer;
 	}
 
-	
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		boolean xmlArrayContainer=aligner.isParentOfSingleMultipleOccurringChildElement();
@@ -72,8 +72,8 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 				documentContainer.endElementGroup(topElement);	
 			}
 			if (log.isTraceEnabled()) log.trace("startElementGroup ["+localName+"]");
-			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);	
-			topElement=localName;			
+			documentContainer.startElementGroup(localName, xmlArrayContainer, repeatedElement, typeDefinition);
+			topElement=localName;
 		}
 		element.push(topElement);
 		topElement=null;
@@ -97,7 +97,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 							String name=atts.getLocalName(i);
 							String namespace=atts.getURI(i);
 							String value=atts.getValue(i);
-							XSSimpleTypeDefinition attTypeDefinition = findAttributeTypeDefinition(atts, attributeUses, namespace, name);
+							XSSimpleTypeDefinition attTypeDefinition = findAttributeTypeDefinition(attributeUses, namespace, name);
 							if (log.isTraceEnabled()) log.trace("startElement ["+localName+"] attribute ["+namespace+":"+name+"] value ["+value+"]");
 							if (StringUtils.isNotEmpty(value)) {
 								documentContainer.setAttribute(name, value, attTypeDefinition);
@@ -127,7 +127,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		}
 	}
 
-	private XSSimpleTypeDefinition findAttributeTypeDefinition(Attributes atts, XSObjectList attributeUses, String namespace, String name) {
+	private XSSimpleTypeDefinition findAttributeTypeDefinition(XSObjectList attributeUses, String namespace, String name) {
 		if (attributeUses==null) {
 			return null;
 		}
@@ -142,7 +142,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (topElement!=null) {
@@ -178,10 +178,10 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		XmlAligner aligner = new XmlAligner(validatorHandler);
 		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
 		aligner.setContentHandler(xml2object);
-		
+
 		return validatorHandler;
 	} 
-	
+
 	public static void translate(String xml, URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
 		ValidatorHandler validatorHandler = setupHandler(schemaURL, documentContainer);
 		XmlUtils.parseXml(xml, validatorHandler);

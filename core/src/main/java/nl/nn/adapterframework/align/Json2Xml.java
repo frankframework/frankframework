@@ -176,7 +176,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			return null;
 		}
 		try {
-			Map<String, String> result=new LinkedHashMap<String,String>();
+			Map<String, String> result=new LinkedHashMap<String,String>(); // it is not really necessary to preserve the order, but often the results look nicer, and it is easier for testing ...
 			for (String key:o.keySet()) {
 				if (key.startsWith(attributePrefix)) {
 					String attributeName=key.substring(attributePrefix.length());

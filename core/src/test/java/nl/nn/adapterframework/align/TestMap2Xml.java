@@ -176,15 +176,15 @@ public class TestMap2Xml extends AlignTestBase {
 	}
 
 	@Test
-	@Ignore("Does not work, not priority to solve it now")
-	public void testAnyAttribute() throws Exception {
-		super.testAnyAttribute();
+	@Ignore("The conversion fails to add label name attributes, see https://github.com/ibissource/iaf/issues/2806")
+	public void testLabelValue() throws Exception {
+		super.testLabelValue();
 	}
 
 	@Test
-	@Ignore("Does not work, not priority to solve it now")
-	public void testLabelValue() throws Exception {
-		super.testLabelValue();
+	@Ignore("The conversion fails to handle 'anyAttribute' properly, see https://github.com/ibissource/iaf/issues/2807")
+	public void testAnyAttribute() throws Exception {
+		super.testAnyAttribute();
 	}
 
 }
