@@ -107,7 +107,7 @@ public abstract class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeCharset(Message message, int confidence) throws IOException {
-		if(StringUtils.isNotEmpty(message.getCharset())) {
+		if(StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			Charset.forName(message.getCharset());
 		}
 
@@ -118,7 +118,7 @@ public abstract class MessageUtils {
 			String charset = match.getName();
 
 			if(match.getConfidence() > 90) {
-				return Charset.forName(charset);
+				return updateMessageCharset(message, charset);
 			}
 
 			//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
@@ -126,13 +126,28 @@ public abstract class MessageUtils {
 				charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
 			}
 			if(match.getConfidence() >= confidence) {
-				LOG.info("unable to properly detect charset for message [{}], using [{}]", message, charset);
-				return Charset.forName(charset);
+				LOG.info("unable to properly detect charset for message [{}], best match [{}]", message, charset);
+				return updateMessageCharset(message, charset);
 			}
 
+			updateMessageCharset(message, null);
 			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, match.getName(), match.getConfidence(), confidence);
 		}
-		return StreamUtil.DEFAULT_CHARSET; //fall back to the default charset.
+		return null; //fall back to the default charset.
+	}
+
+	private static Charset updateMessageCharset(Message message, String charsetName) {
+		try {
+			if(charsetName != null) {
+				return Charset.forName(charsetName); //parse it first to validate the charset
+			}
+			return null;
+		} finally {
+			Map<String, Object> context = message.getContext();
+			if(context != null) {
+				context.put(MessageContext.METADATA_CHARSET, charsetName);
+			}
+		}
 	}
 
 	/**

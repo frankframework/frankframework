@@ -32,6 +32,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -58,6 +59,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -142,10 +144,32 @@ public class Message implements Serializable {
 		return new MessageContext(getContext());
 	}
 
-	// representing a charset of binary requests 
+	/**
+	 * Representing a charset of binary requests 
+	 * @return the provided charset when the message was created
+	 */
 	public String getCharset() {
 		return (String)context.get(MessageContext.METADATA_CHARSET);
 	}
+
+	/**
+	 * If no charset was provided and the requested charset is <code>auto</auto>, try to parse the charset.
+	 * If unsuccessful return the default; <code>UTF-8</code>.
+	 */
+	private String computeCharset() throws IOException {
+		return computeCharset(getCharset());
+	}
+	private String computeCharset(String defaultCharset) throws IOException {
+		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultCharset)) {
+			Charset charset = MessageUtils.computeCharset(this);
+			defaultCharset = (charset != null) ? charset.name() : null;
+		}
+		if (StringUtils.isEmpty(defaultCharset)) {
+			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		return defaultCharset;
+	}
+
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation. 
@@ -283,10 +307,11 @@ public class Message implements Serializable {
 			return (Reader) request;
 		}
 		if (isBinary()) {
-			String readerCharset = getCharset(); //Don't overwrite the Message's charset
+			String readerCharset = computeCharset(); //Doesn't overwrite the Message's charset unless it's set to AUTO
 			if (StringUtils.isEmpty(readerCharset)) {
 				readerCharset=StringUtils.isNotEmpty(defaultCharset)?defaultCharset:StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			}
+
 			log.debug("returning InputStream as Reader");
 			InputStream inputStream = asInputStream();
 			try {
@@ -330,13 +355,6 @@ public class Message implements Serializable {
 				log.debug("returning InputStream from supplier");
 				return ((ThrowingSupplier<InputStream,Exception>) request).get();
 			}
-			if (StringUtils.isEmpty(defaultCharset)) {
-				defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
-			if (request instanceof Reader) {
-				log.debug("returning Reader as InputStream");
-				return new ReaderInputStream((Reader) request, defaultCharset);
-			}
 			if (request instanceof byte[]) {
 				log.debug("returning byte[] as InputStream");
 				return new ByteArrayInputStream((byte[]) request);
@@ -344,6 +362,11 @@ public class Message implements Serializable {
 			if(request instanceof Node) {
 				log.debug("returning Node as InputStream");
 				return new ByteArrayInputStream(asByteArray());
+			}
+			defaultCharset = computeCharset(defaultCharset);
+			if (request instanceof Reader) {
+				log.debug("returning Reader as InputStream");
+				return new ReaderInputStream((Reader) request, defaultCharset);
 			}
 			log.debug("returning String as InputStream");
 			return new ByteArrayInputStream(request.toString().getBytes(defaultCharset));
@@ -469,9 +492,7 @@ public class Message implements Serializable {
 		if (request instanceof byte[]) {
 			return (byte[])request;
 		}
-		if (StringUtils.isEmpty(defaultCharset)) {
-			defaultCharset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
+		defaultCharset = computeCharset(defaultCharset);
 		if (request instanceof String) {
 			return ((String)request).getBytes(defaultCharset);
 		}

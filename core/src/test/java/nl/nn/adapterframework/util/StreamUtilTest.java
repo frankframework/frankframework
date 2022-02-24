@@ -108,7 +108,7 @@ public class StreamUtilTest {
 	}
 
 	@Test
-	public void testIets() throws Exception {
+	public void testCaptureWithMarkSupportedOutputStream() throws Exception {
 		URL input = ClassUtils.getResourceURL("/ForEachChildElementPipe/bulk2.xml");
 
 		Message message = new Message(input.openStream()); //non-repeatable
