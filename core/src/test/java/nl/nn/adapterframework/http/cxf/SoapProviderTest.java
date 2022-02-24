@@ -50,10 +50,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.stream.Message;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {
@@ -202,7 +202,7 @@ public class SoapProviderTest {
 		assertNotNull(session.get("mimeHeaders"));
 
 		assertNotNull(session.get("attachments"));
-		assertEquals("<attachments />", session.get("attachments").toString().trim());
+		assertEquals("<attachments/>", session.get("attachments").toString().trim());
 	}
 
 	@Test
