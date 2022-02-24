@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
@@ -49,7 +48,6 @@ import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import lombok.Lombok;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 
@@ -417,27 +415,47 @@ public class StreamUtil {
 	}
 
 	public static OutputStream markOutputStream(OutputStream stream) {
-		return new MarkSupportedOutputStream(stream);
+		return new ByteSkipingOutputStream(stream);
 	}
 
-	private static class MarkSupportedOutputStream extends BufferedOutputStream {
+	static class ByteSkipingOutputStream extends FilterOutputStream {
+		private int bytesToSkip = 0;
 
-		public MarkSupportedOutputStream(OutputStream out) {
-			super(out, 1024);
+		public ByteSkipingOutputStream(OutputStream out) {
+			super(out);
 		}
 
-		public void mark(int readLimit) {
-			try {
-				flush(); // Flush the internal buffer before assigning a new one.
-			} catch (IOException e) {
-				Lombok.sneakyThrow(e);
+		@Override
+		public synchronized void write(int b) throws IOException {
+			if(bytesToSkip > 0) {
+				--bytesToSkip;
+				return;
 			}
-			buf = new byte[readLimit];
-			count = 0;
+
+			out.write(b);
+		}
+
+		@Override
+		public synchronized void write(byte[] b, int off, int len) throws IOException {
+			if(bytesToSkip == 0) {
+				out.write(b, off, len);
+				return;
+			}
+
+			int sizeToRead = Math.abs(off - len);
+			if(bytesToSkip < sizeToRead) {
+				out.write(b, off + bytesToSkip, len - bytesToSkip);
+				bytesToSkip = 0;
+			} else {
+				bytesToSkip -= sizeToRead;
+			}
+		}
+
+		public synchronized void skip(int bytesToSkip) {
+			this.bytesToSkip = bytesToSkip;
 		}
 		public void reset() {
-			buf = new byte[1024];
-			count = 0;
+			skip(0);
 		}
 	}
 
@@ -515,13 +533,13 @@ public class StreamUtil {
 
 			@Override
 			public synchronized void mark(int readlimit) {
-				((MarkSupportedOutputStream) markableOutputStream).mark(readlimit);
+				((ByteSkipingOutputStream) markableOutputStream).skip(readlimit);
 				super.mark(readlimit);
 			}
 
 			@Override
 			public synchronized void reset() throws IOException {
-				((MarkSupportedOutputStream) markableOutputStream).reset();
+				((ByteSkipingOutputStream) markableOutputStream).reset();
 				super.reset();
 			}
 		};

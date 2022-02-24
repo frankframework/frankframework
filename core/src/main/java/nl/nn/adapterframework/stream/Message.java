@@ -379,7 +379,7 @@ public class Message implements Serializable {
 			if(!stream.markSupported()) {
 				request = new BufferedInputStream(stream, readLimit);
 			}
-			stream.mark(readLimit + 1);
+			stream.mark(readLimit);
 			try {
 				return readBytesFromInputStream(stream, readLimit);
 			} finally {
@@ -391,8 +391,8 @@ public class Message implements Serializable {
 				return readBytesFromInputStream(stream, readLimit);
 			}
 		}
-		if(request instanceof byte[]) {
-			return (byte[]) request;
+		if(request instanceof byte[]) { //copy of, else we can bump into buffer overflow exceptions
+			return Arrays.copyOf((byte[]) request, readLimit);
 		}
 
 		return null;
