@@ -107,7 +107,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void configure() throws ConfigurationException, SenderException, TimeoutException {
+	public void configure() throws ConfigurationException {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
 		sender.configure();
