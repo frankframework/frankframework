@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 import lombok.Setter;
+import nl.nn.adapterframework.statistics.MicroMeterBasics.MicroMeterSnapshot;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -29,7 +30,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9.9
  */
-public class MicroMeterBasics implements IBasics<MicroMeterBasics> {
+public class MicroMeterBasics implements IBasics<MicroMeterSnapshot> {
 
 	public static final int NUM_BASIC_ITEMS=6;   
 
@@ -38,12 +39,21 @@ public class MicroMeterBasics implements IBasics<MicroMeterBasics> {
 	
 	protected long min = Long.MAX_VALUE;
 	protected long sumOfSquares=0;
+
+	protected class MicroMeterSnapshot {
+		protected HistogramSnapshot histogramSnapshot;
+		protected long min = Long.MAX_VALUE;
+		protected long max = 0;
+		protected long sumOfSquares;
+	}
 	
 
-	public void mark(MicroMeterBasics other) {
-		snapshot = distributionSummary!=null ? distributionSummary.takeSnapshot() : null;
-		min = Long.MAX_VALUE;
-		sumOfSquares=other.sumOfSquares;
+	@Override
+	public MicroMeterSnapshot takeSnapshot() {
+		MicroMeterSnapshot result = new MicroMeterSnapshot();
+		result.histogramSnapshot = distributionSummary!=null ? distributionSummary.takeSnapshot() : null;
+		result.sumOfSquares= sumOfSquares;
+		return result;
 	}
 	
 	public void addValue(long value) {
@@ -59,6 +69,56 @@ public class MicroMeterBasics implements IBasics<MicroMeterBasics> {
 			min = value;
 		}
 	}
+
+	@Override
+	public long getIntervalCount(MicroMeterSnapshot mark) {
+		return getCount() - mark.histogramSnapshot.count();
+	}
+
+	@Override
+	public long getIntervalMin(MicroMeterSnapshot mark) {
+		return mark.min;
+	}
+
+	@Override
+	public long getIntervalMax(MicroMeterSnapshot mark) {
+		return mark.max;
+	}
+
+	@Override
+	public void updateIntervalMinMax(MicroMeterSnapshot mark, long value) {
+		if (mark.min>value) {
+			mark.min = value;
+		}
+		if (mark.max<value) {
+			mark.max = value;
+		}
+	}
+	@Override
+	public long getIntervalSum(MicroMeterSnapshot mark) {
+		return getSum() - Math.round(mark.histogramSnapshot.total());
+	}
+
+	@Override
+	public long getIntervalSumOfSquares(MicroMeterSnapshot mark) {
+		return getSumOfSquares() - mark.sumOfSquares;
+	}
+
+	@Override
+	public double getIntervalAverage(MicroMeterSnapshot mark) {
+		long intervalCount=getIntervalCount(mark);
+		if (intervalCount==0) {
+			return 0;
+		}
+		return getIntervalSum(mark)/(double)(intervalCount);
+	}
+
+	@Override
+	public double getIntervalVariance(MicroMeterSnapshot mark) {
+		return calculateVariance(getIntervalCount(mark), getIntervalSum(mark), getIntervalSumOfSquares(mark));
+	}
+
+
 
 	protected void addSums(long value) {
 		sumOfSquares += value * value;

@@ -51,6 +51,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 	}
  
 	
+	@Override
 	public void addValue(long value, long count, long min, long max) {
 		if (count <= values.length) {
 			storeFirstValue(value, count);
@@ -106,6 +107,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		return result; 
 	}
 
+	@Override
 	public double getPercentileEstimate(int index, long count, long min, long max) {
 		if (count<=values.length) { 
 			return getInterpolatedPercentile(p[index],count);
@@ -113,19 +115,23 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		return getInterpolatedPercentile(p[index],values.length);
 	}
 
+	@Override
 	public int getNumPercentiles() {
 		return p.length;
 	}
 
+	@Override
 	public int getPercentage(int index) {
 		return p[index];
 	}
 
 
+	@Override
 	public int getSampleCount(long count, long min, long max) {
 		return values.length;
 	}
 
+	@Override
 	public XmlBuilder getSample(int index, long count, long min, long max) {
 		XmlBuilder sample = new XmlBuilder("sample");
 		sample.addAttribute("percentile",""+(100*index)/values.length);

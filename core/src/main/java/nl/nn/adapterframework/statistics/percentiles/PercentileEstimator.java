@@ -31,7 +31,5 @@ public interface PercentileEstimator {
 
 	int getSampleCount(long count, long min, long max);
 	XmlBuilder getSample(int index, long count, long min, long max);
-	
-	public void clear();
 
 }

@@ -51,6 +51,17 @@ public class Basics implements IBasics<Basics> {
 	protected long sum = 0;
 	protected long sumOfSquares=0;
 	
+	public Basics() {
+		super();
+	}
+
+	protected Basics(long count, long sum, long sumOfSquares) {
+		this();
+		this.count = count;
+		this.sum = sum;
+		this.sumOfSquares = sumOfSquares;
+	}
+	
 	public void reset() {
 		count = 0;
 		min = Long.MAX_VALUE;
@@ -59,20 +70,19 @@ public class Basics implements IBasics<Basics> {
 		sumOfSquares=0;
 	}
 
-	public void mark(Basics other) {
-		min = Long.MAX_VALUE;
-		max = 0;
-		count = other.count;
-		sum = other.sum;
-		sumOfSquares=other.sumOfSquares;
+	@Override
+	public Basics takeSnapshot() {
+		return new Basics(count, sum, sumOfSquares);
 	}
 	
+	@Override
 	public void addValue(long value) {
 		++count;
 		checkMinMax(value);
 		addSums(value);
 	}
 	
+	@Override
 	public void checkMinMax(long value) {
 		if (value < min) {
 			min = value;
@@ -158,41 +168,65 @@ public class Basics implements IBasics<Basics> {
 
 
 	
+	@Override
 	public long getCount() {
 		return count;
 	}
+	@Override
 	public long getIntervalCount(Basics mark) {
 		return count-mark.getCount();
 	}
 
+	@Override
 	public long getMax() {
 		return max;
 	}
 
+	@Override
 	public long getMin() {
 		return min;
 	}
 
+	@Override
 	public long getSum() {
 		return sum;
 	}
+	@Override
 	public long getSumOfSquares() {
 		return sumOfSquares;
 	}
 
+	@Override
 	public long getIntervalSum(Basics mark) {
 		return sum-mark.getSum();
 	}
+	@Override
 	public long getIntervalSumOfSquares(Basics mark) {
 		return sumOfSquares-mark.getSumOfSquares();
 	}
+	@Override
+	public long getIntervalMin(Basics mark) {
+		return mark.getMin();
+	}
 
+	@Override
+	public long getIntervalMax(Basics mark) {
+		return mark.getMax();
+	}
+
+	@Override
+	public void updateIntervalMinMax(Basics mark, long value) {
+		mark.checkMinMax(value);
+	}
+
+	@Override
 	public double getAverage() {
 		if (count == 0) {
 			return 0;
 		}
 		return (sum / (double)count);
 	}
+	@Override
 	public double getIntervalAverage(Basics mark) {
 		long intervalCount=getIntervalCount(mark);
 		if (intervalCount==0) {
@@ -201,13 +235,16 @@ public class Basics implements IBasics<Basics> {
 		return getIntervalSum(mark)/(double)(intervalCount);
 	}
 
+	@Override
 	public double getVariance() {
 		return calculateVariance(count, sum, sumOfSquares);
 	}
+	@Override
 	public double getIntervalVariance(Basics mark) {
 		return calculateVariance(count-mark.getCount(), sum-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
 	}
 
+	@Override
 	public double getStdDev() {
 		return Math.sqrt(getVariance());
 	}
