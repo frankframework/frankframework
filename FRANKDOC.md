@@ -12,6 +12,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.default` | `@Default` | Attribute setter | Describes default value. |
 | `@ff.protected` | `@Protected` | Attribute setter | Suppresses declaration and inheritance of attribute. Annotation is inherited. |
 | `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config. |
+| `@ff.optional` | `@Optional` | Attribute or child setter | Undoes inherited `@ff.mandatory`, making the attribute or child optional even if it overrides a mandatory attribute or child.
 | `@ff.defaultElement` | | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
 
