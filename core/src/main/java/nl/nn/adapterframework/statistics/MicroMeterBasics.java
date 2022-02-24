@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package nl.nn.adapterframework.statistics;
 
 import java.text.DecimalFormat;
 
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.distribution.HistogramSnapshot;
+import lombok.Setter;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -26,49 +29,27 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9.9
  */
-public class Basics implements IBasics<Basics> {
+public class MicroMeterBasics implements IBasics<MicroMeterBasics> {
 
 	public static final int NUM_BASIC_ITEMS=6;   
 
-/*
- * Capacity calculation.
- * c: number of bits in count
- * d: number of databits
- * 
- * int:  32 bits
- * long: 64 bits
- * 
- * lengths
- * count: c
- * sum: c+d
- * sumOfSquares: c+2d 
- */
+	private @Setter DistributionSummary distributionSummary;
+	private HistogramSnapshot snapshot;
 	
-	
-	protected long count = 0;
 	protected long min = Long.MAX_VALUE;
-	protected long max = 0;
-	protected long sum = 0;
 	protected long sumOfSquares=0;
 	
-	public void reset() {
-		count = 0;
-		min = Long.MAX_VALUE;
-		max = 0;
-		sum = 0;
-		sumOfSquares=0;
-	}
 
-	public void mark(Basics other) {
+	public void mark(MicroMeterBasics other) {
+		snapshot = distributionSummary!=null ? distributionSummary.takeSnapshot() : null;
 		min = Long.MAX_VALUE;
-		max = 0;
-		count = other.count;
-		sum = other.sum;
 		sumOfSquares=other.sumOfSquares;
 	}
 	
 	public void addValue(long value) {
-		++count;
+		if (distributionSummary!=null) {
+			distributionSummary.record(value);
+		}
 		checkMinMax(value);
 		addSums(value);
 	}
@@ -77,28 +58,12 @@ public class Basics implements IBasics<Basics> {
 		if (value < min) {
 			min = value;
 		}
-		if (value > max) {
-			max = value;
-		}
 	}
 
 	protected void addSums(long value) {
-		sum += value;
 		sumOfSquares += value * value;
 	}
 
-	public void addRecord(Basics record) {
-		count+=record.getCount();
-		if (record.getMin() < min) {
-			min = record.getMin();
-		}
-		if (record.getMax() > max) {
-			max = record.getMax();
-		}
-		sum += record.getSum();
-		sumOfSquares += record.getSumOfSquares();
-	}
-	
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		double result;
 		if (count>1) {
@@ -159,14 +124,14 @@ public class Basics implements IBasics<Basics> {
 
 	
 	public long getCount() {
-		return count;
+		return distributionSummary!=null ? distributionSummary.count() : 0;
 	}
-	public long getIntervalCount(Basics mark) {
-		return count-mark.getCount();
+	public long getIntervalCount(MicroMeterBasics mark) {
+		return getCount()-mark.getCount();
 	}
 
 	public long getMax() {
-		return max;
+		return distributionSummary!=null ? Math.round(distributionSummary.max()) : 0;
 	}
 
 	public long getMin() {
@@ -174,26 +139,23 @@ public class Basics implements IBasics<Basics> {
 	}
 
 	public long getSum() {
-		return sum;
+		return distributionSummary!=null ? Math.round(distributionSummary.totalAmount()) : 0;
 	}
 	public long getSumOfSquares() {
 		return sumOfSquares;
 	}
 
-	public long getIntervalSum(Basics mark) {
-		return sum-mark.getSum();
+	public long getIntervalSum(MicroMeterBasics mark) {
+		return getSum()-Math.round(mark.snapshot.total());
 	}
-	public long getIntervalSumOfSquares(Basics mark) {
+	public long getIntervalSumOfSquares(MicroMeterBasics mark) {
 		return sumOfSquares-mark.getSumOfSquares();
 	}
 
 	public double getAverage() {
-		if (count == 0) {
-			return 0;
-		}
-		return (sum / (double)count);
+		return distributionSummary!=null ? distributionSummary.mean() : 0;
 	}
-	public double getIntervalAverage(Basics mark) {
+	public double getIntervalAverage(MicroMeterBasics mark) {
 		long intervalCount=getIntervalCount(mark);
 		if (intervalCount==0) {
 			return 0;
@@ -202,10 +164,18 @@ public class Basics implements IBasics<Basics> {
 	}
 
 	public double getVariance() {
-		return calculateVariance(count, sum, sumOfSquares);
+		if (distributionSummary==null) {
+			return Double.NaN;
+		}
+		HistogramSnapshot snapshot = distributionSummary.takeSnapshot();
+		return calculateVariance(snapshot.count(), Math.round(snapshot.total()), sumOfSquares);
 	}
-	public double getIntervalVariance(Basics mark) {
-		return calculateVariance(count-mark.getCount(), sum-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
+	public double getIntervalVariance(MicroMeterBasics mark) {
+		if (distributionSummary==null) {
+			return Double.NaN;
+		}
+		HistogramSnapshot snapshot = distributionSummary.takeSnapshot();
+		return calculateVariance(snapshot.count()-mark.getCount(), Math.round(snapshot.total())-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
 	}
 
 	public double getStdDev() {

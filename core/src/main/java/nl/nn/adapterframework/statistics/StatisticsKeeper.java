@@ -26,7 +26,6 @@ import java.util.StringTokenizer;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import lombok.Getter;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
@@ -46,8 +45,8 @@ public class StatisticsKeeper implements ItemList {
 	private String name = null;
 	private long first = Long.MIN_VALUE;
 	private long last = 0;
-	private Basics cumulative;
-	private Basics mark;
+	private IBasics cumulative;
+	private IBasics mark;
 	private long[] classBoundaries;
 	private long[] classCounts;
 
@@ -66,7 +65,7 @@ public class StatisticsKeeper implements ItemList {
 
 	protected PercentileEstimator pest;
 
-	private @Getter DistributionSummary distributionSummary;
+	private DistributionSummary distributionSummary;
 
 	private static List<String> labels;
 	private static List<String> types;
@@ -79,7 +78,7 @@ public class StatisticsKeeper implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
-		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+		this(name, MicroMeterBasics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
@@ -100,15 +99,22 @@ public class StatisticsKeeper implements ItemList {
 				.publishPercentiles(percentiles)
 				//.publishPercentileHistogram()
 				;
-		distributionSummary = builder.register(registry);
+		DistributionSummary distributionSummary = builder.register(registry);
+		
+		if (cumulative instanceof MicroMeterBasics) {
+			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
+		} else {
+			this.distributionSummary = distributionSummary;
+		}
 	}
 
 	protected StatisticsKeeper(String name, Class basicsClass, String boundaryConfigKey, String defaultBoundaryList) {
 		super();
 		this.name = name;
 		try {
-			cumulative=(Basics)basicsClass.newInstance();
-			mark=(Basics)basicsClass.newInstance();
+			cumulative=(IBasics)basicsClass.newInstance();
+			mark=new Basics();
+//			mark=(IBasics)basicsClass.newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -190,7 +196,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public String getItemName(int index) {
-		if (index < Basics.NUM_BASIC_ITEMS) {
+		if (index < IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemName(index);
 		}
 		switch (index) {
@@ -234,7 +240,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public Type getItemType(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemType(index);
 		}
 		switch (index) {
@@ -262,7 +268,7 @@ public class StatisticsKeeper implements ItemList {
 
 	@Override
 	public Object getItemValue(int index) {
-		if (index<Basics.NUM_BASIC_ITEMS) {
+		if (index<IBasics.NUM_BASIC_ITEMS) {
 			return cumulative.getItemValue(index);
 		}
 		switch (index) {
