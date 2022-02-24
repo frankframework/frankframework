@@ -24,7 +24,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.DELETE_OBJECT.getLabel());
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis deleted=\"true\" />", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis deleted=\"true\"/>", result);
 	}
 
 	@Test
@@ -37,7 +37,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id><properties><property name=\"cmis:name\">dummy</property></properties><versioningState>NONE</versioningState><contentStream filename=\"file.txt\" length=\"4\" mimeType=\"text/plain\"></contentStream></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n  <id>dummy</id>\n</cmis>", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>dummy</id>\n</cmis>", result);
 	}
 
 	@Test
@@ -50,6 +50,6 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n  <id>testId</id>\n  <contentStream length=\"0\" mimeType=\"text/xml\" />\n</cmis>", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>testId</id>\n\t<contentStream length=\"0\" mimeType=\"text/xml\"/>\n</cmis>", result);
 	}
 }

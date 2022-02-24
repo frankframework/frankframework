@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 
 		Message message = event.getMessage();
 		XmlBuilder messageBuilder = XmlBuilder.create("message");
-		messageBuilder.setElementContent(message.getFormattedMessage());
-		eventBuilder.setSubElement(messageBuilder);
+		messageBuilder.setValue(message.getFormattedMessage());
+		eventBuilder.addSubElement(messageBuilder);
 
 		Throwable t = message.getThrowable();
 		if(t != null || alwaysWriteExceptions) {
@@ -75,8 +75,8 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			if(t != null) {
 				t.printStackTrace(new PrintWriter(sw));
 			}
-			throwableBuilder.setElementContent(sw.toString());
-			eventBuilder.setSubElement(throwableBuilder);
+			throwableBuilder.setValue(sw.toString());
+			eventBuilder.addSubElement(throwableBuilder);
 		}
 
 		return eventBuilder.toString()+System.lineSeparator();
@@ -91,6 +91,11 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 		return new IbisXmlLayout(config, charset, alwaysWriteExceptions);
 	}
 
+	/**
+	 * Local copy of an old version of XmlBuilder, that
+	 * - does not use logging itself
+	 * - java escapes unicode characters
+	 */
 	private static class XmlBuilder {
 		private Element element;
 
@@ -102,14 +107,14 @@ public class IbisXmlLayout extends IbisMaskingLayout {
 			element = new Element(tagName);
 		}
 
-		public void setElementContent(String value) {
+		public void setValue(String value) {
 			if (value != null) {
 				//Escape illegal JDOM characters
 				element.setText(StringEscapeUtils.escapeJava(value));
 			}
 		}
 
-		public void setSubElement(XmlBuilder newElement) {
+		public void addSubElement(XmlBuilder newElement) {
 			addSubElement(newElement, true);
 		}
 
