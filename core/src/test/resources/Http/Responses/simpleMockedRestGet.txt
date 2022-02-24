@@ -1,9 +1,10 @@
 <result>
-  <statuscode>200</statuscode>
-  <headers>
-    <header name="connection" value="Keep-Alive" />
-    <header name="content-type" value="text/plain" />
-  </headers>
-  <message>GET /hallo HTTP/1.1
-Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1</message>
+	<statuscode>200</statuscode>
+	<headers>
+		<header name="connection" value="Keep-Alive"/>
+		<header name="content-type" value="text/plain"/>
+	</headers>
+	<message>GET /hallo HTTP/1.1
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+</message>
 </result>

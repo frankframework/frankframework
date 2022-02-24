@@ -47,7 +47,7 @@ public class DocWriter {
 		XmlBuilder complexType;
 		XmlBuilder choice;
 
-		schema = new XmlBuilder("schema", "xs", XML_SCHEMA_URI);
+		schema = new XmlBuilder("xs:schema");
 		schema.addAttribute("xmlns:xs", XML_SCHEMA_URI);
 		schema.addAttribute("elementFormDefault", "qualified");
 
@@ -70,7 +70,7 @@ public class DocWriter {
 			String elementType,
 			String minOccurs) {
 		XmlBuilder element;
-		element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element = new XmlBuilder("xs:element");
 		element.addAttribute("name", elementName);
 		element.addAttribute("type", elementType);
 		element.addAttribute("minOccurs", minOccurs);
@@ -79,7 +79,7 @@ public class DocWriter {
 
 	private static void addElement(XmlBuilder schema, String elementName, String elementType) {
 		XmlBuilder element;
-		element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		element = new XmlBuilder("xs:element");
 		element.addAttribute("name", elementName);
 		element.addAttribute("type", elementType);
 		schema.addSubElement(element);
@@ -87,7 +87,7 @@ public class DocWriter {
 
 	private static XmlBuilder addComplexType(XmlBuilder schema, String complexTypeName) {
 		XmlBuilder complexType;
-		complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
+		complexType = new XmlBuilder("xs:complexType");
 		complexType.addAttribute("name", complexTypeName);
 		schema.addSubElement(complexType);
 		return complexType;
@@ -95,7 +95,7 @@ public class DocWriter {
 
 	private static XmlBuilder addChoice(XmlBuilder complexType, String minOccurs, String maxOccurs) {
 		XmlBuilder choice;
-		choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+		choice = new XmlBuilder("xs:choice");
 		choice.addAttribute("minOccurs", minOccurs);
 		choice.addAttribute("maxOccurs", maxOccurs);
 		complexType.addSubElement(choice);
@@ -104,14 +104,14 @@ public class DocWriter {
 
 	private static void addIbisBeanToSchema(IbisBean ibisBean, XmlBuilder schema, DocInfo docInfo) {
 		if ((ibisBean.getClazz() != null) && (ibisBean.getSortedMethodsXsd().length >= 1)) {
-			XmlBuilder complexType = new XmlBuilder("complexType", "xs", XML_SCHEMA_URI);
+			XmlBuilder complexType = new XmlBuilder("xs:complexType");
 			complexType.addAttribute("name", ibisBean.getName() + "Type");
 			List<XmlBuilder> choices = new ArrayList<XmlBuilder>();
 			for (MethodXsd methoXsd : ibisBean.getSortedMethodsXsd()) {
 				if (methoXsd.getChildIbisBeans() != null) {
 					// Pipes, Senders, ...
 					if (!ignore(ibisBean, methoXsd.getChildIbisBeanName(), docInfo)) {
-						XmlBuilder choice = new XmlBuilder("choice", "xs", XML_SCHEMA_URI);
+						XmlBuilder choice = new XmlBuilder("xs:choice");
 						choice.addAttribute("minOccurs", "0");
 						addMaxOccurs(choice, methoXsd.getMaxOccurs());
 							for (IbisBean childIbisBean : methoXsd.getChildIbisBeans()) {
@@ -153,7 +153,7 @@ public class DocWriter {
 	}
 
 	private static XmlBuilder getChildIbisBeanSchemaElement(String childIbisBeanName, int maxOccurs) {
-		XmlBuilder element = new XmlBuilder("element", "xs", XML_SCHEMA_URI);
+		XmlBuilder element = new XmlBuilder("xs:element");
 		element.addAttribute("name", childIbisBeanName);
 		element.addAttribute("type", childIbisBeanName + "Type");
 		element.addAttribute("minOccurs", "0");
