@@ -10,7 +10,7 @@ The Frank!Doc provides reference information for Frank developers as explained i
 | `@ff.forward` | | Class | Describes a forward (e.g. `success`, `failure`). First argument is name of forward. Second argument is description. |
 | `@ff.tag` | | Class | Tag that classifies the Java class. First argument is tag name, second argument is tag value. |
 | `@ff.default` | `@Default` | Attribute setter | Describes default value. |
-| `@ff.protected` | `@Protected` | Attribute setter | Suppresses declaration and inheritance of attribute. Annotation is inherited. |
+| `@ff.protected` | `@Protected` | Attribute setter or child setter | Suppresses declaration and inheritance of attribute or child. Annotation is inherited. |
 | `@ff.mandatory` | `@Mandatory` | Attribute or child setter | Makes attribute or child mandatory in Frank config. |
 | `@ff.defaultElement` | | Child setter | Set default value of `className` attribute in XSD syntax 1 element. |
 | | `@EnumLabel` | Enum constant | Set representation required in Frank configs. |
