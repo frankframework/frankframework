@@ -114,7 +114,7 @@ We have yet to test the compatibility of the iaf-test module with Jetty. Until t
 
 ### Checking differences within Larva
 
-The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/helloLarva.html. Larva tests
+The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/testPipelines.html. Larva tests
 execute some system-under-test, for example a Frank configuration. The
 output of the system-under-test is often compared to some expected value.
 The Graphical User Interface of Larva shows these differences, but sometimes
@@ -138,13 +138,18 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Install Eclipse with Lombok
 
-- Download Eclipse from [here](https://www.eclipse.org/downloads/packages/), choosing "Eclipse IDE for Enterprise Java Developers". We tested our instructions with version 2021-09, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). There is no installer. To install Eclipse, just unzip your download to a directory of your choice.
+- Open the webpage with [downloads of Eclipse](https://www.eclipse.org/downloads/packages/). At the top of this page, you see a link to download an installer. We recommend that you do not use an installer, because you can also download a .zip file with the sources of Eclipse. When you use a zip file instead of an installer, it is easier to have different versions of Eclipse on your development computer.
+- Click the link "Eclipse IDE for Enterprise Java and Web Developers". A page opens with a big Download button to the right. Skip that one because it is an installer. Click a link to the left of that, under "Download Links". We tested our instructions with version 2021-12, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). To install Eclipse, just unzip your download to a directory of your choice.
+- You may get an error "path too long". You can fix that by giving your .zip file a shorter name and trying again.
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
-- Download version 1.18.12. You may need the link "older versions".
+- Download version 1.18.12. You need the link "older versions" to find that version.
 - Run the .jar you downloaded. Under Windows you can double-click it.
-- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location". You should point to the eclipse.exe file.
+- You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
+
+MHD: Hier was ik gebleven. Ik wacht op antwoord op een vraag: Kunnen we de Zulu JDK gebruiken ipv Oracle?
+
 - The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html).
 
 **NOTE:** In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore 
@@ -153,6 +158,9 @@ with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typica
 ### Configure Eclipse
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
+
+MHD: Does this still apply?
+
 - You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
 
       --illegal-access=warn
@@ -178,6 +186,9 @@ with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typica
 ### Set up a Tomcat server in Eclipse
 
 - Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
+
+MHD: No longer version 7. Insert a new version.
+
 - Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v7.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
