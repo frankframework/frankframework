@@ -147,19 +147,13 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
-
-MHD: Hier was ik gebleven. Ik wacht op antwoord op een vraag: Kunnen we de Zulu JDK gebruiken ipv Oracle?
-
-- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.oracle.com/nl/java/technologies/javase/javase8u211-later-archive-downloads.html).
-
-**NOTE:** In earlier versions of this file, you were asked to start Eclipse using a Java 8 JRE. That does not work anymore 
-with Eclipse 2021-09. You must start Eclipse from a Java 11 or later JRE, typically the JRE delivered with Eclipse, and then configure a Java 8 **JDK** in the workspace or project settings. A Java 8 JRE is not sufficient because some unit tests require a JDK. Configuring Eclipse to use the Java 8 JDK will be explained later.
+- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright.
 
 ### Configure Eclipse
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 
-MHD: Does this still apply?
+MHD: Does this still apply? I did not apply it while trying out.
 
 - You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
 
@@ -169,6 +163,7 @@ MHD: Does this still apply?
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - There are a few unit tests that only run when a JDK is available; a JRE is not sufficient for them. Let Eclipse run unit tests using a JDK, as follows. Go to Window | Preferences. Go to Java | Installed JREs. Press Add... and browse to an installation directory of a JDK. Finally, make it the default by clicking the checkbox.
+- You may have to delete the JRE that came with Eclipse.
 
 ### Import the source code
 
@@ -182,6 +177,8 @@ MHD: Does this still apply?
 - **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
+
+MHD: Here the Eclipse build fails...
 
 ### Set up a Tomcat server in Eclipse
 
