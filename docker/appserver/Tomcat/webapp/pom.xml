@@ -18,6 +18,7 @@
 		<config.groupid>org.ibissource</config.groupid>
 		<config.project>ibis-adapterframework-${config.tag}</config.project>
 		<config.project.version>${project.version}</config.project.version>
+		<config.image.tag>iaf-${config.tag}-tomcat</config.image.tag>
 	</properties>
 	
 	
@@ -75,7 +76,7 @@
 								<exec executable="docker" failonerror="true">
 									<arg value="build"/>
 									<arg value="-t"/>
-									<arg value="iaf-${config.tag}-tomcat"/>
+									<arg value="${config.image.tag}"/>
 									<arg value="."/>
 								</exec>
 							</target>
