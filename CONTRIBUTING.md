@@ -153,7 +153,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 
-MHD: Does this still apply? I did not apply it while trying out.
+MHD: Does this still apply? I did not apply it while trying out. Later the build failed and I applied this. The build still failed. The build also failed when I replaced the Zulu JDK with the Oracle JDK again.
 
 - You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
 
