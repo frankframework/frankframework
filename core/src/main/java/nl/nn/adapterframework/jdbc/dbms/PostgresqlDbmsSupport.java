@@ -260,6 +260,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		updateLob(stmt, column, blobHandle, true);
 	}
 
+	@Override
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT_SCHEMA()");
+	}
 	
 	@Override
 	public boolean isTablePresent(Connection conn, String tableName) throws JdbcException {
