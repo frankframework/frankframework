@@ -142,28 +142,19 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Click the link "Eclipse IDE for Enterprise Java and Web Developers". A page opens with a big Download button to the right. Skip that one because it is an installer. Click a link to the left of that, under "Download Links". We tested our instructions with version 2021-12, but older versions should also work. Note that 64-bit Eclipse doesn't work with 32-bit JRE/JDK (doesn't start without any message). To install Eclipse, just unzip your download to a directory of your choice.
 - You may get an error "path too long". You can fix that by giving your .zip file a shorter name and trying again.
 - Download the Lombok library. This is easier than letting Maven do the download and then finding the .jar file in Eclipse. Browse to https://projectlombok.org/. On the top menu, choose "Download".
-- Download version 1.18.12. You need the link "older versions" to find that version.
+- Download version 1.18.22. You need the link "older versions" to find that version.
 - Run the .jar you downloaded. Under Windows you can double-click it.
 - You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
-- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright.
 
 ### Configure Eclipse
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
-
-MHD: Does this still apply? I did not apply it while trying out. Later the build failed and I applied this. The build still failed. The build also failed when I replaced the Zulu JDK with the Oracle JDK again.
-
-- You need to adjust `eclipse.ini` to avoid problems with Lombok, see https://stackoverflow.com/questions/69218106/eclipse-not-able-to-open-java-files-unable-to-make-protected-final-java-lang. Please append the following lines:
-
-      --illegal-access=warn
-      --add-opens java.base/java.lang=ALL-UNNAMED
-
 - Start Eclipse and close Welcome.
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-- There are a few unit tests that only run when a JDK is available; a JRE is not sufficient for them. Let Eclipse run unit tests using a JDK, as follows. Go to Window | Preferences. Go to Java | Installed JREs. Press Add... and browse to an installation directory of a JDK. Finally, make it the default by clicking the checkbox.
-- You may have to delete the JRE that came with Eclipse.
+
+MHD: Test that the unit tests work with the default JRE.
 
 ### Import the source code
 
@@ -177,8 +168,6 @@ MHD: Does this still apply? I did not apply it while trying out. Later the build
 - **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
-
-MHD: Here the Eclipse build fails...
 
 ### Set up a Tomcat server in Eclipse
 
