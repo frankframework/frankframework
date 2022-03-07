@@ -152,9 +152,8 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
+- Check that Lombok has been installed correctly. Go to help | "about eclipse". To the bottom of the dialog, there should be a line that starts with "Lombok v1.18.22".
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
-
-MHD: Test that the unit tests work with the default JRE.
 
 ### Import the source code
 
@@ -168,15 +167,14 @@ MHD: Test that the unit tests work with the default JRE.
 - **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco and iaf-idin (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Rightclick iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
+- The Frank!Framework can only run on Java 8. Please install a Java 8 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://www.azul.com/downloads/?package=jdk). This is the Zulu OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs.
+- You may have to delete the JRE that came with Eclipse there.
 
 ### Set up a Tomcat server in Eclipse
 
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v7.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download the latest version of [Tomcat](http://tomcat.apache.org/) (version 7.0.47+ is known to work)), OK, Finish.
-
-MHD: No longer version 7. Insert a new version.
-
-- Double click Tomcat v7.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
-- Right click Tomcat v7.0 Server at localhost, Start.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v9.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 9.0.59 or a later version of Tomcat 9), OK, Finish.
+- Double click Tomcat v9.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Right click Tomcat v9.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
 ### In some cases you might want/need to:
