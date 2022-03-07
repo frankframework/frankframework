@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -111,15 +112,17 @@ public class StreamUtilTest {
 	public void testCaptureWithMarkSupportedOutputStream() throws Exception {
 		URL input = ClassUtils.getResourceURL("/ForEachChildElementPipe/bulk2.xml");
 
+		int bufferSize = 2048;
 		Message message = new Message(input.openStream()); //non-repeatable
 		ByteArrayOutputStream boas = message.captureBinaryStream();
-		byte[] magic = message.getMagic(StreamUtil.DEFAULT_STREAM_CAPTURE_LIMIT);
+		byte[] magic = message.getMagic(bufferSize);
 
 		message.asString(); //read twice after the magic has been fetched
 		message.asString();
 
-		assertEquals(new String(magic), new String(boas.toByteArray())); //Since the capture limit has not been read the magic should equal the entire stream
-		assertEquals(message.asString(), new String(boas.toByteArray()));
+		byte[] capture = Arrays.copyOf(boas.toByteArray(), bufferSize); //it is possible more characters have been written to the captured stream
+		assertEquals(new String(magic), new String(capture));
+		assertEquals(message.asString(), Message.asMessage(input).asString()); //verify that the message output, after reading the magic, has not changed
 	}
 
 	@Test

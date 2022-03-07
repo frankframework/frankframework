@@ -446,7 +446,7 @@ public class StreamUtil {
 			int sizeToRead = Math.abs(off - len);
 			if(bytesToSkip < sizeToRead) {
 				out.write(b, off + bytesToSkip, len - bytesToSkip);
-				bytesToSkip = 0;
+				reset();
 			} else {
 				bytesToSkip -= sizeToRead;
 			}
@@ -460,6 +460,10 @@ public class StreamUtil {
 		}
 	}
 
+	/**
+	 * Triggers the next byte after the threshold has been reached.
+	 * If bytes are written in chunks it triggers after processing the entire chunk.
+	 */
 	public static OutputStream limitSize(OutputStream stream, int maxSize) {
 		return new ThresholdingOutputStream(maxSize) {
 
