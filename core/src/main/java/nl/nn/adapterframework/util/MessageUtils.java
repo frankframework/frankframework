@@ -37,6 +37,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 
 public abstract class MessageUtils {
 	private static Logger LOG = LogUtil.getLogger(MessageUtils.class);
+	private static int charsetConfidenceLevel = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -98,7 +99,7 @@ public abstract class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeCharset(Message message) throws IOException {
-		return computeCharset(message, 65);
+		return computeCharset(message, charsetConfidenceLevel);
 	}
 
 	/**
@@ -118,6 +119,7 @@ public abstract class MessageUtils {
 			String charset = match.getName();
 
 			if(match.getConfidence() > 90) {
+				LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 				return updateMessageCharset(message, charset);
 			}
 
@@ -126,16 +128,17 @@ public abstract class MessageUtils {
 				charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
 			}
 			if(match.getConfidence() >= confidence) {
-				LOG.info("unable to properly detect charset for message [{}], best match [{}]", message, charset);
+				LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 				return updateMessageCharset(message, charset);
 			}
 
 			updateMessageCharset(message, null);
-			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, match.getName(), match.getConfidence(), confidence);
+			LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 		}
 		return null; //fall back to the default charset.
 	}
 
+	//Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
 	private static Charset updateMessageCharset(Message message, String charsetName) {
 		try {
 			if(charsetName != null) {
