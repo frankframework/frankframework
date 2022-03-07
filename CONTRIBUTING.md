@@ -152,7 +152,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 - If you want to change -vm options in `eclipse.ini`, please be aware that that option is present already. Update the existing option and do not introduce a duplicate -vm.
 - Start Eclipse and close Welcome.
-- Check that Lombok has been installed correctly. Go to help | "about eclipse". To the bottom of the dialog, there should be a line that starts with "Lombok v1.18.22".
+- Check that Lombok has been installed correctly. Go to Help | "about eclipse". To the bottom of the dialog, there should be a line that starts with "Lombok v1.18.22".
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 
 ### Import the source code
