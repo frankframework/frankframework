@@ -15,17 +15,20 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
+import lombok.Getter;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager;
 import nl.nn.adapterframework.jta.ThreadConnectableJtaTransactionManager;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 
 	protected IThreadConnectableTransactionManager txManager;
+	private @Getter TestConfiguration configuration;
 
-	private static TransactionManagerType singleTransactionManagerType = null; 	// set to a specific transaction manager type, to speed up testing
+	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
@@ -56,11 +59,14 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	public void setup() throws Exception {
 		super.setup();
 
-		setupDataSource();
+		configuration = transactionManagerType.getConfigurationContext();
+		txManager = configuration.getBean(SpringTxManagerProxy.class, "txManager");
+//		setupDataSource();
 
+		System.err.println(dataSource);
 		prepareDatabase();
 	}
-
+/*
 	protected void setupDataSource() throws Exception {
 		switch (transactionManagerType) {
 			case DATASOURCE:
@@ -94,7 +100,7 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 		UserTransaction utx = com.arjuna.ats.jta.UserTransaction.userTransaction();
 		txManager = new ThreadConnectableJtaTransactionManager(utx, tm);
 	}
-
+*/
 	public TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, timeout);
 	}

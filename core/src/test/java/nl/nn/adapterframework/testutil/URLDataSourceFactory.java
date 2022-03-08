@@ -93,6 +93,10 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 
 	@Override
 	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
+		if("jdbc/testconfiguration".equals(jndiName)) { //Spring tries to fetch the default DataSource (jdbc.datasource.default) which must be set explicitly during tests
+			return objects.get("H2");
+		}
+
 		if(!objects.containsKey(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}
