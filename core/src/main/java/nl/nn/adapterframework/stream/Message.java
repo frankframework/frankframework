@@ -146,7 +146,7 @@ public class Message implements Serializable {
 
 	/**
 	 * Representing a charset of binary requests 
-	 * @return the provided charset when the message was created
+	 * @return the charset provided when the message was created
 	 */
 	public String getCharset() {
 		return (String)context.get(MessageContext.METADATA_CHARSET);
